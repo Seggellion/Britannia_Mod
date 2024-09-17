@@ -4,7 +4,9 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.event.ModEventHandler;
 import com.seggellion.britannia_mod.features.MobSpawnControl; 
-import com.seggellion.britannia_mod.event.PlayerEventHandler; 
+import com.seggellion.britannia_mod.event.PlayerEventHandler;
+import com.seggellion.britannia_mod.features.DiamondToolControl; 
+import com.seggellion.britannia_mod.features.RecipeRemovalHandler;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.api.distmarker.Dist;
@@ -36,6 +38,8 @@ public class BritanniaMod {
         // Register MobSpawnControl on the Forge event bus to handle mob spawn control
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler()); 
+        NeoForge.EVENT_BUS.register(new DiamondToolControl());
+        NeoForge.EVENT_BUS.register(new RecipeRemovalHandler()); 
 
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
 

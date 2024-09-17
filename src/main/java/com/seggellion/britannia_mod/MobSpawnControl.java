@@ -14,8 +14,6 @@ public class MobSpawnControl {
     @SubscribeEvent
     public void onEntityJoinLevel(EntityJoinLevelEvent event) {
         Entity entity = event.getEntity();
-        LOGGER.info("Entity joined level: {}", entity.getType().getDescription().getString());
-
         if (entity instanceof Creeper || entity instanceof EnderMan) {
             event.setCanceled(true);
             LOGGER.info("Prevented spawning of {}", entity.getType().getDescription().getString());
