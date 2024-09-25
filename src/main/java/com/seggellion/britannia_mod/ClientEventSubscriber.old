@@ -1,0 +1,30 @@
+package com.seggellion.britannia_mod.client;
+
+import com.seggellion.britannia_mod.BritanniaMod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import net.neoforged.fml.common.Mod;
+
+@Mod.EventBusSubscriber(modid = BritanniaMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@OnlyIn(Dist.CLIENT)
+public class ClientEventSubscriber {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientEventSubscriber.class);
+
+    // Method to listen for FMLClientSetupEvent and register client-specific events
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        LOGGER.info("Client setup event called");
+        // Register client-specific events like the ManaOverlayScreen
+        registerClientEvents();
+    }
+
+    // Client setup method to register client-specific events, like rendering overlays
+    public static void registerClientEvents() {
+        LOGGER.info("Register ManaOverlayScreen");
+        NeoForge.EVENT_BUS.register(new ManaOverlayScreen());
+    }
+}
