@@ -1,0 +1,38 @@
+{
+  "moongate_hum": {
+    "sounds": [
+      {
+        "name": "britannia_mod:moongate_hum",
+        "stream": false,
+        "volume": 0.5,
+        "pitch": 1.0
+      }
+    ]
+  },
+  "moongate_teleport": {
+    "sounds": [
+      {
+        "name": "britannia_mod:moongate_teleport",
+        "stream": false,
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+    "heal_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:heal_spell_cast",
+          "stream": false
+        }
+      ]
+    },
+    "magic_arrow_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:magic_arrow_cast",
+          "stream": false
+        }
+      ]
+    }
+}
