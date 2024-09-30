@@ -1,0 +1,14 @@
+{
+  "item.britannia_mod.garlic": "Garlic",
+  "item.britannia_mod.ginseng": "Ginseng",
+  "item.britannia_mod.spiders_silk": "Spiders Silk",
+  "item.britannia_mod.sulphurous_ash": "Sulphurous Ash",
+  "item.britannia_mod.night_sight_item": "Night Sight",
+  "item.britannia_mod.heal_item": "Heal",
+  "item.britannia_mod.magic_arrow_item": "Magic Arrow",
+  "block.britannia_mod.moongate_block": "MoonGate",
+  "block.britannia_mod.moongate_top": "MoonGate(Top)",
+
+  "itemGroup.britannia_item_tab": "Britannia Item Tab",
+  "itemGroup.britannia_magic_tab": "Britannia Magic Tab"
+}

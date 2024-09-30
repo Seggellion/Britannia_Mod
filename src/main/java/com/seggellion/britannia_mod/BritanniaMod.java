@@ -76,21 +76,28 @@ public static final DeferredHolder<Item, Item> MOONGATE_TOP_ITEM = ITEMS.registe
     "moongate_top", () -> new BlockItem(MOONGATE_TOP.get(), new Item.Properties()));
 
     // Register a Creative Tab
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_TABS.register(
-        "britannia_tab", () -> CreativeModeTab.builder()
-                .title(Component.translatable("itemGroup.britannia_tab"))
-                .icon(() -> NIGHT_SIGHT_ITEM.get().getDefaultInstance())
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE__ITEM_TAB = CREATIVE_TABS.register(
+        "britannia_item_tab", () -> CreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.britannia_item_tab"))
+                .icon(() -> GARLIC.get().getDefaultInstance())
                 .displayItems((parameters, output) -> {
                     output.accept(GARLIC.get());
                     output.accept(GINSENG.get());
                     output.accept(SPIDERS_SILK.get());
                     output.accept(SULPHUROUS_ASH.get());
-                    output.accept(NIGHT_SIGHT_ITEM.get());
-                    output.accept(HEAL_ITEM.get());
-                    output.accept(MAGIC_ARROW_ITEM.get());
                     output.accept(MOONGATE_BLOCK_ITEM.get());
                     output.accept(MOONGATE_TOP_ITEM.get());
                 }).build());
+
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_MAGIC_TAB = CREATIVE_TABS.register(
+            "britannia_tab_magic", () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.britannia_magic_tab"))
+                    .icon(() -> NIGHT_SIGHT_ITEM.get().getDefaultInstance())
+                    .displayItems((parameters, output) -> {
+                        output.accept(NIGHT_SIGHT_ITEM.get());
+                        output.accept(HEAL_ITEM.get());
+                        output.accept(MAGIC_ARROW_ITEM.get());
+                    }).build());
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("BritanniaMod constructor called");
