@@ -1,7 +1,6 @@
-package com.seggellion.britannia_mod.items;
+package com.seggellion.britannia_mod.item;
 
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.CreativeModeTab;
 
 public class ReagentItem extends Item {
     public ReagentItem() {

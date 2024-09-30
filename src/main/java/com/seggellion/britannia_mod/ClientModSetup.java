@@ -1,11 +1,11 @@
 package com.seggellion.britannia_mod;
 
-import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.api.distmarker.Dist;
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import org.slf4j.Logger;
 
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();

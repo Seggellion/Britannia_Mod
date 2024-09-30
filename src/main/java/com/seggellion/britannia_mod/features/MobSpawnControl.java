@@ -1,12 +1,10 @@
 package com.seggellion.britannia_mod.features;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-
 
 public class MobSpawnControl {
     @SubscribeEvent

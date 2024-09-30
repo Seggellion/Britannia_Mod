@@ -4,7 +4,6 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 public class NightSightSpell extends Spell {
@@ -17,8 +16,8 @@ public class NightSightSpell extends Spell {
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.SPIDERS_SILK.get()),
-            new ItemStack(BritanniaMod.SULPHUROUS_ASH.get())
+                new ItemStack(BritanniaMod.SPIDERS_SILK.get()),
+                new ItemStack(BritanniaMod.SULPHUROUS_ASH.get())
         };
     }
 

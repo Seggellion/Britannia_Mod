@@ -1,22 +1,22 @@
 package com.seggellion.britannia_mod.event;
 
 import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.level.ClipContext;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import com.seggellion.britannia_mod.magic.NightSightSpell;
 import com.seggellion.britannia_mod.magic.HealSpell;
 import com.seggellion.britannia_mod.magic.MagicArrowSpell;
+import com.seggellion.britannia_mod.magic.NightSightSpell;
 import com.seggellion.britannia_mod.magic.Spell;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import org.slf4j.Logger;
 
 public class PlayerEventHandler {
     private static final Logger LOGGER = LogUtils.getLogger();

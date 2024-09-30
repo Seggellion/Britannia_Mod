@@ -1,14 +1,14 @@
 package com.seggellion.britannia_mod.magic;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.network.NetworkHandler;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 public class ManaHandler {
@@ -42,7 +42,7 @@ public class ManaHandler {
         Player player = event.getEntity();
         if (!player.level().isClientSide()) {
             CompoundTag tag = player.getPersistentData();
-            int tickCounter = tag.getInt(TICK_COUNTER_TAG); 
+            int tickCounter = tag.getInt(TICK_COUNTER_TAG);
             tickCounter++;
 
             if (tickCounter >= TICKS_PER_MANA) {

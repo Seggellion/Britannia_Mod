@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.event;
 
+
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;

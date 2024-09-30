@@ -1,8 +1,8 @@
 package com.seggellion.britannia_mod.world;
 
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;

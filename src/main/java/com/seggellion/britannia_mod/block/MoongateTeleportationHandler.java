@@ -1,16 +1,16 @@
 package com.seggellion.britannia_mod.block;
 
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel; // Import ServerLevel
-import net.minecraft.network.chat.Component;  // Import Component
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
 
 public class MoongateTeleportationHandler {
 
     private static final List<String> CITY_NAMES = List.of(
-        "Britain", "Moonglow", "Yew", "Minoc", "Trinsic", "Skara Brae", "Jhelom", "Magincia"
+            "Britain", "Moonglow", "Yew", "Minoc", "Trinsic", "Skara Brae", "Jhelom", "Magincia"
     );
 
     // Cooldown map to track last teleport time (UUID -> last teleport timestamp)

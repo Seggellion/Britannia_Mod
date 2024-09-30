@@ -38,9 +38,9 @@ public class DiamondToolControl {
     // Utility method to check if the item is a diamond tool
     private boolean isDiamondTool(ItemStack itemStack) {
         return itemStack.getItem() == Items.DIAMOND_PICKAXE ||
-               itemStack.getItem() == Items.DIAMOND_AXE ||
-               itemStack.getItem() == Items.DIAMOND_SWORD ||
-               itemStack.getItem() == Items.DIAMOND_SHOVEL ||
-               itemStack.getItem() == Items.DIAMOND_HOE;
+                itemStack.getItem() == Items.DIAMOND_AXE ||
+                itemStack.getItem() == Items.DIAMOND_SWORD ||
+                itemStack.getItem() == Items.DIAMOND_SHOVEL ||
+                itemStack.getItem() == Items.DIAMOND_HOE;
     }
 }

@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '1.0.17'
+    id 'net.neoforged.moddev' version '1.0.20'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -187,13 +187,3 @@ idea {
         downloadJavadoc = true
     }
 }
-
-
-// Task to copy the custom world into the mod output
-task copyCustomWorld(type: Copy) {
-    from 'src/main/resources/custom_world' // Path to your custom world files
-    into "$buildDir/resources/main/custom_world" // Output directory where the world will be placed
-}
-
-// Declare that the jar task depends on the copyCustomWorld task
-jar.dependsOn(copyCustomWorld)

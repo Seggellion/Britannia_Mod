@@ -1,15 +1,14 @@
 package com.seggellion.britannia_mod.ui;
 
-import com.seggellion.britannia_mod.magic.ManaHandler;
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;  
-import com.mojang.logging.LogUtils;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import org.slf4j.Logger;
 
 @OnlyIn(Dist.CLIENT)

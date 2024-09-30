@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.magic;
 
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 public abstract class SpellBase {
@@ -23,3 +22,4 @@ public abstract class SpellBase {
     public abstract void castSelf(Player player);
     public abstract void castTarget(Player caster, Player target);
 }
+

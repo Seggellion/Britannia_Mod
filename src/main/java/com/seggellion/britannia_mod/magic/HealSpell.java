@@ -1,16 +1,16 @@
 package com.seggellion.britannia_mod.magic;
 
 import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.sound.ModSounds;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.network.chat.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,9 +28,9 @@ public class HealSpell extends Spell {
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.GARLIC.get()),
-            new ItemStack(BritanniaMod.GINSENG.get()),
-            new ItemStack(BritanniaMod.SPIDERS_SILK.get())
+                new ItemStack(BritanniaMod.GARLIC.get()),
+                new ItemStack(BritanniaMod.GINSENG.get()),
+                new ItemStack(BritanniaMod.SPIDERS_SILK.get())
         };
     }
 
@@ -58,12 +58,12 @@ public class HealSpell extends Spell {
             if (!level.isClientSide) {
                 SoundEvent healSound = ModSounds.HEAL_SPELL_CAST.get();
                 level.playSound(
-                    null, // null to play for all nearby players
-                    caster.getX(), caster.getY(), caster.getZ(), // Location of the player
-                    healSound, // Sound event for heal spell
-                    SoundSource.PLAYERS, // Sound category
-                    1.0F, // Volume
-                    1.0F  // Pitch
+                        null, // null to play for all nearby players
+                        caster.getX(), caster.getY(), caster.getZ(), // Location of the player
+                        healSound, // Sound event for heal spell
+                        SoundSource.PLAYERS, // Sound category
+                        1.0F, // Volume
+                        1.0F  // Pitch
                 );
             }
 

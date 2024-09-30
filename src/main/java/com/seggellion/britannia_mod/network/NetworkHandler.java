@@ -1,14 +1,14 @@
 package com.seggellion.britannia_mod.network;
 
-import net.minecraft.server.level.ServerPlayer;
+import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
-import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
-import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class NetworkHandler {
 
@@ -17,16 +17,16 @@ public class NetworkHandler {
         final PayloadRegistrar registrar = event.registrar("1");
 
         registrar.playToClient(
-            ManaSyncPayload.TYPE,
-            ManaSyncPayload.STREAM_CODEC,
-            new IPayloadHandler<>() {
-                @Override
-                public void handle(ManaSyncPayload data, IPayloadContext context) {
-                    handleDataOnClient(data, context);
+                ManaSyncPayload.TYPE,
+                ManaSyncPayload.STREAM_CODEC,
+                new IPayloadHandler<>() {
+                    @Override
+                    public void handle(ManaSyncPayload data, IPayloadContext context) {
+                        handleDataOnClient(data, context);
+                    }
                 }
-            }
         );
-        
+
         // Ensure server-side handling if necessary
         if (FMLLoader.getDist().isDedicatedServer()) {
             // Add server-side payload handling here if needed

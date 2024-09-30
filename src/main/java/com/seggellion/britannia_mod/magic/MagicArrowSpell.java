@@ -1,19 +1,19 @@
 package com.seggellion.britannia_mod.magic;
 
 import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.sound.ModSounds;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;  // Make sure to import Player
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.AbstractArrow.Pickup;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -32,7 +32,7 @@ public class MagicArrowSpell extends Spell {
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.SULPHUROUS_ASH.get())  // Magic Arrow only requires sulphurous ash
+                new ItemStack(BritanniaMod.SULPHUROUS_ASH.get())  // Magic Arrow only requires sulphurous ash
         };
     }
 
@@ -60,12 +60,12 @@ public class MagicArrowSpell extends Spell {
             if (!level.isClientSide) {
                 SoundEvent magicArrowSound = ModSounds.MAGIC_ARROW_SPELL_CAST.get();  // You can replace with a magic arrow sound if you have one
                 level.playSound(
-                    null, // null to play for all nearby players
-                    caster.getX(), caster.getY(), caster.getZ(), // Location of the player
-                    magicArrowSound, // Sound event for magic arrow
-                    SoundSource.PLAYERS, // Sound category
-                    1.0F, // Volume
-                    1.0F  // Pitch
+                        null, // null to play for all nearby players
+                        caster.getX(), caster.getY(), caster.getZ(), // Location of the player
+                        magicArrowSound, // Sound event for magic arrow
+                        SoundSource.PLAYERS, // Sound category
+                        1.0F, // Volume
+                        1.0F  // Pitch
                 );
             }
 
@@ -84,7 +84,7 @@ public class MagicArrowSpell extends Spell {
         arrow.setBaseDamage(5.0D);  // Set arrow damage
         arrow.setCritArrow(true);  // Make it a critical arrow
         arrow.setRemainingFireTicks(100);  // Set arrow on fire for 5 seconds (100 ticks)
-        arrow.pickup = Pickup.DISALLOWED;  // Disallow pickup of the arrow
+        arrow.pickup = AbstractArrow.Pickup.DISALLOWED;  // Disallow pickup of the arrow
 
         // Calculate direction based on player's look vector
         Vec3 lookVector = caster.getLookAngle();

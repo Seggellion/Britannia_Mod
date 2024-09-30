@@ -1,10 +1,10 @@
 package com.seggellion.britannia_mod.magic;
 
+import com.mojang.logging.LogUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.chat.Component;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 public abstract class Spell {

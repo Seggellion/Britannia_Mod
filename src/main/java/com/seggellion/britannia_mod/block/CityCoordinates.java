@@ -1,4 +1,3 @@
-// CityCoordinates.java
 package com.seggellion.britannia_mod.block;
 
 import net.minecraft.core.BlockPos;

@@ -1,19 +1,19 @@
 package com.seggellion.britannia_mod.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 public record ManaSyncPayload(int mana) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<ManaSyncPayload> TYPE = new CustomPacketPayload.Type<>(
-        ResourceLocation.fromNamespaceAndPath("britannia_mod", "mana_sync")
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "mana_sync")
     );
 
     public static final StreamCodec<FriendlyByteBuf, ManaSyncPayload> STREAM_CODEC = StreamCodec.of(
-        ManaSyncPayload::encode,
-        ManaSyncPayload::decode
+            ManaSyncPayload::encode,
+            ManaSyncPayload::decode
     );
 
     // Decoder method
