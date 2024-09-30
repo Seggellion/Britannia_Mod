@@ -16,14 +16,16 @@ out
 # gradle
 build
 .gradle
+gradlew
+gradlew.bat
+
 
 # other
 eclipse
 run
 runs
 run-data
-gradlew
-gradlew.bat
+
 
 repo
 
