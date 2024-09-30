@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.features;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;

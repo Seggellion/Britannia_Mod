@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.ui;
 
-import com.seggellion.britannia_mod.magic.ManaHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
