@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 public class ManaHandler {
     private static final int MAX_MANA = 100;
     private static final int MANA_REGEN_RATE = 1;
-    private static final int TICKS_PER_MANA = 100;
+    private static final int TICKS_PER_MANA = 200;
     private static final String MANA_TAG = "mana";
     private static final String TICK_COUNTER_TAG = "mana_tick_counter";
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -36,6 +36,13 @@ public class ManaHandler {
         }
     }
 
+    // Add this new method to ManaHandler
+    public static void reduceMana(Player player, int amount) {
+        int currentMana = getMana(player);
+        int newMana = Math.max(0, currentMana - amount);
+        setMana(player, newMana);
+        LOGGER.info("Reduced mana by {} points from player: {}. New mana: {}", amount, player.getName().getString(), newMana);
+    }
 
     @SubscribeEvent
     public void onPlayerTick(PlayerTickEvent.Post event) {

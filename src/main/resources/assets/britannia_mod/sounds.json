@@ -4,7 +4,7 @@
       {
         "name": "britannia_mod:moongate_hum",
         "stream": false,
-        "volume": 0.5,
+        "volume": 1.0,
         "pitch": 1.0
       }
     ]
@@ -27,10 +27,58 @@
         }
       ]
     },
+    "clumsy_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:clumsy_cast",
+          "stream": false
+        }
+      ]
+    },
+    "night_sight_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:night_sight_cast",
+          "stream": false
+        }
+      ]
+    },
+    "create_food_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:create_food_cast",
+          "stream": false
+        }
+      ]
+    },
+    "feeblemind_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:feeblemind_cast",
+          "stream": false
+        }
+      ]
+    },
+    "weakness_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:weakness_cast",
+          "stream": false
+        }
+      ]
+    },
     "magic_arrow_spell_cast": {
       "sounds": [
         {
           "name": "britannia_mod:magic_arrow_cast",
+          "stream": false
+        }
+      ]
+    },
+    "react_armor_spell_cast": {
+      "sounds": [
+        {
+          "name": "britannia_mod:reactive_armor_cast",
           "stream": false
         }
       ]
