@@ -6,8 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class MoongateTeleportationHandler {
 
@@ -15,7 +14,17 @@ public class MoongateTeleportationHandler {
         "Britain", "Moonglow", "Yew", "Minoc", "Trinsic", "Skara Brae", "Jhelom", "Magincia"
     );
 
+    // Set to track players who have recently teleported
+    private static final Set<UUID> recentlyTeleportedPlayers = new HashSet<>();
+
     public static void teleportPlayer(ServerPlayer player) {
+        UUID playerUUID = player.getUUID();
+
+        // Check if the player has recently teleported
+        if (recentlyTeleportedPlayers.contains(playerUUID)) {
+            return;  // Prevent immediate re-entry into the moongate
+        }
+
         Random random = new Random();
         int index = random.nextInt(CITY_NAMES.size());
         String cityName = CITY_NAMES.get(index);
@@ -34,6 +43,19 @@ public class MoongateTeleportationHandler {
 
             // Teleport the player 1 block away within the same level
             player.teleportTo(level, moveAwayPos.x, moveAwayPos.y, moveAwayPos.z, player.getYRot(), player.getXRot());
+
+            // Add player to the recently teleported set
+            recentlyTeleportedPlayers.add(playerUUID);
+
+            // Schedule removal from the set after a delay
+            player.getServer().execute(() -> {
+                try {
+                    Thread.sleep(5000);  // 5-second delay before player can re-enter the moongate
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                recentlyTeleportedPlayers.remove(playerUUID);
+            });
         } else {
             player.sendSystemMessage(Component.literal("Invalid moongate destination."));
         }
