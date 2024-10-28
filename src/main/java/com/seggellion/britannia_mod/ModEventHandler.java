@@ -1,35 +1,38 @@
+// ModEventHandler.java
 package com.seggellion.britannia_mod.event;
 
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
+import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.entity.HorseSellerNPC;
+import com.seggellion.britannia_mod.registry.EntityRegistry; // Updated import to use EntityRegistry
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
+@EventBusSubscriber(modid = BritanniaMod.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModEventHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public ModEventHandler() {
-        LOGGER.info("ModEventHandler instantiated");
-    }
-
     @SubscribeEvent
-    public void commonSetup(FMLCommonSetupEvent event) {
+    public static void commonSetup(FMLCommonSetupEvent event) {
         LOGGER.info("HELLO FROM COMMON SETUP");
     }
 
     @SubscribeEvent
-    public void addCreative(BuildCreativeModeTabContentsEvent event) {
+    public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
             LOGGER.info("Adding items to creative tab");
         }
     }
 
     @SubscribeEvent
-    public void onClientSetup(FMLClientSetupEvent event) {
+    public static void onClientSetup(FMLClientSetupEvent event) {
         LOGGER.info("HELLO FROM CLIENT SETUP");
     }
 }

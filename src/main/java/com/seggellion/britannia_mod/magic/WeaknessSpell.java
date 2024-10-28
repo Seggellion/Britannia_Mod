@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.magic;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,26 +16,25 @@ import net.minecraft.world.item.ItemStack;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-public class ReactiveArmorSpell extends Spell {
+public class WeaknessSpell extends Spell {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Override
     protected int getManaCost() {
-        return 6;
+        return 4;
     }
 
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.GARLIC.get()),
-            new ItemStack(BritanniaMod.GINSENG.get()),
-            new ItemStack(BritanniaMod.MANDRAKE_ROOT.get())
+            new ItemStack(ItemRegistry.GARLIC.get()),
+            new ItemStack(ItemRegistry.NIGHTSHADE.get())
         };
     }
 
     @Override
     protected int getCooldownTime() {
-        return 2000; // 2-second cooldown
+        return 1000; // 1-second cooldown
     }
 
     @Override
@@ -60,21 +60,26 @@ public class ReactiveArmorSpell extends Spell {
             return; // If caster is null, we shouldn't proceed
         }
 
-        // Freeze the player during casting, then apply reactive armor effect after delay
+        // Freeze the player during casting, then apply weakness after delay
         int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
         SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Apply reactive armor effect to the caster (one-time offensive spell block for 2 minutes)
-            caster.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 2400, 0)); // 2 minutes duration (2400 ticks)
-            LOGGER.info("Reactive armor applied to caster: {}", caster.getName().getString());
+            if (caster.getHealth() > 4.0F) {
+                caster.setHealth(caster.getHealth() - 4.0F); // Remove two hearts (4 health points)
+                caster.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600, 0)); // 30 seconds of weakness effect
+                LOGGER.info("Two hearts removed from caster: {}", caster.getName().getString());
+            } else {
+                LOGGER.info("Caster has insufficient health to lose two hearts.");
+                caster.sendSystemMessage(Component.literal("You do not have enough health to cast this spell!"));
+            }
 
-            // Play reactive armor spell sound
+            // Play weakness spell sound
             ServerLevel level = caster.getServer().overworld();
             if (level != null && !level.isClientSide) {
-                SoundEvent reactiveArmorSound = ModSounds.REACT_ARMOR_SPELL_CAST.get();
+                SoundEvent weaknessSound = ModSounds.WEAKNESS_SPELL_CAST.get();
                 level.playSound(
                     null, // null to play for all nearby players
                     caster.getX(), caster.getY(), caster.getZ(), // Location of the player
-                    reactiveArmorSound, // Sound event for reactive armor spell
+                    weaknessSound, // Sound event for weakness spell
                     SoundSource.PLAYERS, // Sound category
                     1.0F, // Volume
                     1.0F  // Pitch
@@ -86,24 +91,30 @@ public class ReactiveArmorSpell extends Spell {
     @Override
     protected void applyTargetEffect(ServerPlayer caster, LivingEntity target) {
         if (target == null || target.getServer() == null) {
-            LOGGER.warn("Target or target's server is null. Cannot proceed with applyTargetEffect.");
+            LOGGER.warn("Target or target's server is null. Cannot apply target effect.");
             return; // Ensure that the target is valid
         }
 
-        // Freeze the caster during casting, then apply reactive armor effect to target after delay
+        // Freeze the caster during casting, then apply weakness effect to target after delay
         int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
         SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            target.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 2400, 0)); // 2 minutes duration (2400 ticks)
-            LOGGER.info("Reactive armor applied to target: {} by caster: {}", target.getName().getString(), caster.getName().getString());
+            if (target.getHealth() > 4.0F) {
+                target.setHealth(target.getHealth() - 4.0F); // Remove two hearts (4 health points)
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600, 0)); // 30 seconds of weakness effect
+                LOGGER.info("Two hearts removed from target: {} by caster: {}", target.getName().getString(), caster.getName().getString());
+            } else {
+                LOGGER.info("Target has insufficient health to lose two hearts.");
+                caster.sendSystemMessage(Component.literal("The target does not have enough health to cast this spell!"));
+            }
 
-            // Play reactive armor spell sound
+            // Play weakness spell sound
             ServerLevel level = target.getServer().overworld();
             if (level != null && !level.isClientSide) {
-                SoundEvent reactiveArmorSound = ModSounds.REACT_ARMOR_SPELL_CAST.get();
+                SoundEvent weaknessSound = ModSounds.WEAKNESS_SPELL_CAST.get();
                 level.playSound(
                     null, // null to play for all nearby players
                     target.getX(), target.getY(), target.getZ(), // Location of the target
-                    reactiveArmorSound, // Sound event for reactive armor spell
+                    weaknessSound, // Sound event for weakness spell
                     SoundSource.PLAYERS, // Sound category
                     1.0F, // Volume
                     1.0F  // Pitch
@@ -112,8 +123,8 @@ public class ReactiveArmorSpell extends Spell {
         });
     }
 
-    // Check if the item is the spell item for Reactive Armor
+    // Check if the item is the spell item for Weakness
     public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == BritanniaMod.REACTIVE_ARMOR_ITEM.get();
+        return itemStack.getItem() == ItemRegistry.WEAKNESS_ITEM.get();
     }
 }

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.magic;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +30,7 @@ public class MagicArrowSpell extends Spell {
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.SULPHUROUS_ASH.get())  // Magic Arrow only requires sulphurous ash
+            new ItemStack(ItemRegistry.SULPHUROUS_ASH.get())  // Magic Arrow only requires sulphurous ash
         };
     }
 
@@ -166,6 +167,6 @@ public class MagicArrowSpell extends Spell {
 
     // Check if the item is the spell item for Magic Arrow
     public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == BritanniaMod.MAGIC_ARROW_ITEM.get();
+        return itemStack.getItem() == ItemRegistry.MAGIC_ARROW_ITEM.get();
     }
 }

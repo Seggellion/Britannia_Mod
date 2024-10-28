@@ -3,36 +3,36 @@ package com.seggellion.britannia_mod.magic;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-public class ClumsySpell extends Spell {
+public class HealSpell extends Spell {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Override
     protected int getManaCost() {
-        return 4;
+        return 4;  // Adjust mana cost as per the heal spell requirement
     }
 
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.NIGHTSHADE.get()),
-            new ItemStack(BritanniaMod.BLOOD_MOSS.get())
+            new ItemStack(ItemRegistry.GARLIC.get()),
+            new ItemStack(ItemRegistry.GINSENG.get()),
+            new ItemStack(ItemRegistry.SPIDERS_SILK.get())
         };
     }
 
     @Override
     protected int getCooldownTime() {
-        return 1000;
+        return 1000; // 1-second cooldown in milliseconds
     }
 
     @Override
@@ -58,20 +58,19 @@ public class ClumsySpell extends Spell {
             return; // If caster is null, we shouldn't proceed
         }
 
-        // Freeze the player during casting, then apply clumsy effect after delay
+        // Freeze the player during casting, heal after delay, then unfreeze
         int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
         SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Apply clumsy effect to the caster
-            caster.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
+            caster.heal(4.0F);  // Heal the player
 
-            // Play clumsy spell sound
+            // Play heal sound
             ServerLevel level = caster.getServer().overworld();
             if (level != null && !level.isClientSide) {
-                SoundEvent clumsySound = ModSounds.CLUMSY_SPELL_CAST.get();
+                SoundEvent healSound = ModSounds.HEAL_SPELL_CAST.get();
                 level.playSound(
                     null, // null to play for all nearby players
                     caster.getX(), caster.getY(), caster.getZ(), // Location of the player
-                    clumsySound, // Sound event for clumsy spell
+                    healSound, // Sound event for heal spell
                     SoundSource.PLAYERS, // Sound category
                     1.0F, // Volume
                     1.0F  // Pitch
@@ -87,30 +86,40 @@ public class ClumsySpell extends Spell {
             return; // Ensure that the target is valid
         }
 
-        // Freeze the caster during casting, then apply clumsy effect to target after delay
-        int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
-        SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Apply clumsy effect to the target
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
-
-            // Play clumsy spell sound
-            ServerLevel level = target.getServer().overworld();
-            if (level != null && !level.isClientSide) {
-                SoundEvent clumsySound = ModSounds.CLUMSY_SPELL_CAST.get();
-                level.playSound(
-                    null, // null to play for all nearby players
-                    target.getX(), target.getY(), target.getZ(), // Location of the target
-                    clumsySound, // Sound event for clumsy spell
-                    SoundSource.PLAYERS, // Sound category
-                    1.0F, // Volume
-                    1.0F  // Pitch
-                );
-            }
-        });
+        // Number of ticks to cast (1 second = 20 ticks)
+        int castTime = (caster != null) ? 20 : 0;
+        LOGGER.info("Freezing caster {} while casting on target {}", caster != null ? caster.getName().getString() : "Unknown", target.getName().getString());
+        
+        // Freeze the caster during casting, apply effect to target after delay, then unfreeze
+        if (caster != null) {
+            SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
+                healTarget(target);
+            });
+        } else {
+            healTarget(target);
+        }
     }
 
-    // Check if the item is the spell item for Clumsy
+    private void healTarget(LivingEntity target) {
+        target.heal(4.0F);  // Heal the target
+
+        // Play heal sound
+        ServerLevel level = target.getServer().overworld();
+        if (level != null && !level.isClientSide) {
+            SoundEvent healSound = ModSounds.HEAL_SPELL_CAST.get();
+            level.playSound(
+                null, // null to play for all nearby players
+                target.getX(), target.getY(), target.getZ(), // Location of the target
+                healSound, // Sound event for heal spell
+                SoundSource.PLAYERS, // Sound category
+                1.0F, // Volume
+                1.0F  // Pitch
+            );
+        }
+    }
+
+    // Check if the item is the spell item for Heal
     public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == BritanniaMod.CLUMSY_ITEM.get();
+        return itemStack.getItem() == ItemRegistry.HEAL_ITEM.get();
     }
 }

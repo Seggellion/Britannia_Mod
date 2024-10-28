@@ -17,6 +17,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -26,6 +28,11 @@ public class ClientEventHandler {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean wasAttackPressed = false;
+
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        LOGGER.info("Client setup event called. Registering client-side handlers.");
+        // Register client-specific things here, like renderers or key bindings
+    }
 
     @SubscribeEvent
     public void onClientTick(ClientTickEvent.Post event) {

@@ -1,0 +1,12 @@
+modLoader="javafml"
+loaderVersion="[5,)"
+issueTrackerURL="https://github.com/your-repo/your-mod/issues"
+logoFile="your_mod_logo.png"
+license="MIT"  # Replace with your actual license
+
+[[mods]]
+modId="britannia_mod"
+version="0.0.5"  # Replace with your actual mod version
+displayName="Britannia"
+authors="Seggellion"  # Replace with actual authors
+description='''Mod adds features from the world of Britannia'''

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.magic;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,9 +39,9 @@ public class CreateFoodSpell extends Spell {
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.GARLIC.get()),
-            new ItemStack(BritanniaMod.GINSENG.get()),
-            new ItemStack(BritanniaMod.MANDRAKE_ROOT.get())
+            new ItemStack(ItemRegistry.GARLIC.get()),
+            new ItemStack(ItemRegistry.GINSENG.get()),
+            new ItemStack(ItemRegistry.MANDRAKE_ROOT.get())
         };
     }
 
@@ -103,6 +104,6 @@ public class CreateFoodSpell extends Spell {
 
     // Check if the item is the spell item for Create Food
     public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == BritanniaMod.CREATE_FOOD_ITEM.get();
+        return itemStack.getItem() == ItemRegistry.CREATE_FOOD_ITEM.get();
     }
 }

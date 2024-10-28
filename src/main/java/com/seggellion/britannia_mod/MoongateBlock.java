@@ -10,19 +10,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;  // Correct import for Vec3
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.sounds.SoundEvent; // Add this import
-import net.minecraft.util.RandomSource; // Update for RandomSource
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
 import net.minecraft.core.particles.ParticleTypes;
-
+import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class MoongateBlock extends Block {
-        private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Set<UUID> playersOnMoongate = new HashSet<>();
 
     public MoongateBlock() {
         super(BlockBehaviour.Properties.of()
@@ -53,54 +57,65 @@ public class MoongateBlock extends Block {
         return PushReaction.BLOCK;
     }
 
+    @Override
+    public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
+        if (!worldIn.isClientSide && entityIn instanceof ServerPlayer player) {
+            UUID playerUUID = player.getUUID();
 
+            // If the player is not directly on the moongate block, remove them from the tracking set
+            if (!player.blockPosition().equals(pos)) {
+                playersOnMoongate.remove(playerUUID);
+                return;
+            }
 
-@Override
-public void entityInside(BlockState state, Level worldIn, BlockPos pos, net.minecraft.world.entity.Entity entityIn) {
-    if (!worldIn.isClientSide && entityIn instanceof ServerPlayer player) {
-        // Teleport the player on server side
-        MoongateTeleportationHandler.teleportPlayer(player);
+            // If the player is already in the set, do not teleport them again
+            if (playersOnMoongate.contains(playerUUID)) {
+                return;
+            }
 
-        // Log the SoundEvent
-        SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
+            // Teleport the player on server side
+            MoongateTeleportationHandler.teleportPlayer(player);
 
-        // Check if the SoundEvent is null
-        if (soundEvent == null) {
-            LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
+            // Log the SoundEvent
+            SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
+
+            if (soundEvent == null) {
+                LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
+            }
+
+            // Play teleport sound
+            worldIn.playSound(
+                null, // No specific player; null will send to all players (but we can restrict it)
+                player.getX(), player.getY(), player.getZ(),
+                soundEvent,
+                net.minecraft.sounds.SoundSource.PLAYERS,
+                1.0F,
+                1.0F
+            );
+
+            // Add player to the set to track they are on the moongate
+            playersOnMoongate.add(playerUUID);
         }
-
-worldIn.playSound(
-    null, // No specific player; null will send to all players (but we can restrict it)
-    player.getX(), player.getY(), player.getZ(),
-    soundEvent,
-    net.minecraft.sounds.SoundSource.PLAYERS,
-    1.0F,
-    1.0F
-);
     }
-}
 
+    @Override
+    public void animateTick(BlockState stateIn, Level worldIn, BlockPos pos, RandomSource rand) {
+        if (rand.nextFloat() < 0.1F) {
+            SoundEvent soundEvent = ModSounds.MOONGATE_HUM.get();
 
+            if (soundEvent == null) {
+                LOGGER.error("SoundEvent MOONGATE_HUM is null!");
+            }
+            worldIn.addParticle(ParticleTypes.GLOW, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0, 1); // Blue-tinted glow particles
 
-@Override
-public void animateTick(BlockState stateIn, Level worldIn, BlockPos pos, RandomSource rand) {
-    if (rand.nextFloat() < 0.1F) {
-        SoundEvent soundEvent = ModSounds.MOONGATE_HUM.get();
-
-        if (soundEvent == null) {
-            LOGGER.error("SoundEvent MOONGATE_HUM is null!");
+            worldIn.playLocalSound(
+                pos,
+                soundEvent,
+                net.minecraft.sounds.SoundSource.BLOCKS,
+                0.5F,
+                1.0F,
+                false
+            );
         }
-        worldIn.addParticle(ParticleTypes.GLOW, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 0, 0, 1); // Blue-tinted glow particles
-
-        worldIn.playLocalSound(
-            pos,
-            soundEvent,
-            net.minecraft.sounds.SoundSource.BLOCKS,
-            0.5F,
-            1.0F,
-            false
-        );
     }
-}
-
 }

@@ -3,35 +3,37 @@ package com.seggellion.britannia_mod.magic;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-public class HealSpell extends Spell {
+public class NightSightSpell extends Spell {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Override
     protected int getManaCost() {
-        return 4;  // Adjust mana cost as per the heal spell requirement
+        return 4;
     }
 
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.GARLIC.get()),
-            new ItemStack(BritanniaMod.GINSENG.get()),
-            new ItemStack(BritanniaMod.SPIDERS_SILK.get())
+            new ItemStack(ItemRegistry.SPIDERS_SILK.get()),
+            new ItemStack(ItemRegistry.SULPHUROUS_ASH.get())
         };
     }
 
     @Override
     protected int getCooldownTime() {
-        return 1000; // 1-second cooldown in milliseconds
+        return 1000; // 1-second cooldown
     }
 
     @Override
@@ -57,24 +59,27 @@ public class HealSpell extends Spell {
             return; // If caster is null, we shouldn't proceed
         }
 
-        // Freeze the player during casting, heal after delay, then unfreeze
+        // Freeze the player during casting, apply night vision after delay, then unfreeze
         int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
         SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            caster.heal(4.0F);  // Heal the player
+            // Apply night vision effect to the caster
+            caster.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 24000)); // 20 minutes of Night Vision
 
-            // Play heal sound
+            // Play night sight spell sound
             ServerLevel level = caster.getServer().overworld();
             if (level != null && !level.isClientSide) {
-                SoundEvent healSound = ModSounds.HEAL_SPELL_CAST.get();
+                SoundEvent nightSightSound = ModSounds.NIGHT_SIGHT_SPELL_CAST.get();
                 level.playSound(
                     null, // null to play for all nearby players
-                    caster.getX(), caster.getY(), caster.getZ(), // Location of the player
-                    healSound, // Sound event for heal spell
+                    caster.getX(), caster.getY(), caster.getZ(), // Location of the caster
+                    nightSightSound, // Sound event for night sight spell
                     SoundSource.PLAYERS, // Sound category
                     1.0F, // Volume
                     1.0F  // Pitch
                 );
             }
+
+            LOGGER.info("Night vision applied to caster: {}", caster.getName().getString());
         });
     }
 
@@ -85,40 +90,32 @@ public class HealSpell extends Spell {
             return; // Ensure that the target is valid
         }
 
-        // Number of ticks to cast (1 second = 20 ticks)
-        int castTime = (caster != null) ? 20 : 0;
-        LOGGER.info("Freezing caster {} while casting on target {}", caster != null ? caster.getName().getString() : "Unknown", target.getName().getString());
-        
-        // Freeze the caster during casting, apply effect to target after delay, then unfreeze
-        if (caster != null) {
-            SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-                healTarget(target);
-            });
-        } else {
-            healTarget(target);
-        }
+        // Freeze the caster during casting, apply night vision to target after delay, then unfreeze
+        int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
+        SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
+            // Apply night vision effect to the target
+            target.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 24000)); // 20 minutes of Night Vision
+
+            // Play night sight spell sound
+            ServerLevel level = target.getServer().overworld();
+            if (level != null && !level.isClientSide) {
+                SoundEvent nightSightSound = ModSounds.NIGHT_SIGHT_SPELL_CAST.get();
+                level.playSound(
+                    null, // null to play for all nearby players
+                    target.getX(), target.getY(), target.getZ(), // Location of the target
+                    nightSightSound, // Sound event for night sight spell
+                    SoundSource.PLAYERS, // Sound category
+                    1.0F, // Volume
+                    1.0F  // Pitch
+                );
+            }
+
+            LOGGER.info("Night vision applied to target: {} by caster: {}", target.getName().getString(), caster.getName().getString());
+        });
     }
 
-    private void healTarget(LivingEntity target) {
-        target.heal(4.0F);  // Heal the target
-
-        // Play heal sound
-        ServerLevel level = target.getServer().overworld();
-        if (level != null && !level.isClientSide) {
-            SoundEvent healSound = ModSounds.HEAL_SPELL_CAST.get();
-            level.playSound(
-                null, // null to play for all nearby players
-                target.getX(), target.getY(), target.getZ(), // Location of the target
-                healSound, // Sound event for heal spell
-                SoundSource.PLAYERS, // Sound category
-                1.0F, // Volume
-                1.0F  // Pitch
-            );
-        }
-    }
-
-    // Check if the item is the spell item for Heal
+    // Check if the item is the spell item for Night Sight
     public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == BritanniaMod.HEAL_ITEM.get();
+        return itemStack.getItem() == ItemRegistry.NIGHT_SIGHT_ITEM.get();
     }
 }

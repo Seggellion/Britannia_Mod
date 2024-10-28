@@ -82,5 +82,30 @@
           "stream": false
         }
       ]
-    }
+    },
+      "mongbat_ambient": {
+          "sounds": [
+              "britannia_mod:mongbat_ambient"
+          ]
+      },
+      "mongbat_angry": {
+          "sounds": [
+              "britannia_mod:mongbat_angry"
+          ]
+      },
+      "mongbat_attack": {
+          "sounds": [
+              "britannia_mod:mongbat_attack"
+          ]
+      },
+      "mongbat_hurt": {
+          "sounds": [
+              "britannia_mod:mongbat_hurt"
+          ]
+      },
+      "mongbat_death": {
+          "sounds": [
+              "britannia_mod:mongbat_death"
+          ]
+      }
 }

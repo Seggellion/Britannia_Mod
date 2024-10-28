@@ -11,10 +11,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
-public class NightSightSpell extends Spell {
+public class ClumsySpell extends Spell {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Override
@@ -25,14 +26,14 @@ public class NightSightSpell extends Spell {
     @Override
     protected ItemStack[] getReagents() {
         return new ItemStack[]{
-            new ItemStack(BritanniaMod.SPIDERS_SILK.get()),
-            new ItemStack(BritanniaMod.SULPHUROUS_ASH.get())
+            new ItemStack(ItemRegistry.NIGHTSHADE.get()),
+            new ItemStack(ItemRegistry.BLOOD_MOSS.get())
         };
     }
 
     @Override
     protected int getCooldownTime() {
-        return 1000; // 1-second cooldown
+        return 1000;
     }
 
     @Override
@@ -58,27 +59,25 @@ public class NightSightSpell extends Spell {
             return; // If caster is null, we shouldn't proceed
         }
 
-        // Freeze the player during casting, apply night vision after delay, then unfreeze
+        // Freeze the player during casting, then apply clumsy effect after delay
         int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
         SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Apply night vision effect to the caster
-            caster.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 24000)); // 20 minutes of Night Vision
+            // Apply clumsy effect to the caster
+            caster.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
 
-            // Play night sight spell sound
+            // Play clumsy spell sound
             ServerLevel level = caster.getServer().overworld();
             if (level != null && !level.isClientSide) {
-                SoundEvent nightSightSound = ModSounds.NIGHT_SIGHT_SPELL_CAST.get();
+                SoundEvent clumsySound = ModSounds.CLUMSY_SPELL_CAST.get();
                 level.playSound(
                     null, // null to play for all nearby players
-                    caster.getX(), caster.getY(), caster.getZ(), // Location of the caster
-                    nightSightSound, // Sound event for night sight spell
+                    caster.getX(), caster.getY(), caster.getZ(), // Location of the player
+                    clumsySound, // Sound event for clumsy spell
                     SoundSource.PLAYERS, // Sound category
                     1.0F, // Volume
                     1.0F  // Pitch
                 );
             }
-
-            LOGGER.info("Night vision applied to caster: {}", caster.getName().getString());
         });
     }
 
@@ -89,32 +88,30 @@ public class NightSightSpell extends Spell {
             return; // Ensure that the target is valid
         }
 
-        // Freeze the caster during casting, apply night vision to target after delay, then unfreeze
+        // Freeze the caster during casting, then apply clumsy effect to target after delay
         int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
         SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Apply night vision effect to the target
-            target.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 24000)); // 20 minutes of Night Vision
+            // Apply clumsy effect to the target
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
 
-            // Play night sight spell sound
+            // Play clumsy spell sound
             ServerLevel level = target.getServer().overworld();
             if (level != null && !level.isClientSide) {
-                SoundEvent nightSightSound = ModSounds.NIGHT_SIGHT_SPELL_CAST.get();
+                SoundEvent clumsySound = ModSounds.CLUMSY_SPELL_CAST.get();
                 level.playSound(
                     null, // null to play for all nearby players
                     target.getX(), target.getY(), target.getZ(), // Location of the target
-                    nightSightSound, // Sound event for night sight spell
+                    clumsySound, // Sound event for clumsy spell
                     SoundSource.PLAYERS, // Sound category
                     1.0F, // Volume
                     1.0F  // Pitch
                 );
             }
-
-            LOGGER.info("Night vision applied to target: {} by caster: {}", target.getName().getString(), caster.getName().getString());
         });
     }
 
-    // Check if the item is the spell item for Night Sight
+    // Check if the item is the spell item for Clumsy
     public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == BritanniaMod.NIGHT_SIGHT_ITEM.get();
+        return itemStack.getItem() == ItemRegistry.CLUMSY_ITEM.get();
     }
 }
