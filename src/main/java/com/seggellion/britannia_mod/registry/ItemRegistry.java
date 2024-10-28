@@ -8,9 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.minecraft.client.color.item.ItemColor;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import com.mojang.logging.LogUtils;
@@ -81,24 +79,6 @@ public class ItemRegistry {
             )
     );
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void registerSpawnEggColors(RegisterColorHandlersEvent.Item event) {
-        LOGGER.info("Registering spawn egg colors for britannia_mod");
-        
-        // Register spawn egg colors using a lambda expression
-        event.register(new ItemColor() {
-            @Override
-            public int getColor(ItemStack stack, int layer) {
-                if (layer == 0) {
-                    return 0x996600; // Background color
-                } else {
-                    return 0xffffff; // Highlight color
-                }
-            }
-        }, MONGBAT_SPAWN_EGG.get(), HORSE_SELLER_SPAWN_EGG.get());
-
-        LOGGER.info("Registered color for egg: " + MONGBAT_SPAWN_EGG.getId());
-    }
 
 
 

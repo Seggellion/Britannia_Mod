@@ -1,0 +1,121 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.0.165' // Updated to NeoGradle userdev plugin
+}
+
+version = mod_version
+group = mod_group_id
+
+repositories {
+    mavenLocal()
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroup("software.bernie.geckolib")
+        }
+    }
+    maven {
+        name = 'NeoForge'
+        url = 'https://maven.neoforged.net/releases'
+    }
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21) // Use Java 21 as required by Minecraft 1.21+
+    }
+}
+
+dependencies {
+    implementation 'net.neoforged:neoforge:21.1.72'
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+    implementation "io.github.llamalad7:mixinextras-common:0.3.5"
+    annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
+}
+
+runs {
+    client {
+        workingDirectory = file("run")
+        systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+        arguments "--username", "Dev"
+    }
+
+    server {
+        workingDirectory = file("run/server")
+        arguments "--nogui"
+        systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+    }
+
+
+    configureEach {
+        systemProperty "forge.logging.markers", "REGISTRIES"
+        logging.captureStandardOutput(LogLevel.DEBUG)
+    }
+}
+
+jarJar {
+
+    dependencies {
+        // Add GeckoLib to be included inside the Jar using Jar-in-Jar
+        jarJar "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    }
+}
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
+tasks.register("generateModMetadata", ProcessResources) {
+    def replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+task copyCustomWorld(type: Copy) {
+    from 'src/main/resources/custom_world'
+    into "$buildDir/resources/main/custom_world"
+}
+
+jar.dependsOn(copyCustomWorld)

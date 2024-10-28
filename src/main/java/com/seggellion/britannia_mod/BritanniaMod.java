@@ -4,12 +4,15 @@ package com.seggellion.britannia_mod;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.*;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
+import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import com.seggellion.britannia_mod.ClientModSetup;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.command.ModCommands;
+import com.seggellion.britannia_mod.features.MobSpawnControl;
+import com.seggellion.britannia_mod.features.DiamondToolControl;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -33,6 +36,8 @@ public class BritanniaMod {
         ItemRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
         CreativeTabRegistry.register(modEventBus);
+
+        
         SoundRegistry.register(modEventBus);
         ConfigRegistry.register();  // No longer passes modContainer
         ModAttributes.register(modEventBus); 
@@ -43,16 +48,23 @@ public class BritanniaMod {
         // Register event handlers
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
+        NeoForge.EVENT_BUS.register(new DiamondToolControl());
+        NeoForge.EVENT_BUS.register(new MobSpawnControl());
 
         if (FMLLoader.getDist().isClient()) {
             modEventBus.addListener(ClientEventHandler::onClientSetup);
                 modEventBus.addListener(ClientModSetup::onClientSetup);
 
             NeoForge.EVENT_BUS.register(new ClientEventHandler());
+            modEventBus.register(new ClientOnlyItemRegistry());
+
+
         }
         
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
     }
+
+
 
     private void registerEntityAttributes(EntityAttributeCreationEvent event) {
         EntityRegistry.registerAttributes(event);
