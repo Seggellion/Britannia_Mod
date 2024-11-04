@@ -7,12 +7,15 @@ import com.seggellion.britannia_mod.event.ClientEventHandler;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import com.seggellion.britannia_mod.ClientModSetup;
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.magic.ManaHandler;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
+import com.seggellion.britannia_mod.spawner.DaemonSpawner;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.command.ModCommands;
 import com.seggellion.britannia_mod.features.MobSpawnControl;
 import com.seggellion.britannia_mod.features.DiamondToolControl;
+import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -42,14 +45,21 @@ public class BritanniaMod {
         ConfigRegistry.register();  // No longer passes modContainer
         ModAttributes.register(modEventBus); 
 
+    
         modEventBus.addListener(this::registerEntityAttributes); 
         modEventBus.register(NetworkHandler.class);
+        modEventBus.register(ModSpawnPlacementRegistry.class);
+
+
         ModSounds.register(modEventBus);
         // Register event handlers
+        MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
         NeoForge.EVENT_BUS.register(new DiamondToolControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
+        NeoForge.EVENT_BUS.register(DaemonSpawner.class);
+        ManaHandler.register();
 
         if (FMLLoader.getDist().isClient()) {
             modEventBus.addListener(ClientEventHandler::onClientSetup);

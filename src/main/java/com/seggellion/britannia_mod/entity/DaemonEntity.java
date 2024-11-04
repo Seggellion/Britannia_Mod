@@ -1,36 +1,34 @@
-// MongbatEntity.java
+// DaemonEntity.java
 package com.seggellion.britannia_mod.entity;
 
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.magic.Caster;
+import com.seggellion.britannia_mod.magic.MagicArrowSpell;
 import net.minecraft.world.entity.Entity;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity; 
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.LootTable;
-
 
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -44,21 +42,28 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class MongbatEntity extends Monster implements GeoAnimatable {
-        private static final Logger LOGGER = LogManager.getLogger();
-
+public class DaemonEntity extends Monster implements GeoAnimatable, Caster {
+    private static final Logger LOGGER = LogManager.getLogger();
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    public MongbatEntity(EntityType<? extends Monster> entityType, Level level) {
+    // Mana-related attributes
+    private int mana = 10;
+    private final int maxMana = 10;
+    private int manaCooldown = 0;
+    private static final int MANA_REGEN_COOLDOWN = 20;  // 1 second in ticks
+    private static final int MAGIC_ARROW_COST = 4;
+
+    public DaemonEntity(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level);
+        this.setPersistenceRequired();
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<MongbatEntity>(this, "controller", 0, this::predicate));
+        controllers.add(new AnimationController<>(this, "controller", 0, this::predicate));
     }
 
-   private PlayState predicate(AnimationState<MongbatEntity> state) {
+    private PlayState predicate(AnimationState<DaemonEntity> state) {
         if (state.isMoving()) {
             state.getController().setAnimation(RawAnimation.begin().thenLoop("animation.model.walk"));
             return PlayState.CONTINUE;
@@ -71,7 +76,6 @@ public class MongbatEntity extends Monster implements GeoAnimatable {
         }
     }
 
-
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return cache;
@@ -79,89 +83,107 @@ public class MongbatEntity extends Monster implements GeoAnimatable {
 
     @Override
     public double getTick(Object object) {
-        // Return the entity's age in ticks for animation purposes
         return this.tickCount;
     }
 
-    // Attributes
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 8.0D)
+                .add(Attributes.MAX_HEALTH, 100.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.ATTACK_DAMAGE, 1.0D)
-                .add(Attributes.FOLLOW_RANGE, 16.0D)
+                .add(Attributes.ATTACK_DAMAGE, 8.0D)
+                .add(Attributes.FOLLOW_RANGE, 32.0D)
                 .add(Attributes.FLYING_SPEED, 0.4D);
     }
 
-    // Goals and behaviors
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2D, false));
-        this.goalSelector.addGoal(2, new RandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(1, new DaemonCastMagicGoal(this));
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.2D, false));
+        this.goalSelector.addGoal(3, new RandomStrollGoal(this, 1.0D));
+        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
-    // Spawn conditions
-    public static boolean canSpawn(EntityType<MongbatEntity> type, ServerLevelAccessor world, MobSpawnType spawnReason, BlockPos pos, RandomSource random) {
-        //return Monster.isDarkEnoughToSpawn(world, pos, random) && Monster.checkMobSpawnRules(type, world, spawnReason, pos, random);
-         //   LOGGER.info("Mongbat canSpawn called at position {}: always returning true for testing", pos);
-    return true;
+    @Override
+    public void tick() {
+        super.tick();
+
+        if (manaCooldown > 0) {
+            manaCooldown--;
+        } else if (mana < maxMana) {
+            mana++;
+            manaCooldown = MANA_REGEN_COOLDOWN; // Reset cooldown after regen
+        }
+    }
+    
+
+    @Override
+    public LivingEntity asLivingEntity() {
+        return this;
     }
 
+    public boolean canCastMagicArrow() {
+        return this.getMana() >= MAGIC_ARROW_COST;
+    }
 
-// Sound events for Mongbat
+    public void castMagicArrow(LivingEntity target) {
+        if (canCastMagicArrow()) {
+            consumeMana(MAGIC_ARROW_COST);
+            MagicArrowSpell magicArrowSpell = new MagicArrowSpell();
+            magicArrowSpell.applyEffect(this, target);
+        }
+    }
+
+  @Override
+    public void consumeMana(int amount) {
+        this.mana = Math.max(0, this.mana - amount);
+    }
+
+    public int getMana() {
+        return mana;
+    }
+
+    public static boolean canSpawn(EntityType<DaemonEntity> type, ServerLevelAccessor world, MobSpawnType spawnReason, BlockPos pos, RandomSource random) {
+        return true;
+    }
+
     @Override
     protected SoundEvent getAmbientSound() {
-        return ModSounds.MONGBAT_AMBIENT.get();
+        return ModSounds.DAEMON_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        return ModSounds.MONGBAT_HURT.get();
+        return ModSounds.DAEMON_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return ModSounds.MONGBAT_DEATH.get();
+        return ModSounds.DAEMON_DEATH.get();
     }
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
-        // Mongbats don't have typical footsteps, can use a wing flap sound here if needed.
-        this.playSound(ModSounds.MONGBAT_ANGRY.get(), 0.15F, 1.0F);
+        this.playSound(ModSounds.DAEMON_ANGRY.get(), 0.15F, 1.0F);
     }
-
-
-    // Override getDefaultLootTable
-/*@Override
-protected ResourceKey<LootTable> getDefaultLootTable() {
-    ResourceKey<LootTable> lootTableKey = ResourceKey.create(
-            Registries.LOOT_TABLE,
-            ResourceLocation.fromNamespaceAndPath("britannia_mod", "entities/mongbat")
-    );
-    LOGGER.info("MongbatEntity using loot table: {}", lootTableKey);
-    return lootTableKey;
-}*/
-
-@Override
-protected ResourceKey<LootTable> getDefaultLootTable() {
-    return ResourceKey.create(
-        Registries.LOOT_TABLE,
-        ResourceLocation.fromNamespaceAndPath("britannia_mod", "entities/mongbat")
-    );
-}
 
     @Override
     public boolean doHurtTarget(Entity target) {
         boolean result = super.doHurtTarget(target);
         if (result) {
-            this.playSound(ModSounds.MONGBAT_ATTACK.get(), 1.0F, 1.0F);
+            this.playSound(ModSounds.DAEMON_ATTACK.get(), 1.0F, 1.0F);
         }
         return result;
     }
 
+    @Override
+    protected ResourceKey<LootTable> getDefaultLootTable() {
+        return ResourceKey.create(
+            Registries.LOOT_TABLE,
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "entities/daemon")
+        );
+    }
 }

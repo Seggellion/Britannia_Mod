@@ -22,7 +22,7 @@ public class ItemRegistry {
   private static final Logger LOGGER = LogUtils.getLogger();
     // General Items
     public static final DeferredHolder<Item, Item> GOLD_COIN = ITEMS.register("gold_coin",
-            () -> new Item(new Item.Properties().stacksTo(60000)));
+            () -> new Item(new Item.Properties().stacksTo(99)));
     
     // Spell Ingredients
     public static final DeferredHolder<Item, Item> SPIDERS_SILK = ITEMS.register("spiders_silk",
@@ -69,6 +69,16 @@ public class ItemRegistry {
             )
     );
 
+        public static final DeferredHolder<Item, DeferredSpawnEggItem> DAEMON_SPAWN_EGG = ITEMS.register(
+            "daemon_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.DAEMON_ENTITY,
+                    0xcc0000,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );
+
     public static final DeferredHolder<Item, DeferredSpawnEggItem> MONGBAT_SPAWN_EGG = ITEMS.register(
             "mongbat_spawn_egg",
             () -> new DeferredSpawnEggItem(
@@ -78,9 +88,6 @@ public class ItemRegistry {
                     new Item.Properties()
             )
     );
-
-
-
 
     // Block Items
     public static final DeferredHolder<Item, Item> MOONGATE_BLOCK_ITEM = ITEMS.register(

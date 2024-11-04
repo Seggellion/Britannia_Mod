@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.entity.HorseSellerNPC;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
+import com.seggellion.britannia_mod.entity.DaemonEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -29,6 +30,13 @@ public class EntityRegistry {
                     .build("britannia_mod:mongbat")
     );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<DaemonEntity>> DAEMON_ENTITY = ENTITIES.register(
+            "daemon",
+            () -> EntityType.Builder.of(DaemonEntity::new, MobCategory.MONSTER)
+                    .sized(2.5F, 5.5F)
+                    .build("britannia_mod:daemon")
+    );
+
     public static void register(IEventBus modEventBus) {
         ENTITIES.register(modEventBus);
     }
@@ -36,6 +44,7 @@ public class EntityRegistry {
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         // Register attributes without redundant checks
         event.put(MONGBAT_ENTITY.get(), MongbatEntity.createAttributes().build());
+        event.put(DAEMON_ENTITY.get(), DaemonEntity.createAttributes().build());
         event.put(HORSE_SELLER_NPC.get(), HorseSellerNPC.createAttributes().build());
     }
 }

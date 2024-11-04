@@ -33,6 +33,7 @@ public class HorseSellerNPC extends AbstractVillager {
 
     public HorseSellerNPC(EntityType<? extends AbstractVillager> entityType, Level level) {
         super(entityType, level);
+        this.setPersistenceRequired();
     }
 
     @Override
@@ -99,7 +100,8 @@ public class HorseSellerNPC extends AbstractVillager {
                     horse.setPos(this.getX(), this.getY(), this.getZ());
                     horse.setTamed(true);
                     horse.setOwnerUUID(player.getUUID());
-                    this.level().addFreshEntity(horse);
+                    horse.getInventory().setItem(0, new ItemStack(net.minecraft.world.item.Items.SADDLE));
+                    this.level().addFreshEntity(horse);                    
                     player.displayClientMessage(Component.literal("You have purchased a tamed horse!"), true);
                 }
                 return InteractionResult.SUCCESS;
@@ -122,6 +124,10 @@ public class HorseSellerNPC extends AbstractVillager {
                 .add(Attributes.MAX_ABSORPTION, 0.0D)
                 .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
                 .add(Attributes.BURNING_TIME, 1.0D)
+                .add(Attributes.JUMP_STRENGTH, 1.0D)
+                .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
+                .add(Attributes.FALL_DAMAGE_MULTIPLIER, 2.0D)
+              //  .add(getAttributeHolder(ModAttributes.FALL_DAMAGE_MULTIPLIER.get()), 1.0D)
                 .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
                 .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
                 .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D);

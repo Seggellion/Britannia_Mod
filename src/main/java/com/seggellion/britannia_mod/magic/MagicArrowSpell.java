@@ -1,10 +1,9 @@
 package com.seggellion.britannia_mod.magic;
 
-import com.seggellion.britannia_mod.BritanniaMod;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -16,7 +15,6 @@ import net.minecraft.world.entity.projectile.AbstractArrow.Pickup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 public class MagicArrowSpell extends Spell {
@@ -29,144 +27,108 @@ public class MagicArrowSpell extends Spell {
 
     @Override
     protected ItemStack[] getReagents() {
-        return new ItemStack[]{
-            new ItemStack(ItemRegistry.SULPHUROUS_ASH.get())  // Magic Arrow only requires sulphurous ash
-        };
+        return new ItemStack[]{new ItemStack(ItemRegistry.SULPHUROUS_ASH.get())};  // Reagents required
     }
 
     @Override
     protected int getCooldownTime() {
-        return 1000; // 1-second cooldown in milliseconds
+        return 1000; // Cooldown in milliseconds
     }
 
+    // Override to provide the spell effect for ServerPlayer
     @Override
-    protected void applyEffect(ServerPlayer caster, LivingEntity target) {
-        if (caster == null) {
-            LOGGER.warn("Caster is null, cannot proceed with applyEffect.");
-            return;
-        }
-
-        // Determine if the target is the caster themselves or another entity
+    public void applyEffect(ServerPlayer caster, LivingEntity target) {
+        LOGGER.info("Applying spell effect for ServerPlayer: {}", caster.getName().getString());
         if (target == caster) {
-            LOGGER.info("applySelfEffect caster: {}", caster.getName().getString());
-            applySelfEffect(caster);
+            applySelfEffect(caster);  // Apply self-effect if the target is the caster
         } else {
-            LOGGER.info("applyTargetEffect caster: {}, target: {}", caster.getName().getString(), target.getName().getString());
-            applyTargetEffect(caster, target);
+            applyTargetEffect(caster, target);  // Apply target effect if casting on another entity
         }
     }
 
+    // Implement the applySelfEffect for ServerPlayer from Spell class
     @Override
     protected void applySelfEffect(ServerPlayer caster) {
-        if (caster == null || caster.getServer() == null) {
-            return; // If caster is null, we shouldn't proceed
-        }
-
-        // Freeze the player during casting, then shoot magic arrow after delay
-        int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
-        SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Shoot magic arrow at a target direction
-            shootMagicArrow(caster);
-
-            // Play magic arrow sound
-            ServerLevel level = caster.getServer().overworld();
-            if (level != null && !level.isClientSide) {
-                SoundEvent magicArrowSound = ModSounds.MAGIC_ARROW_SPELL_CAST.get();
-                level.playSound(
-                    null, // null to play for all nearby players
-                    caster.getX(), caster.getY(), caster.getZ(), // Location of the player
-                    magicArrowSound, // Sound event for magic arrow
-                    SoundSource.PLAYERS, // Sound category
-                    1.0F, // Volume
-                    1.0F  // Pitch
-                );
-            }
-        });
+        LOGGER.info("Applying self-effect for ServerPlayer: {}", caster.getName().getString());
+        shootMagicArrow(caster);
+        playMagicArrowSound(caster);
     }
 
+    // Implement the applyTargetEffect for ServerPlayer
     @Override
     protected void applyTargetEffect(ServerPlayer caster, LivingEntity target) {
-        if (caster == null || target == null || target.getServer() == null) {
-            LOGGER.warn("Caster or target is null, cannot proceed with applyTargetEffect.");
-            return;
-        }
+        LOGGER.info("Applying target effect for ServerPlayer: {}", caster.getName().getString());
+        shootMagicArrowTowardsTarget(caster, target);
+        playMagicArrowSound(target);
+    }
 
-        // Freeze the caster during casting, then shoot magic arrow towards target after delay
-        int castTime = 20; // Number of ticks to cast (1 second = 20 ticks)
-        SpellEffectHandler.freezePlayerDuringCast(caster, castTime, () -> {
-            // Shoot magic arrow towards the target
-            shootMagicArrowTowardsTarget(caster, target);
-
-            // Play magic arrow sound
-            ServerLevel level = target.getServer().overworld();
-            if (level != null && !level.isClientSide) {
-                SoundEvent magicArrowSound = ModSounds.MAGIC_ARROW_SPELL_CAST.get();
-                level.playSound(
-                    null, // null to play for all nearby players
-                    target.getX(), target.getY(), target.getZ(), // Location of the target
-                    magicArrowSound, // Sound event for magic arrow
-                    SoundSource.PLAYERS, // Sound category
-                    1.0F, // Volume
-                    1.0F  // Pitch
-                );
+    // Overloaded method for LivingEntity casters (e.g., DaemonEntity)
+    public void applyEffect(LivingEntity caster, LivingEntity target) {
+        LOGGER.info("Applying spell effect for LivingEntity: {}", caster.getName().getString());
+        if (caster instanceof ServerPlayer) {
+            applyEffect((ServerPlayer) caster, target);  // Delegate to original method for ServerPlayer
+        } else {
+            if (target == caster) {
+                applySelfEffect(caster);  // Generic self-effect
+            } else {
+                applyTargetEffect(caster, target);  // Generic target-effect
             }
-        });
+        }
     }
 
-    // Method to shoot a flaming arrow in the direction of the crosshairs
-    private void shootMagicArrow(ServerPlayer caster) {
-        Level world = caster.level();
+    // Generic self-effect for LivingEntity casters
+    private void applySelfEffect(LivingEntity caster) {
+        if (caster == null) return;
+        LOGGER.info("Applying self-effect to: {}", caster.getName().getString());
+        shootMagicArrow(caster);
+        playMagicArrowSound(caster);
+    }
 
-        // Create a new arrow entity
-        Arrow arrow = new Arrow(EntityType.ARROW, world);
-        arrow.setOwner(caster);  // Set caster as the shooter
-        arrow.setBaseDamage(5.0D);  // Set arrow damage
-        arrow.setCritArrow(true);  // Make it a critical arrow
-        arrow.setRemainingFireTicks(100);  // Set arrow on fire for 5 seconds (100 ticks)
-        arrow.pickup = Pickup.DISALLOWED;  // Disallow pickup of the arrow
+    // Generic target-effect for LivingEntity casters
+    private void applyTargetEffect(LivingEntity caster, LivingEntity target) {
+        if (caster == null || target == null) return;
+        LOGGER.info("Applying target-effect from: {} to target: {}", caster.getName().getString(), target.getName().getString());
+        shootMagicArrowTowardsTarget(caster, target);
+        playMagicArrowSound(target);
+    }
 
-        // Calculate direction based on player's look vector
+    // Play the magic arrow sound at the entity's location
+    private void playMagicArrowSound(LivingEntity entity) {
+        Level level = entity.getCommandSenderWorld();  // Use getCommandSenderWorld() to access the level
+        if (!level.isClientSide) {
+            SoundEvent magicArrowSound = ModSounds.MAGIC_ARROW_SPELL_CAST.get();  // Ensure this sound event exists
+            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), magicArrowSound, SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
+    }
+
+    // Shoots magic arrow in the caster's looking direction
+    private void shootMagicArrow(LivingEntity caster) {
+        Level world = caster.getCommandSenderWorld();  // Use getCommandSenderWorld() to access the level
+        Arrow arrow = createMagicArrow(caster, world);
         Vec3 lookVector = caster.getLookAngle();
-        arrow.setPos(
-            caster.getX() + lookVector.x * 2,
-            caster.getEyeY() - 0.1D,
-            caster.getZ() + lookVector.z * 2
-        );
-        arrow.shoot(lookVector.x, lookVector.y, lookVector.z, 2.5F, 0);  // Speed and accuracy of the arrow
-
-        world.addFreshEntity(arrow);  // Add the arrow to the world
+        arrow.setPos(caster.getX() + lookVector.x * 2, caster.getEyeY() - 0.1D, caster.getZ() + lookVector.z * 2);
+        arrow.shoot(lookVector.x, lookVector.y, lookVector.z, 2.5F, 0);
+        world.addFreshEntity(arrow);
     }
 
-    // Method to shoot a magic arrow towards a specific target
-    private void shootMagicArrowTowardsTarget(ServerPlayer caster, LivingEntity target) {
-        Level world = caster.level();
+    // Shoots magic arrow toward a specific target
+    private void shootMagicArrowTowardsTarget(LivingEntity caster, LivingEntity target) {
+        Level world = caster.getCommandSenderWorld();  // Use getCommandSenderWorld() to access the level
+        Arrow arrow = createMagicArrow(caster, world);
+        Vec3 direction = new Vec3(target.getX() - caster.getX(), target.getEyeY() - caster.getEyeY(), target.getZ() - caster.getZ()).normalize();
+        arrow.setPos(caster.getX() + direction.x * 2, caster.getEyeY() - 0.1D, caster.getZ() + direction.z * 2);
+        arrow.shoot(direction.x, direction.y, direction.z, 2.5F, 0);
+        world.addFreshEntity(arrow);
+    }
 
-        // Create a new arrow entity
+    // Creates a magic arrow entity with custom properties
+    private Arrow createMagicArrow(LivingEntity caster, Level world) {
         Arrow arrow = new Arrow(EntityType.ARROW, world);
-        arrow.setOwner(caster);  // Set caster as the shooter
-        arrow.setBaseDamage(5.0D);  // Set arrow damage
-        arrow.setCritArrow(true);  // Make it a critical arrow
-        arrow.setRemainingFireTicks(100);  // Set arrow on fire for 5 seconds (100 ticks)
-        arrow.pickup = Pickup.DISALLOWED;  // Disallow pickup of the arrow
-
-        // Calculate direction based on the position of the target
-        Vec3 direction = new Vec3(
-            target.getX() - caster.getX(),
-            target.getEyeY() - caster.getEyeY(),
-            target.getZ() - caster.getZ()
-        ).normalize();
-        arrow.setPos(
-            caster.getX() + direction.x * 2,
-            caster.getEyeY() - 0.1D,
-            caster.getZ() + direction.z * 2
-        );
-        arrow.shoot(direction.x, direction.y, direction.z, 2.5F, 0);  // Speed and accuracy of the arrow
-
-        world.addFreshEntity(arrow);  // Add the arrow to the world
-    }
-
-    // Check if the item is the spell item for Magic Arrow
-    public boolean isSpellItem(ItemStack itemStack) {
-        return itemStack.getItem() == ItemRegistry.MAGIC_ARROW_ITEM.get();
+        arrow.setOwner(caster);
+        arrow.setBaseDamage(5.0D);
+        arrow.setCritArrow(true);
+        arrow.setRemainingFireTicks(100);
+        arrow.pickup = Pickup.DISALLOWED;
+        return arrow;
     }
 }

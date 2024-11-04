@@ -88,6 +88,33 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mongbat_death"))
     );
 
+
+    // Adding Mongbat Sounds
+    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_AMBIENT = SOUND_EVENTS.register(
+            "daemon_ambient",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_ambient"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_ANGRY = SOUND_EVENTS.register(
+            "daemon_angry",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_angry"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_ATTACK = SOUND_EVENTS.register(
+            "daemon_attack",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_attack"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_HURT = SOUND_EVENTS.register(
+            "daemon_hurt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_hurt"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_DEATH = SOUND_EVENTS.register(
+            "daemon_death",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_death"))
+    );
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);

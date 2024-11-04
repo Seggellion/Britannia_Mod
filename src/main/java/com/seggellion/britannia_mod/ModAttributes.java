@@ -22,6 +22,12 @@ public class ModAttributes {
             () -> new RangedAttribute("attribute.name.britannia_mod.generic.gravity", 0.08D, -1.0D, 1.0D).setSyncable(true)
     );
 
+        public static final DeferredHolder<Attribute, Attribute> FALL_DAMAGE_MULTIPLIER = ATTRIBUTES.register(
+        "generic.fall_damage_multiplier",
+        () -> new RangedAttribute("attribute.name.britannia_mod.generic.fall_damage_multiplier", 1.0D, 0.0D, 1024.0D).setSyncable(true)
+        );
+        
+
     public static final DeferredHolder<Attribute, Attribute> STEP_HEIGHT = ATTRIBUTES.register(
             "generic.step_height",
             () -> new RangedAttribute("attribute.name.britannia_mod.generic.step_height", 0.6D, 0.0D, 1.0D).setSyncable(true)

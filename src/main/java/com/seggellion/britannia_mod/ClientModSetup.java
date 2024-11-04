@@ -6,6 +6,8 @@ import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.client.renderer.entity.MongbatRenderer;
 import com.seggellion.britannia_mod.entity.HorseSellerNPC;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
+import com.seggellion.britannia_mod.entity.DaemonEntity;
+import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -28,6 +30,7 @@ public class ClientModSetup {
         event.enqueueWork(() -> {
             // Register the entity renderers here
             EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
+            EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), DaemonRenderer::new);
             EntityRenderers.register(EntityRegistry.HORSE_SELLER_NPC.get(), HorseSellerNPCRenderer::new);
         });
     }

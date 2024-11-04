@@ -27,6 +27,8 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.MOONGATE_TOP_ITEM.get());
                         output.accept(ItemRegistry.HORSE_SELLER_SPAWN_EGG.get());
                         output.accept(ItemRegistry.MONGBAT_SPAWN_EGG.get());
+                        output.accept(ItemRegistry.DAEMON_SPAWN_EGG.get());
+                        output.accept(ItemRegistry.GOLD_COIN.get());
                     }).build());
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_MAGIC_TAB = CREATIVE_TABS.register(

@@ -40,6 +40,16 @@ public class ClientOnlyItemRegistry {
             }
         }, ItemRegistry.HORSE_SELLER_SPAWN_EGG.get());
 
+        event.register(new ItemColor() {
+            @Override
+            public int getColor(ItemStack stack, int layer) {
+                if (layer == 0) {
+                    return 0xcc0000; // Background color for Daemon Seller spawn egg
+                } else {
+                    return 0xffffff; // Highlight color for DAemon Seller spawn egg
+                }
+            }
+        }, ItemRegistry.DAEMON_SPAWN_EGG.get());
         LOGGER.info("Registered colors for Mongbat and Horse Seller spawn eggs.");
     }
 }

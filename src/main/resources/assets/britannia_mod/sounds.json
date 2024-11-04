@@ -107,5 +107,30 @@
           "sounds": [
               "britannia_mod:mongbat_death"
           ]
-      }
+      },
+    "daemon_ambient": {
+        "sounds": [
+            "britannia_mod:daemon_ambient"
+        ]
+    },
+    "daemon_angry": {
+        "sounds": [
+            "britannia_mod:daemon_angry"
+        ]
+    },
+    "daemon_attack": {
+        "sounds": [
+            "britannia_mod:daemon_attack"
+        ]
+    },
+    "daemon_hurt": {
+        "sounds": [
+            "britannia_mod:daemon_hurt"
+        ]
+    },
+    "daemon_death": {
+        "sounds": [
+            "britannia_mod:daemon_death"
+        ]
+    }
 }

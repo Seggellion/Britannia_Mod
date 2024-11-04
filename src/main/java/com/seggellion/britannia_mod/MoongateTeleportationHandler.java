@@ -10,12 +10,10 @@ import java.util.*;
 
 public class MoongateTeleportationHandler {
 
+    private static final Set<UUID> recentlyTeleportedPlayers = new HashSet<>();
     private static final List<String> CITY_NAMES = List.of(
         "Britain", "Moonglow", "Yew", "Minoc", "Trinsic", "Skara Brae", "Jhelom", "Magincia"
     );
-
-    // Set to track players who have recently teleported
-    private static final Set<UUID> recentlyTeleportedPlayers = new HashSet<>();
 
     public static void teleportPlayer(ServerPlayer player) {
         UUID playerUUID = player.getUUID();
@@ -33,31 +31,33 @@ public class MoongateTeleportationHandler {
         if (destination != null) {
             ServerLevel level = player.serverLevel();
 
+            // Force load the chunk at the destination synchronously
+            level.getChunk(destination.getX() >> 4, destination.getZ() >> 4);
+
             // Teleport the player to the chosen city
             player.teleportTo(level, destination.getX() + 0.5, destination.getY(), destination.getZ() + 0.5, player.getYRot(), player.getXRot());
             player.sendSystemMessage(Component.literal("Teleporting to " + cityName));
 
-            // Move the player 1 block away in the direction they are facing to avoid re-entering the moongate
-            Vec3 direction = player.getLookAngle().normalize();  // Get the player's look direction
-            Vec3 moveAwayPos = new Vec3(player.getX() + direction.x, player.getY(), player.getZ() + direction.z);  // Move 1 block away
-
-            // Teleport the player 1 block away within the same level
+            // Move the player 1 block away in the direction they are facing
+            Vec3 direction = player.getLookAngle().normalize();
+            Vec3 moveAwayPos = new Vec3(player.getX() + direction.x, player.getY(), player.getZ() + direction.z);
             player.teleportTo(level, moveAwayPos.x, moveAwayPos.y, moveAwayPos.z, player.getYRot(), player.getXRot());
 
-            // Add player to the recently teleported set
+            // Add player to the recently teleported set and start cooldown
             recentlyTeleportedPlayers.add(playerUUID);
-
-            // Schedule removal from the set after a delay
-            player.getServer().execute(() -> {
-                try {
-                    Thread.sleep(5000);  // 5-second delay before player can re-enter the moongate
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                recentlyTeleportedPlayers.remove(playerUUID);
-            });
+            MoongateTickHandler.addPlayerCooldown(playerUUID, 100); // 100 ticks = 5 seconds
         } else {
             player.sendSystemMessage(Component.literal("Invalid moongate destination."));
         }
+    }
+
+        // Public method to remove a player from the recently teleported set
+    public static void removeTeleportedPlayer(UUID playerUUID) {
+        recentlyTeleportedPlayers.remove(playerUUID);
+    }
+
+    // Optional: Public method to check if a player is in the recently teleported set
+    public static boolean hasRecentlyTeleported(UUID playerUUID) {
+        return recentlyTeleportedPlayers.contains(playerUUID);
     }
 }
