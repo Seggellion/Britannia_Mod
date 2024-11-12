@@ -2,21 +2,41 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+
+import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tiers;
 import net.neoforged.bus.api.IEventBus;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Items; // Example item
+
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.Tool.Rule;
+
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import com.mojang.logging.LogUtils;
 
 import org.slf4j.Logger;
+import java.util.Optional;
+import java.util.List;
 
 
 public class ItemRegistry {
+
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(
             net.minecraft.core.registries.Registries.ITEM, "britannia_mod");
   private static final Logger LOGGER = LogUtils.getLogger();
@@ -89,7 +109,87 @@ public class ItemRegistry {
             )
     );
 
+    public static final DeferredHolder<Item, DeferredSpawnEggItem> LICH_SPAWN_EGG = ITEMS.register(
+            "lich_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.LICH_ENTITY,
+                    0x808080,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );
+
+        public static final DeferredHolder<Item, DeferredSpawnEggItem> WRAITH_SPAWN_EGG = ITEMS.register(
+            "wraith_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.WRAITH_ENTITY,
+                    0xD3D3D3,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );
+
+        public static final DeferredHolder<Item, DeferredSpawnEggItem> SHADE_SPAWN_EGG = ITEMS.register(
+            "shade_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.SHADE_ENTITY,
+                    0x202020,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );    
+
+            public static final DeferredHolder<Item, DeferredSpawnEggItem> GHOUL_SPAWN_EGG = ITEMS.register(
+            "ghoul_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.GHOUL_ENTITY,
+                    0x8B0000,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );   
+
+
+// Tools
+    // Register TwoHandedAxeItem with Tool rules for logs
+ public static final DeferredHolder<Item, Item> TWO_HANDED_AXE = ITEMS.register("two_handed_axe",
+            () -> {
+                LOGGER.info("Registering TwoHandedAxeItem");
+
+                // Define a TagKey for logs
+                TagKey<Block> logTag = TagKey.create(BuiltInRegistries.BLOCK.key(), net.minecraft.tags.BlockTags.LOGS.location());
+
+                // Attempt to retrieve the HolderSet for the logs tag
+                Optional<List<Tool.Rule>> toolRules = BuiltInRegistries.BLOCK.getTag(logTag)
+                        .map(holderSet -> List.of(new Rule(holderSet, Optional.of(6.0F), Optional.of(true))));
+
+                if (toolRules.isEmpty()) {
+                    LOGGER.error("Failed to retrieve the logs tag for Tool.Rule creation");
+                    return new TwoHandedAxeItem(Tiers.IRON, new Item.Properties()); // Fallback item without tool properties
+                }
+
+                // Create a Tool with the retrieved rules for logs
+                Tool tool = new Tool(
+                        toolRules.get(), // Rule for logs with speed and can-drop option
+                        6.0F, // Default mining speed
+                        1     // Damage per block mined
+                );
+
+                // Attach Tool component to Item.Properties
+                return new TwoHandedAxeItem(Tiers.IRON, new Item.Properties()
+                        .component(net.minecraft.core.component.DataComponents.TOOL, tool));
+            }
+    );
     // Block Items
+
+        public static final DeferredHolder<Item, Item> SHADE_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "shade_spawn_block", () -> new BlockItem(BlockRegistry.SHADE_SPAWN_BLOCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> LICH_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "lich_spawn_block", () -> new BlockItem(BlockRegistry.LICH_SPAWN_BLOCK.get(), new Item.Properties()));
+
+
+
     public static final DeferredHolder<Item, Item> MOONGATE_BLOCK_ITEM = ITEMS.register(
             "moongate_block", () -> new BlockItem(BlockRegistry.MOONGATE_BLOCK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MOONGATE_TOP_ITEM = ITEMS.register(

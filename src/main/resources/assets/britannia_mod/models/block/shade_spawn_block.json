@@ -1,0 +1,7 @@
+{
+    "parent": "block/block",
+    "textures": {
+      "all": "britannia_mod:block/shade_spawn_block"
+    }
+  }
+  

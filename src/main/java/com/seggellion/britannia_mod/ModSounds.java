@@ -115,6 +115,64 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_death"))
     );
 
+      // Adding Lich Sounds
+    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_AMBIENT = SOUND_EVENTS.register(
+            "lich_ambient",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_ambient"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_ANGRY = SOUND_EVENTS.register(
+            "lich_angry",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_angry"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_ATTACK = SOUND_EVENTS.register(
+            "lich_attack",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_attack"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_HURT = SOUND_EVENTS.register(
+            "lich_hurt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_hurt"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_DEATH = SOUND_EVENTS.register(
+            "lich_death",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_death"))
+    );
+
+         // Adding ghost monster Sounds
+    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_AMBIENT = SOUND_EVENTS.register(
+            "ghost_ambient",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_ambient"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_ANGRY = SOUND_EVENTS.register(
+            "ghost_angry",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_angry"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_ATTACK = SOUND_EVENTS.register(
+            "ghost_attack",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_attack"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_HURT = SOUND_EVENTS.register(
+            "ghost_hurt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_hurt"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_DEATH = SOUND_EVENTS.register(
+            "ghost_death",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_death"))
+    );
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> GOLD_COIN = SOUND_EVENTS.register(
+            "gold_coin",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":gold_coin"))
+    );
+
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);

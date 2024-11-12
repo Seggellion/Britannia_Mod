@@ -40,6 +40,44 @@ public class ClientOnlyItemRegistry {
             }
         }, ItemRegistry.HORSE_SELLER_SPAWN_EGG.get());
 
+        // Register spawn egg colors for Lich and Horse Seller
+        event.register(new ItemColor() {
+            @Override
+            public int getColor(ItemStack stack, int layer) {
+                if (layer == 0) {
+                    return 0x996600; // Background color for Lich spawn egg
+                } else {
+                    return 0xffffff; // Highlight color for Lich spawn egg
+                }
+            }
+        }, ItemRegistry.LICH_SPAWN_EGG.get());
+
+        // Register spawn egg colors for Wraith
+        event.register(new ItemColor() {
+            @Override
+            public int getColor(ItemStack stack, int layer) {
+                if (layer == 0) {
+                    return 0xD3D3D3; // Background color for Lich spawn egg
+                } else {
+                    return 0xffffff; // Highlight color for Lich spawn egg
+                }
+            }
+        }, ItemRegistry.WRAITH_SPAWN_EGG.get());
+
+
+        // Register spawn egg colors for Ghoul
+        event.register(new ItemColor() {
+            @Override
+            public int getColor(ItemStack stack, int layer) {
+                if (layer == 0) {
+                    return 0x8B0000; // Background color for Lich spawn egg
+                } else {
+                    return 0xffffff; // Highlight color for Lich spawn egg
+                }
+            }
+        }, ItemRegistry.GHOUL_SPAWN_EGG.get());
+
+     // Register spawn egg colors for Mongbat and Horse Seller
         event.register(new ItemColor() {
             @Override
             public int getColor(ItemStack stack, int layer) {

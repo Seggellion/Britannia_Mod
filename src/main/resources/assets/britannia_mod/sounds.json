@@ -132,5 +132,61 @@
         "sounds": [
             "britannia_mod:daemon_death"
         ]
-    }
+    },
+    "lich_ambient": {
+      "sounds": [
+          "britannia_mod:lich_ambient"
+      ]
+  },
+  "lich_angry": {
+      "sounds": [
+          "britannia_mod:lich_angry"
+      ]
+  },
+  "lich_attack": {
+      "sounds": [
+          "britannia_mod:lich_attack"
+      ]
+  },
+  "lich_hurt": {
+      "sounds": [
+          "britannia_mod:lich_hurt"
+      ]
+  },
+  "lich_death": {
+      "sounds": [
+          "britannia_mod:lich_death"
+      ]
+  },
+  "ghost_ambient": {
+    "sounds": [
+        "britannia_mod:ghost_ambient"
+    ]
+},
+"ghost_angry": {
+    "sounds": [
+        "britannia_mod:ghost_angry"
+    ]
+},
+"ghost_attack": {
+    "sounds": [
+        "britannia_mod:ghost_attack"
+    ]
+},
+"ghost_hurt": {
+    "sounds": [
+        "britannia_mod:ghost_hurt"
+    ]
+},
+"ghost_death": {
+    "sounds": [
+        "britannia_mod:ghost_death"
+    ]
+},
+"gold_coin": {
+    "sounds": [
+        "britannia_mod:gold_coin"
+    ]
+}
+
 }

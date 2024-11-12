@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.magic.ManaHandler;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.spawner.DaemonSpawner;
+import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
+import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.command.ModCommands;
@@ -59,6 +61,9 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(new DiamondToolControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(DaemonSpawner.class);
+        NeoForge.EVENT_BUS.register(BritainCemetarySpawner.class);
+        NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
+
         ManaHandler.register();
 
         if (FMLLoader.getDist().isClient()) {
