@@ -158,6 +158,31 @@
           "britannia_mod:lich_death"
       ]
   },
+  "wisp_ambient": {
+    "sounds": [
+        "britannia_mod:wisp_ambient"
+    ]
+},
+"wisp_angry": {
+    "sounds": [
+        "britannia_mod:wisp_angry"
+    ]
+},
+"wisp_attack": {
+    "sounds": [
+        "britannia_mod:wisp_attack"
+    ]
+},
+"wisp_hurt": {
+    "sounds": [
+        "britannia_mod:wisp_hurt"
+    ]
+},
+"wisp_death": {
+    "sounds": [
+        "britannia_mod:wisp_death"
+    ]
+},
   "ghost_ambient": {
     "sounds": [
         "britannia_mod:ghost_ambient"
@@ -183,10 +208,40 @@
         "britannia_mod:ghost_death"
     ]
 },
+"earth_elemental_ambient": {
+  "sounds": [
+      "britannia_mod:earth_elemental_ambient"
+  ]
+},
+"earth_elemental_angry": {
+  "sounds": [
+      "britannia_mod:earth_elemental_angry"
+  ]
+},
+"earth_elemental_attack": {
+  "sounds": [
+      "britannia_mod:earth_elemental_attack"
+  ]
+},
+"earth_elemental_hurt": {
+  "sounds": [
+      "britannia_mod:earth_elemental_hurt"
+  ]
+},
+"earth_elemental_death": {
+  "sounds": [
+      "britannia_mod:earth_elemental_death"
+  ]
+},
 "gold_coin": {
     "sounds": [
         "britannia_mod:gold_coin"
     ]
+},
+"shame_dungeon_music": {
+  "sounds": [
+      "britannia_mod:shame_dungeon_music"
+  ]
 }
 
 }

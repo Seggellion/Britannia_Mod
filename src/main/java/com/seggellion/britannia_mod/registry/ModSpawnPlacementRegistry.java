@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.entity.MongbatEntity;
+import com.seggellion.britannia_mod.entity.WispEntity;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
@@ -22,6 +23,14 @@ public class ModSpawnPlacementRegistry {
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             MongbatEntity::canSpawn,
+            Operation.REPLACE
+        );
+
+        event.register(
+            EntityRegistry.WISP_ENTITY.get(),
+            SpawnPlacementTypes.NO_RESTRICTIONS,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            WispEntity::canSpawn,
             Operation.REPLACE
         );
     }

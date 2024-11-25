@@ -3,22 +3,23 @@ package com.seggellion.britannia_mod;
 
 import com.seggellion.britannia_mod.client.renderer.HorseSellerNPCRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry; 
+import com.seggellion.britannia_mod.registry.ItemRegistry; 
 import com.seggellion.britannia_mod.client.renderer.entity.MongbatRenderer;
-import com.seggellion.britannia_mod.entity.HorseSellerNPC;
-import com.seggellion.britannia_mod.entity.MongbatEntity;
-import com.seggellion.britannia_mod.entity.DaemonEntity;
 import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
-import com.seggellion.britannia_mod.entity.LichEntity;
 import com.seggellion.britannia_mod.client.renderer.entity.LichRenderer;
-import com.seggellion.britannia_mod.entity.WraithEntity;
 import com.seggellion.britannia_mod.client.renderer.entity.WraithRenderer;
-import com.seggellion.britannia_mod.entity.GhoulEntity;
 import com.seggellion.britannia_mod.client.renderer.entity.GhoulRenderer;
-import com.seggellion.britannia_mod.entity.ShadeEntity;
 import com.seggellion.britannia_mod.client.renderer.entity.ShadeRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.ShadowOreElementalRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
+
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
@@ -36,14 +37,27 @@ public class ClientModSetup {
         ManaOverlayScreen.register();
 
         event.enqueueWork(() -> {
-            // Register the entity renderers here
+            // Register the entity renderers
             EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
             EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), DaemonRenderer::new);
             EntityRenderers.register(EntityRegistry.LICH_ENTITY.get(), LichRenderer::new);
             EntityRenderers.register(EntityRegistry.WRAITH_ENTITY.get(), WraithRenderer::new);
             EntityRenderers.register(EntityRegistry.GHOUL_ENTITY.get(), GhoulRenderer::new);
             EntityRenderers.register(EntityRegistry.SHADE_ENTITY.get(), ShadeRenderer::new);
+            EntityRenderers.register(EntityRegistry.WISP_ENTITY.get(), WispRenderer::new);
+            EntityRenderers.register(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), EarthElementalRenderer::new);
+            EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalRenderer::new);
+            EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.HORSE_SELLER_NPC.get(), HorseSellerNPCRenderer::new);
+
+            // Register the blocking property for the Order Shield
+            ItemProperties.register(
+                ItemRegistry.ORDER_SHIELD.get(),
+                ResourceLocation.fromNamespaceAndPath("minecraft", "blocking"),
+                (stack, world, entity, seed) -> {
+                    return entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F;
+                }
+            );
         });
     }
 }

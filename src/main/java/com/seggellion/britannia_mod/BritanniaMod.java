@@ -11,6 +11,8 @@ import com.seggellion.britannia_mod.magic.ManaHandler;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.spawner.DaemonSpawner;
 import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
+import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
+import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
 import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.network.NetworkHandler;
@@ -62,6 +64,7 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(DaemonSpawner.class);
         NeoForge.EVENT_BUS.register(BritainCemetarySpawner.class);
+        NeoForge.EVENT_BUS.register(ShameDungeonSpawner.class);
         NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
 
         ManaHandler.register();
@@ -72,8 +75,8 @@ public class BritanniaMod {
 
             NeoForge.EVENT_BUS.register(new ClientEventHandler());
             modEventBus.register(new ClientOnlyItemRegistry());
-
-
+                    LOGGER.info("Registering ShameDungeonMusicHandler for client-side events.");
+            NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
         }
         
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);

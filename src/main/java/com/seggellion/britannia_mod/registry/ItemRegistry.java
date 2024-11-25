@@ -4,6 +4,9 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.OrderShieldItem;
+import com.seggellion.britannia_mod.item.MoongateLinkingWand;
+
 
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -139,6 +142,16 @@ public class ItemRegistry {
             )
     );    
 
+            public static final DeferredHolder<Item, DeferredSpawnEggItem> EARTH_ELEMENTAL_SPAWN_EGG = ITEMS.register(
+            "earth_elemental_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.EARTH_ELEMENTAL_ENTITY,
+                    0x964B00,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );    
+
             public static final DeferredHolder<Item, DeferredSpawnEggItem> GHOUL_SPAWN_EGG = ITEMS.register(
             "ghoul_spawn_egg",
             () -> new DeferredSpawnEggItem(
@@ -149,32 +162,47 @@ public class ItemRegistry {
             )
     );   
 
+       public static final DeferredHolder<Item, DeferredSpawnEggItem> WISP_SPAWN_EGG = ITEMS.register(
+            "wisp_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.WISP_ENTITY,
+                    0x02D8E9,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );   
+
+public static final DeferredHolder<Item, Item> ORDER_SHIELD = ITEMS.register("order_shield",
+    () -> {
+        Item shield = new OrderShieldItem(new Item.Properties()
+            .stacksTo(1)
+            .durability(336));
+        LOGGER.info("Registered Order Shield: {}", shield);
+        return shield;
+    });
+
+
 
 // Tools
     // Register TwoHandedAxeItem with Tool rules for logs
  public static final DeferredHolder<Item, Item> TWO_HANDED_AXE = ITEMS.register("two_handed_axe",
             () -> {
                 LOGGER.info("Registering TwoHandedAxeItem");
-
                 // Define a TagKey for logs
                 TagKey<Block> logTag = TagKey.create(BuiltInRegistries.BLOCK.key(), net.minecraft.tags.BlockTags.LOGS.location());
-
                 // Attempt to retrieve the HolderSet for the logs tag
                 Optional<List<Tool.Rule>> toolRules = BuiltInRegistries.BLOCK.getTag(logTag)
                         .map(holderSet -> List.of(new Rule(holderSet, Optional.of(6.0F), Optional.of(true))));
-
                 if (toolRules.isEmpty()) {
                     LOGGER.error("Failed to retrieve the logs tag for Tool.Rule creation");
                     return new TwoHandedAxeItem(Tiers.IRON, new Item.Properties()); // Fallback item without tool properties
                 }
-
                 // Create a Tool with the retrieved rules for logs
                 Tool tool = new Tool(
                         toolRules.get(), // Rule for logs with speed and can-drop option
                         6.0F, // Default mining speed
                         1     // Damage per block mined
                 );
-
                 // Attach Tool component to Item.Properties
                 return new TwoHandedAxeItem(Tiers.IRON, new Item.Properties()
                         .component(net.minecraft.core.component.DataComponents.TOOL, tool));
@@ -188,6 +216,18 @@ public class ItemRegistry {
         public static final DeferredHolder<Item, Item> LICH_SPAWN_BLOCK_ITEM = ITEMS.register(
             "lich_spawn_block", () -> new BlockItem(BlockRegistry.LICH_SPAWN_BLOCK.get(), new Item.Properties()));
 
+
+public static final DeferredHolder<Item, Item> DUNGEON_MOONGATE_BLOCK_ITEM = ITEMS.register(
+        "dungeon_moongate_block", () -> new BlockItem(BlockRegistry.DUNGEON_MOONGATE_BLOCK.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, Item> DUNGEON_MOONGATE_TOP_ITEM = ITEMS.register(
+        "dungeon_moongate_top", () -> new BlockItem(BlockRegistry.DUNGEON_MOONGATE_TOP.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.register(
+    "moongate_linking_wand",
+    () -> new MoongateLinkingWand(new Item.Properties().stacksTo(1)));
 
 
     public static final DeferredHolder<Item, Item> MOONGATE_BLOCK_ITEM = ITEMS.register(

@@ -6,7 +6,11 @@ import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
 import com.seggellion.britannia_mod.entity.WraithEntity;
 import com.seggellion.britannia_mod.entity.GhoulEntity;
+import com.seggellion.britannia_mod.entity.WispEntity;
 import com.seggellion.britannia_mod.entity.ShadeEntity;
+import com.seggellion.britannia_mod.entity.EarthElementalEntity;
+import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
+import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -44,30 +48,60 @@ public class EntityRegistry {
         public static final DeferredHolder<EntityType<?>, EntityType<LichEntity>> LICH_ENTITY = ENTITIES.register(
             "lich",
             () -> EntityType.Builder.of(LichEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 2F)
+                    .sized(1F, 2.5F)
                     .build("britannia_mod:lich")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<WraithEntity>> WRAITH_ENTITY = ENTITIES.register(
             "wraith",
             () -> EntityType.Builder.of(WraithEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 3F)
+                    .sized(1F, 2.5F)
                     .build("britannia_mod:wraith")
     );
 
             public static final DeferredHolder<EntityType<?>, EntityType<GhoulEntity>> GHOUL_ENTITY = ENTITIES.register(
             "ghoul",
             () -> EntityType.Builder.of(GhoulEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 1F)
+                    .sized(1F, 2.5F)
                     .build("britannia_mod:ghoul")
+    );
+
+                public static final DeferredHolder<EntityType<?>, EntityType<WispEntity>> WISP_ENTITY = ENTITIES.register(
+            "wisp",
+            () -> EntityType.Builder.of(WispEntity::new, MobCategory.MONSTER)
+                    .sized(1F, 1F)
+                    .build("britannia_mod:wisp")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<ShadeEntity>> SHADE_ENTITY = ENTITIES.register(
             "shade",
             () -> EntityType.Builder.of(ShadeEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 1F)
+                    .sized(1F, 2.5F)
                     .build("britannia_mod:shade")
     );
+        public static final DeferredHolder<EntityType<?>, EntityType<EarthElementalEntity>> EARTH_ELEMENTAL_ENTITY = ENTITIES.register(
+            "earth_elemental",
+            () -> EntityType.Builder.of(EarthElementalEntity::new, MobCategory.MONSTER)
+                    .sized(2F, 3.5F)
+                    .build("britannia_mod:earth_elemental")
+    );
+
+
+        public static final DeferredHolder<EntityType<?>, EntityType<ShadowOreElementalEntity>> SHADOW_ORE_ELEMENTAL_ENTITY = ENTITIES.register(
+            "shadow_ore_elemental",
+            () -> EntityType.Builder.of(ShadowOreElementalEntity::new, MobCategory.MONSTER)
+                    .sized(1F, 3.5F)
+                    .build("britannia_mod:shadow_ore_elemental")
+    );
+
+            public static final DeferredHolder<EntityType<?>, EntityType<GoldOreElementalEntity>> GOLD_ORE_ELEMENTAL_ENTITY = ENTITIES.register(
+            "gold_ore_elemental",
+            () -> EntityType.Builder.of(GoldOreElementalEntity::new, MobCategory.MONSTER)
+                    .sized(1F, 3.5F)
+                    .build("britannia_mod:gold_ore_elemental")
+    );
+
+
 
     public static void register(IEventBus modEventBus) {
         ENTITIES.register(modEventBus);
@@ -79,8 +113,12 @@ public class EntityRegistry {
         event.put(WRAITH_ENTITY.get(), WraithEntity.createAttributes().build());
         event.put(GHOUL_ENTITY.get(), GhoulEntity.createAttributes().build());
         event.put(SHADE_ENTITY.get(), ShadeEntity.createAttributes().build());
+        event.put(EARTH_ELEMENTAL_ENTITY.get(), EarthElementalEntity.createAttributes().build());
+        event.put(SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalEntity.createAttributes().build());
+        event.put(GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalEntity.createAttributes().build());
         event.put(DAEMON_ENTITY.get(), DaemonEntity.createAttributes().build());
          event.put(LICH_ENTITY.get(), LichEntity.createAttributes().build());
+        event.put(WISP_ENTITY.get(), WispEntity.createAttributes().build());
         event.put(HORSE_SELLER_NPC.get(), HorseSellerNPC.createAttributes().build());
     }
 }

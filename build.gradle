@@ -31,6 +31,7 @@ java {
 
 dependencies {
     implementation 'net.neoforged:neoforge:21.1.72'
+    implementation "software.bernie.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}"
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     implementation "io.github.llamalad7:mixinextras-common:0.3.5"

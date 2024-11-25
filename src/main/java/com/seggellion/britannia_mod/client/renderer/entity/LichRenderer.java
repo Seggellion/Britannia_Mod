@@ -25,6 +25,6 @@ public class LichRenderer extends GeoEntityRenderer<LichEntity> {
                           MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                           float partialTick, int packedLight, int packedOverlay, int color) {
         super.preRender(poseStack, entity, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, color);
-        poseStack.scale(1.1F, 1.1F, 1.1F);
+        poseStack.scale(0.9F, 0.9F, 0.9F);
     }
 }

@@ -64,6 +64,29 @@ public class ClientOnlyItemRegistry {
             }
         }, ItemRegistry.WRAITH_SPAWN_EGG.get());
 
+        // Register spawn egg colors for Earth Elemental
+        event.register(new ItemColor() {
+            @Override
+            public int getColor(ItemStack stack, int layer) {
+                if (layer == 0) {
+                    return 0x964B00; // Background color for Lich spawn egg
+                } else {
+                    return 0xffffff; // Highlight color for Lich spawn egg
+                }
+            }
+        }, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
+
+        // Register spawn egg colors wisp
+        event.register(new ItemColor() {
+            @Override
+            public int getColor(ItemStack stack, int layer) {
+                if (layer == 0) {
+                    return 0x02D8E9; // Background color for Lich spawn egg
+                } else {
+                    return 0xffffff; // Highlight color for Lich spawn egg
+                }
+            }
+        }, ItemRegistry.WISP_SPAWN_EGG.get());
 
         // Register spawn egg colors for Ghoul
         event.register(new ItemColor() {

@@ -167,6 +167,62 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_death"))
     );
 
+      // Adding Earth Elemental monster Sounds
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_AMBIENT = SOUND_EVENTS.register(
+            "earth_elemental_ambient",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_ambient"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_ANGRY = SOUND_EVENTS.register(
+            "earth_elemental_angry",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_angry"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_ATTACK = SOUND_EVENTS.register(
+            "earth_elemental_attack",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_attack"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_HURT = SOUND_EVENTS.register(
+            "earth_elemental_hurt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_hurt"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_DEATH = SOUND_EVENTS.register(
+            "earth_elemental_death",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_death"))
+    );
+
+  // Adding Wisp Sounds
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_AMBIENT = SOUND_EVENTS.register(
+            "wisp_ambient",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_ambient"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_ANGRY = SOUND_EVENTS.register(
+            "wisp_angry",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_angry"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_ATTACK = SOUND_EVENTS.register(
+            "wisp_attack",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_attack"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_HURT = SOUND_EVENTS.register(
+            "wisp_hurt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_hurt"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_DEATH = SOUND_EVENTS.register(
+            "wisp_death",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_death"))
+    );
+
+    // Added gold coin sound
+
         public static final DeferredHolder<SoundEvent, SoundEvent> GOLD_COIN = SOUND_EVENTS.register(
             "gold_coin",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":gold_coin"))

@@ -1,0 +1,40 @@
+{
+  "parent": "builtin/entity",
+  "textures": {
+    "layer0": "britannia_mod:item/order_shield"
+  },
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [180, -90, -15],
+      "translation": [1, -12, 0], 
+      "scale": [1, -1, 1] 
+    },
+    "thirdperson_lefthand": {
+      "rotation": [180, -90, -15],
+      "translation": [1, -12, 0],
+      "scale": [1, -1, 1]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, 0, 0],
+      "translation": [-2, -12, 5],
+      "scale": [0.85, 0.85, 0.85]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 0, 0],
+      "translation": [-1, -12, 5],
+      "scale": [0.85, 0.85, 0.85]
+    },
+    "gui": {
+      "rotation": [30, 180, 10],
+      "translation": [-2, -6, 0],
+      "scale": [0.7, 0.7, 0.7]
+    },
+    "ground": {
+      "translation": [0, 3, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "fixed": {
+      "scale": [0.5, 0.5, 0.5]
+    }
+  }
+}

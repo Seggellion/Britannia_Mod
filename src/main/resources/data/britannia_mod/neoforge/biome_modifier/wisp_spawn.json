@@ -1,0 +1,15 @@
+{
+    "type": "neoforge:add_spawns",
+    "biomes": [
+      "minecraft:dark_forest"
+    ],
+    "spawners": [
+      {
+        "type": "britannia_mod:wisp",
+        "weight": 5,
+        "minCount": 1,
+        "maxCount": 1
+      }
+    ]
+  }
+  

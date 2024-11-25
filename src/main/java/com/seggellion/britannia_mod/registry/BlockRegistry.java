@@ -6,6 +6,9 @@ import com.seggellion.britannia_mod.block.LichSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
+import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
+import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -36,11 +39,24 @@ public class BlockRegistry {
             () -> BlockEntityType.Builder.of(LichSpawnBlockEntity::new, LICH_SPAWN_BLOCK.get()).build(null));
 
 
+public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_BLOCK = BLOCKS.register(
+        "dungeon_moongate_block", DungeonMoongateBlock::new);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DungeonMoongateBlockEntity>> DUNGEON_MOONGATE_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+        "dungeon_moongate_block_entity",
+        () -> BlockEntityType.Builder.of(DungeonMoongateBlockEntity::new, DUNGEON_MOONGATE_BLOCK.get()).build(null));
+
+public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_TOP = BLOCKS.register(
+    "dungeon_moongate_top", DungeonMoongateTopBlock::new);
+
+
 public static final DeferredHolder<Block, Block> MOONGATE_BLOCK = BLOCKS.register(
             "moongate_block", MoongateBlock::new);
 
     public static final DeferredHolder<Block, Block> MOONGATE_TOP = BLOCKS.register(
             "moongate_top", MoongateBlock::new);
+
+
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

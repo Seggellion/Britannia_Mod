@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.features;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -19,7 +20,7 @@ public class MobSpawnControl {
         if (entity instanceof Skeleton skeleton) {
             skeleton.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         }
-        if (entity instanceof Creeper || entity instanceof EnderMan) {
+        if (entity instanceof Creeper || entity instanceof EnderMan || entity instanceof Phantom) {
             event.setCanceled(true);
         }
     }
