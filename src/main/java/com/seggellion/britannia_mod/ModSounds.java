@@ -228,6 +228,13 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":gold_coin"))
     );
 
+        // Added catch fish sound
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> CATCH_FISH = SOUND_EVENTS.register(
+            "catch_fish",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":catch_fish"))
+    );
+
 
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {

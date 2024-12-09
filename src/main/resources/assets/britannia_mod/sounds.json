@@ -242,6 +242,11 @@
   "sounds": [
       "britannia_mod:shame_dungeon_music"
   ]
+},
+"catch_fish": {
+  "sounds": [
+      "britannia_mod:catch_fish"
+  ]
 }
 
 }
