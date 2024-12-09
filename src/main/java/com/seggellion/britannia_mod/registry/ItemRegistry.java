@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.OrderShieldItem;
 import com.seggellion.britannia_mod.item.MoongateLinkingWand;
+import com.seggellion.britannia_mod.item.WeightedFishItem;
 
 
 import net.minecraft.world.item.BlockItem;
@@ -80,6 +81,22 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> MAGIC_ARROW_ITEM = ITEMS.register("magic_arrow_item",
             () -> new Item(new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> COD = ITEMS.register("cod",
+        () -> new WeightedFishItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> SALMON = ITEMS.register("salmon",
+        () -> new WeightedFishItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> TUNA = ITEMS.register("tuna",
+        () -> new WeightedFishItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> TROUT = ITEMS.register("trout",
+        () -> new WeightedFishItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> SWORDFISH = ITEMS.register("swordfish",
+        () -> new WeightedFishItem(new Item.Properties()));
+
 
     // Spawn Eggs
     public static final DeferredHolder<Item, DeferredSpawnEggItem> HORSE_SELLER_SPAWN_EGG = ITEMS.register(

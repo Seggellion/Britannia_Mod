@@ -1,0 +1,205 @@
+package com.seggellion.britannia_mod.command;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.seggellion.britannia_mod.player.PlayerData;
+import com.seggellion.britannia_mod.player.PlayerDataManager;
+import com.seggellion.britannia_mod.entity.HorseSellerNPC;
+import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.inventory.CityInventory;
+import com.seggellion.britannia_mod.registry.EntityRegistry;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+
+import net.minecraft.server.level.ServerPlayer;
+import java.util.Map;
+import java.util.List;
+
+public class ModCommands {
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("spawn_horse_seller")
+                .requires(source -> source.hasPermission(2)) // Permission level 2 (OP)
+                .executes(ModCommands::spawnHorseSeller));
+
+        // Register the 'add_city' command
+        dispatcher.register(Commands.literal("add_city")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.argument("cityName", StringArgumentType.string())
+                .executes(context -> addCity(context, StringArgumentType.getString(context, "cityName")))));
+
+        // Register the leaderboard commands
+        dispatcher.register(Commands.literal("leaderboard")
+            .requires(source -> source.hasPermission(0))
+            .then(Commands.literal("top_contributors")
+                .then(Commands.argument("fishType", StringArgumentType.string())
+                    .executes(ModCommands::showTopContributors)))
+            .then(Commands.literal("biggest_fish")
+                .then(Commands.argument("fishType", StringArgumentType.string())
+                    .executes(ModCommands::showBiggestFish))));
+
+        // Register the 'spawn_fish_merchant' command
+        dispatcher.register(Commands.literal("spawn_fish_merchant")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.argument("cityName", StringArgumentType.string())
+                .executes(context -> spawnFishMerchant(context, StringArgumentType.getString(context, "cityName")))));
+
+        // Register the 'cityinventory' command with optional argument
+        dispatcher.register(Commands.literal("cityinventory")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.argument("cityName", StringArgumentType.string())
+                .executes(ModCommands::showCityInventory)
+                .then(Commands.argument("subcategory", StringArgumentType.string())
+                    .executes(ModCommands::showCityInventorySubcategory))));
+    }
+
+    private static int spawnHorseSeller(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+
+        if (player != null) {
+            HorseSellerNPC npc = EntityRegistry.HORSE_SELLER_NPC.get().create(player.level());
+
+            if (npc != null) {
+                npc.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+                player.level().addFreshEntity(npc);
+                source.sendSuccess(() -> Component.literal("Horse Seller NPC spawned."), true);
+                return 1;
+            }
+        }
+
+        source.sendFailure(Component.literal("Failed to spawn Horse Seller NPC."));
+        return 0;
+    }
+
+    private static int addCity(CommandContext<CommandSourceStack> context, String cityName) {
+        CommandSourceStack source = context.getSource();
+        if (source.getLevel() instanceof ServerLevel serverLevel) {
+            CityManager cityManager = CityManager.get(serverLevel);
+            cityManager.addCity(cityName);
+            cityManager.setDirty();
+            source.sendSuccess(() -> Component.literal("City added: " + cityName), true);
+            return 1;
+        }
+        source.sendFailure(Component.literal("Failed to add city."));
+        return 0;
+    }
+
+    private static int showTopContributors(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String fishType = StringArgumentType.getString(context, "fishType");
+        ServerLevel serverLevel = source.getLevel();
+
+        PlayerDataManager manager = PlayerDataManager.get(serverLevel);
+        List<PlayerData> topContributors = manager.getTopContributors(fishType, 10);
+
+        source.sendSuccess(() -> Component.literal("Top Contributors for " + fishType + ":"), false);
+        for (int i = 0; i < topContributors.size(); i++) {
+            final int index = i; // Make index final
+            final PlayerData data = topContributors.get(i); // Make data final
+            source.sendSuccess(() -> Component.literal((index + 1) + ". " + data.getPlayerUUID() + ": " + data.getTotalContributions().get(fishType)), false);
+        }
+
+        return 1;
+    }
+
+    private static int showBiggestFish(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String fishType = StringArgumentType.getString(context, "fishType");
+        ServerLevel serverLevel = source.getLevel();
+
+        PlayerDataManager manager = PlayerDataManager.get(serverLevel);
+        List<PlayerData> biggestFishCatchers = manager.getBiggestFishCatchers(fishType, 10);
+
+        source.sendSuccess(() -> Component.literal("Biggest Fish Caught for " + fishType + ":"), false);
+        for (int i = 0; i < biggestFishCatchers.size(); i++) {
+            final int index = i; // Make index final
+            final PlayerData data = biggestFishCatchers.get(i); // Make data final
+            source.sendSuccess(() -> Component.literal((index + 1) + ". " + data.getPlayerUUID() + ": " + data.getBiggestFish().get(fishType) + " stones"), false);
+        }
+
+        return 1;
+    }
+
+    private static int showCityInventory(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String cityName = StringArgumentType.getString(context, "cityName");
+        ServerPlayer player = source.getPlayer();
+
+        if (player != null && source.getLevel() instanceof ServerLevel serverLevel) {
+            CityManager cityManager = CityManager.get(serverLevel);
+            City city = cityManager.getCity(cityName);
+            if (city != null) {
+                CityInventory cityInventory = city.getInventory();
+                source.sendSuccess(() -> Component.literal("City Inventory for " + cityName + ":"), false);
+                cityInventory.getAllCommodities().forEach((category, subcategories) -> {
+                    subcategories.forEach((subcategory, items) -> {
+                        items.forEach((itemName, quantity) -> {
+                            source.sendSuccess(() -> Component.literal("- " + category + " -> " + subcategory + " -> " + itemName + ": " + quantity), false);
+                        });
+                    });
+                });
+                return 1;
+            } else {
+                source.sendFailure(Component.literal("City not found: " + cityName));
+                return 0;
+            }
+        }
+
+        source.sendFailure(Component.literal("Failed to retrieve City Inventory."));
+        return 0;
+    }
+
+    private static int spawnFishMerchant(CommandContext<CommandSourceStack> context, String cityName) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+
+        if (player != null) {
+            EntityFishMerchant merchant = EntityRegistry.FISH_MERCHANT_ENTITY.get().create(player.level());
+
+            if (merchant != null) {
+                merchant.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+                merchant.setCityName(cityName);
+                player.level().addFreshEntity(merchant);
+                source.sendSuccess(() -> Component.literal("Fish Merchant spawned in city: " + cityName), true);
+                return 1;
+            }
+        }
+
+        source.sendFailure(Component.literal("Failed to spawn Fish Merchant."));
+        return 0;
+    }
+
+    private static int showCityInventorySubcategory(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String cityName = StringArgumentType.getString(context, "cityName");
+        String subcategoryArg = StringArgumentType.getString(context, "subcategory").toLowerCase();
+        ServerPlayer player = source.getPlayer();
+
+        if (player != null && source.getLevel() instanceof ServerLevel serverLevel) {
+            CityManager cityManager = CityManager.get(serverLevel);
+            City city = cityManager.getCity(cityName);
+            if (city != null) {
+                CityInventory cityInventory = city.getInventory();
+                int totalQuantity = cityInventory.getSubcategoryTotal("food", subcategoryArg);
+                if (totalQuantity > 0) {
+                    source.sendSuccess(() -> Component.literal("Total " + cityName + " -> food -> " + subcategoryArg + ": " + totalQuantity), false);
+                } else {
+                    source.sendSuccess(() -> Component.literal("No commodities found for subcategory: " + subcategoryArg + " in city: " + cityName), false);
+                }
+                return 1;
+            } else {
+                source.sendFailure(Component.literal("City not found: " + cityName));
+                return 0;
+            }
+        }
+
+        source.sendFailure(Component.literal("Failed to retrieve City Inventory."));
+        return 0;
+    }
+}

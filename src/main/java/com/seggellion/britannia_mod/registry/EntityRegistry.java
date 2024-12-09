@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.entity.EarthElementalEntity;
 import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
 import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
+import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -30,6 +31,14 @@ public class EntityRegistry {
                     .sized(0.6F, 1.95F)
                     .build("britannia_mod:horse_seller_npc")
     );
+
+    public static final DeferredHolder<EntityType<?>, EntityType<EntityFishMerchant>> FISH_MERCHANT_ENTITY = ENTITIES.register(
+    "fish_merchant",
+    () -> EntityType.Builder.of(EntityFishMerchant::new, MobCategory.MISC)
+            .sized(0.6F, 1.95F)
+            .build("britannia_mod:fish_merchant")
+);
+
 
     public static final DeferredHolder<EntityType<?>, EntityType<MongbatEntity>> MONGBAT_ENTITY = ENTITIES.register(
             "mongbat",
@@ -120,5 +129,7 @@ public class EntityRegistry {
          event.put(LICH_ENTITY.get(), LichEntity.createAttributes().build());
         event.put(WISP_ENTITY.get(), WispEntity.createAttributes().build());
         event.put(HORSE_SELLER_NPC.get(), HorseSellerNPC.createAttributes().build());
+        event.put(FISH_MERCHANT_ENTITY.get(), EntityFishMerchant.createAttributes().build());
+
     }
 }

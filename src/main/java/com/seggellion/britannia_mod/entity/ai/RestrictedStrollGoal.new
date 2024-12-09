@@ -1,0 +1,36 @@
+package com.seggellion.britannia_mod.entity.ai.goal;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.phys.Vec3;
+
+public class RestrictedStrollGoal extends RandomStrollGoal {
+    private final BlockPos spawnPosition;
+    private final double radius;
+
+    public RestrictedStrollGoal(Mob mob, double speed, BlockPos spawnPosition, double radius) {
+        super(mob, speed);
+        this.spawnPosition = spawnPosition;
+        this.radius = radius;
+    }
+
+    @Override
+    protected Vec3 getPosition() {
+        Vec3 randomPos = super.getPosition();
+        if (randomPos == null) return null;
+
+        double dx = randomPos.x - spawnPosition.getX();
+        double dz = randomPos.z - spawnPosition.getZ();
+        double distanceSquared = dx * dx + dz * dz;
+
+        if (distanceSquared > radius * radius) {
+            // Position is outside the allowed radius, adjust it
+            double angle = Math.atan2(dz, dx);
+            double newX = spawnPosition.getX() + radius * Math.cos(angle);
+            double newZ = spawnPosition.getZ() + radius * Math.sin(angle);
+            return new Vec3(newX, randomPos.y, newZ);
+        }
+        return randomPos;
+    }
+}

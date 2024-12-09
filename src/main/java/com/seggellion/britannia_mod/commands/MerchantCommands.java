@@ -1,0 +1,157 @@
+package com.seggellion.britannia_mod.commands;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.entity.HorseSellerNPC;
+import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.inventory.CityInventory;
+import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.market.MarketManager;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity.RemovalReason;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class MerchantCommands {
+    
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("spawn_horse_seller")
+                .requires(source -> source.hasPermission(2))
+                .executes(MerchantCommands::spawnHorseSeller));
+
+        dispatcher.register(Commands.literal("spawn_fish_merchant")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.argument("cityName", StringArgumentType.string())
+                    .executes(context -> spawnFishMerchant(context, StringArgumentType.getString(context, "cityName")))));
+        dispatcher.register(Commands.literal("delete_fish_merchant")
+                .requires(source -> source.hasPermission(2))
+                .executes(context -> deleteFishMerchant(context)));
+    }
+
+
+
+    private static int spawnHorseSeller(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+
+        if (player != null) {
+            HorseSellerNPC npc = EntityRegistry.HORSE_SELLER_NPC.get().create(player.level());
+
+            if (npc != null) {
+                npc.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+                player.level().addFreshEntity(npc);
+                source.sendSuccess(() -> Component.literal("Horse Seller NPC spawned."), true);
+                return 1;
+            }
+        }
+
+        source.sendFailure(Component.literal("Failed to spawn Horse Seller NPC."));
+        return 0;
+    }
+
+    private static int spawnFishMerchant(CommandContext<CommandSourceStack> context, String cityName) {
+    CommandSourceStack source = context.getSource();
+    ServerPlayer player = source.getPlayer();
+
+    if (player != null) {
+        EntityFishMerchant merchant = EntityRegistry.FISH_MERCHANT_ENTITY.get().create(player.level());
+
+        if (merchant != null) {
+            merchant.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+            merchant.setCityName(cityName);
+            player.level().addFreshEntity(merchant);
+
+            // Associate the merchant with the city
+            ServerLevel serverLevel = source.getLevel(); // Get ServerLevel
+            CityManager cityManager = CityManager.get(serverLevel);
+            City city = cityManager.getCity(cityName);
+            if (city == null) {
+                source.sendFailure(Component.literal("City not found: " + cityName));
+                return 0;
+            }
+            CityInventory cityInventory = city.getInventory();
+            
+            // Initialize city if not already initialized
+           // cityInventory.initializeCity(cityName);
+            LOGGER.info("Initialized market prices for city: {}", cityName);
+            
+            // Associate NPC count
+               cityInventory.associateNpc(merchant); // Pass the EntityFishMerchant instance
+
+            
+            // **NEW LINE: Associate the merchant to track population**
+            cityInventory.associateMerchant(merchant);
+
+            source.sendSuccess(() -> Component.literal("Fish Merchant spawned in city: " + cityName), true);
+            return 1;
+        }
+    }
+
+    source.sendFailure(Component.literal("Failed to spawn Fish Merchant."));
+    return 0;
+}
+
+
+  private static int deleteFishMerchant(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+
+        if (player != null && source.getLevel() instanceof ServerLevel serverLevel) {
+            // Find the nearest EntityFishMerchant within a 10-block radius
+            EntityFishMerchant nearestMerchant = serverLevel.getEntitiesOfClass(EntityFishMerchant.class, player.getBoundingBox().inflate(10.0))
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+            if (nearestMerchant != null) {
+                String cityName = nearestMerchant.getCityName();
+
+                // Remove the merchant from the world
+                nearestMerchant.remove(RemovalReason.DISCARDED);
+                LOGGER.info("Fish Merchant {} removed from the world.", nearestMerchant.getUUID());
+
+                if (!cityName.isEmpty()) {
+                    // Update city data to remove association
+                    CityManager cityManager = CityManager.get(serverLevel);
+                    City city = cityManager.getCity(cityName);
+
+                    if (city != null) {
+                        CityInventory cityInventory = city.getInventory();
+                        
+                        // **Remove NPC Count**
+                       // cityInventory.removeNpc(cityName, nearestMerchant.getUUID().toString());
+                        
+                        // **Remove Merchant from Population**
+                        cityInventory.removeMerchant(nearestMerchant);
+                        
+                        cityManager.setDirty();
+                    } else {
+                        LOGGER.warn("City {} not found while deleting merchant {}", cityName, nearestMerchant.getUUID());
+                    }
+                }
+
+                source.sendSuccess(() -> Component.literal("Fish Merchant deleted."), true);
+                return 1;
+            } else {
+                source.sendFailure(Component.literal("No Fish Merchant found nearby."));
+                return 0;
+            }
+        }
+
+        source.sendFailure(Component.literal("Failed to delete Fish Merchant."));
+        return 0;
+    }
+
+
+}

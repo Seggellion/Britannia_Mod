@@ -1,0 +1,29 @@
+package com.seggellion.britannia_mod.commands;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.seggellion.britannia_mod.inventory.CityInventory;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerPlayer;
+
+public class CityInventoryCommand {
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("cityinventory")
+                .requires(source -> source.hasPermission(2))
+                .executes(context -> {
+                    CommandSourceStack source = context.getSource();
+                    if (source.getLevel() instanceof ServerLevel serverLevel) {
+                        CityInventory cityInventory = CityInventory.get(serverLevel);
+                        source.sendSuccess(Component.literal("City Inventory:"), false);
+                        cityInventory.getAllCommodities().forEach((category, subcategories) -> {
+                            subcategories.forEach((subcategory, quantity) -> {
+                                source.sendSuccess(Component.literal("- " + category + " -> " + subcategory + ": " + quantity), false);
+                            });
+                        });
+                    }
+                    return 1;
+                })
+        );
+    }
+}

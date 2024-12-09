@@ -1,0 +1,46 @@
+package com.seggellion.britannia_mod.util;
+
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Item;
+import java.util.Random;
+
+public class FishWeightManager {
+    private static final Random RANDOM = new Random();
+
+    // Assign weight to a fish ItemStack
+    public static void assignWeight(ItemStack fishStack) {
+        if (isFishItem(fishStack)) {
+            double weight = generateRandomWeight(fishStack.getItem());
+
+            // Store the weight using the data component system
+            fishStack.set(ModDataComponents.FISH_WEIGHT, weight);
+        }
+    }
+
+    // Get the weight of a fish ItemStack
+    public static double getWeight(ItemStack fishStack) {
+        if (isFishItem(fishStack)) {
+            Double weight = fishStack.get(ModDataComponents.FISH_WEIGHT);
+            return weight != null ? weight : 0.0;
+        }
+        return 0.0;
+    }
+
+    // Check if the ItemStack is a fish item
+    public static boolean isFishItem(ItemStack stack) {
+        return stack.is(Items.COD) || stack.is(Items.SALMON) || stack.is(Items.TROPICAL_FISH);
+    }
+
+    // Generate a random weight based on fish type
+    private static double generateRandomWeight(Item item) {
+        if (item == Items.COD) {
+            return 1.0 + RANDOM.nextDouble() * 4.0; // Weight between 1.0 and 5.0
+        } else if (item == Items.SALMON) {
+            return 2.0 + RANDOM.nextDouble() * 6.0; // Weight between 2.0 and 8.0
+        } else if (item == Items.TROPICAL_FISH) {
+            return 0.5 + RANDOM.nextDouble() * 1.5; // Weight between 0.5 and 2.0
+        }
+        return 0.0;
+    }
+}

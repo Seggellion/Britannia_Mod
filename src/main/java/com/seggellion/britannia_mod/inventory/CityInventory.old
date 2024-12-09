@@ -1,0 +1,294 @@
+package com.seggellion.britannia_mod.inventory;
+import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import net.minecraft.nbt.CompoundTag;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class CityInventory {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+    // Map structure: Category -> Subcategory -> Item -> Quantity (int)
+    private Map<String, Map<String, Map<String, Integer>>> commodities = new HashMap<>();
+
+    // Parallel structure for weights:
+    // Category -> Subcategory -> Item -> Weight (double)
+    private Map<String, Map<String, Map<String, Double>>> commodityWeights = new HashMap<>();
+
+    // Map to track NPC counts per city
+    private Map<String, Integer> cityNpcCounts = new HashMap<>();
+
+    public CityInventory() {
+    }
+
+public void removeNpc(String cityName, String npcId) {
+    // Example implementation if you're storing NPC associations
+    Map<String, List<String>> npcAssociations = new HashMap<>(); // Replace with your actual storage
+
+    if (npcAssociations.containsKey(cityName)) {
+        npcAssociations.get(cityName).remove(npcId);
+        if (npcAssociations.get(cityName).isEmpty()) {
+            npcAssociations.remove(cityName);
+        }
+    }
+}
+
+public void removeMerchant(EntityFishMerchant merchant) {
+    if (associatedMerchants.remove(merchant)) {
+        String cityName = merchant.getCityName().trim().toLowerCase();
+        cityNpcCounts.put(cityName, Math.max(0, cityNpcCounts.getOrDefault(cityName, 0) - 1));
+        LOGGER.warn("Merchant {} removed from city {}. New population: {}", merchant.getUUID(), cityName, cityNpcCounts.get(cityName));
+    } else {
+        LOGGER.warn("Merchant {} not found in associated merchants", merchant.getUUID());
+    }
+}
+
+private final List<EntityFishMerchant> associatedMerchants = new ArrayList<>();
+
+public void associateMerchant(EntityFishMerchant merchant) {
+    if (!associatedMerchants.contains(merchant)) {
+        associatedMerchants.add(merchant);
+        String cityName = merchant.getCityName().trim().toLowerCase();
+        cityNpcCounts.put(cityName, cityNpcCounts.getOrDefault(cityName, 0) + 1);
+        LOGGER.warn("Merchant {} associated to city {}. New population: {}", merchant.getUUID(), cityName, cityNpcCounts.get(cityName));
+    }
+}
+
+public List<EntityFishMerchant> getAssociatedMerchants() {
+    return new ArrayList<>(associatedMerchants);
+}
+
+    public void consumeFood(String cityName) {
+        int npcCount = cityNpcCounts.getOrDefault(cityName, 0);
+          LOGGER.warn("Food is starting to be consumed, and has npcount of {}", npcCount);
+        // Base consumption rate (e.g., 0.1 units per NPC per tick)
+        double baseConsumptionRate = 0.1;
+        double totalConsumption = npcCount * baseConsumptionRate;
+        LOGGER.warn("Total consumption for city {}: {}", cityName, totalConsumption);
+
+    Map<String, Map<String, Double>> foodWeights = commodityWeights.getOrDefault("food", new HashMap<>());
+    LOGGER.warn("Current food weights for city {}: {}", cityName, foodWeights);
+
+
+        Map<String, Map<String, Integer>> foodStocks = commodities.getOrDefault("food", new HashMap<>());
+    LOGGER.warn("Current food stocks for city {}: {}", cityName, foodStocks);
+
+
+        for (Map<String, Integer> subcategory : foodStocks.values()) {
+            for (Map.Entry<String, Integer> entry : subcategory.entrySet()) {
+                String itemName = entry.getKey();
+                int currentQuantity = entry.getValue();
+
+                // Reduce quantity proportionally
+                int consumed = Math.min(currentQuantity, (int) Math.ceil(totalConsumption));
+                subcategory.put(itemName, currentQuantity - consumed);
+
+                LOGGER.warn("Consumed {} of {} in category 'food'", consumed, itemName);
+                totalConsumption -= consumed;
+                LOGGER.warn("Remaining consumption after consuming {}: {}", consumed, totalConsumption);
+
+                if (totalConsumption <= 0) break;
+            }
+            if (totalConsumption <= 0) break;
+        }
+    }
+
+    public void initializeCity(String cityName) {
+        commodities.putIfAbsent("food", new HashMap<>());
+        commodityWeights.putIfAbsent("food", new HashMap<>());
+   
+    cityNpcCounts.putIfAbsent(cityName, 0); // Initialize NPC count for the city
+    }
+
+public void associateNpc(String cityName, String npcId) {
+    // Increment the NPC count for the city
+    cityNpcCounts.put(cityName, cityNpcCounts.getOrDefault(cityName, 0) + 1);
+    LOGGER.warn("Associated NPC {} to city {}. New population: {}", npcId, cityName, cityNpcCounts.get(cityName));
+}
+
+    // Load data from NBT
+    public void load(CompoundTag tag) {
+        commodities.clear();
+        commodityWeights.clear();
+
+        CompoundTag commoditiesTag = tag.getCompound("Commodities");
+        for (String category : commoditiesTag.getAllKeys()) {
+            CompoundTag subcategoriesTag = commoditiesTag.getCompound(category);
+            Map<String, Map<String, Integer>> subcategories = new HashMap<>();
+            for (String subcategory : subcategoriesTag.getAllKeys()) {
+                CompoundTag itemsTag = subcategoriesTag.getCompound(subcategory);
+                Map<String, Integer> items = new HashMap<>();
+                for (String itemName : itemsTag.getAllKeys()) {
+                    int quantity = itemsTag.getInt(itemName);
+                    items.put(itemName, quantity);
+                }
+                subcategories.put(subcategory, items);
+            }
+            commodities.put(category, subcategories);
+        }
+
+        // Load commodityWeights if present
+        if (tag.contains("CommodityWeights")) {
+            CompoundTag weightsTag = tag.getCompound("CommodityWeights");
+            for (String category : weightsTag.getAllKeys()) {
+                CompoundTag subcategoriesTag = weightsTag.getCompound(category);
+                Map<String, Map<String, Double>> subcategories = new HashMap<>();
+                for (String subcategory : subcategoriesTag.getAllKeys()) {
+                    CompoundTag itemsTag = subcategoriesTag.getCompound(subcategory);
+                    Map<String, Double> items = new HashMap<>();
+                    for (String itemName : itemsTag.getAllKeys()) {
+                        double weight = itemsTag.getDouble(itemName);
+                        items.put(itemName, weight);
+                    }
+                    subcategories.put(subcategory, items);
+                }
+                commodityWeights.put(category, subcategories);
+            }
+        }
+
+    // Load cityNpcCounts
+    if (tag.contains("CityNpcCounts")) {
+        CompoundTag cityNpcCountsTag = tag.getCompound("CityNpcCounts");
+        for (String cityName : cityNpcCountsTag.getAllKeys()) {
+            int count = cityNpcCountsTag.getInt(cityName);
+            cityNpcCounts.put(cityName, count);
+            LOGGER.warn("Loaded NPC count for city {}: {}", cityName, count);
+        }
+    } else {
+        LOGGER.warn("No NPC counts found in NBT for city inventories.");
+    }
+
+    LOGGER.warn("Loaded commodities, weights, and city NPC counts from NBT.");
+
+    }
+
+public void clearAllCommodities() {
+    this.commodities.clear(); // Assuming `commodities` is a Map or similar structure holding the inventory
+    this.commodityWeights.clear();     // Assuming `weights` tracks weights for each category/subcategory
+}
+
+public int getPopulation(String cityName) {
+    return cityNpcCounts.getOrDefault(cityName, 0);
+}
+
+
+
+    // Save data to NBT
+    public void save(CompoundTag tag) {
+        CompoundTag commoditiesTag = new CompoundTag();
+        for (Map.Entry<String, Map<String, Map<String, Integer>>> categoryEntry : commodities.entrySet()) {
+            String category = categoryEntry.getKey();
+            CompoundTag subcategoriesTag = new CompoundTag();
+            for (Map.Entry<String, Map<String, Integer>> subcategoryEntry : categoryEntry.getValue().entrySet()) {
+                String subcategory = subcategoryEntry.getKey();
+                CompoundTag itemsTag = new CompoundTag();
+                for (Map.Entry<String, Integer> itemEntry : subcategoryEntry.getValue().entrySet()) {
+                    String itemName = itemEntry.getKey();
+                    int quantity = itemEntry.getValue();
+                    itemsTag.putInt(itemName, quantity);
+                }
+                subcategoriesTag.put(subcategory, itemsTag);
+            }
+            commoditiesTag.put(category, subcategoriesTag);
+        }
+        tag.put("Commodities", commoditiesTag);
+
+        // Save commodityWeights
+        CompoundTag weightsTag = new CompoundTag();
+        for (Map.Entry<String, Map<String, Map<String, Double>>> categoryEntry : commodityWeights.entrySet()) {
+            String category = categoryEntry.getKey();
+            CompoundTag subcategoriesTag = new CompoundTag();
+            for (Map.Entry<String, Map<String, Double>> subcategoryEntry : categoryEntry.getValue().entrySet()) {
+                String subcategory = subcategoryEntry.getKey();
+                CompoundTag itemsTag = new CompoundTag();
+                for (Map.Entry<String, Double> itemEntry : subcategoryEntry.getValue().entrySet()) {
+                    String itemName = itemEntry.getKey();
+                    double weight = itemEntry.getValue();
+                    itemsTag.putDouble(itemName, weight);
+                }
+                subcategoriesTag.put(subcategory, itemsTag);
+            }
+            weightsTag.put(category, subcategoriesTag);
+        }
+        tag.put("CommodityWeights", weightsTag);
+
+   // Save cityNpcCounts
+    CompoundTag cityNpcCountsTag = new CompoundTag();
+    for (Map.Entry<String, Integer> entry : cityNpcCounts.entrySet()) {
+        cityNpcCountsTag.putInt(entry.getKey(), entry.getValue());
+    }
+    tag.put("CityNpcCounts", cityNpcCountsTag);
+
+    }
+
+    // Method to add commodities
+    public void addCommodity(String category, String subcategory, String itemName, int amount) {
+        commodities
+            .computeIfAbsent(category, k -> new HashMap<>())
+            .computeIfAbsent(subcategory, k -> new HashMap<>())
+            .merge(itemName, amount, Integer::sum);
+    }
+
+    public void addCommodityWeight(String category, String subcategory, String itemName, double weight) {
+        commodityWeights
+            .computeIfAbsent(category, k -> new HashMap<>())
+            .computeIfAbsent(subcategory, k -> new HashMap<>())
+            .merge(itemName, weight, Double::sum);
+        setDirty(); // Mark data as changed if needed
+    }
+
+    public double getCategoryTotalWeight(String category) {
+        double total = 0.0;
+        Map<String, Map<String, Double>> subcategories = commodityWeights.get(category);
+        if (subcategories != null) {
+           for (Map<String, Double> items : subcategories.values()) {
+              for (double weight : items.values()) {
+                  total += weight;
+              }
+           }
+        }
+        return total;
+    }
+
+    // Method to get the quantity of a specific commodity
+    public int getCommodityQuantity(String category, String subcategory, String itemName) {
+        return commodities.getOrDefault(category, new HashMap<>())
+                .getOrDefault(subcategory, new HashMap<>())
+                .getOrDefault(itemName, 0);
+    }
+
+    // Method to get total quantity of a subcategory
+    public int getSubcategoryTotal(String category, String subcategory) {
+        return commodities.getOrDefault(category, new HashMap<>())
+                .getOrDefault(subcategory, new HashMap<>())
+                .values()
+                .stream()
+                .mapToInt(Integer::intValue)
+                .sum();
+    }
+
+public Map<String, Double> getAllCategoryWeights() {
+    Map<String, Double> result = new HashMap<>();
+    for (String category : commodityWeights.keySet()) {
+        result.put(category, getCategoryTotalWeight(category));
+    }
+    return result;
+}
+
+
+    // Method to get all commodities
+    public Map<String, Map<String, Map<String, Integer>>> getAllCommodities() {
+        return commodities;
+    }
+
+    // Placeholder setDirty() method
+    // If CityInventory needs to be a SavedData or integrated with a system that requires setDirty(),
+    // implement it accordingly. For now, it can be a no-op.
+    private void setDirty() {
+        // no-op or implement saving logic if required
+    }
+}

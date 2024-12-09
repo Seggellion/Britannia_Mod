@@ -46,7 +46,7 @@ public class ShadeSpawnBlock extends Block implements EntityBlock {
 
         @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        LOGGER.info("getCollisionShape called - returning empty shape to allow pass-through at {}", pos);
+   //     LOGGER.info("getCollisionShape called - returning empty shape to allow pass-through at {}", pos);
         return Shapes.empty(); // No collision shape, so players can walk through it
     }
 

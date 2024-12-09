@@ -1,0 +1,43 @@
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import com.seggellion.britannia_mod.BritanniaMod;
+
+public class DoubleDataComponentType implements DataComponentType<Double> {
+    private final ResourceLocation id;
+
+    public DoubleDataComponentType(String name) {
+        this.id = new ResourceLocation(BritanniaMod.MODID, name);
+    }
+
+    @Override
+    public ResourceLocation id() {
+        return id;
+    }
+
+    @Override
+    public Class<Double> type() {
+        return Double.class;
+    }
+
+    @Override
+    public void write(Double value, FriendlyByteBuf buffer) {
+        buffer.writeDouble(value);
+    }
+
+    @Override
+    public Double read(FriendlyByteBuf buffer) {
+        return buffer.readDouble();
+    }
+
+    @Override
+    public void write(Double value, CompoundTag tag) {
+        tag.putDouble("value", value);
+    }
+
+    @Override
+    public Double read(CompoundTag tag) {
+        return tag.getDouble("value");
+    }
+}

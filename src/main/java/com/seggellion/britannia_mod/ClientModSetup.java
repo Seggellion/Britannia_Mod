@@ -1,7 +1,8 @@
 // ClientModSetup.java
 package com.seggellion.britannia_mod;
 
-import com.seggellion.britannia_mod.client.renderer.HorseSellerNPCRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.HorseSellerNPCRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.EntityFishMerchantRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry; 
 import com.seggellion.britannia_mod.registry.ItemRegistry; 
 import com.seggellion.britannia_mod.client.renderer.entity.MongbatRenderer;
@@ -36,6 +37,7 @@ public class ClientModSetup {
         // Register the mana overlay (render it during the HUD)
         ManaOverlayScreen.register();
 
+
         event.enqueueWork(() -> {
             // Register the entity renderers
             EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
@@ -49,6 +51,9 @@ public class ClientModSetup {
             EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.HORSE_SELLER_NPC.get(), HorseSellerNPCRenderer::new);
+            EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), EntityFishMerchantRenderer::new);
+
+
 
             // Register the blocking property for the Order Shield
             ItemProperties.register(

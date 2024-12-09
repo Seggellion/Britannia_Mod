@@ -1,4 +1,4 @@
-package com.seggellion.britannia_mod.client.renderer;
+package com.seggellion.britannia_mod.client.renderer.entity;
 
 import com.seggellion.britannia_mod.entity.HorseSellerNPC;
 import net.minecraft.client.model.VillagerModel;
