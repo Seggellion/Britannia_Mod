@@ -1,0 +1,46 @@
+{
+    "parent": "item/generated",
+    "textures": {
+      "layer0": "minecraft:block/oak_log"
+    },
+  
+    "overrides": [
+      {
+        "predicate": {
+          "custom_model_data": 1
+        },
+        "model": "britannia_mod:item/weighted_wood_item_spruce"
+      },
+      {
+        "predicate": {
+          "custom_model_data": 2
+        },
+        "model": "britannia_mod:item/weighted_wood_item_birch"
+      },
+      {
+        "predicate": {
+          "custom_model_data": 3
+        },
+        "model": "britannia_mod:item/weighted_wood_item_jungle"
+      },
+      {
+        "predicate": {
+          "custom_model_data": 4
+        },
+        "model": "britannia_mod:item/weighted_wood_item_acacia"
+      },
+      {
+        "predicate": {
+          "custom_model_data": 5
+        },
+        "model": "britannia_mod:item/weighted_wood_item_dark_oak"
+      },
+      {
+        "predicate": {
+          "custom_model_data": 6
+        },
+        "model": "britannia_mod:item/weighted_wood_item_mangrove"
+      }
+    ]
+  }
+  

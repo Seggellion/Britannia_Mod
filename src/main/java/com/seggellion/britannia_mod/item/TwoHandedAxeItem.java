@@ -1,63 +1,97 @@
-// TwoHandedAxeItem.java
 package com.seggellion.britannia_mod.item;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.TieredItem;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.sounds.SoundSource;
+import com.seggellion.britannia_mod.ModSounds;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-public class TwoHandedAxeItem extends TieredItem {
-    private static final Logger LOGGER = LogUtils.getLogger();
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-    public TwoHandedAxeItem(Tier tier, Properties properties) {
-        super(tier, properties);
-        LOGGER.info("TwoHandedAxeItem initialized.");
+public class TwoHandedAxeItem extends AxeItem {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    private static final ResourceLocation ATTACK_SPEED_MODIFIER =
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "attack_speed");
+    private static final ResourceLocation ATTACK_DAMAGE_MODIFIER =
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "attack_damage");
+
+
+    public TwoHandedAxeItem(Tier tier, Item.Properties properties) {
+        super(tier, properties); // Pass only the tier and properties to the parent constructor
     }
 
     @Override
-    public boolean canAttackBlock(BlockState state, Level world, BlockPos pos, Player player) {
-        LOGGER.info("Checking if can attack block at {}. Block is log: {}", pos, state.is(BlockTags.LOGS));
-        return state.is(BlockTags.LOGS);
+    public boolean isCorrectToolForDrops(net.minecraft.world.item.ItemStack stack, BlockState state) {
+        // Allow breaking logs in Adventure mode
+             LOGGER.info("isCorrectToolForDrops");
+        return state.is(BlockTags.LOGS) || super.isCorrectToolForDrops(stack, state);
     }
 
-    @Override
-    public float getDestroySpeed(ItemStack stack, BlockState state) {
-        LOGGER.info("Determining destroy speed for block. Block is log: {}", state.is(BlockTags.LOGS));
-        return state.is(BlockTags.LOGS) ? 6.0F : super.getDestroySpeed(stack, state);
-    }
-
-    @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Level world = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-        BlockState state = world.getBlockState(pos);
-        Player player = context.getPlayer();
-
-        LOGGER.info("useOn called. Player interacting with block at {}. Block is log: {}", pos, state.is(BlockTags.LOGS));
-
-        if (state.is(BlockTags.LOGS) && player != null && !world.isClientSide) {
-            world.destroyBlock(pos, true, player);
-            LOGGER.info("Log block destroyed successfully.");
-            return InteractionResult.SUCCESS;
+  @Override
+    public boolean canAttackBlock(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+        // Custom logic to simulate slower swing
+        LOGGER.info("canAttackBlock");
+        if (player.isCreative()) return true;
+        if (state.is(BlockTags.LOGS)) {
+                            LOGGER.info("Swing time reduced");
+            player.swingTime = 40; // Increase swing time to slow the animation
         }
-
-        LOGGER.info("Block interaction not a log or interaction failed.");
-        return super.useOn(context);
+        return super.canAttackBlock(state, level, pos, player);
     }
 
-    // Helper method to determine if this item should act as a tool for breaking logs
-    public boolean isCorrectToolForDrops(BlockState state) {
-        boolean canDrop = state.is(BlockTags.LOGS);
-        LOGGER.info("Checking if correct tool for block drops. Block is log: {}", canDrop);
-        return canDrop;
+       @Override
+    public float getDestroySpeed(ItemStack stack, BlockState state) {
+        if (state.is(BlockTags.LOGS)) {
+            LOGGER.info("getDestroySpeed invoked: reducing speed for logs");
+            return 2.0F; // Reduced block breaking speed for logs
+        }
+        return super.getDestroySpeed(stack, state);
     }
+
+    public static ItemAttributeModifiers createAttributes() {
+        return ItemAttributeModifiers.builder()
+                .add(Attributes.ATTACK_DAMAGE,
+                        new AttributeModifier(ATTACK_DAMAGE_MODIFIER, 10.0, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.HAND) // Use EquipmentSlotGroup.HAND for both hands
+                .add(Attributes.ATTACK_SPEED,
+                        new AttributeModifier(ATTACK_SPEED_MODIFIER, -3.5, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.HAND) // Use EquipmentSlotGroup.HAND for both hands
+                .build();
+    }
+
+
+
+@Override
+public void inventoryTick(ItemStack stack, Level world, Entity entity, int slot, boolean selected) {
+    super.inventoryTick(stack, world, entity, slot, selected);
+
+    if (!world.isClientSide && entity instanceof Player player && selected) {
+        // Only reset attack strength if the player is holding this specific item
+        if (player.getMainHandItem() == stack) {
+            player.resetAttackStrengthTicker(); // Safely reset swing strength
+        }
+    }
+}
+
+
+
 }

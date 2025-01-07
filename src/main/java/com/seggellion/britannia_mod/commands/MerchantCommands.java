@@ -87,11 +87,9 @@ public class MerchantCommands {
             LOGGER.info("Initialized market prices for city: {}", cityName);
             
             // Associate NPC count
-               cityInventory.associateNpc(merchant); // Pass the EntityFishMerchant instance
+               cityInventory.associateNpc(merchant); 
 
-            
-            // **NEW LINE: Associate the merchant to track population**
-            cityInventory.associateMerchant(merchant);
+    
 
             source.sendSuccess(() -> Component.literal("Fish Merchant spawned in city: " + cityName), true);
             return 1;
@@ -133,7 +131,7 @@ public class MerchantCommands {
                        // cityInventory.removeNpc(cityName, nearestMerchant.getUUID().toString());
                         
                         // **Remove Merchant from Population**
-                        cityInventory.removeMerchant(nearestMerchant);
+                        cityInventory.removeNpc(nearestMerchant);
                         
                         cityManager.setDirty();
                     } else {

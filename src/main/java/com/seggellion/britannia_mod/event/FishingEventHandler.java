@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.event;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 
-import com.seggellion.britannia_mod.registry.ModSounds;
+import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
@@ -82,10 +82,13 @@ public class FishingEventHandler {
             player.drop(weightedFishStack, false);
         }
         LOGGER.info("Gave WeightedFishItem (type: {}, weight: {}) directly to the player", fishData.fishType, weight);
-            // Play the custom catch_fish sound at the player's position
-    Vec3 playerPosVec = player.position();
-    BlockPos playerPos = new BlockPos(playerPosVec.x, playerPosVec.y, playerPosVec.z);
-    world.playSound(null, playerPos, ModSounds.CATCH_FISH.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+
+        // Play the custom catch_fish sound at the player's position
+        Vec3 playerPosVec = player.position();
+        BlockPos playerPos = new BlockPos((int) playerPosVec.x, (int) playerPosVec.y, (int) playerPosVec.z);
+        world.playSound(null, playerPos, ModSounds.CATCH_FISH.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        LOGGER.info("Played catch_fish sound at player's position: {}", playerPos);
+
     }
 
     private Item getRandomFish() {

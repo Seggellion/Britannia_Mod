@@ -90,6 +90,7 @@ public class MongbatEntity extends Monster implements GeoAnimatable {
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
                 .add(Attributes.ATTACK_DAMAGE, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 16.0D)
+                 .add(Attributes.ATTACK_SPEED, -2.0D)
                 .add(Attributes.FLYING_SPEED, 0.4D);
     }
 

@@ -233,6 +233,31 @@
       "britannia_mod:earth_elemental_death"
   ]
 },
+"rat_ambient": {
+  "sounds": [
+      "britannia_mod:rat_ambient"
+  ]
+},
+"rat_angry": {
+  "sounds": [
+      "britannia_mod:rat_angry"
+  ]
+},
+"rat_attack": {
+  "sounds": [
+      "britannia_mod:rat_attack"
+  ]
+},
+"rat_hurt": {
+  "sounds": [
+      "britannia_mod:rat_hurt"
+  ]
+},
+"rat_death": {
+  "sounds": [
+      "britannia_mod:rat_death"
+  ]
+},
 "gold_coin": {
     "sounds": [
         "britannia_mod:gold_coin"
@@ -243,9 +268,19 @@
       "britannia_mod:shame_dungeon_music"
   ]
 },
+"britain_city_music": {
+  "sounds": [
+      "britannia_mod:britain_city_music"
+  ]
+},
 "catch_fish": {
   "sounds": [
       "britannia_mod:catch_fish"
+  ]
+},
+"chop_tree": {
+  "sounds": [
+      "britannia_mod:chop_tree"
   ]
 }
 

@@ -3,16 +3,33 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
+
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.ModToolTiers;
 import com.seggellion.britannia_mod.item.OrderShieldItem;
 import com.seggellion.britannia_mod.item.MoongateLinkingWand;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
+import com.seggellion.britannia_mod.item.WeightedWoodItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.HolderSet.Named;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tiers;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -25,11 +42,15 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.Tool.Rule;
+import net.minecraft.world.item.AdventureModePredicate;
+import net.minecraft.advancements.critereon.BlockPredicate; 
 
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.registries.RegistryManager;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import com.mojang.logging.LogUtils;
@@ -37,6 +58,10 @@ import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 import java.util.Optional;
 import java.util.List;
+import java.util.Collections;
+import java.util.UUID;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 
 public class ItemRegistry {
@@ -139,6 +164,17 @@ public static final DeferredHolder<Item, Item> SWORDFISH = ITEMS.register("sword
             )
     );
 
+    
+    public static final DeferredHolder<Item, DeferredSpawnEggItem> RAT_SPAWN_EGG = ITEMS.register(
+            "rat_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.RAT_ENTITY,
+                    0x2a7700,
+                    0xffffff,
+                    new Item.Properties()
+            )
+    );
+
         public static final DeferredHolder<Item, DeferredSpawnEggItem> WRAITH_SPAWN_EGG = ITEMS.register(
             "wraith_spawn_egg",
             () -> new DeferredSpawnEggItem(
@@ -194,37 +230,25 @@ public static final DeferredHolder<Item, Item> ORDER_SHIELD = ITEMS.register("or
         Item shield = new OrderShieldItem(new Item.Properties()
             .stacksTo(1)
             .durability(336));
-        LOGGER.info("Registered Order Shield: {}", shield);
         return shield;
     });
 
 
+public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEMS.register("two_handed_axe", () ->
+    new TwoHandedAxeItem(
+        ModToolTiers.TWO_HANDED_AXE_TIER, // Custom tier
+        new Item.Properties()
+            .stacksTo(1)
+            .attributes(TwoHandedAxeItem.createAttributes()) // Use the attribute supplier
+    )
+);
 
-// Tools
-    // Register TwoHandedAxeItem with Tool rules for logs
- public static final DeferredHolder<Item, Item> TWO_HANDED_AXE = ITEMS.register("two_handed_axe",
-            () -> {
-                LOGGER.info("Registering TwoHandedAxeItem");
-                // Define a TagKey for logs
-                TagKey<Block> logTag = TagKey.create(BuiltInRegistries.BLOCK.key(), net.minecraft.tags.BlockTags.LOGS.location());
-                // Attempt to retrieve the HolderSet for the logs tag
-                Optional<List<Tool.Rule>> toolRules = BuiltInRegistries.BLOCK.getTag(logTag)
-                        .map(holderSet -> List.of(new Rule(holderSet, Optional.of(6.0F), Optional.of(true))));
-                if (toolRules.isEmpty()) {
-                    LOGGER.error("Failed to retrieve the logs tag for Tool.Rule creation");
-                    return new TwoHandedAxeItem(Tiers.IRON, new Item.Properties()); // Fallback item without tool properties
-                }
-                // Create a Tool with the retrieved rules for logs
-                Tool tool = new Tool(
-                        toolRules.get(), // Rule for logs with speed and can-drop option
-                        6.0F, // Default mining speed
-                        1     // Damage per block mined
-                );
-                // Attach Tool component to Item.Properties
-                return new TwoHandedAxeItem(Tiers.IRON, new Item.Properties()
-                        .component(net.minecraft.core.component.DataComponents.TOOL, tool));
-            }
+    // ADD THIS for WeightedWoodItem:
+    public static final DeferredHolder<Item, Item> WEIGHTED_WOOD_ITEM = ITEMS.register(
+        "weighted_wood_item",
+        () -> new WeightedWoodItem(new Item.Properties())
     );
+    
     // Block Items
 
         public static final DeferredHolder<Item, Item> SHADE_SPAWN_BLOCK_ITEM = ITEMS.register(
@@ -232,6 +256,9 @@ public static final DeferredHolder<Item, Item> ORDER_SHIELD = ITEMS.register("or
 
         public static final DeferredHolder<Item, Item> LICH_SPAWN_BLOCK_ITEM = ITEMS.register(
             "lich_spawn_block", () -> new BlockItem(BlockRegistry.LICH_SPAWN_BLOCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> WOOD_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "wood_spawn_block", () -> new BlockItem(BlockRegistry.WOOD_SPAWN_BLOCK.get(), new Item.Properties()));
 
 
 public static final DeferredHolder<Item, Item> DUNGEON_MOONGATE_BLOCK_ITEM = ITEMS.register(

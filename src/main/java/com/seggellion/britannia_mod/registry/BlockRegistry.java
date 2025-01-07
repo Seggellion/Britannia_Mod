@@ -3,7 +3,9 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.MoongateBlock;
 import com.seggellion.britannia_mod.block.LichSpawnBlock;
+import com.seggellion.britannia_mod.block.WoodSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
@@ -37,6 +39,18 @@ public class BlockRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LichSpawnBlockEntity>> LICH_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
             "lich_spawn_block_entity",
             () -> BlockEntityType.Builder.of(LichSpawnBlockEntity::new, LICH_SPAWN_BLOCK.get()).build(null));
+
+
+
+    public static final DeferredHolder<Block, Block> WOOD_SPAWN_BLOCK = BLOCKS.register(
+            "wood_spawn_block",
+            WoodSpawnBlock::new 
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WoodSpawnBlockEntity>> WOOD_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+            "wood_spawn_block_entity",
+            () -> BlockEntityType.Builder.of(WoodSpawnBlockEntity::new, WOOD_SPAWN_BLOCK.get()).build(null));
+
 
 
 public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_BLOCK = BLOCKS.register(

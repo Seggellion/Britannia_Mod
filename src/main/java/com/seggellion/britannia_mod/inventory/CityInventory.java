@@ -1,6 +1,13 @@
 package com.seggellion.britannia_mod.inventory;
 
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
+import com.seggellion.britannia_mod.entity.ICityEntity;
+import com.seggellion.britannia_mod.entity.TownPersonEntity;
+import net.minecraft.world.entity.Entity;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -9,6 +16,10 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
+import java.util.Iterator;
+
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,10 +29,12 @@ public class CityInventory {
     private static final Logger LOGGER = LogManager.getLogger();
     
 private boolean isStarving = false;
+private final Map<BlockPos, List<Entity>> blockNpcAssociations = new HashMap<>();
 
 public boolean isStarving() {
     return isStarving;
 }
+
 
     private String cityName; // Store the name of the city this inventory belongs to
 
@@ -34,7 +47,7 @@ public boolean isStarving() {
 
     private int npcCount = 0; // Population count for this city
 
-    private final List<EntityFishMerchant> associatedMerchants = new ArrayList<>();
+private final List<UUID> associatedNpcs = new ArrayList<>();
 
     public CityInventory(String cityName) {
         this.cityName = cityName;
@@ -59,6 +72,37 @@ public boolean isStarving() {
         return categoryWeights;
     }
 
+  public void associateNpcWithBlock(BlockPos blockPos, Entity npc) {
+        blockNpcAssociations.computeIfAbsent(blockPos, k -> new ArrayList<>()).add(npc);
+        associateNpc(npc);
+        LOGGER.info("Associated NPC {} with block {} in city {}. New population: {}", 
+                    npc.getUUID(), blockPos, getCityName(), getNpcCount());
+    }
+
+
+  public void removeNpcsForBlock(BlockPos blockPos) {
+        List<Entity> npcs = blockNpcAssociations.remove(blockPos);
+        if (npcs != null) {
+            LOGGER.info("Removing {} NPCs associated with block {} in city {}", npcs.size(), blockPos, getCityName());
+            for (Entity npc : npcs) {
+                npc.discard(); // Removes the entity from the world
+                removeNpc(npc);
+                LOGGER.info("Discarded NPC {}. New population: {}", npc.getUUID(), getNpcCount());
+            }
+        } else {
+            LOGGER.warn("No NPCs found for block {} in city {}", blockPos, getCityName());
+        }
+    }
+
+    public int getNpcCount() {
+        return npcCount;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+    
+
     // Returns the total weight for a specific category
     public double getCategoryTotalWeight(String category) {
         return commodityWeights.getOrDefault(category, new HashMap<>())
@@ -77,17 +121,49 @@ public boolean isStarving() {
                 .sum();
     }
 
-    public void associateNpc(EntityFishMerchant merchant) {
-        if (!associatedMerchants.contains(merchant)) {
-            associatedMerchants.add(merchant);
-            npcCount++;
-            LOGGER.warn("Merchant {} associated to city {}. New population: {}", merchant.getUUID(), cityName, npcCount);
-            setDirty(); // Mark data as changed if using persistence
-        }
+
+public void removeNpc(Entity npc) {
+    if (npc == null) return;
+    // if using a list, do associatedNpcs.remove(npc);
+    npcCount = Math.max(0, npcCount - 1);
+    LOGGER.warn("Removed NPC {} from city {}. New population: {}", 
+                npc.getUUID(), cityName, npcCount);
+    setDirty();
+}
+
+
+public void associateNpc(Entity npc) {
+    if (npc == null || associatedNpcs.contains(npc.getUUID())) return;
+
+    if (!(npc instanceof ICityEntity cityEntity)) {
+        LOGGER.warn("Skipping NPC {}: Not an ICityEntity.", npc.getUUID());
+        return;
     }
 
+    String npcCityName = cityEntity.getCityName();
+
+    if (!npcCityName.equalsIgnoreCase(this.cityName)) {
+        LOGGER.warn("Skipping NPC {}: mismatched city association (expected {}, got {}).",
+                    npc.getUUID(), this.cityName, npcCityName);
+        return;
+    }
+
+    associatedNpcs.add(npc.getUUID());
+    npcCount++;
+    LOGGER.info("Associated NPC {} to city {}. Population: {}", npc.getUUID(), cityName, npcCount);
+}
+
+
+public void reAssociateNpcs(ServerLevel serverLevel) {
+    associatedNpcs.forEach(uuid -> {
+        Entity npc = serverLevel.getEntity(uuid);
+        if (npc == null) return; // Skip non-existent NPCs
+        if (!associatedNpcs.contains(npc)) associateNpc(npc);
+    });
+}
+
     public void removeMerchant(EntityFishMerchant merchant) {
-        if (associatedMerchants.remove(merchant)) {
+        if (associatedNpcs.remove(merchant)) {
             npcCount = Math.max(0, npcCount - 1);
             LOGGER.warn("Merchant {} removed from city {}. New population: {}", merchant.getUUID(), cityName, npcCount);
             setDirty(); // Mark data as changed for persistence
@@ -262,16 +338,16 @@ public boolean isStarving() {
     }
 
     public void clearPopulation() {
-        // Option 1: Reset npcCount and clear associated merchants
-        for (EntityFishMerchant merchant : new ArrayList<>(associatedMerchants)) {
-            removeMerchant(merchant); // This method decrements npcCount and removes the merchant
-        }
-        // Alternatively, Option 2: Directly reset npcCount and clear the list without triggering remove logic
-        this.associatedMerchants.clear();
-        this.npcCount = 0;
+        // Clear the list of associated merchants
+        associatedNpcs.clear();
         
+        // Reset the NPC count directly
+        npcCount = 0;
+
         LOGGER.warn("Population for city {} has been cleared. New population: {}", cityName, npcCount);
-        setDirty(); // Mark data as changed for persistence
+
+        // Mark data as changed for persistence
+        setDirty();
     }
 
     // Method to add commodities
@@ -298,9 +374,9 @@ public boolean isStarving() {
         return commodityWeights;
     }
 
-    // Getter for associatedMerchants
-    public List<EntityFishMerchant> getAssociatedMerchants() {
-        return Collections.unmodifiableList(associatedMerchants);
+    // Getter for associatedNpcs
+    public List<UUID> getAssociatedNpcs() {
+        return Collections.unmodifiableList(associatedNpcs);
     }
 
     // Getter for all commodities
@@ -309,9 +385,29 @@ public boolean isStarving() {
     }
 
     // Getter for population
-    public int getPopulation() {
-        return npcCount;
+public int getPopulation() {
+    return associatedNpcs.size();
+}
+
+
+public List<Entity> getAssociatedEntities(ServerLevel serverLevel) {
+    List<Entity> entities = new ArrayList<>();
+    Iterator<UUID> iterator = associatedNpcs.iterator();
+    while (iterator.hasNext()) {
+        UUID uuid = iterator.next();
+        Entity npc = serverLevel.getEntity(uuid);
+        if (npc != null) {
+            entities.add(npc);
+        } else {
+            iterator.remove(); // Remove orphaned UUID
+            npcCount = Math.max(0, npcCount - 1);
+            LOGGER.warn("Removed orphaned NPC UUID {}. New population: {}", uuid, npcCount);
+        }
     }
+    return entities;
+}
+
+
 
 
 public void associateMerchant(EntityFishMerchant merchant) {

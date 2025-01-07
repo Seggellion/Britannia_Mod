@@ -32,6 +32,7 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.MONGBAT_SPAWN_EGG.get());
                         output.accept(ItemRegistry.DAEMON_SPAWN_EGG.get());
                         output.accept(ItemRegistry.LICH_SPAWN_EGG.get());
+                        output.accept(ItemRegistry.RAT_SPAWN_EGG.get());
                         output.accept(ItemRegistry.WRAITH_SPAWN_EGG.get());
                         output.accept(ItemRegistry.GHOUL_SPAWN_EGG.get());
                         output.accept(ItemRegistry.SHADE_SPAWN_EGG.get());
@@ -39,6 +40,7 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
                         output.accept(ItemRegistry.SHADE_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.LICH_SPAWN_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.TWO_HANDED_AXE.get());
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());

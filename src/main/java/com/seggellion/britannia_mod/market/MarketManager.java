@@ -9,75 +9,144 @@ import org.apache.logging.log4j.Logger;
 
 
 
+/**
+ * MarketManager that handles both fish items and wood items.
+ * Price adjusts based on total weight supply in a city’s inventory.
+ */
 public class MarketManager {
-    private static final Map<String, Double> basePrices = new HashMap<>();
-    private static final Map<String, Map<String, Double>> cityPrices = new HashMap<>();
     private static final Logger LOGGER = LogManager.getLogger();
+
+    /** Price cap: once supply (in stones) >= this, price becomes 0. */
+    private static final double MAX_SUPPLY_CAP = 1000.0;
+
+    /**
+     * A simple map from "itemName" => basePrice. 
+     * You can unify fish & wood names, e.g. "cod", "salmon", "oak", "spruce", etc.
+     */
+    private static final Map<String, Double> basePrices = new HashMap<>();
+
+    /**
+     * For each city, we store a map: itemName => current adjusted price.
+     * If no city is present, we create it (or fallback to basePrices).
+     */
+    private static final Map<String, Map<String, Double>> cityPrices = new HashMap<>();
+
     static {
-        // Base prices for each fish type
-        basePrices.put("cod", 4.8);
-        basePrices.put("salmon", 16.1);
-        basePrices.put("tuna", 15.4);
-        basePrices.put("trout", 5.9);
-        basePrices.put("swordfish", 26.6);
+        // Example base fish prices (stones-based):
+        basePrices.put("cod",        0.4);
+        basePrices.put("salmon",     1.6);
+        basePrices.put("tuna",       1.5);
+        basePrices.put("trout",      0.5);
+        basePrices.put("swordfish",  2.6);
+
+        // Example wood base prices (stones-based). 
+        // You can choose any values that make sense for your economy.
+        basePrices.put("oak",       1.0);
+        basePrices.put("spruce",    1.1);
+        basePrices.put("birch",     1.0);
+        basePrices.put("jungle",    1.2);
+        basePrices.put("acacia",    1.1);
+        basePrices.put("dark_oak",  1.3);
+        basePrices.put("mangrove",  1.2);
     }
 
-    // Initialize city pricing
+    //=====================================================
+    // Initialization / Basic Access
+    //=====================================================
+
+    /** Initialize market prices for a city if not present. */
     public static void initializeCity(String cityName) {
-    if (!cityPrices.containsKey(cityName)) {
-        cityPrices.put(cityName, new HashMap<>(basePrices));
-        System.out.println("Initialized market prices for city: " + cityName);
+        if (!cityPrices.containsKey(cityName)) {
+            // Start them at the base prices
+            cityPrices.put(cityName, new HashMap<>(basePrices));
+            LOGGER.info("Initialized market prices for city: {}", cityName);
+        }
     }
 
-     //   cityPrices.putIfAbsent(cityName, new HashMap<>(basePrices));
+    /**
+     * Get the current (already-adjusted) price for itemName in cityName.
+     * If no city is found, returns 0.0.
+     */
+    public static double getMarketPrice(String cityName, String itemName) {
+        Map<String, Double> priceMap = cityPrices.get(cityName);
+        if (priceMap == null) {
+            LOGGER.warn("No city price map found for '{}'. Returning 0.", cityName);
+            return 0.0;
+        }
+        return priceMap.getOrDefault(itemName, 0.0);
     }
 
-    // Get the current market price for a specific fish in a city
-   // public static double getMarketPrice(String cityName, String fishType) {
-   //     return cityPrices.getOrDefault(cityName, new HashMap<>()).getOrDefault(fishType, 0.0);
-  //  }
-    
-public static double getMarketPrice(String cityName, String fishType) {
-    Map<String, Double> cityPriceMap = cityPrices.get(cityName);
-    if (cityPriceMap == null) {
-        LOGGER.warn("No prices found for city: {}", cityName);
-        return 0.0;
+    /** Get the entire city price map for debugging or display. */
+    public static Map<String, Double> getCityPrices(String cityName) {
+        return cityPrices.getOrDefault(cityName, new HashMap<>());
     }
-    double price = cityPriceMap.getOrDefault(fishType, 0.0);
-    LOGGER.info("Market price fetched for city {} and fish {}: {}", cityName, fishType, price);
-    return price;
-}
 
+    //=====================================================
+    // Supply and Demand Logic
+    //=====================================================
 
-public static Map<String, Double> getCityPrices(String cityName) {
-    return cityPrices.getOrDefault(cityName, new HashMap<>());
-}
-
-
-
-    // Adjust prices based on stock levels in a city
+    /**
+     * Recalculate prices for all known items in city inventory.
+     * 
+     * - If supply >= MAX_SUPPLY_CAP => price = 0
+     * - If supply == 0 => price = basePrice * 1.05
+     * - Else => linear interpolation from (basePrice * 1.05) down to 0 as supply approaches 1000.
+     * 
+     * This will update the cityPrices map so future calls to getMarketPrice() reflect changes.
+     */
     public static void adjustPrices(String cityName, CityInventory cityInventory) {
-            LOGGER.info("Adjusting prices for city: {}", cityName);
+        // Ensure city is in cityPrices
+        Map<String, Double> adjustedPriceMap =
+                cityPrices.computeIfAbsent(cityName, k -> new HashMap<>(basePrices));
 
-        Map<String, Integer> foodStocks = cityInventory.getAllCommodities()
-                                                       .getOrDefault("food", new HashMap<>())
-                                                       .getOrDefault("fish", new HashMap<>());
+        // We'll iterate over your commodityWeights structure to see what's in the city.
+        // commodityWeights:  category -> subcategory -> itemName -> weight (double)
+        Map<String, Map<String, Map<String, Double>>> weights = cityInventory.getCommodityWeights();
 
-        Map<String, Double> prices = cityPrices.computeIfAbsent(cityName, k -> new HashMap<>(basePrices));
+        LOGGER.info("Adjusting prices in city '{}' based on supply. Base price & formula are used for recognized items.", cityName);
 
-        for (Map.Entry<String, Integer> entry : foodStocks.entrySet()) {
-            String fishType = entry.getKey();
-            int quantity = entry.getValue();
-            double basePrice = basePrices.getOrDefault(fishType, 0.0);
+        // Go through each category/subcategory 
+        for (Map.Entry<String, Map<String, Map<String, Double>>> catEntry : weights.entrySet()) {
+            String category = catEntry.getKey();  // e.g. "food" or "wood"
+            Map<String, Map<String, Double>> subMap = catEntry.getValue();
 
-            // Adjust prices based on stock
-            double priceChange = (quantity < 50 ? 0.1 : -0.1) * (50 - quantity) / 50.0;
-            double newPrice = prices.get(fishType) + priceChange;
+            for (Map.Entry<String, Map<String, Double>> subEntry : subMap.entrySet()) {
+                String subcategory = subEntry.getKey();  // e.g. "fish" or "logs"
+                Map<String, Double> itemMap = subEntry.getValue();
 
-            // Ensure prices remain within bounds
-            newPrice = Math.max(basePrice * 0.5, Math.min(newPrice, basePrice * 2.0));
+                for (Map.Entry<String, Double> itemEntry : itemMap.entrySet()) {
+                    String itemName = itemEntry.getKey();   // e.g. "cod" or "oak"
+                    double supplyInStones = itemEntry.getValue();  // total weight
 
-            prices.put(fishType, newPrice);
+                    // If we do not track a base price for itemName, skip
+                    if (!basePrices.containsKey(itemName)) {
+                        LOGGER.debug("No basePrice known for '{}'. Skipping price adjust in city '{}'.", itemName, cityName);
+                        continue;
+                    }
+
+                    double basePrice = basePrices.get(itemName);
+
+                    double newPrice;
+                    if (supplyInStones >= MAX_SUPPLY_CAP) {
+                        // Price is 0 if supply is huge
+                        newPrice = 0.0;
+                    } else if (supplyInStones <= 0.00001) {
+                        // If effectively no supply, price is base * 1.05
+                        newPrice = basePrice * 1.05;
+                    } else {
+                        // Linear interpolation from (basePrice * 1.05) at 0 supply
+                        // down to 0 at supply = MAX_SUPPLY_CAP
+                        // i.e. newPrice = (basePrice*1.05) * (1 - supplyInStones / MAX_SUPPLY_CAP)
+                        double factor = 1.0 - (supplyInStones / MAX_SUPPLY_CAP);
+                        if (factor < 0.0) factor = 0.0;  // clamp
+                        newPrice = (basePrice * 1.05) * factor;
+                    }
+
+                    // Store the updated price in the city map
+                    adjustedPriceMap.put(itemName, newPrice);
+                    LOGGER.debug("Adjusted price for '{}' in city '{}': supply={}, newPrice={}", itemName, cityName, supplyInStones, newPrice);
+                }
+            }
         }
     }
 }

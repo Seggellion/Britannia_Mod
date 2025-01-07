@@ -4,6 +4,8 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.entity.HorseSellerNPC;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
+import com.seggellion.britannia_mod.entity.RatEntity;
+import com.seggellion.britannia_mod.entity.CustomCatEntity;
 import com.seggellion.britannia_mod.entity.WraithEntity;
 import com.seggellion.britannia_mod.entity.GhoulEntity;
 import com.seggellion.britannia_mod.entity.WispEntity;
@@ -13,6 +15,8 @@ import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
 import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
+import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -39,6 +43,21 @@ public class EntityRegistry {
             .build("britannia_mod:fish_merchant")
 );
 
+    public static final DeferredHolder<EntityType<?>, EntityType<EntityWoodMerchant>> WOOD_MERCHANT_ENTITY = ENTITIES.register(
+    "wood_merchant",
+    () -> EntityType.Builder.of(EntityWoodMerchant::new, MobCategory.MISC)
+            .sized(0.6F, 1.95F)
+            .build("britannia_mod:wood_merchant")
+);
+
+public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> TOWN_PERSON_ENTITY = ENTITIES.register(
+    "town_person",
+    () -> EntityType.Builder.of(TownPersonEntity::new, MobCategory.MISC)
+        .sized(0.6F, 1.95F)
+        .build("britannia_mod:town_person")
+);
+
+
 
     public static final DeferredHolder<EntityType<?>, EntityType<MongbatEntity>> MONGBAT_ENTITY = ENTITIES.register(
             "mongbat",
@@ -60,6 +79,21 @@ public class EntityRegistry {
                     .sized(1F, 2.5F)
                     .build("britannia_mod:lich")
     );
+
+            public static final DeferredHolder<EntityType<?>, EntityType<RatEntity>> RAT_ENTITY = ENTITIES.register(
+            "rat",
+            () -> EntityType.Builder.of(RatEntity::new, MobCategory.MONSTER)
+                    .sized(0.3F, 0.3F)
+                    .build("britannia_mod:rat")
+    );
+
+            public static final DeferredHolder<EntityType<?>, EntityType<CustomCatEntity>> CUSTOM_CAT_ENTITY = ENTITIES.register(
+            "custom_cat",
+            () -> EntityType.Builder.of(CustomCatEntity::new, MobCategory.CREATURE)
+                .sized(0.6F, 0.7F)
+                    .build("britannia_mod:custom_cat")
+    );
+
 
         public static final DeferredHolder<EntityType<?>, EntityType<WraithEntity>> WRAITH_ENTITY = ENTITIES.register(
             "wraith",
@@ -125,11 +159,15 @@ public class EntityRegistry {
         event.put(EARTH_ELEMENTAL_ENTITY.get(), EarthElementalEntity.createAttributes().build());
         event.put(SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalEntity.createAttributes().build());
         event.put(GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalEntity.createAttributes().build());
+        event.put(CUSTOM_CAT_ENTITY.get(), CustomCatEntity.createAttributes().build());
         event.put(DAEMON_ENTITY.get(), DaemonEntity.createAttributes().build());
          event.put(LICH_ENTITY.get(), LichEntity.createAttributes().build());
+        event.put(RAT_ENTITY.get(), RatEntity.createAttributes().build());
         event.put(WISP_ENTITY.get(), WispEntity.createAttributes().build());
         event.put(HORSE_SELLER_NPC.get(), HorseSellerNPC.createAttributes().build());
         event.put(FISH_MERCHANT_ENTITY.get(), EntityFishMerchant.createAttributes().build());
+        event.put(WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchant.createAttributes().build());
+        event.put(TOWN_PERSON_ENTITY.get(), TownPersonEntity.createAttributes().build());
 
     }
 }

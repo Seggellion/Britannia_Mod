@@ -194,6 +194,33 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_death"))
     );
 
+
+  // Adding Rat Sounds
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_AMBIENT = SOUND_EVENTS.register(
+            "rat_ambient",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_ambient"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_ANGRY = SOUND_EVENTS.register(
+            "rat_angry",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_angry"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_ATTACK = SOUND_EVENTS.register(
+            "rat_attack",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_attack"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_HURT = SOUND_EVENTS.register(
+            "rat_hurt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_hurt"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_DEATH = SOUND_EVENTS.register(
+            "rat_death",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_death"))
+    );
+
   // Adding Wisp Sounds
 
     public static final DeferredHolder<SoundEvent, SoundEvent> WISP_AMBIENT = SOUND_EVENTS.register(
@@ -235,6 +262,12 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":catch_fish"))
     );
 
+        // Added tree chop sound
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> CHOP_TREE = SOUND_EVENTS.register(
+            "chop_tree",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chop_tree"))
+    );
 
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {

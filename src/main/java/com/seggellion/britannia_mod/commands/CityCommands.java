@@ -12,6 +12,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.List;
@@ -36,59 +37,74 @@ public class CityCommands {
                 .then(Commands.literal("population")
                     .executes(CityCommands::showCityPopulation)
                     .then(Commands.literal("clear")
-                        .executes(CityCommands::clearCityPopulation)))
+                        .executes(CityCommands::clearCityPopulation))
+                    .then(Commands.literal("list")
+                        .executes(CityCommands::listCityPopulation)))
                 // New: Clear inventory command
                 .then(Commands.literal("clear")
-                    .executes(CityCommands::clearCityInventory))));
+                    .executes(CityCommands::clearCityInventory)))
+            .then(Commands.literal("delete_cities")
+                .executes(CityCommands::deleteAllCities)));
     }
 
     private static int showCityInventory(CommandContext<CommandSourceStack> context) {
-        CommandSourceStack source = context.getSource();
-        String cityNameInput = StringArgumentType.getString(context, "cityName");
-        String cityName = cityNameInput; // No standardization
-        ServerPlayer player = source.getPlayer();
+    CommandSourceStack source = context.getSource();
+    String cityNameInput = StringArgumentType.getString(context, "cityName");
+    String cityName = cityNameInput; // No standardization
+    ServerPlayer player = source.getPlayer();
 
-        LOGGER.warn("Command executed: /cityinventory {} inventory", cityNameInput);
+    LOGGER.warn("Command executed: /cityinventory {} inventory", cityNameInput);
 
-        if (player != null && source.getLevel() instanceof ServerLevel serverLevel) {
-            CityManager cityManager = CityManager.get(serverLevel);
-            City city = cityManager.getCity(cityName);
-            if (city != null) {
-                CityInventory cityInventory = city.getInventory();
-                source.sendSuccess(() -> Component.literal("City Inventory for " + cityName + ":"), false);
+    if (player != null && source.getLevel() instanceof ServerLevel serverLevel) {
+        CityManager cityManager = CityManager.get(serverLevel);
+        City city = cityManager.getCity(cityName);
+        if (city != null) {
+            CityInventory cityInventory = city.getInventory();
+            source.sendSuccess(() -> Component.literal("City Inventory for " + cityName + ":"), false);
 
-                cityInventory.getAllCommodities().forEach((category, subcategories) -> {
-                    subcategories.forEach((subcategory, items) -> {
-                        items.forEach((itemName, quantity) -> {
-                            source.sendSuccess(() -> Component.literal("- " + category + " -> " + subcategory + " -> " + itemName + ": " + quantity), false);
-                        });
+            // Display all commodities
+            cityInventory.getAllCommodities().forEach((category, subcategories) -> {
+                subcategories.forEach((subcategory, items) -> {
+                    items.forEach((itemName, quantity) -> {
+                        source.sendSuccess(() -> Component.literal("- " + category + " -> " + subcategory + " -> " + itemName + ": " + quantity), false);
                     });
                 });
+            });
 
-                // Define the category you want to display weights for
-                String weightCategory = "food"; // Replace with the desired category
-                Map<String, Double> categoryWeights = cityInventory.getAllCategoryWeights(weightCategory);
-
-                if (!categoryWeights.isEmpty()) {
-                    source.sendSuccess(() -> Component.literal("Weight Totals by Subcategory for " + weightCategory + ":"), false);
-                    categoryWeights.forEach((subCategory, totalWeight) -> {
-                        source.sendSuccess(() -> Component.literal("- " + subCategory + ": " + totalWeight + " stones total"), false);
-                    });
-                } else {
-                    source.sendSuccess(() -> Component.literal("(No weighted commodities recorded yet)"), false);
-                }
-
-                return 1;
+            // Display food weight totals
+            String foodCategory = "food";
+            Map<String, Double> foodWeights = cityInventory.getAllCategoryWeights(foodCategory);
+            if (!foodWeights.isEmpty()) {
+                source.sendSuccess(() -> Component.literal("Weight Totals by Subcategory for " + foodCategory + ":"), false);
+                foodWeights.forEach((subCategory, totalWeight) -> {
+                    source.sendSuccess(() -> Component.literal("- " + subCategory + ": " + totalWeight + " stones total"), false);
+                });
             } else {
-                // sendFailure with direct component
-                source.sendFailure(Component.literal("City not found: " + cityName));
-                return 0;
+                source.sendSuccess(() -> Component.literal("(No weighted food commodities recorded yet)"), false);
             }
-        }
 
-        source.sendFailure(Component.literal("Failed to retrieve City Inventory."));
-        return 0;
+            // Display wood weight totals
+            String woodCategory = "wood";
+            Map<String, Double> woodWeights = cityInventory.getAllCategoryWeights(woodCategory);
+            if (!woodWeights.isEmpty()) {
+                source.sendSuccess(() -> Component.literal("Weight Totals by Subcategory for " + woodCategory + ":"), false);
+                woodWeights.forEach((subCategory, totalWeight) -> {
+                    source.sendSuccess(() -> Component.literal("- " + subCategory + ": " + totalWeight + " stones total"), false);
+                });
+            } else {
+                source.sendSuccess(() -> Component.literal("(No weighted wood commodities recorded yet)"), false);
+            }
+
+            return 1;
+        } else {
+            source.sendFailure(Component.literal("City not found: " + cityName));
+            return 0;
+        }
     }
+
+    source.sendFailure(Component.literal("Failed to retrieve City Inventory."));
+    return 0;
+}
 
     private static int showCityInventoryCategoryWeight(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
@@ -236,4 +252,71 @@ private static int clearCityPopulation(CommandContext<CommandSourceStack> contex
         source.sendFailure(Component.literal("Failed to clear City Inventory."));
         return 0;
     }
+
+
+    private static int listCityPopulation(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String cityName = StringArgumentType.getString(context, "cityName");
+        
+        if (!(source.getLevel() instanceof ServerLevel serverLevel)) {
+            source.sendFailure(Component.literal("Command can only be executed in a server world."));
+            return 0;
+        }
+
+        CityManager cityManager = CityManager.get(serverLevel);
+        City city = cityManager.getCity(cityName);
+
+        if (city == null) {
+            source.sendFailure(Component.literal("City not found: " + cityName));
+            return 0;
+        }
+
+        CityInventory inventory = city.getInventory();
+        List<Entity> npcs = inventory.getAssociatedEntities(serverLevel);
+
+        if (npcs.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("No NPCs found for city: " + cityName), false);
+            return 1;
+        }
+
+        source.sendSuccess(() -> Component.literal("NPCs for city: " + cityName), false);
+        for (Entity npc : npcs) {
+            String npcType = npc.getType().toString();
+            source.sendSuccess(() -> Component.literal("- UUID: " + npc.getUUID() + ", Type: " + npcType + ", City: " + cityName), false);
+        }
+
+        return 1;
+    }
+
+    private static int deleteAllCities(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getLevel() instanceof ServerLevel serverLevel)) {
+            source.sendFailure(Component.literal("Command can only be executed in a server world."));
+            return 0;
+        }
+
+        CityManager cityManager = CityManager.get(serverLevel);
+        for (City city : cityManager.getCities().values()) {
+            CityInventory inventory = city.getInventory();
+
+            // Despawn all NPCs
+            List<Entity> npcs = inventory.getAssociatedEntities(serverLevel);
+            for (Entity npc : npcs) {
+                npc.discard();
+            }
+
+            // Clear city inventory
+            inventory.clearPopulation();
+            inventory.clearAllCommodities();
+        }
+
+        // Clear all cities
+        cityManager.getCities().clear();
+        cityManager.setDirty(); // Mark for saving
+
+        source.sendSuccess(() -> Component.literal("All cities and associated NPCs have been deleted."), true);
+        return 1;
+    }
+
 }

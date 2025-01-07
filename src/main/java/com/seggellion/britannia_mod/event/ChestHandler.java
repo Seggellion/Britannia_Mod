@@ -1,0 +1,152 @@
+package com.seggellion.britannia_mod.event;
+
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ChestHandler {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static final Map<BlockPos, ItemStack> CHEST_CONFIGURATIONS = new HashMap<>();
+
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
+        ServerLevel serverLevel = event.getServer().getLevel(ServerLevel.OVERWORLD);
+        if (serverLevel != null) {
+            // Initialize chest configurations here to ensure items are registered
+            CHEST_CONFIGURATIONS.put(new BlockPos(5161, 72, 4317), createFishingRod());
+            CHEST_CONFIGURATIONS.put(new BlockPos(5052, 67, 3912), createSeggellionsAxe());
+
+            CHEST_CONFIGURATIONS.forEach((pos, itemStack) -> setupChest(serverLevel, pos, itemStack));
+        }
+    }
+
+    @SubscribeEvent
+    public void onServerTickPre(ServerTickEvent.Pre event) {
+        ServerLevel serverLevel = event.getServer().getLevel(ServerLevel.OVERWORLD);
+        if (serverLevel != null) {
+            CHEST_CONFIGURATIONS.forEach((pos, itemStack) -> ensureChestContainsItem(serverLevel, pos, itemStack));
+        }
+    }
+
+private static void setupChest(ServerLevel serverLevel, BlockPos chestPos, ItemStack itemStack) {
+    serverLevel.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 3);
+    BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos);
+
+    if (blockEntity instanceof ChestBlockEntity chestEntity) {
+        // Validate the item stack
+        ItemStack validatedItem = validateItemStack(itemStack);
+
+        // Set the item in the chest
+        chestEntity.setItem(0, validatedItem);
+        chestEntity.setChanged();
+        LOGGER.info("Chest at {} initialized with {}", chestPos, validatedItem.getHoverName().getString());
+    } else {
+        LOGGER.warn("Failed to initialize chest at {}: BlockEntity is not a chest", chestPos);
+    }
+}
+
+
+private static void ensureChestContainsItem(ServerLevel serverLevel, BlockPos chestPos, ItemStack itemStack) {
+    BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos);
+
+    if (blockEntity instanceof ChestBlockEntity chestEntity) {
+        ItemStack chestItem = chestEntity.getItem(0);
+        if (chestItem.isEmpty() || !isMatchingItem(chestItem, itemStack)) {
+            // Validate the item stack
+            ItemStack validatedItem = validateItemStack(itemStack);
+
+            // Set the item in the chest
+            chestEntity.setItem(0, validatedItem);
+            chestEntity.setChanged();
+            LOGGER.info("Repopulated chest at {} with {}", chestPos, validatedItem.getHoverName().getString());
+        }
+    } else {
+        LOGGER.warn("Failed to access chest at {}: BlockEntity is not a chest", chestPos);
+    }
+}
+
+private static ItemStack validateItemStack(ItemStack itemStack) {
+    if (itemStack.isEmpty()) {
+        LOGGER.warn("Attempted to use an empty ItemStack");
+        return ItemStack.EMPTY;
+    }
+
+    // Copy the ItemStack to preserve its data
+    ItemStack validatedItem = itemStack.copy();
+
+    // Ensure the components are valid
+    DataComponentMap components = validatedItem.getComponents();
+    if (components == null || components.isEmpty()) {
+        LOGGER.warn("ItemStack {} has no valid components, defaulting to EMPTY", validatedItem.getHoverName().getString());
+        return ItemStack.EMPTY;
+    }
+
+    LOGGER.info("Validated ItemStack with components: {}", components);
+    return validatedItem;
+}
+
+
+    private static boolean isMatchingItem(ItemStack stack, ItemStack referenceStack) {
+        return stack.getItem() == referenceStack.getItem()
+                && stack.getHoverName().getString().equals(referenceStack.getHoverName().getString());
+    }
+
+
+private static ItemStack createFishingRod() {
+    ItemStack fishingRod = new ItemStack(Items.FISHING_ROD);
+
+    // Build and apply data components
+    DataComponentMap.Builder builder = DataComponentMap.builder();
+    builder.set(DataComponents.CUSTOM_NAME, Component.literal("Ordinary Fishing Rod"));
+
+    // Apply components to the ItemStack
+    fishingRod.applyComponents(builder.build());
+
+    // Log for debugging
+    LOGGER.info("Created Fishing Rod with components: {}", fishingRod.getComponents());
+
+    return fishingRod;
+}
+
+private static ItemStack createSeggellionsAxe() {
+    ItemStack axe = new ItemStack(ItemRegistry.TWO_HANDED_AXE.get());
+
+    // Build and apply data components
+    DataComponentMap.Builder builder = DataComponentMap.builder();
+    builder.set(DataComponents.CUSTOM_NAME, Component.literal("Seggellion's Axe"));
+
+    // Apply components to the ItemStack
+    axe.applyComponents(builder.build());
+
+    // Set durability
+    int maxDurability = axe.getMaxDamage();
+    int halfDamage = maxDurability / 2;
+    axe.setDamageValue(halfDamage);
+
+    // Log for debugging
+    LOGGER.info("Created Seggellion's Axe with components: {}", axe.getComponents());
+
+    return axe;
+}
+
+
+
+}

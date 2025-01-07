@@ -12,10 +12,20 @@ import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.spawner.DaemonSpawner;
 import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
 import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
+import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
 import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
+import com.seggellion.britannia_mod.client.BritainMusicHandler;
 import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
+import com.seggellion.britannia_mod.event.BreakSpeedHandler;
+import com.seggellion.britannia_mod.event.PopulationEventHandler;
+import com.seggellion.britannia_mod.event.InventoryHandler;
+import com.seggellion.britannia_mod.event.ChestHandler;
+import com.seggellion.britannia_mod.event.GlobalEventHandler;
+import com.seggellion.britannia_mod.event.WoodChopEventHandler;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
+import com.seggellion.britannia_mod.event.TreeKarmaHandler;
+import com.seggellion.britannia_mod.event.KarmaReductionHandler;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.features.MobSpawnControl;
 import com.seggellion.britannia_mod.features.DiamondToolControl;
@@ -24,15 +34,14 @@ import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.City;
-
-
+import com.seggellion.britannia_mod.network.CityDataSync;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
-
+import net.minecraft.world.entity.Entity;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -54,6 +63,7 @@ import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -63,6 +73,7 @@ public class BritanniaMod {
     private static final Logger LOGGER = LogUtils.getLogger();
     private int foodConsumptionTickCounter = 0; // Tick counter for food consumption
     private int starvationNotificationTickCounter = 0; // Tick counter for starvation notifications
+    private int citySyncTickCounter = 0; // Tick counter for food consumption
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
@@ -102,7 +113,18 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(DaemonSpawner.class);
         NeoForge.EVENT_BUS.register(BritainCemetarySpawner.class);
         NeoForge.EVENT_BUS.register(ShameDungeonSpawner.class);
+        NeoForge.EVENT_BUS.register(BritainCitySpawner.class);
         NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
+        NeoForge.EVENT_BUS.register(GlobalEventHandler.class);
+        NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
+       // NeoForge.EVENT_BUS.register(BreakSpeedHandler.class);
+       NeoForge.EVENT_BUS.register(new BreakSpeedHandler());
+        NeoForge.EVENT_BUS.register(new ChestHandler());
+        NeoForge.EVENT_BUS.register(new PopulationEventHandler());
+       NeoForge.EVENT_BUS.register(new InventoryHandler());
+        NeoForge.EVENT_BUS.register(new TreeKarmaHandler());
+        NeoForge.EVENT_BUS.register(new KarmaReductionHandler());
+
         NeoForge.EVENT_BUS.addListener(this::onServerTickPre);
 
         ManaHandler.register();
@@ -113,11 +135,12 @@ public class BritanniaMod {
 
             NeoForge.EVENT_BUS.register(new ClientEventHandler());
             modEventBus.register(new ClientOnlyItemRegistry());
-            LOGGER.info("Registering ShameDungeonMusicHandler for client-side events.");
+
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
+            NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
         }
 
-        NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+       
     }
 
     private void registerEntityAttributes(EntityAttributeCreationEvent event) {
@@ -125,28 +148,6 @@ public class BritanniaMod {
     }
 
 
-    public void onServerStarting(ServerStartingEvent event) {
-        MinecraftServer server = event.getServer();
-        ServerLevel serverLevel = server.getLevel(Level.OVERWORLD); // We defined this as serverLevel
-
-
-        if (serverLevel != null) {
-            // Coordinates where you want the chest to appear
-            BlockPos chestPos = new BlockPos(98, -60, 9979);
-            
-            // Set the block at these coordinates to a chest
-            serverLevel.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 3);
-            
-            // Retrieve the BlockEntity of the chest
-            BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos); // Use serverLevel, not overworld
-
-            if (blockEntity instanceof ChestBlockEntity chestEntity) {
-                // Clear the chest (optional) and set the first slot to a fishing rod
-                chestEntity.setItem(0, new ItemStack(Items.FISHING_ROD));
-                chestEntity.setChanged();
-            }
-        }
-    }
 
  public void onServerTickPre(ServerTickEvent.Pre event) {
         MinecraftServer server = event.getServer(); // Correct method to retrieve server
@@ -156,17 +157,13 @@ public class BritanniaMod {
             LOGGER.warn("ServerLevel is null. Skipping tick.");
             return;
         }
-        //populate chest
-         if (serverLevel != null) {
-        BlockPos chestPos = new BlockPos(98, -60, 9979);
-        BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos);
-            if (blockEntity instanceof ChestBlockEntity chestEntity) {
-                if (chestEntity.getItem(0).isEmpty()) {
-                    chestEntity.setItem(0, new ItemStack(Items.FISHING_ROD));
-                    chestEntity.setChanged();
-                }
-            }
-        }
+
+
+    citySyncTickCounter++;
+    if (citySyncTickCounter >= 1200) {
+        citySyncTickCounter = 0;
+        CityDataSync.postCityDataToRails(serverLevel, "Britain");
+    }
 
         // Handle Food Consumption
         foodConsumptionTickCounter++;
@@ -197,8 +194,13 @@ public class BritanniaMod {
                 CityInventory cityInventory = city.getInventory();
                 if (cityInventory.isStarving()) {
                     // Iterate through associated merchants
-                    List<EntityFishMerchant> merchants = cityInventory.getAssociatedMerchants();
-                    for (EntityFishMerchant merchant : merchants) {
+                    List<UUID> merchants = cityInventory.getAssociatedNpcs();
+                    for (UUID merchantUuid : merchants) {
+                        Entity merchant = serverLevel.getEntity(merchantUuid); // Resolve UUID to Entity
+                        if (merchant == null) {
+                            LOGGER.warn("Merchant with UUID {} could not be found.", merchantUuid);
+                            continue;
+                        }
                         Level merchantLevel = merchant.level();
                         if (merchantLevel instanceof ServerLevel sLevel) {
                             double radius = 20.0;
@@ -233,18 +235,19 @@ public class BritanniaMod {
         return city.getInventory();
     }
 
-    public static void associateNpcToCity(ServerLevel serverLevel, String cityName, EntityFishMerchant merchant) {
+    public static void associateNpcToCity(ServerLevel serverLevel, String cityName, Entity merchant) {
         LOGGER.warn("Associating NPC {} to city {}", merchant.getUUID(), cityName);
         CityInventory cityInventory = getCityInventory(serverLevel, cityName);
-        cityInventory.associateMerchant(merchant);
+        cityInventory.associateNpc(merchant);
         LOGGER.warn("City inventory after association: {}", cityInventory);
     }
 
-    public static List<EntityFishMerchant> getCityMerchants(ServerLevel serverLevel, String cityName) {
+    public static List<UUID> getCityMerchants(ServerLevel serverLevel, String cityName) {
         CityManager cityManager = CityManager.get(serverLevel);
         City city = cityManager.getCity(cityName);
+         LOGGER.warn("GetCitymerchants citname: {}", city);
         if (city != null) {
-            return city.getInventory().getAssociatedMerchants();
+            return city.getInventory().getAssociatedNpcs();
         }
         return Collections.emptyList();
     }

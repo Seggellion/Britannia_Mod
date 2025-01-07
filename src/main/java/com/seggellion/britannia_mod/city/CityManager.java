@@ -10,13 +10,17 @@ import net.minecraft.world.level.saveddata.SavedData;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class CityManager extends SavedData {
     private static final String DATA_NAME = "britannia_city_manager";
     private final Map<String, City> cities = new HashMap<>();
 
+    private static final Logger LOGGER = LogManager.getLogger();
+
     public CityManager() {
     }
-
 
     // Corrected load method signature
     public static CityManager load(CompoundTag tag, HolderLookup.Provider provider) {
@@ -54,6 +58,10 @@ public class CityManager extends SavedData {
     }
 
     public void addCity(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            LOGGER.warn("Attempted to add a city with an invalid name.");
+            return;
+        }
         if (!cities.containsKey(name)) {
             cities.put(name, new City(name));
             this.setDirty();

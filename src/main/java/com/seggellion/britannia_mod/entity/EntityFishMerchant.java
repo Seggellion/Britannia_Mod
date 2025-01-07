@@ -40,7 +40,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class EntityFishMerchant extends AbstractVillager implements IEntityExtension {
+public class EntityFishMerchant extends AbstractVillager implements IEntityExtension, ICityEntity  {
     private String cityName;
     private BlockPos spawnPosition;
     private int maxHomeDistance = 5; // Set to match the spawner's radius
@@ -49,7 +49,7 @@ public class EntityFishMerchant extends AbstractVillager implements IEntityExten
     public EntityFishMerchant(EntityType<? extends AbstractVillager> entityType, Level level) {
         super(entityType, level);
         this.setPersistenceRequired();
-        this.cityName = ""; // Default to empty string
+        this.cityName = ""; 
         this.spawnPosition = this.blockPosition();
     }
 
@@ -83,13 +83,13 @@ public void readAdditionalSaveData(CompoundTag tag) {
 public void onAddedToLevel() { 
     LOGGER.warn("EntityFishMerchant {} is being added to the level.", this.getUUID());
     if (!this.cityName.isEmpty()) {
-        setCityName(this.cityName);
+        LOGGER.info("City name already set to {}, skipping re-association.", this.cityName);
     }
 }
 
     // Getter and Setter for cityName
     public String getCityName() {
-        return cityName;
+        return this.cityName;
     }
 
 
@@ -278,16 +278,20 @@ LOGGER.info("Market prices for city {} initialized: {}", cityName, MarketManager
 }
 
 public void setCityName(String cityName) {
+    if (this.cityName != null && this.cityName.equals(cityName)) {
+        LOGGER.warn("CityName already set to {}, skipping association.", cityName);
+        return;
+    }
     this.cityName = cityName;
     if (this.level() instanceof ServerLevel sLevel) {
-        CityInventory cityInventory = BritanniaMod.getCityInventory(sLevel, cityName);
-        cityInventory.associateMerchant(this);
         BritanniaMod.associateNpcToCity(sLevel, cityName, this);
     } else {
         LOGGER.warn("Level is not an instance of ServerLevel.");
     }
 }
 
+
+/*
 public void associateWithCity(String cityName) {
     this.cityName = cityName;
     if (this.level() instanceof ServerLevel sLevel) {
@@ -298,6 +302,7 @@ public void associateWithCity(String cityName) {
         LOGGER.warn("Level is not an instance of ServerLevel.");
     }
 }
+*/
 
     @Override
     public boolean equals(Object obj) {
