@@ -15,4 +15,13 @@ public class ModToolTiers {
         15, // Enchantment value
         () -> Ingredient.of(ItemRegistry.GOLD_COIN.get()) // Repair material
     );
+
+    public static final Tier PICKAXE_TIER = new SimpleTier(
+        ModTags.Blocks.LOGS, // Custom logs tag
+        500, // Durability
+        2.0F, // Mining speed multiplier
+        7.0F, // Attack damage bonus
+        15, // Enchantment value
+        () -> Ingredient.of(ItemRegistry.GOLD_COIN.get()) // Repair material
+    );
 }

@@ -24,11 +24,12 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.SULPHUROUS_ASH.get());
                         output.accept(ItemRegistry.MANDRAKE_ROOT.get());
                         output.accept(ItemRegistry.MOONGATE_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.SMALL_FORGE_BLOCK_ENTITY.get());
+                        output.accept(ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                         output.accept(ItemRegistry.MOONGATE_TOP_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_LINKING_WAND.get());
                         output.accept(ItemRegistry.DUNGEON_MOONGATE_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.DUNGEON_MOONGATE_TOP_ITEM.get());
-                        output.accept(ItemRegistry.HORSE_SELLER_SPAWN_EGG.get());
                         output.accept(ItemRegistry.MONGBAT_SPAWN_EGG.get());
                         output.accept(ItemRegistry.DAEMON_SPAWN_EGG.get());
                         output.accept(ItemRegistry.LICH_SPAWN_EGG.get());
@@ -41,7 +42,13 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.SHADE_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.LICH_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.STONE_SPAWN_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.METAL_SPAWN_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.FISH_SPAWN_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.HORSE_SPAWN_BLOCK_ITEM.get());
+                         output.accept(ItemRegistry.BLACKSMITH_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.TWO_HANDED_AXE.get());
+                        output.accept(ItemRegistry.PICKAXE.get());
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());
                     }).build());

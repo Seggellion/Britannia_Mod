@@ -62,6 +62,11 @@ public class WoodChopEventHandler {
 
         BlockState state = event.getState();
         BlockPos pos = event.getPos();
+             LOGGER.info("Wood block is about to break");
+ if (player.isCreative() || player.hasPermissions(2)) {
+        LOGGER.info("Skipping TreeKarmaHandler: Player {} is in Creative or an OP.", player.getName().getString());
+     // pineapple   return; 
+    }
 
         // Only proceed if it's a log block, and the player is using your custom axe
         if (usingTwoHandedAxe && state.is(BlockTags.LOGS)) {

@@ -32,7 +32,12 @@ public class KarmaReductionHandler {
                 if (currentTime - timeCut > TreeKarmaHandler.REPLANT_TIMEOUT_MS) {
                     ServerPlayer player = server.getPlayerList().getPlayer(playerId);
                     if (player != null) {
-                        KarmaManager.changeKarma(player, -5); // Deduct 5 karma
+                            UUID userId = player.getUUID();
+                              double x = player.getX();
+                                double y = player.getY();
+                                double z = player.getZ();
+                            KarmaManager.adjustUserStats(server, userId, -5, 0, x,y,z); 
+
                         player.sendSystemMessage(Component.literal("You failed to replant a tree. Karma reduced!"));
                     }
                     iterator.remove(); // Remove the entry after processing

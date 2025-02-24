@@ -18,6 +18,15 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerChangeGameTypeEvent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.Level;
+import com.seggellion.britannia_mod.block.FishSpawnBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import com.seggellion.britannia_mod.InvisibleInAdventureMode;
+
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -88,4 +97,38 @@ public class ClientEventHandler {
             LOGGER.info("Client: No spell detected on item.");
         }
     }
+
+
+
+
+  @SubscribeEvent
+     public void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
+        LOGGER.info("Game mode change detected!");
+
+        Player player = Minecraft.getInstance().player;
+        Level level = Minecraft.getInstance().level;
+
+        if (player != null && level != null) {
+            BlockPos pos = player.blockPosition();
+
+            // Iterate over a small area around the player to ensure nearby blocks are updated
+            int range = 5; // Update blocks within 5 blocks of the player
+            for (int x = -range; x <= range; x++) {
+                for (int y = -range; y <= range; y++) {
+                    for (int z = -range; z <= range; z++) {
+                        BlockPos checkPos = pos.offset(x, y, z);
+                        BlockState blockState = level.getBlockState(checkPos);
+                        Block block = blockState.getBlock();
+
+                        if (block instanceof InvisibleInAdventureMode) {
+                            LOGGER.info("Forcing block update at {}", checkPos);
+                            level.sendBlockUpdated(checkPos, blockState, blockState, 3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 }

@@ -33,7 +33,6 @@ public class ManaOverlayScreen {
 
     public void updateMana(int mana) {
         this.clientMana = mana;
-        LOGGER.info("clientMana updated to {}", clientMana);
     }
 
     @SubscribeEvent

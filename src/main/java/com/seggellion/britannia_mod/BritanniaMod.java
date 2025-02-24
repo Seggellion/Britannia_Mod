@@ -26,6 +26,15 @@ import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
+import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
+import com.seggellion.britannia_mod.client.ModModelLayers;
+import com.seggellion.britannia_mod.event.BlockRestoreHandler;
+import com.seggellion.britannia_mod.event.CustomBlockBreakHandler;
+import com.seggellion.britannia_mod.event.ToolInteractionHandler;
+import com.seggellion.britannia_mod.event.CityGameModeHandler;
+//import com.seggellion.britannia_mod.villager.CustomVillagerProfessions;
+import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
+import com.seggellion.britannia_mod.villager.VillagerTradeUpdater;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.features.MobSpawnControl;
 import com.seggellion.britannia_mod.features.DiamondToolControl;
@@ -33,7 +42,9 @@ import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.city.CommodityConsumer;
 import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -42,6 +53,7 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.core.registries.Registries;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -73,7 +85,6 @@ public class BritanniaMod {
     private static final Logger LOGGER = LogUtils.getLogger();
     private int foodConsumptionTickCounter = 0; // Tick counter for food consumption
     private int starvationNotificationTickCounter = 0; // Tick counter for starvation notifications
-    private int citySyncTickCounter = 0; // Tick counter for food consumption
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
@@ -81,14 +92,17 @@ public class BritanniaMod {
         // Register mod components
         BlockRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
+        SwordRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
+        BlacksmithProfessions.registerAll(modEventBus);
+    
         // CommandRegistry.register(modEventBus);
         CreativeTabRegistry.register(modEventBus);
 
         SoundRegistry.register(modEventBus);
         ConfigRegistry.register();  // No longer passes modContainer
         ModAttributes.register(modEventBus); 
-
+      //  modEventBus.addListener(BlacksmithProfessions::onVillagerTrades);
         modEventBus.addListener(this::registerEntityAttributes); 
         modEventBus.register(NetworkHandler.class);
         modEventBus.register(ModSpawnPlacementRegistry.class);
@@ -102,7 +116,14 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
         NeoForge.EVENT_BUS.register(new DiamondToolControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
+        NeoForge.EVENT_BUS.register(new BlockRestoreHandler());
+
+       
+        //NeoForge.EVENT_BUS.register(new BlacksmithTradeEventHandler());
+        
         // NeoForge.EVENT_BUS.register(new FishingEventHandler());
+        //NeoForge.EVENT_BUS.register(new StoneOreBreakEventHandler());
+
 
         // Create an instance of your event handler
         FishingEventHandler fishingEventHandler = new FishingEventHandler();
@@ -111,31 +132,44 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.addListener(fishingEventHandler::onItemFished);
 
         NeoForge.EVENT_BUS.register(DaemonSpawner.class);
+        NeoForge.EVENT_BUS.register(VillagerTradeUpdater.class);
         NeoForge.EVENT_BUS.register(BritainCemetarySpawner.class);
         NeoForge.EVENT_BUS.register(ShameDungeonSpawner.class);
         NeoForge.EVENT_BUS.register(BritainCitySpawner.class);
         NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
         NeoForge.EVENT_BUS.register(GlobalEventHandler.class);
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
+        NeoForge.EVENT_BUS.register(CommodityConsumer.class);
+//        NeoForge.EVENT_BUS.register(BlacksmithProfessions.class);
+
+
        // NeoForge.EVENT_BUS.register(BreakSpeedHandler.class);
-       NeoForge.EVENT_BUS.register(new BreakSpeedHandler());
+       //NeoForge.EVENT_BUS.register(new BreakSpeedHandler());
+        NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
+        NeoForge.EVENT_BUS.register(new CityGameModeHandler());
+       NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
         NeoForge.EVENT_BUS.register(new ChestHandler());
         NeoForge.EVENT_BUS.register(new PopulationEventHandler());
        NeoForge.EVENT_BUS.register(new InventoryHandler());
         NeoForge.EVENT_BUS.register(new TreeKarmaHandler());
         NeoForge.EVENT_BUS.register(new KarmaReductionHandler());
+        NeoForge.EVENT_BUS.register(new BlacksmithPOIHandler());
 
-        NeoForge.EVENT_BUS.addListener(this::onServerTickPre);
+
+        NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+
 
         ManaHandler.register();
 
         if (FMLLoader.getDist().isClient()) {
             modEventBus.addListener(ClientEventHandler::onClientSetup);
             modEventBus.addListener(ClientModSetup::onClientSetup);
+            modEventBus.addListener(ClientModSetup::onRegisterItemColors);
+            modEventBus.addListener(ClientModSetup::registerRenderers);
 
             NeoForge.EVENT_BUS.register(new ClientEventHandler());
             modEventBus.register(new ClientOnlyItemRegistry());
-
+            modEventBus.register(ModModelLayers.class);
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
         }
@@ -147,85 +181,7 @@ public class BritanniaMod {
         EntityRegistry.registerAttributes(event);
     }
 
-
-
- public void onServerTickPre(ServerTickEvent.Pre event) {
-        MinecraftServer server = event.getServer(); // Correct method to retrieve server
-        ServerLevel serverLevel = server.getLevel(Level.OVERWORLD); // Replace with appropriate dimension if needed
-
-        if (serverLevel == null) {
-            LOGGER.warn("ServerLevel is null. Skipping tick.");
-            return;
-        }
-
-
-    citySyncTickCounter++;
-    if (citySyncTickCounter >= 1200) {
-        citySyncTickCounter = 0;
-        CityDataSync.postCityDataToRails(serverLevel, "Britain");
-    }
-
-        // Handle Food Consumption
-        foodConsumptionTickCounter++;
-        if (foodConsumptionTickCounter >= 1200) { // 1200 ticks = 60 seconds
-            LOGGER.warn("60 seconds elapsed. Initiating food consumption for all cities.");
-
-            CityManager cityManager = CityManager.get(serverLevel);
-            LOGGER.warn("Number of cities managed by CityManager: {}", cityManager.getCities().size());
-
-            cityManager.getCities().forEach((cityName, city) -> {
-                // Consume food resources
-                CityInventory cityInventory = city.getInventory();
-                cityInventory.consumeFood(); // No argument
-            });
-
-            // Reset the food consumption tick counter after consumption
-            foodConsumptionTickCounter = 0;
-            LOGGER.warn("Food consumption cycle completed and tick counter reset.");
-        }
-
-        // Handle Starvation Notifications
-        starvationNotificationTickCounter++;
-        if (starvationNotificationTickCounter >= 20) { // 20 ticks = 1 second
-            LOGGER.debug("Starvation notification check cycle.");
-
-            CityManager cityManager = CityManager.get(serverLevel);
-            cityManager.getCities().forEach((cityName, city) -> {
-                CityInventory cityInventory = city.getInventory();
-                if (cityInventory.isStarving()) {
-                    // Iterate through associated merchants
-                    List<UUID> merchants = cityInventory.getAssociatedNpcs();
-                    for (UUID merchantUuid : merchants) {
-                        Entity merchant = serverLevel.getEntity(merchantUuid); // Resolve UUID to Entity
-                        if (merchant == null) {
-                            LOGGER.warn("Merchant with UUID {} could not be found.", merchantUuid);
-                            continue;
-                        }
-                        Level merchantLevel = merchant.level();
-                        if (merchantLevel instanceof ServerLevel sLevel) {
-                            double radius = 20.0;
-                            List<Player> nearbyPlayers = sLevel.getEntitiesOfClass(Player.class,
-                                    merchant.getBoundingBox().inflate(radius));
-
-                            for (Player player : nearbyPlayers) {
-                                player.displayClientMessage(
-                                        Component.literal(cityName + " is starving! Please sell them some food."),
-                                        true // Action bar display
-                                );
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Reset the starvation notification tick counter after notifications
-            starvationNotificationTickCounter = 0;
-            LOGGER.debug("Starvation notification check cycle completed.");
-        }
-    }
-
     public static CityInventory getCityInventory(ServerLevel serverLevel, String cityName) {
-        LOGGER.warn("Retrieving CityInventory for city: {}", cityName);
         CityManager cityManager = CityManager.get(serverLevel);
         City city = cityManager.getCity(cityName);
         if (city == null) {
@@ -236,16 +192,13 @@ public class BritanniaMod {
     }
 
     public static void associateNpcToCity(ServerLevel serverLevel, String cityName, Entity merchant) {
-        LOGGER.warn("Associating NPC {} to city {}", merchant.getUUID(), cityName);
         CityInventory cityInventory = getCityInventory(serverLevel, cityName);
         cityInventory.associateNpc(merchant);
-        LOGGER.warn("City inventory after association: {}", cityInventory);
     }
 
     public static List<UUID> getCityMerchants(ServerLevel serverLevel, String cityName) {
         CityManager cityManager = CityManager.get(serverLevel);
         City city = cityManager.getCity(cityName);
-         LOGGER.warn("GetCitymerchants citname: {}", city);
         if (city != null) {
             return city.getInventory().getAssociatedNpcs();
         }
@@ -255,4 +208,10 @@ public class BritanniaMod {
     private void notifyNearbyPlayers(ServerLevel serverLevel, String cityName) {
         // This method can be removed or repurposed since notifications are handled in the tick handler
     }
+
+    public void onServerStarting(ServerStartingEvent event) {
+        NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
+    }
+
+
 }

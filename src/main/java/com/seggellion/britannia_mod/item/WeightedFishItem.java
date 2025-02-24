@@ -28,9 +28,7 @@ public class WeightedFishItem extends Item {
         CompoundTag tag = customData.copyTag();
         tag.putDouble("FishWeight", weight);
         CustomData updated = CustomData.of(tag);
-        LOGGER.info("Data updated");
         stack.set(CUSTOM_DATA, updated);
-        LOGGER.info("Stack set for stack {}", stack);
     }
 
     public double getWeight(ItemStack stack) {

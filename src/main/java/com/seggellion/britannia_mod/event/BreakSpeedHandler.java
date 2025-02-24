@@ -15,6 +15,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
 import com.seggellion.britannia_mod.registry.CityRegistry;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class BreakSpeedHandler {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
-
+  LOGGER.info("BreakSpeedHandler Tick");
         GameType currentMode = player.gameMode.getGameModeForPlayer();
         // Do nothing if player is in Creative
         if (currentMode == GameType.CREATIVE) {
@@ -118,6 +119,18 @@ public class BreakSpeedHandler {
                     LOGGER.info("Player breaking valid log block: {}", state.getBlock());
                 }
             }
+        
+// Handle BritanniaPickaxeItem
+            if (item instanceof BritanniaPickaxeItem) {
+                if (!state.is(BlockTags.BASE_STONE_OVERWORLD) && !state.is(BlockTags.STONE_ORE_REPLACEABLES)) {
+                    LOGGER.info("Preventing block breaking for non-stone blocks with IronPickaxe.");
+                    event.setCanceled(true);
+                } else {
+                    LOGGER.info("Breaking stone or ore block with IronPickaxe.");
+                    event.setNewSpeed(2.0F); // Custom block-breaking speed for stone/ores
+                }
+            }
+
         }
     }
 }

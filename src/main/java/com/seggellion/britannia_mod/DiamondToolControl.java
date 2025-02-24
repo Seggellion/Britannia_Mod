@@ -30,7 +30,6 @@ public class DiamondToolControl {
             ItemStack itemStack = player.getInventory().getItem(i);
             if (isDiamondTool(itemStack)) {
                 player.getInventory().removeItem(i, itemStack.getCount());  // Remove all diamond tools
-                LOGGER.info("Removed {} from player {}", itemStack.getItem().getDescription().getString(), player.getName().getString());
             }
         }
     }

@@ -282,6 +282,21 @@
   "sounds": [
       "britannia_mod:chop_tree"
   ]
+},
+"transaction": {
+  "sounds": [
+      "britannia_mod:transaction"
+  ]
+},
+"mining1": {
+  "sounds": [
+      "britannia_mod:mining1"
+  ]
+},
+"mining2": {
+  "sounds": [
+      "britannia_mod:mining2"
+  ]
 }
 
 }

@@ -19,6 +19,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import com.seggellion.britannia_mod.InvisibleInAdventureMode;
+
+
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,36 +34,35 @@ import org.apache.logging.log4j.Logger;
  * A block that can spawn a WoodMerchant when city food supply >= 200 stones.
  * Right-click with a custom-named Name Tag to set the city name.
  */
-public class WoodSpawnBlock extends Block implements EntityBlock {
+public class WoodSpawnBlock extends Block implements EntityBlock, InvisibleInAdventureMode  {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public WoodSpawnBlock() {
         // Provide some default properties (e.g., let's use a generic "strength(1.5F)" and "noOcclusion()").
         super(BlockBehaviour.Properties.of()
               .strength(1.5F));
-
-        LOGGER.info("WoodSpawnBlock");
-
     }
 
-/*
-@Override
-public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-    // A full 1x1x1 cube shape ensures the game recognizes there's a block to click.
-    return box(0, 0, 0, 16, 16, 16);
-}
-*/
-    /**
-     * If your version’s Block class does not have a matching getRenderShape signature, 
-     * remove this method or rename it to your version’s method signature.
-     */
-    /*
+
+    @Override
     public RenderShape getRenderShape(BlockState state) {
-        // If you want the block invisible.
-        return RenderShape.INVISIBLE;
-    }
-*/
+        Player player = net.minecraft.client.Minecraft.getInstance().player;
 
+        if (player != null && player.isCreative()) {
+            return RenderShape.MODEL; // Visible in creative mode
+        }
+        return RenderShape.INVISIBLE; // Hidden for all other players
+    }
+
+        @Override
+    public VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return Shapes.block(); // Critical for preventing "see through world"
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return Shapes.empty(); // No collision shape, so players can walk through it
+    }
 
 
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {

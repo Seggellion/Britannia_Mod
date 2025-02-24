@@ -1,0 +1,300 @@
+package com.seggellion.britannia_mod.entity;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.network.CityDataSync;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.util.BlacksmithTradeHelper;
+import com.seggellion.britannia_mod.util.LocalRecipes;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.core.Holder;
+import com.seggellion.britannia_mod.ModAttributes;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.level.Level;
+import java.util.Map;
+import org.slf4j.Logger;
+import java.util.Optional;
+import java.util.List;
+
+public class EntityJourneymanBlacksmith extends AbstractVillager {
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private String cityName = "";
+
+    private MerchantOffers offers = new MerchantOffers();
+
+
+    public EntityJourneymanBlacksmith(EntityType<? extends AbstractVillager> entityType, Level level) {
+        super(entityType, level);
+        this.setPersistenceRequired();
+    }
+
+    @Override
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new WaterAvoidingRandomStrollGoal(this, 0.5D));
+        this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(2, new RandomLookAroundGoal(this));
+    }
+
+       @Override
+    protected void rewardTradeXp(MerchantOffer offer) {
+        // No XP is rewarded for trades.
+    }
+
+    // ------------------------------------------------------------------
+    // CRITICAL OVERRIDES FOR A CUSTOM MERCHANT
+    // ------------------------------------------------------------------
+    @Override
+    public MerchantOffers getOffers() {
+        return this.offers;
+    }
+
+    @Override
+public void overrideOffers(@Nullable MerchantOffers offers) {
+    if (offers != null) {
+        this.offers = offers;
+    }
+}
+
+    public void setOffers(MerchantOffers offers) {
+        this.offers = offers;
+    }
+
+    // If the code calls getVillagerXp() or setVillagerXp(int):
+    @Override
+    public int getVillagerXp() {
+        return 0; // or store a field if you want XP
+    }
+    // If needed:
+    // public void setVillagerXp(int xp) { /* store xp in a field */ }
+
+    // -------------------------------------------------------------
+    // TRADING PLAYER FIELDS & LOGIC
+    // -------------------------------------------------------------
+    private Player tradingPlayer;
+
+    @Override
+    public void setTradingPlayer(@Nullable Player player) {
+        this.tradingPlayer = player;
+    }
+
+    @Nullable
+    @Override
+    public Player getTradingPlayer() {
+        return this.tradingPlayer;
+    }
+
+    @Override
+    public boolean isTrading() {
+        return this.tradingPlayer != null;
+    }
+
+    // -------------------------------------------------------------
+    // RIGHT-CLICK -> OPEN MERCHANT WINDOW
+    // -------------------------------------------------------------
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+            LOGGER.info("mobInteract cityName={}", this.cityName);
+            this.updateTrades(); // Fill 'this.offers'
+
+            // Mark that we're now trading with this player
+            LOGGER.info("Trade offers before UI: {}", this.getOffers().toString());
+
+            // Provide a menu that uses your 'offers' field
+            SimpleMenuProvider menuProvider = new SimpleMenuProvider(
+                (containerId, playerInv, p) -> {
+                    MerchantMenu menu = new MerchantMenu(containerId, playerInv, this);
+                    // Optionally call menu.setOffers(this.offers); but since getOffers() is overridden,
+                    // the container will see them anyway.
+                    return menu;
+                },
+                this.getDisplayName()
+            );
+            serverPlayer.openMenu(menuProvider);
+
+            this.setTradingPlayer(player);
+            this.getOffers(); // Ensures offers are set before UI update
+           // this.stopTrading(); // Resets any previous interactions
+
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.sidedSuccess(this.level().isClientSide);
+    }
+
+
+
+    // ----------------------------------------------------------------
+    // The method that populates 'this.offers' with MerchantOffer entries
+    // ----------------------------------------------------------------
+@Override
+protected void updateTrades() {
+    MerchantOffers newOffers = new MerchantOffers();
+
+    if (!(this.level() instanceof ServerLevel serverLevel)) return;
+
+    LOGGER.info("updateTrades() called for JourneymanBlacksmith: cityName={}", this.cityName);
+
+    JsonObject tradeData = CityDataSync.fetchCityDataWithMarketPrices(serverLevel, this.cityName);
+    if (tradeData == null || tradeData.isEmpty()) {
+        LOGGER.warn("No tradeData found for city: {}", this.cityName);
+        return;
+    }
+
+    int techSupply = tradeData.get("tech_supply").getAsInt();
+    JsonArray metalSupply = tradeData.getAsJsonArray("metal_commodities");
+    JsonObject marketPrices = tradeData.getAsJsonObject("market_prices");
+
+    List<ItemStack> swordStacks = BlacksmithTradeHelper.getTradesForTechLevel(techSupply, metalSupply);
+    LOGGER.info("swordStacks from BlacksmithTradeHelper: {}", swordStacks);
+
+    for (ItemStack sword : swordStacks) {
+        if (sword.isEmpty()) {
+            LOGGER.warn("Skipping empty sword stack!");
+            continue;
+        }
+
+        String fullKey = sword.getItem().toString();
+        String shortKey = extractShortKey(fullKey);
+
+        double basePrice = computePriceFromRecipes(shortKey, marketPrices);
+        int finalPrice = (int) Math.ceil(basePrice * 1.4);
+
+        MerchantOffer offer = new MerchantOffer(
+            new ItemCost(
+                ItemRegistry.GOLD_COIN.get().builtInRegistryHolder(),
+                finalPrice,
+                DataComponentPredicate.EMPTY,
+                ItemStack.EMPTY
+            ),
+            sword,
+            10,   // Max uses
+            0,    // No XP
+            0.05F // Price multiplier
+        );
+
+        newOffers.add(offer);
+        LOGGER.info("Created MerchantOffer: itemKey={}, finalPrice={}, sword={}", shortKey, finalPrice, sword);
+    }
+
+    LOGGER.info("Finished updateTrades(). # of offers={}", newOffers.size());
+
+    // Use overrideOffers() instead of directly modifying this.offers
+    this.overrideOffers(newOffers);
+}
+
+    private static String extractShortKey(String fullKey) {
+        int colonIndex = fullKey.indexOf(':');
+        return (colonIndex < 0) ? fullKey : fullKey.substring(colonIndex + 1);
+    }
+
+    private double computePriceFromRecipes(String shortKey, JsonObject marketPrices) {
+        Map<String, Double> recipe = LocalRecipes.getRecipe(shortKey);
+        if (recipe.isEmpty()) {
+            return marketPrices.has(shortKey) ? marketPrices.get(shortKey).getAsDouble() : 10.0;
+        }
+
+        double total = 0.0;
+        for (Map.Entry<String, Double> part : recipe.entrySet()) {
+            String matName = part.getKey();
+            double qty = part.getValue();
+            if (marketPrices.has(matName)) {
+                double matPrice = marketPrices.get(matName).getAsDouble();
+                total += matPrice * qty;
+            } else {
+                LOGGER.warn("No market price for material={} in recipe for item={}", matName, shortKey);
+            }
+        }
+        return total;
+    }
+
+    /**
+     * Defines the attributes for the Journeyman Blacksmith.
+     */
+    public static AttributeSupplier.Builder createAttributes() {
+        return AttributeSupplier.builder()
+        .add(Attributes.MAX_HEALTH, 2000.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.FOLLOW_RANGE, 35.0D)
+                .add(Attributes.ATTACK_DAMAGE, 2.0D)
+                .add(Attributes.ARMOR, 50.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 0.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
+                .add(Attributes.MAX_ABSORPTION, 0.0D)
+                .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
+                .add(Attributes.BURNING_TIME, 5.0D)
+                .add(Attributes.JUMP_STRENGTH, 0.1D)
+                .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
+                .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)
+                .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
+                .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
+                .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D)
+                 .add(getAttributeHolder(ModAttributes.NAMETAG_DISTANCE.get()), 64.0D);
+    }
+    
+    
+    private static Holder<Attribute> getAttributeHolder(Attribute attribute) {
+        return BuiltInRegistries.ATTRIBUTE.getResourceKey(attribute)
+                .flatMap(BuiltInRegistries.ATTRIBUTE::getHolder)
+                .orElseThrow(() -> new IllegalArgumentException("Attribute not registered: " + attribute));
+    }
+
+    public String getCityName() {
+        return this.cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    @Override
+    public AgeableMob getBreedOffspring(ServerLevel serverLevel, AgeableMob ageableMob) {
+        return null;
+    }
+
+
+    @Override
+    public float getScale() {
+        AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.SCALE.get()));
+        return instance != null ? (float) instance.getValue() : 1.0F;
+    }
+
+    @Override
+    public double getDefaultGravity() {
+        AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.GRAVITY.get()));
+        return instance != null ? instance.getValue() : 0.08D;
+    }
+
+    @Override
+    public float maxUpStep() {
+        AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()));
+        return instance != null ? (float) instance.getValue() : super.maxUpStep();
+    }
+
+
+
+}

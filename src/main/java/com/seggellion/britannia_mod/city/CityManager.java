@@ -59,7 +59,6 @@ public class CityManager extends SavedData {
 
     public void addCity(String name) {
         if (name == null || name.trim().isEmpty()) {
-            LOGGER.warn("Attempted to add a city with an invalid name.");
             return;
         }
         if (!cities.containsKey(name)) {

@@ -1,0 +1,63 @@
+package com.seggellion.britannia_mod.villager;
+
+import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerTrades;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.Merchant;
+import net.neoforged.neoforge.event.village.VillagerTradesEvent;
+import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
+
+import net.neoforged.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+
+import java.util.List;
+
+public class BlacksmithTradeEventHandler {
+    @SubscribeEvent
+    public static void onVillagerTrades(VillagerTradesEvent event) {
+                  LOGGER.warn("Trade Initialized");
+        // Check if it's our blacksmith profession
+        if (event.getType() == BlacksmithProfessions.JOURNEYMAN_BLACKSMITH.get()) {
+             LOGGER.warn("Trade Initialized with blacksmitih");
+            Int2ObjectMap<List<VillagerTrades.ItemListing>> trades = event.getTrades();
+  LOGGER.warn("Trade Initialized with blacksmitih");
+            // Let's say at level 1 (int key = 1), we add some trades:
+            trades.get(1).add((merchant, random) -> {
+                // cost: 10 gold coins
+                ItemCost cost = new ItemCost(
+                    ItemRegistry.GOLD_COIN.get(),
+                    10
+                );
+
+                // result: an IRON sword for example
+                ItemStack result = new ItemStack(new QualitySwordItem(UOMetalToolMaterial.IRON.getTier(),
+                        new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+
+                return new MerchantOffer(cost, result, 10, 1, 0.05F);
+            });
+
+            // Another trade for level 2
+            trades.get(2).add((merchant, random) -> {
+                // cost
+                ItemCost cost = new ItemCost(
+                    ItemRegistry.GOLD_COIN.get(),
+                    50
+                );
+
+                // a VALORITE sword
+                ItemStack result = new ItemStack(new QualitySwordItem(UOMetalToolMaterial.VALORITE.getTier(),
+                        new net.minecraft.world.item.Item.Properties().stacksTo(1)));
+
+                return new MerchantOffer(cost, result, 5, 2, 0.05F);
+            });
+
+            // Add more trades at levels 3, 4, 5 if desired
+        }
+    }
+}

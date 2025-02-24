@@ -13,8 +13,8 @@ public class CityRegistry {
     static {
         // Define Britain city with multiple areas
         cities.put("Britain", List.of(
-            new AABB(new Vec3(4962, 96, 4015), new Vec3(5255, 64, 4402)), // Main area
-            new AABB(new Vec3(5255, 96, 3884), new Vec3(5521, 65, 4385))  // Secondary area
+            new AABB(new Vec3(4962, 96, 4015), new Vec3(5521, 61, 4385)), // Main area
+            new AABB(new Vec3(4874, 96, 4386), new Vec3(5173, 61, 4495))  // Adjusted secondary area
         ));
         // Add more cities as needed
         // cities.put("OtherCity", List.of(...));

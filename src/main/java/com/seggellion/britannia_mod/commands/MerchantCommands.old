@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.entity.HorseSellerNPC;
+import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.City;
@@ -46,7 +46,7 @@ public class MerchantCommands {
         ServerPlayer player = source.getPlayer();
 
         if (player != null) {
-            HorseSellerNPC npc = EntityRegistry.HORSE_SELLER_NPC.get().create(player.level());
+            EntityHorseMerchant npc = EntityRegistry.HORSE_SELLER_NPC.get().create(player.level());
 
             if (npc != null) {
                 npc.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());

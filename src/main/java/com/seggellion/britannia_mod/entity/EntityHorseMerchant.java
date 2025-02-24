@@ -1,4 +1,4 @@
-// HorseSellerNPC.java
+// EntityHorseMerchant.java
 package com.seggellion.britannia_mod.entity;
 
 import com.seggellion.britannia_mod.BritanniaMod;
@@ -29,9 +29,12 @@ import net.minecraft.world.InteractionResult;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HorseSellerNPC extends AbstractVillager {
+public class EntityHorseMerchant extends AbstractVillager {
 
-    public HorseSellerNPC(EntityType<? extends AbstractVillager> entityType, Level level) {
+    private String cityName = "";
+
+
+    public EntityHorseMerchant(EntityType<? extends AbstractVillager> entityType, Level level) {
         super(entityType, level);
         this.setPersistenceRequired();
     }
@@ -167,6 +170,16 @@ public class HorseSellerNPC extends AbstractVillager {
     @Override
     protected void rewardTradeXp(MerchantOffer offer) {
         // This NPC doesn't use typical trades.
+    }
+
+        // Getter and Setter for cityName
+    public String getCityName() {
+        return this.cityName;
+    }
+
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
     }
 
     @Override

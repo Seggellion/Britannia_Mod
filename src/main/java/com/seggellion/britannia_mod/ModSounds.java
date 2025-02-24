@@ -62,6 +62,22 @@ public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAS
     () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":reactive_armor_spell_cast"))
 );
 
+public static final DeferredHolder<SoundEvent, SoundEvent> TRANSACTION = SOUND_EVENTS.register(
+    "transaction", 
+    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":transaction"))
+);
+
+public static final DeferredHolder<SoundEvent, SoundEvent> MINING1 = SOUND_EVENTS.register(
+    "mining1", 
+    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mining1"))
+);
+
+public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENTS.register(
+    "mining2", 
+    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mining2"))
+);
+
+
 // Adding Mongbat Sounds
     public static final DeferredHolder<SoundEvent, SoundEvent> MONGBAT_AMBIENT = SOUND_EVENTS.register(
             "mongbat_ambient",

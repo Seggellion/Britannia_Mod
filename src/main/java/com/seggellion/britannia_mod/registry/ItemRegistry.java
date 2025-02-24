@@ -5,6 +5,11 @@ import com.seggellion.britannia_mod.registry.EntityRegistry;
 
 
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.item.PurityOreItem;
+import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.ModToolTiers;
 import com.seggellion.britannia_mod.item.OrderShieldItem;
 import com.seggellion.britannia_mod.item.MoongateLinkingWand;
@@ -123,16 +128,6 @@ public static final DeferredHolder<Item, Item> SWORDFISH = ITEMS.register("sword
         () -> new WeightedFishItem(new Item.Properties()));
 
 
-    // Spawn Eggs
-    public static final DeferredHolder<Item, DeferredSpawnEggItem> HORSE_SELLER_SPAWN_EGG = ITEMS.register(
-            "horse_seller_spawn_egg",
-            () -> new DeferredSpawnEggItem(
-                    EntityRegistry.HORSE_SELLER_NPC,
-                    0xFFA500,
-                    0xffffff,
-                    new Item.Properties()
-            )
-    );
 
         public static final DeferredHolder<Item, DeferredSpawnEggItem> DAEMON_SPAWN_EGG = ITEMS.register(
             "daemon_spawn_egg",
@@ -234,6 +229,31 @@ public static final DeferredHolder<Item, Item> ORDER_SHIELD = ITEMS.register("or
     });
 
 
+  // Register the Pickaxe
+    public static final DeferredHolder<Item, BritanniaPickaxeItem> PICKAXE = ITEMS.register("pickaxe", () ->
+        new BritanniaPickaxeItem(
+            ModToolTiers.PICKAXE_TIER, // Custom tool tier
+            new Item.Properties()
+                .stacksTo(1) // Single-stack tool
+        )
+    );
+
+    // Register the Purity Iron Ore item
+    public static final DeferredHolder<Item, PurityOreItem> PURITY_ORE_ITEM = ITEMS.register("purity_ore_item", () ->
+        new PurityOreItem(
+            new Item.Properties()
+                .stacksTo(1) // Default stack size
+        )
+    );
+
+        // Register the Graded Stone Ore item
+    public static final DeferredHolder<Item, GradeStoneItem> GRADE_STONE_ITEM = ITEMS.register("grade_stone_item", () ->
+        new GradeStoneItem(
+            new Item.Properties()
+                .stacksTo(1) // Default stack size
+        )
+    );
+
 public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEMS.register("two_handed_axe", () ->
     new TwoHandedAxeItem(
         ModToolTiers.TWO_HANDED_AXE_TIER, // Custom tier
@@ -260,6 +280,21 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
         public static final DeferredHolder<Item, Item> WOOD_SPAWN_BLOCK_ITEM = ITEMS.register(
             "wood_spawn_block", () -> new BlockItem(BlockRegistry.WOOD_SPAWN_BLOCK.get(), new Item.Properties()));
 
+        public static final DeferredHolder<Item, Item> METAL_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "metal_spawn_block", () -> new BlockItem(BlockRegistry.METAL_SPAWN_BLOCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> STONE_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "stone_spawn_block", () -> new BlockItem(BlockRegistry.STONE_SPAWN_BLOCK.get(), new Item.Properties()));
+
+
+        public static final DeferredHolder<Item, Item> FISH_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "fish_spawn_block", () -> new BlockItem(BlockRegistry.FISH_SPAWN_BLOCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> HORSE_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "horse_spawn_block", () -> new BlockItem(BlockRegistry.HORSE_SPAWN_BLOCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> BLACKSMITH_SPAWN_BLOCK_ITEM = ITEMS.register(
+            "blacksmith_spawn_block", () -> new BlockItem(BlockRegistry.BLACKSMITH_SPAWN_BLOCK.get(), new Item.Properties()));
 
 public static final DeferredHolder<Item, Item> DUNGEON_MOONGATE_BLOCK_ITEM = ITEMS.register(
         "dungeon_moongate_block", () -> new BlockItem(BlockRegistry.DUNGEON_MOONGATE_BLOCK.get(), new Item.Properties()));
@@ -278,6 +313,12 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
             "moongate_block", () -> new BlockItem(BlockRegistry.MOONGATE_BLOCK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MOONGATE_TOP_ITEM = ITEMS.register(
             "moongate_top", () -> new BlockItem(BlockRegistry.MOONGATE_TOP.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LARGE_FORGE_BLOCK_ENTITY = ITEMS.register(
+            "large_forge_item", () -> new BlockItem(BlockRegistry.LARGE_FORGE_BLOCK.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SMALL_FORGE_BLOCK_ENTITY = ITEMS.register(
+            "small_forge_item", () -> new BlockItem(BlockRegistry.SMALL_FORGE_BLOCK.get(), new Item.Properties()));
+
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

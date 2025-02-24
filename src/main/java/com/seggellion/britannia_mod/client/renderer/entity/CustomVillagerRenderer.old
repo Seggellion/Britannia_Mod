@@ -1,0 +1,26 @@
+package com.seggellion.britannia_mod.client.renderer.entity;
+
+import net.minecraft.client.model.VillagerModel;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.VillagerRenderer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.npc.Villager;
+import com.seggellion.britannia_mod.villager.BlacksmithProfessions; // Your profession registry class
+
+public class CustomVillagerRenderer extends VillagerRenderer {
+
+    public CustomVillagerRenderer(EntityRendererProvider.Context context) {
+        super(context);
+    }
+
+    private static final ResourceLocation JOURNEYMAN_BLACKSMITH_TEXTURE = ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/journeyman_blacksmith.png");
+
+
+    @Override
+    public ResourceLocation getTextureLocation(Villager villager) {
+        if (villager.getVillagerData().getProfession() == BlacksmithProfessions.JOURNEYMAN_BLACKSMITH.get()) {
+            return JOURNEYMAN_BLACKSMITH_TEXTURE;
+        }
+        return super.getTextureLocation(villager);
+    }
+}

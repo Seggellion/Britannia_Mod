@@ -14,6 +14,9 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -24,44 +27,59 @@ public class ChestHandler {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final Map<BlockPos, ItemStack> CHEST_CONFIGURATIONS = new HashMap<>();
+private static final Map<BlockPos, ChestConfig> CHEST_CONFIGURATIONS = new HashMap<>();
+
+
+    private static class ChestConfig {
+        ItemStack itemStack;
+        Direction direction;
+
+        public ChestConfig(ItemStack itemStack, Direction direction) {
+            this.itemStack = itemStack;
+            this.direction = direction;
+        }
+    }
 
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         ServerLevel serverLevel = event.getServer().getLevel(ServerLevel.OVERWORLD);
         if (serverLevel != null) {
             // Initialize chest configurations here to ensure items are registered
-            CHEST_CONFIGURATIONS.put(new BlockPos(5161, 72, 4317), createFishingRod());
-            CHEST_CONFIGURATIONS.put(new BlockPos(5052, 67, 3912), createSeggellionsAxe());
-
-            CHEST_CONFIGURATIONS.forEach((pos, itemStack) -> setupChest(serverLevel, pos, itemStack));
+            CHEST_CONFIGURATIONS.put(new BlockPos(5161, 72, 4317), new ChestConfig(createFishingRod(), Direction.EAST));
+            CHEST_CONFIGURATIONS.put(new BlockPos(5052, 67, 3912), new ChestConfig(createSeggellionsAxe(), Direction.WEST));
+            CHEST_CONFIGURATIONS.put(new BlockPos(4560, 143, 4185), new ChestConfig(createRustedPickaxe(), Direction.SOUTH));
+            CHEST_CONFIGURATIONS.forEach((pos, chestConfig) -> setupChest(serverLevel, pos, chestConfig));
         }
     }
 
-    @SubscribeEvent
-    public void onServerTickPre(ServerTickEvent.Pre event) {
-        ServerLevel serverLevel = event.getServer().getLevel(ServerLevel.OVERWORLD);
-        if (serverLevel != null) {
-            CHEST_CONFIGURATIONS.forEach((pos, itemStack) -> ensureChestContainsItem(serverLevel, pos, itemStack));
-        }
-    }
-
-private static void setupChest(ServerLevel serverLevel, BlockPos chestPos, ItemStack itemStack) {
-    serverLevel.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 3);
-    BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos);
-
-    if (blockEntity instanceof ChestBlockEntity chestEntity) {
-        // Validate the item stack
-        ItemStack validatedItem = validateItemStack(itemStack);
-
-        // Set the item in the chest
-        chestEntity.setItem(0, validatedItem);
-        chestEntity.setChanged();
-        LOGGER.info("Chest at {} initialized with {}", chestPos, validatedItem.getHoverName().getString());
-    } else {
-        LOGGER.warn("Failed to initialize chest at {}: BlockEntity is not a chest", chestPos);
+@SubscribeEvent
+public void onServerTickPre(ServerTickEvent.Pre event) {
+    ServerLevel serverLevel = event.getServer().getLevel(ServerLevel.OVERWORLD);
+    if (serverLevel != null) {
+        CHEST_CONFIGURATIONS.forEach((pos, chestConfig) -> ensureChestContainsItem(serverLevel, pos, chestConfig.itemStack));
     }
 }
+
+
+    private static void setupChest(ServerLevel serverLevel, BlockPos chestPos, ChestConfig chestConfig) {
+        serverLevel.setBlock(chestPos, Blocks.CHEST.defaultBlockState(), 3);
+        BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos);
+
+    Direction chestFacing = chestConfig.direction;
+    serverLevel.setBlock(chestPos, Blocks.CHEST.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, chestFacing), 3);
+
+        if (blockEntity instanceof ChestBlockEntity chestEntity) {
+            // Validate the item stack
+            ItemStack validatedItem = validateItemStack(chestConfig.itemStack);
+
+            // Set the item in the chest
+            chestEntity.setItem(0, validatedItem);
+            chestEntity.setChanged();
+        LOGGER.info("Chest at {} initialized with {} facing {}", chestPos, chestConfig.itemStack.getHoverName().getString(), chestFacing);
+        } else {
+            LOGGER.warn("Failed to initialize chest at {}: BlockEntity is not a chest", chestPos);
+        }
+    }
 
 
 private static void ensureChestContainsItem(ServerLevel serverLevel, BlockPos chestPos, ItemStack itemStack) {
@@ -110,43 +128,63 @@ private static ItemStack validateItemStack(ItemStack itemStack) {
     }
 
 
-private static ItemStack createFishingRod() {
-    ItemStack fishingRod = new ItemStack(Items.FISHING_ROD);
+    private static ItemStack createFishingRod() {
+        ItemStack fishingRod = new ItemStack(Items.FISHING_ROD);
 
-    // Build and apply data components
-    DataComponentMap.Builder builder = DataComponentMap.builder();
-    builder.set(DataComponents.CUSTOM_NAME, Component.literal("Ordinary Fishing Rod"));
+        // Build and apply data components
+        DataComponentMap.Builder builder = DataComponentMap.builder();
+        builder.set(DataComponents.CUSTOM_NAME, Component.literal("Ordinary Fishing Rod"));
 
-    // Apply components to the ItemStack
-    fishingRod.applyComponents(builder.build());
+        // Apply components to the ItemStack
+        fishingRod.applyComponents(builder.build());
 
-    // Log for debugging
-    LOGGER.info("Created Fishing Rod with components: {}", fishingRod.getComponents());
+        // Log for debugging
+        LOGGER.info("Created Fishing Rod with components: {}", fishingRod.getComponents());
 
-    return fishingRod;
-}
+        return fishingRod;
+    }
 
-private static ItemStack createSeggellionsAxe() {
-    ItemStack axe = new ItemStack(ItemRegistry.TWO_HANDED_AXE.get());
+    private static ItemStack createSeggellionsAxe() {
+        ItemStack axe = new ItemStack(ItemRegistry.TWO_HANDED_AXE.get());
 
-    // Build and apply data components
-    DataComponentMap.Builder builder = DataComponentMap.builder();
-    builder.set(DataComponents.CUSTOM_NAME, Component.literal("Seggellion's Axe"));
+        // Build and apply data components
+        DataComponentMap.Builder builder = DataComponentMap.builder();
+        builder.set(DataComponents.CUSTOM_NAME, Component.literal("Seggellion's Axe"));
 
-    // Apply components to the ItemStack
-    axe.applyComponents(builder.build());
+        // Apply components to the ItemStack
+        axe.applyComponents(builder.build());
 
-    // Set durability
-    int maxDurability = axe.getMaxDamage();
-    int halfDamage = maxDurability / 2;
-    axe.setDamageValue(halfDamage);
+        // Set durability
+        int maxDurability = axe.getMaxDamage();
+        int halfDamage = maxDurability / 2;
+        axe.setDamageValue(halfDamage);
 
-    // Log for debugging
-    LOGGER.info("Created Seggellion's Axe with components: {}", axe.getComponents());
+        // Log for debugging
+        LOGGER.info("Created Seggellion's Axe with components: {}", axe.getComponents());
 
-    return axe;
-}
+        return axe;
+    }
 
+    private static ItemStack createRustedPickaxe() {
+        ItemStack pickaxe = new ItemStack(ItemRegistry.PICKAXE.get());
+
+        // Build and apply data components
+        DataComponentMap.Builder builder = DataComponentMap.builder();
+        builder.set(DataComponents.CUSTOM_NAME, Component.literal("A rusted Iron Pickaxe"));
+
+        // Apply components to the ItemStack
+        pickaxe.applyComponents(builder.build());
+
+        // Set durability
+        int maxDurability = pickaxe.getMaxDamage();
+        int halfDamage = maxDurability / 2;
+        pickaxe.setDamageValue(halfDamage);
+
+        // Log for debugging
+        LOGGER.info("Created Rusted pickaxe: {}", pickaxe.getComponents());
+
+        return pickaxe;
+    }
 
 
 }

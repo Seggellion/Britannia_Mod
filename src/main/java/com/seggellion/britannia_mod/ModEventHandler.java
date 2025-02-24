@@ -2,7 +2,7 @@
 package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.entity.HorseSellerNPC;
+import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
 import com.seggellion.britannia_mod.registry.EntityRegistry; // Updated import to use EntityRegistry
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -21,18 +21,15 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event) {
-        LOGGER.info("HELLO FROM COMMON SETUP");
     }
 
     @SubscribeEvent
     public static void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            LOGGER.info("Adding items to creative tab");
         }
     }
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        LOGGER.info("HELLO FROM CLIENT SETUP");
     }
 }

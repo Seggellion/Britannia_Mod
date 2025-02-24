@@ -1,0 +1,61 @@
+package com.seggellion.britannia_mod.villager;
+
+import com.google.common.collect.ImmutableSet;
+import com.seggellion.britannia_mod.BritanniaMod;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+/**
+ * Defines our custom "Blacksmith" profession, referencing a POI block(s).
+ */
+public class CustomVillagerProfessions {
+    public static final DeferredRegister<PoiType> POI_TYPES = DeferredRegister.create(
+            Registries.POINT_OF_INTEREST_TYPE,
+            BritanniaMod.MODID
+    );
+
+    public static final DeferredRegister<VillagerProfession> PROFESSIONS = DeferredRegister.create(
+            Registries.VILLAGER_PROFESSION,
+            BritanniaMod.MODID
+    );
+
+    // 1) Create a POI for the blacksmith's workstation.
+    //    We'll assume you have a custom block "SMITHING_TABLE" or you can reuse vanilla "blast_furnace" states.
+    //    If you want to use a vanilla block, see note below.
+public static final DeferredHolder<PoiType, PoiType> BLACKSMITH_POI = POI_TYPES.register(
+    "blacksmith_poi",
+    () -> new PoiType(
+        // collect every state of your custom spawn block
+        ImmutableSet.copyOf(Block.BLOCK_STATE_REGISTRY.stream()
+            .filter(state -> state.is(BlockRegistry.BLACKSMITH_SPAWN_BLOCK.get())) // your custom block
+            .toList()
+        ),
+        1, // ticketCount
+        1
+    )
+);
+
+public static final DeferredHolder<VillagerProfession, VillagerProfession> BLACKSMITH = PROFESSIONS.register(
+    "blacksmith",
+    () -> new VillagerProfession(
+        "britannia_mod:blacksmith",
+        holder -> holder.is(BLACKSMITH_POI.get().matchTag()), // acquire
+        holder -> holder.is(BLACKSMITH_POI.get().matchTag()), // secondary poi
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        SoundEvents.VILLAGER_WORK_ARMORER
+    )
+);
+
+    public static void registerAll(net.neoforged.bus.api.IEventBus eventBus) {
+        POI_TYPES.register(eventBus);
+        PROFESSIONS.register(eventBus);
+    }
+}

@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "britannia_mod:item/stone_grade_5",
+    "layer1": "britannia_mod:item/stone_grade_5"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 1001 }, "model": "britannia_mod:item/stone_grade_1" },
+    { "predicate": { "custom_model_data": 1002 }, "model": "britannia_mod:item/stone_grade_2" },
+    { "predicate": { "custom_model_data": 1003 }, "model": "britannia_mod:item/stone_grade_3" },
+    { "predicate": { "custom_model_data": 1004 }, "model": "britannia_mod:item/stone_grade_4" },
+    { "predicate": { "custom_model_data": 1005 }, "model": "britannia_mod:item/stone_grade_5" }
+  ]
+}

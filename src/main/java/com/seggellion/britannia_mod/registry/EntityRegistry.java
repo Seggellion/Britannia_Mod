@@ -1,7 +1,8 @@
 // EntityRegistry.java
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.entity.HorseSellerNPC;
+import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
+//import com.seggellion.britannia_mod.entity.EntityJourneymanBlacksmith;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
 import com.seggellion.britannia_mod.entity.RatEntity;
@@ -16,6 +17,8 @@ import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
+import com.seggellion.britannia_mod.entity.EntityStoneMerchant;
+import com.seggellion.britannia_mod.entity.EntityMetalMerchant;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -29,12 +32,13 @@ public class EntityRegistry {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(
             net.minecraft.core.registries.Registries.ENTITY_TYPE, "britannia_mod");
 
-    public static final DeferredHolder<EntityType<?>, EntityType<HorseSellerNPC>> HORSE_SELLER_NPC = ENTITIES.register(
-            "horse_seller_npc",
-            () -> EntityType.Builder.of(HorseSellerNPC::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<EntityHorseMerchant>> HORSE_MERCHANT_ENTITY = ENTITIES.register(
+            "horse_merchant",
+            () -> EntityType.Builder.of(EntityHorseMerchant::new, MobCategory.MISC)
                     .sized(0.6F, 1.95F)
-                    .build("britannia_mod:horse_seller_npc")
+                    .build("britannia_mod:horse_merchant")
     );
+
 
     public static final DeferredHolder<EntityType<?>, EntityType<EntityFishMerchant>> FISH_MERCHANT_ENTITY = ENTITIES.register(
     "fish_merchant",
@@ -48,6 +52,20 @@ public class EntityRegistry {
     () -> EntityType.Builder.of(EntityWoodMerchant::new, MobCategory.MISC)
             .sized(0.6F, 1.95F)
             .build("britannia_mod:wood_merchant")
+);
+
+    public static final DeferredHolder<EntityType<?>, EntityType<EntityMetalMerchant>> METAL_MERCHANT_ENTITY = ENTITIES.register(
+    "metal_merchant",
+    () -> EntityType.Builder.of(EntityMetalMerchant::new, MobCategory.MISC)
+            .sized(0.6F, 1.95F)
+            .build("britannia_mod:metal_merchant")
+);
+
+    public static final DeferredHolder<EntityType<?>, EntityType<EntityStoneMerchant>> STONE_MERCHANT_ENTITY = ENTITIES.register(
+    "stone_merchant",
+    () -> EntityType.Builder.of(EntityStoneMerchant::new, MobCategory.MISC)
+            .sized(0.6F, 1.95F)
+            .build("britannia_mod:stone_merchant")
 );
 
 public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> TOWN_PERSON_ENTITY = ENTITIES.register(
@@ -164,9 +182,12 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
          event.put(LICH_ENTITY.get(), LichEntity.createAttributes().build());
         event.put(RAT_ENTITY.get(), RatEntity.createAttributes().build());
         event.put(WISP_ENTITY.get(), WispEntity.createAttributes().build());
-        event.put(HORSE_SELLER_NPC.get(), HorseSellerNPC.createAttributes().build());
+        event.put(HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchant.createAttributes().build());
         event.put(FISH_MERCHANT_ENTITY.get(), EntityFishMerchant.createAttributes().build());
         event.put(WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchant.createAttributes().build());
+        event.put(METAL_MERCHANT_ENTITY.get(), EntityMetalMerchant.createAttributes().build());
+        event.put(STONE_MERCHANT_ENTITY.get(), EntityStoneMerchant.createAttributes().build());
+       // event.put(JOURNEYMAN_BLACKSMITH_ENTITY.get(), EntityJourneymanBlacksmith.createAttributes().build());
         event.put(TOWN_PERSON_ENTITY.get(), TownPersonEntity.createAttributes().build());
 
     }

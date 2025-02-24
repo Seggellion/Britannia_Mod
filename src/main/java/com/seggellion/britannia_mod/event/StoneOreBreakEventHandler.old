@@ -1,0 +1,85 @@
+package com.seggellion.britannia_mod.event;
+
+import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
+import com.seggellion.britannia_mod.item.PurityIronOreItem;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.sounds.SoundSource;
+import com.seggellion.britannia_mod.ModSounds;
+import com.mojang.logging.LogUtils;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+
+import org.slf4j.Logger;
+
+public class StoneOreBreakEventHandler {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    /**
+     * Handles left-clicking on ores and stones with the Iron Pickaxe.
+     */
+    @SubscribeEvent
+    public void onPlayerLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof Player player) {
+            Level level = player.level();
+            BlockPos pos = event.getPos();
+            BlockState state = level.getBlockState(pos);
+            ItemStack heldItem = player.getMainHandItem();
+
+            // Check if the player is using the Iron Pickaxe
+            if (heldItem.getItem() instanceof BritanniaPickaxeItem) {
+                LOGGER.info("Player left-clicking with Iron Pickaxe at {}", pos);
+
+                // Check if the block is stone or ore
+                if (state.is(Blocks.STONE) || state.is(BlockTags.STONE_ORE_REPLACEABLES)) {
+                    // Play custom mining sound
+                    level.playSound(null, pos, ModSounds.MINING1.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                    // Track the block for restoration
+                    BrokenBlockTracker.recordBrokenBlock(pos, state);
+
+                    // Handle custom drops
+                    if (state.is(Blocks.IRON_ORE) || state.is(Blocks.DEEPSLATE_IRON_ORE)) {
+                        // Create and drop Purity Iron Ore
+                        ItemStack purityOreStack = new ItemStack(ItemRegistry.PURITY_IRON_ORE.get());
+                        int purity = 1 + RandomSource.create().nextInt(5); // Random purity between 1–5
+                        PurityIronOreItem.setPurity(purityOreStack, purity);
+
+                        ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, purityOreStack);
+                        level.addFreshEntity(drop);
+                        level.playSound(null, pos, ModSounds.MINING2.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+
+                        LOGGER.info("Dropped PurityIronOreItem with purity={}", purity);
+
+                        // Notify the player
+                        player.displayClientMessage(Component.literal("You mined Purity Iron Ore with purity: " + purity), true);
+                    } else if (state.is(Blocks.STONE)) {
+                        // Drop regular stone block
+                        ItemStack stoneStack = new ItemStack(Blocks.STONE);
+                        ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stoneStack);
+                        level.addFreshEntity(drop);
+
+                        LOGGER.info("Dropped stone block at {}", pos);
+                    }
+
+                    // Cancel further interactions (optional, depending on behavior)
+                    event.setCanceled(true);
+                }
+            }
+        }
+    }
+}

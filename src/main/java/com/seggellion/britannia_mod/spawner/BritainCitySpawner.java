@@ -15,6 +15,7 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.minecraft.world.entity.npc.Villager;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -36,7 +37,6 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
 
     // Exclude players explicitly using instanceof
     if (entity instanceof net.minecraft.world.entity.player.Player) {
-        LOGGER.debug("Skipping player entity: {}", entity.getName().getString());
         return;
     }
 
@@ -48,13 +48,11 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
     for (AABB area : cityAreas) {
         if (area.contains(entity.position())) {
             event.setCanceled(true); // Cancel the event only when inside a defined city area
-            LOGGER.debug("Canceled spawn of disallowed entity {} at {}", entity.getType().getDescriptionId(), entity.position());
             return;
         }
     }
 
     // Log entities outside defined areas for debugging
-    LOGGER.debug("Entity {} not in any defined city area: {}", entity.getType().getDescriptionId(), entity.position());
 }
 
 
@@ -83,6 +81,11 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
                 || entity.getType().toString().equals("minecraft:cat")
                 || entity.getType().toString().equals("minecraft:bee")
                 || entity instanceof EntityWoodMerchant
+                || entity instanceof EntityStoneMerchant
+                || entity instanceof EntityMetalMerchant
+                || entity instanceof Villager
+              //  || entity instanceof EntityJourneymanBlacksmith
+                || entity instanceof EntityHorseMerchant
                 || entity instanceof CustomCatEntity
                 || entity instanceof EntityFishMerchant
                 || entity instanceof TownPersonEntity;
@@ -103,13 +106,18 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
 
         if (excess > 0 && !nonCriticalEntities.isEmpty()) {
             nonCriticalEntities.stream().limit(excess).forEach(Entity::discard);
-            LOGGER.info("Removed {} excess entities in area {}", excess, area);
+  
         }
     }
 
     private static boolean isCriticalEntity(Entity entity) {
         return entity instanceof EntityWoodMerchant
                 || entity instanceof EntityFishMerchant
+                 || entity instanceof EntityMetalMerchant
+                  || entity instanceof EntityStoneMerchant
+                  || entity instanceof Villager
+            //    || entity instanceof EntityJourneymanBlacksmith
+                || entity instanceof EntityHorseMerchant
                 || entity instanceof TownPersonEntity;
     }
 
@@ -132,12 +140,10 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
                 if (entity != null) {
                     entity.moveTo(x + 0.5, y, z + 0.5);
                     level.addFreshEntity(entity);
-                    LOGGER.debug("Spawned {} at ({}, {}, {})", entity.getType().getDescriptionId(), x, y, z);
                     return;
                 }
             }
         }
-        LOGGER.debug("Failed to spawn entity in area {}", area);
     }
 
     private static boolean isChunkLoaded(Level level, BlockPos pos) {

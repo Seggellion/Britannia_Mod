@@ -39,16 +39,13 @@ public class ClumsySpell extends Spell {
     @Override
     protected void applyEffect(ServerPlayer caster, LivingEntity target) {
         if (caster == null) {
-            LOGGER.warn("Caster is null, cannot proceed with applyEffect.");
             return;
         }
 
         // Determine if the target is the caster themselves or another entity
         if (target == caster) {
-            LOGGER.info("applySelfEffect caster: {}", caster.getName().getString());
             applySelfEffect(caster);
         } else {
-            LOGGER.info("applyTargetEffect caster: {}, target: {}", caster.getName().getString(), target.getName().getString());
             applyTargetEffect(caster, target);
         }
     }
@@ -84,7 +81,6 @@ public class ClumsySpell extends Spell {
     @Override
     protected void applyTargetEffect(ServerPlayer caster, LivingEntity target) {
         if (target == null || target.getServer() == null) {
-            LOGGER.warn("Target or target's server is null. Cannot apply target effect.");
             return; // Ensure that the target is valid
         }
 

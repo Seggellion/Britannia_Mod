@@ -3,10 +3,16 @@ package com.seggellion.britannia_mod.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.item.WeightedFishItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -45,6 +51,46 @@ public class CityCommands {
                     .executes(CityCommands::clearCityInventory)))
             .then(Commands.literal("delete_cities")
                 .executes(CityCommands::deleteAllCities)));
+
+            //dispatcher for fish testing
+            dispatcher.register(Commands.literal("createfish")
+                        .requires(source -> source.hasPermission(2))
+                        .then(Commands.argument("fishType", StringArgumentType.string())
+                            .then(Commands.argument("weight", FloatArgumentType.floatArg(0.1f, 100.0f))
+                                .executes(CityCommands::createWeightedFish))));
+
+        // New command for setting the API token:
+        dispatcher.register(
+            Commands.literal("britannia_api")
+                .requires(source -> source.hasPermission(2)) // ensure only ops
+                .then(Commands.literal("set_token")
+                    .then(Commands.argument("token", StringArgumentType.string())
+                        .executes(CityCommands::setApiToken)
+                    )
+                )
+        );
+
+    }
+
+      // This is the method that actually sets the token
+    private static int setApiToken(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String token = StringArgumentType.getString(context, "token");
+
+        // We assume this command is run on the server context
+        if (source.getLevel() instanceof ServerLevel serverLevel) {
+            // Retrieve or create the saved data
+            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+            data.setApiToken(token);
+
+            source.sendSuccess(() -> Component.literal("API Token set successfully!"), false);
+
+            LOGGER.info("API Token stored on the server: {}", token);
+            return 1;
+        }
+
+        source.sendFailure(Component.literal("Unable to set API token. Not in a server level context."));
+        return 0;
     }
 
     private static int showCityInventory(CommandContext<CommandSourceStack> context) {
@@ -318,5 +364,63 @@ private static int clearCityPopulation(CommandContext<CommandSourceStack> contex
         source.sendSuccess(() -> Component.literal("All cities and associated NPCs have been deleted."), true);
         return 1;
     }
+
+
+ private static int createWeightedFish(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        ServerPlayer player = source.getPlayer();
+
+        String fishType = StringArgumentType.getString(context, "fishType").toLowerCase();
+        float weight = FloatArgumentType.getFloat(context, "weight");
+
+        LOGGER.warn("Command executed: /createfish {} {}", fishType, weight);
+
+        if (player == null) {
+            source.sendFailure(Component.literal("This command can only be used by a player."));
+            return 0;
+        }
+
+        Item fishItem = getFishItemByType(fishType);
+        if (fishItem == null) {
+            source.sendFailure(Component.literal("Invalid fish type: " + fishType));
+            return 0;
+        }
+
+        // Create the WeightedFishItem stack
+        ItemStack weightedFishStack = new ItemStack(fishItem);
+        WeightedFishItem weightedFish = (WeightedFishItem) weightedFishStack.getItem();
+
+        // Set the weight and fish type into the WeightedFishItem
+        weightedFish.setWeight(weightedFishStack, weight);
+        weightedFish.setFishType(weightedFishStack, fishType);
+
+        // Give the weighted fish directly to the player
+        if (!player.getInventory().add(weightedFishStack)) {
+            player.drop(weightedFishStack, false);
+        }
+
+        source.sendSuccess(() -> Component.literal("Created a " + fishType + " weighing " + weight + " stones."), true);
+        LOGGER.info("Gave WeightedFishItem (type: {}, weight: {}) directly to the player", fishType, weight);
+
+        return 1;
+    }
+
+    private static Item getFishItemByType(String fishType) {
+        switch (fishType) {
+            case "cod":
+                return ItemRegistry.COD.get();
+            case "salmon":
+                return ItemRegistry.SALMON.get();
+            case "tuna":
+                return ItemRegistry.TUNA.get();
+            case "trout":
+                return ItemRegistry.TROUT.get();
+            case "swordfish":
+                return ItemRegistry.SWORDFISH.get();
+            default:
+                return null;
+        }
+    }
+
 
 }

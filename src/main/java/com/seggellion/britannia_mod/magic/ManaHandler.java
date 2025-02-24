@@ -41,7 +41,6 @@ public class ManaHandler {
         int currentMana = getMana(player);
         int newMana = Math.max(0, currentMana - amount);
         setMana(player, newMana);
-        LOGGER.info("Reduced mana by {} points from player: {}. New mana: {}", amount, player.getName().getString(), newMana);
     }
 
     @SubscribeEvent
@@ -56,7 +55,6 @@ public class ManaHandler {
                 int currentMana = getMana(player);
                 if (currentMana < MAX_MANA) {
                     setMana(player, currentMana + MANA_REGEN_RATE);
-                    LOGGER.info("Mana regenerated: {} for player {}", getMana(player), player.getName().getString());
                 }
                 tickCounter = 0;
             }
@@ -66,7 +64,6 @@ public class ManaHandler {
 
     public static boolean useMana(Player player, int amount) {
         int currentMana = getMana(player);
-        LOGGER.info("Attempting to use mana. Current Mana: {}, Amount needed: {}", currentMana, amount);
         if (currentMana >= amount) {
             setMana(player, currentMana - amount);
             LOGGER.info("Mana used. New Mana: {}", getMana(player));

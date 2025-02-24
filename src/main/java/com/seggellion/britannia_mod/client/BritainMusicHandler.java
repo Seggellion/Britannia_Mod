@@ -31,10 +31,8 @@ public class BritainMusicHandler {
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         Player player = event.getEntity();
-        LOGGER.debug("BritainMusicHandler: Received PlayerTickEvent for player: {}", player.getName().getString());
 
         if (!player.level().isClientSide()) {
-            LOGGER.debug("Skipping event handling for server-side logic.");
             return; // Ensure this logic only runs on the client
         }
 
@@ -48,14 +46,12 @@ public class BritainMusicHandler {
         boolean isPlayerInBritain = britainAreas.stream().anyMatch(area -> area.contains(position));
 
         if (isPlayerInBritain) {
-            LOGGER.debug("Player {} is inside the Britain city area.", player.getName().getString());
             if (!isMusicPlaying) {
                 playCustomMusic(minecraft);
                 isMusicPlaying = true;
             }
         } else {
             if (isMusicPlaying) {
-                LOGGER.debug("Player {} exited the Britain city area, stopping music.", player.getName().getString());
                 stopCustomMusic(minecraft);
                 isMusicPlaying = false;
             }
@@ -66,18 +62,12 @@ public class BritainMusicHandler {
         if (minecraft.getSoundManager() != null) {
             SimpleSoundInstance soundInstance = SimpleSoundInstance.forMusic(BRITAIN_MUSIC_EVENT);
             minecraft.getSoundManager().play(soundInstance);
-            LOGGER.info("Playing custom Britain city music: {}", BRITAIN_MUSIC_EVENT.getLocation());
-        } else {
-            LOGGER.warn("SoundManager is null, unable to play custom music.");
-        }
+        } 
     }
 
     private static void stopCustomMusic(Minecraft minecraft) {
         if (minecraft.getSoundManager() != null) {
             minecraft.getSoundManager().stop(BRITAIN_MUSIC_EVENT.getLocation(), SoundSource.MUSIC);
-            LOGGER.info("Stopped custom Britain city music: {}", BRITAIN_MUSIC_EVENT.getLocation());
-        } else {
-            LOGGER.warn("SoundManager is null, unable to stop custom music.");
         }
     }
 }

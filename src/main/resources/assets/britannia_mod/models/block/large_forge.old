@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "all": "britannia_mod:textures/block/large_forge"
+  }
+}

@@ -11,8 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.sounds.SoundSource;
-import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.core.Holder;
@@ -42,17 +40,14 @@ public class TwoHandedAxeItem extends AxeItem {
     @Override
     public boolean isCorrectToolForDrops(net.minecraft.world.item.ItemStack stack, BlockState state) {
         // Allow breaking logs in Adventure mode
-             LOGGER.info("isCorrectToolForDrops");
         return state.is(BlockTags.LOGS) || super.isCorrectToolForDrops(stack, state);
     }
 
   @Override
     public boolean canAttackBlock(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
         // Custom logic to simulate slower swing
-        LOGGER.info("canAttackBlock");
         if (player.isCreative()) return true;
         if (state.is(BlockTags.LOGS)) {
-                            LOGGER.info("Swing time reduced");
             player.swingTime = 40; // Increase swing time to slow the animation
         }
         return super.canAttackBlock(state, level, pos, player);
@@ -61,7 +56,6 @@ public class TwoHandedAxeItem extends AxeItem {
        @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
         if (state.is(BlockTags.LOGS)) {
-            LOGGER.info("getDestroySpeed invoked: reducing speed for logs");
             return 2.0F; // Reduced block breaking speed for logs
         }
         return super.getDestroySpeed(stack, state);

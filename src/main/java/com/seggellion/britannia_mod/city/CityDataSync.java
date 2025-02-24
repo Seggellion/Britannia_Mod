@@ -3,183 +3,242 @@ package com.seggellion.britannia_mod.network;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataManager;
+import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.config.ModConfig;
+
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.List;
+import java.util.UUID;
+import java.util.Arrays;
+import java.util.ArrayList;
 
-/**
- * Utility class to send city + commodity + leaderboard data to a Rails endpoint.
- */
+
 public class CityDataSync {
     private static final Logger LOGGER = LogManager.getLogger();
-    
-    // Example: You might store your Rails endpoint here
-    //private static final String SYNC_URL = "http://127.0.0.1:3000/api/cities/sync"; 
 
-private static final String SYNC_URL = "https://ultimacraft-c079bdcd2cd0.herokuapp.com/api/cities/sync"; 
-    
-    // Replace with your actual server/endpoint
-
-    /**
-     * Called (for example) every so often, or when city data changes significantly.
-     * This method tries to gather city data from CityManager and a PlayerDataManager,
-     * then POST it as JSON to your Rails server's /api/cities/sync endpoint.
-     */
-    public static void postCityDataToRails(ServerLevel serverLevel, String cityName) {
+    public static double[] fetchFoodAndWoodSupply(ServerLevel serverLevel, String cityName) {
         try {
-            CityManager cityManager = CityManager.get(serverLevel);
-            City city = cityManager.getCity(cityName);
-            if (city == null) {
-                LOGGER.warn("City not found: {}", cityName);
-                return;
+            URL url = new URL(ModConfig.API_BASE_URL + "cities/" + cityName + "/food_and_wood_supply"); // New endpoint
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+            String apiToken = data.getApiToken();
+
+            if (!apiToken.isEmpty()) {
+                connection.setRequestProperty("Authorization", "Bearer " + apiToken);
             }
-            
-            // 1. Build JSON for the city.
-            JsonObject cityRoot = new JsonObject();
-            cityRoot.addProperty("city_name", city.getName());  // "Britain"
-            
-            // Example from city inventory
-            CityInventory inv = city.getInventory();
-            cityRoot.addProperty("population", inv.getPopulation());
-            cityRoot.addProperty("is_starving", inv.isStarving());
 
-            // NEW: food_supply, wood_supply
-            double currentFood = inv.getCategoryTotalWeight("food"); 
-            double currentWood = inv.getCategoryTotalWeight("wood");
-            cityRoot.addProperty("food_supply", currentFood);  // <--- new field
-            cityRoot.addProperty("wood_supply", currentWood);  // <--- new field
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                try (Scanner scanner = new Scanner(connection.getInputStream())) {
+                    String response = scanner.useDelimiter("\\A").next();
+                    JsonObject json = new com.google.gson.JsonParser().parse(response).getAsJsonObject();
 
-            // 2. Collect commodity data
-            JsonArray commoditiesArray = new JsonArray();
-            Map<String, Map<String, Map<String, Integer>>> allCommodities = inv.getAllCommodities();
-            for (Map.Entry<String, Map<String, Map<String, Integer>>> categoryEntry : allCommodities.entrySet()) {
-                String category = categoryEntry.getKey();
-                Map<String, Map<String, Integer>> subcats = categoryEntry.getValue();
-                
-                for (Map.Entry<String, Map<String, Integer>> subcatEntry : subcats.entrySet()) {
-                    String subcat = subcatEntry.getKey();
-                    Map<String, Integer> items = subcatEntry.getValue();
-                    
-                    for (Map.Entry<String, Integer> itemEntry : items.entrySet()) {
-                        String itemName = itemEntry.getKey();
-                        int quantity = itemEntry.getValue();
-                        
-                        // Optionally fetch the weight from commodityWeights
-                        double weight = 0.0;
-                        if (inv.getCommodityWeights().containsKey(category) 
-                            && inv.getCommodityWeights().get(category).containsKey(subcat) 
-                            && inv.getCommodityWeights().get(category).get(subcat).containsKey(itemName)) {
-                            weight = inv.getCommodityWeights()
-                                        .get(category)
-                                        .get(subcat)
-                                        .get(itemName);
-                        }
-                        
-                        JsonObject cObj = new JsonObject();
-                        cObj.addProperty("category", category);
-                        cObj.addProperty("subcategory", subcat);
-                        cObj.addProperty("item_name", itemName);
-                        cObj.addProperty("quantity", quantity);
-                        cObj.addProperty("weight", weight);
-                        commoditiesArray.add(cObj);
-                    }
+                    double foodSupply = json.has("food_supply") ? json.get("food_supply").getAsDouble() : 0.0;
+                    double woodSupply = json.has("wood_supply") ? json.get("wood_supply").getAsDouble() : 0.0;
+
+                    return new double[]{foodSupply, woodSupply};
                 }
             }
-            cityRoot.add("commodities", commoditiesArray);
-
-            // 3. Leaderboard data. We'll fetch from PlayerDataManager
-            JsonArray leaderboardArray = new JsonArray();
-            PlayerDataManager playerDataManager = PlayerDataManager.get(serverLevel);
-            // Suppose we store total fish or wood contributions in PlayerData
-            // For each player, build a JSON element
-            for (PlayerData data : playerDataManager.getAllPlayers()) {
-            String playerName = PlayerData.getPlayerName(serverLevel, data.getPlayerUUID());
-
-                String playerUuid = data.getPlayerUUID().toString();
-
-
-                for (Map.Entry<String, Double> e : data.getTotalContributions().entrySet()) {
-                    String commodityName = e.getKey();
-                    double totalContrib = e.getValue();
-                    double biggest = data.getBiggestFish().getOrDefault(commodityName, 0.0);
-                    
-                    String commodityType = "unknown";
-                        if (commodityName.contains("fish") || commodityName.contains("cod") ||
-                            commodityName.contains("swordfish") || 
-                            commodityName.contains("salmon") || commodityName.contains("tuna")) {
-                            commodityType = "food";
-                        } else if (commodityName.contains("log") || commodityName.contains("oak") ||
-                        commodityName.contains("spruce") || commodityName.contains("pine") ||
-                                commodityName.contains("wood")) {
-                            commodityType = "wood";
-                        }
-
-                    JsonObject lbObj = new JsonObject();
-                    lbObj.addProperty("player_uuid", playerUuid);
-                    lbObj.addProperty("player_name", playerName); 
-                    lbObj.addProperty("commodity_name", commodityName);
-                    lbObj.addProperty("commodity_type", commodityType);  
-                    lbObj.addProperty("total_contribution", totalContrib);
-                    lbObj.addProperty("biggest_single", biggest);
-                    leaderboardArray.add(lbObj);
-                }
-            }
-            cityRoot.add("leaderboard", leaderboardArray);
-
-            // 4. Send the JSON
-            postJsonToEndpoint(cityRoot, SYNC_URL);
-
         } catch (Exception e) {
-            LOGGER.error("Error posting city data to Rails: ", e);
         }
+        return new double[]{0.0, 0.0}; 
     }
 
-    /**
-     * Helper method to handle the actual HTTP POST.
-     */
-    private static void postJsonToEndpoint(JsonObject root, String endpointUrl) throws Exception {
-        String jsonPayload = root.toString();
-
-        LOGGER.info("Posting JSON to endpoint: {}", endpointUrl);
-        LOGGER.info("Payload: {}", jsonPayload);
-
-        URL url = new URL(endpointUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setDoOutput(true);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(jsonPayload.getBytes("UTF-8"));
-        }
-
-        int responseCode = conn.getResponseCode();
-        LOGGER.info("Response Code: {}", responseCode);
-
-        // Read response body (if any)
-        try (Scanner scanner = new Scanner(conn.getInputStream(), "UTF-8")) {
-            StringBuilder sb = new StringBuilder();
-            while (scanner.hasNextLine()) {
-                sb.append(scanner.nextLine());
+    public static double fetchFoodSupply(ServerLevel serverLevel, String cityName) {
+        try {
+            URL url = new URL(ModConfig.API_BASE_URL + "/cities/" + cityName + "/food_supply");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Content-Type", "application/json");
+            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+            String apiToken = data.getApiToken(); // Might be empty if not set
+                // Include the token in a header, for example, "Authorization: Bearer <token>"
+                if (!apiToken.isEmpty()) {
+                    connection.setRequestProperty("Authorization", "Bearer " + apiToken);
+                }
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                try (Scanner scanner = new Scanner(connection.getInputStream())) {
+                    String response = scanner.useDelimiter("\\A").next();
+                    JsonObject json = new com.google.gson.JsonParser().parse(response).getAsJsonObject();
+                    return json.get("food_supply").getAsDouble();
+                }
             }
-            LOGGER.info("Rails server response: {}", sb.toString());
-        } catch (Exception ex) {
-            LOGGER.warn("No response body or error: {}", ex.getMessage());
+        } catch (Exception e) {
+        }
+        return 0.0;
+    }
+
+     public static JsonArray parseStarvingCitiesResponse(InputStream inputStream) {
+        try (InputStreamReader reader = new InputStreamReader(inputStream)) {
+            JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();
+            if (response.has("starving_cities")) {
+                return response.getAsJsonArray("starving_cities");
+            } else {
+            }
+        } catch (Exception e) {
+        }
+        return new JsonArray();
+    }
+
+    public static List<UUID> getAssociatedMerchants(String cityName) {
+            try {
+                URL url = new URL(ModConfig.API_BASE_URL + "/cities/" + cityName + "/merchants");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    JsonObject response = JsonParser.parseReader(new InputStreamReader(conn.getInputStream())).getAsJsonObject();
+                    if (response.has("merchants")) {
+                        JsonArray merchantsArray = response.getAsJsonArray("merchants");
+                        List<UUID> merchants = new ArrayList<>();
+                        for (JsonElement element : merchantsArray) {
+                            try {
+                                merchants.add(UUID.fromString(element.getAsString()));
+                            } catch (IllegalArgumentException e) {
+                            }
+                        }
+                        return merchants;
+                    }
+                } else {
+                }
+                conn.disconnect();
+            } catch (Exception e) {
+            }
+            return new ArrayList<>();
         }
 
-        conn.disconnect();
+    public static void registerNpc(ServerLevel serverLevel, UUID npcId, String npcType, String cityName, String name, String description, int level, int health, int mana, boolean isActive, String spawnLocation) {
+        try {
+            URL url = new URL(ModConfig.API_BASE_URL + "/npcs");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+            String apiToken = data.getApiToken(); // Might be empty if not set
+                // Include the token in a header, for example, "Authorization: Bearer <token>"
+                if (!apiToken.isEmpty()) {
+                    connection.setRequestProperty("Authorization", "Bearer " + apiToken);
+                }
+            JsonObject payload = new JsonObject();
+            payload.addProperty("npc_id", npcId.toString());
+            payload.addProperty("npc_type", npcType);
+            payload.addProperty("city_name", cityName);
+            payload.addProperty("name", name);
+            payload.addProperty("description", description);
+            payload.addProperty("level", level);
+            payload.addProperty("health", health);
+            payload.addProperty("mana", mana);
+            payload.addProperty("is_active", isActive);
+            payload.addProperty("spawn_location", spawnLocation);
+
+            connection.getOutputStream().write(payload.toString().getBytes());
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
+            }
+        } catch (Exception e) {
+        }
     }
+
+
+    public static void removeNpc(ServerLevel serverLevel, UUID npcId) {
+        try {
+            URL url = new URL(ModConfig.API_BASE_URL + "/npcs/" + npcId);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("DELETE");
+            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+            String apiToken = data.getApiToken(); // Might be empty if not set
+                // Include the token in a header, for example, "Authorization: Bearer <token>"
+                if (!apiToken.isEmpty()) {
+                    connection.setRequestProperty("Authorization", "Bearer " + apiToken);
+                }
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
+            }
+        } catch (Exception e) {
+        }
+    }
+
+
+    private static boolean isCityStarving(String cityName) {
+        try {
+            URL url = new URL(ModConfig.API_BASE_URL + "/" + cityName + "/starvation_status");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                JsonObject response = JsonParser.parseReader(new InputStreamReader(conn.getInputStream())).getAsJsonObject();
+                boolean starving = response.get("starving").getAsBoolean();
+                conn.disconnect();
+                return starving;
+            } else {
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+        }
+        return false;
+    }
+
+    // Example stub for listing all city names
+    private static List<String> fetchAllCityNames() {
+        // Return a static list or call another API endpoint
+        return Arrays.asList("Britain", "Trinsic");
+    }
+
+public static JsonObject fetchCityDataWithMarketPrices(ServerLevel serverLevel, String cityName) {
+    try {
+        URL url = new URL(ModConfig.API_BASE_URL + "cities/" + cityName + "/trade_data"); // New endpoint
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Content-Type", "application/json");
+
+        CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+        String apiToken = data.getApiToken();
+        if (!apiToken.isEmpty()) {
+            connection.setRequestProperty("Authorization", "Bearer " + apiToken);
+        }
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == 200) {
+            try (Scanner scanner = new Scanner(connection.getInputStream())) {
+                String response = scanner.useDelimiter("\\A").next();
+                return JsonParser.parseString(response).getAsJsonObject();
+            }
+        } else {
+        }
+    } catch (Exception e) {
+    }
+
+    return new JsonObject(); // Return empty JSON if an error occurs
+}
+
 }

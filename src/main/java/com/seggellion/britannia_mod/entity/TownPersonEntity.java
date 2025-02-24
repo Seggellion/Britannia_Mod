@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.StrollThroughVillageGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
@@ -48,8 +49,8 @@ public class TownPersonEntity extends AbstractVillager  implements ICityEntity {
 
     @Override
     protected void registerGoals() {
-        // Wander within 30 blocks of spawnPosition
-        this.goalSelector.addGoal(1, new RestrictedStrollGoal(this, 0.4D, maxHomeDistance));
+    this.goalSelector.addGoal(1, new StrollThroughVillageGoal(this, 10));
+
         // Idle behavior
         this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));

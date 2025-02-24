@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.market.MarketManager;
 import com.seggellion.britannia_mod.player.PlayerDataManager;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
+import com.seggellion.britannia_mod.util.SendTransactionToAPI;
 import com.seggellion.britannia_mod.BritanniaMod;
 
 
@@ -20,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -33,9 +35,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.extensions.IEntityExtension;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import com.google.gson.JsonObject;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,13 +52,64 @@ public class EntityFishMerchant extends AbstractVillager implements IEntityExten
     private BlockPos spawnPosition;
     private int maxHomeDistance = 5; // Set to match the spawner's radius
     private static final Logger LOGGER = LogManager.getLogger();
-    
+    private static final double MESSAGE_RADIUS = 20.0;
+
+
     public EntityFishMerchant(EntityType<? extends AbstractVillager> entityType, Level level) {
         super(entityType, level);
         this.setPersistenceRequired();
         this.cityName = ""; 
         this.spawnPosition = this.blockPosition();
     }
+
+
+@Override
+public void tick() {
+    super.tick();
+    if (!this.level().isClientSide) {
+        // Check if city is starving (set by the API consumption logic)
+        boolean isStarving = this.getPersistentData().getBoolean("starving");
+
+        // Optionally, store city name in the merchant's persistent data or a field
+    
+        // If you store cityName in a separate field, you can use getCityName() instead
+
+        if (isStarving && cityName != null && !cityName.isEmpty()) {
+                  LOGGER.info("EntityFishMerchant is starving");
+            // Gather all players in a 20-block radius
+            double radius = 20.0;
+            AABB area = this.getBoundingBox().inflate(radius);
+            List<Player> nearbyPlayers = this.level().getEntitiesOfClass(Player.class, area);
+
+            // Display the starving message
+            for (Player player : nearbyPlayers) {
+                player.displayClientMessage(
+                    Component.literal(cityName + " is starving! Please sell them some food."),
+                    true // Action bar display
+                );
+            }
+        }
+    }
+}
+
+
+    public static void notifyNearbyPlayers(ServerLevel serverLevel, String cityName) {
+        // For each FishMerchant that belongs to cityName, notify players
+        for (Entity e : serverLevel.getEntities().getAll()) {
+            if (e instanceof EntityFishMerchant fishMerchant 
+                && fishMerchant.getCityName().equalsIgnoreCase(cityName)) {
+                AABB area = fishMerchant.getBoundingBox().inflate(MESSAGE_RADIUS);
+                List<Player> nearbyPlayers = serverLevel.getEntitiesOfClass(Player.class, area);
+                for (Player player : nearbyPlayers) {
+                    player.displayClientMessage(
+                        Component.literal(cityName + " is starving! Please sell them some fish."),
+                        true
+                    );
+                }
+            }
+        }
+    }
+
 
     @Override
     protected void registerGoals() {
@@ -111,170 +169,85 @@ public void onAddedToLevel() {
 
 @Override
 public InteractionResult mobInteract(Player player, InteractionHand hand) {
-    if (!this.level().isClientSide) {
-        LOGGER.info("Player interacting with Fish Merchant");
+    // Short-circuit on the client side to prevent unnecessary logic execution.
+    if (this.level().isClientSide) {
+        return InteractionResult.sidedSuccess(true); // Prevent further client-side interactions.
+    }
 
-MarketManager.initializeCity(cityName);
-LOGGER.info("Market prices for city {} initialized: {}", cityName, MarketManager.getCityPrices(cityName));
+    // Ensure the merchant is associated with a valid city.
+    if (cityName == null || cityName.isEmpty()) {
+        player.displayClientMessage(Component.literal("This merchant is not associated with any city."), true);
+        return InteractionResult.CONSUME; 
+    }
 
-
-        if (cityName == null || cityName.isEmpty()) {
-            player.displayClientMessage(Component.literal("This merchant is not associated with any city."), true);
-            return InteractionResult.SUCCESS;
-        }
-
-        Map<ItemStack, Double> fishStacks = new HashMap<>();
-        for (ItemStack stack : player.getInventory().items) {
-            LOGGER.info("Checking item in inventory: {}", stack.getItem());
-            if (stack.getItem() instanceof WeightedFishItem wfi) {
-                LOGGER.info("Found WeightedFishItem: {}", stack.getItem());
-                double weight = wfi.getWeight(stack);
-                LOGGER.info("Retrieved weight: {}", weight);
-                if (weight > 0.0) {
-                    fishStacks.put(stack, weight);
-                }
-            } else {
-                LOGGER.info("Item is not a WeightedFishItem: {}", stack.getItem());
+    // Collect fish stacks from the player's inventory.
+    Map<ItemStack, Double> fishStacks = new HashMap<>();
+    for (ItemStack stack : player.getInventory().items) {
+        if (stack.getItem() instanceof WeightedFishItem wfi) {
+            double weight = wfi.getWeight(stack);
+            if (weight > 0.0) {
+                fishStacks.put(stack, weight);
             }
         }
-         LOGGER.info("Is this loading?");
-        if (!fishStacks.isEmpty()) {
-            int totalCoins = 0;
-            int codCount = 0, salmonCount = 0, tropicalFishCount = 0;
-            int tunaCount = 0, troutCount = 0, swordfishCount = 0; // Add new counts
+    }
 
-            double codWeightTotal = 0.0, salmonWeightTotal = 0.0, tropicalFishWeightTotal = 0.0;
-            double tunaWeightTotal = 0.0, troutWeightTotal = 0.0, swordfishWeightTotal = 0.0; // Add new weights
+    // If the player has fish to sell, process the transaction.
+    if (!fishStacks.isEmpty()) {
+        String playerUuid = player.getUUID().toString();
+        List<JsonObject> transactionItems = new ArrayList<>();
 
-            for (Map.Entry<ItemStack, Double> entry : fishStacks.entrySet()) {
-                ItemStack fishStack = entry.getKey();
-                double weight = entry.getValue();
+        // Build transaction data for the API call.
+        for (Map.Entry<ItemStack, Double> entry : fishStacks.entrySet()) {
+            ItemStack fishStack = entry.getKey();
+            double weight = entry.getValue();
+            WeightedFishItem wfi = (WeightedFishItem) fishStack.getItem();
+            String fishType = wfi.getFishType(fishStack);
 
-                String fishType = "unknown";
-                if (fishStack.getItem() instanceof WeightedFishItem wfi) {
-                    // Retrieve the stored fish type from the WeightedFishItem
-                    fishType = wfi.getFishType(fishStack);
-                } else {
-                    // Fallback if needed (shouldn't happen since we only handle WeightedFishItem)
-                    fishType = getFishType(fishStack.getItem());
-                }
+            JsonObject itemJson = new JsonObject();
+            itemJson.addProperty("item_id", "britannia_mod:weighted_fish_item");
+            itemJson.addProperty("item_name", fishType);
 
-
-                double marketPrice = MarketManager.getMarketPrice(cityName, fishType);
-                LOGGER.info("Market price for {} in {}: {}", fishType, cityName, marketPrice);
-
-
-                int coins = (int) (weight * marketPrice);
-                totalCoins += coins;
-                LOGGER.info("Calculated coins for {} (weight: {}): {}", fishType, weight, coins);
-
-                // Update counts
-                if (fishType.equals("cod")) codCount += fishStack.getCount();
-                if (fishType.equals("salmon")) salmonCount += fishStack.getCount();
-                if (fishType.equals("tuna")) tunaCount += fishStack.getCount();
-                if (fishType.equals("trout")) troutCount += fishStack.getCount();
-                if (fishType.equals("swordfish")) swordfishCount += fishStack.getCount();
-
-                // Remove fish from inventory
-                player.getInventory().removeItem(fishStack);
-            }
-
-      LOGGER.info("What is total coins? {}", totalCoins);
-            if (totalCoins > 0) {
-                giveGoldCoins(player, totalCoins);
-                player.displayClientMessage(Component.literal("Thank you for your fish! Here are your gold coins."), true);
-
-                if (this.level() instanceof ServerLevel serverLevel) {
-                    CityManager cityManager = CityManager.get(serverLevel);
-                    City city = cityManager.getCity(cityName);
-
-                    // Calculate total weights
-                    for (Map.Entry<ItemStack, Double> entry : fishStacks.entrySet()) {
-                        ItemStack fishStack = entry.getKey();
-                        double weight = entry.getValue();
-                        WeightedFishItem wfi = (WeightedFishItem) fishStack.getItem();
-                        String fishType = wfi.getFishType(fishStack);
-                        int count = fishStack.getCount();
-                        double totalFishWeight = weight * count;
-
-                        switch (fishType) {
-                            case "cod":
-                                codWeightTotal += totalFishWeight;
-                                break;
-                            case "salmon":
-                                salmonWeightTotal += totalFishWeight;
-                                break;
-                            case "tuna":
-                                tunaWeightTotal += totalFishWeight;
-                                break;
-                            case "trout":
-                                troutWeightTotal += totalFishWeight;
-                                break;
-                            case "swordfish":
-                                swordfishWeightTotal += totalFishWeight;
-                                break;
-                            case "tropical_fish":
-                                tropicalFishWeightTotal += totalFishWeight;
-                                break;
-                            default:
-                                LOGGER.warn("Unknown fish type encountered: {}", fishType);
-                                break;
-                        }
-                    }
-
-
-                    if (city != null) {
-                        CityInventory cityInventory = city.getInventory();
-                        cityInventory.addCommodity("food", "fish", "cod", codCount);
-                        cityInventory.addCommodity("food", "fish", "salmon", salmonCount);
-                        cityInventory.addCommodity("food", "fish", "tuna", tunaCount);
-                        cityInventory.addCommodity("food", "fish", "trout", troutCount);
-                        cityInventory.addCommodity("food", "fish", "swordfish", swordfishCount);
-
-                        // Add weight data
-                        cityInventory.addCommodityWeight("food", "fish", "cod", codWeightTotal);
-                        cityInventory.addCommodityWeight("food", "fish", "salmon", salmonWeightTotal);
-                        cityInventory.addCommodityWeight("food", "fish", "tuna", tunaWeightTotal);
-                        cityInventory.addCommodityWeight("food", "fish", "trout", troutWeightTotal);
-                        cityInventory.addCommodityWeight("food", "fish", "swordfish", swordfishWeightTotal);
-
-                        cityManager.setDirty();
-                        LOGGER.info("Calling adjustPrices for city: {}", cityName);
-                        MarketManager.adjustPrices(cityName, cityInventory);
-
-
-                        // Convert fishStacks (Map<ItemStack, Double>) to Map<String, Double> fishTypeContributions
-                        Map<String, Double> fishTypeContributions = new HashMap<>();
-                        for (Map.Entry<ItemStack, Double> entry : fishStacks.entrySet()) {
-                            ItemStack fishStack = entry.getKey();
-                            double weight = entry.getValue();
-                            WeightedFishItem wfi = (WeightedFishItem) fishStack.getItem();
-                            String fishType = wfi.getFishType(fishStack);
-                            
-                            // If there are multiple items in this stack, each contributes 'weight'
-                            // If weight is per stack, adjust logic accordingly. Assuming weight is per item:
-                            double totalFishContribution = weight * fishStack.getCount();
-                            fishTypeContributions.merge(fishType, totalFishContribution, Double::sum);
-                        }
-
-                        PlayerDataManager manager = PlayerDataManager.get(serverLevel);
-                        if (player instanceof ServerPlayer serverPlayer) {
-                            manager.recordSale(serverPlayer, fishTypeContributions);
-                        }
-                    } else {
-                        player.displayClientMessage(Component.literal("City not found: " + cityName), true);
-                    }
-                }
+            if (useWeight(fishStack.getItem())) {
+                itemJson.addProperty("weight", weight);
             } else {
-                player.displayClientMessage(Component.literal("No coins awarded. Are these fish valid?"), true);
+                itemJson.addProperty("quantity", (int) weight);
+            }
+            transactionItems.add(itemJson);
+        }
+
+        // Send the transaction data to the API if there are valid items.
+        if (!transactionItems.isEmpty()) {
+            if (this.level() instanceof ServerLevel serverLevel) {
+                SendTransactionToAPI.send(
+                    serverLevel,
+                    playerUuid,
+                    cityName,
+                    transactionItems,
+                    "sell",
+                    "FishMerchant",
+                    this.getUUID().toString(),
+                    this.getName().getString(),
+                    player
+                );
+                this.getPersistentData().remove("starving");
             }
         } else {
-            player.displayClientMessage(Component.literal("You don't have any fish to sell."), true);
+            player.displayClientMessage(Component.literal("No valid items to sell."), true);
         }
-
-        return InteractionResult.SUCCESS;
+    } else {
+        // Notify the player if they don't have any fish to sell.
+        player.displayClientMessage(Component.literal("You don't have any fish to sell."), true);
     }
-    return super.mobInteract(player, hand);
+
+    return InteractionResult.CONSUME; // Indicate that the interaction was fully handled by the server.
+}
+
+
+public static boolean useWeight(Item item) {
+    if (item instanceof WeightedFishItem) {
+        return true;
+    }
+    return false;
 }
 
 public void setCityName(String cityName) {
@@ -383,7 +356,8 @@ private String getFishType(Item item) {
                 .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)
                 .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
                 .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
-                .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D);
+                .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D)
+                 .add(getAttributeHolder(ModAttributes.NAMETAG_DISTANCE.get()), 64.0D);
     }
 
     private static Holder<Attribute> getAttributeHolder(Attribute attribute) {

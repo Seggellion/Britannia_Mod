@@ -29,17 +29,6 @@ public class ClientOnlyItemRegistry {
             }
         }, ItemRegistry.MONGBAT_SPAWN_EGG.get());
 
-        event.register(new ItemColor() {
-            @Override
-            public int getColor(ItemStack stack, int layer) {
-                if (layer == 0) {
-                    return 0xFFA500; // Background color for Horse Seller spawn egg
-                } else {
-                    return 0xffffff; // Highlight color for Horse Seller spawn egg
-                }
-            }
-        }, ItemRegistry.HORSE_SELLER_SPAWN_EGG.get());
-
         // Register spawn egg colors for Lich and Horse Seller
         event.register(new ItemColor() {
             @Override

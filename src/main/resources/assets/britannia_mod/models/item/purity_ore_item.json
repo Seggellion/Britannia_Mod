@@ -1,0 +1,17 @@
+{
+    "parent": "item/generated",
+    "textures": {
+      "layer0": "britannia_mod:item/purity_ore_5"
+    },
+    "overrides": [
+      { "predicate": { "custom_model_data": 2001.0 }, "model": "britannia_mod:item/purity_ore_1" },
+      { "predicate": { "custom_model_data": 2002.0 }, "model": "britannia_mod:item/purity_ore_2" },
+      { "predicate": { "custom_model_data": 2003.0 }, "model": "britannia_mod:item/purity_ore_3" },
+      { "predicate": { "custom_model_data": 2004.0 }, "model": "britannia_mod:item/purity_ore_4" },
+      { "predicate": { "custom_model_data": 2005.0 }, "model": "britannia_mod:item/purity_ore_5" }
+    ],
+    "logger": {
+      "enabled": true,
+      "level": "info"
+    }
+  }

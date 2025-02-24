@@ -2,10 +2,25 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.MoongateBlock;
+import com.seggellion.britannia_mod.block.MoongateTopBlock;
+import com.seggellion.britannia_mod.block.SmallForgeBlock;
+import com.seggellion.britannia_mod.block.LargeForgeBlock;
+import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
+import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LichSpawnBlock;
 import com.seggellion.britannia_mod.block.WoodSpawnBlock;
+import com.seggellion.britannia_mod.block.MetalSpawnBlock;
+import com.seggellion.britannia_mod.block.StoneSpawnBlock;
+import com.seggellion.britannia_mod.block.FishSpawnBlock;
+import com.seggellion.britannia_mod.block.HorseSpawnBlock;
+import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.FishSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
@@ -41,7 +56,6 @@ public class BlockRegistry {
             () -> BlockEntityType.Builder.of(LichSpawnBlockEntity::new, LICH_SPAWN_BLOCK.get()).build(null));
 
 
-
     public static final DeferredHolder<Block, Block> WOOD_SPAWN_BLOCK = BLOCKS.register(
             "wood_spawn_block",
             WoodSpawnBlock::new 
@@ -51,6 +65,73 @@ public class BlockRegistry {
             "wood_spawn_block_entity",
             () -> BlockEntityType.Builder.of(WoodSpawnBlockEntity::new, WOOD_SPAWN_BLOCK.get()).build(null));
 
+
+    public static final DeferredHolder<Block, Block> STONE_SPAWN_BLOCK = BLOCKS.register(
+            "stone_spawn_block",
+            StoneSpawnBlock::new 
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StoneSpawnBlockEntity>> STONE_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+            "stone_spawn_block_entity",
+            () -> BlockEntityType.Builder.of(StoneSpawnBlockEntity::new, STONE_SPAWN_BLOCK.get()).build(null));
+
+
+    public static final DeferredHolder<Block, Block> METAL_SPAWN_BLOCK = BLOCKS.register(
+            "metal_spawn_block",
+            MetalSpawnBlock::new 
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MetalSpawnBlockEntity>> METAL_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+            "metal_spawn_block_entity",
+            () -> BlockEntityType.Builder.of(MetalSpawnBlockEntity::new, METAL_SPAWN_BLOCK.get()).build(null));
+
+
+
+
+    public static final DeferredHolder<Block, Block> FISH_SPAWN_BLOCK = BLOCKS.register(
+            "fish_spawn_block",
+            FishSpawnBlock::new 
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FishSpawnBlockEntity>> FISH_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+            "fish_spawn_block_entity",
+            () -> BlockEntityType.Builder.of(FishSpawnBlockEntity::new, FISH_SPAWN_BLOCK.get()).build(null));
+
+
+    public static final DeferredHolder<Block, Block> HORSE_SPAWN_BLOCK = BLOCKS.register(
+            "horse_spawn_block",
+            HorseSpawnBlock::new 
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HorseSpawnBlockEntity>> HORSE_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+            "horse_spawn_block_entity",
+            () -> BlockEntityType.Builder.of(HorseSpawnBlockEntity::new, HORSE_SPAWN_BLOCK.get()).build(null));
+
+    public static final DeferredHolder<Block, Block> BLACKSMITH_SPAWN_BLOCK = BLOCKS.register(
+            "blacksmith_spawn_block",
+            BlacksmithSpawnBlock::new 
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlacksmithSpawnBlockEntity>> BLACKSMITH_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+            "blacksmith_spawn_block_entity",
+            () -> BlockEntityType.Builder.of(BlacksmithSpawnBlockEntity::new, BLACKSMITH_SPAWN_BLOCK.get()).build(null));
+
+    // ✅ Register Large Forge Block
+    public static final DeferredHolder<Block, Block> LARGE_FORGE_BLOCK = BLOCKS.register(
+            "large_forge_block", LargeForgeBlock::new);
+
+    // ✅ Register Large Forge Block Entity Type
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LargeForgeBlockEntity>> LARGE_FORGE_BLOCK_ENTITY_TYPE =
+        BLOCK_ENTITY_TYPES.register("large_forge_block_entity",
+            () -> BlockEntityType.Builder.of(LargeForgeBlockEntity::new, LARGE_FORGE_BLOCK.get()).build(null));
+
+
+    public static final DeferredHolder<Block, Block> SMALL_FORGE_BLOCK = BLOCKS.register(
+            "small_forge_block", SmallForgeBlock::new);
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SmallForgeBlockEntity>> SMALL_FORGE_BLOCK_ENTITY_TYPE =
+        BLOCK_ENTITY_TYPES.register("small_forge_block_entity",
+            () -> BlockEntityType.Builder.of(SmallForgeBlockEntity::new, SMALL_FORGE_BLOCK.get()).build(null));
 
 
 public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_BLOCK = BLOCKS.register(
@@ -68,7 +149,7 @@ public static final DeferredHolder<Block, Block> MOONGATE_BLOCK = BLOCKS.registe
             "moongate_block", MoongateBlock::new);
 
     public static final DeferredHolder<Block, Block> MOONGATE_TOP = BLOCKS.register(
-            "moongate_top", MoongateBlock::new);
+            "moongate_top", MoongateTopBlock::new);
 
 
 

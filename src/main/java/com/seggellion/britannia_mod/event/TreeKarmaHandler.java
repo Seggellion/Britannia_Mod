@@ -29,13 +29,16 @@ public class TreeKarmaHandler {
         Player player = event.getPlayer();
 
         LOGGER.info("TreeCutEvent triggered. Block: {}, Position: {}", state, pos);
-
+ if (player.isCreative() || player.hasPermissions(2)) {
+        LOGGER.info("Skipping TreeKarmaHandler: Player {} is in Creative or an OP.", player.getName().getString());
+     // pineapple   return; // Do not apply tree karma for OPs or Creative mode players
+    }
         if (state.is(BlockTags.LOGS)) { // Check if the broken block is a log
             if (player != null && !player.level().isClientSide) {
                 UUID playerId = player.getUUID();
                 long currentTime = System.currentTimeMillis();
                 treeCutTimestamps.put(playerId, currentTime);
-
+                  
                 LOGGER.info("Player {} cut a log at {}. Timestamp recorded: {}", player.getName().getString(), pos, currentTime);
                 player.sendSystemMessage(Component.literal("You cut down a tree. Replant a sapling to avoid karma loss!"));
             } else {
