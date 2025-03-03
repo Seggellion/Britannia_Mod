@@ -162,12 +162,12 @@ public class BritanniaMod {
         ManaHandler.register();
 
         if (FMLLoader.getDist().isClient()) {
-            modEventBus.addListener(ClientEventHandler::onClientSetup);
+    //           modEventBus.addListener(ClientEventHandler::onClientSetup);
             modEventBus.addListener(ClientModSetup::onClientSetup);
             modEventBus.addListener(ClientModSetup::onRegisterItemColors);
             modEventBus.addListener(ClientModSetup::registerRenderers);
-
-            NeoForge.EVENT_BUS.register(new ClientEventHandler());
+            ClientEventHandler.register(modEventBus);
+           // NeoForge.EVENT_BUS.register(new ClientEventHandler());
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);

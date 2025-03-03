@@ -26,6 +26,8 @@ import net.minecraft.world.level.Level;
 import com.seggellion.britannia_mod.block.FishSpawnBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.InvisibleInAdventureMode;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.NeoForge;
 
 
 import org.slf4j.Logger;
@@ -37,6 +39,11 @@ public class ClientEventHandler {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean wasAttackPressed = false;
+
+    public static void register(IEventBus modEventBus) {
+        modEventBus.addListener(ClientEventHandler::onClientSetup);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
+    }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
         LOGGER.info("Client setup event called. Registering client-side handlers.");
@@ -98,11 +105,8 @@ public class ClientEventHandler {
         }
     }
 
-
-
-
   @SubscribeEvent
-     public void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
+     public static void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
         LOGGER.info("Game mode change detected!");
 
         Player player = Minecraft.getInstance().player;

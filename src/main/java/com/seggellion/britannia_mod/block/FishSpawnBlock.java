@@ -28,6 +28,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,6 +48,7 @@ public class FishSpawnBlock extends Block implements EntityBlock, InvisibleInAdv
               .strength(1.5F));
     }
 
+    @OnlyIn(Dist.CLIENT)
     @Override
     public RenderShape getRenderShape(BlockState state) {
         Player player = net.minecraft.client.Minecraft.getInstance().player;
