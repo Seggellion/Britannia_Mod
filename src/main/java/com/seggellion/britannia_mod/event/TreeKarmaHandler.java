@@ -31,7 +31,7 @@ public class TreeKarmaHandler {
         LOGGER.info("TreeCutEvent triggered. Block: {}, Position: {}", state, pos);
  if (player.isCreative() || player.hasPermissions(2)) {
         LOGGER.info("Skipping TreeKarmaHandler: Player {} is in Creative or an OP.", player.getName().getString());
-     // pineapple   return; // Do not apply tree karma for OPs or Creative mode players
+     return;
     }
         if (state.is(BlockTags.LOGS)) { // Check if the broken block is a log
             if (player != null && !player.level().isClientSide) {

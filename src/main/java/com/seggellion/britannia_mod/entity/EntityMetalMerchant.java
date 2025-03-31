@@ -256,16 +256,6 @@ public void readAdditionalSaveData(CompoundTag tag) {
         return null; 
     }
 
-    @Override
-    public void remove(RemovalReason reason) {
-        super.remove(reason);
-        if (!this.level().isClientSide) {
-            // Ensure this NPC is removed from city data and spawn block if it’s a server-side removal.
-            removeNpcFromCity();
-            removeNpcFromSpawnBlock();
-        }
-    }
-
     private void removeNpcFromCity() {
         // Example: calling an API or manager method to remove from city data
         // The cityName or cityId must be stored on this entity, e.g., getCityName()

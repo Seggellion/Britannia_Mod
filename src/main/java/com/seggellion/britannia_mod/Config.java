@@ -12,6 +12,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
+
+//This code may be deprecated!! mar 23
 // An example config class. This is not required, but it's a good idea to have one to keep your config organized.
 // Demonstrates how to use Neo's config APIs
 @EventBusSubscriber(modid = BritanniaMod.MODID, bus = EventBusSubscriber.Bus.MOD)
@@ -45,6 +47,15 @@ public class Config
             .comment("Set to true to prevent Endermen from spawning.")
             .define("disableEndermanSpawning", true);
 
+private static final ModConfigSpec.BooleanValue DISABLE_WANDERING_TRADER_SPAWNING = BUILDER
+        .comment("Set to true to prevent Wandering Traders from spawning.")
+        .define("disableWanderingTraderSpawning", true);
+
+private static final ModConfigSpec.BooleanValue DISABLE_TRADER_LLAMA_SPAWNING = BUILDER
+        .comment("Set to true to prevent Trader Llamas from spawning.")
+        .define("disableTraderLlamaSpawning", true);
+
+
     static final ModConfigSpec SPEC = BUILDER.build();
 
     public static boolean logDirtBlock;
@@ -59,6 +70,10 @@ public class Config
 
     public static boolean disableCreeperSpawning;
     public static boolean disableEndermanSpawning;
+    public static boolean disableWanderingTraderSpawning;
+public static boolean disableTraderLlamaSpawning;
+
+    
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)

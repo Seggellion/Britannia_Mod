@@ -112,6 +112,33 @@ public class ItemRegistry {
     public static final DeferredHolder<Item, Item> MAGIC_ARROW_ITEM = ITEMS.register("magic_arrow_item",
             () -> new Item(new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> INTERIOR_DECORATOR_TOOL = ITEMS.register("interior_decorator_tool",
+            () -> new Item(new Item.Properties()));
+
+
+        public static final DeferredHolder<Item, Item> SHADOW_IRON_INGOT = ITEMS.register("shadow_iron_ingot", () ->
+        new Item(new Item.Properties())
+        );
+        public static final DeferredHolder<Item, Item> VALORITE_INGOT = ITEMS.register("valorite_ingot", () ->
+        new Item(new Item.Properties())
+        );
+        public static final DeferredHolder<Item, Item> VERITE_INGOT = ITEMS.register("verite_ingot", () ->
+        new Item(new Item.Properties())
+        );
+        public static final DeferredHolder<Item, Item> AGAPITE_INGOT = ITEMS.register("agapite_ingot", () ->
+        new Item(new Item.Properties())
+        );
+        public static final DeferredHolder<Item, Item> COPPER_INGOT = ITEMS.register("copper_ingot", () ->
+        new Item(new Item.Properties())
+        );
+        public static final DeferredHolder<Item, Item> SILVER_INGOT = ITEMS.register("silver_ingot", () ->
+        new Item(new Item.Properties())
+        );
+        public static final DeferredHolder<Item, Item> TIN_INGOT = ITEMS.register("tin_ingot", () ->
+        new Item(new Item.Properties())
+        );
+
+
 public static final DeferredHolder<Item, Item> COD = ITEMS.register("cod",
         () -> new WeightedFishItem(new Item.Properties()));
 
@@ -229,14 +256,6 @@ public static final DeferredHolder<Item, Item> ORDER_SHIELD = ITEMS.register("or
     });
 
 
-  // Register the Pickaxe
-    public static final DeferredHolder<Item, BritanniaPickaxeItem> PICKAXE = ITEMS.register("pickaxe", () ->
-        new BritanniaPickaxeItem(
-            ModToolTiers.PICKAXE_TIER, // Custom tool tier
-            new Item.Properties()
-                .stacksTo(1) // Single-stack tool
-        )
-    );
 
     // Register the Purity Iron Ore item
     public static final DeferredHolder<Item, PurityOreItem> PURITY_ORE_ITEM = ITEMS.register("purity_ore_item", () ->
@@ -318,6 +337,61 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
             "large_forge_item", () -> new BlockItem(BlockRegistry.LARGE_FORGE_BLOCK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SMALL_FORGE_BLOCK_ENTITY = ITEMS.register(
             "small_forge_item", () -> new BlockItem(BlockRegistry.SMALL_FORGE_BLOCK.get(), new Item.Properties()));
+
+// decorations
+
+    public static final DeferredHolder<Item, Item> CANDELABRA_SMALL_ITEM = ITEMS.register(
+            "candelabra_small", () -> new BlockItem(BlockRegistry.CANDELABRA_SMALL.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CANDELABRA_TALL_ITEM = ITEMS.register(
+            "candelabra_tall", () -> new BlockItem(BlockRegistry.CANDELABRA_TALL.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> MAGINCIA_STYLE_THRONE_ITEM = ITEMS.register(
+            "magincia_style_throne", () -> new BlockItem(BlockRegistry.MAGINCIA_STYLE_THRONE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> YEW_TABLE_ITEM = ITEMS.register(
+            "yew_table", () -> new BlockItem(BlockRegistry.YEW_TABLE.get(), new Item.Properties()));
+
+        // Custom Ore Items
+        public static final DeferredHolder<Item, Item> COPPER_ORE_ITEM = ITEMS.register(
+                "copper_ore", () -> new BlockItem(BlockRegistry.COPPER_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> TIN_ORE_ITEM = ITEMS.register(
+                "tin_ore", () -> new BlockItem(BlockRegistry.TIN_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> SILVER_ORE_ITEM = ITEMS.register(
+                "silver_ore", () -> new BlockItem(BlockRegistry.SILVER_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> GOLD_ORE_ITEM = ITEMS.register(
+                "gold_ore", () -> new BlockItem(BlockRegistry.GOLD_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> SHADOW_IRON_ORE_ITEM = ITEMS.register(
+                "shadow_iron_ore", () -> new BlockItem(BlockRegistry.SHADOW_IRON_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> AGAPITE_ORE_ITEM = ITEMS.register(
+                "agapite_ore", () -> new BlockItem(BlockRegistry.AGAPITE_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> VERITE_ORE_ITEM = ITEMS.register(
+                "verite_ore", () -> new BlockItem(BlockRegistry.VERITE_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> VALORITE_ORE_ITEM = ITEMS.register(
+                "valorite_ore", () -> new BlockItem(BlockRegistry.VALORITE_ORE.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> HIGH_PURITY_SILVER_ORE_ITEM = ITEMS.register(
+                "high_purity_silver_ore", () -> new BlockItem(BlockRegistry.HIGH_PURITY_SILVER_ORE.get(), new Item.Properties()));
+
+        // Custom Rock Items
+        public static final DeferredHolder<Item, Item> IGNEOUS_ROCK_ITEM = ITEMS.register(
+                "igneous_rock", () -> new BlockItem(BlockRegistry.IGNEOUS_ROCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> METAMORPHIC_ROCK_ITEM = ITEMS.register(
+                "metamorphic_rock", () -> new BlockItem(BlockRegistry.METAMORPHIC_ROCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> VOLCANIC_ROCK_ITEM = ITEMS.register(
+                "volcanic_rock", () -> new BlockItem(BlockRegistry.VOLCANIC_ROCK.get(), new Item.Properties()));
+
+        public static final DeferredHolder<Item, Item> GLACIAL_ROCK_ITEM = ITEMS.register(
+                "glacial_rock", () -> new BlockItem(BlockRegistry.GLACIAL_ROCK.get(), new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {

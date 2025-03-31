@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/yew_table" },
+    "facing=east":  { "model": "britannia_mod:block/yew_table", "y": 90 },
+    "facing=south": { "model": "britannia_mod:block/yew_table", "y": 180 },
+    "facing=west":  { "model": "britannia_mod:block/yew_table", "y": 270 }
+  }
+}

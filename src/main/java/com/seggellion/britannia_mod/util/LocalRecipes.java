@@ -44,6 +44,12 @@ private static final Logger LOGGER = LogManager.getLogger();
         recipeMap.put("viking_sword_gold", Map.of("gold", 2.0, "oak", 1.0));
         recipeMap.put("viking_sword_valorite", Map.of("valorite", 2.0, "oak", 1.0));
 
+        // Britannia Pickaxes (same base logic, different naming)
+        recipeMap.put("pickaxe_iron", Map.of("iron", 4.0, "oak", 2.0));
+        recipeMap.put("pickaxe_gold", Map.of("gold", 4.0, "oak", 2.0));
+        recipeMap.put("pickaxe_valorite", Map.of("valorite", 4.0, "oak", 2.0));
+
+
         // Make the map immutable
         Map<String, Map<String, Double>> tempUnmodifiable = new HashMap<>();
         for (Map.Entry<String, Map<String, Double>> entry : recipeMap.entrySet()) {
@@ -72,6 +78,11 @@ private static final Logger LOGGER = LogManager.getLogger();
         public static Map<String, Double> getVikingSwordRecipe(String material) {
         return RECIPE_MAP.getOrDefault("viking_sword_" + material.toLowerCase(), Collections.emptyMap());
     }
+
+    public static Map<String, Double> getPickaxeRecipe(String material) {
+        return RECIPE_MAP.getOrDefault("pickaxe_" + material.toLowerCase(), Collections.emptyMap());
+    }
+
 
     /**
      * Retrieves the deducted commodities and their total sum (checksum).

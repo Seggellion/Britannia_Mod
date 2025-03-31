@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.util.SendTransactionToAPI;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.item.QualityToolItem;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.trading.ItemCost;
@@ -85,6 +86,8 @@ public class VillagerTradeUpdater {
                 LOGGER.info("Skipping {} due to missing materials.", shortKey);
                 continue;
             }
+
+            
             double basePrice = computePriceFromRecipes(sword, marketPrices);
             int finalPrice = (int) Math.ceil(basePrice * 1.4);
 
@@ -107,23 +110,23 @@ public class VillagerTradeUpdater {
         return offers;
     }
 
-private static boolean materialAvailableForItem(ItemStack sword, JsonArray metalSupply) {
-    // Ensure the item is a QualitySwordItem
-    if (!(sword.getItem() instanceof QualitySwordItem)) {
-        return false;
+private static boolean materialAvailableForItem(ItemStack stack, JsonArray metalSupply) {
+    int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
+    String material = null;
+
+    if (stack.getItem() instanceof QualitySwordItem) {
+        material = QualitySwordItem.getMaterialFromModelData(modelData);
+    } else if (stack.getItem() instanceof QualityToolItem) {
+        material = QualityToolItem.getMaterialFromModelData(modelData);
+    } else {
+        return false; // Not a known quality item
     }
 
-    // Extract metal type from `custom_model_data`
-    int modelData = sword.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
-    String metalType = QualitySwordItem.getMaterialFromModelData(modelData);
-
-
-    if (metalType == null) {
+    if (material == null) {
         LOGGER.warn("Unknown material for modelData: {}", modelData);
         return false;
     }
 
-    // Check if the metal is available in the supply
     for (var element : metalSupply) {
         if (element.isJsonArray()) {
             JsonArray pair = element.getAsJsonArray();
@@ -131,7 +134,7 @@ private static boolean materialAvailableForItem(ItemStack sword, JsonArray metal
                 String availableMetal = pair.get(0).getAsString().toLowerCase();
                 double quantity = pair.get(1).getAsDouble();
 
-                if (metalType.equals(availableMetal) && quantity > 0) {
+                if (material.equals(availableMetal) && quantity > 0) {
                     return true;
                 }
             } else {
@@ -141,25 +144,60 @@ private static boolean materialAvailableForItem(ItemStack sword, JsonArray metal
             LOGGER.error("Expected JSON array but found: {}", element);
         }
     }
+
     return false;
 }
 
 
-  private static double computePriceFromRecipes(ItemStack sword, JsonObject marketPrices) {
-    // Get material from sword
-    int modelData = sword.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
-    String material = QualitySwordItem.getMaterialFromModelData(modelData);
 
-    if (material == null) {
-        return 10.0; // Default price
+private static double computePriceFromRecipes(ItemStack stack, JsonObject marketPrices) {
+    int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
+    String material = null;
+    int quality = 1;
+
+    if (stack.getItem() instanceof QualitySwordItem) {
+        material = QualitySwordItem.getMaterialFromModelData(modelData);
+        quality = QualitySwordItem.getQuality(stack);
+    } else if (stack.getItem() instanceof QualityToolItem) {
+        material = QualityToolItem.getMaterialFromModelData(modelData);
+        quality = QualityToolItem.getQuality(stack);
     }
 
-    double basePrice = marketPrices.has(material) ? marketPrices.get(material).getAsDouble() : 10.0;
-    int quality = QualitySwordItem.getQuality(sword);
+    String itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+    String shortKey = itemKey.contains(":") ? itemKey.split(":")[1] : itemKey;
 
-    // Adjust price by quality
-    double finalPrice = basePrice * (1.0 + (quality - 1) * 0.2); // Higher quality = more expensive
-    return Math.ceil(finalPrice); // Round up
+
+    if (material == null) {
+        LOGGER.warn("computePriceFromRecipes: Material was null for item: {}, modelData: {}", itemKey, modelData);
+        return 10.0;
+    }
+
+
+    String fullRecipeKey = shortKey + "_" + material;
+    Map<String, Double> recipe = LocalRecipes.getRecipe(fullRecipeKey);
+
+    if (recipe.isEmpty()) {
+        LOGGER.warn("computePriceFromRecipes: No recipe found for key '{}'", fullRecipeKey);
+    } else {
+        LOGGER.info("computePriceFromRecipes: Using recipe for '{}': {}", fullRecipeKey, recipe);
+    }
+
+
+    double basePrice = marketPrices.has(material) ? marketPrices.get(material).getAsDouble() : 10.0;
+    double totalCost = 0.0;
+    for (Map.Entry<String, Double> entry : recipe.entrySet()) {
+        String ingredient = entry.getKey();
+        double quantity = entry.getValue();
+        double pricePerUnit = marketPrices.has(ingredient) ? marketPrices.get(ingredient).getAsDouble() : 10.0;
+        totalCost += quantity * pricePerUnit;
+    }
+    double finalPrice = Math.ceil(totalCost * (1.0 + (quality - 1) * 0.2));
+
+    LOGGER.info("Pricing item: {}, material: {}, quality: {}, basePrice: {}, finalPrice: {}",
+        itemKey, material, quality, basePrice, finalPrice
+    );
+
+    return finalPrice;
 }
 
 

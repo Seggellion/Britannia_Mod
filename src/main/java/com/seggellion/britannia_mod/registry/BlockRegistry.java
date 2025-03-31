@@ -2,11 +2,14 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.MoongateBlock;
+import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
 import com.seggellion.britannia_mod.block.LargeForgeBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
+import com.seggellion.britannia_mod.block.ChairBlock;
+import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
 import com.seggellion.britannia_mod.block.LichSpawnBlock;
 import com.seggellion.britannia_mod.block.WoodSpawnBlock;
 import com.seggellion.britannia_mod.block.MetalSpawnBlock;
@@ -14,6 +17,7 @@ import com.seggellion.britannia_mod.block.StoneSpawnBlock;
 import com.seggellion.britannia_mod.block.FishSpawnBlock;
 import com.seggellion.britannia_mod.block.HorseSpawnBlock;
 import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
+import com.seggellion.britannia_mod.block.CandelabraBlock;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
@@ -27,6 +31,9 @@ import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
 import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -39,7 +46,6 @@ public class BlockRegistry {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(
             net.minecraft.core.registries.Registries.BLOCK_ENTITY_TYPE, "britannia_mod");
-
 
     public static final DeferredHolder<Block, Block> SHADE_SPAWN_BLOCK = BLOCKS.register(
             "shade_spawn_block", ShadeSpawnBlock::new);
@@ -150,6 +156,85 @@ public static final DeferredHolder<Block, Block> MOONGATE_BLOCK = BLOCKS.registe
 
     public static final DeferredHolder<Block, Block> MOONGATE_TOP = BLOCKS.register(
             "moongate_top", MoongateTopBlock::new);
+
+
+public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
+    "candelabra_small",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15))
+);
+
+public static final DeferredHolder<Block, Block> CANDELABRA_TALL = BLOCKS.register(
+    "candelabra_tall",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15))
+);
+
+
+        public static final DeferredHolder<Block, Block> YEW_TABLE = BLOCKS.register(
+        "yew_table",
+        () -> new RotatableFurnitureBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(0.3f)
+                .noOcclusion())
+        );
+
+
+                public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
+        "magincia_style_throne",
+         () -> new ChairBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(0.3f)
+                .noOcclusion()
+        )
+        );
+
+
+
+        public static final DeferredHolder<Block, Block> COPPER_ORE = BLOCKS.register(
+                "copper_ore", BaseOreBlock::new);
+                
+        public static final DeferredHolder<Block, Block> TIN_ORE = BLOCKS.register(
+                "tin_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> SILVER_ORE = BLOCKS.register(
+                "silver_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> GOLD_ORE = BLOCKS.register(
+                "gold_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> SHADOW_IRON_ORE = BLOCKS.register(
+                "shadow_iron_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> AGAPITE_ORE = BLOCKS.register(
+                "agapite_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> VERITE_ORE = BLOCKS.register(
+                "verite_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> VALORITE_ORE = BLOCKS.register(
+                "valorite_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> HIGH_PURITY_SILVER_ORE = BLOCKS.register(
+                "high_purity_silver_ore", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> IGNEOUS_ROCK = BLOCKS.register(
+                "igneous_rock", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> METAMORPHIC_ROCK = BLOCKS.register(
+                "metamorphic_rock", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> VOLCANIC_ROCK = BLOCKS.register(
+                "volcanic_rock", BaseOreBlock::new);
+
+        public static final DeferredHolder<Block, Block> GLACIAL_ROCK = BLOCKS.register(
+                "glacial_rock", BaseOreBlock::new);
 
 
 

@@ -6,6 +6,11 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.registry.ToolRegistry;
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import net.minecraft.world.item.Item;
+
 
 public class CreativeTabRegistry {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(
@@ -26,6 +31,11 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.MOONGATE_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.SMALL_FORGE_BLOCK_ENTITY.get());
                         output.accept(ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
+                        output.accept(ItemRegistry.YEW_TABLE_ITEM.get());
+                        output.accept(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
+                        output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
+                        output.accept(ItemRegistry.CANDELABRA_TALL_ITEM.get());
+                        output.accept(ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_TOP_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_LINKING_WAND.get());
                         output.accept(ItemRegistry.DUNGEON_MOONGATE_BLOCK_ITEM.get());
@@ -46,12 +56,43 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.METAL_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.FISH_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.HORSE_SPAWN_BLOCK_ITEM.get());
-                         output.accept(ItemRegistry.BLACKSMITH_SPAWN_BLOCK_ITEM.get());
+                        output.accept(ItemRegistry.BLACKSMITH_SPAWN_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.TWO_HANDED_AXE.get());
-                        output.accept(ItemRegistry.PICKAXE.get());
+                        output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3)); 
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());
                     }).build());
+
+public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_ORE_TAB = CREATIVE_TABS.register(
+        "britannia_ore_tab", () -> CreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.britannia_ore_tab"))
+                .icon(() -> Item.BY_BLOCK.get(BlockRegistry.VALORITE_ORE.get()).getDefaultInstance())
+                .displayItems((parameters, output) -> {
+                    // Add ores
+                    safeAccept(output, ItemRegistry.COPPER_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.TIN_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.SILVER_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.GOLD_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.SHADOW_IRON_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.AGAPITE_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.VERITE_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.VALORITE_ORE_ITEM.get());
+                    safeAccept(output, ItemRegistry.HIGH_PURITY_SILVER_ORE_ITEM.get());
+
+                    // Add rock types from ItemRegistry
+                    safeAccept(output, ItemRegistry.IGNEOUS_ROCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.METAMORPHIC_ROCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.VOLCANIC_ROCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.GLACIAL_ROCK_ITEM.get());
+                }).build());
+
+    private static void safeAccept(CreativeModeTab.Output output, Item item) {
+        if (item != null) {
+            output.accept(item);
+        } else {
+            System.err.println("Warning: Attempted to add a null item to the creative tab.");
+        }
+    }
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_MAGIC_TAB = CREATIVE_TABS.register(
             "britannia_tab_magic", () -> CreativeModeTab.builder()

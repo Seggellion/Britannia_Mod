@@ -40,25 +40,4 @@ public class BritanniaPickaxeItem extends PickaxeItem {
         return super.getDestroySpeed(stack, state);
     }
 
-/*
-    @Override
-    public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity entity) {
-        if (!level.isClientSide && entity instanceof Player player) {
-            LOGGER.info("Block is being mined!!");
-            // Handle custom ore drops
-            if (state.is(Blocks.IRON_ORE) || state.is(Blocks.DEEPSLATE_IRON_ORE)) {
-                ItemStack purityOreStack = new ItemStack(ItemRegistry.PURITY_ORE_ITEM.get());
-                PurityOreItem oreItem = (PurityOreItem) purityOreStack.getItem();
-
-                // Assign custom purity value
-                int purity = 1 + level.random.nextInt(5); // Random purity between 1 and 5
-                oreItem.setPurity(purityOreStack, purity);
-                LOGGER.info("oreItem:", oreItem);
-                // Drop the item using Minecraft's drop mechanism
-                Block.popResource(level, pos, purityOreStack);
-            }
-        }
-        return super.mineBlock(stack, level, state, pos, entity);
-    }
-*/
 }

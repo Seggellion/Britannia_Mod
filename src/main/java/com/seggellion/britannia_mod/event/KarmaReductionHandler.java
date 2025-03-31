@@ -4,10 +4,9 @@ import com.seggellion.britannia_mod.util.KarmaManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.registries.RegistryManager;
 import net.neoforged.bus.api.SubscribeEvent;
-
 
 import java.util.Iterator;
 import java.util.Map;
@@ -15,7 +14,7 @@ import java.util.UUID;
 
 public class KarmaReductionHandler {
 
-     @SubscribeEvent
+    @SubscribeEvent
     public void onServerTick(ServerTickEvent.Post event) {
         long currentTime = System.currentTimeMillis();
 
@@ -31,15 +30,25 @@ public class KarmaReductionHandler {
 
                 if (currentTime - timeCut > TreeKarmaHandler.REPLANT_TIMEOUT_MS) {
                     ServerPlayer player = server.getPlayerList().getPlayer(playerId);
-                    if (player != null) {
-                            UUID userId = player.getUUID();
-                              double x = player.getX();
-                                double y = player.getY();
-                                double z = player.getZ();
-                            KarmaManager.adjustUserStats(server, userId, -5, 0, x,y,z); 
 
+                    if (player != null) {
+                        GameType currentMode = player.gameMode.getGameModeForPlayer();
+
+                        // ❌ Skip karma penalty if in Creative mode
+                        if (currentMode == GameType.CREATIVE) {
+                            iterator.remove(); // Still clean up the timestamp to avoid memory buildup
+                            continue;
+                        }
+
+                        UUID userId = player.getUUID();
+                        double x = player.getX();
+                        double y = player.getY();
+                        double z = player.getZ();
+
+                        KarmaManager.adjustUserStats(server, userId, -5, 0, x, y, z);
                         player.sendSystemMessage(Component.literal("You failed to replant a tree. Karma reduced!"));
                     }
+
                     iterator.remove(); // Remove the entry after processing
                 }
             }

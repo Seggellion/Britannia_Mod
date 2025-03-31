@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.registry.ToolRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.DataComponentMap;
@@ -16,7 +17,7 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -166,21 +167,16 @@ private static ItemStack validateItemStack(ItemStack itemStack) {
     }
 
     private static ItemStack createRustedPickaxe() {
-        ItemStack pickaxe = new ItemStack(ItemRegistry.PICKAXE.get());
+        // Create pickaxe with initialized quality & material
+        ItemStack pickaxe = ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 1); // Rusted = low quality
 
-        // Build and apply data components
-        DataComponentMap.Builder builder = DataComponentMap.builder();
-        builder.set(DataComponents.CUSTOM_NAME, Component.literal("A rusted Iron Pickaxe"));
+        // Add custom name
+        pickaxe.set(DataComponents.CUSTOM_NAME, Component.literal("A rusted Iron Pickaxe"));
 
-        // Apply components to the ItemStack
-        pickaxe.applyComponents(builder.build());
-
-        // Set durability
+        // Set durability to half
         int maxDurability = pickaxe.getMaxDamage();
-        int halfDamage = maxDurability / 2;
-        pickaxe.setDamageValue(halfDamage);
+        pickaxe.setDamageValue(maxDurability / 2);
 
-        // Log for debugging
         LOGGER.info("Created Rusted pickaxe: {}", pickaxe.getComponents());
 
         return pickaxe;

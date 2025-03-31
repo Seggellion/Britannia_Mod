@@ -8,9 +8,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.Tag;
+
 // GeckoLib imports
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -21,48 +24,69 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.HashMap;
+
 public class SmallForgeBlockEntity extends BlockEntity implements GeoBlockEntity {
     private static final String STORED_PURITY_KEY = "StoredPurity";
     private int storedPurity = 0;
+    private final Map<String, Integer> storedPurityMap = new HashMap<>();
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public SmallForgeBlockEntity(BlockPos pos, BlockState state) {
         super(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), pos, state);
     }
 
-    public void addPurity(int purity) {
-        this.storedPurity += purity;
+        public void addPurity(String oreType, int purityToAdd, Supplier<Item> ingotSupplier) {
+            int currentPurity = storedPurityMap.getOrDefault(oreType, 0);
+            currentPurity += purityToAdd;
 
-        // 🔄 Convert ore into ingots when purity reaches 6
-        if (storedPurity >= 6) {
-            int ingotsProduced = (storedPurity / 6) * 2;
-            storedPurity %= 6; // Keep the remainder
+            if (currentPurity >= 6) {
+                int ingotsToDrop = (currentPurity / 6) * 2;
+                currentPurity %= 6;
 
-            if (level != null && !level.isClientSide) {
-
-                ItemStack ingotStack = new ItemStack(Items.IRON_INGOT, ingotsProduced);
-                ItemEntity ingotEntity = new ItemEntity(level, worldPosition.getX(), worldPosition.getY() + 1, worldPosition.getZ(), ingotStack);
-                level.addFreshEntity(ingotEntity);
-
-      
+                if (level != null && !level.isClientSide) {
+                    ItemStack ingotStack = new ItemStack(ingotSupplier.get(), ingotsToDrop);
+                    ItemEntity ingotEntity = new ItemEntity(
+                        level,
+                        worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 1.0,
+                        worldPosition.getZ() + 0.5,
+                        ingotStack
+                    );
+                    level.addFreshEntity(ingotEntity);
+                }
             }
+
+            storedPurityMap.put(oreType, currentPurity);
+            setChanged();
         }
 
-        setChanged(); 
+@Override
+protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+    super.saveAdditional(tag, provider);
+
+    CompoundTag purityTag = new CompoundTag();
+    for (Map.Entry<String, Integer> entry : storedPurityMap.entrySet()) {
+        purityTag.putInt(entry.getKey(), entry.getValue());
     }
 
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.loadAdditional(tag, provider);
-        storedPurity = tag.getInt(STORED_PURITY_KEY);
-    }
+    tag.put(STORED_PURITY_KEY, purityTag);
+}
 
-  
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
-        tag.putInt(STORED_PURITY_KEY, storedPurity);
+@Override
+protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+    super.loadAdditional(tag, provider);
+    storedPurityMap.clear();
+
+    if (tag.contains(STORED_PURITY_KEY, Tag.TAG_COMPOUND)) {
+        CompoundTag purityTag = tag.getCompound(STORED_PURITY_KEY);
+        for (String key : purityTag.getAllKeys()) {
+            storedPurityMap.put(key, purityTag.getInt(key));
+        }
     }
+}
 
     @Override
     public void registerControllers(ControllerRegistrar controllers) {

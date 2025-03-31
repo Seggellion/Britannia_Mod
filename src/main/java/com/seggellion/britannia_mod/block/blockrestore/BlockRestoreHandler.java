@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
+import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -20,7 +21,9 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class BlockRestoreHandler {
-    private static final long RESTORE_DELAY = 10 * 1000L; // 10 seconds in milliseconds
+
+    private static final int RESTORE_HOURS = 6;
+    private static final long RESTORE_DELAY = RESTORE_HOURS * 60L * 60L * 1000L;
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent.Pre event) {
@@ -28,7 +31,10 @@ public class BlockRestoreHandler {
         if (server == null) return;
 
         long now = System.currentTimeMillis();
-        Iterator<Map.Entry<BlockPos, BrokenBlockData>> iterator = BrokenBlockTracker.getBrokenBlocks().entrySet().iterator();
+        ResourceKey<Level> dimensionKey = Level.OVERWORLD;
+        ServerLevel level = server.getLevel(dimensionKey);
+        BrokenBlockDataStorage storage = BrokenBlockDataStorage.get(level);
+        Iterator<Map.Entry<BlockPos, BrokenBlockData>> iterator = storage.getBrokenBlocks().entrySet().iterator();
 
         Map<UUID, Integer> playerRestoreCount = new HashMap<>();
 
@@ -37,8 +43,7 @@ public class BlockRestoreHandler {
             BrokenBlockData data = entry.getValue();
 
             if (now - data.brokenTime >= RESTORE_DELAY) {
-                ResourceKey<Level> dimensionKey = Level.OVERWORLD;
-                ServerLevel level = server.getLevel(dimensionKey);
+             
 
                 if (level != null && level.isLoaded(data.pos)) {
                     level.setBlockAndUpdate(data.pos, data.originalState);

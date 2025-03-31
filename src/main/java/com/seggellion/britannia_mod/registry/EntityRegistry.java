@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
 //import com.seggellion.britannia_mod.entity.EntityJourneymanBlacksmith;
+import com.seggellion.britannia_mod.entity.LivingSeatEntity;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
 import com.seggellion.britannia_mod.entity.RatEntity;
@@ -112,6 +113,11 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
                     .build("britannia_mod:custom_cat")
     );
 
+public static final DeferredHolder<EntityType<?>, EntityType<LivingSeatEntity>> SEAT_ENTITY =
+    ENTITIES.register("seat_entity",
+        () -> EntityType.Builder.<LivingSeatEntity>of(LivingSeatEntity::new, MobCategory.MISC)
+            .sized(0.5f, 0.5f) // Required!
+            .build("britannia_mod:seat_entity"));
 
         public static final DeferredHolder<EntityType<?>, EntityType<WraithEntity>> WRAITH_ENTITY = ENTITIES.register(
             "wraith",
@@ -187,7 +193,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
         event.put(WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchant.createAttributes().build());
         event.put(METAL_MERCHANT_ENTITY.get(), EntityMetalMerchant.createAttributes().build());
         event.put(STONE_MERCHANT_ENTITY.get(), EntityStoneMerchant.createAttributes().build());
-       // event.put(JOURNEYMAN_BLACKSMITH_ENTITY.get(), EntityJourneymanBlacksmith.createAttributes().build());
+
         event.put(TOWN_PERSON_ENTITY.get(), TownPersonEntity.createAttributes().build());
 
     }

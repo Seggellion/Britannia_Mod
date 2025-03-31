@@ -129,8 +129,8 @@ private static void handleResponse(HttpURLConnection conn, Player player, List<J
                     removeGoldCoins(serverPlayer, (int) totalGold);
                 } else if ("sell".equals(transactionType)) {
                     // ✅ Give Gold for Sales and Remove Sold Items
-                    giveGoldCoins(serverPlayer, (int) totalGold);
                     removeSoldItems(serverPlayer, items);
+                    giveGoldCoins(serverPlayer, (int) totalGold);                   
                 } else {
                     LOGGER.warn("Unknown transaction type: {}", transactionType);
                 }

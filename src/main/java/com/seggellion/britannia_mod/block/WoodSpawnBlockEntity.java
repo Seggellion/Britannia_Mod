@@ -27,7 +27,7 @@ public class WoodSpawnBlockEntity extends BlockEntity {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final double SPAWN_RADIUS = 10.0;
     private static final int MAX_COOLDOWN = 1000;
-    private static final int REQUIRED_FOOD = 100;
+    private static final int REQUIRED_FOOD = 200;
     private static final int MAX_MERCHANTS = 1;
     private static final int TOWNSPERSON_COUNT = 4;
 

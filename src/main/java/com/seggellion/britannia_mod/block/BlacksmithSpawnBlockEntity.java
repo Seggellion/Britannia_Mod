@@ -45,7 +45,8 @@ public class BlacksmithSpawnBlockEntity extends BlockEntity {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final double SPAWN_RADIUS = 10.0;
     private static final int MAX_COOLDOWN = 1000;
-    private static final int REQUIRED_FOOD = 0;
+    private static final int REQUIRED_FOOD = 400;
+    private static final int REQUIRED_WOOD = 200;
     private static final int MAX_MERCHANTS = 1;
     private static final int TOWNSPERSON_COUNT = 2;
 
@@ -72,13 +73,16 @@ public void tick() {
     spawnCooldown = MAX_COOLDOWN;
     if (!(level instanceof ServerLevel serverLevel)) return;
 
-    double currentFood = CityDataSync.fetchFoodSupply(serverLevel, cityName);
+    double[] supplies = CityDataSync.fetchFoodAndWoodSupply(serverLevel, cityName);
+    double currentFood = supplies[0]; // Food supply
+    double currentWood = supplies[1]; // Wood supply
+
     long blacksmithMerchantCount = associatedNpcs.stream()
             .map(serverLevel::getEntity)
             .filter(e -> e instanceof Villager)
             .count();
 
-    if (currentFood >= REQUIRED_FOOD && blacksmithMerchantCount < MAX_MERCHANTS) {
+if (currentFood >= REQUIRED_FOOD && currentWood >= REQUIRED_WOOD && blacksmithMerchantCount < MAX_MERCHANTS) {
         spawnBlacksmithMerchant(serverLevel);
         long currentTownspeople = associatedNpcs.stream()
                 .map(serverLevel::getEntity)
@@ -86,7 +90,7 @@ public void tick() {
                 .count();
         int spawnCount = Math.max(0, TOWNSPERSON_COUNT - (int) currentTownspeople);
         spawnTownspersons(serverLevel, spawnCount);
-    } else if (currentFood < REQUIRED_FOOD) {
+    } else if (currentFood < REQUIRED_FOOD || currentWood < REQUIRED_WOOD) {
         despawnAssociatedNpcs(serverLevel);
     }
 }

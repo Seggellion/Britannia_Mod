@@ -8,6 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.core.BlockPos;
@@ -69,9 +70,18 @@ public class ToolInteractionHandler {
             // IronPickaxe → stone/ore only
             else if (item instanceof BritanniaPickaxeItem) {
                 boolean isStone = state.is(BlockTags.BASE_STONE_OVERWORLD);
-                boolean isOre = state.is(Blocks.IRON_ORE)
-                             || state.is(Blocks.DEEPSLATE_IRON_ORE)
-                             || state.is(Blocks.GOLD_ORE);
+                boolean isOre = state.is(Blocks.IRON_ORE) ||
+                        state.is(Blocks.DEEPSLATE_IRON_ORE) ||
+                        state.is(Blocks.GOLD_ORE) ||
+                        state.is(BlockRegistry.COPPER_ORE.get()) ||
+                        state.is(BlockRegistry.TIN_ORE.get()) ||
+                        state.is(BlockRegistry.SILVER_ORE.get()) ||
+                        state.is(BlockRegistry.GOLD_ORE.get()) ||
+                        state.is(BlockRegistry.SHADOW_IRON_ORE.get()) ||
+                        state.is(BlockRegistry.AGAPITE_ORE.get()) ||
+                        state.is(BlockRegistry.VERITE_ORE.get()) ||
+                        state.is(BlockRegistry.VALORITE_ORE.get()) ||
+                        state.is(BlockRegistry.HIGH_PURITY_SILVER_ORE.get());
                 if (!isStone && !isOre) {
                     LOGGER.info("Preventing block breaking for non-stone/ore block with IronPickaxe: {}",
                                 state.getBlock());

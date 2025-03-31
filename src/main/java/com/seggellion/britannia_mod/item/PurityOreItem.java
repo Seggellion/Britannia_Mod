@@ -96,6 +96,11 @@ public class PurityOreItem extends Item {
             case "gold ore" -> 200;
             case "shadow iron ore" -> 300;
             case "valorite ore" -> 400;
+            case "silver ore" -> 500;
+            case "verite ore" -> 600;
+            case "agapite ore" -> 700;
+            case "copper ore" -> 800;
+            case "tin ore" -> 900;
             default -> 0;
         };
     }

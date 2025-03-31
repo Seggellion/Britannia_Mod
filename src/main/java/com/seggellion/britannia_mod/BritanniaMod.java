@@ -46,6 +46,9 @@ import com.seggellion.britannia_mod.city.CommodityConsumer;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.network.CityDataSync;
+import com.seggellion.britannia_mod.util.OreVeinLoader;
+
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -88,11 +91,13 @@ public class BritanniaMod {
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
-
+        OreVeinLoader.loadOreVeins();
         // Register mod components
+     //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
         SwordRegistry.register(modEventBus);
+        ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
         BlacksmithProfessions.registerAll(modEventBus);
     
@@ -102,7 +107,7 @@ public class BritanniaMod {
         SoundRegistry.register(modEventBus);
         ConfigRegistry.register();  // No longer passes modContainer
         ModAttributes.register(modEventBus); 
-      //  modEventBus.addListener(BlacksmithProfessions::onVillagerTrades);
+
         modEventBus.addListener(this::registerEntityAttributes); 
         modEventBus.register(NetworkHandler.class);
         modEventBus.register(ModSpawnPlacementRegistry.class);
@@ -118,14 +123,6 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new BlockRestoreHandler());
 
-       
-        //NeoForge.EVENT_BUS.register(new BlacksmithTradeEventHandler());
-        
-        // NeoForge.EVENT_BUS.register(new FishingEventHandler());
-        //NeoForge.EVENT_BUS.register(new StoneOreBreakEventHandler());
-
-
-        // Create an instance of your event handler
         FishingEventHandler fishingEventHandler = new FishingEventHandler();
 
         // Register the event handler method directly
@@ -140,11 +137,6 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(GlobalEventHandler.class);
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
         NeoForge.EVENT_BUS.register(CommodityConsumer.class);
-//        NeoForge.EVENT_BUS.register(BlacksmithProfessions.class);
-
-
-       // NeoForge.EVENT_BUS.register(BreakSpeedHandler.class);
-       //NeoForge.EVENT_BUS.register(new BreakSpeedHandler());
         NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
         NeoForge.EVENT_BUS.register(new CityGameModeHandler());
        NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
@@ -162,12 +154,11 @@ public class BritanniaMod {
         ManaHandler.register();
 
         if (FMLLoader.getDist().isClient()) {
-    //           modEventBus.addListener(ClientEventHandler::onClientSetup);
             modEventBus.addListener(ClientModSetup::onClientSetup);
             modEventBus.addListener(ClientModSetup::onRegisterItemColors);
             modEventBus.addListener(ClientModSetup::registerRenderers);
+
             ClientEventHandler.register(modEventBus);
-           // NeoForge.EVENT_BUS.register(new ClientEventHandler());
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);

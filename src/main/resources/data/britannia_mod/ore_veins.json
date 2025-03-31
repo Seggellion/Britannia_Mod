@@ -1,0 +1,13 @@
+[
+  { "oreType": "shadow_iron", "x": 240, "y": -50, "z": 100, "radius": 35, "rotation": "XZ"  }, 
+  { "oreType": "tin", "x": 220, "y": -50, "z": 100, "radius": 35, "rotation": "XZ"  }, 
+  { "oreType": "agapite", "x": 200, "y": -50, "z": 100, "radius": 55, "rotation": "XZ"  },
+    { "oreType": "copper", "x": 180, "y": -50, "z": 100, "radius": 15, "rotation": "XZ"  },
+    { "oreType": "iron", "x": 160, "y": -50, "z": 100, "radius": 90, "rotation": "XZ"  },
+    { "oreType": "gold", "x": 140, "y": -50, "z": 100, "radius": 50, "rotation": "XZ" },
+    { "oreType": "silver", "x": 120, "y": -50, "z": 100, "radius": 50, "rotation": "ZW" },
+    { "oreType": "verite", "x": 40, "y": -50, "z": 100, "radius": 20, "rotation": "XZ"  },
+    { "oreType": "valorite", "x": 20, "y": -50, "z": 100, "radius": 50, "rotation": "XZ"  },
+    { "oreType": "coal", "x": 80, "y": -50, "z": 100, "radius": 50, "rotation": "XZ"  }
+  ]
+  

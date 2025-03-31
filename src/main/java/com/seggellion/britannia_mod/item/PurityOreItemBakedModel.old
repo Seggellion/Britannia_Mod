@@ -1,0 +1,106 @@
+package com.seggellion.britannia_mod.client.model;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.RandomSource;
+import net.minecraft.core.Direction;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+import java.util.List;
+import java.util.ArrayList;
+import net.minecraft.world.item.ItemDisplayContext;
+
+public class PurityOreItemBakedModel implements BakedModel, IBakedModelExtension {
+    private final BakedModel originalModel;
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    public PurityOreItemBakedModel(BakedModel originalModel) {
+        this.originalModel = originalModel;
+    }
+
+    @Override
+    public List<BakedQuad> getQuads(net.minecraft.world.level.block.state.BlockState state, Direction side, RandomSource rand) {
+        List<BakedQuad> quads = originalModel.getQuads(state, side, rand);
+        
+        LOGGER.info("🔆 Adjusting brightness for Silver Ore!");
+
+        if (isSilverOre()) {
+            return adjustBrightness(quads, 1.5f); // Increase brightness by 50%
+        }
+
+        return quads;
+    }
+
+    @Override
+    public boolean useAmbientOcclusion() {
+        return originalModel.useAmbientOcclusion();
+    }
+
+    @Override
+    public boolean isGui3d() {
+        return originalModel.isGui3d();
+    }
+
+    @Override
+    public boolean usesBlockLight() {
+        return originalModel.usesBlockLight();
+    }
+
+    @Override
+    public boolean isCustomRenderer() {
+        return true;
+    }
+
+    @Override
+    public TextureAtlasSprite getParticleIcon() {
+        return originalModel.getParticleIcon();
+    }
+
+    @Override
+    public ItemOverrides getOverrides() {
+        return originalModel.getOverrides();
+    }
+
+    @Override
+    public BakedModel applyTransform(ItemDisplayContext context, PoseStack poseStack, boolean applyLeftHandTransform) {
+        return this;
+    }
+
+    private List<BakedQuad> adjustBrightness(List<BakedQuad> quads, float brightnessFactor) {
+        List<BakedQuad> brightenedQuads = new ArrayList<>();
+
+        for (BakedQuad quad : quads) {
+            int[] vertexData = quad.getVertices().clone();
+            
+            for (int i = 0; i < vertexData.length; i += 7) {
+                int color = vertexData[i + 3]; // Extract color
+                int newColor = adjustColorBrightness(color, brightnessFactor);
+                vertexData[i + 3] = newColor; // Modify color brightness
+            }
+
+            brightenedQuads.add(new BakedQuad(vertexData, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade()));
+        }
+
+        return brightenedQuads;
+    }
+
+    private int adjustColorBrightness(int color, float factor) {
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
+
+        r = Math.min(255, (int) (r * factor));
+        g = Math.min(255, (int) (g * factor));
+        b = Math.min(255, (int) (b * factor));
+
+        return (r << 16) | (g << 8) | b;
+    }
+
+    private boolean isSilverOre() {
+        return true; // Replace with actual ore type check logic
+    }
+}

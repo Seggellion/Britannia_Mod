@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.util;
 
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.util.RandomSource;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ public final class BlockBreakUtils {
     static {
         ORE_TYPES.put("shadow_iron", new Double[]{1.0, 3.0});
         ORE_TYPES.put("verite", new Double[]{4.0, 6.0});
+        ORE_TYPES.put("silver", new Double[]{4.0, 6.0});
         ORE_TYPES.put("valorite", new Double[]{6.0, 8.0});
         ORE_TYPES.put("dull_copper", new Double[]{0.5, 2.0});
         ORE_TYPES.put("copper", new Double[]{1.0, 3.0});
@@ -26,8 +28,17 @@ public final class BlockBreakUtils {
      */
     public static String deduceOreType(BlockState state) {
         if (state.is(Blocks.IRON_ORE)) return "Iron ore";
-        if (state.is(Blocks.DEEPSLATE_IRON_ORE)) return "Shadow Iron ore";
         if (state.is(Blocks.GOLD_ORE)) return "Gold ore";
+        if (state.is(BlockRegistry.COPPER_ORE.get())) return "Copper ore";
+        if (state.is(BlockRegistry.TIN_ORE.get())) return "Tin ore";
+        if (state.is(BlockRegistry.SILVER_ORE.get())) return "Silver ore";
+        if (state.is(BlockRegistry.GOLD_ORE.get())) return "Gold ore";
+        if (state.is(BlockRegistry.SHADOW_IRON_ORE.get())) return "Shadow Iron ore";
+        if (state.is(BlockRegistry.AGAPITE_ORE.get())) return "Agapite ore";
+        if (state.is(BlockRegistry.VERITE_ORE.get())) return "Verite ore";
+        if (state.is(BlockRegistry.VALORITE_ORE.get())) return "Valorite ore";
+        if (state.is(BlockRegistry.HIGH_PURITY_SILVER_ORE.get())) return "High-Purity Silver ore";
+
         // Add more logic or custom blocks as needed
         return "unknown";
     }
@@ -44,6 +55,10 @@ public final class BlockBreakUtils {
         if (state.is(Blocks.CALCITE))     return "Limestone";
         if (state.is(Blocks.GRANITE))     return "Granite";
         if (state.is(Blocks.BLACKSTONE))  return "Blackrock";
+        if (state.is(BlockRegistry.IGNEOUS_ROCK.get())) return "Igneous Rock";
+        if (state.is(BlockRegistry.METAMORPHIC_ROCK.get())) return "Metamorphic Rock";
+        if (state.is(BlockRegistry.VOLCANIC_ROCK.get())) return "Volcanic Rock";
+        if (state.is(BlockRegistry.GLACIAL_ROCK.get())) return "Glacial Rock";
         return "Unknown";
     }
 

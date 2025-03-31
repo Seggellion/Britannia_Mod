@@ -1,0 +1,82 @@
+package com.seggellion.britannia_mod.registry;
+
+// NeoForge & Minecraft Imports
+import com.seggellion.britannia_mod.features.AltitudeScaledFeature;
+import com.seggellion.britannia_mod.features.ClusterVeinFeature;
+import com.seggellion.britannia_mod.features.LayeredVeinFeature;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.OreFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.data.worldgen.features.OreFeatures; // ✅ Import correct OreFeatures class
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
+
+import java.util.List;
+
+public class FeatureRegistry {
+    public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(
+            Registries.FEATURE, "britannia_mod");
+
+    public static final DeferredRegister<ConfiguredFeature<?, ?>> CONFIGURED_FEATURES = DeferredRegister.create(
+            Registries.CONFIGURED_FEATURE, "britannia_mod");
+
+    // ✅ Register Custom Features
+    public static final DeferredHolder<Feature<?>, Feature<OreConfiguration>> CLUSTER_VEIN = FEATURES.register(
+            "cluster_vein", ClusterVeinFeature::new);
+
+    public static final DeferredHolder<Feature<?>, Feature<OreConfiguration>> LAYERED_VEIN = FEATURES.register(
+            "layered_vein", LayeredVeinFeature::new);
+
+    public static final DeferredHolder<Feature<?>, Feature<OreConfiguration>> ALTITUDE_SCALED_VEIN = FEATURES.register(
+            "altitude_scaled_vein", AltitudeScaledFeature::new);
+
+    // ✅ Define Replaceable Target Blocks
+    private static final List<OreConfiguration.TargetBlockState> STONE_REPLACEABLES = List.of(
+        OreConfiguration.target(OreFeatures.ORE_STONE, Blocks.STONE.defaultBlockState()),
+        OreConfiguration.target(OreFeatures.ORE_ANDESITE, Blocks.ANDESITE.defaultBlockState()),
+        OreConfiguration.target(OreFeatures.ORE_GRANITE, Blocks.GRANITE.defaultBlockState()),
+        OreConfiguration.target(OreFeatures.ORE_DIORITE, Blocks.DIORITE.defaultBlockState())
+    );
+
+    // ✅ Register Configured Features (Specific Ore Types)
+    public static final DeferredHolder<ConfiguredFeature<?, ?>, ConfiguredFeature<OreConfiguration, ?>> CLUSTER_COPPER = CONFIGURED_FEATURES.register(
+            "cluster_copper", () -> new ConfiguredFeature<>(
+                    CLUSTER_VEIN.get(),
+                    new OreConfiguration(STONE_REPLACEABLES, Blocks.COPPER_ORE.defaultBlockState(), 8)
+            ));
+
+    public static final DeferredHolder<ConfiguredFeature<?, ?>, ConfiguredFeature<OreConfiguration, ?>> CLUSTER_VERITE = CONFIGURED_FEATURES.register(
+            "cluster_verite", () -> new ConfiguredFeature<>(
+                    CLUSTER_VEIN.get(),
+                    new OreConfiguration(STONE_REPLACEABLES, Blocks.IRON_ORE.defaultBlockState(), 10)
+            ));
+
+    public static final DeferredHolder<ConfiguredFeature<?, ?>, ConfiguredFeature<OreConfiguration, ?>> LAYER_COAL = CONFIGURED_FEATURES.register(
+            "layer_coal", () -> new ConfiguredFeature<>(
+                    LAYERED_VEIN.get(),
+                    new OreConfiguration(STONE_REPLACEABLES, Blocks.COAL_ORE.defaultBlockState(), 15)
+            ));
+
+    public static final DeferredHolder<ConfiguredFeature<?, ?>, ConfiguredFeature<OreConfiguration, ?>> LAYER_SILVER = CONFIGURED_FEATURES.register(
+            "layer_silver", () -> new ConfiguredFeature<>(
+                    LAYERED_VEIN.get(),
+                    new OreConfiguration(STONE_REPLACEABLES, Blocks.IRON_ORE.defaultBlockState(), 12)
+            ));
+
+    public static final DeferredHolder<ConfiguredFeature<?, ?>, ConfiguredFeature<OreConfiguration, ?>> ALTITUDE_VERITE = CONFIGURED_FEATURES.register(
+            "altitude_verite", () -> new ConfiguredFeature<>(
+                    ALTITUDE_SCALED_VEIN.get(),
+                    new OreConfiguration(STONE_REPLACEABLES, Blocks.GOLD_ORE.defaultBlockState(), 8)
+            ));
+
+    // ✅ Register to Event Bus
+    public static void register(IEventBus modEventBus) {
+        FEATURES.register(modEventBus);
+        CONFIGURED_FEATURES.register(modEventBus);
+    }
+}

@@ -1,6 +1,9 @@
 package com.seggellion.britannia_mod.blockrestore;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.UUID;
 
@@ -16,4 +19,24 @@ public class BrokenBlockData {
         this.brokenTime = brokenTime;
         this.playerUUID = playerUUID;
     }
+public CompoundTag toNbt() {
+    CompoundTag tag = new CompoundTag();
+    tag.putInt("x", pos.getX());
+    tag.putInt("y", pos.getY());
+    tag.putInt("z", pos.getZ());
+    tag.put("blockState", NbtUtils.writeBlockState(originalState));
+    tag.putLong("brokenTime", brokenTime);
+    tag.putUUID("playerUUID", playerUUID);
+    return tag;
+}
+
+public static BrokenBlockData fromNbt(CompoundTag tag) {
+    BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
+    BlockState state = NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), tag.getCompound("blockState"));
+    long time = tag.getLong("brokenTime");
+    UUID playerUUID = tag.getUUID("playerUUID");
+    return new BrokenBlockData(pos, state, time, playerUUID);
+}
+
+
 }

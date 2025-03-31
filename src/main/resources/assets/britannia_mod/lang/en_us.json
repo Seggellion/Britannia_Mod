@@ -24,5 +24,19 @@
   "item.britannia_mod.moongate_linking_wand": "Orb of the moons",
 
   "itemGroup.britannia_item_tab": "Britannia Item Tab",
-  "itemGroup.britannia_magic_tab": "Britannia Magic Tab"
+  "itemGroup.britannia_magic_tab": "Britannia Magic Tab",
+    "block.britannia_mod.copper_ore": "Copper Ore",
+    "block.britannia_mod.tin_ore": "Tin Ore",
+    "block.britannia_mod.silver_ore": "Silver Ore",
+    "block.britannia_mod.gold_ore": "Gold Ore",
+    "block.britannia_mod.shadow_iron_ore": "Shadow Iron Ore",
+    "block.britannia_mod.agapite_ore": "Agapite Ore",
+    "block.britannia_mod.verite_ore": "Verite Ore",
+    "block.britannia_mod.valorite_ore": "Valorite Ore",
+    "block.britannia_mod.high_purity_silver_ore": "High-Purity Silver Ore",
+    "block.britannia_mod.igneous_rock": "Igneous Rock",
+    "block.britannia_mod.metamorphic_rock": "Metamorphic Rock",
+    "block.britannia_mod.volcanic_rock": "Volcanic Rock",
+    "block.britannia_mod.glacial_rock": "Glacial Rock"  
+
 }

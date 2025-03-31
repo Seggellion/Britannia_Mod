@@ -65,7 +65,7 @@ public class WoodChopEventHandler {
              LOGGER.info("Wood block is about to break");
  if (player.isCreative() || player.hasPermissions(2)) {
         LOGGER.info("Skipping TreeKarmaHandler: Player {} is in Creative or an OP.", player.getName().getString());
-     // pineapple   return; 
+    return; 
     }
 
         // Only proceed if it's a log block, and the player is using your custom axe
@@ -111,16 +111,12 @@ public class WoodChopEventHandler {
             player.displayClientMessage(
                 Component.literal(String.format("You chop %s log. Weight=%.2f stones", woodType, weight)), true
             );
-                    player.sendSystemMessage(Component.literal("You cut down a tree. Replant a sapling to avoid karma loss!"));
+                    player.sendSystemMessage(Component.literal("You cut down a tree. Replant a sapling to avoid karma loss"));
 
         }
     }
 
-    /**
-     * Use block name or translation key to guess wood type.
-     * This is quick & dirty. You could also read e.g. block tags if you have
-     * multiple sets, or just keep it simpler.
-     */
+
     private static String deduceWoodType(BlockState state) {
         // e.g. "block.minecraft.oak_log"
         String name = state.getBlock().getDescriptionId().toLowerCase();

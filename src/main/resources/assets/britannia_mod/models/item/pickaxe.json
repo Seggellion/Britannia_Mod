@@ -1,7 +1,28 @@
 {
-    "parent": "item/generated",
-    "textures": {
-      "layer0": "britannia_mod:item/pickaxe"
+  "parent": "item/generated",
+  "textures": {
+   "layer0": "britannia_mod:item/pickaxe"
+  },
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [-20, -90, 25],
+      "translation": [0, 3.5, 1.6],
+      "scale": [1.2, 1.2, 1.2]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [-20, 90, -25],
+      "translation": [0, 3.5, 1.6],
+      "scale": [1.2, 1.2, 1.2]
+    },
+    "firstperson_righthand": {
+      "rotation": [0, -90, 25],
+      "translation": [1.13, 3.2, 0.4],
+      "scale": [0.68, 0.68, 0.68]
+    },
+    "firstperson_lefthand": {
+      "rotation": [0, 90, -25],
+      "translation": [1.13, 3.2, 0.4],
+      "scale": [0.68, 0.68, 0.68]
     }
   }
-  
+}
