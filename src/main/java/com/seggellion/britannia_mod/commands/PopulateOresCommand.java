@@ -52,6 +52,10 @@ public class PopulateOresCommand {
         ORE_TYPES.put("redstone", Blocks.REDSTONE_ORE);
         ORE_TYPES.put("deepslate_redstone", Blocks.DEEPSLATE_REDSTONE_ORE);
         ORE_TYPES.put("vanilla_copper", Blocks.COPPER_ORE);
+        ORE_TYPES.put("emerald", Blocks.EMERALD_ORE);
+        ORE_TYPES.put("deepslate_emerald", Blocks.DEEPSLATE_EMERALD_ORE);
+        ORE_TYPES.put("deepslate_lapis", Blocks.DEEPSLATE_LAPIS_ORE);
+        ORE_TYPES.put("lapis", Blocks.LAPIS_ORE);
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
