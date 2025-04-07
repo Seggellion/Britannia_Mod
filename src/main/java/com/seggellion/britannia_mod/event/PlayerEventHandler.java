@@ -119,7 +119,7 @@ public void onItemPickup(ItemEntityPickupEvent.Pre event) { // Changed to Pre
         Level level = player.level();
         BlockPos pos = event.getPos();
         BlockState state = level.getBlockState(pos);
-
+    
         if (player instanceof ServerPlayer serverPlayer && !level.isClientSide()) {
             // Check if player is in Adventure mode
             if (serverPlayer.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {

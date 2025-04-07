@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.event;
 
-import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -19,6 +18,8 @@ import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraft.world.level.block.Blocks;
 import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,10 +64,6 @@ public class WoodChopEventHandler {
         BlockState state = event.getState();
         BlockPos pos = event.getPos();
              LOGGER.info("Wood block is about to break");
- if (player.isCreative() || player.hasPermissions(2)) {
-        LOGGER.info("Skipping TreeKarmaHandler: Player {} is in Creative or an OP.", player.getName().getString());
-    return; 
-    }
 
         // Only proceed if it's a log block, and the player is using your custom axe
         if (usingTwoHandedAxe && state.is(BlockTags.LOGS)) {
@@ -102,7 +99,7 @@ public class WoodChopEventHandler {
 
     UUID playerId = player.getUUID();
         long currentTime = System.currentTimeMillis();
-        TreeKarmaHandler.treeCutTimestamps.put(playerId, currentTime);
+    
 
 
             LOGGER.info("Dropped WeightedWoodItem for type={}, weight={}", woodType, weight);
@@ -111,6 +108,13 @@ public class WoodChopEventHandler {
             player.displayClientMessage(
                 Component.literal(String.format("You chop %s log. Weight=%.2f stones", woodType, weight)), true
             );
+
+ if (player.isCreative() || player.hasPermissions(2)) {
+        LOGGER.info("Skipping TreeKarmaHandler: Player {} is in Creative or an OP.", player.getName().getString());
+    return; 
+    }
+    TreeKarmaHandler.treeCutTimestamps.put(playerId, currentTime);
+
                     player.sendSystemMessage(Component.literal("You cut down a tree. Replant a sapling to avoid karma loss"));
 
         }

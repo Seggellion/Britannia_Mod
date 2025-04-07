@@ -32,7 +32,6 @@ public class TwoHandedAxeItem extends AxeItem {
     private static final ResourceLocation ATTACK_DAMAGE_MODIFIER =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "attack_damage");
 
-
     public TwoHandedAxeItem(Tier tier, Item.Properties properties) {
         super(tier, properties); // Pass only the tier and properties to the parent constructor
     }

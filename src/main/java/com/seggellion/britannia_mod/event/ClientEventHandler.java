@@ -29,6 +29,18 @@ import com.seggellion.britannia_mod.InvisibleInAdventureMode;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.core.registries.BuiltInRegistries;
+import java.io.InputStream;
+import net.minecraft.core.registries.Registries;
+import java.io.IOException;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import com.seggellion.britannia_mod.client.structure.StructureCache;
+import net.minecraft.nbt.CompoundTag;
+
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -56,6 +68,11 @@ public class ClientEventHandler {
         if (mc.player == null || mc.level == null) {
             return;
         }
+
+    if (!StructureCache.hasLoadedGhostStructure()) {
+        loadGhostStructure(mc);
+        StructureCache.setGhostStructureLoaded(true);
+    }
 
         boolean isAttackPressed = mc.options.keyAttack.isDown();
 
@@ -133,6 +150,30 @@ public class ClientEventHandler {
             }
         }
     }
+
+    private void loadGhostStructure(Minecraft mc) {
+    ResourceLocation structureId = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/small_house.nbt");
+
+    try (InputStream stream = mc.getResourceManager().getResourceOrThrow(structureId).open()) {
+        CompoundTag tag = NbtIo.readCompressed(stream, NbtAccounter.unlimitedHeap());
+
+        if (mc.getConnection() == null) {
+            LOGGER.warn("Skipping ghost structure load: registryAccess not available yet.");
+            return;
+        }
+
+        RegistryAccess registryAccess = mc.getConnection().registryAccess();
+
+        StructureTemplate template = new StructureTemplate();
+        template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag);
+
+        StructureCache.setSmallHouseTemplate(template);
+        LOGGER.info("✅ Ghost structure loaded: {}", structureId);
+    } catch (IOException e) {
+        LOGGER.error("❌ Failed to load ghost structure: {}", structureId, e);
+    }
+}
+
 
 
 }

@@ -33,6 +33,8 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                         output.accept(ItemRegistry.YEW_TABLE_ITEM.get());
                         output.accept(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
+                        output.accept(ItemRegistry.SMALL_HOUSE_DEED.get());
+                         output.accept(ItemRegistry.BLUE_TENT_DEED.get());
                         output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                         output.accept(ItemRegistry.CANDELABRA_TALL_ITEM.get());
                         output.accept(ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
@@ -62,6 +64,23 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());
                     }).build());
+
+
+public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WORLD_BLOCKS = CREATIVE_TABS.register(
+        "britannia_world_blocks", () -> CreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.britannia_world_blocks"))
+                .icon(() -> Item.BY_BLOCK.get(BlockRegistry.QUARTER_DIRT_BLOCK.get()).getDefaultInstance())
+                .displayItems((parameters, output) -> {
+                    safeAccept(output, ItemRegistry.QUARTER_DIRT_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.HALF_DIRT_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.THREE_QUARTER_DIRT_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.QUARTER_GRASS_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.HALF_GRASS_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.THREE_QUARTER_GRASS_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.HALF_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.THREE_QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
+                }).build());
 
 public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_ORE_TAB = CREATIVE_TABS.register(
         "britannia_ore_tab", () -> CreativeModeTab.builder()

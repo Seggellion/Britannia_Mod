@@ -3,7 +3,9 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
-
+import com.seggellion.britannia_mod.item.SmallHouseDeedItem;
+import com.seggellion.britannia_mod.item.BlueTentDeedItem;
+import com.seggellion.britannia_mod.item.DeedItem;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
@@ -112,9 +114,80 @@ public class ItemRegistry {
     public static final DeferredHolder<Item, Item> MAGIC_ARROW_ITEM = ITEMS.register("magic_arrow_item",
             () -> new Item(new Item.Properties()));
 
+
+// custom fraction blocks
+
+public static final DeferredHolder<Item, Item> QUARTER_DIRT_BLOCK_ITEM = ITEMS.register(
+    "quarter_dirt_block",
+    () -> new BlockItem(BlockRegistry.QUARTER_DIRT_BLOCK.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> HALF_DIRT_BLOCK_ITEM = ITEMS.register(
+    "half_dirt_block",
+    () -> new BlockItem(BlockRegistry.HALF_DIRT_BLOCK.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> THREE_QUARTER_DIRT_BLOCK_ITEM = ITEMS.register(
+    "three_quarter_dirt_block",
+    () -> new BlockItem(BlockRegistry.THREE_QUARTER_DIRT_BLOCK.get(), new Item.Properties())
+);
+
+
+public static final DeferredHolder<Item, Item> QUARTER_GRASS_BLOCK_ITEM = ITEMS.register(
+    "quarter_grass_block",
+    () -> new BlockItem(BlockRegistry.QUARTER_GRASS_BLOCK.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> HALF_GRASS_BLOCK_ITEM = ITEMS.register(
+    "half_grass_block",
+    () -> new BlockItem(BlockRegistry.HALF_GRASS_BLOCK.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> THREE_QUARTER_GRASS_BLOCK_ITEM = ITEMS.register(
+    "three_quarter_grass_block",
+    () -> new BlockItem(BlockRegistry.THREE_QUARTER_GRASS_BLOCK.get(), new Item.Properties())
+);
+
+
+public static final DeferredHolder<Item, Item> QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM = ITEMS.register(
+    "quarter_deepslate_cobblestone_block",
+    () -> new BlockItem(BlockRegistry.QUARTER_DEEPSLATE_COBBLESTONE_BLOCK.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> HALF_DEEPSLATE_COBBLESTONE_BLOCK_ITEM = ITEMS.register(
+    "half_deepslate_cobblestone_block",
+    () -> new BlockItem(BlockRegistry.HALF_DEEPSLATE_COBBLESTONE_BLOCK.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> THREE_QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM = ITEMS.register(
+    "three_quarter_deepslate_cobblestone_block",
+    () -> new BlockItem(BlockRegistry.THREE_QUARTER_DEEPSLATE_COBBLESTONE_BLOCK.get(), new Item.Properties())
+);
+
+
+        // Housing tools
     public static final DeferredHolder<Item, Item> INTERIOR_DECORATOR_TOOL = ITEMS.register("interior_decorator_tool",
             () -> new Item(new Item.Properties()));
 
+
+    public static final DeferredHolder<Item, Item> DEED_ITEM = ITEMS.register("deed_item",
+        () -> new DeedItem(new Item.Properties()));
+
+
+public static final DeferredHolder<Item, Item> SMALL_HOUSE_DEED = ITEMS.register("small_deed",
+    () -> new SmallHouseDeedItem(new Item.Properties()));
+
+
+public static final DeferredHolder<Item, Item> BLUE_TENT_ITEM = ITEMS.register(
+    "blue_tent", () -> new BlockItem(BlockRegistry.BLUE_TENT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> BLUE_TENT_DEED = ITEMS.register(
+    "blue_tent_deed", () -> new BlueTentDeedItem(new Item.Properties())
+);
+
+
+// Ingots / Metals
 
         public static final DeferredHolder<Item, Item> SHADOW_IRON_INGOT = ITEMS.register("shadow_iron_ingot", () ->
         new Item(new Item.Properties())

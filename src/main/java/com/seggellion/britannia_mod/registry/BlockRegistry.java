@@ -6,8 +6,10 @@ import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
 import com.seggellion.britannia_mod.block.LargeForgeBlock;
+import com.seggellion.britannia_mod.block.BlueTentBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
+import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
 import com.seggellion.britannia_mod.block.ChairBlock;
 import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
 import com.seggellion.britannia_mod.block.LichSpawnBlock;
@@ -18,6 +20,11 @@ import com.seggellion.britannia_mod.block.FishSpawnBlock;
 import com.seggellion.britannia_mod.block.HorseSpawnBlock;
 import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
 import com.seggellion.britannia_mod.block.CandelabraBlock;
+import com.seggellion.britannia_mod.block.HalfBlock;
+import com.seggellion.britannia_mod.block.QuarterBlock;
+import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
+import com.seggellion.britannia_mod.block.HouseLotBlock;
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
@@ -54,6 +61,55 @@ public class BlockRegistry {
             "shade_spawn_block_entity",
             () -> BlockEntityType.Builder.of(ShadeSpawnBlockEntity::new, SHADE_SPAWN_BLOCK.get()).build(null));
 
+// Custom fraction blocks
+        public static final DeferredHolder<Block, Block> QUARTER_DIRT_BLOCK = BLOCKS.register(
+        "quarter_dirt_block", 
+        () -> new QuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
+        );
+
+       public static final DeferredHolder<Block, Block> HALF_DIRT_BLOCK = BLOCKS.register(
+        "half_dirt_block", 
+        () -> new HalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
+        );
+        
+        public static final DeferredHolder<Block, Block> THREE_QUARTER_DIRT_BLOCK = BLOCKS.register(
+        "three_quarter_dirt_block", 
+        () -> new ThreeQuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
+        );
+
+        public static final DeferredHolder<Block, Block> QUARTER_GRASS_BLOCK = BLOCKS.register(
+        "quarter_grass_block", 
+        () -> new QuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
+        );
+
+       public static final DeferredHolder<Block, Block> HALF_GRASS_BLOCK = BLOCKS.register(
+        "half_grass_block", 
+        () -> new HalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
+        );
+        
+        public static final DeferredHolder<Block, Block> THREE_QUARTER_GRASS_BLOCK = BLOCKS.register(
+        "three_quarter_grass_block", 
+        () -> new ThreeQuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
+        );
+
+        public static final DeferredHolder<Block, Block> QUARTER_DEEPSLATE_COBBLESTONE_BLOCK = BLOCKS.register(
+        "quarter_deepslate_cobblestone_block", 
+        () -> new QuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(3.0f, 6.0f))
+        );
+
+        public static final DeferredHolder<Block, Block> HALF_DEEPSLATE_COBBLESTONE_BLOCK = BLOCKS.register(
+        "half_deepslate_cobblestone_block", 
+        () -> new HalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(3.0f, 6.0f))
+        );
+
+        
+        public static final DeferredHolder<Block, Block> THREE_QUARTER_DEEPSLATE_COBBLESTONE_BLOCK = BLOCKS.register(
+        "three_quarter_deepslate_cobblestone_block", 
+        () -> new ThreeQuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).strength(3.0f, 6.0f))
+        );
+
+
+// end of fraction blocks
    public static final DeferredHolder<Block, Block> LICH_SPAWN_BLOCK = BLOCKS.register(
             "lich_spawn_block", LichSpawnBlock::new);
 
@@ -139,6 +195,28 @@ public class BlockRegistry {
         BLOCK_ENTITY_TYPES.register("small_forge_block_entity",
             () -> BlockEntityType.Builder.of(SmallForgeBlockEntity::new, SMALL_FORGE_BLOCK.get()).build(null));
 
+// House deeds
+
+public static final DeferredHolder<Block, Block> HOUSE_LOT_BLOCK = BLOCKS.register(
+    "house_lot_block", HouseLotBlock::new);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HouseLotBlockEntity>> HOUSE_LOT_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITY_TYPES.register("house_lot_block_entity",
+        () -> BlockEntityType.Builder.of(HouseLotBlockEntity::new, HOUSE_LOT_BLOCK.get()).build(null));
+
+
+public static final DeferredHolder<Block, Block> BLUE_TENT = BLOCKS.register("blue_tent", 
+    () -> new BlueTentBlock(BlockBehaviour.Properties.of()
+        .noOcclusion()
+        .strength(1.0f))
+);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlueTentBlockEntity>> BLUE_TENT_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITY_TYPES.register("blue_tent_block_entity",
+        () -> BlockEntityType.Builder.of(BlueTentBlockEntity::new, BLUE_TENT.get()).build(null));
+
+
+//end of house deeds
 
 public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_BLOCK = BLOCKS.register(
         "dungeon_moongate_block", DungeonMoongateBlock::new);

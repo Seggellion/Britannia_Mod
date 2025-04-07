@@ -15,6 +15,7 @@ import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
 import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
 import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
 import com.seggellion.britannia_mod.client.BritainMusicHandler;
+import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
 import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
 import com.seggellion.britannia_mod.event.BreakSpeedHandler;
 import com.seggellion.britannia_mod.event.PopulationEventHandler;
@@ -157,12 +158,13 @@ public class BritanniaMod {
             modEventBus.addListener(ClientModSetup::onClientSetup);
             modEventBus.addListener(ClientModSetup::onRegisterItemColors);
             modEventBus.addListener(ClientModSetup::registerRenderers);
-
             ClientEventHandler.register(modEventBus);
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
+            NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
+
         }
 
        

@@ -7,6 +7,7 @@ import net.minecraft.world.level.GameType;    // <— Notice: "world.level.GameT
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import org.slf4j.Logger;
+import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.CityRegistry;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
@@ -45,13 +46,14 @@ public class CityGameModeHandler {
         Item item = heldItem.getItem();
 
         // If holding IronPickaxe or TwoHandedAxe and currently in Adventure => switch to Survival
-        if ((item instanceof BritanniaPickaxeItem || item instanceof TwoHandedAxeItem)
+        if ((item == ToolRegistry.PICKAXE.get() || item instanceof TwoHandedAxeItem)
                 && currentMode == GameType.ADVENTURE) {
-            LOGGER.info("Switching player to Survival mode while holding IronPickaxe or TwoHandedAxe.");
+            LOGGER.info("Switching player to Survival mode while holding UO Pickaxe or TwoHandedAxe.");
+
             player.setGameMode(GameType.SURVIVAL);
         }
         // If not holding either and in Survival => revert to Adventure
-        else if (!(item instanceof BritanniaPickaxeItem)
+        else if (!(item == ToolRegistry.PICKAXE.get())
                 && !(item instanceof TwoHandedAxeItem)
                 && currentMode == GameType.SURVIVAL) {
             LOGGER.info("Restoring Adventure mode when not holding IronPickaxe or TwoHandedAxe.");
