@@ -33,7 +33,7 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                         output.accept(ItemRegistry.YEW_TABLE_ITEM.get());
                         output.accept(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
-                        output.accept(ItemRegistry.SMALL_HOUSE_DEED.get());
+                        output.accept(ItemRegistry.SMALL_WOOD_HOUSE_DEED.get());
                          output.accept(ItemRegistry.BLUE_TENT_DEED.get());
                         output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                         output.accept(ItemRegistry.CANDELABRA_TALL_ITEM.get());

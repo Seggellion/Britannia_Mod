@@ -1,4 +1,4 @@
-package com.seggellion.britannia_mod.house;
+package com.seggellion.britannia_mod.structure;
 
 public enum HouseSize {
     SMALL(9, 9, 8),

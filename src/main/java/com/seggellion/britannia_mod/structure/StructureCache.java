@@ -4,14 +4,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class StructureCache {
-    private static StructureTemplate smallHouseTemplate;
+    private static StructureTemplate smallWoodHouseTemplate;
 
-    public static void setSmallHouseTemplate(StructureTemplate template) {
-        smallHouseTemplate = template;
+    public static void setSmallWoodHouseTemplate(StructureTemplate template) {
+        smallWoodHouseTemplate = template;
     }
 
-    public static StructureTemplate getSmallHouseTemplate() {
-        return smallHouseTemplate;
+    public static StructureTemplate getSmallWoodHouseTemplate() {
+        return smallWoodHouseTemplate;
     }
 
     private static boolean ghostStructureLoaded = false;
@@ -24,5 +24,5 @@ public class StructureCache {
         ghostStructureLoaded = loaded;
     }
 
-    public static final ResourceLocation SMALL_HOUSE_ID = ResourceLocation.fromNamespaceAndPath("britannia_mod", "small_house");
+    public static final ResourceLocation SMALL_WOOD_HOUSE_ID = ResourceLocation.fromNamespaceAndPath("britannia_mod", "small_wood_house");
 }

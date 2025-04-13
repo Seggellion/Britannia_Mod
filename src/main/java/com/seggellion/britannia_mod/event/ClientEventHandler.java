@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -21,6 +22,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerChangeGameTypeEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.Level;
 import com.seggellion.britannia_mod.block.FishSpawnBlock;
@@ -28,6 +30,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.InvisibleInAdventureMode;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+
+import java.util.function.Predicate;
+
 
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,6 +50,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import com.seggellion.britannia_mod.client.structure.StructureCache;
 import net.minecraft.nbt.CompoundTag;
 
+import java.util.List;
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -55,6 +65,8 @@ public class ClientEventHandler {
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ClientEventHandler::onClientSetup);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
+
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
@@ -62,14 +74,17 @@ public class ClientEventHandler {
         // Register client-specific things here, like renderers or key bindings
     }
 
+
+
     @SubscribeEvent
-    public void onClientTick(ClientTickEvent.Post event) {
+public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) {
             return;
         }
 
     if (!StructureCache.hasLoadedGhostStructure()) {
+       // LOGGER.info("Attempting to load ghost structure...");
         loadGhostStructure(mc);
         StructureCache.setGhostStructureLoaded(true);
     }
@@ -83,7 +98,7 @@ public class ClientEventHandler {
         wasAttackPressed = isAttackPressed;
     }
 
-    private void handleLeftClick(Minecraft mc) {
+private static void handleLeftClick(Minecraft mc) {
         LocalPlayer player = mc.player;
         ItemStack itemStack = player.getMainHandItem();
         Spell spell = SpellRegistry.getSpell(itemStack);
@@ -151,28 +166,38 @@ public class ClientEventHandler {
         }
     }
 
-    private void loadGhostStructure(Minecraft mc) {
-    ResourceLocation structureId = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/small_house.nbt");
+private static void loadGhostStructure(Minecraft mc) {
+    LOGGER.info("🔍 Attempting to manually load ghost structure from resource stream...");
 
-    try (InputStream stream = mc.getResourceManager().getResourceOrThrow(structureId).open()) {
+    ResourceLocation resource = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/small_wood_house.nbt");
+
+    try (InputStream stream = mc.getResourceManager().getResourceOrThrow(resource).open()) {
         CompoundTag tag = NbtIo.readCompressed(stream, NbtAccounter.unlimitedHeap());
-
-        if (mc.getConnection() == null) {
-            LOGGER.warn("Skipping ghost structure load: registryAccess not available yet.");
-            return;
-        }
-
-        RegistryAccess registryAccess = mc.getConnection().registryAccess();
+        RegistryAccess registryAccess = mc.level.registryAccess(); // client-side
 
         StructureTemplate template = new StructureTemplate();
-        template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag);
+        template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag); // ✅ Load the structure
 
-        StructureCache.setSmallHouseTemplate(template);
-        LOGGER.info("✅ Ghost structure loaded: {}", structureId);
+        // 🚫 No more filterBlocks() -- too fragile
+
+        // ✅ Now safe to cache
+        StructureCache.setSmallWoodHouseTemplate(template);
+
+        if (template.getSize().equals(Vec3i.ZERO)) {
+            LOGGER.warn("⚠️ Loaded structure has size Vec3i.ZERO (likely empty): {}", resource);
+        } else {
+            LOGGER.info("✅ Structure loaded with size: {}", template.getSize());
+        }
+
     } catch (IOException e) {
-        LOGGER.error("❌ Failed to load ghost structure: {}", structureId, e);
+        LOGGER.error("❌ Failed to load structure: {}", resource, e);
     }
 }
+
+
+
+
+
 
 
 

@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
-import com.seggellion.britannia_mod.item.SmallHouseDeedItem;
+import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
@@ -174,8 +174,8 @@ public static final DeferredHolder<Item, Item> THREE_QUARTER_DEEPSLATE_COBBLESTO
         () -> new DeedItem(new Item.Properties()));
 
 
-public static final DeferredHolder<Item, Item> SMALL_HOUSE_DEED = ITEMS.register("small_deed",
-    () -> new SmallHouseDeedItem(new Item.Properties()));
+public static final DeferredHolder<Item, Item> SMALL_WOOD_HOUSE_DEED = ITEMS.register("small_wood_house_deed",
+    () -> new SmallWoodHouseDeedItem(new Item.Properties()));
 
 
 public static final DeferredHolder<Item, Item> BLUE_TENT_ITEM = ITEMS.register(

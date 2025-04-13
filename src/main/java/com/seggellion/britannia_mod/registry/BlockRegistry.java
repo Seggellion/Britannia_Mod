@@ -2,6 +2,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.MoongateBlock;
+import com.seggellion.britannia_mod.block.HouseSignBlock;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
@@ -66,6 +67,10 @@ public class BlockRegistry {
         "quarter_dirt_block", 
         () -> new QuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
         );
+
+public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
+    BLOCKS.register("house_sign", HouseSignBlock::new);
+
 
        public static final DeferredHolder<Block, Block> HALF_DIRT_BLOCK = BLOCKS.register(
         "half_dirt_block", 

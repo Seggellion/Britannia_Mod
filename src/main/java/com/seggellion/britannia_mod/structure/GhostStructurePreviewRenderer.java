@@ -1,9 +1,11 @@
 package com.seggellion.britannia_mod.client.house;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.seggellion.britannia_mod.item.SmallHouseDeedItem;
+import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.client.house.HouseRotationData;
+import com.seggellion.britannia_mod.util.StructureUtils;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -17,86 +19,131 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.core.Vec3i;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.core.Direction;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import java.util.List;
+import java.util.ArrayList;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 
 public class GhostStructurePreviewRenderer {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private static final ResourceLocation STRUCTURE = ResourceLocation.fromNamespaceAndPath("britannia_mod", "small_house");
+@SubscribeEvent
+public static void onRenderLevel(RenderLevelStageEvent event) {
+    if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) return;
 
-    @SubscribeEvent
-    public static void onRenderLevel(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) return;
+    Minecraft mc = Minecraft.getInstance();
+    Level level = mc.level;
+    Player player = mc.player;
+    if (level == null || player == null) return;
 
+    // Must hold the deed
+    ItemStack held = player.getMainHandItem();
+    if (!(held.getItem() instanceof SmallWoodHouseDeedItem)) return;
 
-        Minecraft mc = Minecraft.getInstance();
-        Level level = mc.level;
-        Player player = mc.player;
-        if (level == null || player == null) return;
+    // Load the structure
+    StructureTemplate template = StructureCache.getSmallWoodHouseTemplate();
+    if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
 
-        ItemStack held = player.getMainHandItem();
-        if (!(held.getItem() instanceof SmallHouseDeedItem)) return;
-        LOGGER.info("holding SmallHouseDeedItem, held: {}", held.getItem().getDescriptionId());
-        StructureTemplate template = StructureCache.getSmallHouseTemplate();
-        if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
+    PoseStack poseStack = event.getPoseStack();
+    MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
+    BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
 
-        PoseStack poseStack = event.getPoseStack();
-        MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
-        BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
+    // 1) Find rotation from HouseRotationData
+    int deg = HouseRotationData.getRotation(player); // [0, 90, 180, 270]
+    Rotation rotation = StructureUtils.getRotation(deg);
 
-        int rotationDeg = HouseRotationData.getRotation(player);
-        Rotation rotation = Rotation.values()[(rotationDeg / 90) % 4];
+    // 2) Find the block the player is targeting
+    HitResult hit = mc.hitResult;
+    BlockPos doorAnchor;
+    if (hit instanceof BlockHitResult bhr) {
+        doorAnchor = bhr.getBlockPos();
+    } else {
+        // fallback
+        doorAnchor = player.blockPosition();
+    }
 
-        StructurePlaceSettings settings = new StructurePlaceSettings()
-                .setRotation(rotation)
-                .setIgnoreEntities(true)
-                .setKnownShape(true);
+    // 3) Offset the anchor to place door exactly at that position
+    Vec3i size = template.getSize();
+    BlockPos doorOffset = StructureUtils.getDoorOffset(size); // e.g. (size.x/2, 0, 0)
+    BlockPos adjustedPos = StructureUtils.getAdjustedPosForDoor(doorAnchor, rotation, doorOffset);
 
-        BlockPos origin = player.blockPosition();
-        Vec3i vecSize = template.getSize();
-        BlockPos size = new BlockPos(vecSize.getX(), vecSize.getY(), vecSize.getZ());
-        BlockPos start = origin.offset(-size.getX() / 2, 0, -size.getZ() / 2);
+    // 4) Retrieve block info from the template
+    List<StructureBlockInfo> blockInfos = getBlocksViaReflection(template);
+    if (blockInfos.isEmpty()) return;
 
-        // ✅ Correct way to get blocks
-        List<StructureBlockInfo> blocks = template.filterBlocks(BlockPos.ZERO, settings, null);
+    StructurePlaceSettings settings = new StructurePlaceSettings()
+            .setRotation(rotation)
+            .setIgnoreEntities(true);
 
-        for (StructureBlockInfo blockInfo : blocks) {
-            BlockState state = blockInfo.state();
-            if (state.isAir()) continue;
+    // 5) Render each block
+    for (StructureBlockInfo info : blockInfos) {
+        BlockState state = info.state();
+        if (state.isAir()) continue;
 
-            BlockPos localOffset = StructureTemplate.calculateRelativePosition(settings, blockInfo.pos());
-            BlockPos worldPos = start.offset(localOffset);
+        // rotate the block state for correct orientation
+        try {
+            state = state.rotate(rotation);
+        } catch (Exception ignored) { }
 
-            poseStack.pushPose();
-            poseStack.translate(
-                    worldPos.getX() - mc.gameRenderer.getMainCamera().getPosition().x,
-                    worldPos.getY() - mc.gameRenderer.getMainCamera().getPosition().y,
-                    worldPos.getZ() - mc.gameRenderer.getMainCamera().getPosition().z
+        // compute final position
+        BlockPos localOffset = StructureTemplate.calculateRelativePosition(settings, info.pos());
+        BlockPos worldPos = adjustedPos.offset(localOffset);
+
+        poseStack.pushPose();
+        poseStack.translate(
+            worldPos.getX() - mc.gameRenderer.getMainCamera().getPosition().x,
+            worldPos.getY() - mc.gameRenderer.getMainCamera().getPosition().y,
+            worldPos.getZ() - mc.gameRenderer.getMainCamera().getPosition().z
+        );
+
+        try {
+            dispatcher.renderBatched(
+                state,
+                worldPos,
+                level,
+                poseStack,
+                buffer.getBuffer(RenderType.translucent()),
+                false,
+                RandomSource.create()
             );
-
-            try {
-                dispatcher.renderBatched(
-                        state,
-                        worldPos,
-                        level,
-                        poseStack,
-                        buffer.getBuffer(RenderType.translucent()),
-                        false,
-                        RandomSource.create()
-                );
-            } catch (Exception ignored) {}
-
-            poseStack.popPose();
+        } catch (Exception e) {
+            // If a block doesn't like being batched, ignore
         }
 
-        buffer.endBatch(RenderType.translucent());
+        poseStack.popPose();
     }
+
+    buffer.endBatch(RenderType.translucent());
+}
+
+private static List<StructureBlockInfo> getBlocksViaReflection(StructureTemplate template) {
+    try {
+        Field paletteField = StructureTemplate.class.getDeclaredField("palettes");
+        paletteField.setAccessible(true);
+        List<?> palettes = (List<?>) paletteField.get(template);
+
+        if (!palettes.isEmpty()) {
+            Object palette = palettes.get(0);
+            Method blocksMethod = palette.getClass().getMethod("blocks");
+            return (List<StructureBlockInfo>) blocksMethod.invoke(palette);
+        }
+    } catch (Exception e) {
+        LOGGER.error("❌ Reflection error on structure palettes", e);
+    }
+    return List.of();
+}
+
 }
