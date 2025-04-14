@@ -43,6 +43,7 @@ import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
+import com.seggellion.britannia_mod.structure.StructureProtectionHandler;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.CommodityConsumer;
 import com.seggellion.britannia_mod.city.City;
@@ -150,7 +151,7 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(new KarmaReductionHandler());
         NeoForge.EVENT_BUS.register(new BlacksmithPOIHandler());
         NeoForge.EVENT_BUS.register(new SurvivalZoneHandler());
-
+          NeoForge.EVENT_BUS.register(new StructureProtectionHandler());
 
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
 

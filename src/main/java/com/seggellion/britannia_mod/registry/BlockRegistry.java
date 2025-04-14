@@ -8,9 +8,11 @@ import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
 import com.seggellion.britannia_mod.block.LargeForgeBlock;
 import com.seggellion.britannia_mod.block.BlueTentBlock;
+import com.seggellion.britannia_mod.block.PurpleTentBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
 import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
+import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
 import com.seggellion.britannia_mod.block.ChairBlock;
 import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
 import com.seggellion.britannia_mod.block.LichSpawnBlock;
@@ -41,6 +43,9 @@ import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.Blocks;
+
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -221,6 +226,18 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlueTentB
         () -> BlockEntityType.Builder.of(BlueTentBlockEntity::new, BLUE_TENT.get()).build(null));
 
 
+public static final DeferredHolder<Block, Block> PURPLE_TENT = BLOCKS.register("purple_tent", 
+    () -> new PurpleTentBlock(BlockBehaviour.Properties.of()
+        .noOcclusion()
+        .strength(1.0f))
+);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PurpleTentBlockEntity>> PURPLE_TENT_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITY_TYPES.register("purple_tent_block_entity",
+        () -> BlockEntityType.Builder.of(PurpleTentBlockEntity::new, PURPLE_TENT.get()).build(null));
+
+
+
 //end of house deeds
 
 public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_BLOCK = BLOCKS.register(
@@ -268,6 +285,38 @@ public static final DeferredHolder<Block, Block> CANDELABRA_TALL = BLOCKS.regist
                 .noOcclusion())
         );
 
+
+// Roof blocks
+
+public static final DeferredHolder<Block, Block> TILE_ROOF_BASE = BLOCKS.register("tile_roof_base", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE))
+);
+
+public static final DeferredHolder<Block, StairBlock> TILE_ROOF = BLOCKS.register("tile_roof", () ->
+    new StairBlock(TILE_ROOF_BASE.get().defaultBlockState(),
+        BlockBehaviour.Properties.ofFullCopy(Blocks.BRICK_STAIRS))
+);
+
+
+public static final DeferredHolder<Block, Block> THATCH_ROOF_BASE = BLOCKS.register("thatch_roof_base", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.HAY_BLOCK))
+);
+
+public static final DeferredHolder<Block, StairBlock> THATCH_ROOF = BLOCKS.register("thatch_roof", () ->
+    new StairBlock(THATCH_ROOF_BASE.get().defaultBlockState(),
+        BlockBehaviour.Properties.ofFullCopy(Blocks.BRICK_STAIRS))
+);
+
+public static final DeferredHolder<Block, Block> SLATE_ROOF_BASE = BLOCKS.register("slate_roof_base", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE))
+);
+
+public static final DeferredHolder<Block, StairBlock> SLATE_ROOF = BLOCKS.register("slate_roof", () ->
+    new StairBlock(SLATE_ROOF_BASE.get().defaultBlockState(),
+        BlockBehaviour.Properties.ofFullCopy(Blocks.BRICK_STAIRS))
+);
+
+// Furniture
 
                 public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
         "magincia_style_throne",

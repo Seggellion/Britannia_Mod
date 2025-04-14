@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.client.house.HouseRotationData;
+import com.seggellion.britannia_mod.client.house.GhostPreviewState;
 import com.seggellion.britannia_mod.util.StructureUtils;
 
 import net.minecraft.client.Minecraft;
@@ -49,11 +50,9 @@ public static void onRenderLevel(RenderLevelStageEvent event) {
     Player player = mc.player;
     if (level == null || player == null) return;
 
-    // Must hold the deed
     ItemStack held = player.getMainHandItem();
     if (!(held.getItem() instanceof SmallWoodHouseDeedItem)) return;
 
-    // Load the structure
     StructureTemplate template = StructureCache.getSmallWoodHouseTemplate();
     if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
 
@@ -61,46 +60,41 @@ public static void onRenderLevel(RenderLevelStageEvent event) {
     MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
     BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
 
-    // 1) Find rotation from HouseRotationData
-    int deg = HouseRotationData.getRotation(player); // [0, 90, 180, 270]
+    int deg = HouseRotationData.getRotation(player); // 0, 90, 180, 270
     Rotation rotation = StructureUtils.getRotation(deg);
+    StructurePlaceSettings settings = new StructurePlaceSettings()
+        .setRotation(rotation)
+        .setIgnoreEntities(true);
 
-    // 2) Find the block the player is targeting
-    HitResult hit = mc.hitResult;
-    BlockPos doorAnchor;
-    if (hit instanceof BlockHitResult bhr) {
-        doorAnchor = bhr.getBlockPos();
-    } else {
-        // fallback
-        doorAnchor = player.blockPosition();
-    }
-
-    // 3) Offset the anchor to place door exactly at that position
     Vec3i size = template.getSize();
-    BlockPos doorOffset = StructureUtils.getDoorOffset(size); // e.g. (size.x/2, 0, 0)
-    BlockPos adjustedPos = StructureUtils.getAdjustedPosForDoor(doorAnchor, rotation, doorOffset);
+    BlockPos doorOffset = StructureUtils.getDoorOffset(size); // e.g. (4, 0, 0)
 
-    // 4) Retrieve block info from the template
+    // 🌀 Place structure CENTER rotated around player, keeping DOOR nearest
+    int radius = 3;
+    double angle = Math.toRadians(deg + 180);
+    double offsetX = Math.cos(angle) * radius;
+    double offsetZ = Math.sin(angle) * radius;
+BlockPos doorTarget = new BlockPos(
+    (int) Math.floor(player.getX() + Math.cos(angle) * radius),
+    player.blockPosition().getY(),
+    (int) Math.floor(player.getZ() + Math.sin(angle) * radius)
+);
+
+    BlockPos structureStart = StructureUtils.getAdjustedPosForDoor(doorTarget, rotation, doorOffset);
+
     List<StructureBlockInfo> blockInfos = getBlocksViaReflection(template);
     if (blockInfos.isEmpty()) return;
 
-    StructurePlaceSettings settings = new StructurePlaceSettings()
-            .setRotation(rotation)
-            .setIgnoreEntities(true);
-
-    // 5) Render each block
     for (StructureBlockInfo info : blockInfos) {
         BlockState state = info.state();
         if (state.isAir()) continue;
 
-        // rotate the block state for correct orientation
         try {
             state = state.rotate(rotation);
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {}
 
-        // compute final position
         BlockPos localOffset = StructureTemplate.calculateRelativePosition(settings, info.pos());
-        BlockPos worldPos = adjustedPos.offset(localOffset);
+        BlockPos worldPos = structureStart.offset(localOffset);
 
         poseStack.pushPose();
         poseStack.translate(
@@ -119,15 +113,14 @@ public static void onRenderLevel(RenderLevelStageEvent event) {
                 false,
                 RandomSource.create()
             );
-        } catch (Exception e) {
-            // If a block doesn't like being batched, ignore
-        }
+        } catch (Exception ignored) {}
 
         poseStack.popPose();
     }
 
     buffer.endBatch(RenderType.translucent());
 }
+
 
 private static List<StructureBlockInfo> getBlocksViaReflection(StructureTemplate template) {
     try {

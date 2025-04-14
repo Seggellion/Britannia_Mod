@@ -34,6 +34,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import java.util.function.Predicate;
 
@@ -47,8 +48,17 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import com.seggellion.britannia_mod.network.ManaSyncPayload;
+import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
+
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
+
 import net.minecraft.nbt.CompoundTag;
+
 
 import java.util.List;
 
@@ -137,6 +147,23 @@ private static void handleLeftClick(Minecraft mc) {
         }
     }
 
+       @SubscribeEvent
+    public static void registerClientPackets(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+
+        registrar.playToClient(
+            ManaSyncPayload.TYPE,
+            ManaSyncPayload.STREAM_CODEC,
+            ClientNetworkHandler::handleManaSyncOnClient
+        );
+
+        registrar.playToClient(
+            HouseManagementScreenPayload.TYPE,
+            HouseManagementScreenPayload.STREAM_CODEC,
+            ClientNetworkHandler::handleHouseScreenOnClient
+        );
+    }
+
   @SubscribeEvent
      public static void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
         LOGGER.info("Game mode change detected!");
@@ -193,12 +220,4 @@ private static void loadGhostStructure(Minecraft mc) {
         LOGGER.error("❌ Failed to load structure: {}", resource, e);
     }
 }
-
-
-
-
-
-
-
-
 }

@@ -8,18 +8,30 @@ import java.util.UUID;
  */
 public class StructureRecord {
     private final UUID ownerUuid;
-    private final AABB boundingBox; // This bounding box should already be expanded (Y: -20 to +30)
+    private final UUID houseUuid; // <- ADD THIS
+    private final AABB structureBox; 
+    private final AABB fullBox;  
 
-    public StructureRecord(UUID ownerUuid, AABB boundingBox) {
+    public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox, UUID houseUuid) {
         this.ownerUuid = ownerUuid;
-        this.boundingBox = boundingBox;
+        this.structureBox = structureBox;
+        this.fullBox = fullBox;
+        this.houseUuid = houseUuid;
     }
 
     public UUID getOwnerUuid() {
         return ownerUuid;
     }
 
-    public AABB getBoundingBox() {
-        return boundingBox;
+       public UUID getHouseUuid() {
+        return houseUuid;
+    }
+
+    public AABB getStructureBox() {
+        return structureBox;
+    }
+
+    public AABB getFullBox() {
+        return fullBox;
     }
 }

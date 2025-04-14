@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import com.seggellion.britannia_mod.block.LargeForgeRenderer;
 import com.seggellion.britannia_mod.block.BlueTentRenderer;
+import com.seggellion.britannia_mod.block.PurpleTentRenderer;
 import com.seggellion.britannia_mod.block.SmallForgeRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
@@ -374,6 +375,8 @@ private static int getTintForOreType(String oreType) {
 
         event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
+            event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
+
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
     }

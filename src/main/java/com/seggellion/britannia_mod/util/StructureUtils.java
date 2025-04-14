@@ -41,8 +41,17 @@ public class StructureUtils {
 
     public static BlockPos getDoorOffset(Vec3i size) {
         // If door is at z=0, centered on X:
-        return new BlockPos(size.getX()/2, 0, 0);
+        
+        return new BlockPos(size.getX() - 1, 0, size.getZ() / 2); // X+, Z center
     }
+
+public static Vec3i getRotatedSize(Vec3i originalSize, Rotation rotation) {
+    return switch (rotation) {
+        case NONE, CLOCKWISE_180 -> new Vec3i(originalSize.getX(), originalSize.getY(), originalSize.getZ());
+        case CLOCKWISE_90, COUNTERCLOCKWISE_90 -> new Vec3i(originalSize.getZ(), originalSize.getY(), originalSize.getX());
+    };
+}
+
 
     public static BlockPos getAdjustedPosForDoor(BlockPos doorTarget, Rotation rotation, BlockPos doorOffset) {
         // Rotate the door offset

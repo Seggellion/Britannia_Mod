@@ -123,6 +123,8 @@ public class HouseLotBlockEntity extends BlockEntity {
         setChanged();
     }
 
+
+
     public void load(CompoundTag tag, HolderLookup.Provider provider) {
         // If the superclass does not have this method, omit calling super.
         if (tag.contains("Owner")) {
@@ -149,6 +151,36 @@ public class HouseLotBlockEntity extends BlockEntity {
         }
     }
 
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        // If the superclass does not have this method, omit calling super.
+        if (tag.contains("Owner")) {
+            this.owner = tag.getString("Owner");
+        }
+        if (tag.contains("HouseSize")) {
+            this.houseSize = HouseSize.valueOf(tag.getString("HouseSize"));
+        }
+        if (tag.contains("HouseUUID")) {
+            this.houseUuid = UUID.fromString(tag.getString("HouseUUID"));
+        }
+        this.forSale = tag.getBoolean("ForSale");
+        this.price = tag.getInt("Price");
+
+        if (tag.contains("AccessList", Tag.TAG_LIST)) {
+            ListTag listTag = tag.getList("AccessList", Tag.TAG_STRING);
+            this.accessList.clear();
+            for (int i = 0; i < listTag.size(); i++) {
+                this.accessList.add(listTag.getString(i));
+            }
+        }
+        if (tag.contains("PlacedAt")) {
+            this.placedAt = Instant.parse(tag.getString("PlacedAt"));
+        }
+    }
+
+
+    @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         // If calling super.saveAdditional(tag, provider) is not possible, omit it.
         tag.putString("Owner", this.owner);

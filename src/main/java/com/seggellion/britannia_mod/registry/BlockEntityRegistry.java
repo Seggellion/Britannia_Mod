@@ -19,6 +19,7 @@ public class BlockEntityRegistry {
         BLOCK_ENTITIES.register("house_lot", () ->
             BlockEntityType.Builder.of(HouseLotBlockEntity::new, BlockRegistry.HOUSE_LOT_BLOCK.get()).build(null));
 
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HouseSignBlockEntity>> HOUSE_SIGN =
         BLOCK_ENTITIES.register("house_sign", () ->
             BlockEntityType.Builder.of(HouseSignBlockEntity::new, BlockRegistry.HOUSE_SIGN_BLOCK.get()).build(null));

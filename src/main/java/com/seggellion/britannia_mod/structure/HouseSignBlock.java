@@ -20,8 +20,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
 public class HouseSignBlock extends Block implements EntityBlock {
+   private static final Logger LOGGER = LogUtils.getLogger();
 
     public HouseSignBlock() {
             super(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(3.0f, 3.0f));
@@ -34,23 +37,29 @@ public class HouseSignBlock extends Block implements EntityBlock {
     @Override
 protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
     if (level.isClientSide()) return InteractionResult.SUCCESS;
+        LOGGER.info("Interacted with sign");
 
     ServerLevel serverLevel = (ServerLevel) level;
     ServerPlayer serverPlayer = (ServerPlayer) player;
 
     // 🔍 Look up the real ownership from nearby lot block
-    HouseLotBlockEntity lot = HouseUtil.findNearbyLot(serverLevel, pos);
-    if (lot == null) {
-        player.sendSystemMessage(Component.literal("Could not find the house controller."));
-        return InteractionResult.FAIL;
-    }
+BlockEntity below = level.getBlockEntity(pos.below());
+if (!(below instanceof HouseLotBlockEntity lot)) {
+    player.sendSystemMessage(Component.literal("Could not find the house controller."));
+    return InteractionResult.FAIL;
+}
+
+        LOGGER.info("EntityBlockFound");
 
     if (!lot.getOwner().equals(player.getName().getString())) {
         player.sendSystemMessage(Component.literal("You are not the owner of this house."));
         return InteractionResult.FAIL;
     }
 
+            LOGGER.info("Is owner");
+
     // ✅ Success: open the house management GUI
+    
     HouseManagementScreenPayload.send(serverPlayer, pos);
     return InteractionResult.SUCCESS;
 }

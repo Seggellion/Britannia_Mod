@@ -4,6 +4,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.loading.FMLLoader;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.minecraft.client.Minecraft;
+
 
 public record HouseManagementActionPayload(Action action) implements CustomPacketPayload {
 
@@ -35,11 +39,13 @@ public record HouseManagementActionPayload(Action action) implements CustomPacke
         return TYPE;
     }
 
-    // Implement your sendAction method here; this is a placeholder.
     public static void sendAction(Action action) {
-        // Example:
-        // YourNetworkChannel.sendToServer(new HouseManagementActionPayload(action));
-        System.out.println("Sending action: " + action);
+        if (FMLLoader.getDist().isClient()) {
+            Minecraft.getInstance().getConnection().send(
+                new ServerboundCustomPayloadPacket(new HouseManagementActionPayload(action))
+            );
+        }
     }
+
     
 }

@@ -4,9 +4,11 @@ package com.seggellion.britannia_mod.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.structure.StructureRecord;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +26,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Map;
+
 
 public class HouseDataAPI {
 
@@ -115,4 +119,38 @@ public class HouseDataAPI {
             LOGGER.error("Error sending house data to API: ", e);
         }
     }
+
+public static void deleteHouseRecord(ServerPlayer player, StructureRecord record) {
+    try {
+        URL url = new URL(ModConfig.API_BASE_URL + "houses/delete");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("DELETE");
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+        CityAPITokenData data = CityAPITokenData.getOrCreate(player.serverLevel());
+        String apiToken = data.getApiToken();
+        if (!apiToken.isEmpty()) {
+            conn.setRequestProperty("Authorization", "Bearer " + apiToken);
+        }
+
+        conn.setDoOutput(true);
+        JsonObject payload = new JsonObject();
+        payload.addProperty("owner", player.getName().getString());
+        payload.addProperty("uuid", record.getHouseUuid().toString());
+
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+        }
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            LOGGER.warn("Failed to delete house: " + responseCode);
+        }
+    } catch (Exception e) {
+        LOGGER.error("Failed to delete house record: ", e);
+    }
+}
+
+
+
 }

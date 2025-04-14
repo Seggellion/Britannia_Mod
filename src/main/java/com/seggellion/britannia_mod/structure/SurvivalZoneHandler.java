@@ -14,23 +14,22 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.util.List;
 
-/**
- * Event handler that checks each tick whether a player is inside the bounds of their own structure.
- * When inside, switches game mode to SURVIVAL; when outside, switches to ADVENTURE.
- *
- * Designed for thousands of players by limiting checks to the player's current chunk.
- */
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class SurvivalZoneHandler {
 
-    // This method is intended to be registered with NeoForge's event bus.
-    // For example, in BritanniaMod's constructor:
-    //   NeoForge.EVENT_BUS.register(new SurvivalZoneHandler());
+
+private static final Logger LOGGER = LogManager.getLogger();
+
      @SubscribeEvent
     public void onServerTick(ServerTickEvent.Post event) {
 
 
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
+      
 
         // Iterate over online players
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
@@ -39,7 +38,7 @@ public class SurvivalZoneHandler {
             if (currentMode == GameType.CREATIVE || currentMode == GameType.SPECTATOR) {
                 continue;
             }
-
+   LOGGER.info("Not in creative mode");
             BlockPos playerPos = player.blockPosition();
             int chunkX = SectionPos.blockToSectionCoord(playerPos.getX());
             int chunkZ = SectionPos.blockToSectionCoord(playerPos.getZ());
@@ -51,21 +50,23 @@ public class SurvivalZoneHandler {
                 }
                 continue;
             }
-
+   LOGGER.info("Structure found in chunk.");
             boolean insideOwnStructure = false;
             Vec3 playerVec = player.position();
             for (StructureRecord record : structuresInChunk) {
                 if (!record.getOwnerUuid().equals(player.getUUID())) {
                     continue;
                 }
-                AABB bb = record.getBoundingBox();
-                if (bb.contains(playerVec)) {
+                if (record.getOwnerUuid().equals(player.getUUID()) &&
+                    record.getFullBox().contains(playerVec)) {
                     insideOwnStructure = true;
                     break;
                 }
+
             }
 
             if (insideOwnStructure) {
+                   LOGGER.info("Is inside structure");
                 if (currentMode != GameType.SURVIVAL) {
                     player.setGameMode(GameType.SURVIVAL);
                 }

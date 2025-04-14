@@ -6,8 +6,16 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import com.seggellion.britannia_mod.network.HouseManagementActionPayload;
+import java.util.UUID;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
+@OnlyIn(Dist.CLIENT)
 public class HouseManagementScreen extends Screen {
+
+   private static final Logger LOGGER = LogUtils.getLogger();
 
     // Create the ResourceLocation using the static factory method.
     private static final ResourceLocation BACKGROUND =
@@ -17,9 +25,16 @@ public class HouseManagementScreen extends Screen {
     private final int backgroundWidth = 256;
     private final int backgroundHeight = 180;
 
-    public HouseManagementScreen() {
+ private final UUID houseUuid;
+    private final String ownerUsername;
+    private final String houseType;
+
+    public HouseManagementScreen(UUID houseUuid, String ownerUsername, String houseType) {
         // Use Component.literal(...) to create the title text.
         super(Component.literal("House Management"));
+                this.houseUuid = houseUuid;
+        this.ownerUsername = ownerUsername;
+        this.houseType = houseType;
     }
 
     @Override
@@ -51,15 +66,24 @@ public class HouseManagementScreen extends Screen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Render the default background using the full signature.
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
-        
+
         // Render our custom GUI background.
         renderBg(guiGraphics, partialTick, mouseX, mouseY);
-        
+         int titleY = (this.height - backgroundHeight) / 2 + 10;
+ int startX = this.width / 2 - 110;
+        int startY = titleY + 20;
+               
+
+
         // Draw the screen title centered over the background.
-        guiGraphics.drawCenteredString(this.font, this.title.getString(),
-                this.width / 2, (this.height - backgroundHeight) / 2 + 10, 0xFFFFFF);
-        
+        guiGraphics.drawCenteredString(this.font, this.title.getString(), this.width / 2, titleY, 0xFFFFFF);
+
+
+        guiGraphics.drawString(this.font, "UUID: " + houseUuid.toString(), startX, startY, 0xCCCCCC);
+        guiGraphics.drawString(this.font, "Owner: " + ownerUsername, startX, startY + 12, 0xCCCCCC);
+        guiGraphics.drawString(this.font, "Type: " + houseType, startX, startY + 24, 0xCCCCCC);
+
+
         // Render the buttons and other widgets.
         super.render(guiGraphics, mouseX, mouseY, partialTick);
     }
@@ -76,6 +100,13 @@ public class HouseManagementScreen extends Screen {
         // Draw the background image.
         guiGraphics.blit(BACKGROUND, x, y, 0, 0, backgroundWidth, backgroundHeight);
     }
+
+    @Override
+public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    // Do nothing — this disables default blur or shader backgrounds
+}
+
+
 
     @Override
     public boolean isPauseScreen() {

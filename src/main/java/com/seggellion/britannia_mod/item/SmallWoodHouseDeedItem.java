@@ -39,6 +39,7 @@ public class SmallWoodHouseDeedItem extends DeedItem {
 
             StructurePlacer.placeStructure((ServerLevel) level, basePos, rotation, "small_wood_house.nbt", player);
             HouseRotationData.clear(player);
+            stack.shrink(1);
             return InteractionResultHolder.success(stack);
         }
 

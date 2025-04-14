@@ -20,7 +20,7 @@ public class StructureRegionManager {
      * Registers a structure record in every chunk it overlaps.
      */
     public static void registerStructure(StructureRecord structureRecord) {
-        AABB bb = structureRecord.getBoundingBox();
+        AABB bb = structureRecord.getFullBox();
         ChunkRange range = chunkRangeFromBoundingBox(bb);
 
         for (int x = range.minChunkX; x <= range.maxChunkX; x++) {
@@ -41,7 +41,7 @@ public class StructureRegionManager {
      * Unregisters a structure record from every chunk it was registered in.
      */
     public static void unregisterStructure(StructureRecord target) {
-        AABB bb = target.getBoundingBox();
+        AABB bb = target.getFullBox();
         ChunkRange range = chunkRangeFromBoundingBox(bb);
 
         for (int x = range.minChunkX; x <= range.maxChunkX; x++) {

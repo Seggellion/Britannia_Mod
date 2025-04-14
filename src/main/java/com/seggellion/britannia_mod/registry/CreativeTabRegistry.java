@@ -35,6 +35,7 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
                         output.accept(ItemRegistry.SMALL_WOOD_HOUSE_DEED.get());
                          output.accept(ItemRegistry.BLUE_TENT_DEED.get());
+                         output.accept(ItemRegistry.PURPLE_TENT_DEED.get());
                         output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                         output.accept(ItemRegistry.CANDELABRA_TALL_ITEM.get());
                         output.accept(ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
@@ -80,6 +81,9 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WO
                     safeAccept(output, ItemRegistry.QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
                     safeAccept(output, ItemRegistry.HALF_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
                     safeAccept(output, ItemRegistry.THREE_QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
+                    safeAccept(output, ItemRegistry.TILE_ROOF_ITEM.get() );
+                    safeAccept(output, ItemRegistry.THATCH_ROOF_ITEM.get() );
+                    safeAccept(output, ItemRegistry.SLATE_ROOF_ITEM.get() );
                 }).build());
 
 public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_ORE_TAB = CREATIVE_TABS.register(
@@ -107,7 +111,7 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_OR
 
     private static void safeAccept(CreativeModeTab.Output output, Item item) {
         if (item != null) {
-            output.accept(item);
+        output.accept(item.getDefaultInstance()); // ✅ guarantees valid stack
         } else {
             System.err.println("Warning: Attempted to add a null item to the creative tab.");
         }

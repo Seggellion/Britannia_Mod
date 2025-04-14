@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.registry.EntityRegistry;
 
 import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
+import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
@@ -185,6 +186,30 @@ public static final DeferredHolder<Item, Item> BLUE_TENT_ITEM = ITEMS.register(
 public static final DeferredHolder<Item, Item> BLUE_TENT_DEED = ITEMS.register(
     "blue_tent_deed", () -> new BlueTentDeedItem(new Item.Properties())
 );
+
+public static final DeferredHolder<Item, Item> PURPLE_TENT_ITEM = ITEMS.register(
+    "purple_tent", () -> new BlockItem(BlockRegistry.PURPLE_TENT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> PURPLE_TENT_DEED = ITEMS.register(
+    "purple_tent_deed", () -> new PurpleTentDeedItem(new Item.Properties())
+);
+
+// roofing items
+
+public static final DeferredHolder<Item, BlockItem> TILE_ROOF_ITEM = ITEMS.register("tile_roof", () ->
+    new BlockItem(BlockRegistry.TILE_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> THATCH_ROOF_ITEM = ITEMS.register("thatch_roof", () ->
+    new BlockItem(BlockRegistry.THATCH_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_ITEM = ITEMS.register("slate_roof", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF.get(), new Item.Properties())
+);
+
+
 
 
 // Ingots / Metals
