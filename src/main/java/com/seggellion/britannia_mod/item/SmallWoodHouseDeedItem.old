@@ -49,12 +49,15 @@ public class SmallWoodHouseDeedItem extends DeedItem {
     @SuppressWarnings("removal")
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-        if (entity.level().isClientSide || !(entity instanceof Player player)) return false;
+        if (!entity.level().isClientSide || !(entity instanceof Player player)) return false;
+
         if (player.getMainHandItem() == stack) {
             HouseRotationData.rotateClockwise(player);
             player.displayClientMessage(Component.literal("Rotated House to " + HouseRotationData.getRotation(player) + "°"), true);
             return true;
         }
+
         return false;
     }
+
 }

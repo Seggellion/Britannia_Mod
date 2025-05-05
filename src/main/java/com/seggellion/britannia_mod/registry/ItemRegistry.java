@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
-import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
+// import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
@@ -18,6 +18,8 @@ import com.seggellion.britannia_mod.item.OrderShieldItem;
 import com.seggellion.britannia_mod.item.MoongateLinkingWand;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
+import com.seggellion.britannia_mod.structure.HouseSize;
+import com.seggellion.britannia_mod.item.DeedItemFactory;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -68,6 +70,9 @@ import java.util.Optional;
 import java.util.List;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.Map;
+import java.util.EnumMap;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -171,12 +176,38 @@ public static final DeferredHolder<Item, Item> THREE_QUARTER_DEEPSLATE_COBBLESTO
             () -> new Item(new Item.Properties()));
 
 
-    public static final DeferredHolder<Item, Item> DEED_ITEM = ITEMS.register("deed_item",
-        () -> new DeedItem(new Item.Properties()));
+public static final DeferredHolder<Item, Item> DEED_ITEM =
+    ITEMS.register("deed_item",
+        () -> new DeedItem(new Item.Properties()
+            .stacksTo(1)));  // ✅ no creative tab here
 
 
-public static final DeferredHolder<Item, Item> SMALL_WOOD_HOUSE_DEED = ITEMS.register("small_wood_house_deed",
-    () -> new SmallWoodHouseDeedItem(new Item.Properties()));
+    /* ------------- 2) NEW: all house deeds in one map --------- */
+    public static final Map<HouseSize, DeferredHolder<Item, Item>> HOUSE_DEEDS =
+            new EnumMap<>(HouseSize.class);
+
+    static {
+        for (HouseSize size : HouseSize.values()) {
+            HOUSE_DEEDS.put(size, DeedItemFactory.register(ITEMS, size));
+        }
+    }
+
+
+// statues
+
+public static final DeferredHolder<Item, Item> PILLAR_ITEM = ITEMS.register(
+    "pillar", () -> new BlockItem(BlockRegistry.PILLAR.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> STATUE_WOMAN_ITEM = ITEMS.register(
+    "statue_woman", () -> new BlockItem(BlockRegistry.STATUE_WOMAN.get(), new Item.Properties())
+);
+    /* ------------- convenience getters ----------------------- */
+
+    /** Returns the actual Item for the given size; safe after registry events have fired. */
+    public static Item deedFor(HouseSize size) {
+        return HOUSE_DEEDS.get(size).get();
+    }
 
 
 public static final DeferredHolder<Item, Item> BLUE_TENT_ITEM = ITEMS.register(
@@ -205,12 +236,44 @@ public static final DeferredHolder<Item, BlockItem> THATCH_ROOF_ITEM = ITEMS.reg
     new BlockItem(BlockRegistry.THATCH_ROOF.get(), new Item.Properties())
 );
 
+
+public static final DeferredHolder<Item, BlockItem> CEDAR_ROOF_ITEM = ITEMS.register("cedar_roof", () ->
+    new BlockItem(BlockRegistry.CEDAR_ROOF.get(), new Item.Properties())
+);
+
 public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_ITEM = ITEMS.register("slate_roof", () ->
     new BlockItem(BlockRegistry.SLATE_ROOF.get(), new Item.Properties())
 );
 
+public static final DeferredHolder<Item, BlockItem> TILE_ROOF_FLAT_ITEM = ITEMS.register("tile_roof_flat", () ->
+    new BlockItem(BlockRegistry.TILE_ROOF_FLAT.get(), new Item.Properties())
+);
 
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_FLAT_ITEM = ITEMS.register("slate_roof_flat", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF_FLAT.get(), new Item.Properties())
+);
 
+public static final DeferredHolder<Item, BlockItem> THATCH_ROOF_FLAT_ITEM = ITEMS.register("thatch_roof_flat", () ->
+    new BlockItem(BlockRegistry.THATCH_ROOF_FLAT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> CEDAR_ROOF_FLAT_ITEM = ITEMS.register("cedar_roof_flat", () ->
+    new BlockItem(BlockRegistry.CEDAR_ROOF_FLAT.get(), new Item.Properties())
+);
+
+// structure items
+public static final DeferredHolder<Item, BlockItem> OAK_WALL_BOTTOM_ITEM =
+        ITEMS.register("oak_wall_bottom",
+            () -> new BlockItem(BlockRegistry.OAK_WALL_BOTTOM.get(), new Item.Properties()));
+
+// public static final DeferredHolder<Item, BlockItem> OAK_WALL_TOP_ITEM =
+//        ITEMS.register("oak_wall_top",
+//            () -> new BlockItem(BlockRegistry.OAK_WALL_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> METAL_DOOR_ITEM = ITEMS.register(
+    "metal_door_item",
+    () -> new BlockItem(BlockRegistry.METAL_DOOR.get(), new Item.Properties().stacksTo(64))
+);
 
 // Ingots / Metals
 

@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.Map;
-
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 
 public class HouseDataAPI {
 
@@ -35,14 +35,16 @@ public class HouseDataAPI {
 
     public static void sendHouseDataToRails(ServerLevel level, BlockPos housePos, Player owner, HouseSize size) {
         try {
-            // Example: we generate a new UUID here,
-            // but if you want the EXACT block-entity's UUID, read it from the entity:
-            //   HouseLotBlockEntity lotBE = ...
-            //   UUID houseUuid = lotBE.getHouseUuid();
-            UUID houseUuid = UUID.randomUUID();
+            HouseLotBlockEntity lot = (HouseLotBlockEntity) level.getBlockEntity(housePos);
+            if (lot == null) {
+                LOGGER.error("HouseLotBlockEntity not found at position: {}", housePos);
+                return;
+            }
+            UUID houseUuid = lot.getHouseUuid(); // ✅ Use the actual in-game UUID
+
 
             // We'll assume "small" for the house_type, matching your MIGRATION (house_type can be "villa", "cottage", etc.)
-            String houseType = "small";
+            String houseType = lot.getHouseType();
 
             // The Rails endpoint
             String urlString = ModConfig.API_BASE_URL + "houses";  // e.g. .../api/houses

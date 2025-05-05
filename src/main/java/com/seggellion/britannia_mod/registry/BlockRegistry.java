@@ -6,12 +6,16 @@ import com.seggellion.britannia_mod.block.HouseSignBlock;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
+import com.seggellion.britannia_mod.block.PillarBlock;
+import com.seggellion.britannia_mod.block.StatueWomanBlock;
 import com.seggellion.britannia_mod.block.LargeForgeBlock;
 import com.seggellion.britannia_mod.block.BlueTentBlock;
 import com.seggellion.britannia_mod.block.PurpleTentBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
 import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
+import com.seggellion.britannia_mod.block.PillarBlockEntity;
+import com.seggellion.britannia_mod.block.StatueWomanBlockEntity;
 import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
 import com.seggellion.britannia_mod.block.ChairBlock;
 import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
@@ -27,6 +31,7 @@ import com.seggellion.britannia_mod.block.HalfBlock;
 import com.seggellion.britannia_mod.block.QuarterBlock;
 import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
 import com.seggellion.britannia_mod.block.HouseLotBlock;
+import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
@@ -40,11 +45,16 @@ import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
 import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
+import com.seggellion.britannia_mod.block.TopOakWallBlock;
+import com.seggellion.britannia_mod.block.MetalDoorBlock;
+import com.seggellion.britannia_mod.block.ThinWall;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.SlabBlock;
 
 
 import net.neoforged.bus.api.IEventBus;
@@ -205,6 +215,32 @@ public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
         BLOCK_ENTITY_TYPES.register("small_forge_block_entity",
             () -> BlockEntityType.Builder.of(SmallForgeBlockEntity::new, SMALL_FORGE_BLOCK.get()).build(null));
 
+
+//statues
+
+public static final DeferredHolder<Block, Block> PILLAR = BLOCKS.register("pillar", 
+    () -> new PillarBlock(BlockBehaviour.Properties.of()
+        .noOcclusion()
+        .strength(1.0f))
+);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PillarBlockEntity>> PILLAR_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITY_TYPES.register("pillar_block_entity",
+        () -> BlockEntityType.Builder.of(PillarBlockEntity::new, PILLAR.get()).build(null));
+
+public static final DeferredHolder<Block, Block> STATUE_WOMAN = BLOCKS.register("statue_woman", 
+    () -> new StatueWomanBlock(BlockBehaviour.Properties.of()
+        .noOcclusion()
+        .strength(1.0f))
+);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StatueWomanBlockEntity>> STATUE_WOMAN_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITY_TYPES.register("statue_woman_block_entity",
+        () -> BlockEntityType.Builder.of(StatueWomanBlockEntity::new, STATUE_WOMAN.get()).build(null));
+
+
+
+
 // House deeds
 
 public static final DeferredHolder<Block, Block> HOUSE_LOT_BLOCK = BLOCKS.register(
@@ -220,6 +256,7 @@ public static final DeferredHolder<Block, Block> BLUE_TENT = BLOCKS.register("bl
         .noOcclusion()
         .strength(1.0f))
 );
+
 
 public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlueTentBlockEntity>> BLUE_TENT_BLOCK_ENTITY_TYPE =
     BLOCK_ENTITY_TYPES.register("blue_tent_block_entity",
@@ -316,6 +353,51 @@ public static final DeferredHolder<Block, StairBlock> SLATE_ROOF = BLOCKS.regist
         BlockBehaviour.Properties.ofFullCopy(Blocks.BRICK_STAIRS))
 );
 
+public static final DeferredHolder<Block, Block> CEDAR_ROOF_BASE = BLOCKS.register("cedar_roof_base", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE))
+);
+
+public static final DeferredHolder<Block, StairBlock> CEDAR_ROOF = BLOCKS.register("cedar_roof", () ->
+    new StairBlock(CEDAR_ROOF_BASE.get().defaultBlockState(),
+        BlockBehaviour.Properties.ofFullCopy(Blocks.BRICK_STAIRS))
+);
+
+public static final DeferredHolder<Block, TopOnlySlabBlock> TILE_ROOF_FLAT = BLOCKS.register("tile_roof_flat", () ->
+    new TopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+
+public static final DeferredHolder<Block, TopOnlySlabBlock> SLATE_ROOF_FLAT = BLOCKS.register("slate_roof_flat", () ->
+    new TopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+public static final DeferredHolder<Block, TopOnlySlabBlock> THATCH_ROOF_FLAT = BLOCKS.register("thatch_roof_flat", () ->
+    new TopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+public static final DeferredHolder<Block, TopOnlySlabBlock> CEDAR_ROOF_FLAT = BLOCKS.register("cedar_roof_flat", () ->
+    new TopOnlySlabBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE_SLAB))
+);
+
+// structure blocks
+
+// Bottom Oak Wall
+//public static final DeferredHolder<Block, OffsetQuarterPaneBlock> OAK_WALL_BOTTOM =
+//        BLOCKS.register("oak_wall_bottom", OffsetQuarterPaneBlock::new);
+
+public static final DeferredHolder<Block, ThinWall> OAK_WALL_BOTTOM =
+    BLOCKS.register("oak_wall_bottom", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.0f)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+        )
+    );
+
+//public static final DeferredHolder<Block, OffsetQuarterPaneBlock> OAK_WALL_TOP =
+//        BLOCKS.register("oak_wall_top", OffsetQuarterPaneBlock::new);
+
 // Furniture
 
                 public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
@@ -368,6 +450,8 @@ public static final DeferredHolder<Block, StairBlock> SLATE_ROOF = BLOCKS.regist
         public static final DeferredHolder<Block, Block> GLACIAL_ROCK = BLOCKS.register(
                 "glacial_rock", BaseOreBlock::new);
 
+        public static final DeferredHolder<Block, Block> METAL_DOOR = BLOCKS.register(
+        "metal_door", MetalDoorBlock::new);
 
 
     public static void register(IEventBus modEventBus) {

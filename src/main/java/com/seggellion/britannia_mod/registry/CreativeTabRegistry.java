@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import net.minecraft.world.item.Item;
+import com.seggellion.britannia_mod.structure.HouseSize;
 
 
 public class CreativeTabRegistry {
@@ -33,7 +34,6 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                         output.accept(ItemRegistry.YEW_TABLE_ITEM.get());
                         output.accept(ItemRegistry.INTERIOR_DECORATOR_TOOL.get());
-                        output.accept(ItemRegistry.SMALL_WOOD_HOUSE_DEED.get());
                          output.accept(ItemRegistry.BLUE_TENT_DEED.get());
                          output.accept(ItemRegistry.PURPLE_TENT_DEED.get());
                         output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
@@ -64,6 +64,9 @@ public class CreativeTabRegistry {
                         output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3)); 
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());
+                        for (HouseSize size : HouseSize.values()) {
+                                output.accept(ItemRegistry.deedFor(size));
+                            }
                     }).build());
 
 
@@ -82,8 +85,18 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WO
                     safeAccept(output, ItemRegistry.HALF_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
                     safeAccept(output, ItemRegistry.THREE_QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM.get());
                     safeAccept(output, ItemRegistry.TILE_ROOF_ITEM.get() );
+                    safeAccept(output, ItemRegistry.TILE_ROOF_FLAT_ITEM.get() );
+                    safeAccept(output, ItemRegistry.CEDAR_ROOF_ITEM.get() );
+                    safeAccept(output, ItemRegistry.CEDAR_ROOF_FLAT_ITEM.get() );
                     safeAccept(output, ItemRegistry.THATCH_ROOF_ITEM.get() );
+                    safeAccept(output, ItemRegistry.THATCH_ROOF_FLAT_ITEM.get() );
                     safeAccept(output, ItemRegistry.SLATE_ROOF_ITEM.get() );
+                    safeAccept(output, ItemRegistry.SLATE_ROOF_FLAT_ITEM.get() );
+                    safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
+                    safeAccept(output, ItemRegistry.OAK_WALL_BOTTOM_ITEM.get());
+             //       safeAccept(output, ItemRegistry.OAK_WALL_TOP_ITEM.get());
+                    safeAccept(output, ItemRegistry.PILLAR_ITEM.get());
+                    safeAccept(output, ItemRegistry.STATUE_WOMAN_ITEM.get());
                 }).build());
 
 public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_ORE_TAB = CREATIVE_TABS.register(

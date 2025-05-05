@@ -12,8 +12,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import java.util.UUID;
 
-public record HouseManagementScreenPayload(BlockPos signPos, UUID uuid, String username, String houseType) implements CustomPacketPayload {
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+public record HouseManagementScreenPayload(BlockPos pos, UUID uuid, String username, String houseType, String houseName) implements CustomPacketPayload {
     
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public static final CustomPacketPayload.Type<HouseManagementScreenPayload> TYPE =
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("britannia_mod", "house_management_screen"));
@@ -24,23 +28,20 @@ public record HouseManagementScreenPayload(BlockPos signPos, UUID uuid, String u
     );
 
 public static HouseManagementScreenPayload decode(FriendlyByteBuf buf) {
-    int x = buf.readInt();
-    int y = buf.readInt();
-    int z = buf.readInt();
+    BlockPos pos = buf.readBlockPos();
     UUID uuid = buf.readUUID();
     String username = buf.readUtf();
     String houseType = buf.readUtf();
-    return new HouseManagementScreenPayload(new BlockPos(x, y, z), uuid, username, houseType);
+    String houseName = buf.readUtf();
+    return new HouseManagementScreenPayload(pos, uuid, username, houseType, houseName);
 }
 
-
 public static void encode(FriendlyByteBuf buf, HouseManagementScreenPayload payload) {
-    buf.writeInt(payload.signPos().getX());
-    buf.writeInt(payload.signPos().getY());
-    buf.writeInt(payload.signPos().getZ());
+    buf.writeBlockPos(payload.pos());
     buf.writeUUID(payload.uuid());
     buf.writeUtf(payload.username());
     buf.writeUtf(payload.houseType());
+    buf.writeUtf(payload.houseName());
 }
 
 
@@ -60,8 +61,10 @@ public static void send(ServerPlayer player, BlockPos pos) {
     UUID uuid = lotBE.getHouseUuid();
     String username = lotBE.getOwner();
     String houseType = lotBE.getHouseType();
+    String houseName = lotBE.getHouseName();
+    LOGGER.info(" Sending HouseManagementScreenPayload to {}", player.getName().getString());
 
-    NetworkHandler.sendToPlayer(player, new HouseManagementScreenPayload(pos, uuid, username, houseType));
+    NetworkHandler.sendToPlayer(player, new HouseManagementScreenPayload(pos, uuid, username, houseType, houseName));
 }
 
 

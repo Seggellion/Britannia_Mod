@@ -1,0 +1,8 @@
+{
+    "variants": {
+      "type=bottom": { "model": "britannia_mod:block/structure/thatch_roof_flat" },
+      "type=top": { "model": "britannia_mod:block/structure/thatch_roof_flat" },
+      "type=double": { "model": "britannia_mod:block/structure/thatch_roof_flat_double" }
+    }
+  }
+  

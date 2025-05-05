@@ -168,8 +168,7 @@ public class BritanniaMod {
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
-            
-
+            modEventBus.addListener(ClientEventHandler::registerClientPackets);
         }
 
        

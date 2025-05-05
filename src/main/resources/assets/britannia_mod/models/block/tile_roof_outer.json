@@ -2,11 +2,11 @@
 	"credit": "Made with Blockbench",
 	"ambientocclusion": false,
 	"textures": {
-		"1": "britannia_mod:block/roof/brick_texture",
+		"1": "britannia_mod:block/roof/tile_texture",
 		"2": "britannia_mod:block/roof/log_texture",
 		"3": "britannia_mod:block/roof/other_textures",
 		"4": "britannia_mod:block/roof/other_textures_2",
-		"particle": "britannia_mod:block/roof/brick_texture"
+		"particle": "britannia_mod:block/roof/tile_texture"
 	},
 	"elements": [
 		{

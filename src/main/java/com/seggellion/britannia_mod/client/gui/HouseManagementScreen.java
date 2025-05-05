@@ -5,36 +5,49 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.Minecraft;
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
+
 import com.seggellion.britannia_mod.network.HouseManagementActionPayload;
 import java.util.UUID;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
 import org.slf4j.Logger;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.BlockPos;
+
 import com.mojang.logging.LogUtils;
 
 @OnlyIn(Dist.CLIENT)
 public class HouseManagementScreen extends Screen {
 
-   private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
 
-    // Create the ResourceLocation using the static factory method.
+    // Main management background
     private static final ResourceLocation BACKGROUND =
-        ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/gui/house_management.png");
+        ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/house_management.png");
 
-    // Dimensions of the background image (adjust as needed for your PNG)
+    // New banner for house name display
+    private static final ResourceLocation BANNER_BACKGROUND =
+        ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/house_sign.png");
+
     private final int backgroundWidth = 256;
     private final int backgroundHeight = 180;
-
- private final UUID houseUuid;
+private final BlockPos housePos;
+    private final UUID houseUuid;
     private final String ownerUsername;
     private final String houseType;
+    private String houseName;
 
-    public HouseManagementScreen(UUID houseUuid, String ownerUsername, String houseType) {
-        // Use Component.literal(...) to create the title text.
+    public HouseManagementScreen(BlockPos housePos, UUID houseUuid, String ownerUsername, String houseType, @Nullable String houseName) {
         super(Component.literal("House Management"));
-                this.houseUuid = houseUuid;
+            this.housePos = housePos;
+        this.houseUuid = houseUuid;
         this.ownerUsername = ownerUsername;
         this.houseType = houseType;
+            this.houseName = (houseName != null && !houseName.trim().isEmpty()) ? houseName.trim() : "An unnamed house";
     }
 
     @Override
@@ -42,10 +55,8 @@ public class HouseManagementScreen extends Screen {
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        // Create a "Re-deed House" button using the builder API.
         this.addRenderableWidget(
             Button.builder(Component.literal("Re-deed House"), (button) -> {
-                // Call your networking code to send the REDEED action.
                 HouseManagementActionPayload.sendAction(HouseManagementActionPayload.Action.REDEED);
                 this.onClose();
             })
@@ -53,7 +64,25 @@ public class HouseManagementScreen extends Screen {
             .build()
         );
 
-        // Create a "Cancel" button using the builder API.
+        this.addRenderableWidget(
+            Button.builder(Component.literal("Rename House"), (button) -> {
+                Minecraft.getInstance().setScreen(new RenameHouseScreen(housePos,houseUuid, ownerUsername, houseType));
+            })
+            .bounds(centerX - 50, centerY - 40, 100, 20)
+            .build()
+        );
+
+        this.addRenderableWidget(
+            Button.builder(Component.literal("Sign Options"), (button) -> {
+                Minecraft.getInstance().setScreen(
+                    new SignOptionsScreen(housePos, houseUuid, ownerUsername, houseType)
+                );
+            })
+            .bounds(centerX - 50, centerY - 70, 100, 20)
+            .build()
+        );
+
+
         this.addRenderableWidget(
             Button.builder(Component.literal("Cancel"), (button) -> {
                 this.onClose();
@@ -63,53 +92,59 @@ public class HouseManagementScreen extends Screen {
         );
     }
 
-    @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // Render the default background using the full signature.
+@Override
+public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+    this.renderBg(guiGraphics, partialTick, mouseX, mouseY);
 
-        // Render our custom GUI background.
-        renderBg(guiGraphics, partialTick, mouseX, mouseY);
-         int titleY = (this.height - backgroundHeight) / 2 + 10;
- int startX = this.width / 2 - 110;
-        int startY = titleY + 20;
-               
+    // Centered house name over banner
+       int bannerWidth = 256;
+        int bannerHeight = 40;
+    int bannerY = (this.height / 2) - backgroundHeight / 2 - bannerHeight - 5;
+    guiGraphics.drawCenteredString(this.font, houseName, this.width / 2, bannerY + 10, 0xFFFFFF);
 
+    int startX = this.width / 2 - 110;
+    int startY = (this.height - backgroundHeight) / 2 + 20;
 
-        // Draw the screen title centered over the background.
-        guiGraphics.drawCenteredString(this.font, this.title.getString(), this.width / 2, titleY, 0xFFFFFF);
+    guiGraphics.drawCenteredString(this.font, this.title.getString(), this.width / 2, startY - 12, 0xFFFFFF);
 
+    guiGraphics.drawString(this.font, "UUID: " + houseUuid.toString(), startX, startY, 0xCCCCCC);
+    guiGraphics.drawString(this.font, "Owner: " + ownerUsername, startX, startY + 12, 0xCCCCCC);
+    guiGraphics.drawString(this.font, "Type: " + houseType, startX, startY + 24, 0xCCCCCC);
 
-        guiGraphics.drawString(this.font, "UUID: " + houseUuid.toString(), startX, startY, 0xCCCCCC);
-        guiGraphics.drawString(this.font, "Owner: " + ownerUsername, startX, startY + 12, 0xCCCCCC);
-        guiGraphics.drawString(this.font, "Type: " + houseType, startX, startY + 24, 0xCCCCCC);
-
-
-        // Render the buttons and other widgets.
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-    }
-
-    /**
-     * Renders the custom GUI background image.
-     */
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // Bind the custom background texture.
-        this.minecraft.getTextureManager().bindForSetup(BACKGROUND);
-        // Calculate coordinates to center the image.
-        int x = (this.width - backgroundWidth) / 2;
-        int y = (this.height - backgroundHeight) / 2;
-        // Draw the background image.
-        guiGraphics.blit(BACKGROUND, x, y, 0, 0, backgroundWidth, backgroundHeight);
-    }
-
-    @Override
-public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-    // Do nothing — this disables default blur or shader backgrounds
+    super.render(guiGraphics, mouseX, mouseY, partialTick);
 }
 
 
+protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    int centerX = this.width / 2;
+
+    // First: draw the banner background
+    this.minecraft.getTextureManager().bindForSetup(BANNER_BACKGROUND);
+    int bannerWidth = 256;
+    int bannerHeight = 40;
+    int bannerX = centerX - (bannerWidth / 2);
+    int bannerY = (this.height / 2) - backgroundHeight / 2 - bannerHeight - 5; // 5px spacing
+    guiGraphics.blit(BANNER_BACKGROUND, bannerX, bannerY, 0, 0, bannerWidth, bannerHeight);
+
+    // Second: draw the main management panel background
+    this.minecraft.getTextureManager().bindForSetup(BACKGROUND);
+    int backgroundX = centerX - (backgroundWidth / 2);
+    int backgroundY = (this.height - backgroundHeight) / 2;
+    guiGraphics.blit(BACKGROUND, backgroundX, backgroundY, 0, 0, backgroundWidth, backgroundHeight);
+}
+
+
+    
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // intentionally blank – skip blur shader
+    }
 
     @Override
     public boolean isPauseScreen() {
         return false;
     }
+
+
+
 }

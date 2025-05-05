@@ -285,6 +285,19 @@ public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENT
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chop_tree"))
     );
 
+
+// structure sounds
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_OPEN = SOUND_EVENTS.register(
+            "metal_door_open",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_open"))
+    );
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_CLOSE = SOUND_EVENTS.register(
+            "metal_door_close",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_close"))
+    );
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);

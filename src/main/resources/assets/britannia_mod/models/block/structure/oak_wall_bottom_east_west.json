@@ -1,0 +1,20 @@
+{
+    "parent": "block/cube_column",
+    "textures": {
+      "end": "britannia_mod:block/structure/oak_wall_bottom",
+      "side": "britannia_mod:block/structure/oak_wall_bottom"
+    },
+    "elements": [
+      {
+        "from": [0, 0, 5.33],
+        "to": [16, 16, 10.66],
+        "faces": {
+          "west": { "texture": "#side" },
+          "east": { "texture": "#side" },
+          "up": { "texture": "#end" },
+          "down": { "texture": "#end" }
+        }
+      }
+    ]
+  }
+  

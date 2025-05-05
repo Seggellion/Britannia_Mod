@@ -1,0 +1,92 @@
+{
+  "multipart": [
+      {
+          "when": {
+              "half": "lower",
+              "hinge": "left",
+              "open": false
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_bottom_left"
+          }
+      },
+      {
+          "when": {
+              "half": "lower",
+              "hinge": "left",
+              "open": true
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_bottom_left_open",
+              "y": 90,
+              "uvlock": true
+          }
+      },
+      {
+          "when": {
+              "half": "lower",
+              "hinge": "right",
+              "open": false
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_bottom_right"
+          }
+      },
+      {
+          "when": {
+              "half": "lower",
+              "hinge": "right",
+              "open": true
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_bottom_right_open",
+              "y": 270,
+              "uvlock": true
+          }
+      },
+      {
+          "when": {
+              "half": "upper",
+              "hinge": "left",
+              "open": false
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_top_left"
+          }
+      },
+      {
+          "when": {
+              "half": "upper",
+              "hinge": "left",
+              "open": true
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_top_left_open",
+              "y": 90,
+              "uvlock": true
+          }
+      },
+      {
+          "when": {
+              "half": "upper",
+              "hinge": "right",
+              "open": false
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_top_right"
+          }
+      },
+      {
+          "when": {
+              "half": "upper",
+              "hinge": "right",
+              "open": true
+          },
+          "apply": {
+              "model": "britannia_mod:block/structure/metal_door_top_right_open",
+              "y": 270,
+              "uvlock": true
+          }
+      }
+  ]
+}

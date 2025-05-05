@@ -1,0 +1,10 @@
+{
+  "parent": "britannia_mod:block/house_sign_oval_base",
+  "visibility": {
+    "sign": true,
+    "holder": true
+  },
+  "textures": {
+    "texture0": "britannia_mod:block/signs/tailor"
+  }
+}

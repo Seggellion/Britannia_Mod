@@ -1,5 +1,5 @@
 package com.seggellion.britannia_mod.block.entity;
-
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.structure.HouseSize;
 import net.minecraft.core.BlockPos;
@@ -10,6 +10,10 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.network.protocol.Packet;
+
+import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -26,6 +30,7 @@ public class HouseLotBlockEntity extends BlockEntity {
     private Instant placedAt;
     private String houseType;
     private String regionName;
+    private String houseName;
     
 
     public HouseLotBlockEntity(BlockPos pos, BlockState state) {
@@ -38,7 +43,8 @@ public class HouseLotBlockEntity extends BlockEntity {
         this.accessList = new ArrayList<>();
         this.placedAt = Instant.now();
         this.houseType = "";   
-        this.regionName = "";      
+        this.regionName = "";   
+        this.houseName = "";   
     }
 
     // ----------------------------------
@@ -66,6 +72,7 @@ public class HouseLotBlockEntity extends BlockEntity {
     }
 
     public UUID getHouseUuid() {
+
         return houseUuid;
     }
     public void setHouseUuid(UUID houseUuid) {
@@ -114,6 +121,15 @@ public class HouseLotBlockEntity extends BlockEntity {
         setChanged();
     }
 
+        // New getter and setter for houseName
+    public String getHouseName() {
+        return houseName;
+    }
+    public void setHouseName(String houseName) {
+        this.houseName = houseName;
+        setChanged();
+    }
+
     // New getter and setter for regionName
     public String getRegionName() {
         return regionName;
@@ -135,6 +151,12 @@ public class HouseLotBlockEntity extends BlockEntity {
         }
         if (tag.contains("HouseUUID")) {
             this.houseUuid = UUID.fromString(tag.getString("HouseUUID"));
+        }
+        if (tag.contains("HouseType")) {
+                this.houseType = tag.getString("HouseType");
+        }
+        if (tag.contains("HouseName")) {
+                this.houseName = tag.getString("HouseName");
         }
         this.forSale = tag.getBoolean("ForSale");
         this.price = tag.getInt("Price");
@@ -167,6 +189,14 @@ public class HouseLotBlockEntity extends BlockEntity {
         this.forSale = tag.getBoolean("ForSale");
         this.price = tag.getInt("Price");
 
+        if (tag.contains("HouseType")) {
+                this.houseType = tag.getString("HouseType");
+        }
+
+        if (tag.contains("HouseName")) {
+                this.houseName = tag.getString("HouseName");
+        }
+
         if (tag.contains("AccessList", Tag.TAG_LIST)) {
             ListTag listTag = tag.getList("AccessList", Tag.TAG_STRING);
             this.accessList.clear();
@@ -185,9 +215,12 @@ public class HouseLotBlockEntity extends BlockEntity {
         // If calling super.saveAdditional(tag, provider) is not possible, omit it.
         tag.putString("Owner", this.owner);
         tag.putString("HouseSize", this.houseSize.name());
+        tag.putString("HouseType", this.houseType);
+        tag.putString("HouseName", this.houseName);
         tag.putString("HouseUUID", this.houseUuid.toString());
         tag.putBoolean("ForSale", this.forSale);
         tag.putInt("Price", this.price);
+        
 
         ListTag listTag = new ListTag();
         for (String user : this.accessList) {
@@ -196,6 +229,22 @@ public class HouseLotBlockEntity extends BlockEntity {
         tag.put("AccessList", listTag);
         tag.putString("PlacedAt", this.placedAt.toString());
     }
+
+
+@Override
+public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    CompoundTag tag = new CompoundTag();
+    this.saveAdditional(tag, provider);
+    return tag;
+}
+
+
+@Nullable
+@Override
+public Packet<ClientGamePacketListener> getUpdatePacket() {
+    return ClientboundBlockEntityDataPacket.create(this);
+}
+
 
 
 }

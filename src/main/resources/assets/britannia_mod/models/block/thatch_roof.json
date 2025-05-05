@@ -5,9 +5,9 @@
 	"textures": {
 		"0": "britannia_mod:block/roof/other_textures_5",
 		"2": "britannia_mod:block/roof/dark_stone_texture",
-		"3": "britannia_mod:block/roof/haybale_texture",
+		"3": "britannia_mod:block/roof/thatch_texture",
 		"4": "britannia_mod:block/roof/log_texture",
-		"particle": "britannia_mod:block/roof/haybale_texture"
+		"particle": "britannia_mod:block/roof/thatch_texture"
 	},
 	"elements": [
 		{

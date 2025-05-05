@@ -5,7 +5,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 
-
 public class HouseSignBlockEntity extends BlockEntity {
     private String ownerUsername = "";
 
@@ -23,5 +22,4 @@ public class HouseSignBlockEntity extends BlockEntity {
         setChanged();
     }
     
-    // In a full solution, override load() and saveAdditional() to persist ownerUsername.
 }

@@ -1,0 +1,8 @@
+newmtl m_2e7db249-42d2-96c9-fd6d-8c4d24a5017a
+map_Kd #texture0
+
+newmtl m_354127b2-32ee-e6a7-a465-ff51d7a51b13
+map_Kd #texture1
+
+newmtl m_db0f1192-fd13-dbaa-f412-42b8a778d960
+map_Kd #texture2

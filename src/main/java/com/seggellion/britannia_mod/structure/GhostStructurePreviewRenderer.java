@@ -1,11 +1,13 @@
 package com.seggellion.britannia_mod.client.house;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
+// import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
+import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
 import com.seggellion.britannia_mod.client.house.HouseRotationData;
 import com.seggellion.britannia_mod.client.house.GhostPreviewState;
 import com.seggellion.britannia_mod.util.StructureUtils;
+import com.seggellion.britannia_mod.structure.HouseSize;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -51,9 +53,18 @@ public static void onRenderLevel(RenderLevelStageEvent event) {
     if (level == null || player == null) return;
 
     ItemStack held = player.getMainHandItem();
-    if (!(held.getItem() instanceof SmallWoodHouseDeedItem)) return;
 
-    StructureTemplate template = StructureCache.getSmallWoodHouseTemplate();
+StructureTemplate template = null;
+
+    if (held.getItem() instanceof AbstractHouseDeedItem deed) {
+        HouseSize size = deed.getHouseSize();
+        String nbt = size.structureFile().replace(".nbt", ""); 
+        template = StructureCache.get(nbt);
+
+    }
+
+
+  //  StructureTemplate template = StructureCache.getSmallWoodHouseTemplate();
     if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
 
     PoseStack poseStack = event.getPoseStack();

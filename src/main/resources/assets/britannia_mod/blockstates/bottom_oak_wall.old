@@ -1,0 +1,9 @@
+{
+    "variants": {
+      "facing=north": { "model": "britannia_mod:block/structure/bottom_oak_wall" },
+      "facing=south": { "model": "britannia_mod:block/structure/bottom_oak_wall", "y": 180 },
+      "facing=west":  { "model": "britannia_mod:block/structure/bottom_oak_wall", "y": 270 },
+      "facing=east":  { "model": "britannia_mod:block/structure/bottom_oak_wall", "y": 90 }
+    }
+  }
+  

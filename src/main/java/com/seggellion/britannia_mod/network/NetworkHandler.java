@@ -8,6 +8,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
+import com.seggellion.britannia_mod.network.ManaSyncPayload;
+
+import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
+
 import com.seggellion.britannia_mod.structure.HouseActionHandler;
 
 
@@ -25,11 +29,54 @@ public class NetworkHandler {
     public static void register(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
 
+        // Existing ManaSyncPayload registration
+        registrar.playToClient(
+            ManaSyncPayload.TYPE,
+            ManaSyncPayload.STREAM_CODEC,
+            (payload, context) -> {
+                if (FMLLoader.getDist().isClient()) {
+                    ClientNetworkHandler.handleManaSyncOnClient(payload, context);
+                }
+            }
+        );
+
         // ✅ Register: Spell cast (client → server)
         registrar.playToServer(
             SpellCastPayload.TYPE,
             SpellCastPayload.STREAM_CODEC,
             (data, context) -> handleSpellCastOnServer(data, context)
+        );
+
+        // Register for house renaming
+        registrar.playToServer(
+            RenameHousePayload.TYPE,
+            RenameHousePayload.STREAM_CODEC,
+            (payload, context) -> context.enqueueWork(() -> {
+                if (context.player() instanceof ServerPlayer serverPlayer) {
+                    RenameHouseHandler.handle(payload, serverPlayer);
+                }
+            })
+        );
+
+registrar.playToClient(
+    HouseManagementScreenPayload.TYPE,
+    HouseManagementScreenPayload.STREAM_CODEC,
+    (payload, context) -> {
+        if (FMLLoader.getDist().isClient()) {
+            ClientNetworkHandler.handleHouseScreenOnClient(payload, context);
+        }
+    }
+);
+
+        // Register for sign style update (sign_type + holder_type)
+        registrar.playToServer(
+            UpdateSignStylePayload.TYPE,
+            UpdateSignStylePayload.STREAM_CODEC,
+            (payload, context) -> context.enqueueWork(() -> {
+                if (context.player() instanceof ServerPlayer serverPlayer) {
+                    UpdateSignStyleHandler.handle(payload, serverPlayer);
+                }
+            })
         );
 
         // Register HouseManagementActionPayload (client → server)
@@ -53,6 +100,7 @@ public static void sendToServer(SpellCastPayload payload) {
         Minecraft.getInstance().getConnection().send(new ServerboundCustomPayloadPacket(payload));
     }
 }
+
 
 
     // Method to send packets from server → client

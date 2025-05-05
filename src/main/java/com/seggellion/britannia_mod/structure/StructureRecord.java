@@ -8,16 +8,24 @@ import java.util.UUID;
  */
 public class StructureRecord {
     private final UUID ownerUuid;
-    private final UUID houseUuid; // <- ADD THIS
+    private final UUID houseUuid;
     private final AABB structureBox; 
-    private final AABB fullBox;  
+    private final AABB fullBox;
+    private final String sizeId; 
 
-    public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox, UUID houseUuid) {
+    public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox, UUID houseUuid,  String sizeId) {
         this.ownerUuid = ownerUuid;
         this.structureBox = structureBox;
         this.fullBox = fullBox;
         this.houseUuid = houseUuid;
+        this.sizeId = sizeId;
     }
+
+       // Optional: Keep the old constructor if needed
+    public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox, UUID houseUuid) {
+        this(ownerUuid, structureBox, fullBox, houseUuid, "unknown");
+    }
+
 
     public UUID getOwnerUuid() {
         return ownerUuid;
@@ -34,4 +42,5 @@ public class StructureRecord {
     public AABB getFullBox() {
         return fullBox;
     }
+    public String getSizeId() { return sizeId; } 
 }

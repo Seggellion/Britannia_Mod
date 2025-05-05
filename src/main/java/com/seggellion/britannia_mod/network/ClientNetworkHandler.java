@@ -12,17 +12,28 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.slf4j.Logger;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientNetworkHandler {
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public static void handleHouseScreenOnClient(HouseManagementScreenPayload data, IPayloadContext context) {
         context.enqueueWork(() -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && mc.level != null) {
-                mc.setScreen(new HouseManagementScreen(data.uuid(), data.username(), data.houseType()));
+                LOGGER.info("🎯 Received HouseManagementScreenPayload. Opening screen with UUID={}, Username={}, Type={}",
+                        data.uuid(), data.username(), data.houseType());
+                            mc.setScreen(new HouseManagementScreen(
+                data.pos(), // BlockPos
+                data.uuid(),    // UUID
+                data.username(),
+                data.houseType(),
+                data.houseName()
+            ));
+
             }
         });
     }

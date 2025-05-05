@@ -4,6 +4,8 @@ import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.SpellCastPayload;
 import com.seggellion.britannia_mod.magic.Spell;
 import com.seggellion.britannia_mod.magic.SpellRegistry;
+import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -76,7 +78,6 @@ public class ClientEventHandler {
         modEventBus.addListener(ClientEventHandler::onClientSetup);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
-
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
@@ -86,27 +87,32 @@ public class ClientEventHandler {
 
 
 
-    @SubscribeEvent
+ @SubscribeEvent
 public static void onClientTick(ClientTickEvent.Post event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) {
-            return;
-        }
-
-    if (!StructureCache.hasLoadedGhostStructure()) {
-       // LOGGER.info("Attempting to load ghost structure...");
-        loadGhostStructure(mc);
-        StructureCache.setGhostStructureLoaded(true);
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.player == null || mc.level == null) {
+        return;
     }
 
-        boolean isAttackPressed = mc.options.keyAttack.isDown();
+    ItemStack held = mc.player.getMainHandItem();
+    if (held.getItem() instanceof AbstractHouseDeedItem deed) {
+        String structureName = deed.getHouseSize().structureFile().replace(".nbt", ""); // no extension
 
-        if (isAttackPressed && !wasAttackPressed) {
-            handleLeftClick(mc);
+        if (StructureCache.get(structureName) == null) {
+            LOGGER.info("🔍 Ghost structure '{}' not yet cached, loading...", structureName);
+            loadGhostStructure(mc, structureName);  // dynamically load the correct structure
         }
-
-        wasAttackPressed = isAttackPressed;
     }
+
+    boolean isAttackPressed = mc.options.keyAttack.isDown();
+
+    if (isAttackPressed && !wasAttackPressed) {
+        handleLeftClick(mc);
+    }
+
+    wasAttackPressed = isAttackPressed;
+}
+
 
 private static void handleLeftClick(Minecraft mc) {
         LocalPlayer player = mc.player;
@@ -147,21 +153,11 @@ private static void handleLeftClick(Minecraft mc) {
         }
     }
 
-       @SubscribeEvent
+    @SubscribeEvent
     public static void registerClientPackets(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
 
-        registrar.playToClient(
-            ManaSyncPayload.TYPE,
-            ManaSyncPayload.STREAM_CODEC,
-            ClientNetworkHandler::handleManaSyncOnClient
-        );
 
-        registrar.playToClient(
-            HouseManagementScreenPayload.TYPE,
-            HouseManagementScreenPayload.STREAM_CODEC,
-            ClientNetworkHandler::handleHouseScreenOnClient
-        );
     }
 
   @SubscribeEvent
@@ -192,11 +188,10 @@ private static void handleLeftClick(Minecraft mc) {
             }
         }
     }
+private static void loadGhostStructure(Minecraft mc, String structureName) {
+    LOGGER.info("🔍 Attempting to manually load ghost structure '{}' from resource stream...", structureName);
 
-private static void loadGhostStructure(Minecraft mc) {
-    LOGGER.info("🔍 Attempting to manually load ghost structure from resource stream...");
-
-    ResourceLocation resource = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/small_wood_house.nbt");
+    ResourceLocation resource = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/" + structureName + ".nbt");
 
     try (InputStream stream = mc.getResourceManager().getResourceOrThrow(resource).open()) {
         CompoundTag tag = NbtIo.readCompressed(stream, NbtAccounter.unlimitedHeap());
@@ -205,19 +200,18 @@ private static void loadGhostStructure(Minecraft mc) {
         StructureTemplate template = new StructureTemplate();
         template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag); // ✅ Load the structure
 
-        // 🚫 No more filterBlocks() -- too fragile
-
-        // ✅ Now safe to cache
-        StructureCache.setSmallWoodHouseTemplate(template);
+        // Save it to cache with the *right* structure name
+        StructureCache.put(structureName, template);
 
         if (template.getSize().equals(Vec3i.ZERO)) {
-            LOGGER.warn("⚠️ Loaded structure has size Vec3i.ZERO (likely empty): {}", resource);
+            LOGGER.warn("⚠️ Loaded structure '{}' has size Vec3i.ZERO (likely empty)", structureName);
         } else {
-            LOGGER.info("✅ Structure loaded with size: {}", template.getSize());
+            LOGGER.info("✅ Structure '{}' loaded with size: {}", structureName, template.getSize());
         }
 
     } catch (IOException e) {
-        LOGGER.error("❌ Failed to load structure: {}", resource, e);
+        LOGGER.error("❌ Failed to load structure '{}'", structureName, e);
     }
 }
+
 }

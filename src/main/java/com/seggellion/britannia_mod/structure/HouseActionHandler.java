@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.util.HouseDataAPI;
 import com.seggellion.britannia_mod.structure.StructureRegionManager;
 import com.seggellion.britannia_mod.structure.StructureRecord;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +17,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.SectionPos;
+
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.registries.DeferredHolder;
+
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -95,10 +102,17 @@ public static void handleRedeed(ServerPlayer player) {
 
         // ✅ Step 4: Notify Rails and give back deed
          HouseDataAPI.deleteHouseRecord(player, record);
-        ItemStack deed = new ItemStack(ItemRegistry.SMALL_WOOD_HOUSE_DEED.get());
-        if (!player.getInventory().add(deed)) {
-            player.drop(deed, false);
-        }
+
+ItemStack deedStack = ItemRegistry.ITEMS.getEntries().stream()
+    .map(DeferredHolder::get)
+    .filter(i -> i instanceof AbstractHouseDeedItem d
+                  && d.getHouseSize().id().equals(record.getSizeId()))
+    .findFirst()
+    .map(ItemStack::new)   
+    .orElse(ItemStack.EMPTY); 
+
+        player.getInventory().placeItemBackInInventory(deedStack);
+
 
         player.sendSystemMessage(Component.literal("Your house has been re-deeded. The deed has been returned."));
         LOGGER.info("House successfully re-deeded for {}", player.getName().getString());

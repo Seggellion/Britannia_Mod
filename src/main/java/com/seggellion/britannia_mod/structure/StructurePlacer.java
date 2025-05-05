@@ -37,13 +37,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.UUID;
 
+public class StructurePlacer {
 
-    public class StructurePlacer {
-        private static final Logger LOGGER = LoggerFactory.getLogger(StructurePlacer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StructurePlacer.class);
 
-    public static void placeStructure(ServerLevel level, BlockPos playerPos, int rotationDeg, String structurePath, Player player) {
-        ResourceLocation structureId = ResourceLocation.fromNamespaceAndPath("britannia_mod", structurePath.replace(".nbt", ""));
-        LOGGER.info("Placing structure from {}", structureId);
+    /**
+     * Places a house structure in the world.
+     *
+     * @param level       server level
+     * @param playerPos   block‑pos the player is standing on
+     * @param rotationDeg current rotation from {@link HouseRotationData}
+     * @param size        which house we are placing (SMALL, MEDIUM, …)
+     * @param player      placing player
+     */
+    public static void placeStructure(ServerLevel level,
+                                      BlockPos playerPos,
+                                      int rotationDeg,
+                                      HouseSize size,
+                                      Player player) {
+
+        /* ---------- 1. resolve structure file ---------- */
+        String nbtFile = size.structureFile();                 // e.g. "medium_house.nbt"
+        ResourceLocation structureId =
+                ResourceLocation.fromNamespaceAndPath("britannia_mod",
+                        nbtFile.replace(".nbt", ""));
+        LOGGER.info("Placing structure {} (rotation {}° for {})",
+                     structureId, rotationDeg, player.getName().getString());
 
         StructureTemplate template = level.getStructureManager().getOrCreate(structureId);
         if (template == null || template.getSize().equals(Vec3i.ZERO)) {
@@ -51,71 +70,61 @@ import java.util.UUID;
             return;
         }
 
+        /* ---------- 2. rotation & offsets ---------- */
         Rotation rotation = StructureUtils.getRotation(rotationDeg);
         StructurePlaceSettings settings = new StructurePlaceSettings()
-            .setRotation(rotation)
-            .setIgnoreEntities(true);
+                .setRotation(rotation)
+                .setIgnoreEntities(true);
 
-Vec3i rawSize = template.getSize(); // this is BEFORE rotation
+        Vec3i rawSize = template.getSize(); // pre‑rotation
+        BlockPos localDoorOffset = StructureUtils.getDoorOffset(rawSize);
+        BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
+                new StructurePlaceSettings().setRotation(rotation),
+                localDoorOffset);
 
-
-// Apply rotation to get the true size
-
-
-    
-      BlockPos localDoorOffset = StructureUtils.getDoorOffset(rawSize); // no rotation yet
-BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
-    new StructurePlaceSettings().setRotation(rotation),
-    localDoorOffset
-);
-
-
-        // Calculate doorTarget = 3 blocks outward from player in rotation direction
+        /* player → door is always 3 blocks */
         double radians = Math.toRadians((rotationDeg + 90) % 360);
-        double offsetX = Math.cos(radians) * 3;
-        double offsetZ = Math.sin(radians) * 3;
         BlockPos doorTarget = new BlockPos(
-            (int) (player.getX() + offsetX),
-            playerPos.getY(),
-            (int) (player.getZ() + offsetZ)
-        );
+                (int) (player.getX() + Math.cos(radians) * 3),
+                playerPos.getY(),
+                (int) (player.getZ() + Math.sin(radians) * 3));
 
-        // Apply directional adjustment (East +1, South +2), respecting current rotation
         BlockPos extraOffset = StructureTemplate.calculateRelativePosition(
-            new StructurePlaceSettings().setRotation(rotation),
-            new BlockPos(-3, 0, -3)
-        );
+                new StructurePlaceSettings().setRotation(rotation),
+                new BlockPos(-3, 0, -3));
         doorTarget = doorTarget.offset(extraOffset);
 
+        BlockPos adjustedPos = StructureUtils
+                .getAdjustedPosForDoor(doorTarget, Rotation.NONE, rotatedDoorOffset);
 
-   BlockPos adjustedPos = StructureUtils.getAdjustedPosForDoor(doorTarget, Rotation.NONE, rotatedDoorOffset);
+        /* ---------- 3. place structure ---------- */
+        UUID houseUuid = UUID.randomUUID();
+        boolean placed = template.placeInWorld(level, adjustedPos, adjustedPos,
+                                               settings, level.getRandom(), 3);
+        if (!placed) {
+            LOGGER.error("Failed to place {}", structureId);
+            return;
+        }
+        LOGGER.info("Structure placed at {} (rot {} size {})",
+                    adjustedPos, rotation, rawSize);
 
-        UUID houseUuid = UUID.randomUUID(); // Generate it only once
+        /* ---------- 4. create HouseLot block/entity ---------- */
+        Direction facing   = rotation.rotate(Direction.EAST);           // door faces EAST in NBT
+        BlockPos baseLot   = doorTarget.relative(facing.getOpposite(), 1);
+        BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
+                new StructurePlaceSettings().setRotation(rotation),
+                new BlockPos(1, 1, -2));
+        BlockPos lotPos = baseLot.offset(lotOffset);
 
-        boolean placed = template.placeInWorld(level, adjustedPos, adjustedPos, settings, level.getRandom(), 3);
-        LOGGER.info("Structure placed at {}, rotated {}, rotatedSize {}", adjustedPos, rotation);
+        level.setBlock(lotPos,
+                BlockRegistry.HOUSE_LOT_BLOCK.get().defaultBlockState(), 3);
 
-        // Place HouseLot block 1 block behind door
-        Direction facing = rotation.rotate(Direction.EAST); // Door is EAST in NBT
-        BlockPos baseLotPos = doorTarget.relative(facing.getOpposite(), 1);
-
-        // Apply offset: +1 East, -1 North (in unrotated structure space)
-        BlockPos rotatedOffset = StructureTemplate.calculateRelativePosition(
-            new StructurePlaceSettings().setRotation(rotation),
-            new BlockPos(1, 1, -2)
-        );
-
-        BlockPos lotPos = baseLotPos.offset(rotatedOffset);
-
-        level.setBlock(lotPos, BlockRegistry.HOUSE_LOT_BLOCK.get().defaultBlockState(), 3);
-
-        BlockEntity be = level.getBlockEntity(lotPos);
-        if (be instanceof HouseLotBlockEntity lotBE) {
+        if (level.getBlockEntity(lotPos) instanceof HouseLotBlockEntity lotBE) {
             lotBE.setOwnerUsername(player.getName().getString());
-            lotBE.setHouseSize(HouseSize.SMALL);
+            lotBE.setHouseSize(size);                 // <-- enum, no more hard‑coding
             lotBE.setHouseUuid(houseUuid);
-            lotBE.setHouseType("small");
-            lotBE.setRegionName("Trinsic");
+            lotBE.setHouseType(size.id());           // "small", "medium", …
+            lotBE.setRegionName("Trinsic");          // TODO: dynamic region lookup
             lotBE.setForSale(false);
             lotBE.setPrice(0);
             lotBE.setPlacedAt(Instant.now());
@@ -123,52 +132,17 @@ BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
             lotBE.setChanged();
         }
 
-int w = rawSize.getX();
-int h = rawSize.getY();
-int d = rawSize.getZ();
+        /* ---------- 5. register region + basement ---------- */
+  StructureBoxes boxes = StructureUtils.makeStructureBoxes(adjustedPos, rawSize, rotation);
+StructureRegionManager.registerStructure(
+    new StructureRecord(player.getUUID(),
+        boxes.structureBox(),
+        boxes.fullBox(),     
+        houseUuid,
+        size.id()));  // <- now it matches correctly
 
-BlockPos min;
-BlockPos max;
 
-// this has to get refined -- but the 180 is good to go
-switch (rotation) {
-    case NONE -> {
-        min = adjustedPos;
-        max = adjustedPos.offset(w - 1, h - 1, d - 1);
+        /* ---------- 6. sync to Rails ---------- */
+        HouseDataAPI.sendHouseDataToRails(level, lotPos, player, size);
     }
-    case CLOCKWISE_90 -> {
-        min = adjustedPos.offset(-(d - 1), 0, 0);
-        max = adjustedPos.offset(0, h - 1, w - 1);
-    }
-    case CLOCKWISE_180 -> {
-        min = adjustedPos.offset(-(w - 1), 0, -(d - 1));
-        max = adjustedPos.offset(1, h - 1, 1);
-    }
-    case COUNTERCLOCKWISE_90 -> {
-        min = adjustedPos.offset(0, 0, -(w - 1));
-        max = adjustedPos.offset(d - 1, h - 1, 0);
-    }
-    default -> throw new IllegalStateException("Unexpected rotation: " + rotation);
 }
-
-
-AABB structureBox = new AABB(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ());
-int basementMinY = min.getY() - 5;
-AABB fullBox = new AABB(min.getX(), basementMinY, min.getZ(), max.getX(), max.getY(), max.getZ());
-
-
-
-LOGGER.info("AdjustedPos: {}", adjustedPos);
-LOGGER.info("basementMinY: {}", basementMinY);
-LOGGER.info("StructureBox: {}", structureBox);
-LOGGER.info("FullBox: {}", fullBox);
-
-
-
-StructureRegionManager.registerStructure(new StructureRecord(player.getUUID(), structureBox, fullBox, houseUuid));
-
-        HouseDataAPI.sendHouseDataToRails(level, lotPos, player, HouseSize.SMALL);
-    }
-
-
-    }

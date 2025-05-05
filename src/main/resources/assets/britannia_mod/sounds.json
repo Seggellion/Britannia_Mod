@@ -297,6 +297,16 @@
   "sounds": [
       "britannia_mod:mining2"
   ]
+},
+"door_metal_close": {
+  "sounds": [
+      "britannia_mod:door_metal_close"
+  ]
+},
+"door_metal_open": {
+  "sounds": [
+      "britannia_mod:door_metal_open"
+  ]
 }
 
 }

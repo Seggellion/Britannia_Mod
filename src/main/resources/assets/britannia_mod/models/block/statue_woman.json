@@ -1,0 +1,9 @@
+{
+    "loader": "neoforge:obj",
+    "model": "britannia_mod:models/block/statues/statue_woman.obj",
+    "flip_v": false,
+    "textures": {
+      "texture0": "britannia_mod:block/pillar_woman_texture"
+    }
+  }
+  
