@@ -9,15 +9,9 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRen
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import com.seggellion.britannia_mod.block.LargeForgeRenderer;
-import com.seggellion.britannia_mod.block.BlueTentRenderer;
 import com.seggellion.britannia_mod.block.PillarRenderer;
-import com.seggellion.britannia_mod.block.StatueWomanRenderer;
 import com.seggellion.britannia_mod.block.PurpleTentRenderer;
 import com.seggellion.britannia_mod.block.HouseSignRenderer;
 import com.seggellion.britannia_mod.block.SmallForgeRenderer;
@@ -29,7 +23,6 @@ import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.LichRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.RatRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
-import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.client.renderer.entity.WraithRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.GhoulRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.ShadeRenderer;
@@ -39,17 +32,11 @@ import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRendere
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.minecraft.world.item.Tier;
-import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
-import net.neoforged.neoforge.common.SimpleTier;
 import net.minecraft.world.item.component.CustomModelData;
-import net.neoforged.neoforge.client.event.ClientPlayerChangeGameTypeEvent;
-import net.minecraft.client.resources.model.BakedModel;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -58,40 +45,23 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.model.obj.ObjLoader;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.world.item.Item;
-import net.minecraft.client.Minecraft;
-import net.neoforged.neoforge.common.NeoForge;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.registry.SwordRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
-import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
-import net.minecraft.nbt.CompoundTag;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RegisterNamedRenderTypesEvent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
-import britannia_mod.client.model.loader.StatueWomanModelLoader;
-
-import java.util.Map;
-import java.util.HashMap;
 
 
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
-  
+
 @SubscribeEvent
 public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
 
@@ -380,25 +350,17 @@ private static int getTintForOreType(String oreType) {
 
         event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
-            event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
 
-    event.registerBlockEntityRenderer(BlockEntityRegistry.HOUSE_SIGN.get(), HouseSignRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.HOUSE_SIGN.get(), HouseSignRenderer::new);
 
         event.registerBlockEntityRenderer(BlockRegistry.PILLAR_BLOCK_ENTITY_TYPE.get(), PillarRenderer::new);
-                event.registerBlockEntityRenderer(BlockRegistry.STATUE_WOMAN_BLOCK_ENTITY_TYPE.get(), StatueWomanRenderer::new);
 
 
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
     }
 
-    @SubscribeEvent
-    public static void onRegisterGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
-    event.register(
-        ResourceLocation.fromNamespaceAndPath("britannia_mod", "statue_woman"),
-        new StatueWomanModelLoader()
-    );
-}
 
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {

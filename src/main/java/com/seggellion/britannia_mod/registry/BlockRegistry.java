@@ -13,9 +13,7 @@ import com.seggellion.britannia_mod.block.BlueTentBlock;
 import com.seggellion.britannia_mod.block.PurpleTentBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
-import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
 import com.seggellion.britannia_mod.block.PillarBlockEntity;
-import com.seggellion.britannia_mod.block.StatueWomanBlockEntity;
 import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
 import com.seggellion.britannia_mod.block.ChairBlock;
 import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
@@ -32,29 +30,23 @@ import com.seggellion.britannia_mod.block.QuarterBlock;
 import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
 import com.seggellion.britannia_mod.block.HouseLotBlock;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
-import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.FishSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.*;
 import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
 import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
-import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
-import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
+import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.SlabBlock;
 
 
 import net.neoforged.bus.api.IEventBus;
@@ -233,12 +225,6 @@ public static final DeferredHolder<Block, Block> STATUE_WOMAN = BLOCKS.register(
         .noOcclusion()
         .strength(1.0f))
 );
-
-public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StatueWomanBlockEntity>> STATUE_WOMAN_BLOCK_ENTITY_TYPE =
-    BLOCK_ENTITY_TYPES.register("statue_woman_block_entity",
-        () -> BlockEntityType.Builder.of(StatueWomanBlockEntity::new, STATUE_WOMAN.get()).build(null));
-
-
 
 
 // House deeds
