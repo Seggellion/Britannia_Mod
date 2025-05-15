@@ -29,7 +29,7 @@ import java.util.Properties;
 public class StatueWomanBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<StatueWomanBlock> CODEC = simpleCodec(StatueWomanBlock::new);
 
-    public StatueWomanBlock(Properties properties) {
+    public  StatueWomanBlock(Properties properties) {
         super(properties);
     }
 
