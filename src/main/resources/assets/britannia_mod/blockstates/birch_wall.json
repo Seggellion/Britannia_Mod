@@ -1,0 +1,14 @@
+{
+    "variants": {
+      "corner=false,facing=north": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_north" },
+      "corner=false,facing=south": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_south" },
+      "corner=false,facing=west": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_west" },
+      "corner=false,facing=east": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_east" },
+  
+      "corner=true,facing=north": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_north_corner" },
+      "corner=true,facing=south": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_south_corner" },
+      "corner=true,facing=west": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_west_corner" },
+      "corner=true,facing=east": { "model": "britannia_mod:block/structure/birch_wall/birch_wall_east_corner" }
+    }
+  }
+  

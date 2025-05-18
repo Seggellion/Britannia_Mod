@@ -1,0 +1,21 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end":  "britannia_mod:block/structure/log_wall",
+    "side": "britannia_mod:block/structure/log_wall"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to":   [16, 16, 8],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west":  { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "up":    { "texture": "#end"  },
+        "down":  { "texture": "#end"  }
+      }
+    }
+  ]
+}

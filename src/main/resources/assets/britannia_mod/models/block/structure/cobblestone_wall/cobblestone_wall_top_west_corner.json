@@ -1,0 +1,33 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "end":  "britannia_mod:block/structure/cobblestone_wall_top",
+    "side": "britannia_mod:block/structure/cobblestone_wall_top"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0], 
+      "to":   [8, 16, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west":  { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "up":    { "texture": "#end"  },
+        "down":  { "texture": "#end"  }
+      }
+    },
+    {
+      "from": [0, 0, 8], 
+      "to":   [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west":  { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "up":    { "texture": "#end"  },
+        "down":  { "texture": "#end"  }
+      }
+    }
+  ]
+}

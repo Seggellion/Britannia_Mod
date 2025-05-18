@@ -1,0 +1,33 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "end" : "britannia_mod:block/structure/oak_wall_top",
+    "side": "britannia_mod:block/structure/oak_wall_top"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 10.66],
+      "to"  : [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "east" : { "texture": "#side" },
+        "west" : { "texture": "#side" },
+        "up"   : { "texture": "#end"  },
+        "down" : { "texture": "#end"  }
+      }
+    },
+    {
+      "from": [10.66, 0, 0],
+      "to"  : [16,    16, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west" : { "texture": "#side" },
+        "east" : { "texture": "#side" },
+        "up"   : { "texture": "#end"  },
+        "down" : { "texture": "#end"  }
+      }
+    }
+  ]
+}

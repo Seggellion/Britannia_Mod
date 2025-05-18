@@ -1,8 +1,7 @@
 {
     "variants": {
       "type=bottom": { "model": "britannia_mod:block/structure/tile_roof_flat" },
-      "type=top": { "model": "britannia_mod:block/structure/tile_roof_flat" },
-      "type=double": { "model": "britannia_mod:block/structure/tile_roof_flat_double" }
+      "type=top": { "model": "britannia_mod:block/structure/tile_roof_flat" }
     }
   }
   

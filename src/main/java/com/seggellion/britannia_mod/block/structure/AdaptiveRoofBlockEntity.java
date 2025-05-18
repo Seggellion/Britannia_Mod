@@ -1,0 +1,134 @@
+package com.seggellion.britannia_mod.block.entity;
+
+import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import org.slf4j.Logger;
+import net.minecraft.world.level.block.Block;
+
+import net.minecraft.network.Connection;
+
+import com.mojang.logging.LogUtils;
+
+
+public class AdaptiveRoofBlockEntity extends BlockEntity {
+
+
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+
+ private ResourceLocation bottomTexture = null;
+private static final String TAG_KEY = "BottomTexture";
+
+    public AdaptiveRoofBlockEntity(BlockPos pos, BlockState state) {
+        super(BlockEntityRegistry.ADAPTIVE_ROOF.get(), pos, state);
+    }
+
+    public void setBottomTexture(ResourceLocation texture) {
+
+
+        if ("minecraft:block/air".equals(texture.toString())) {
+            this.bottomTexture = null;
+        } else {
+            this.bottomTexture = texture;
+        }
+
+        setChanged();
+
+            if (level instanceof ServerLevel server) {
+                server.blockEntityChanged(worldPosition); // ← notifies all tracking players
+            }
+
+            if (this.level != null && !this.level.isClientSide) {
+        this.level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        this.level.getChunkAt(worldPosition).setUnsaved(true);
+        
+    }
+    }
+
+    public ResourceLocation getBottomTexture() {
+        return bottomTexture;
+    }
+
+@Override
+public void onLoad() {
+    super.onLoad();
+
+    // Run only on the logical server – this forces the initial sync packet
+    if (!level.isClientSide && level instanceof ServerLevel server) {
+    LOGGER.info("[AdaptiveRoofBE] onLoad called with {}", worldPosition);
+        server.blockEntityChanged(worldPosition);     // sends update tag to all viewers
+    }
+}
+
+@Override
+protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+    super.saveAdditional(tag, provider);
+    if (bottomTexture != null) {
+    tag.putString("BottomTexture", bottomTexture.toString());
+    }
+}
+
+
+@Override
+public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+    CompoundTag tag = super.getUpdateTag(provider);
+    if (bottomTexture != null) {
+        tag.putString(TAG_KEY, bottomTexture.toString());
+    }
+    return tag;
+}
+
+public void handleUpdateTag(CompoundTag tag) {
+    if (tag.contains("BottomTexture")) {
+        this.bottomTexture = ResourceLocation.tryParse(tag.getString("BottomTexture"));
+          LOGGER.info("[AdaptiveRoofBE] handleUpdateTag called with {}", tag);
+        readTexture(tag); 
+    }
+}
+
+@Override
+public ClientboundBlockEntityDataPacket getUpdatePacket() {
+    return ClientboundBlockEntityDataPacket.create(this);
+}
+
+
+public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+    handleUpdateTag(pkt.getTag());
+}
+
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        if (tag.contains("BottomTexture")) {
+            bottomTexture = ResourceLocation.tryParse(tag.getString("BottomTexture"));
+             LOGGER.info("[AdaptiveRoofBE] loadAdditional called with {}", bottomTexture);
+               readTexture(tag);    
+        }
+    }
+
+/* ------------------------------------------------------------ */
+/*  Helper – parse tag and notify renderer                      */
+/* ------------------------------------------------------------ */
+private void readTexture(CompoundTag tag) {
+    if (!tag.contains("BottomTexture")) return;
+
+    bottomTexture = ResourceLocation.tryParse(tag.getString("BottomTexture"));
+ LOGGER.info("[AdaptiveRoofBE] readTexture called with {}", bottomTexture);
+    // If we’re on the logical client, force the chunk to re‑render
+    if (level != null && level.isClientSide) {
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(),
+                               Block.UPDATE_CLIENTS);        // <‑‑ refresh
+    }
+}
+
+
+
+}

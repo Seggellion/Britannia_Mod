@@ -1,0 +1,9 @@
+{
+    "variants": {
+      "facing=north": { "model": "britannia_mod:block/statue_pillar" },
+      "facing=east":  { "model": "britannia_mod:block/statue_pillar", "y": 90 },
+      "facing=south": { "model": "britannia_mod:block/statue_pillar", "y": 180 },
+      "facing=west":  { "model": "britannia_mod:block/statue_pillar", "y": 270 }
+    }
+  }
+  

@@ -50,6 +50,7 @@ import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
+import com.seggellion.britannia_mod.client.ThinWallClient;
 
 
 import net.minecraft.core.BlockPos;
@@ -165,6 +166,7 @@ public class BritanniaMod {
             ClientEventHandler.register(modEventBus);
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);
+            modEventBus.register(new ThinWallClient()); 
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);

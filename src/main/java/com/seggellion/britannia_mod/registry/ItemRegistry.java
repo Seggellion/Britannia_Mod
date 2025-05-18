@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.InteriorDecoratorToolItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
@@ -172,8 +173,12 @@ public static final DeferredHolder<Item, Item> THREE_QUARTER_DEEPSLATE_COBBLESTO
 
 
         // Housing tools
-    public static final DeferredHolder<Item, Item> INTERIOR_DECORATOR_TOOL = ITEMS.register("interior_decorator_tool",
-            () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> INTERIOR_DECORATOR_TOOL =
+        ITEMS.register("interior_decorator_tool",
+            () -> new InteriorDecoratorToolItem(
+                    new Item.Properties()
+                        .stacksTo(1)            // one tool per slot
+                        .durability(1)));
 
 
 public static final DeferredHolder<Item, Item> DEED_ITEM =
@@ -196,7 +201,7 @@ public static final DeferredHolder<Item, Item> DEED_ITEM =
 // statues
 
 public static final DeferredHolder<Item, Item> PILLAR_ITEM = ITEMS.register(
-    "pillar", () -> new BlockItem(BlockRegistry.PILLAR.get(), new Item.Properties())
+    "statue_pillar", () -> new BlockItem(BlockRegistry.STATUE_PILLAR.get(), new Item.Properties())
 );
 
 public static final DeferredHolder<Item, Item> STATUE_WOMAN_ITEM = ITEMS.register(
@@ -253,6 +258,15 @@ public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_FLAT_ITEM = ITEMS
     new BlockItem(BlockRegistry.SLATE_ROOF_FLAT.get(), new Item.Properties())
 );
 
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_1_FLAT_ITEM = ITEMS.register("slate_roof_1_flat", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF_1_FLAT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_2_FLAT_ITEM = ITEMS.register("slate_roof_2_flat", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF_2_FLAT.get(), new Item.Properties())
+);
+
+
 public static final DeferredHolder<Item, BlockItem> THATCH_ROOF_FLAT_ITEM = ITEMS.register("thatch_roof_flat", () ->
     new BlockItem(BlockRegistry.THATCH_ROOF_FLAT.get(), new Item.Properties())
 );
@@ -262,13 +276,80 @@ public static final DeferredHolder<Item, BlockItem> CEDAR_ROOF_FLAT_ITEM = ITEMS
 );
 
 // structure items
+public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_ITEM =
+        ITEMS.register("brick_foundation",
+            () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_FOUNDATION_ITEM =
+        ITEMS.register("stone_foundation",
+            () -> new BlockItem(BlockRegistry.STONE_FOUNDATION.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> COBBLESTONE_FOUNDATION_ITEM =
+        ITEMS.register("cobblestone_foundation",
+            () -> new BlockItem(BlockRegistry.COBBLESTONE_FOUNDATION.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BIRCH_WALL_ITEM =
+        ITEMS.register("birch_wall",
+            () -> new BlockItem(BlockRegistry.BIRCH_WALL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> LOG_WALL_ITEM =
+        ITEMS.register("log_wall",
+            () -> new BlockItem(BlockRegistry.LOG_WALL.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("stone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.STONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_TOP_ITEM =
+        ITEMS.register("stone_wall_top",
+            () -> new BlockItem(BlockRegistry.STONE_WALL_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> COBBLESTONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("cobblestone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.COBBLESTONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> COBBLESTONE_WALL_TOP_ITEM =
+        ITEMS.register("cobblestone_wall_top",
+            () -> new BlockItem(BlockRegistry.COBBLESTONE_WALL_TOP.get(), new Item.Properties()));
+
+
+
 public static final DeferredHolder<Item, BlockItem> OAK_WALL_BOTTOM_ITEM =
         ITEMS.register("oak_wall_bottom",
             () -> new BlockItem(BlockRegistry.OAK_WALL_BOTTOM.get(), new Item.Properties()));
 
-// public static final DeferredHolder<Item, BlockItem> OAK_WALL_TOP_ITEM =
-//        ITEMS.register("oak_wall_top",
-//            () -> new BlockItem(BlockRegistry.OAK_WALL_TOP.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> OAK_WALL_TOP_ITEM =
+        ITEMS.register("oak_wall_top",
+            () -> new BlockItem(BlockRegistry.OAK_WALL_TOP.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> BRICK_WALL_BOTTOM_ITEM =
+        ITEMS.register("brick_wall_bottom",
+            () -> new BlockItem(BlockRegistry.BRICK_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BRICK_WALL_TOP_ITEM =
+        ITEMS.register("brick_wall_top",
+            () -> new BlockItem(BlockRegistry.BRICK_WALL_TOP.get(), new Item.Properties()));
+
+
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("plaster_stone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.PLASTER_STONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_TOP_ITEM =
+        ITEMS.register("plaster_stone_wall_top",
+            () -> new BlockItem(BlockRegistry.PLASTER_STONE_WALL_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_WALL_BOTTOM_ITEM =
+        ITEMS.register("plaster_wood_wall_bottom",
+            () -> new BlockItem(BlockRegistry.PLASTER_WOOD_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_WALL_TOP_ITEM =
+        ITEMS.register("plaster_wood_wall_top",
+            () -> new BlockItem(BlockRegistry.PLASTER_WOOD_WALL_TOP.get(), new Item.Properties()));
+
 
 public static final DeferredHolder<Item, Item> METAL_DOOR_ITEM = ITEMS.register(
     "metal_door_item",

@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.features;
 
-import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -8,6 +7,7 @@ import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
 public class DiamondToolControl {
     private static final Logger LOGGER = LogUtils.getLogger();

@@ -1,0 +1,14 @@
+{
+    "variants": {
+      "corner=false,facing=north": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_north" },
+      "corner=false,facing=south": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_south" },
+      "corner=false,facing=west": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_west" },
+      "corner=false,facing=east": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_east" },
+  
+      "corner=true,facing=north": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_north_corner" },
+      "corner=true,facing=south": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_south_corner" },
+      "corner=true,facing=west": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_west_corner" },
+      "corner=true,facing=east": { "model": "britannia_mod:block/structure/stone_wall/stone_wall_top_east_corner" }
+    }
+  }
+  
