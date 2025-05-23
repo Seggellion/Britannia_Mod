@@ -1,12 +1,10 @@
 package com.seggellion.britannia_mod.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.seggellion.britannia_mod.block.HouseSignBlock.HolderType;
-import com.seggellion.britannia_mod.block.HouseSignBlock.SignType;
 import com.seggellion.britannia_mod.network.UpdateSignStylePayload;
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import com.seggellion.britannia_mod.block.HouseSignBlock;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,8 +35,8 @@ private final int backgroundHeight = 180;
     private final String ownerUsername;
     private final String houseType;
 
-    private HolderType selectedHolder;
-    private SignType selectedSign;
+    private HouseSignBlock.HolderType selectedHolder;
+    private HouseSignBlock.SignType selectedSign;
 
 
     private int scrollOffset = 0;
@@ -58,17 +56,17 @@ private final int backgroundHeight = 180;
             if (state.hasProperty(HouseSignBlock.SIGN_TYPE)) {
                 this.selectedSign = state.getValue(HouseSignBlock.SIGN_TYPE);
             } else {
-                this.selectedSign = SignType.DEFAULT;
+                this.selectedSign = HouseSignBlock.SignType.DEFAULT;
             }
 
             if (state.hasProperty(HouseSignBlock.HOLDER_TYPE)) {
                 this.selectedHolder = state.getValue(HouseSignBlock.HOLDER_TYPE);
             } else {
-                this.selectedHolder = HolderType.WOOD;
+                this.selectedHolder = HouseSignBlock.HolderType.WOOD;
             }
         } else {
-            this.selectedSign = SignType.DEFAULT;
-            this.selectedHolder = HolderType.WOOD;
+            this.selectedSign = HouseSignBlock.SignType.DEFAULT;
+            this.selectedHolder = HouseSignBlock.HolderType.WOOD;
         }
     }
 
@@ -78,8 +76,8 @@ private final int backgroundHeight = 180;
         int centerX = width / 2;
         int startY = height / 4;
 
-        int holderX = centerX - (HolderType.values().length * 40 / 2);
-        for (HolderType type : HolderType.values()) {
+        int holderX = centerX - (HouseSignBlock.HolderType.values().length * 40 / 2);
+        for (HouseSignBlock.HolderType type : HouseSignBlock.HolderType.values()) {
             this.addRenderableWidget(
                 Button.builder(Component.literal(type.toString()), btn -> {
                     selectedHolder = type;
@@ -98,10 +96,10 @@ private final int backgroundHeight = 180;
 
         clearSignButtons();
 
-        SignType[] allTypes = SignType.values();
+        HouseSignBlock.SignType[] allTypes = HouseSignBlock.SignType.values();
         int row = 0;
         for (int i = scrollOffset; i < Math.min(allTypes.length, scrollOffset + visibleRows); i++) {
-            final SignType type = allTypes[i];
+            final HouseSignBlock.SignType type = allTypes[i];
             int y = startY + (row * 22);
             this.addRenderableWidget(
                 Button.builder(Component.literal(type.toString()), btn -> {
@@ -119,9 +117,9 @@ private final int backgroundHeight = 180;
             }).bounds(centerX + 105, startY - 2, 20, 20).build());
         }
 
-        if (scrollOffset + visibleRows < SignType.values().length) {
+        if (scrollOffset + visibleRows < HouseSignBlock.SignType.values().length) {
             this.addRenderableWidget(Button.builder(Component.literal("▼"), btn -> {
-                scrollOffset = Math.min(SignType.values().length - visibleRows, scrollOffset + 1);
+                scrollOffset = Math.min(HouseSignBlock.SignType.values().length - visibleRows, scrollOffset + 1);
                 init(); // refresh
             }).bounds(centerX + 105, startY + visibleRows * 22 - 2, 20, 20).build());
         }
@@ -147,7 +145,7 @@ private final int backgroundHeight = 180;
     }
 
     private boolean isSignTypeButton(String label) {
-        for (SignType s : SignType.values()) {
+        for (HouseSignBlock.SignType s : HouseSignBlock.SignType.values()) {
             if (s.toString().equals(label)) return true;
         }
         return false;

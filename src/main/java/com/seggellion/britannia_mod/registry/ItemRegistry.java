@@ -531,6 +531,8 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
     );
     
     // Block Items
+        public static final DeferredHolder<Item, Item> HOUSE_SIGN_BLOCK_ITEM = ITEMS.register(
+            "house_sign", () -> new BlockItem(BlockRegistry.HOUSE_SIGN_BLOCK.get(), new Item.Properties()));
 
         public static final DeferredHolder<Item, Item> SHADE_SPAWN_BLOCK_ITEM = ITEMS.register(
             "shade_spawn_block", () -> new BlockItem(BlockRegistry.SHADE_SPAWN_BLOCK.get(), new Item.Properties()));

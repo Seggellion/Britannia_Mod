@@ -2,7 +2,6 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.MoongateBlock;
-import com.seggellion.britannia_mod.block.HouseSignBlock;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
@@ -47,6 +46,7 @@ import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -82,8 +82,8 @@ public class BlockRegistry {
         () -> new QuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
         );
 
-public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
-    BLOCKS.register("house_sign", HouseSignBlock::new);
+        public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK = BLOCKS.register(
+                "house_sign", HouseSignBlock::new);
 
 
        public static final DeferredHolder<Block, Block> HALF_DIRT_BLOCK = BLOCKS.register(

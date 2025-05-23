@@ -64,6 +64,7 @@ public class CreativeTabRegistry {
                         output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3)); 
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());
+                        output.accept(ItemRegistry.HOUSE_SIGN_BLOCK_ITEM.get());
                         for (HouseSize size : HouseSize.values()) {
                                 output.accept(ItemRegistry.deedFor(size));
                             }
