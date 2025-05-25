@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.item;
 
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
+import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -49,8 +51,34 @@ public class MoongateLinkingWand extends Item {
                     }
                 }
                 return InteractionResult.SUCCESS;
+
+} else if (state.getBlock() instanceof CarpetTeleporterBlock) {
+    if (firstMoongatePos == null) {
+        firstMoongatePos = pos;
+        player.sendSystemMessage(Component.literal("First carpet teleporter selected."));
+    } else {
+        BlockEntity firstEntity = world.getBlockEntity(firstMoongatePos);
+        BlockEntity secondEntity = world.getBlockEntity(pos);
+        if (firstEntity instanceof CarpetTeleporterBlockEntity firstTeleporter &&
+            secondEntity instanceof CarpetTeleporterBlockEntity secondTeleporter) {
+
+            firstTeleporter.setTarget(pos); // One-way only
+            firstTeleporter.setChanged();
+
+            player.sendSystemMessage(Component.literal("Carpet teleporters linked (one-way)."));
+            firstMoongatePos = null;
+        } else {
+            player.sendSystemMessage(Component.literal("Error: One of the teleporters is invalid."));
+        }
+    }
+    return InteractionResult.SUCCESS;
+
+
+
             } else {
-                player.sendSystemMessage(Component.literal("This is not a dungeon moongate."));
+
+                
+                player.sendSystemMessage(Component.literal("This is not a dungeon moongate, or teleporter."));
             }
         }
         return InteractionResult.PASS;

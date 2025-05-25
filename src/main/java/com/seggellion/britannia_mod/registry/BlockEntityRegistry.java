@@ -1,8 +1,9 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.BritanniaMod;
+
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.block.entity.HouseSignBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
+import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 
 import net.minecraft.core.registries.Registries;
@@ -32,6 +33,12 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AdaptiveR
             BlockRegistry.THATCH_ROOF_FLAT.get()
         ).build(null)
     );
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTeleporterBlockEntity>> CARPET_TELEPORTER_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITIES.register("carpet_teleporter_block_entity", () ->
+        BlockEntityType.Builder.of(CarpetTeleporterBlockEntity::new,
+                                   BlockRegistry.CARPET_TELEPORTER_BLOCK.get())
+                               .build(null));
 
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HouseSignBlockEntity>> HOUSE_SIGN =

@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "britannia_mod:models/block/statues/male_statue.obj",
+  "render_type": "translucent",
+  "textures": {
+    "texture0": "britannia_mod:block/statue_male"
+  },
+  "automatic_culling": false,
+  "shade_quads": false,
+  "flip_v": true,
+  "emissive_ambient": false
+}

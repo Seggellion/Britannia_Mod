@@ -1,0 +1,22 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end":  "britannia_mod:block/structure/plaster_stone_corner",
+    "side": "britannia_mod:block/structure/plaster_stone_corner"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],      
+      "to":   [8, 16, 16],
+      "faces": {
+        "north": { "texture": "#side", "uv": [16, 0, 0, 16] },
+        "south": { "texture": "#side", "uv": [16, 0, 0, 16] },
+        "west" : { "texture": "#side", "uv": [16, 0, 0, 16] },
+        "east" : { "texture": "#side", "uv": [16, 0, 0, 16] },
+
+        "up"   : { "texture": "#end",  "uv": [16, 0, 0, 16] },
+        "down" : { "texture": "#end",  "uv": [16, 0, 0, 16] }
+      }
+    }
+  ]
+}

@@ -1,6 +1,10 @@
 {
-    "variants": {
-      "": { "model": "britannia_mod:block/half_grass_block" }
-    }
+  "variants": {
+    "": [
+      { "model": "britannia_mod:block/fractional/half_grass1" },
+      { "model": "britannia_mod:block/fractional/half_grass2" },
+      { "model": "britannia_mod:block/fractional/half_grass3" },
+      { "model": "britannia_mod:block/fractional/half_grass4" }
+    ]
   }
-  
+}

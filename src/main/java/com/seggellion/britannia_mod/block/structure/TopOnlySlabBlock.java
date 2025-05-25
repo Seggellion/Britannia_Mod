@@ -110,11 +110,8 @@ public InteractionResult useWithoutItem(BlockState state,
         if (item == Item.byBlock(BlockRegistry.BRICK_WALL_TOP.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/brick_wall_top");
         }
-        if (item == Item.byBlock(BlockRegistry.PLASTER_STONE_WALL_BOTTOM.get())) {
-                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_stone_wall_bottom");
-        }
-        if (item == Item.byBlock(BlockRegistry.PLASTER_STONE_WALL_TOP.get())) {
-                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_stone_wall_top");
+        if (item == Item.byBlock(BlockRegistry.PLASTER_STONE_FOUNDATION.get())) {
+                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_stone_foundation");
         }
         if (item == Item.byBlock(BlockRegistry.COBBLESTONE_WALL_BOTTOM.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/cobblestone_wall_bottom");
@@ -122,12 +119,20 @@ public InteractionResult useWithoutItem(BlockState state,
         if (item == Item.byBlock(BlockRegistry.COBBLESTONE_WALL_TOP.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/cobblestone_wall_top");
         }
-
+        if (item == Item.byBlock(BlockRegistry.COBBLESTONE_FOUNDATION.get())) {
+                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/cobblestone_foundation");
+        }
         if (item == Item.byBlock(BlockRegistry.PLASTER_WOOD_WALL_BOTTOM.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_wood_wall_bottom");
         }
         if (item == Item.byBlock(BlockRegistry.PLASTER_WOOD_WALL_TOP.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_wood_wall_top");
+        }
+        if (item == Item.byBlock(BlockRegistry.LOG_WALL.get())) {
+                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/log_wall");
+        }
+        if (item == Item.byBlock(BlockRegistry.PLASTER_WOOD_FOUNDATION.get())) {
+                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_wood_foundation");
         }
         return null;
     }

@@ -17,6 +17,7 @@ import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.ModToolTiers;
 import com.seggellion.britannia_mod.item.OrderShieldItem;
 import com.seggellion.britannia_mod.item.MoongateLinkingWand;
+import com.seggellion.britannia_mod.item.CarpetTeleporterItem;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.structure.HouseSize;
@@ -207,6 +208,15 @@ public static final DeferredHolder<Item, Item> PILLAR_ITEM = ITEMS.register(
 public static final DeferredHolder<Item, Item> STATUE_WOMAN_ITEM = ITEMS.register(
     "statue_woman", () -> new BlockItem(BlockRegistry.STATUE_WOMAN.get(), new Item.Properties())
 );
+
+  public static final DeferredHolder<Item, Item> STATUE_COUPLE_ITEM = ITEMS.register(
+    "statue_couple", () -> new BlockItem(BlockRegistry.STATUE_COUPLE.get(), new Item.Properties())
+);
+  
+  public static final DeferredHolder<Item, Item> STATUE_MAN_ITEM = ITEMS.register(
+    "statue_man", () -> new BlockItem(BlockRegistry.STATUE_MAN.get(), new Item.Properties())
+);
+  
     /* ------------- convenience getters ----------------------- */
 
     /** Returns the actual Item for the given size; safe after registry events have fired. */
@@ -292,6 +302,18 @@ public static final DeferredHolder<Item, BlockItem> BIRCH_WALL_ITEM =
         ITEMS.register("birch_wall",
             () -> new BlockItem(BlockRegistry.BIRCH_WALL.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> WINDOW_1X1_ITEM =
+        ITEMS.register("window_1x1",
+            () -> new BlockItem(BlockRegistry.WINDOW_1X1.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_1X1_ITEM =
+        ITEMS.register("window_cross_1x1",
+            () -> new BlockItem(BlockRegistry.WINDOW_CROSS_1X1.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_BIRCH_1X1_ITEM =
+        ITEMS.register("window_birch_1x1",
+            () -> new BlockItem(BlockRegistry.WINDOW_BIRCH_1X1.get(), new Item.Properties()));
+
 
 public static final DeferredHolder<Item, BlockItem> LOG_WALL_ITEM =
         ITEMS.register("log_wall",
@@ -333,6 +355,11 @@ public static final DeferredHolder<Item, BlockItem> BRICK_WALL_TOP_ITEM =
             () -> new BlockItem(BlockRegistry.BRICK_WALL_TOP.get(), new Item.Properties()));
 
 
+public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_FOUNDATION_ITEM =
+        ITEMS.register("plaster_stone_foundation",
+            () -> new BlockItem(BlockRegistry.PLASTER_STONE_FOUNDATION.get(), new Item.Properties()));
+
+
 
 public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_BOTTOM_ITEM =
         ITEMS.register("plaster_stone_wall_bottom",
@@ -341,6 +368,11 @@ public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_BOTTOM_IT
 public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_TOP_ITEM =
         ITEMS.register("plaster_stone_wall_top",
             () -> new BlockItem(BlockRegistry.PLASTER_STONE_WALL_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_FOUNDATION_ITEM =
+        ITEMS.register("plaster_wood_foundation",
+            () -> new BlockItem(BlockRegistry.PLASTER_WOOD_FOUNDATION.get(), new Item.Properties()));
+
 
 public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_WALL_BOTTOM_ITEM =
         ITEMS.register("plaster_wood_wall_bottom",
@@ -532,6 +564,9 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
     
     // Block Items
 
+ public static final DeferredHolder<Item, Item> HOUSE_SIGN_BLOCK_ITEM = ITEMS.register(
+            "house_sign", () -> new BlockItem(BlockRegistry.HOUSE_SIGN_BLOCK.get(), new Item.Properties()));
+
         public static final DeferredHolder<Item, Item> SHADE_SPAWN_BLOCK_ITEM = ITEMS.register(
             "shade_spawn_block", () -> new BlockItem(BlockRegistry.SHADE_SPAWN_BLOCK.get(), new Item.Properties()));
 
@@ -557,6 +592,8 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
         public static final DeferredHolder<Item, Item> BLACKSMITH_SPAWN_BLOCK_ITEM = ITEMS.register(
             "blacksmith_spawn_block", () -> new BlockItem(BlockRegistry.BLACKSMITH_SPAWN_BLOCK.get(), new Item.Properties()));
 
+// teleporters
+
 public static final DeferredHolder<Item, Item> DUNGEON_MOONGATE_BLOCK_ITEM = ITEMS.register(
         "dungeon_moongate_block", () -> new BlockItem(BlockRegistry.DUNGEON_MOONGATE_BLOCK.get(), new Item.Properties()));
 
@@ -575,12 +612,23 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
     public static final DeferredHolder<Item, Item> MOONGATE_TOP_ITEM = ITEMS.register(
             "moongate_top", () -> new BlockItem(BlockRegistry.MOONGATE_TOP.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, Item> CARPET_TELEPORTER_BLOCK_ITEM = ITEMS.register(
+    "carpet_teleporter_block", () ->
+        new CarpetTeleporterItem(new Item.Properties()));
+
+// end of teleporters
     public static final DeferredHolder<Item, Item> LARGE_FORGE_BLOCK_ENTITY = ITEMS.register(
             "large_forge_item", () -> new BlockItem(BlockRegistry.LARGE_FORGE_BLOCK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SMALL_FORGE_BLOCK_ENTITY = ITEMS.register(
             "small_forge_item", () -> new BlockItem(BlockRegistry.SMALL_FORGE_BLOCK.get(), new Item.Properties()));
 
 // decorations
+
+    public static final DeferredHolder<Item, Item> LAMP_POST_REGULAR_ITEM = ITEMS.register(
+            "lamp_post_regular", () -> new BlockItem(BlockRegistry.LAMP_POST_REGULAR.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LAMP_POST_FANCY_ITEM = ITEMS.register(
+            "lamp_post_fancy", () -> new BlockItem(BlockRegistry.LAMP_POST_FANCY.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> CANDELABRA_SMALL_ITEM = ITEMS.register(
             "candelabra_small", () -> new BlockItem(BlockRegistry.CANDELABRA_SMALL.get(), new Item.Properties()));
@@ -590,6 +638,9 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
 
     public static final DeferredHolder<Item, Item> MAGINCIA_STYLE_THRONE_ITEM = ITEMS.register(
             "magincia_style_throne", () -> new BlockItem(BlockRegistry.MAGINCIA_STYLE_THRONE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LORD_BRITISH_THRONE_ITEM = ITEMS.register(
+            "lord_british_throne", () -> new BlockItem(BlockRegistry.LORD_BRITISH_THRONE.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> YEW_TABLE_ITEM = ITEMS.register(
             "yew_table", () -> new BlockItem(BlockRegistry.YEW_TABLE.get(), new Item.Properties()));

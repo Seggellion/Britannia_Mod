@@ -1,10 +1,11 @@
-// BlockRegistry.java
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.MoongateBlock;
-import com.seggellion.britannia_mod.block.HouseSignBlock;
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
+import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
+import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
 import com.seggellion.britannia_mod.block.StatuePillarBlock;
 import com.seggellion.britannia_mod.block.StatueWomanBlock;
@@ -230,6 +231,17 @@ public static final DeferredHolder<Block, Block> STATUE_WOMAN = BLOCKS.register(
         .strength(1.0f))
 );
 
+public static final DeferredHolder<Block, Block> STATUE_COUPLE = BLOCKS.register("statue_couple", 
+    () -> new StatueWomanBlock(BlockBehaviour.Properties.of()
+        .noOcclusion()
+        .strength(1.0f))
+);
+
+public static final DeferredHolder<Block, Block> STATUE_MAN = BLOCKS.register("statue_man", 
+    () -> new StatueWomanBlock(BlockBehaviour.Properties.of()
+        .noOcclusion()
+        .strength(1.0f))
+);
 
 
 // House deeds
@@ -268,6 +280,8 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PurpleTen
 
 //end of house deeds
 
+// teleporters
+
 public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_BLOCK = BLOCKS.register(
         "dungeon_moongate_block", DungeonMoongateBlock::new);
 
@@ -284,6 +298,15 @@ public static final DeferredHolder<Block, Block> MOONGATE_BLOCK = BLOCKS.registe
 
     public static final DeferredHolder<Block, Block> MOONGATE_TOP = BLOCKS.register(
             "moongate_top", MoongateTopBlock::new);
+
+
+public static final DeferredHolder<Block, Block> CARPET_TELEPORTER_BLOCK = BLOCKS.register(
+    "carpet_teleporter_block", CarpetTeleporterBlock::new);
+
+public static final DeferredHolder<Block, Block> CARPET_DUMMY_BLOCK = BLOCKS.register(
+    "carpet_dummy_block", CarpetDummyBlock::new);
+
+// light sources
 
 
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
@@ -303,6 +326,26 @@ public static final DeferredHolder<Block, Block> CANDELABRA_TALL = BLOCKS.regist
         .noOcclusion()
         .lightLevel(state -> 15))
 );
+
+
+public static final DeferredHolder<Block, Block> LAMP_POST_REGULAR = BLOCKS.register(
+    "lamp_post_regular",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15))
+);
+
+public static final DeferredHolder<Block, Block> LAMP_POST_FANCY = BLOCKS.register(
+    "lamp_post_fancy",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15))
+);
+
 
 
         public static final DeferredHolder<Block, Block> YEW_TABLE = BLOCKS.register(
@@ -403,7 +446,35 @@ public static final DeferredHolder<Block, Block> STONE_FOUNDATION = BLOCKS.regis
         .sound(SoundType.STONE))
 );
 
+public static final DeferredHolder<Block, ThinWall> WINDOW_1X1 =
+    BLOCKS.register("window_1x1", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.0f)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+        )
+    );
 
+    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_1X1 =
+    BLOCKS.register("window_cross_1x1", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.0f)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+        )
+    );
+
+    public static final DeferredHolder<Block, ThinWall> WINDOW_BIRCH_1X1 =
+    BLOCKS.register("window_birch_1x1", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.0f)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+        )
+    );
 
 public static final DeferredHolder<Block, ThinWall> OAK_WALL_BOTTOM =
     BLOCKS.register("oak_wall_bottom", 
@@ -517,6 +588,15 @@ public static final DeferredHolder<Block, ThinWall> COBBLESTONE_WALL_BOTTOM =
         )
     );
 
+public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_FOUNDATION =
+    BLOCKS.register("plaster_stone_foundation", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
 
 public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_WALL_BOTTOM =
     BLOCKS.register("plaster_stone_wall_bottom", 
@@ -530,6 +610,16 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_WALL_BOTTOM =
 
     public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_WALL_TOP =
     BLOCKS.register("plaster_stone_wall_top", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_FOUNDATION =
+    BLOCKS.register("plaster_wood_foundation", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
             .mapColor(MapColor.STONE)
             .strength(2.0f)
@@ -560,15 +650,25 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
 // Furniture
 
-                public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
-        "magincia_style_throne",
-         () -> new ChairBlock(BlockBehaviour.Properties.of()
-                .mapColor(MapColor.WOOD)
-                .strength(0.3f)
-                .noOcclusion()
-        )
+        public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
+            "magincia_style_throne",
+            () -> new ChairBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
         );
 
+        public static final DeferredHolder<Block, Block> LORD_BRITISH_THRONE = BLOCKS.register(
+            "lord_british_throne",
+            () -> new ChairBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+// Ores
 
 
         public static final DeferredHolder<Block, Block> COPPER_ORE = BLOCKS.register(

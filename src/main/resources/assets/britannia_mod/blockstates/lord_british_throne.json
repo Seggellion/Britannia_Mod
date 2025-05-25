@@ -1,0 +1,21 @@
+{
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/lord_british_throne",
+        "y": 180
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/lord_british_throne",
+        "y": 0
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/lord_british_throne",
+        "y": 90
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/lord_british_throne",
+        "y": 270
+      }
+    }
+  }
+  

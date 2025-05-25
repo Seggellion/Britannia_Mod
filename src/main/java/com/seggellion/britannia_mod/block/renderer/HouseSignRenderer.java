@@ -1,8 +1,10 @@
-package com.seggellion.britannia_mod.block;
+package com.seggellion.britannia_mod.block.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.block.entity.HouseSignBlockEntity;
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
+import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;

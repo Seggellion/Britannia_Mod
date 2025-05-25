@@ -1,0 +1,52 @@
+{
+  "parent": "britannia_mod:block/carpet_teleporter/template_carpet_wide",
+  "textures": {
+    "tex": "britannia_mod:block/carpet_teleporter_variant4"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#tex",
+          "uv": [
+            5.3333,
+            5.3333,
+            10.6666,
+            10.6666
+          ]
+        },
+        "down": {
+          "texture": "#tex",
+          "uv": [
+            5.3333,
+            5.3333,
+            10.6666,
+            10.6666
+          ]
+        },
+        "north": {
+          "texture": "#tex"
+        },
+        "south": {
+          "texture": "#tex"
+        },
+        "west": {
+          "texture": "#tex"
+        },
+        "east": {
+          "texture": "#tex"
+        }
+      }
+    }
+  ]
+}

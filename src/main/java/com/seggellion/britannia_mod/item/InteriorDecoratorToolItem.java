@@ -13,6 +13,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import com.seggellion.britannia_mod.block.CarpetDummyBlock;
+import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 
 
 public class InteriorDecoratorToolItem extends Item {
@@ -22,6 +24,7 @@ public class InteriorDecoratorToolItem extends Item {
         super(props);
     }
 
+
     @Override
     public InteractionResult useOn(UseOnContext ctx) {
         Level level        = ctx.getLevel();
@@ -30,7 +33,37 @@ public class InteriorDecoratorToolItem extends Item {
         ItemStack inHand   = ctx.getItemInHand();
         BlockState state   = level.getBlockState(pos);
 
-        /* Only affect ThinWall blocks */
+   
+
+        if (state.getBlock() instanceof CarpetTeleporterBlock) {
+            LOGGER.info("🎨 InteriorDecoratorTool carpet teleporter");
+            if (!level.isClientSide()) {
+                int currentStyle = state.getValue(CarpetTeleporterBlock.STYLE);
+                int nextStyle = (currentStyle + 1) % 5;
+                level.setBlock(pos, state.setValue(CarpetTeleporterBlock.STYLE, nextStyle), 4);
+
+                // Update surrounding dummy slices
+                for (int dz = -1; dz <= 1; dz++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if (dx == 0 && dz == 0) continue;
+                        BlockPos targetPos = pos.offset(dx, 0, dz);
+                        BlockState targetState = level.getBlockState(targetPos);
+
+                        if (targetState.getBlock() instanceof CarpetDummyBlock) {
+                            level.setBlock(targetPos,
+                                targetState.setValue(CarpetDummyBlock.STYLE, nextStyle), 3);
+                        }
+                    }
+                }
+
+                LOGGER.debug("🎨 InteriorDecoratorTool cycled carpet style at {}", pos);
+            }
+
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+
+     /* Only affect ThinWall blocks */
         if (!(state.getBlock() instanceof ThinWall wall)) {
             return InteractionResult.PASS;
         }
@@ -42,9 +75,9 @@ public class InteriorDecoratorToolItem extends Item {
 
         /* Server‑side: flip the ALT_TEXTURE bit and notify clients */
         if (!level.isClientSide()) {
-            boolean next = !state.getValue(ThinWall.ALT_TEXTURE);
-            level.setBlock(pos, state.setValue(ThinWall.ALT_TEXTURE, next), 3);
-            LOGGER.debug("🎨 InteriorDecoratorTool toggled wall style at {}", pos);
+            int next = (state.getValue(ThinWall.STYLE) + 1) % 3;
+            level.setBlock(pos, state.setValue(ThinWall.STYLE, next), 3);
+            LOGGER.info("🎨 InteriorDecoratorTool toggled wall style at {}", pos);
         }
 
         /* SUCCESS on server, CONSUME on client so the hand swings once */

@@ -1,0 +1,9 @@
+{
+    "variants": {
+      "facing=north": { "model": "britannia_mod:block/statue_couple" },
+      "facing=east":  { "model": "britannia_mod:block/statue_couple", "y": 90 },
+      "facing=south": { "model": "britannia_mod:block/statue_couple", "y": 180 },
+      "facing=west":  { "model": "britannia_mod:block/statue_couple", "y": 270 }
+    }
+  }
+  

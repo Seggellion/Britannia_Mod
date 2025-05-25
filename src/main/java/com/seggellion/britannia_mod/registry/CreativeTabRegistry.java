@@ -39,6 +39,8 @@ public class CreativeTabRegistry {
                         output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                         output.accept(ItemRegistry.CANDELABRA_TALL_ITEM.get());
                         output.accept(ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
+                        output.accept(ItemRegistry.LORD_BRITISH_THRONE_ITEM.get());
+                        output.accept(ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_TOP_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_LINKING_WAND.get());
                         output.accept(ItemRegistry.DUNGEON_MOONGATE_BLOCK_ITEM.get());
@@ -64,6 +66,7 @@ public class CreativeTabRegistry {
                         output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3)); 
                         output.accept(ItemRegistry.ORDER_SHIELD.get());
                         output.accept(ItemRegistry.GOLD_COIN.get());
+                        output.accept(ItemRegistry.HOUSE_SIGN_BLOCK_ITEM.get());
                         for (HouseSize size : HouseSize.values()) {
                                 output.accept(ItemRegistry.deedFor(size));
                             }
@@ -108,12 +111,20 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WO
                     safeAccept(output, ItemRegistry.COBBLESTONE_FOUNDATION_ITEM.get());
                     safeAccept(output, ItemRegistry.BIRCH_WALL_ITEM.get());
                     safeAccept(output, ItemRegistry.LOG_WALL_ITEM.get());
-                    safeAccept(output, ItemRegistry.PLASTER_STONE_WALL_BOTTOM_ITEM.get());
-                    safeAccept(output, ItemRegistry.PLASTER_STONE_WALL_TOP_ITEM.get());
+                    safeAccept(output, ItemRegistry.PLASTER_STONE_FOUNDATION_ITEM.get());
+                    safeAccept(output, ItemRegistry.PLASTER_WOOD_FOUNDATION_ITEM.get());
                     safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_BOTTOM_ITEM.get());
                     safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_TOP_ITEM.get());
                     safeAccept(output, ItemRegistry.PILLAR_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_1X1_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_CROSS_1X1_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_BIRCH_1X1_ITEM.get());
                     safeAccept(output, ItemRegistry.STATUE_WOMAN_ITEM.get());
+                    safeAccept(output, ItemRegistry.STATUE_COUPLE_ITEM.get());
+                    safeAccept(output, ItemRegistry.STATUE_MAN_ITEM.get());
+                    safeAccept(output, ItemRegistry.LAMP_POST_FANCY_ITEM.get());
+                     safeAccept(output, ItemRegistry.LAMP_POST_REGULAR_ITEM.get());
+                                          
                 }).build());
 
 public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_ORE_TAB = CREATIVE_TABS.register(

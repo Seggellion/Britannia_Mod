@@ -1,0 +1,54 @@
+{
+  "variants": {
+    "part=nw,style=0": { "model": "britannia_mod:block/carpet_teleporter/carpet_nw" },
+    "part=n,style=0":  { "model": "britannia_mod:block/carpet_teleporter/carpet_n" },
+    "part=ne,style=0": { "model": "britannia_mod:block/carpet_teleporter/carpet_ne" },
+    "part=w,style=0":  { "model": "britannia_mod:block/carpet_teleporter/carpet_w" },
+    "part=c,style=0":  { "model": "britannia_mod:block/carpet_teleporter/carpet_c" },
+    "part=e,style=0":  { "model": "britannia_mod:block/carpet_teleporter/carpet_e" },
+    "part=sw,style=0": { "model": "britannia_mod:block/carpet_teleporter/carpet_sw" },
+    "part=s,style=0":  { "model": "britannia_mod:block/carpet_teleporter/carpet_s" },
+    "part=se,style=0": { "model": "britannia_mod:block/carpet_teleporter/carpet_se" },
+
+    "part=nw,style=1": { "model": "britannia_mod:block/carpet_teleporter/carpet_nw_alt1" },
+    "part=n,style=1":  { "model": "britannia_mod:block/carpet_teleporter/carpet_n_alt1" },
+    "part=ne,style=1": { "model": "britannia_mod:block/carpet_teleporter/carpet_ne_alt1" },
+    "part=w,style=1":  { "model": "britannia_mod:block/carpet_teleporter/carpet_w_alt1" },
+    "part=c,style=1":  { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt1" },
+    "part=e,style=1":  { "model": "britannia_mod:block/carpet_teleporter/carpet_e_alt1" },
+    "part=sw,style=1": { "model": "britannia_mod:block/carpet_teleporter/carpet_sw_alt1" },
+    "part=s,style=1":  { "model": "britannia_mod:block/carpet_teleporter/carpet_s_alt1" },
+    "part=se,style=1": { "model": "britannia_mod:block/carpet_teleporter/carpet_se_alt1" },
+
+    "part=nw,style=2": { "model": "britannia_mod:block/carpet_teleporter/carpet_nw_alt2" },
+    "part=n,style=2":  { "model": "britannia_mod:block/carpet_teleporter/carpet_n_alt2" },
+    "part=ne,style=2": { "model": "britannia_mod:block/carpet_teleporter/carpet_ne_alt2" },
+    "part=w,style=2":  { "model": "britannia_mod:block/carpet_teleporter/carpet_w_alt2" },
+    "part=c,style=2":  { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt2" },
+    "part=e,style=2":  { "model": "britannia_mod:block/carpet_teleporter/carpet_e_alt2" },
+    "part=sw,style=2": { "model": "britannia_mod:block/carpet_teleporter/carpet_sw_alt2" },
+    "part=s,style=2":  { "model": "britannia_mod:block/carpet_teleporter/carpet_s_alt2" },
+    "part=se,style=2": { "model": "britannia_mod:block/carpet_teleporter/carpet_se_alt2" },
+
+    "part=nw,style=3": { "model": "britannia_mod:block/carpet_teleporter/carpet_nw_alt3" },
+    "part=n,style=3":  { "model": "britannia_mod:block/carpet_teleporter/carpet_n_alt3" },
+    "part=ne,style=3": { "model": "britannia_mod:block/carpet_teleporter/carpet_ne_alt3" },
+    "part=w,style=3":  { "model": "britannia_mod:block/carpet_teleporter/carpet_w_alt3" },
+    "part=c,style=3":  { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt3" },
+    "part=e,style=3":  { "model": "britannia_mod:block/carpet_teleporter/carpet_e_alt3" },
+    "part=sw,style=3": { "model": "britannia_mod:block/carpet_teleporter/carpet_sw_alt3" },
+    "part=s,style=3":  { "model": "britannia_mod:block/carpet_teleporter/carpet_s_alt3" },
+    "part=se,style=3": { "model": "britannia_mod:block/carpet_teleporter/carpet_se_alt3" },
+    "part=nw,style=4": { "model": "britannia_mod:block/carpet_teleporter/carpet_nw_alt4" },
+
+    "part=n,style=4":  { "model": "britannia_mod:block/carpet_teleporter/carpet_n_alt4" },
+    "part=ne,style=4": { "model": "britannia_mod:block/carpet_teleporter/carpet_ne_alt4" },
+    "part=w,style=4":  { "model": "britannia_mod:block/carpet_teleporter/carpet_w_alt4" },
+    "part=c,style=4":  { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt4" },
+    "part=e,style=4":  { "model": "britannia_mod:block/carpet_teleporter/carpet_e_alt4" },
+    "part=sw,style=4": { "model": "britannia_mod:block/carpet_teleporter/carpet_sw_alt4" },
+    "part=s,style=4":  { "model": "britannia_mod:block/carpet_teleporter/carpet_s_alt4" },
+    "part=se,style=4": { "model": "britannia_mod:block/carpet_teleporter/carpet_se_alt4" }
+
+  }
+}

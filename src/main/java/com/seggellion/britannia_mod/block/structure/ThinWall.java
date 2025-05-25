@@ -9,70 +9,78 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 
 public class ThinWall extends Block {
 
-    public static final DirectionProperty FACING  = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
-    public static final BooleanProperty  CORNER   = BooleanProperty.create("corner");
-    public static final BooleanProperty  FILLED   = BooleanProperty.create("filled");
+    /* ─── block‑state properties ─────────────────────────────── */
 
-    public static final BooleanProperty ALT_TEXTURE = BooleanProperty.create("alt"); 
+    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
+    public static final BooleanProperty  CORNER  = BooleanProperty.create("corner");
+    public static final BooleanProperty  FILLED  = BooleanProperty.create("filled");
 
+    /** 0 = standard, 1 = alt skin, 2 = alt skin flipped horizontally */
+    public static final IntegerProperty STYLE = IntegerProperty.create("style", 0, 2);
 
-    /* basic strip shapes (5.33 px thick) */
-    private static final VoxelShape NORTH_SHAPE = Block.box(0, 0, 0,     16, 16, 5.33);
-    private static final VoxelShape SOUTH_SHAPE = Block.box(0, 0, 10.66, 16, 16, 16);
-    private static final VoxelShape WEST_SHAPE  = Block.box(0, 0, 0,      5.33,16, 16);
-    private static final VoxelShape EAST_SHAPE  = Block.box(10.66,0, 0,   16,  16, 16);
-    private static final VoxelShape FULL_SHAPE  = Shapes.block();                       // 16³
+    /* ─── voxel shapes ( 16 px ⇒ 1 block ) ───────────────────── */
+
+    private static final VoxelShape NORTH_SHAPE = Block.box(0, 0,     0,   16, 16, 5.33);
+    private static final VoxelShape SOUTH_SHAPE = Block.box(0, 0, 10.66,   16, 16, 16);
+    private static final VoxelShape WEST_SHAPE  = Block.box(0, 0,      0,   5.33,16, 16);
+    private static final VoxelShape EAST_SHAPE  = Block.box(10.66,0,   0,   16,  16, 16);
+    private static final VoxelShape FULL_SHAPE  = Shapes.block();
+
+    /* ─── constructor & defaults ─────────────────────────────── */
 
     public ThinWall(BlockBehaviour.Properties props) {
         super(props);
         registerDefaultState(stateDefinition.any()
-            .setValue(FACING,  Direction.NORTH)
-            .setValue(CORNER,  false)
-            .setValue(FILLED,  false)
-            .setValue(ALT_TEXTURE, false)); 
+                .setValue(FACING, Direction.NORTH)
+                .setValue(CORNER, false)
+                .setValue(FILLED, false)
+                .setValue(STYLE, 0));
     }
 
-    /* ----- placement ----- */
+    /* ─── placement ──────────────────────────────────────────── */
 
-@Override
-public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-    Direction face    = ctx.getHorizontalDirection().getOpposite(); 
-    Direction gapSide = face.getOpposite();                          
-    boolean   filled  = !ctx.getLevel()
-                             .getBlockState(ctx.getClickedPos().relative(gapSide))
-                             .isAir();
-    return defaultBlockState()
-            .setValue(FACING, face)
-            .setValue(CORNER, false)
-            .setValue(FILLED, filled);
-}
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        Direction face    = ctx.getHorizontalDirection().getOpposite();
+        Direction gapSide = face.getOpposite();
+        boolean   filled  = !ctx.getLevel()
+                                .getBlockState(ctx.getClickedPos().relative(gapSide))
+                                .isAir();
 
-    /* ----- neighbour updates ----- */
+        return defaultBlockState()
+                .setValue(FACING, face)
+                .setValue(CORNER, false)
+                .setValue(FILLED, filled)
+                .setValue(STYLE, 0);          // always start in standard style
+    }
 
+    /* ─── neighbour updates ─────────────────────────────────── */
 
-@Override
-public BlockState updateShape(BlockState state, Direction fromDir,
-                              BlockState neighbour, LevelAccessor level,
-                              BlockPos pos,   BlockPos neighbourPos) {
+    @Override
+    public BlockState updateShape(BlockState state, Direction fromDir,
+                                  BlockState neighbour, LevelAccessor level,
+                                  BlockPos pos,   BlockPos neighbourPos) {
 
-    // keep corner logic
-    state = state.setValue(CORNER, isPivot(level, pos, state.getValue(FACING)));
+        // corner check
+        state = state.setValue(CORNER, isPivot(level, pos, state.getValue(FACING)));
 
-    /* update FILLED only when the neighbour on the GAP side changes */
-    if (fromDir == state.getValue(FACING).getOpposite())
-        state = state.setValue(FILLED, !neighbour.isAir());
-
-    return state;
-}
-
+        // filled flag only changes if the neighbour on the gap‑side changes
+        if (fromDir == state.getValue(FACING).getOpposite()) {
+            state = state.setValue(FILLED, !neighbour.isAir());
+        }
+        return state;
+    }
 
     private boolean isPivot(LevelAccessor level, BlockPos pos, Direction facing) {
         Direction.Axis axis = facing.getAxis();
@@ -81,14 +89,16 @@ public BlockState updateShape(BlockState state, Direction fromDir,
         for (Direction dir : Direction.Plane.HORIZONTAL) {
             BlockState n = level.getBlockState(pos.relative(dir));
             if (!(n.getBlock() instanceof ThinWall)) continue;
+
             if (dir.getAxis() == axis) parallel = true;
             else                       perpendicular = true;
+
             if (parallel && perpendicular) return true;
         }
         return false;
     }
 
-    /* ----- visual & collision ----- */
+    /* ─── shape & collision ─────────────────────────────────── */
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {
@@ -101,25 +111,27 @@ public BlockState updateShape(BlockState state, Direction fromDir,
         };
     }
 
-
     @Override
     public VoxelShape getCollisionShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {
-        return getShape(s, w, p, c);   // collision == outline
+        return getShape(s, w, p, c);   // outline equals collision
     }
 
-    /* ----- state defs / utility ----- */
+    /* ─── rotation helpers ─────────────────────────────────── */
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> b) {
-        b.add(FACING, CORNER, FILLED, ALT_TEXTURE);
-    }
-
-    @Override
-    public BlockState rotate(BlockState s, net.minecraft.world.level.block.Rotation r) {
+    public BlockState rotate(BlockState s, Rotation r) {
         return s.setValue(FACING, r.rotate(s.getValue(FACING)));
     }
+
     @Override
-    public BlockState mirror(BlockState s, net.minecraft.world.level.block.Mirror m) {
+    public BlockState mirror(BlockState s, Mirror m) {
         return s.rotate(m.getRotation(s.getValue(FACING)));
+    }
+
+    /* ─── state definition ─────────────────────────────────── */
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> b) {
+        b.add(FACING, CORNER, FILLED, STYLE);
     }
 }
