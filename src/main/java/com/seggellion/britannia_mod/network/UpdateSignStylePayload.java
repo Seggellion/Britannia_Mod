@@ -1,14 +1,13 @@
 package com.seggellion.britannia_mod.network;
 
-import com.seggellion.britannia_mod.block.HouseSignBlock.HolderType;
-import com.seggellion.britannia_mod.block.HouseSignBlock.SignType;
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record UpdateSignStylePayload(BlockPos pos, SignType signType, HolderType holderType)
+public record UpdateSignStylePayload(BlockPos pos, HouseSignBlock.SignType signType, HouseSignBlock.HolderType holderType)
         implements CustomPacketPayload {
 
     public static final Type<UpdateSignStylePayload> TYPE =
@@ -22,8 +21,8 @@ public record UpdateSignStylePayload(BlockPos pos, SignType signType, HolderType
         },
         buf -> new UpdateSignStylePayload(
             buf.readBlockPos(),
-            buf.readEnum(SignType.class),
-            buf.readEnum(HolderType.class)
+            buf.readEnum(HouseSignBlock.SignType.class),
+            buf.readEnum(HouseSignBlock.HolderType.class)
         )
     );
 

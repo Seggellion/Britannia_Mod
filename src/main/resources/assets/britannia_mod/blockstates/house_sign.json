@@ -1,13 +1,132 @@
 {
   "variants": {
-    "facing=north,holder_type=wood,sign_type=default": { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 0 },
-    "facing=east,holder_type=wood,sign_type=default":  { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 90 },
-    "facing=south,holder_type=wood,sign_type=default": { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 180 },
-    "facing=west,holder_type=wood,sign_type=default":  { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 270 },
-
-    "facing=north,holder_type=iron,sign_type=default": { "model": "britannia_mod:block/structure/sign/iron_sign_holder_1", "y": 180 },
-    "facing=east,holder_type=iron,sign_type=default":  { "model": "britannia_mod:block/structure/sign/iron_sign_holder_1", "y": 270 },
-    "facing=south,holder_type=iron,sign_type=default": { "model": "britannia_mod:block/structure/sign/iron_sign_holder_1", "y": 0 },
-    "facing=west,holder_type=iron,sign_type=default":  { "model": "britannia_mod:block/structure/sign/iron_sign_holder_1", "y": 90 }
+    "facing=north,holder_type=wood,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_default",
+      "y": 0
+    },
+    "facing=east,holder_type=wood,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_default",
+      "y": 90
+    },
+    "facing=south,holder_type=wood,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_default",
+      "y": 180
+    },
+    "facing=west,holder_type=wood,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_default",
+      "y": 270
+    },
+    "facing=north,holder_type=wood,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_tailor",
+      "y": 0
+    },
+    "facing=east,holder_type=wood,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_tailor",
+      "y": 90
+    },
+    "facing=south,holder_type=wood,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_tailor",
+      "y": 180
+    },
+    "facing=west,holder_type=wood,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_tailor",
+      "y": 270
+    },
+    "facing=north,holder_type=wood,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_library",
+      "y": 0
+    },
+    "facing=east,holder_type=wood,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_library",
+      "y": 90
+    },
+    "facing=south,holder_type=wood,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_library",
+      "y": 180
+    },
+    "facing=west,holder_type=wood,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_library",
+      "y": 270
+    },
+    "facing=north,holder_type=wood,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_baker",
+      "y": 0
+    },
+    "facing=east,holder_type=wood,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_baker",
+      "y": 90
+    },
+    "facing=south,holder_type=wood,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_baker",
+      "y": 180
+    },
+    "facing=west,holder_type=wood,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_baker",
+      "y": 270
+    },
+    "facing=north,holder_type=iron,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_default",
+      "y": 0
+    },
+    "facing=east,holder_type=iron,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_default",
+      "y": 90
+    },
+    "facing=south,holder_type=iron,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_default",
+      "y": 180
+    },
+    "facing=west,holder_type=iron,sign_type=default": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_default",
+      "y": 270
+    },
+    "facing=north,holder_type=iron,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_tailor",
+      "y": 0
+    },
+    "facing=east,holder_type=iron,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_tailor",
+      "y": 90
+    },
+    "facing=south,holder_type=iron,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_tailor",
+      "y": 180
+    },
+    "facing=west,holder_type=iron,sign_type=tailor": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_tailor",
+      "y": 270
+    },
+    "facing=north,holder_type=iron,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_library",
+      "y": 0
+    },
+    "facing=east,holder_type=iron,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_library",
+      "y": 90
+    },
+    "facing=south,holder_type=iron,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_library",
+      "y": 180
+    },
+    "facing=west,holder_type=iron,sign_type=library": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_library",
+      "y": 270
+    },
+    "facing=north,holder_type=iron,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_baker",
+      "y": 0
+    },
+    "facing=east,holder_type=iron,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_baker",
+      "y": 90
+    },
+    "facing=south,holder_type=iron,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_baker",
+      "y": 180
+    },
+    "facing=west,holder_type=iron,sign_type=baker": {
+      "model": "britannia_mod:block/structure/sign/house_sign_iron_baker",
+      "y": 270
+    }
   }
 }

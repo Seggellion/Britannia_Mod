@@ -1,10 +1,9 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.block.entity.HouseSignBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 
+import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 

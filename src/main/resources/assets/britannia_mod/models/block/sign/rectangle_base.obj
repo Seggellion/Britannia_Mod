@@ -1,6 +1,6 @@
 # Blender 4.4.3
 # www.blender.org
-mtllib oval_base.mtl
+mtllib rectangle_base.mtl
 o cube
 v 1.397025 0.093750 0.480998
 v 1.556181 0.236618 0.531189

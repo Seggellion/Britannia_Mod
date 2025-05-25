@@ -1,9 +1,9 @@
 package com.seggellion.britannia_mod.network;
 
 import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.block.HouseSignBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
