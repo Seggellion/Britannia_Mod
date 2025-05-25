@@ -2,7 +2,7 @@
     "loader": "neoforge:obj",
     "model": "britannia_mod:models/block/statues/statue_pillar.obj",
     "textures": {
-      "Material_0": "britannia_mod:block/pillar_woman_texture"
+      "texture0": "britannia_mod:block/pillar_woman_texture"
     },
     "automatic_culling": false,
     "shade_quads": false,
