@@ -14,7 +14,7 @@
       "emissive_ambient": false,
       "textures": {
         "texture0": "britannia_mod:block/sign/library",
-        "texture1": "britannia_mod:block/sign/rectangle_frame",
+        "texture1": "britannia_mod:block/sign/chain",
         "texture2": "britannia_mod:block/sign/rectangle_frame",
         "particle": "britannia_mod:block/sign/rectangle_frame"
       }
