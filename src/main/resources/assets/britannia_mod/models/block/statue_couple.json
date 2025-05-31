@@ -1,6 +1,7 @@
 {
   "loader": "neoforge:obj",
   "model": "britannia_mod:models/block/statues/statue_couple.obj",
+  "render_type": "translucent",
   "textures": {
     "texture0": "britannia_mod:block/statue_couple"
   },
