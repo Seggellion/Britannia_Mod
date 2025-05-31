@@ -1,36 +1,14 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.block.MoongateBlock;
-import com.seggellion.britannia_mod.structure.HouseSignBlock;
-import com.seggellion.britannia_mod.block.BaseOreBlock;
-import com.seggellion.britannia_mod.block.MoongateTopBlock;
-import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
-import com.seggellion.britannia_mod.block.CarpetDummyBlock;
-import com.seggellion.britannia_mod.block.SmallForgeBlock;
-import com.seggellion.britannia_mod.block.StatuePillarBlock;
-import com.seggellion.britannia_mod.block.StatueWomanBlock;
-import com.seggellion.britannia_mod.block.LargeForgeBlock;
-import com.seggellion.britannia_mod.block.BlueTentBlock;
-import com.seggellion.britannia_mod.block.PurpleTentBlock;
-import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
-import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
+import com.seggellion.britannia_mod.block.*;
 import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
-import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
-import com.seggellion.britannia_mod.block.ChairBlock;
-import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
-import com.seggellion.britannia_mod.block.LichSpawnBlock;
-import com.seggellion.britannia_mod.block.WoodSpawnBlock;
-import com.seggellion.britannia_mod.block.MetalSpawnBlock;
-import com.seggellion.britannia_mod.block.StoneSpawnBlock;
-import com.seggellion.britannia_mod.block.FishSpawnBlock;
-import com.seggellion.britannia_mod.block.HorseSpawnBlock;
-import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
-import com.seggellion.britannia_mod.block.CandelabraBlock;
-import com.seggellion.britannia_mod.block.HalfBlock;
-import com.seggellion.britannia_mod.block.QuarterBlock;
-import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
 import com.seggellion.britannia_mod.block.HouseLotBlock;
+import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
+import com.seggellion.britannia_mod.block.MetalDoorBlock;
+import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
+import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
@@ -38,23 +16,15 @@ import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FishSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
-import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
-import com.seggellion.britannia_mod.block.TopOakWallBlock;
-import com.seggellion.britannia_mod.block.MetalDoorBlock;
-import com.seggellion.britannia_mod.block.ThinWall;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.SlabBlock;
 
 
 import net.neoforged.bus.api.IEventBus;
@@ -219,26 +189,26 @@ public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
 //statues
 
 public static final DeferredHolder<Block, Block> STATUE_PILLAR = BLOCKS.register("statue_pillar", 
-    () -> new StatuePillarBlock(BlockBehaviour.Properties.of()
+    () -> new StatueBlock(BlockBehaviour.Properties.of()
         .noOcclusion()
         .strength(1.0f))
 );
 
 
 public static final DeferredHolder<Block, Block> STATUE_WOMAN = BLOCKS.register("statue_woman", 
-    () -> new StatueWomanBlock(BlockBehaviour.Properties.of()
+    () -> new StatueBlock(BlockBehaviour.Properties.of()
         .noOcclusion()
         .strength(1.0f))
 );
 
 public static final DeferredHolder<Block, Block> STATUE_COUPLE = BLOCKS.register("statue_couple", 
-    () -> new StatueWomanBlock(BlockBehaviour.Properties.of()
+    () -> new StatueCoupleBlock(BlockBehaviour.Properties.of()
         .noOcclusion()
         .strength(1.0f))
 );
 
 public static final DeferredHolder<Block, Block> STATUE_MAN = BLOCKS.register("statue_man", 
-    () -> new StatueWomanBlock(BlockBehaviour.Properties.of()
+    () -> new StatueBlock(BlockBehaviour.Properties.of()
         .noOcclusion()
         .strength(1.0f))
 );
