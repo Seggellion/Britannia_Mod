@@ -21,12 +21,7 @@ public class StatueCoupleBlock extends HorizontalDirectionalBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.or(
-                Block.box(0, 0, 0, 16, 16, 16),
-                Block.box(16, 0, 0, 32, 16, 16),
-                Block.box(0, 0, 16, 16, 16, 32),
-                Block.box(16, 0, 16, 32, 16, 32)
-        );
+        return Shapes.empty();
     }
 
     @Override

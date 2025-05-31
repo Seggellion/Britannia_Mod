@@ -1,7 +1,6 @@
 {
   "loader": "neoforge:obj",
   "model": "britannia_mod:models/block/statues/statue_man.obj",
-  "render_type": "translucent",
   "textures": {
     "texture0": "britannia_mod:block/statue_male"
   },
