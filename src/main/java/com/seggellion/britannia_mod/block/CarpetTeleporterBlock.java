@@ -1,4 +1,3 @@
-// CarpetTeleporterBlock.java
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;

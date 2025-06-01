@@ -2,7 +2,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
-//import com.seggellion.britannia_mod.entity.EntityJourneymanBlacksmith;
+import com.seggellion.britannia_mod.entity.LayEntity;
 import com.seggellion.britannia_mod.entity.LivingSeatEntity;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
@@ -76,7 +76,13 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
         .build("britannia_mod:town_person")
 );
 
-
+    public static final DeferredHolder<EntityType<?>, EntityType<LayEntity>> LAY_ENTITY =
+            ENTITIES.register("lay",
+                    () -> EntityType.Builder.<LayEntity>of(LayEntity::new, MobCategory.MISC)
+                            .sized(0.0F, 0.0F)         
+                            .clientTrackingRange(256)   
+                            .updateInterval(20)
+                            .build("britannia_mod:lay"));
 
     public static final DeferredHolder<EntityType<?>, EntityType<MongbatEntity>> MONGBAT_ENTITY = ENTITIES.register(
             "mongbat",

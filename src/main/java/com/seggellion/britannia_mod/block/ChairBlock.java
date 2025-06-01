@@ -84,8 +84,7 @@ protected InteractionResult useWithoutItem(BlockState state, Level level, BlockP
 @Override
 protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                           Player player, InteractionHand hand, BlockHitResult hit) {
-    LOGGER.info("🔧 useItemOn triggered - Held item: {}, Block: {}", stack.getItem(), state.getBlock());
-
+   
     if (!level.isClientSide()
         && stack.is(ItemRegistry.INTERIOR_DECORATOR_TOOL.get())
         && player.isCreative()

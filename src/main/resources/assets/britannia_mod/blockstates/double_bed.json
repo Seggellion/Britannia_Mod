@@ -1,0 +1,21 @@
+{
+  "multipart": [
+    { "when": { "part": "foot", "facing": "north" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 0 } },
+    { "when": { "part": "foot", "facing": "south" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 180 } },
+    { "when": { "part": "foot", "facing": "west" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 270 } },
+    { "when": { "part": "foot", "facing": "east" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 90 } },
+
+    { "when": { "part": "head", "facing": "north" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 0 } },
+    { "when": { "part": "head", "facing": "south" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 180 } },
+    { "when": { "part": "head", "facing": "west" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 270 } },
+    { "when": { "part": "head", "facing": "east" },
+      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 90 } }
+  ]
+}

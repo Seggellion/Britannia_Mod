@@ -163,6 +163,8 @@ public class BritanniaMod {
             modEventBus.addListener(ClientModSetup::onClientSetup);
             modEventBus.addListener(ClientModSetup::onRegisterItemColors);
             modEventBus.addListener(ClientModSetup::registerRenderers);
+            //modEventBus.addListener(ClientModSetup::onModelBake);
+            
             ClientEventHandler.register(modEventBus);
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);

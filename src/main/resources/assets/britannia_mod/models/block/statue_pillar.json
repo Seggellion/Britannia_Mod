@@ -1,11 +1,11 @@
 {
-    "loader": "neoforge:obj",
-    "model": "britannia_mod:models/block/statues/statue_pillar.obj",
-    "textures": {
-      "Material_0": "britannia_mod:block/pillar_woman_texture"
-    },
-    "automatic_culling": false,
-    "shade_quads": false,
-    "flip_v": true,
-    "emissive_ambient": false
-  }
+  "loader": "neoforge:obj",
+  "model": "britannia_mod:models/block/statues/statue_pillar.obj",
+  "textures": {
+    "texture0": "britannia_mod:block/pillar_woman_texture"
+  },
+  "automatic_culling": false,
+  "shade_quads": false,
+  "flip_v": true,
+  "emissive_ambient": false
+}

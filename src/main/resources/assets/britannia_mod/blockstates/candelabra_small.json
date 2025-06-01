@@ -1,6 +1,21 @@
-{
+    {
     "variants": {
-      "": { "model": "britannia_mod:block/candelabra_small" }
+      "facing=north": {
+        "model": "britannia_mod:block/candelabra_small",
+        "y": 180
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/candelabra_small",
+        "y": 0
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/candelabra_small",
+        "y": 90
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/candelabra_small",
+        "y": 270
+      }
     }
   }
   

@@ -58,7 +58,6 @@ public class RotatableFurnitureBlock extends HorizontalDirectionalBlock {
             Direction next = current.getClockWise();
             level.setBlock(pos, state.setValue(FACING, next), 3);
 
-            LOGGER.info("✅ Rotated furniture block at {}", pos);
             return ItemInteractionResult.SUCCESS;
         }
 

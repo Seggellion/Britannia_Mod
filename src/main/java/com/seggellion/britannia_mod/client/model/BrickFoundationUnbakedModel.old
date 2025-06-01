@@ -1,0 +1,50 @@
+package com.seggellion.britannia_mod.client.model;
+
+import com.seggellion.britannia_mod.client.model.BrickFoundationBakedModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.*;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
+import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import net.minecraft.util.RandomSource;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import java.util.List;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+public class BrickFoundationUnbakedModel
+        implements IUnbakedGeometry<BrickFoundationUnbakedModel> {
+ private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static final ResourceLocation BASE_CUBE =
+        ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/brick_foundation_base");
+
+@Override
+public BakedModel bake(IGeometryBakingContext context,
+                       ModelBaker baker,
+                       Function<Material, TextureAtlasSprite> spriteGetter,
+                       ModelState modelState,
+                       ItemOverrides overrides) {
+
+  Material mat = context.getMaterial("all");      // the same alias cube_all uses
+    TextureAtlasSprite sprite = spriteGetter.apply(mat);
+
+    LOGGER.info("Base cube sprite U0={}, name={}",
+                sprite.getU0(), sprite.contents().name());
+
+   // ResourceLocation model = new ResourceLocation("britannia_mod", "block/structure/brick_foundation_base");
+
+
+//List<BakedQuad> debugQuads = baseModel.getQuads(null, null, RandomSource.create());
+//LOGGER.info("BASE_CUBE quads = {}", debugQuads.size());
+    return new BrickFoundationBakedModel(baker, modelState, BASE_CUBE);
+
+}
+}

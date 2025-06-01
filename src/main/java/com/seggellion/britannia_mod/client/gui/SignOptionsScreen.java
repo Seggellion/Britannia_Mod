@@ -61,11 +61,11 @@ private final int backgroundHeight = 180;
             if (state.hasProperty(HouseSignBlock.HOLDER_TYPE)) {
                 this.selectedHolder = state.getValue(HouseSignBlock.HOLDER_TYPE);
             } else {
-               this.selectedHolder = HouseSignBlock.HolderType.WOOD;
+               this.selectedHolder = HouseSignBlock.HolderType.WOOD_1;
             }
         } else {
             this.selectedSign = HouseSignBlock.SignType.DEFAULT;
-            this.selectedHolder = HouseSignBlock.HolderType.WOOD;
+            this.selectedHolder = HouseSignBlock.HolderType.WOOD_1;
         }
     }
 
@@ -78,7 +78,8 @@ private final int backgroundHeight = 180;
         int holderX = centerX - (HouseSignBlock.HolderType.values().length * 40 / 2);
         for (HouseSignBlock.HolderType type : HouseSignBlock.HolderType.values()) {
             this.addRenderableWidget(
-                Button.builder(Component.literal(type.toString()), btn -> {
+                Button.builder(
+                    Component.translatable("holder_type." + type.getSerializedName()), btn -> {
                     selectedHolder = type;
                 }).bounds(holderX, startY, 60, 20).build()
             );

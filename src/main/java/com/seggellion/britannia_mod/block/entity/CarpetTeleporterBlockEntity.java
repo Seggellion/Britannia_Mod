@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 
 public class CarpetTeleporterBlockEntity extends BlockEntity {
@@ -45,27 +46,30 @@ public BlockPos getTarget() {
 
 public void teleport(ServerPlayer player) {
     BlockPos dest = getTarget();
-    if (dest != null && level != null) {
-
+    if (dest == null || level == null) {
+        return;
+    }
 
     CompoundTag data = player.getPersistentData();
     long now = level.getGameTime();
     long lastTeleport = data.getLong("britannia_mod:last_carpet_teleport");
 
-        level.getChunk(dest); // Force chunk load
-        SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
-        // 🔊 Play sound at source location
-        level.playSound(
-            null,                                // null = play for all nearby players
-            player.blockPosition(),              // position of the player before teleport
-            soundEvent,       // or your custom sound
-            SoundSource.BLOCKS,                  // or SoundSource.PLAYERS
-            1.0f,                                // volume
-            1.0f                                 // pitch
-        );
-        player.teleportTo(dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5);
+    // Cooldown: 40 ticks
+    if (now - lastTeleport < 40) return;
+    data.putLong("britannia_mod:last_carpet_teleport", now);
 
+    // Ensure chunk is fully generated before teleporting
+    if (level instanceof ServerLevel serverLevel) {
+        serverLevel.getChunk(dest); // Guarantees generation/loading
     }
+
+    // Play teleport sound at origin
+    SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
+    level.playSound(null, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 1.0f, 1.0f);
+
+    // Final teleport
+    player.teleportTo(dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5);
 }
+
 
 }

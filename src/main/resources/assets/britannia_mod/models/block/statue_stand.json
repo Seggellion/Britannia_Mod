@@ -1,0 +1,23 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [250, 250],
+	"textures": {
+		"1": "britannia_mod:block/statue_male_stand",
+		"particle": "britannia_mod:block/statue_male_stand"
+	},
+	"elements": [
+		{
+			"from": [-8.34, 0, -8.704],
+			"to": [25.068, 4.176, 24.704],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.364, 0, 8]},
+			"faces": {
+				"north": {"uv": [2.176, 9.344, 3.2, 9.472], "texture": "#1"},
+				"east": {"uv": [8.576, 12.992, 9.6, 13.12], "texture": "#1"},
+				"south": {"uv": [11.776, 9.6, 12.8, 9.728], "texture": "#1"},
+				"west": {"uv": [12.48, 10.304, 13.504, 10.432], "texture": "#1"},
+				"up": {"uv": [12.8, 9.28, 11.776, 8.256], "texture": "#1"},
+				"down": {"uv": [12.8, 8.256, 11.776, 9.28], "texture": "#1"}
+			}
+		}
+	]
+}

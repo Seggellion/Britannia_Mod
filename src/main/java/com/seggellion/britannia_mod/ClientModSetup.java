@@ -2,13 +2,15 @@
 package com.seggellion.britannia_mod;
 
 import com.seggellion.britannia_mod.client.renderer.entity.EntityHorseMerchantRenderer;
-
+import com.seggellion.britannia_mod.client.renderer.entity.DoubleBedRenderer;
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityFishMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
+ //import com.seggellion.britannia_mod.client.model.StoneFloorBakedModel;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.neoforge.client.model.obj.ObjLoader;
 import net.minecraft.world.entity.EntityType;
@@ -19,6 +21,7 @@ import com.seggellion.britannia_mod.block.LargeForgeRenderer;
 import com.seggellion.britannia_mod.block.BlueTentRenderer;
 import com.seggellion.britannia_mod.block.AdaptiveRoofRenderer;
 import com.seggellion.britannia_mod.block.PurpleTentRenderer;
+
 //import com.seggellion.britannia_mod.block.HouseSignRenderer;
 import com.seggellion.britannia_mod.block.SmallForgeRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
@@ -38,6 +41,7 @@ import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRende
 import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
+import net.minecraft.client.renderer.blockentity.BedRenderer;   
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -82,8 +86,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RegisterNamedRenderTypesEvent;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
-
 
 import java.util.Map;
 import java.util.HashMap;
@@ -375,6 +377,9 @@ private static int getTintForOreType(String oreType) {
         };
     };
 
+
+
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
 
@@ -382,8 +387,6 @@ private static int getTintForOreType(String oreType) {
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
             event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
-
-    //event.registerBlockEntityRenderer(BlockEntityRegistry.HOUSE_SIGN.get(), HouseSignRenderer::new);
 
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
@@ -417,7 +420,7 @@ private static int getTintForOreType(String oreType) {
 
             // Register the entity renderers
             EntityRenderers.register(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
-
+            EntityRenderers.register(EntityRegistry.LAY_ENTITY.get(), EmptyRenderer::new);
             EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
             EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), DaemonRenderer::new);
             EntityRenderers.register(EntityRegistry.LICH_ENTITY.get(), LichRenderer::new);
@@ -448,7 +451,17 @@ private static int getTintForOreType(String oreType) {
             );
 
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X1.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X3.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X3.get(), RenderType.cutout());
+
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X1.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X3.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X3.get(), RenderType.cutout());
+
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_BIRCH_1X1.get(), RenderType.cutout());
 
 

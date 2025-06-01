@@ -5,7 +5,7 @@ import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
 import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
-
+import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -45,6 +45,12 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
         BLOCK_ENTITIES.register("house_sign", () ->
             BlockEntityType.Builder.of(HouseSignBlockEntity::new, BlockRegistry.HOUSE_SIGN_BLOCK.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>,
+            BlockEntityType<DoubleBedBlockEntity>> DOUBLE_BED =
+            BLOCK_ENTITIES.register("double_bed",
+                    () -> BlockEntityType.Builder
+                            .of(DoubleBedBlockEntity::new, BlockRegistry.DOUBLE_BED.get())
+                            .build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

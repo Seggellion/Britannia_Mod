@@ -38,8 +38,12 @@ public class CreativeTabRegistry {
                          output.accept(ItemRegistry.PURPLE_TENT_DEED.get());
                         output.accept(ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                         output.accept(ItemRegistry.CANDELABRA_TALL_ITEM.get());
+                        output.accept(ItemRegistry.TORCH_WALL_ITEM.get());
+                        output.accept(ItemRegistry.TORCH_STANDING_ITEM.get());
+                        output.accept(ItemRegistry.BRAZIER_SMALL_ITEM.get());
                         output.accept(ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
-                        output.accept(ItemRegistry.LORD_BRITISH_THRONE_ITEM.get());
+                        output.accept(ItemRegistry.DOUBLE_BED_ITEM.get());
+                      //  output.accept(ItemRegistry.LORD_BRITISH_THRONE_ITEM.get());
                         output.accept(ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_TOP_ITEM.get());
                         output.accept(ItemRegistry.MOONGATE_LINKING_WAND.get());
@@ -98,7 +102,8 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WO
                     safeAccept(output, ItemRegistry.SLATE_ROOF_1_FLAT_ITEM.get() );
                     safeAccept(output, ItemRegistry.SLATE_ROOF_2_FLAT_ITEM.get() );
                     safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
-                    safeAccept(output, ItemRegistry.BRICK_FOUNDATION_ITEM.get());
+                    safeAccept(output, ItemRegistry.BRICK_FOUNDATION_OAK_ITEM.get());
+                    safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SPRUCE_ITEM.get());
                     safeAccept(output, ItemRegistry.OAK_WALL_BOTTOM_ITEM.get());
                     safeAccept(output, ItemRegistry.OAK_WALL_TOP_ITEM.get());
                     safeAccept(output, ItemRegistry.BRICK_WALL_BOTTOM_ITEM.get());
@@ -106,6 +111,7 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WO
                     safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_ITEM.get());
                     safeAccept(output, ItemRegistry.STONE_WALL_TOP_ITEM.get());                
                     safeAccept(output, ItemRegistry.STONE_FOUNDATION_ITEM.get());
+             //       safeAccept(output, ItemRegistry.STONE_FLOOR_ITEM.get());
                     safeAccept(output, ItemRegistry.COBBLESTONE_WALL_BOTTOM_ITEM.get());
                     safeAccept(output, ItemRegistry.COBBLESTONE_WALL_TOP_ITEM.get());                
                     safeAccept(output, ItemRegistry.COBBLESTONE_FOUNDATION_ITEM.get());
@@ -116,15 +122,35 @@ public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WO
                     safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_BOTTOM_ITEM.get());
                     safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_TOP_ITEM.get());
                     safeAccept(output, ItemRegistry.PILLAR_ITEM.get());
-                    safeAccept(output, ItemRegistry.WINDOW_1X1_ITEM.get());
-                    safeAccept(output, ItemRegistry.WINDOW_CROSS_1X1_ITEM.get());
-                    safeAccept(output, ItemRegistry.WINDOW_BIRCH_1X1_ITEM.get());
                     safeAccept(output, ItemRegistry.STATUE_WOMAN_ITEM.get());
                     safeAccept(output, ItemRegistry.STATUE_COUPLE_ITEM.get());
                     safeAccept(output, ItemRegistry.STATUE_MAN_ITEM.get());
+                    safeAccept(output, ItemRegistry.STATUE_STAND_ITEM.get());
                     safeAccept(output, ItemRegistry.LAMP_POST_FANCY_ITEM.get());
-                     safeAccept(output, ItemRegistry.LAMP_POST_REGULAR_ITEM.get());
-                                          
+                    safeAccept(output, ItemRegistry.LAMP_POST_REGULAR_ITEM.get());                                          
+                }).build());
+
+public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WINDOW_BLOCKS = CREATIVE_TABS.register(
+        "britannia_window_blocks", () -> CreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.britannia_window_blocks"))
+                .icon(() -> Item.BY_BLOCK.get(BlockRegistry.WINDOW_2X2.get()).getDefaultInstance())
+                .displayItems((parameters, output) -> {
+
+                    safeAccept(output, ItemRegistry.WINDOW_1X1_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_1X2_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_1X3_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_2X2_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_2X3_ITEM.get());
+
+
+                    safeAccept(output, ItemRegistry.WINDOW_CROSS_1X1_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_CROSS_1X2_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_CROSS_1X3_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_CROSS_2X2_ITEM.get());
+                    safeAccept(output, ItemRegistry.WINDOW_CROSS_2X3_ITEM.get());
+
+                    safeAccept(output, ItemRegistry.WINDOW_BIRCH_1X1_ITEM.get());
+                                        
                 }).build());
 
 public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_ORE_TAB = CREATIVE_TABS.register(

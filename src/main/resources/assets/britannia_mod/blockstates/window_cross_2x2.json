@@ -1,0 +1,9 @@
+  {
+    "variants": {
+      "facing=north": { "model": "britannia_mod:block/structure/windows/window_cross_2x2" },
+      "facing=east":  { "model": "britannia_mod:block/structure/windows/window_cross_2x2", "y": 90 },
+      "facing=south": { "model": "britannia_mod:block/structure/windows/window_cross_2x2", "y": 180 },
+      "facing=west":  { "model": "britannia_mod:block/structure/windows/window_cross_2x2", "y": 270 }
+    }
+  }
+  

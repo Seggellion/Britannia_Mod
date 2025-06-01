@@ -44,6 +44,7 @@
   "itemGroup.britannia_ore_tab": "Britannia Ore",
 
   "itemGroup.britannia_world_blocks": "Britannia World Blocks",
+    "itemGroup.britannia_window_blocks": "Britannia Window Blocks",
     "block.britannia_mod.quarter_dirt_block": "Quarter Dirt Block",
     "block.britannia_mod.half_dirt_block": "Half Dirt Block",
     "block.britannia_mod.three_quarter_dirt_block": "Three Quarter Dirt Block",
@@ -81,5 +82,11 @@
     "item.britannia_mod.earth_elemental_spawn_egg": "Elemental Spawn Egg(Earth)",
     "item.britannia_mod.pickaxe": "Britannia Pickaxe",
     "item.britannia_mod.order_shield": "Order Shield",
-    "item.britannia_mod.gold_coin": "Gold Coin"
+    "item.britannia_mod.gold_coin": "Gold Coin",
+    "holder_type.wood_1": "Wood Style 1",
+    "holder_type.wood_2": "Wood Style 2",
+    "holder_type.metal_1": "Metal Style 1",
+    "holder_type.metal_2": "Metal Style 2",
+    "holder_type.metal_3": "Metal Style 3",
+    "holder_type.metal_4": "Metal Style 4"
 }

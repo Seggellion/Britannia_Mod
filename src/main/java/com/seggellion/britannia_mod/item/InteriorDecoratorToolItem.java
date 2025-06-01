@@ -15,7 +15,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
-
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 
 public class InteriorDecoratorToolItem extends Item {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -34,6 +36,20 @@ public class InteriorDecoratorToolItem extends Item {
         BlockState state   = level.getBlockState(pos);
 
    
+        if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
+            // Don’t rotate walls here – they already use STYLE cycling
+            if (state.getBlock() instanceof ThinWall) {
+                // fall through to existing ThinWall branch
+            } else {
+                if (!level.isClientSide()) {
+                    Direction cur  = state.getValue(HorizontalDirectionalBlock.FACING);
+                    Direction next = cur.getClockWise();           // ⇧ shift‑right‑click? use getCounterClockWise()
+                    level.setBlock(pos, state.setValue(
+                            HorizontalDirectionalBlock.FACING, next), 3);
+                }
+                return InteractionResult.sidedSuccess(level.isClientSide());
+            }
+        }
 
         if (state.getBlock() instanceof CarpetTeleporterBlock) {
             LOGGER.info("🎨 InteriorDecoratorTool carpet teleporter");
@@ -80,7 +96,8 @@ public class InteriorDecoratorToolItem extends Item {
             LOGGER.info("🎨 InteriorDecoratorTool toggled wall style at {}", pos);
         }
 
+
         /* SUCCESS on server, CONSUME on client so the hand swings once */
-        return InteractionResult.sidedSuccess(level.isClientSide());
+       return InteractionResult.sidedSuccess(level.isClientSide());
     }
 }

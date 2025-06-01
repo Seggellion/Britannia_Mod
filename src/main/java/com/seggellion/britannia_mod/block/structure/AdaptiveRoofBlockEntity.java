@@ -9,11 +9,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import org.slf4j.Logger;
 import net.minecraft.world.level.block.Block;
 
 import net.minecraft.network.Connection;
-
+import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 
