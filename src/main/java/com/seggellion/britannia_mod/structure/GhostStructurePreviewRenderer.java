@@ -7,7 +7,7 @@ import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
 import com.seggellion.britannia_mod.client.house.HouseRotationData;
 import com.seggellion.britannia_mod.client.house.GhostPreviewState;
 import com.seggellion.britannia_mod.util.StructureUtils;
-import com.seggellion.britannia_mod.structure.HouseSize;
+import com.seggellion.britannia_mod.structure.HouseStyle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -56,12 +56,12 @@ public static void onRenderLevel(RenderLevelStageEvent event) {
 
 StructureTemplate template = null;
 
-    if (held.getItem() instanceof AbstractHouseDeedItem deed) {
-        HouseSize size = deed.getHouseSize();
-        String nbt = size.structureFile().replace(".nbt", ""); 
-        template = StructureCache.get(nbt);
+if (held.getItem() instanceof AbstractHouseDeedItem deed) {
+    HouseStyle style = deed.getHouseStyle(); // ✅ new: get the actual style
+    String nbt = style.getStructureFile().replace(".nbt", ""); // ✅ get stub
+    template = StructureCache.get(nbt);
+}
 
-    }
 
 
   //  StructureTemplate template = StructureCache.getSmallWoodHouseTemplate();

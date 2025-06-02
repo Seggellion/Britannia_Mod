@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
-import com.seggellion.britannia_mod.structure.HouseSize;
+import com.seggellion.britannia_mod.structure.HouseStyle;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -33,7 +33,7 @@ public class HouseDataAPI {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public static void sendHouseDataToRails(ServerLevel level, BlockPos housePos, Player owner, HouseSize size) {
+    public static void sendHouseDataToRails(ServerLevel level, BlockPos housePos, Player owner, HouseStyle style) {
         try {
             HouseLotBlockEntity lot = (HouseLotBlockEntity) level.getBlockEntity(housePos);
             if (lot == null) {
@@ -69,7 +69,7 @@ public class HouseDataAPI {
             // Required by House model:
             payload.addProperty("uuid", houseUuid.toString());           // e.g. "48e5-..."
             payload.addProperty("house_type", houseType);                // "small" for day 3
-            payload.addProperty("size", size.name().toLowerCase());      // "small", "patio", etc.
+            payload.addProperty("style", style.name().toLowerCase());      // "small", "patio", etc.
             payload.addProperty("x", housePos.getX());
             payload.addProperty("y", housePos.getY());
             payload.addProperty("z", housePos.getZ());

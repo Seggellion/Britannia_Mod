@@ -1,7 +1,7 @@
 package com.seggellion.britannia_mod.block.entity;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
-import com.seggellion.britannia_mod.structure.HouseSize;
+import com.seggellion.britannia_mod.structure.HouseStyle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +22,7 @@ import java.util.UUID;
 
 public class HouseLotBlockEntity extends BlockEntity {
     private String owner;
-    private HouseSize houseSize;
+    private HouseStyle HouseStyle;
     private UUID houseUuid;
     private boolean forSale;
     private int price;
@@ -36,7 +36,7 @@ public class HouseLotBlockEntity extends BlockEntity {
     public HouseLotBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.HOUSE_LOT.get(), pos, state);
         this.owner = "";
-        this.houseSize = HouseSize.SMALL;
+        this.HouseStyle = HouseStyle.SMALL_WOOD;
         this.houseUuid = UUID.randomUUID();
         this.forSale = false;
         this.price = 0;
@@ -63,11 +63,11 @@ public class HouseLotBlockEntity extends BlockEntity {
         setOwner(ownerUsername);
     }
 
-    public HouseSize getHouseSize() {
-        return houseSize;
+    public HouseStyle getHouseStyle() {
+        return HouseStyle;
     }
-    public void setHouseSize(HouseSize houseSize) {
-        this.houseSize = houseSize;
+    public void setHouseStyle(HouseStyle HouseStyle) {
+        this.HouseStyle = HouseStyle;
         setChanged();
     }
 
@@ -146,8 +146,8 @@ public class HouseLotBlockEntity extends BlockEntity {
         if (tag.contains("Owner")) {
             this.owner = tag.getString("Owner");
         }
-        if (tag.contains("HouseSize")) {
-            this.houseSize = HouseSize.valueOf(tag.getString("HouseSize"));
+        if (tag.contains("HouseStyle")) {
+            this.HouseStyle = HouseStyle.valueOf(tag.getString("HouseStyle"));
         }
         if (tag.contains("HouseUUID")) {
             this.houseUuid = UUID.fromString(tag.getString("HouseUUID"));
@@ -180,8 +180,8 @@ public class HouseLotBlockEntity extends BlockEntity {
         if (tag.contains("Owner")) {
             this.owner = tag.getString("Owner");
         }
-        if (tag.contains("HouseSize")) {
-            this.houseSize = HouseSize.valueOf(tag.getString("HouseSize"));
+        if (tag.contains("HouseStyle")) {
+            this.HouseStyle = HouseStyle.valueOf(tag.getString("HouseStyle"));
         }
         if (tag.contains("HouseUUID")) {
             this.houseUuid = UUID.fromString(tag.getString("HouseUUID"));
@@ -214,7 +214,7 @@ public class HouseLotBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         // If calling super.saveAdditional(tag, provider) is not possible, omit it.
         tag.putString("Owner", this.owner);
-        tag.putString("HouseSize", this.houseSize.name());
+        tag.putString("HouseStyle", this.HouseStyle.name());
         tag.putString("HouseType", this.houseType);
         tag.putString("HouseName", this.houseName);
         tag.putString("HouseUUID", this.houseUuid.toString());

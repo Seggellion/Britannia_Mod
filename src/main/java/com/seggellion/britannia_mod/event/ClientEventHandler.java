@@ -94,15 +94,15 @@ public static void onClientTick(ClientTickEvent.Post event) {
         return;
     }
 
-    ItemStack held = mc.player.getMainHandItem();
-    if (held.getItem() instanceof AbstractHouseDeedItem deed) {
-        String structureName = deed.getHouseSize().structureFile().replace(".nbt", ""); // no extension
+   ItemStack held = mc.player.getMainHandItem();
+if (held.getItem() instanceof AbstractHouseDeedItem deed) {
+    String structureName = deed.getHouseStyle().getStructureFile().replace(".nbt", ""); // ✅ uses HouseStyle
 
-        if (StructureCache.get(structureName) == null) {
-            LOGGER.info("🔍 Ghost structure '{}' not yet cached, loading...", structureName);
-            loadGhostStructure(mc, structureName);  // dynamically load the correct structure
-        }
+    if (StructureCache.get(structureName) == null) {
+        LOGGER.info("🔍 Ghost structure '{}' not yet cached, loading...", structureName);
+        loadGhostStructure(mc, structureName);  // dynamically load the correct structure
     }
+}
 
     boolean isAttackPressed = mc.options.keyAttack.isDown();
 

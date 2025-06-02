@@ -10,7 +10,8 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRen
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
- //import com.seggellion.britannia_mod.client.model.StoneFloorBakedModel;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.neoforge.client.model.obj.ObjLoader;
 import net.minecraft.world.entity.EntityType;
@@ -85,7 +86,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RegisterNamedRenderTypesEvent;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.neoforged.neoforge.client.event.ModelEvent;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -213,6 +213,15 @@ event.register((stack, tintIndex) -> {
     SwordRegistry.VIKING_SWORD.get());
 
 }
+
+@SubscribeEvent
+public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+    event.register(
+        ResourceLocation.fromNamespaceAndPath("britannia_mod", "stone_floor_loader"),
+        StoneFloorGeometryLoader.INSTANCE
+    );
+}
+
 
 private static int applyBrightnessTint(int baseColor, float factor) {
     int r = (baseColor >> 16) & 0xFF;
@@ -463,6 +472,15 @@ private static int getTintForOreType(String oreType) {
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X3.get(), RenderType.cutout());
 
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_BIRCH_1X1.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_FENCE_1.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_FENCE_2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LYING_SKELETON.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SITTING_SKELETON.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SKELETON_TORSO.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
 
 
                ItemBlockRenderTypes.setRenderLayer(

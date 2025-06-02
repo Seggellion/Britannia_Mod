@@ -106,16 +106,16 @@ public static void handleRedeed(ServerPlayer player) {
 ItemStack deedStack = ItemRegistry.ITEMS.getEntries().stream()
     .map(DeferredHolder::get)
     .filter(i -> i instanceof AbstractHouseDeedItem d
-                  && d.getHouseSize().id().equals(record.getSizeId()))
+                && d.getHouseStyle().getSize().id().equals(record.getSizeId()))
     .findFirst()
-    .map(ItemStack::new)   
-    .orElse(ItemStack.EMPTY); 
+    .map(ItemStack::new)
+    .orElse(ItemStack.EMPTY);
+
 
         player.getInventory().placeItemBackInInventory(deedStack);
-
-
         player.sendSystemMessage(Component.literal("Your house has been re-deeded. The deed has been returned."));
         LOGGER.info("House successfully re-deeded for {}", player.getName().getString());
+
         return;
     }
 

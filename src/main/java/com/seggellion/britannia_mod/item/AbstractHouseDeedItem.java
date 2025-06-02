@@ -11,6 +11,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.network.chat.Component;
+import com.seggellion.britannia_mod.structure.HouseStyle;
 import com.seggellion.britannia_mod.structure.HouseSize;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -28,16 +29,17 @@ import com.mojang.logging.LogUtils;
 
 public abstract class AbstractHouseDeedItem extends Item {
 
-    private final HouseSize houseSize;
+    private final HouseStyle houseStyle;
 
-    protected AbstractHouseDeedItem(HouseSize size, Properties props) {
+    protected AbstractHouseDeedItem(HouseStyle style, Properties props) {
         super(props);
-        this.houseSize = size;
+        this.houseStyle = style;
     }
-    public HouseSize getHouseSize() {
-        return houseSize;
+    public HouseStyle getHouseStyle() {
+        return houseStyle;
     }
 
+   
     /* ---------- Right‑click = place ---------- */
     @Override
     public InteractionResultHolder<ItemStack> use(Level level,
@@ -52,7 +54,7 @@ public abstract class AbstractHouseDeedItem extends Item {
 StructurePlacer.placeStructure((ServerLevel) level,
                                origin,
                                rotationDeg,
-                               houseSize,
+                               houseStyle,
                                player);
               // 👈 changed signature
             HouseRotationData.clear(player);

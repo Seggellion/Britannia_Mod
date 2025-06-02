@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
+import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.GravestoneBlock;
 import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.MoongateBlock;
 import com.seggellion.britannia_mod.block.BrickFoundationBlock;
@@ -35,7 +37,7 @@ import com.seggellion.britannia_mod.block.HouseLotBlock;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
 import com.seggellion.britannia_mod.block.WindowCollisionBlock;
 import com.seggellion.britannia_mod.block.Window2x3Block;
-//import com.seggellion.britannia_mod.block.StoneFloorBlock;
+import com.seggellion.britannia_mod.block.StoneFloorBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
@@ -252,6 +254,72 @@ public static final DeferredHolder<Block, Block> STATUE_MAN = BLOCKS.register("s
         .noOcclusion()
         .strength(1.0f))
 );
+
+
+// Graveyard
+
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_1 = BLOCKS.register("gravestone_type_1", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_2 = BLOCKS.register("gravestone_type_2", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_3 = BLOCKS.register("gravestone_type_3", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_4 = BLOCKS.register("gravestone_type_4", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_5 = BLOCKS.register("gravestone_type_5", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_6 = BLOCKS.register("gravestone_type_6", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_7 = BLOCKS.register("gravestone_type_7", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_8 = BLOCKS.register("gravestone_type_8", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_9 = BLOCKS.register("gravestone_type_9", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_10 = BLOCKS.register("gravestone_type_10", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_11 = BLOCKS.register("gravestone_type_11", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_12 = BLOCKS.register("gravestone_type_12", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_13 = BLOCKS.register("gravestone_type_13", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_14 = BLOCKS.register("gravestone_type_14", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_15 = BLOCKS.register("gravestone_type_15", GravestoneBlock::new);
+public static final DeferredHolder<Block, Block> GRAVESTONE_TYPE_16 = BLOCKS.register("gravestone_type_16", GravestoneBlock::new);
+
+public static final DeferredHolder<Block, Block> BROKEN_WOODEN_GRAVE_CROSS = BLOCKS.register("broken_wooden_grave_cross", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+public static final DeferredHolder<Block, Block> DAMAGED_WOODEN_GRAVE_CROSS = BLOCKS.register("damaged_wooden_grave_cross", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+public static final DeferredHolder<Block, Block> WOODEN_GRAVE_CROSS = BLOCKS.register("wooden_grave_cross", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> WOODEN_COFFIN = BLOCKS.register("wooden_coffin", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+public static final DeferredHolder<Block, Block> WOODEN_OPEN_COFFIN = BLOCKS.register("wooden_open_coffin", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+public static final DeferredHolder<Block, Block> WOODEN_COFFIN_LID = BLOCKS.register("wooden_coffin_lid", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+public static final DeferredHolder<Block, Block> WOODEN_COFFIN_SKELETON = BLOCKS.register("wooden_coffin_skeleton", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> IRON_CEMETERY_GATE_ARCH = BLOCKS.register("iron_cemetery_gate_arch", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+public static final DeferredHolder<Block, Block> IRON_FENCE_1 = BLOCKS.register("iron_fence_1", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> IRON_FENCE_2 = BLOCKS.register("iron_fence_2", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DEAD_GRAVE_FLOWER_VASE = BLOCKS.register("dead_grave_flower_vase", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+public static final DeferredHolder<Block, Block> DEAD_GRAVE_FLOWERS = BLOCKS.register("dead_grave_flowers", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.DEAD_BUSH).noOcclusion()));
+public static final DeferredHolder<Block, Block> GRAVE_FLOWERS = BLOCKS.register("grave_flowers", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.POPPY).noOcclusion()));
+public static final DeferredHolder<Block, Block> WILTED_GRAVE_FLOWER_VASE = BLOCKS.register("wilted_grave_flower_vase", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+public static final DeferredHolder<Block, Block> WILTED_GRAVE_FLOWERS = BLOCKS.register("wilted_grave_flowers", () ->
+    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.DEAD_BUSH).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> LYING_SKELETON = BLOCKS.register("lying_skeleton", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> SITTING_SKELETON = BLOCKS.register("sitting_skeleton", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> SKELETON_ARM = BLOCKS.register("skeleton_arm", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> SKELETON_LEG = BLOCKS.register("skeleton_leg", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> SKELETON_TORSO = BLOCKS.register("skeleton_torso", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+
 
 
 // House deeds
@@ -645,10 +713,10 @@ public static final DeferredHolder<Block, ThinWall> OAK_WALL_BOTTOM =
         )
     );
 
-//public static final DeferredHolder<Block, Block> STONE_FLOOR =
-//    BLOCKS.register("stone_floor",
-//        StoneFloorBlock::new
- //   );
+public static final DeferredHolder<Block, Block> STONE_FLOOR =
+    BLOCKS.register("stone_floor",
+        StoneFloorBlock::new
+    );
 
 public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
     BLOCKS.register("stone_wall_bottom", 

@@ -1,11 +1,7 @@
 {
-  "parent": "block/cube",
+  "loader": "britannia_mod:stone_floor_loader",
   "textures": {
-    "up": "britannia_mod:block/structure/stone_wall_bottom",
-    "down": "britannia_mod:block/structure/stone_wall_bottom",
-    "north": "britannia_mod:block/structure/stone_wall_bottom",
-    "south": "britannia_mod:block/structure/stone_wall_bottom",
-    "east": "britannia_mod:block/structure/stone_wall_bottom",
-    "west": "britannia_mod:block/structure/stone_wall_bottom"
+    "wall": "britannia_mod:block/structure/stone_wall_foundation",
+    "floor": "britannia_mod:block/structure/stone_floor_1"
   }
 }
