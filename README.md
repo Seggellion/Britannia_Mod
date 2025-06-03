@@ -23,3 +23,8 @@ Additional Resources:
 ==========
 Community Documentation: https://docs.neoforged.net/  
 NeoForged Discord: https://discord.neoforged.net/
+
+Development 
+```bash
+./gradlew runClient -Pdev --no-configuration-cache
+```

@@ -39,10 +39,16 @@ public class HouseSignBlock extends Block implements EntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.or(
-                Block.box(0, 0, 0, 16, 16, 16),
-                Block.box(16, 0, 0, 32, 16, 16)
-        );
+        Direction facing = state.getValue(FACING);
+        VoxelShape base = Block.box(0, 0, 0, 16, 16, 16);
+        VoxelShape sign = switch (facing) {
+            case NORTH -> Block.box(16, 0, 0, 32, 16, 16);
+            case SOUTH -> Block.box(-16, 0, 0, 0, 16, 16);
+            case WEST -> Block.box(0, 0, -16, 16, 16, 0);
+            case EAST -> Block.box(0, 0, 16, 16, 16, 32);
+            default -> Block.box(16, 0, 0, 32, 16, 16);
+        };
+        return Shapes.or(base, sign);
     }
 
     public enum HolderType implements StringRepresentable {

@@ -130,6 +130,7 @@ public static final DeferredHolder<Item, Item> QUARTER_DIRT_BLOCK_ITEM = ITEMS.r
     () -> new BlockItem(BlockRegistry.QUARTER_DIRT_BLOCK.get(), new Item.Properties())
 );
 
+
 public static final DeferredHolder<Item, Item> HALF_DIRT_BLOCK_ITEM = ITEMS.register(
     "half_dirt_block",
     () -> new BlockItem(BlockRegistry.HALF_DIRT_BLOCK.get(), new Item.Properties())
