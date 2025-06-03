@@ -59,10 +59,10 @@ runs {
 }
 
 jarJar {
-
     dependencies {
-        // Add GeckoLib to be included inside the Jar using Jar-in-Jar
-        jarJar "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+        if (!project.hasProperty('dev')) {
+            jarJar "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+        }
     }
 }
 
