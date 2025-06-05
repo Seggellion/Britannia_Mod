@@ -22,6 +22,18 @@ public class StructureUtils {
         };
     }
 
+    // Given player facing direction, what rotation turns structure's NORTH to that?
+public static Rotation getRotationToFace(Direction playerFacing) {
+    return switch (playerFacing) {
+        case NORTH -> Rotation.NONE;                // door already faces north
+        case EAST -> Rotation.CLOCKWISE_90;         // rotate so door ends east
+        case SOUTH -> Rotation.CLOCKWISE_180;       // rotate so door ends south
+        case WEST -> Rotation.COUNTERCLOCKWISE_90;  // rotate so door ends west
+        default -> Rotation.NONE;
+    };
+}
+
+
     public static BlockPos getRotatedDoorOffset(Rotation rotation, BlockPos doorOffset) {
         return StructureTemplate.calculateRelativePosition(
                 new StructurePlaceSettings().setRotation(rotation),
@@ -44,7 +56,7 @@ public class StructureUtils {
     public static BlockPos getDoorOffset(Vec3i size) {
         // If door is at z=0, centered on X:
         
-        return new BlockPos(size.getX() - 1, 0, size.getZ() / 2); // X+, Z center
+return new BlockPos(size.getX() / 2, 0, 0); // X center, Z front (north)
     }
 
 public static Vec3i getRotatedSize(Vec3i originalSize, Rotation rotation) {
@@ -53,6 +65,9 @@ public static Vec3i getRotatedSize(Vec3i originalSize, Rotation rotation) {
         case CLOCKWISE_90, COUNTERCLOCKWISE_90 -> new Vec3i(originalSize.getZ(), originalSize.getY(), originalSize.getX());
     };
 }
+
+
+
 
 
     public static BlockPos getAdjustedPosForDoor(BlockPos doorTarget, Rotation rotation, BlockPos doorOffset) {

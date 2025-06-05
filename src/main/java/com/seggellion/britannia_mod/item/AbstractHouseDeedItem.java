@@ -41,29 +41,32 @@ public abstract class AbstractHouseDeedItem extends Item {
 
    
     /* ---------- Right‑click = place ---------- */
-    @Override
-    public InteractionResultHolder<ItemStack> use(Level level,
-                                                  Player player,
-                                                  InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
+   @Override
+public InteractionResultHolder<ItemStack> use(Level level,
+                                              Player player,
+                                              InteractionHand hand) {
+    ItemStack stack = player.getItemInHand(hand);
 
-        if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            BlockPos origin = player.blockPosition();
-            int rotationDeg  = HouseRotationData.getRotation(player);
+    if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
+        BlockPos origin = player.blockPosition();
+        int rotationDeg = HouseRotationData.getRotation(player);
 
-StructurePlacer.placeStructure((ServerLevel) level,
-                               origin,
-                               rotationDeg,
-                               houseStyle,
-                               player);
-              // 👈 changed signature
-            HouseRotationData.clear(player);
+        boolean placed = StructurePlacer.placeStructure(
+            (ServerLevel) level, origin, rotationDeg, houseStyle, player);
 
+        HouseRotationData.clear(player);
+
+        if (placed) {
             stack.shrink(1); // consume deed
             return InteractionResultHolder.success(stack);
+        } else {
+            return InteractionResultHolder.fail(stack); // do not consume
         }
-        return InteractionResultHolder.pass(stack);
     }
+
+    return InteractionResultHolder.pass(stack);
+}
+
 
     /* ---------- Left‑click = rotate ---------- */
     @SuppressWarnings("removal")

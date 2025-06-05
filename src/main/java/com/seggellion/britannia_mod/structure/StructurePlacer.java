@@ -23,10 +23,19 @@ import com.seggellion.britannia_mod.structure.StructureRecord;
 import com.seggellion.britannia_mod.structure.StructureRegionManager;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
-
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
+import net.minecraft.world.level.block.Block;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+
+import java.io.DataInputStream;
+import java.util.Optional;
 
 
 import net.minecraft.nbt.CompoundTag;
@@ -41,91 +50,189 @@ public class StructurePlacer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StructurePlacer.class);
 
-    /**
-     * Places a house structure in the world.
-     *
-     * @param level       server level
-     * @param playerPos   block‑pos the player is standing on
-     * @param rotationDeg current rotation from {@link HouseRotationData}
-     * @param size        which house we are placing (SMALL, MEDIUM, …)
-     * @param player      placing player
-     */
-    public static void placeStructure(ServerLevel level,
+public static boolean placeStructure(ServerLevel level,
                                   BlockPos playerPos,
                                   int rotationDeg,
                                   HouseStyle style,
                                   Player player) {
 
-    /* ---------- 1. resolve structure file ---------- */
-    String nbtFile = style.getStructureFile();  // ✅ from HouseStyle
-    ResourceLocation structureId = ResourceLocation.fromNamespaceAndPath(
-        "britannia_mod", nbtFile.replace(".nbt", "")
-    );
+String nbtFile = style.getStructureFile();                 // e.g. "structures/wooden_house.nbt"
+    String rawPath = nbtFile.replace(".nbt", "").replaceFirst("^structures/", "");
+    ResourceLocation structureId = ResourceLocation.fromNamespaceAndPath("britannia_mod", rawPath);
+    ResourceLocation nbtPath     = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/" + rawPath + ".nbt");
 
-    LOGGER.info("Placing structure {} (rotation {}° for {})",
-        structureId, rotationDeg, player.getName().getString());
-
+    /* --------------------------------------------------
+       1. Try the normal StructureManager path first
+       -------------------------------------------------- */
     StructureTemplate template = level.getStructureManager().getOrCreate(structureId);
-    if (template == null || template.getSize().equals(Vec3i.ZERO)) {
-        LOGGER.error("Structure {} could not be found or is empty", structureId);
-        return;
+
+    /* --------------------------------------------------
+       2. If that failed (size == 0), fall back to manual
+       -------------------------------------------------- */
+   if (template.getSize().equals(Vec3i.ZERO)) {
+
+    // Ask the resource manager for the structure file
+    Optional<Resource> resOpt =
+        level.getServer().getResourceManager().getResource(nbtPath);
+
+    if (resOpt.isEmpty()) {
+        LOGGER.error("❌ ResourceManager could not find {}", nbtPath);
+        return false;
     }
 
-    /* ---------- 2. rotation & offsets ---------- */
-    Rotation rotation = StructureUtils.getRotation(rotationDeg);
-    StructurePlaceSettings settings = new StructurePlaceSettings()
-        .setRotation(rotation)
-        .setIgnoreEntities(true);
+    // resOpt.get() is NOT AutoCloseable → keep it outside the header
+    Resource res = resOpt.get();
 
-    Vec3i rawSize = template.getSize(); // pre‑rotation
-    BlockPos localDoorOffset = StructureUtils.getDoorOffset(rawSize);
+    // Only close the streams you open
+    try (InputStream in  = res.open();
+         DataInputStream dis = new DataInputStream(in)) {
+
+        CompoundTag tag = NbtIo.read(dis);
+        HolderGetter<Block> blocks =
+            level.registryAccess().lookupOrThrow(Registries.BLOCK);
+
+        template = new StructureTemplate();
+        template.load(blocks, tag);
+
+        LOGGER.info("✅ Manually loaded {}, size {}", structureId, template.getSize());
+
+    } catch (Exception e) {
+        LOGGER.error("💥 Exception loading {} manually", structureId, e);
+        return false;
+    }
+}
+
+
+    /* --------------------------------------------------
+       3. Place the (now‑valid) template
+       -------------------------------------------------- */
+    Rotation rotation = StructureUtils.getRotation(rotationDeg);// always north‑facing
+    Vec3i    rawSize  = template.getSize();
+    BlockPos unrotatedDoorOffset    = StructureUtils.getDoorOffset(rawSize);
     BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
         new StructurePlaceSettings().setRotation(rotation),
-        localDoorOffset);
+        unrotatedDoorOffset
+    );
 
-    double radians = Math.toRadians((rotationDeg + 90) % 360);
-    BlockPos doorTarget = new BlockPos(
-        (int) (player.getX() + Math.cos(radians) * 3),
-        playerPos.getY(),
-        (int) (player.getZ() + Math.sin(radians) * 3));
+    Direction playerFacing = player.getDirection();
 
-    BlockPos extraOffset = StructureTemplate.calculateRelativePosition(
-        new StructurePlaceSettings().setRotation(rotation),
-        new BlockPos(-3, 0, -3));
-    doorTarget = doorTarget.offset(extraOffset);
+    BlockPos doorTarget  = playerPos.relative(playerFacing, 2);
+    BlockPos adjustedPos = doorTarget.subtract(rotatedDoorOffset);
 
-    BlockPos adjustedPos = StructureUtils
-        .getAdjustedPosForDoor(doorTarget, Rotation.NONE, rotatedDoorOffset);
 
-    /* ---------- 3. place structure ---------- */
-    UUID houseUuid = UUID.randomUUID();
-    boolean placed = template.placeInWorld(level, adjustedPos, adjustedPos,
-                                           settings, level.getRandom(), 3);
-    if (!placed) {
+    StructurePlaceSettings settings = new StructurePlaceSettings()
+                                          .setRotation(rotation)
+                                          .setIgnoreEntities(true);
+
+
+// Constraints
+
+// Bounding box (1-block buffer around the structure)
+StructureBoxes boxes = StructureUtils.makeStructureBoxes(adjustedPos, rawSize, rotation);
+
+int minX = Mth.floor(boxes.structureBox().minX) - 1;
+int maxX = Mth.floor(boxes.structureBox().maxX) + 1;
+int minY = Mth.floor(boxes.structureBox().minY);
+int maxY = Mth.floor(boxes.structureBox().maxY);
+int minZ = Mth.floor(boxes.structureBox().minZ) - 1;
+int maxZ = Mth.floor(boxes.structureBox().maxZ) + 1;
+
+boolean valid = true;
+
+outer:
+for (int x = minX; x <= maxX; x++) {
+    for (int y = minY; y <= maxY; y++) {
+        for (int z = minZ; z <= maxZ; z++) {
+            BlockPos pos = new BlockPos(x, y, z);
+            BlockState state = level.getBlockState(pos);
+
+            boolean isBottom = (y == minY);
+
+            if (isBottom) {
+                // Require only grass or sand below
+                if (state.getBlock() != Blocks.GRASS_BLOCK && state.getBlock() != Blocks.SAND) {
+                    valid = false;
+                    break outer;
+                }
+            } else {
+                // Above ground must be air
+                if (!state.isAir()) {
+                    valid = false;
+                    break outer;
+                }
+            }
+        }
+    }
+}
+
+if (!valid) {
+    player.displayClientMessage(Component.literal("❌ Invalid placing location. You need flat grass or sand."), true);
+    return false;
+}
+
+
+// end of constraints
+
+                                          
+
+    if (!template.placeInWorld(level, adjustedPos, adjustedPos, settings,
+                               level.getRandom(), 3)) {
         LOGGER.error("Failed to place {}", structureId);
-        return;
+        return false;
     }
 
-    LOGGER.info("Structure placed at {} (rot {} size {})",
-        adjustedPos, rotation, rawSize);
+    
 
-    /* ---------- 4. create HouseLot block/entity ---------- */
-    Direction facing = rotation.rotate(Direction.EAST); // door faces EAST in NBT
-    BlockPos baseLot = doorTarget.relative(facing.getOpposite(), 1);
-    BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
-        new StructurePlaceSettings().setRotation(rotation),
-        new BlockPos(1, 1, -2));
-    BlockPos lotPos = baseLot.offset(lotOffset);
+BlockPos.betweenClosedStream(
+    new BlockPos(
+        Mth.floor(boxes.structureBox().minX),
+        Mth.floor(boxes.structureBox().minY),
+        Mth.floor(boxes.structureBox().minZ)
+    ),
+    new BlockPos(
+        Mth.floor(boxes.structureBox().maxX) - 1,
+        Mth.floor(boxes.structureBox().maxY) - 1,
+        Mth.floor(boxes.structureBox().maxZ) - 1
+    )
+).forEach(pos -> {
+    BlockState state = level.getBlockState(pos);
+    if (state.getBlock() instanceof HouseSignBlock) {
+        LOGGER.info("✅ Correcting sign at {} for rotation {}", pos, rotation);
+        Direction correctFacing = switch (rotation) {
+            case NONE -> Direction.WEST;
+            case CLOCKWISE_90 -> Direction.NORTH;
+            case CLOCKWISE_180 -> Direction.EAST;
+            case COUNTERCLOCKWISE_90 -> Direction.SOUTH;
+        };
+        if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
+            level.setBlock(pos, state.setValue(HorizontalDirectionalBlock.FACING, correctFacing), 3);
+        }
+    }
+});
+
+    LOGGER.info("Structure {} placed at {} (size {})", structureId, adjustedPos, rawSize);
+    UUID houseUuid = UUID.randomUUID();
+    // You can keep your HouseLot logic unchanged
+    // Lot block goes just inside the door (1 block behind)
+    BlockPos baseLot = doorTarget.relative(playerFacing.getOpposite(), 1);
+BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
+    new StructurePlaceSettings().setRotation(rotation),
+    new BlockPos(2, 1, 0)
+);
+
+
+   BlockPos lotPos = adjustedPos.offset(lotOffset); 
+
 
     level.setBlock(lotPos,
         BlockRegistry.HOUSE_LOT_BLOCK.get().defaultBlockState(), 3);
 
     if (level.getBlockEntity(lotPos) instanceof HouseLotBlockEntity lotBE) {
         lotBE.setOwnerUsername(player.getName().getString());
-        lotBE.setHouseStyle(style); // ✅ now uses style
+        lotBE.setHouseStyle(style);
         lotBE.setHouseUuid(houseUuid);
-        lotBE.setHouseType(style.getSize().id()); // optional; use style.name() if preferred
-        lotBE.setRegionName("Trinsic"); // TODO: dynamic region
+        lotBE.setHouseType(style.getSize().id());
+        lotBE.setRegionName("Trinsic"); // TODO
         lotBE.setForSale(false);
         lotBE.setPrice(0);
         lotBE.setPlacedAt(Instant.now());
@@ -133,19 +240,21 @@ public class StructurePlacer {
         lotBE.setChanged();
     }
 
-    /* ---------- 5. register region + basement ---------- */
-    StructureBoxes boxes = StructureUtils.makeStructureBoxes(adjustedPos, rawSize, rotation);
     StructureRegionManager.registerStructure(
         new StructureRecord(
             player.getUUID(),
             boxes.structureBox(),
             boxes.fullBox(),
             houseUuid,
-            style.getSize().id() // ✅ still matches Rails expectations
+            style.getSize().id()
         )
     );
 
-    /* ---------- 6. sync to Rails ---------- */
     HouseDataAPI.sendHouseDataToRails(level, lotPos, player, style);
+    return true;
+
 }
+
+
+
 }

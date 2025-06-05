@@ -27,6 +27,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraft.world.phys.HitResult;
@@ -39,115 +40,122 @@ import java.util.ArrayList;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-
 public class GhostStructurePreviewRenderer {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-@SubscribeEvent
-public static void onRenderLevel(RenderLevelStageEvent event) {
-    if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) return;
+    @SubscribeEvent
+    public static void onRenderLevel(RenderLevelStageEvent event) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) return;
 
-    Minecraft mc = Minecraft.getInstance();
-    Level level = mc.level;
-    Player player = mc.player;
-    if (level == null || player == null) return;
+        Minecraft mc = Minecraft.getInstance();
+        Level level = mc.level;
+        Player player = mc.player;
+        if (level == null || player == null) return;
 
-    ItemStack held = player.getMainHandItem();
+        ItemStack held = player.getMainHandItem();
 
-StructureTemplate template = null;
+        StructureTemplate template = null;
 
-if (held.getItem() instanceof AbstractHouseDeedItem deed) {
-    HouseStyle style = deed.getHouseStyle(); // ✅ new: get the actual style
-    String nbt = style.getStructureFile().replace(".nbt", ""); // ✅ get stub
-    template = StructureCache.get(nbt);
-}
+        if (held.getItem() instanceof AbstractHouseDeedItem deed) {
+            HouseStyle style = deed.getHouseStyle();
+            String nbt = style.getStructureFile().replace(".nbt", "");
+            template = StructureCache.get(nbt);
+        }
+
+        if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
+
+
+HitResult hitResult = mc.hitResult;
+if (!(hitResult instanceof BlockHitResult blockHit)) return;
+
+BlockPos targetedBlock = blockHit.getBlockPos();
+BlockState targetedState = mc.level.getBlockState(targetedBlock);
+Block targeted = targetedState.getBlock();
+
+if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
 
 
 
-  //  StructureTemplate template = StructureCache.getSmallWoodHouseTemplate();
-    if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
+        PoseStack poseStack = event.getPoseStack();
+        MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
+        BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
 
-    PoseStack poseStack = event.getPoseStack();
-    MultiBufferSource.BufferSource buffer = mc.renderBuffers().bufferSource();
-    BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
+        int deg = HouseRotationData.getRotation(player); // 0, 90, 180, 270
+        Rotation baseRotation = StructureUtils.getRotation(deg);
 
-    int deg = HouseRotationData.getRotation(player); // 0, 90, 180, 270
-    Rotation rotation = StructureUtils.getRotation(deg);
-    StructurePlaceSettings settings = new StructurePlaceSettings()
-        .setRotation(rotation)
-        .setIgnoreEntities(true);
+        StructurePlaceSettings settings = new StructurePlaceSettings()
+            .setRotation(baseRotation)
+            .setIgnoreEntities(true);
 
-    Vec3i size = template.getSize();
-    BlockPos doorOffset = StructureUtils.getDoorOffset(size); // e.g. (4, 0, 0)
+        Vec3i size = template.getSize();
+        BlockPos doorOffset = StructureUtils.getDoorOffset(size); // e.g., (4, 0, 0)
 
-    // 🌀 Place structure CENTER rotated around player, keeping DOOR nearest
-    int radius = 3;
-    double angle = Math.toRadians(deg + 180);
-    double offsetX = Math.cos(angle) * radius;
-    double offsetZ = Math.sin(angle) * radius;
-BlockPos doorTarget = new BlockPos(
-    (int) Math.floor(player.getX() + Math.cos(angle) * radius),
-    player.blockPosition().getY(),
-    (int) Math.floor(player.getZ() + Math.sin(angle) * radius)
-);
-
-    BlockPos structureStart = StructureUtils.getAdjustedPosForDoor(doorTarget, rotation, doorOffset);
-
-    List<StructureBlockInfo> blockInfos = getBlocksViaReflection(template);
-    if (blockInfos.isEmpty()) return;
-
-    for (StructureBlockInfo info : blockInfos) {
-        BlockState state = info.state();
-        if (state.isAir()) continue;
-
-        try {
-            state = state.rotate(rotation);
-        } catch (Exception ignored) {}
-
-        BlockPos localOffset = StructureTemplate.calculateRelativePosition(settings, info.pos());
-        BlockPos worldPos = structureStart.offset(localOffset);
-
-        poseStack.pushPose();
-        poseStack.translate(
-            worldPos.getX() - mc.gameRenderer.getMainCamera().getPosition().x,
-            worldPos.getY() - mc.gameRenderer.getMainCamera().getPosition().y,
-            worldPos.getZ() - mc.gameRenderer.getMainCamera().getPosition().z
+        // Rotate the door offset
+        BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
+            new StructurePlaceSettings().setRotation(baseRotation),
+            doorOffset
         );
 
-        try {
-            dispatcher.renderBatched(
-                state,
-                worldPos,
-                level,
-                poseStack,
-                buffer.getBuffer(RenderType.translucent()),
-                false,
-                RandomSource.create()
+        // Position door 2 blocks in front of the player
+        BlockPos doorTarget = player.blockPosition().relative(player.getDirection(), 2);
+
+        // Calculate where structure origin should be placed
+        BlockPos structureStart = doorTarget.subtract(rotatedDoorOffset);
+
+        // Get block data from template
+        List<StructureBlockInfo> blockInfos = getBlocksViaReflection(template);
+        if (blockInfos.isEmpty()) return;
+
+        for (StructureBlockInfo info : blockInfos) {
+            BlockState state = info.state();
+            if (state.isAir()) continue;
+
+            try {
+                state = state.rotate(baseRotation);
+            } catch (Exception ignored) {}
+
+            BlockPos localOffset = StructureTemplate.calculateRelativePosition(settings, info.pos());
+            BlockPos worldPos = structureStart.offset(localOffset);
+
+            poseStack.pushPose();
+            poseStack.translate(
+                worldPos.getX() - mc.gameRenderer.getMainCamera().getPosition().x,
+                worldPos.getY() - mc.gameRenderer.getMainCamera().getPosition().y,
+                worldPos.getZ() - mc.gameRenderer.getMainCamera().getPosition().z
             );
-        } catch (Exception ignored) {}
 
-        poseStack.popPose();
-    }
+            try {
+                dispatcher.renderBatched(
+                    state,
+                    worldPos,
+                    level,
+                    poseStack,
+                    buffer.getBuffer(RenderType.translucent()),
+                    false,
+                    RandomSource.create()
+                );
+            } catch (Exception ignored) {}
 
-    buffer.endBatch(RenderType.translucent());
-}
-
-
-private static List<StructureBlockInfo> getBlocksViaReflection(StructureTemplate template) {
-    try {
-        Field paletteField = StructureTemplate.class.getDeclaredField("palettes");
-        paletteField.setAccessible(true);
-        List<?> palettes = (List<?>) paletteField.get(template);
-
-        if (!palettes.isEmpty()) {
-            Object palette = palettes.get(0);
-            Method blocksMethod = palette.getClass().getMethod("blocks");
-            return (List<StructureBlockInfo>) blocksMethod.invoke(palette);
+            poseStack.popPose();
         }
-    } catch (Exception e) {
-        LOGGER.error("❌ Reflection error on structure palettes", e);
-    }
-    return List.of();
-}
 
+        buffer.endBatch(RenderType.translucent());
+    }
+
+    private static List<StructureBlockInfo> getBlocksViaReflection(StructureTemplate template) {
+        try {
+            Field paletteField = StructureTemplate.class.getDeclaredField("palettes");
+            paletteField.setAccessible(true);
+            List<?> palettes = (List<?>) paletteField.get(template);
+
+            if (!palettes.isEmpty()) {
+                Object palette = palettes.get(0);
+                Method blocksMethod = palette.getClass().getMethod("blocks");
+                return (List<StructureBlockInfo>) blocksMethod.invoke(palette);
+            }
+        } catch (Exception e) {
+            LOGGER.error("❌ Reflection error on structure palettes", e);
+        }
+        return List.of();
+    }
 }
