@@ -1,0 +1,8 @@
+{
+  "parent": "block/stairs",
+  "textures": {
+    "bottom": "britannia_mod:block/structure/stone_wall_top",
+    "top": "britannia_mod:block/structure/stone_wall_top",
+    "side": "britannia_mod:block/structure/stone_wall_top"
+  }
+}

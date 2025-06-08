@@ -38,6 +38,7 @@ import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
 import com.seggellion.britannia_mod.block.WindowCollisionBlock;
 import com.seggellion.britannia_mod.block.Window2x3Block;
 import com.seggellion.britannia_mod.block.StoneFloorBlock;
+import com.seggellion.britannia_mod.block.CustomStoneStairsBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
@@ -717,6 +718,18 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR =
     BLOCKS.register("stone_floor",
         StoneFloorBlock::new
     );
+
+public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
+    BLOCKS.register("stone_floor_polished",
+        () -> new Block(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops()));
+
+public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.register(
+    "custom_stone_stairs", CustomStoneStairsBlock::new
+);
+
 
 public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
     BLOCKS.register("stone_wall_bottom", 

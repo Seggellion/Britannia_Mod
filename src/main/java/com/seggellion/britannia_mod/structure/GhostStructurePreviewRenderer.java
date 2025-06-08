@@ -97,10 +97,9 @@ if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
         );
 
         // Position door 2 blocks in front of the player
-        BlockPos doorTarget = player.blockPosition().relative(player.getDirection(), 2);
-
+        BlockPos doorTarget = targetedBlock.relative(player.getDirection(), 1);
         // Calculate where structure origin should be placed
-        BlockPos structureStart = doorTarget.subtract(rotatedDoorOffset);
+       BlockPos structureStart = doorTarget.above().subtract(rotatedDoorOffset); 
 
         // Get block data from template
         List<StructureBlockInfo> blockInfos = getBlocksViaReflection(template);

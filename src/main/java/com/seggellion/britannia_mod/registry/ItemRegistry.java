@@ -300,6 +300,15 @@ public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_SPRUCE_ITEM
         ITEMS.register("brick_foundation_spruce",
             () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_SPRUCE.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, Item> CUSTOM_STONE_STAIRS_ITEM = ITEMS.register(
+    "custom_stone_stairs",
+    () -> new BlockItem(BlockRegistry.CUSTOM_STONE_STAIRS.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> STONE_FLOOR_POLISHED_ITEM =
+    ITEMS.register("stone_floor_polished",
+        () -> new BlockItem(BlockRegistry.STONE_FLOOR_POLISHED.get(), new Item.Properties()));
+
 
 public static final DeferredHolder<Item, BlockItem> STONE_FOUNDATION_ITEM =
         ITEMS.register("stone_foundation",

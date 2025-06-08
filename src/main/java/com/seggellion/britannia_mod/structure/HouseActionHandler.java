@@ -106,10 +106,11 @@ public static void handleRedeed(ServerPlayer player) {
 ItemStack deedStack = ItemRegistry.ITEMS.getEntries().stream()
     .map(DeferredHolder::get)
     .filter(i -> i instanceof AbstractHouseDeedItem d
-                && d.getHouseStyle().getSize().id().equals(record.getSizeId()))
+        && d.getHouseStyle().name().equals(record.getStyleId()))   // ← match style
     .findFirst()
     .map(ItemStack::new)
     .orElse(ItemStack.EMPTY);
+
 
 
         player.getInventory().placeItemBackInInventory(deedStack);

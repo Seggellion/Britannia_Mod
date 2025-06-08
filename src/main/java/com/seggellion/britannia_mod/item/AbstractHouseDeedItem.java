@@ -18,6 +18,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.Properties;
 
@@ -41,31 +43,45 @@ public abstract class AbstractHouseDeedItem extends Item {
 
    
     /* ---------- Right‑click = place ---------- */
-   @Override
+@Override
 public InteractionResultHolder<ItemStack> use(Level level,
                                               Player player,
                                               InteractionHand hand) {
     ItemStack stack = player.getItemInHand(hand);
 
     if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
-        BlockPos origin = player.blockPosition();
-        int rotationDeg = HouseRotationData.getRotation(player);
+        HitResult hit = player.pick(5.0D, 0.0F, false);
 
-        boolean placed = StructurePlacer.placeStructure(
-            (ServerLevel) level, origin, rotationDeg, houseStyle, player);
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            BlockPos  targetPos  = ((BlockHitResult) hit).getBlockPos();
+            int       rotationDeg = HouseRotationData.getRotation(player);
 
-        HouseRotationData.clear(player);
+            boolean placed = StructurePlacer.placeStructure(
+                    (ServerLevel) level,
+                    targetPos,
+                    rotationDeg,
+                    houseStyle,
+                    player
+            );
 
-        if (placed) {
-            stack.shrink(1); // consume deed
-            return InteractionResultHolder.success(stack);
-        } else {
-            return InteractionResultHolder.fail(stack); // do not consume
+            if (placed) {
+                stack.shrink(1);          // consume deed
+                HouseRotationData.clear(player);
+                return InteractionResultHolder.success(stack);   // ▶︎ only on success
+            } else {
+                return InteractionResultHolder.fail(stack);      // ▶︎ no swing → no rotate
+            }
         }
+
+        player.displayClientMessage(
+            Component.literal("❌ You must aim at a block to place this."), true);
+        return InteractionResultHolder.fail(stack);
     }
 
     return InteractionResultHolder.pass(stack);
 }
+
+
 
 
     /* ---------- Left‑click = rotate ---------- */

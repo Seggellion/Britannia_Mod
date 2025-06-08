@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;          // ← correct path
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.resources.model.BakedModel;                   // ← NeoForge interface
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public class ThinWallBakedModel implements BakedModel {
     /* custom keys – no external helpers needed */
     private static final ModelProperty<BlockAndTintGetter> LEVEL_PROP = new ModelProperty<>();
     private static final ModelProperty<BlockPos>           POS_PROP   = new ModelProperty<>();
-private static final Logger LOG = LogUtils.getLogger();   
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final BakedModel original;
 
@@ -115,7 +117,7 @@ public List<BakedQuad> getQuads(BlockState state, Direction side,
     int before = quads.size();
 
     facesFor(side, gapSide).forEach(dir ->
-        copyShiftedQuad(neighM, neighbor, dir, gapSide, quads, rand, rt, side)); // Pass 'side'
+        copyShiftedQuad(neighM, neighbor, dir, gapSide, quads, rand, rt, side, state.getBlock())); // Pass 'side'
 
     return quads;
 }
@@ -128,12 +130,31 @@ private static void copyShiftedQuad(BakedModel neighM, BlockState neigh,
                                     Direction srcDir, Direction gapSide,
                                     List<BakedQuad> out,
                                     RandomSource rand, RenderType rt,
-                                    Direction renderSide) {
+                                    Direction renderSide, Block wallBlock) {
 
     List<BakedQuad> src = neighM.getQuads(neigh, srcDir, rand, ModelData.EMPTY, rt);
     if (src.isEmpty()) return;
 
-    final float GAP = 10.66F / 16F;            // 0.666 block
+ //   final float GAP = 10.66F / 16F;            // 0.666 block
+String blockId = BuiltInRegistries.BLOCK.getKey(neigh.getBlock()).getPath();
+
+String wallId = BuiltInRegistries.BLOCK.getKey(wallBlock).getPath();
+
+LOGGER.info("ThinWall fill from: {}", wallId);
+
+        LOGGER.info("Initializing baker: blockId: {}", blockId);
+
+
+float GAP;
+if (wallId.startsWith("stone_wall_")) {
+    GAP = 0.5f;  // reduced fill
+} else if (wallId.startsWith("brick_wall_")) {
+    GAP = 10.66F / 16F;  // standard fill
+} else {
+    GAP = 0.666f;    // fallback fill
+}
+
+
 
     boolean axisX  = gapSide.getAxis() == Direction.Axis.X;
     boolean toward = gapSide.getAxisDirection() == Direction.AxisDirection.POSITIVE;

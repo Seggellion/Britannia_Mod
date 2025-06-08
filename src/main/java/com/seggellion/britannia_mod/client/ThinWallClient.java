@@ -23,7 +23,7 @@ public final class ThinWallClient {
             ResourceLocation      id  = mrl.id();        // record accessor
 
             if (!"britannia_mod".equals(id.getNamespace())) continue;
-            if (!id.getPath().startsWith("stone_wall_"))   continue;
+            if (!id.getPath().contains("_wall_")) continue;
 
             models.put(mrl, new ThinWallBakedModel(e.getValue()));
         }

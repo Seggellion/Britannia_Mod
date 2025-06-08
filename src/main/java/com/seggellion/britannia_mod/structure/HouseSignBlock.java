@@ -27,6 +27,8 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.resources.ResourceLocation;
+
 import org.slf4j.Logger;
 
 public class HouseSignBlock extends Block implements EntityBlock {
@@ -77,13 +79,51 @@ public class HouseSignBlock extends Block implements EntityBlock {
     }
 
     public enum SignType implements StringRepresentable {
-        DEFAULT("default", SignShape.RECTANGLE),
-        TAILOR("tailor", SignShape.OVAL),
-        LIBRARY("library", SignShape.RECTANGLE),
-        BAKER("baker", SignShape.OVAL);
+      
+        BAKER("baker", SignShape.OVAL),
+        HEALER("healer", SignShape.RECTANGLE),
+        INN("inn", SignShape.OVAL),
+ BARD("bard", SignShape.OVAL),
+  TAVERN("tavern", SignShape.OVAL),
+  PROVISIONER("provisioner", SignShape.RECTANGLE),
+        TAILOR("tailor", SignShape.RECTANGLE),
+      MAGE("mage", SignShape.RECTANGLE),
+  SHIPWRIGHT("shipwright", SignShape.OVAL),
+   FLETCHER("fletcher", SignShape.RECTANGLE),
+  REAGENTS("reagents", SignShape.OVAL),
+  BOWYER("bowyer", SignShape.OVAL),
+   TINKER("tinker", SignShape.RECTANGLE),
+   CARPENTER("carpenter", SignShape.RECTANGLE),
+   STABLES("stables", SignShape.RECTANGLE),
+   ARMORER("armorer", SignShape.RECTANGLE),
+   BLACKSMITH("blacksmith", SignShape.RECTANGLE),
+ BLANK("blank", SignShape.RECTANGLE),
+ BUTCHER("butcher", SignShape.RECTANGLE),
+  CUSTOMS("customs", SignShape.OVAL),
+
+ BARBER("barber", SignShape.RECTANGLE),
+
+ JEWELER("jeweler", SignShape.RECTANGLE),
+
+  ARTIST("artist", SignShape.OVAL),
+    DEFAULT("default", SignShape.RECTANGLE),
+
+        LIBRARY("library", SignShape.OVAL),
+        THEATRE("theatre", SignShape.OVAL),
+        BEEKEEPER("beekeeper", SignShape.OVAL),
+        MERCHANT("merchant", SignShape.RECTANGLE),
+        BANK("bank", SignShape.OVAL);
 
         private final String name;
         private final SignShape shape;
+
+        public ResourceLocation icon() {
+            return ResourceLocation.fromNamespaceAndPath(
+                "britannia_mod",
+                "textures/screens/sign_icons/" + getSerializedName() + ".png"
+            );
+        }
+
 
         SignType(String name, SignShape shape) {
             this.name = name;

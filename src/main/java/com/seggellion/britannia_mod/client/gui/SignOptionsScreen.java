@@ -15,6 +15,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import com.seggellion.britannia_mod.client.gui.widget.SignIconButton;
+import net.minecraft.util.Mth;
+import com.seggellion.britannia_mod.structure.HouseSignBlock.SignType;
+import net.minecraft.client.gui.components.CycleButton;
 
 import net.minecraft.resources.ResourceLocation;
 
@@ -27,7 +31,13 @@ private static final ResourceLocation BACKGROUND =
     ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/house_management.png");
 
 private final int backgroundWidth = 256;
-private final int backgroundHeight = 180;
+private final int backgroundHeight = 230;
+
+private int currentPage = 0;
+private static final int COLS = 6;
+private static final int ROWS = 4;
+private static final int TYPES_PER_PAGE = COLS * ROWS;
+
 
 
  private final BlockPos housePos;
@@ -70,101 +80,102 @@ private final int backgroundHeight = 180;
     }
 
 
-    @Override
-    protected void init() {
-        int centerX = width / 2;
-        int startY = height / 4;
+@Override
+protected void init() {
+    int centerX = width / 2;
+    int startY = (this.height - backgroundHeight) / 2 + 30; // Move it to top section of your screen
 
-        int holderX = centerX - (HouseSignBlock.HolderType.values().length * 40 / 2);
-        for (HouseSignBlock.HolderType type : HouseSignBlock.HolderType.values()) {
-            this.addRenderableWidget(
-                Button.builder(
-                    Component.translatable("holder_type." + type.getSerializedName()), btn -> {
-                    selectedHolder = type;
-                }).bounds(holderX, startY, 60, 20).build()
-            );
-            holderX += 65;
-        }
+    CycleButton<HouseSignBlock.HolderType> holderCycle =
+        CycleButton.<HouseSignBlock.HolderType>builder(type ->
+                Component.translatable("holder_type." + type.getSerializedName()))
+            .withValues(HouseSignBlock.HolderType.values())
+            .withInitialValue(selectedHolder)
+            .create(centerX - 60, startY, 120, 20,
+                    Component.literal("Holder"),
+                    (btn, value) -> selectedHolder = value);
 
-        updateSignTypeButtons();
-        addDoneButton();
+    this.addRenderableWidget(holderCycle);
+
+    updateSignTypeButtons();
+    addDoneButton();
+}
+
+ 
+ 
+
+private void updateSignTypeButtons() {
+    clearSignButtons();
+
+    SignType[] all = SignType.values();
+    int startIdx = currentPage * TYPES_PER_PAGE;
+    int endIdx = Math.min(startIdx + TYPES_PER_PAGE, all.length);
+
+    int iconSize = 28;
+    int totalGridWidth = COLS * iconSize; // 270px
+    int backgroundX = (this.width - backgroundWidth) / 2;
+    int baseX = backgroundX + (backgroundWidth - totalGridWidth) / 2; // centers grid
+    int baseY = (this.height - backgroundHeight) / 2 + 80;
+
+    int idx = 0;
+    for (int i = startIdx; i < endIdx; i++) {
+        SignType type = all[i];
+        int col = idx % COLS;
+        int row = idx / COLS;
+
+        this.addRenderableWidget(new SignIconButton(
+            baseX + col * iconSize,
+            baseY + row * iconSize,
+            type,
+            ignored -> selectedSign = type
+        ));
+
+        idx++;
     }
 
-    private void updateSignTypeButtons() {
-        int centerX = width / 2;
-        int startY = height / 2;
+    int arrowY = baseY + ROWS * iconSize - 10;
 
-        clearSignButtons();
-
-         HouseSignBlock.SignType[] allTypes = HouseSignBlock.SignType.values();
-        int row = 0;
-        for (int i = scrollOffset; i < Math.min(allTypes.length, scrollOffset + visibleRows); i++) {
-             final HouseSignBlock.SignType type = allTypes[i];
-            int y = startY + (row * 22);
-            this.addRenderableWidget(
-                Button.builder(Component.literal(type.toString()), btn -> {
-                    selectedSign = type;
-                }).bounds(centerX - 100, y, 200, 20).build()
-            );
-            row++;
-        }
-
-        // Scroll buttons
-        if (scrollOffset > 0) {
-            this.addRenderableWidget(Button.builder(Component.literal("▲"), btn -> {
-                scrollOffset = Math.max(0, scrollOffset - 1);
-                init(); // refresh
-            }).bounds(centerX + 105, startY - 2, 20, 20).build());
-        }
-
-        if (scrollOffset + visibleRows < HouseSignBlock.SignType.values().length) {
-            this.addRenderableWidget(Button.builder(Component.literal("▼"), btn -> {
-                scrollOffset = Math.min(HouseSignBlock.SignType.values().length - visibleRows, scrollOffset + 1);
-                init(); // refresh
-            }).bounds(centerX + 105, startY + visibleRows * 22 - 2, 20, 20).build());
-        }
+    if (currentPage > 0) {
+        this.addRenderableWidget(Button.builder(Component.literal("◄"), btn -> {
+            currentPage--;
+            updateSignTypeButtons();
+        }).bounds(baseX - 24, arrowY, 20, 20).build());
     }
 
-    private void clearSignButtons() {
-        // Remove only sign-type buttons (not holder or Done)
-        this.children().removeIf(c -> {
-            if (c instanceof Button b) {
-                String label = b.getMessage().getString();
-                return label.equals("▲") || label.equals("▼") || isSignTypeButton(label);
-            }
-            return false;
-        });
-
-        this.renderables.removeIf(r -> {
-            if (r instanceof Button b) {
-                String label = b.getMessage().getString();
-                return label.equals("▲") || label.equals("▼") || isSignTypeButton(label);
-            }
-            return false;
-        });
+    if (endIdx < all.length) {
+        this.addRenderableWidget(Button.builder(Component.literal("►"), btn -> {
+            currentPage++;
+            updateSignTypeButtons();
+        }).bounds(baseX + totalGridWidth + 4, arrowY, 20, 20).build());
     }
+}
 
-    private boolean isSignTypeButton(String label) {
-        for (HouseSignBlock.SignType s : HouseSignBlock.SignType.values()) {
-            if (s.toString().equals(label)) return true;
-        }
-        return false;
-    }
+
+
+
+
+
+
+   private void clearSignButtons() {
+    this.children().removeIf(c -> c instanceof SignIconButton);
+    this.renderables.removeIf(r -> r instanceof SignIconButton);
+}
+
 
     private void addDoneButton() {
-        this.addRenderableWidget(
-            Button.builder(Component.literal("Apply & Back"), btn -> {
-                Minecraft.getInstance().getConnection().send(
-                    new ServerboundCustomPayloadPacket(
-                        new UpdateSignStylePayload(housePos, selectedSign, selectedHolder)
-                    )
-                );
-
-                Minecraft.getInstance().setScreen(
-                    new HouseManagementScreen(housePos, houseUuid, ownerUsername, houseType, null)
-                );
-            }).bounds(width / 2 - 60, height - 40, 120, 20).build()
+this.addRenderableWidget(
+    Button.builder(Component.literal("Apply & Back"), btn -> {
+        Minecraft.getInstance().getConnection().send(
+            new ServerboundCustomPayloadPacket(
+                new UpdateSignStylePayload(housePos, selectedSign, selectedHolder)
+            )
         );
+
+        Minecraft.getInstance().setScreen(
+            new HouseManagementScreen(housePos, houseUuid, ownerUsername, houseType, null)
+        );
+    }).bounds(width / 2 - 60, (this.height + backgroundHeight) / 2 - 25, 120, 20).build()  // ✅ ← ADD THIS
+);
+
     }
 
     @Override
@@ -196,8 +207,6 @@ public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partia
 
     guiGraphics.drawCenteredString(this.font, this.title.getString(), this.width / 2, startY - 12, 0xFFFFFF);
 
-    guiGraphics.drawString(this.font, "Selected Holder: " + selectedHolder, startX, startY + 48, 0xAAAAAA);
-    guiGraphics.drawString(this.font, "Selected Sign: " + selectedSign, startX, startY + 60, 0xAAAAAA);
 
     super.render(guiGraphics, mouseX, mouseY, partialTick);
 }

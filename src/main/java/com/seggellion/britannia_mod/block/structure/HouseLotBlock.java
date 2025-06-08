@@ -7,6 +7,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.core.BlockPos;
 
 
@@ -22,4 +23,9 @@ public class HouseLotBlock extends Block implements EntityBlock {
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new HouseLotBlockEntity(pos, state);
     }
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
+    }
+
 }

@@ -116,14 +116,13 @@ String nbtFile = style.getStructureFile();                 // e.g. "structures/w
 
     Direction playerFacing = player.getDirection();
 
-    BlockPos doorTarget  = playerPos.relative(playerFacing, 2);
-    BlockPos adjustedPos = doorTarget.subtract(rotatedDoorOffset);
+    BlockPos doorTarget  = playerPos.relative(playerFacing, 1);
+    BlockPos adjustedPos = doorTarget.above().subtract(rotatedDoorOffset);
 
 
     StructurePlaceSettings settings = new StructurePlaceSettings()
                                           .setRotation(rotation)
                                           .setIgnoreEntities(true);
-
 
 // Constraints
 
@@ -137,26 +136,38 @@ int maxY = Mth.floor(boxes.structureBox().maxY);
 int minZ = Mth.floor(boxes.structureBox().minZ) - 1;
 int maxZ = Mth.floor(boxes.structureBox().maxZ) + 1;
 
+int validationOffsetY = -1; // go one block down to check grass/sand
+
+
 boolean valid = true;
 
 outer:
 for (int x = minX; x <= maxX; x++) {
-    for (int y = minY; y <= maxY; y++) {
-        for (int z = minZ; z <= maxZ; z++) {
-            BlockPos pos = new BlockPos(x, y, z);
-            BlockState state = level.getBlockState(pos);
+    for (int z = minZ; z <= maxZ; z++) {
+        for (int y = minY; y <= maxY; y++) {
 
             boolean isBottom = (y == minY);
 
+            // use different Y for ground vs. upper blocks
+            BlockPos pos = isBottom
+                    ? new BlockPos(x, y + validationOffsetY, z)   // ground block
+                    : new BlockPos(x, y, z);                      // in‑volume air check
+
+            BlockState state = level.getBlockState(pos);
+
             if (isBottom) {
-                // Require only grass or sand below
-                if (state.getBlock() != Blocks.GRASS_BLOCK && state.getBlock() != Blocks.SAND) {
+                // foundation must sit on grass or sand only
+                if (state.getBlock() != Blocks.GRASS_BLOCK &&
+                    state.getBlock() != Blocks.SAND) {
+
+                    LOGGER.warn("❌ Invalid ground block at {}: {}", pos, state.getBlock());
                     valid = false;
                     break outer;
                 }
             } else {
-                // Above ground must be air
-                if (!state.isAir()) {
+                // everything above ground must be replaceable (air, tall grass, etc.)
+                if (!state.isAir() && !state.canBeReplaced()) {
+                    LOGGER.warn("❌ Blocked by {} at {}", state.getBlock(), pos);
                     valid = false;
                     break outer;
                 }
@@ -164,6 +175,10 @@ for (int x = minX; x <= maxX; x++) {
         }
     }
 }
+
+
+
+
 
 if (!valid) {
     player.displayClientMessage(Component.literal("❌ Invalid placing location. You need flat grass or sand."), true);
@@ -246,7 +261,8 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
             boxes.structureBox(),
             boxes.fullBox(),
             houseUuid,
-            style.getSize().id()
+            style.getSize().id(),
+            style.name()
         )
     );
 
@@ -254,7 +270,6 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
     return true;
 
 }
-
 
 
 }

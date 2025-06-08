@@ -1,8 +1,12 @@
 {
-    "variants": {
-      "type=bottom": { "model": "britannia_mod:block/structure/thatch_roof_flat" },
-      "type=top": { "model": "britannia_mod:block/structure/thatch_roof_flat" },
-      "type=double": { "model": "britannia_mod:block/structure/thatch_roof_flat_double" }
-    }
+  "variants": {
+    "type=bottom,supports_lantern=false": { "model": "britannia_mod:block/structure/thatch_roof_flat" },
+    "type=bottom,supports_lantern=true":  { "model": "britannia_mod:block/structure/thatch_roof_flat" },
+
+    "type=top,supports_lantern=false":    { "model": "britannia_mod:block/structure/thatch_roof_flat" },
+    "type=top,supports_lantern=true":     { "model": "britannia_mod:block/structure/thatch_roof_flat" },
+
+    "type=double,supports_lantern=false": { "model": "britannia_mod:block/structure/thatch_roof_flat_double" },
+    "type=double,supports_lantern=true":  { "model": "britannia_mod:block/structure/thatch_roof_flat_double" }
   }
-  
+}

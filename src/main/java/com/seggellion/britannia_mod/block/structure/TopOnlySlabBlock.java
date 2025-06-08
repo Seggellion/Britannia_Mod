@@ -23,6 +23,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.entity.player.Player;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 
 import javax.annotation.Nullable;
@@ -32,6 +36,8 @@ import com.mojang.logging.LogUtils;
 
 
 public class TopOnlySlabBlock extends SlabBlock implements EntityBlock {
+    public static final BooleanProperty SUPPORTS_LANTERN =
+            BooleanProperty.create("supports_lantern");
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -40,7 +46,8 @@ public class TopOnlySlabBlock extends SlabBlock implements EntityBlock {
         super(properties);
         this.registerDefaultState(this.defaultBlockState()
             .setValue(TYPE, SlabType.TOP)
-            .setValue(WATERLOGGED, false));
+            .setValue(WATERLOGGED, false)
+            .setValue(SUPPORTS_LANTERN, false));
     }
 
     @Override
@@ -63,6 +70,8 @@ public InteractionResult useWithoutItem(BlockState state,
                                         BlockHitResult hit) {
 
     ItemStack held = player.getItemInHand(InteractionHand.MAIN_HAND);
+            if (isLantern(held)) return InteractionResult.PASS; // let vanilla handle it
+
     ResourceLocation texture = getTextureFromItem(held.getItem());
             LOGGER.info("[AdaptiveRoof] Player used item: {}", held);
             LOGGER.info("[AdaptiveRoof] texture: {}", texture);
@@ -86,6 +95,38 @@ public InteractionResult useWithoutItem(BlockState state,
 }
 
 
+@Override
+public VoxelShape getBlockSupportShape(BlockState state,
+                                       BlockGetter level,
+                                       BlockPos pos) {
+    return state.getValue(SUPPORTS_LANTERN) ? Shapes.block()
+                                            : super.getBlockSupportShape(state, level, pos);
+}
+
+    // (optional) keep the visual/collision outline consistent
+    @Override
+    public VoxelShape getCollisionShape(BlockState state,
+                                        BlockGetter level,
+                                        BlockPos pos,
+                                        CollisionContext ctx) {
+        if (level.getBlockEntity(pos) instanceof AdaptiveRoofBlockEntity be &&
+            be.getBottomTexture() != null) {
+            return Shapes.block();
+        }
+        return super.getCollisionShape(state, level, pos, ctx);
+    }
+
+private static boolean isLantern(ItemStack stack) {
+        return stack.is(Items.LANTERN) || stack.is(Items.SOUL_LANTERN);
+    }
+
+@Override
+protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+    super.createBlockStateDefinition(builder);
+    builder.add(SUPPORTS_LANTERN); // ✅ REQUIRED
+}
+
+
     @Nullable
     private ResourceLocation getTextureFromItem(Item item) {
           if (item == Items.WOODEN_AXE || item == ItemRegistry.INTERIOR_DECORATOR_TOOL.get()) {
@@ -93,8 +134,19 @@ public InteractionResult useWithoutItem(BlockState state,
     }
 
         if (item == Items.STONE) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/stone");
+        if (item == Items.OAK_LOG) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/oak_log");
+        if (item == Items.DARK_OAK_LOG) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/dark_oak_log");
+
+        if (item == Items.SPRUCE_LOG) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/spruce_log");
+        if (item == Items.JUNGLE_LOG) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/jungle_log");
+
         if (item == Items.OAK_PLANKS) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/oak_planks");
         if (item == Items.SPRUCE_PLANKS) return ResourceLocation.fromNamespaceAndPath("minecraft", "block/spruce_planks");
+     
+             if (item == Item.byBlock(BlockRegistry.THATCH_ROOF.get())) {
+                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/roof/thatch_roof_flat");
+        }
+
         if (item == Item.byBlock(BlockRegistry.OAK_WALL_BOTTOM.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/oak_wall_bottom");
         }

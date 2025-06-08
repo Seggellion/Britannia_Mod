@@ -18,6 +18,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.EntityBlock;
 import java.util.Properties;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.SupportType;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
+
 
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.entity.player.Player;
@@ -26,15 +35,45 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import javax.annotation.Nullable;
 
 public class AdaptiveRoofBlock extends Block implements EntityBlock {
+    public static final BooleanProperty SUPPORTS_LANTERN = BooleanProperty.create("supports_lantern");
 
     public AdaptiveRoofBlock(Properties properties) {
         super(properties);
+                registerDefaultState(defaultBlockState().setValue(SUPPORTS_LANTERN, false));
+
     }
 
+  @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(SUPPORTS_LANTERN);
+    }
     
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new AdaptiveRoofBlockEntity(pos, state);
     }
+
+    @Override
+    public VoxelShape getBlockSupportShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return state.getValue(SUPPORTS_LANTERN) ? Shapes.block()
+                                                : super.getBlockSupportShape(state, level, pos);
+    }
+
+@Override
+public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    if (level.getBlockEntity(pos) instanceof AdaptiveRoofBlockEntity be) {
+        if (be.getBottomTexture() != null) {
+            // Return a full cube shape so `Block.canSupportCenter(...)` returns true
+            return Shapes.block();
+        }
+    }
+
+    // Default (empty or partial) shape
+    return super.getShape(state, level, pos, context);
+}
+
+
+
 
 @Override
 public InteractionResult useWithoutItem(BlockState state,

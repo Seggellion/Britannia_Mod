@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      { "model": "britannia_mod:block/structure/stone_floor_polished_1" },
+      { "model": "britannia_mod:block/structure/stone_floor_polished_2" },
+      { "model": "britannia_mod:block/structure/stone_floor_polished_3" },
+      { "model": "britannia_mod:block/structure/stone_floor_polished_4" }
+    ]
+  }
+}
