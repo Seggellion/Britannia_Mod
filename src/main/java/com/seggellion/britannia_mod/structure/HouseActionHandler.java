@@ -17,6 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.block.Block;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -71,31 +72,45 @@ public static void handleRedeed(ServerPlayer player) {
         LOGGER.info("minY: {}",minY);
 
         // ✅ Step 2: Restore basement (STONE layers below structure, GRASS on top)
+       // Step 2: Restore basement with natural fill material
         int basementStartY = minY - 10;
         int basementEndY = minY - 2;
         int grassY = minY - 1;
-              LOGGER.info("basementStartY: {}",basementStartY);
-        LOGGER.info("basementEndY: {}",basementEndY);
 
-        for (int y = basementStartY; y <= basementEndY; y++) {
-            for (int x = minX; x <= maxX; x++) {
-                for (int z = minZ; z <= maxZ; z++) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                BlockPos groundProbe = new BlockPos(x, basementEndY, z); // one below the basement
+                BlockState groundState = level.getBlockState(groundProbe);
+                Block groundBlock = groundState.getBlock();
+
+                // Determine the fill block based on what the natural ground is
+                Block backfillBlock = Blocks.STONE; // default
+                if (groundBlock == Blocks.SAND || groundBlock == Blocks.RED_SAND) {
+                    backfillBlock = Blocks.SAND;
+                } else if (groundBlock == Blocks.DIRT || groundBlock == Blocks.GRASS_BLOCK || groundBlock == Blocks.COARSE_DIRT) {
+                    backfillBlock = Blocks.DIRT;
+                }
+
+                // Fill basement with selected backfill material
+                for (int y = basementStartY; y <= basementEndY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     if (level.isLoaded(pos)) {
-                        level.setBlock(pos, Blocks.STONE.defaultBlockState(), 3);
+                        level.setBlock(pos, backfillBlock.defaultBlockState(), 3);
+                    }
+                }
+
+                // Top layer becomes GRASS_BLOCK if it's dirt; otherwise, mimic the ground type
+                BlockPos topPos = new BlockPos(x, grassY, z);
+                if (level.isLoaded(topPos)) {
+                    if (backfillBlock == Blocks.DIRT) {
+                        level.setBlock(topPos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
+                    } else {
+                        level.setBlock(topPos, backfillBlock.defaultBlockState(), 3);
                     }
                 }
             }
         }
 
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                BlockPos pos = new BlockPos(x, grassY, z);
-                if (level.isLoaded(pos)) {
-                    level.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
-                }
-            }
-        }
 
         // ✅ Step 3: Unregister the structure
         StructureRegionManager.unregisterStructure(record);
