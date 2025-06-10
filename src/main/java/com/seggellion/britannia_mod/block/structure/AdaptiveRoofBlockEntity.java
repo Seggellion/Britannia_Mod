@@ -78,8 +78,7 @@ public void onLoad() {
     super.onLoad();
 
     if (!level.isClientSide) {
-        LOGGER.info("[AdaptiveRoofBE] onLoad called with {}", worldPosition);
-
+ 
         // Fix legacy blocks with missing textures but incorrect blockstate
         if (bottomTexture == null) {
             BlockState current = getBlockState();
@@ -122,7 +121,6 @@ public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
 public void handleUpdateTag(CompoundTag tag) {
     if (tag.contains("BottomTexture")) {
         this.bottomTexture = ResourceLocation.tryParse(tag.getString("BottomTexture"));
-          LOGGER.info("[AdaptiveRoofBE] handleUpdateTag called with {}", tag);
         readTexture(tag); 
     }
 }
@@ -143,7 +141,6 @@ public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         super.loadAdditional(tag, provider);
         if (tag.contains("BottomTexture")) {
             bottomTexture = ResourceLocation.tryParse(tag.getString("BottomTexture"));
-             LOGGER.info("[AdaptiveRoofBE] loadAdditional called with {}", bottomTexture);
                readTexture(tag);    
         }
     }
@@ -155,7 +152,7 @@ private void readTexture(CompoundTag tag) {
     if (!tag.contains("BottomTexture")) return;
 
     bottomTexture = ResourceLocation.tryParse(tag.getString("BottomTexture"));
- LOGGER.info("[AdaptiveRoofBE] readTexture called with {}", bottomTexture);
+
     // If we’re on the logical client, force the chunk to re‑render
     if (level != null && level.isClientSide) {
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(),

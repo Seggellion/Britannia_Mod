@@ -24,8 +24,6 @@ public class ClientNetworkHandler {
         context.enqueueWork(() -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && mc.level != null) {
-                LOGGER.info("🎯 Received HouseManagementScreenPayload. Opening screen with UUID={}, Username={}, Type={}",
-                        data.uuid(), data.username(), data.houseType());
                             mc.setScreen(new HouseManagementScreen(
                 data.pos(), // BlockPos
                 data.uuid(),    // UUID

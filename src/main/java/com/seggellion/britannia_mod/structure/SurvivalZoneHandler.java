@@ -38,7 +38,7 @@ private static final Logger LOGGER = LogManager.getLogger();
             if (currentMode == GameType.CREATIVE || currentMode == GameType.SPECTATOR) {
                 continue;
             }
-   LOGGER.info("Not in creative mode");
+
             BlockPos playerPos = player.blockPosition();
             int chunkX = SectionPos.blockToSectionCoord(playerPos.getX());
             int chunkZ = SectionPos.blockToSectionCoord(playerPos.getZ());
@@ -50,7 +50,6 @@ private static final Logger LOGGER = LogManager.getLogger();
                 }
                 continue;
             }
-   LOGGER.info("Structure found in chunk.");
             boolean insideOwnStructure = false;
             Vec3 playerVec = player.position();
             for (StructureRecord record : structuresInChunk) {

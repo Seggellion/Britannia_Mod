@@ -140,11 +140,6 @@ String blockId = BuiltInRegistries.BLOCK.getKey(neigh.getBlock()).getPath();
 
 String wallId = BuiltInRegistries.BLOCK.getKey(wallBlock).getPath();
 
-LOGGER.info("ThinWall fill from: {}", wallId);
-
-        LOGGER.info("Initializing baker: blockId: {}", blockId);
-
-
 float GAP;
 if (wallId.startsWith("stone_wall_")) {
     GAP = 0.5f;  // reduced fill

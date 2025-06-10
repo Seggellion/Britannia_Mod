@@ -90,7 +90,6 @@ protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Lev
         && player.isCreative()
         && !player.isSpectator()) {
 
-        LOGGER.info("✅ Rotating chair block at {}", pos);
 
         Direction current = state.getValue(FACING);
         Direction next = current.getClockWise();
@@ -99,7 +98,6 @@ protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Lev
         return ItemInteractionResult.SUCCESS;
     }
 
-    LOGGER.info("⏭️ Interaction passed to default.");
     return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 }
 
