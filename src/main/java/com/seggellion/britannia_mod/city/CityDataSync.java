@@ -4,33 +4,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import com.seggellion.britannia_mod.city.City;
-import com.seggellion.britannia_mod.city.CityManager;
-import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.player.PlayerData;
-import com.seggellion.britannia_mod.player.PlayerDataManager;
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.config.ModConfig;
-
+import com.seggellion.britannia_mod.util.CityAPITokenData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.InputStreamReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.io.OutputStream;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.List;
-import java.util.UUID;
-import java.util.Arrays;
-import java.util.ArrayList;
+import java.util.*;
 
 
 public class CityDataSync {

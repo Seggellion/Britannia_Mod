@@ -2,7 +2,9 @@ package com.seggellion.britannia_mod.block;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -13,13 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.client.renderer.LevelRenderer;
 import org.joml.Vector3f;
-
-import java.util.Map;
-
-import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 
 public class AdaptiveRoofRenderer implements BlockEntityRenderer<AdaptiveRoofBlockEntity> {
 

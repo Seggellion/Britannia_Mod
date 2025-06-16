@@ -1,8 +1,8 @@
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.BritanniaMod;
-import software.bernie.geckolib.model.GeoModel;
 import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.model.GeoModel;
 
 public class LargeForgeModel extends GeoModel<LargeForgeBlockEntity> {
     @Override

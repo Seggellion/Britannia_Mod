@@ -1,29 +1,30 @@
 package com.seggellion.britannia_mod.structure;
 
-import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
-import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
+import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -31,9 +32,8 @@ import org.slf4j.Logger;
 
 public class HouseSignBlock extends Block implements EntityBlock {
     private static final Logger LOGGER = LogUtils.getLogger();
-        
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<SignType> SIGN_TYPE = EnumProperty.create("sign_type", SignType.class);
     public static final EnumProperty<HolderType> HOLDER_TYPE = EnumProperty.create("holder_type", HolderType.class);
 
@@ -60,49 +60,60 @@ public class HouseSignBlock extends Block implements EntityBlock {
         METAL_4("metal_4");
 
         private final String name;
-
-        HolderType(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
+        HolderType(String name) { this.name = name; }
+        @Override public String getSerializedName() { return name; }
+        @Override public String toString() { return name; }
     }
 
     public enum SignType implements StringRepresentable {
+        BAKER("baker", SignShape.OVAL),
+        HEALER("healer", SignShape.RECTANGLE),
+        INN("inn", SignShape.OVAL),
+        BARD("bard", SignShape.OVAL),
+        TAVERN("tavern", SignShape.OVAL),
+        PROVISIONER("provisioner", SignShape.RECTANGLE),
+        TAILOR("tailor", SignShape.RECTANGLE),
+        MAGE("mage", SignShape.RECTANGLE),
+        SHIPWRIGHT("shipwright", SignShape.OVAL),
+        FLETCHER("fletcher", SignShape.RECTANGLE),
+        REAGENTS("reagents", SignShape.OVAL),
+        BOWYER("bowyer", SignShape.OVAL),
+        TINKER("tinker", SignShape.RECTANGLE),
+        CARPENTER("carpenter", SignShape.RECTANGLE),
+        STABLES("stables", SignShape.RECTANGLE),
+        ARMORER("armorer", SignShape.RECTANGLE),
+        BLACKSMITH("blacksmith", SignShape.RECTANGLE),
+        BLANK("blank", SignShape.RECTANGLE),
+        BUTCHER("butcher", SignShape.RECTANGLE),
+        CUSTOMS("customs", SignShape.OVAL),
+        BARBER("barber", SignShape.RECTANGLE),
+        JEWELER("jeweler", SignShape.RECTANGLE),
+        ARTIST("artist", SignShape.OVAL),
         DEFAULT("default", SignShape.RECTANGLE),
-        TAILOR("tailor", SignShape.OVAL),
-        LIBRARY("library", SignShape.RECTANGLE),
-        BAKER("baker", SignShape.OVAL);
+        LIBRARY("library", SignShape.OVAL),
+        THEATRE("theatre", SignShape.OVAL),
+        BEEKEEPER("beekeeper", SignShape.OVAL),
+        MERCHANT("merchant", SignShape.RECTANGLE),
+        BANK("bank", SignShape.OVAL);
 
         private final String name;
         private final SignShape shape;
+
+        public ResourceLocation icon() {
+            return ResourceLocation.fromNamespaceAndPath(
+                    "britannia_mod",
+                    "textures/screens/sign_icons/" + getSerializedName() + ".png"
+            );
+        }
 
         SignType(String name, SignShape shape) {
             this.name = name;
             this.shape = shape;
         }
 
-        @Override
-        public String getSerializedName() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        public SignShape getShape() {
-            return shape;
-        }
+        @Override public String getSerializedName() { return name; }
+        @Override public String toString() { return name; }
+        public SignShape getShape() { return shape; }
 
         public enum SignShape {
             RECTANGLE,
@@ -112,9 +123,9 @@ public class HouseSignBlock extends Block implements EntityBlock {
 
     public HouseSignBlock() {
         super(BlockBehaviour.Properties
-            .of()
-            .noOcclusion()
-            .strength(3.0f, 3.0f)
+                .of()
+                .noOcclusion()
+                .strength(3.0f, 3.0f)
         );
 
         this.registerDefaultState(this.defaultBlockState()

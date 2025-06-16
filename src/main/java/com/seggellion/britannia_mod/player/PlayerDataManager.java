@@ -1,21 +1,15 @@
 package com.seggellion.britannia_mod.player;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.SavedData;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Item;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.Collectors;  // Import Collectors
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PlayerDataManager extends SavedData {  // Extend SavedData
     private static final String DATA_NAME = "britannia_player_data";

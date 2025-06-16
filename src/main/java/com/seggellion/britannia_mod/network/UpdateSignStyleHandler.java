@@ -1,9 +1,8 @@
 package com.seggellion.britannia_mod.network;
 
 import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-
+import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -11,7 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
 import org.slf4j.Logger;
 
 public class UpdateSignStyleHandler {

@@ -1,7 +1,7 @@
 package com.seggellion.britannia_mod.item;
 
-import com.seggellion.britannia_mod.util.ModTags;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.util.ModTags;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.SimpleTier;

@@ -1,10 +1,10 @@
 // BritanniaBlockSetTypes.java
 package com.seggellion.britannia_mod.registry;
 
-import net.minecraft.world.level.block.state.properties.BlockSetType;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.properties.BlockSetType.PressurePlateSensitivity;
 import com.seggellion.britannia_mod.ModSounds;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.BlockSetType.PressurePlateSensitivity;
 
 public class BritanniaBlockSetTypes {
 

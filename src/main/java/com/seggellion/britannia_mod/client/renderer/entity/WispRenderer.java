@@ -1,13 +1,13 @@
 package com.seggellion.britannia_mod.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.seggellion.britannia_mod.entity.WispEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import org.jetbrains.annotations.Nullable;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class WispRenderer extends GeoEntityRenderer<WispEntity> {
     public WispRenderer(EntityRendererProvider.Context renderManager) {

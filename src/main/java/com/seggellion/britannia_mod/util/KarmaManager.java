@@ -1,18 +1,16 @@
 package com.seggellion.britannia_mod.util;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.nbt.CompoundTag;
+import com.google.gson.JsonObject;
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.config.ModConfig;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
-import com.seggellion.britannia_mod.config.ModConfig;
-import java.net.HttpURLConnection;
-import java.util.UUID;
-import com.google.gson.JsonObject;
-import java.io.OutputStream;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.UUID;
 
 
 public class KarmaManager {

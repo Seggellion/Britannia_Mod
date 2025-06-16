@@ -1,15 +1,14 @@
 package com.seggellion.britannia_mod.block;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;          // ← correct package
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 public class BrickFoundationBlock extends Block {
     private static final Logger LOGGER = LogUtils.getLogger();

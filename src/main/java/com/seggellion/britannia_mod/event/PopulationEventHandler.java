@@ -3,44 +3,23 @@
 package com.seggellion.britannia_mod.event;
 
 
-import com.seggellion.britannia_mod.registry.ItemRegistry;
-
-import com.seggellion.britannia_mod.ModSounds;
-
-import net.minecraft.world.phys.Vec3;
-import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.WoodSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.MetalSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.StoneSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.FishSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.FishSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.HorseSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.block.*;
+import com.seggellion.britannia_mod.block.entity.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
-
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.mojang.logging.LogUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
 
 public class PopulationEventHandler {
 

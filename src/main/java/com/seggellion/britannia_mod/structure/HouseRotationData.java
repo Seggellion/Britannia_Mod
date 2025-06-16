@@ -1,10 +1,10 @@
 package com.seggellion.britannia_mod.client.house;
 
+import net.minecraft.world.entity.player.Player;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import net.minecraft.world.entity.player.Player;
 
 public class HouseRotationData {
     private static final Map<UUID, Integer> playerRotationMap = new HashMap<>();

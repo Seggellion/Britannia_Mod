@@ -1,27 +1,17 @@
 package com.seggellion.britannia_mod.network;
 
-import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
+import com.seggellion.britannia_mod.structure.HouseActionHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
-import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
-import com.seggellion.britannia_mod.network.ManaSyncPayload;
-
-import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
-
-import com.seggellion.britannia_mod.structure.HouseActionHandler;
-
-
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.fml.loading.FMLLoader;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class NetworkHandler {
 

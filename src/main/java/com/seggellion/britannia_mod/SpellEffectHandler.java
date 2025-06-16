@@ -1,10 +1,10 @@
 package com.seggellion.britannia_mod.effects;
 
-import net.minecraft.server.level.ServerPlayer;
+import com.mojang.logging.LogUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 /**

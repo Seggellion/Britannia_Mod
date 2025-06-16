@@ -1,30 +1,28 @@
 package com.seggellion.britannia_mod.event;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.BlockPos;
-import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import org.slf4j.Logger;
-import java.util.UUID;
 import com.mojang.logging.LogUtils;
-
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.tags.BlockTags;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
+import com.seggellion.britannia_mod.item.GradeStoneItem;
+import com.seggellion.britannia_mod.item.PurityOreItem;
+import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
-import com.seggellion.britannia_mod.item.PurityOreItem;
-import com.seggellion.britannia_mod.item.GradeStoneItem;
-
-import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
-import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
 import com.seggellion.britannia_mod.util.BlockBreakUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
+import org.slf4j.Logger;
+
+import java.util.UUID;
 
 public class CustomBlockBreakHandler {
     private static final Logger LOGGER = LogUtils.getLogger();

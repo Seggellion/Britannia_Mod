@@ -1,13 +1,13 @@
 // ModConfig.java
 package com.seggellion.britannia_mod.config;
 
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
 
 public class ModConfig {
     private static final Logger LOGGER = LogUtils.getLogger();

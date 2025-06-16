@@ -1,11 +1,11 @@
 package com.seggellion.britannia_mod.client;
 
+import com.seggellion.britannia_mod.client.model.ThinWallBakedModel;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.client.resources.model.BakedModel;
-import com.seggellion.britannia_mod.client.model.ThinWallBakedModel;
 
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public final class ThinWallClient {
             ResourceLocation      id  = mrl.id();        // record accessor
 
             if (!"britannia_mod".equals(id.getNamespace())) continue;
-            if (!id.getPath().startsWith("stone_wall_"))   continue;
+            if (!id.getPath().contains("_wall_")) continue;
 
             models.put(mrl, new ThinWallBakedModel(e.getValue()));
         }

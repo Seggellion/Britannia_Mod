@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.magic;
 
-import com.seggellion.britannia_mod.BritanniaMod;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -13,8 +13,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
+
 import java.util.Random;
 
 public class CreateFoodSpell extends Spell {

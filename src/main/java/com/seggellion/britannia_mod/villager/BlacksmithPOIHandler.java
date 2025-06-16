@@ -1,15 +1,14 @@
 package com.seggellion.britannia_mod.villager;
 
+import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.npc.VillagerProfession;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
 
 public class BlacksmithPOIHandler {
     @SubscribeEvent

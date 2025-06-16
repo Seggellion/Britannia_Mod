@@ -1,19 +1,19 @@
 package com.seggellion.britannia_mod.event;
 
-import com.seggellion.britannia_mod.BritanniaMod;
+import net.minecraft.advancements.critereon.BlockPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.AdventureModePredicate;
-import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+
 import java.util.List;
 import java.util.Optional;
 

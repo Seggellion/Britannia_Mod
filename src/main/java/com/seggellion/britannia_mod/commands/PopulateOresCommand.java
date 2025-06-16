@@ -3,32 +3,26 @@ package com.seggellion.britannia_mod.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.features.*;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.util.OreVeinFetcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.chunk.LevelChunk;
-
-
-import com.seggellion.britannia_mod.util.OreVeinFetcher;
-import com.seggellion.britannia_mod.features.ClusterVein;
-import com.seggellion.britannia_mod.features.LayeredVein;
-import com.seggellion.britannia_mod.features.VerticalVein;
-import com.seggellion.britannia_mod.features.VerticalLayeredVein;
-import com.seggellion.britannia_mod.features.GeodeVein;
-import com.seggellion.britannia_mod.features.SnakeVein;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
-import com.seggellion.britannia_mod.config.ModConfig;
-import net.minecraft.server.MinecraftServer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 public class PopulateOresCommand {
     private static final Logger LOGGER = LogManager.getLogger();
 

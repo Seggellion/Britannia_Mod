@@ -1,25 +1,25 @@
 package com.seggellion.britannia_mod.event;
 
-import net.minecraft.server.level.ServerPlayer;
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
+import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.registry.CityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.GameType;
-import net.minecraft.sounds.SoundSource;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import com.seggellion.britannia_mod.ModSounds;
-import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
-import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
-import com.seggellion.britannia_mod.registry.CityRegistry;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 public class BreakSpeedHandler {
     private static final Logger LOGGER = LogUtils.getLogger();

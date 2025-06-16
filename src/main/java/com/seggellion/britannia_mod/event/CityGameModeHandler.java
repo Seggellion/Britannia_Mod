@@ -1,17 +1,16 @@
 package com.seggellion.britannia_mod.event;
 
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.registry.CityRegistry;
+import com.seggellion.britannia_mod.registry.ToolRegistry;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameType;    // <— Notice: "world.level.GameType" is the newer location
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import org.slf4j.Logger;
-import com.seggellion.britannia_mod.registry.ToolRegistry;
-import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.registry.CityRegistry;
-import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
-import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 
 public class CityGameModeHandler {
     private static final Logger LOGGER = LogUtils.getLogger();

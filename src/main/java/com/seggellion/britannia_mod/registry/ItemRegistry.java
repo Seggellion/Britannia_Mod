@@ -1,82 +1,19 @@
 // ItemRegistry.java
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.registry.EntityRegistry;
-
-// import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
-import com.seggellion.britannia_mod.item.BlueTentDeedItem;
-import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
-import com.seggellion.britannia_mod.item.DeedItem;
-import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
-import com.seggellion.britannia_mod.item.InteriorDecoratorToolItem;
-import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
-import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
-import com.seggellion.britannia_mod.item.QualitySwordItem;
-import com.seggellion.britannia_mod.item.PurityOreItem;
-import com.seggellion.britannia_mod.item.GradeStoneItem;
-import com.seggellion.britannia_mod.item.ModToolTiers;
-import com.seggellion.britannia_mod.item.OrderShieldItem;
-import com.seggellion.britannia_mod.item.MoongateLinkingWand;
-import com.seggellion.britannia_mod.item.CarpetTeleporterItem;
-import com.seggellion.britannia_mod.item.WeightedFishItem;
-import com.seggellion.britannia_mod.item.WeightedWoodItem;
-import com.seggellion.britannia_mod.structure.HouseStyle;
-import com.seggellion.britannia_mod.item.DeedItemFactory;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.Tier;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-
-import net.minecraft.world.entity.EquipmentSlotGroup;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.core.Registry;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.HolderSet.Named;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tiers;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.Items; // Example item
-
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.item.component.Tool;
-import net.minecraft.world.item.component.Tool.Rule;
-import net.minecraft.world.item.AdventureModePredicate;
-import net.minecraft.advancements.critereon.BlockPredicate; 
-
-import net.neoforged.neoforge.common.DeferredSpawnEggItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
-import net.neoforged.neoforge.registries.RegistryManager;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.SubscribeEvent;
 import com.mojang.logging.LogUtils;
-
+import com.seggellion.britannia_mod.item.*;
+import com.seggellion.britannia_mod.structure.HouseStyle;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
-import java.util.Optional;
-import java.util.List;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.Map;
-import java.util.EnumMap;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import java.util.EnumMap;
+import java.util.Map;
 
 
 public class ItemRegistry {
@@ -129,7 +66,6 @@ public static final DeferredHolder<Item, Item> QUARTER_DIRT_BLOCK_ITEM = ITEMS.r
     "quarter_dirt_block",
     () -> new BlockItem(BlockRegistry.QUARTER_DIRT_BLOCK.get(), new Item.Properties())
 );
-
 
 public static final DeferredHolder<Item, Item> HALF_DIRT_BLOCK_ITEM = ITEMS.register(
     "half_dirt_block",
@@ -300,6 +236,15 @@ public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_OAK_ITEM =
 public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_SPRUCE_ITEM =
         ITEMS.register("brick_foundation_spruce",
             () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_SPRUCE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> CUSTOM_STONE_STAIRS_ITEM = ITEMS.register(
+    "custom_stone_stairs",
+    () -> new BlockItem(BlockRegistry.CUSTOM_STONE_STAIRS.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> STONE_FLOOR_POLISHED_ITEM =
+    ITEMS.register("stone_floor_polished",
+        () -> new BlockItem(BlockRegistry.STONE_FLOOR_POLISHED.get(), new Item.Properties()));
 
 
 public static final DeferredHolder<Item, BlockItem> STONE_FOUNDATION_ITEM =

@@ -1,19 +1,18 @@
 package com.seggellion.britannia_mod.network;
 
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import net.minecraft.network.chat.Component;
-
 import net.minecraft.world.level.block.entity.BlockEntity;
-import java.util.UUID;
-
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
+
+import java.util.UUID;
 
 public record HouseManagementScreenPayload(BlockPos pos, UUID uuid, String username, String houseType, String houseName) implements CustomPacketPayload {
     

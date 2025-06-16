@@ -1,16 +1,15 @@
 package com.seggellion.britannia_mod.blockrestore;
 
-import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.server.level.ServerLevel;
-import java.util.Map;
 import net.minecraft.core.BlockPos;
-import java.util.concurrent.ConcurrentHashMap;
-import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
-import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.SavedData;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BrokenBlockDataStorage extends SavedData {
     private static final String DATA_NAME = "broken_blocks";

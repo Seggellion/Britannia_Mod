@@ -2,13 +2,12 @@
 package com.seggellion.britannia_mod.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import net.minecraft.client.renderer.RenderType;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class MongbatRenderer extends GeoEntityRenderer<MongbatEntity> {
     public MongbatRenderer(EntityRendererProvider.Context renderManager) {

@@ -1,11 +1,11 @@
 package com.seggellion.britannia_mod.structure;
 
+import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 
 public class HouseSignBlockEntity extends BlockEntity {
     private String ownerUsername = "";

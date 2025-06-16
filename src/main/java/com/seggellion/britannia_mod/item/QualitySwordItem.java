@@ -1,17 +1,13 @@
 package com.seggellion.britannia_mod.item;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.Tier;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.CustomData;
-import net.neoforged.neoforge.common.extensions.IItemExtension;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
+import net.neoforged.neoforge.common.extensions.IItemExtension;
+
 import java.util.List;
 
 /**

@@ -1,19 +1,17 @@
 package com.seggellion.britannia_mod.event;
 
+import com.mojang.logging.LogUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent.Pre;
 import net.neoforged.neoforge.common.util.TriState;
-
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent.Pre;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 import java.util.HashSet;
 import java.util.Set;

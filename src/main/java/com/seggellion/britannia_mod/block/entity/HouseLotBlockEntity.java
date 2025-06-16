@@ -1,5 +1,5 @@
 package com.seggellion.britannia_mod.block.entity;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.structure.HouseStyle;
 import net.minecraft.core.BlockPos;
@@ -8,12 +8,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.network.protocol.Packet;
-
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 
 import java.time.Instant;
 import java.util.ArrayList;

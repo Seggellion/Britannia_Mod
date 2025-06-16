@@ -1,19 +1,20 @@
 package com.seggellion.britannia_mod.block.entity;
 
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.block.AdaptiveRoofBlock;
+import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.Block;
-
-import net.minecraft.network.Connection;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 
 public class AdaptiveRoofBlockEntity extends BlockEntity {
@@ -30,26 +31,41 @@ private static final String TAG_KEY = "BottomTexture";
     }
 
     public void setBottomTexture(ResourceLocation texture) {
+    this.bottomTexture = "minecraft:block/air".equals(texture.toString()) ? null : texture;
+    boolean supports = bottomTexture != null;
 
+    setChanged();
 
-        if ("minecraft:block/air".equals(texture.toString())) {
-            this.bottomTexture = null;
-        } else {
-            this.bottomTexture = texture;
+    if (level instanceof ServerLevel server) {
+        server.blockEntityChanged(worldPosition);
+    }
+
+    BlockState current = getBlockState();
+
+    // Determine if the block supports the lantern property and update accordingly
+    if (current.hasProperty(TopOnlySlabBlock.SUPPORTS_LANTERN)) {
+        if (current.getValue(TopOnlySlabBlock.SUPPORTS_LANTERN) != supports) {
+            level.setBlock(worldPosition,
+                           current.setValue(TopOnlySlabBlock.SUPPORTS_LANTERN, supports),
+                           Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
+        } else if (!level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, current, current, Block.UPDATE_CLIENTS);
         }
-
-        setChanged();
-
-            if (level instanceof ServerLevel server) {
-                server.blockEntityChanged(worldPosition); // ← notifies all tracking players
-            }
-
-            if (this.level != null && !this.level.isClientSide) {
-        this.level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-        this.level.getChunkAt(worldPosition).setUnsaved(true);
-        
+    } else if (current.hasProperty(AdaptiveRoofBlock.SUPPORTS_LANTERN)) {
+        if (current.getValue(AdaptiveRoofBlock.SUPPORTS_LANTERN) != supports) {
+            level.setBlock(worldPosition,
+                           current.setValue(AdaptiveRoofBlock.SUPPORTS_LANTERN, supports),
+                           Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
+        } else if (!level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, current, current, Block.UPDATE_CLIENTS);
+        }
     }
+
+    if (!level.isClientSide) {
+        level.getChunkAt(worldPosition).setUnsaved(true);
     }
+}
+
 
     public ResourceLocation getBottomTexture() {
         return bottomTexture;
@@ -59,10 +75,27 @@ private static final String TAG_KEY = "BottomTexture";
 public void onLoad() {
     super.onLoad();
 
-    // Run only on the logical server – this forces the initial sync packet
-    if (!level.isClientSide && level instanceof ServerLevel server) {
-    LOGGER.info("[AdaptiveRoofBE] onLoad called with {}", worldPosition);
-        server.blockEntityChanged(worldPosition);     // sends update tag to all viewers
+    if (!level.isClientSide) {
+        LOGGER.info("[AdaptiveRoofBE] onLoad called with {}", worldPosition);
+
+        // Fix legacy blocks with missing textures but incorrect blockstate
+        if (bottomTexture == null) {
+            BlockState current = getBlockState();
+
+            if (current.hasProperty(TopOnlySlabBlock.SUPPORTS_LANTERN) &&
+                current.getValue(TopOnlySlabBlock.SUPPORTS_LANTERN)) {
+                level.setBlock(worldPosition,
+                    current.setValue(TopOnlySlabBlock.SUPPORTS_LANTERN, false),
+                    Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
+            } else if (current.hasProperty(AdaptiveRoofBlock.SUPPORTS_LANTERN) &&
+                       current.getValue(AdaptiveRoofBlock.SUPPORTS_LANTERN)) {
+                level.setBlock(worldPosition,
+                    current.setValue(AdaptiveRoofBlock.SUPPORTS_LANTERN, false),
+                    Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
+            }
+        }
+
+        ((ServerLevel) level).blockEntityChanged(worldPosition);
     }
 }
 

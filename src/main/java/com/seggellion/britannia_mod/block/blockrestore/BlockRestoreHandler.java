@@ -1,23 +1,20 @@
 package com.seggellion.britannia_mod.event;
 
-import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.minecraft.network.chat.Component;
-
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class BlockRestoreHandler {

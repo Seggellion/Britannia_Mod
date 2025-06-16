@@ -1,8 +1,8 @@
 package com.seggellion.britannia_mod.block;
 
-import net.minecraft.server.MinecraftServer;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

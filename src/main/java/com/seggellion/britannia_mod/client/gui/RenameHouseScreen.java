@@ -1,31 +1,20 @@
 
 package com.seggellion.britannia_mod.client.gui;
 
-import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.config.ModConfig;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.network.RenameHousePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.api.distmarker.Dist;
-import org.slf4j.Logger;
 import net.minecraft.core.BlockPos;
-
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.slf4j.Logger;
 
-
-import java.io.OutputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @OnlyIn(Dist.CLIENT)

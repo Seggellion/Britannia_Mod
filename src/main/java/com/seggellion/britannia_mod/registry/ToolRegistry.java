@@ -3,15 +3,12 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.item.QualityToolItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.minecraft.core.registries.Registries;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ToolRegistry {
     public static final DeferredRegister<Item> TOOLS = DeferredRegister.create(

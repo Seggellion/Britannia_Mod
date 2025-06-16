@@ -1,28 +1,15 @@
 package com.seggellion.britannia_mod.inventory;
 
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
-import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.ICityEntity;
-import com.seggellion.britannia_mod.entity.TownPersonEntity;
-import net.minecraft.world.entity.Entity;
-
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.Iterator;
-
-
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
 
 public class CityInventory {
 

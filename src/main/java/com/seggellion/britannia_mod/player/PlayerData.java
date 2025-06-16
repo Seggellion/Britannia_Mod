@@ -1,15 +1,15 @@
 package com.seggellion.britannia_mod.player;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.Optional; 
-
-import net.minecraft.server.players.PlayerList;
-import net.minecraft.server.level.ServerPlayer;
-import com.mojang.authlib.GameProfile;
-import net.minecraft.server.level.ServerLevel;
 
 
 

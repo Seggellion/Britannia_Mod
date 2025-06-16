@@ -1,8 +1,7 @@
 package com.seggellion.britannia_mod.entity.ai.goal;
 
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;

@@ -1,8 +1,9 @@
 
 package com.seggellion.britannia_mod.registry;
 
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

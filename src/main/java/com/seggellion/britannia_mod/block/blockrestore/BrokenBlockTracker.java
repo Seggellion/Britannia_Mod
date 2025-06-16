@@ -1,13 +1,10 @@
 package com.seggellion.britannia_mod.blockrestore;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.server.level.ServerLevel;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 
 public class BrokenBlockTracker {

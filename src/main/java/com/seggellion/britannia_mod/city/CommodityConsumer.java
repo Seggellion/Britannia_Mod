@@ -2,34 +2,31 @@ package com.seggellion.britannia_mod.city;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
-
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.slf4j.Logger;
 
-import java.io.OutputStream;
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
-import java.net.HttpURLConnection;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import com.google.gson.JsonParser;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
-import java.io.InputStream;
-import com.seggellion.britannia_mod.config.ModConfig;
-
-import java.io.IOException;
 
 public class CommodityConsumer {
     private static final Logger LOGGER = LogUtils.getLogger();

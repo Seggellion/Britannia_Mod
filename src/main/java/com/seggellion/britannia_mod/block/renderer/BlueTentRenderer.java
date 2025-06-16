@@ -1,12 +1,12 @@
 package com.seggellion.britannia_mod.block;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.LightTexture;
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.Direction;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import org.slf4j.Logger;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 
 public class BlueTentRenderer extends GeoBlockRenderer<BlueTentBlockEntity> {

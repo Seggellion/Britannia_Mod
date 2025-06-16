@@ -1,19 +1,15 @@
 package com.seggellion.britannia_mod.network;
 
 import com.google.gson.JsonObject;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.config.ModConfig;
-import com.seggellion.britannia_mod.network.RenameHousePayload;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
-import com.mojang.logging.LogUtils;
-
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.network.chat.Component;
-
 import org.slf4j.Logger;
 
 import java.io.OutputStream;

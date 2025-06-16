@@ -1,24 +1,18 @@
 package com.seggellion.britannia_mod.entity;
 
-import com.seggellion.britannia_mod.city.City;
-import com.seggellion.britannia_mod.city.CityManager;
-import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.network.CityDataSync;
-import com.seggellion.britannia_mod.market.MarketManager;
-import com.seggellion.britannia_mod.player.PlayerDataManager;
-import com.seggellion.britannia_mod.item.PurityOreItem;
+import com.google.gson.JsonObject;
+import com.seggellion.britannia_mod.ModAttributes;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
+import com.seggellion.britannia_mod.item.PurityOreItem;
+import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.util.SendTransactionToAPI;
-import com.seggellion.britannia_mod.ModAttributes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -29,19 +23,18 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import  net.neoforged.neoforge.common.NeoForgeMod;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.UUID;
+
 import java.util.ArrayList;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**

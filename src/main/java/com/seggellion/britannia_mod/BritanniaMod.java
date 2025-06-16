@@ -2,89 +2,44 @@
 package com.seggellion.britannia_mod;
 
 import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.registry.*;
-import com.seggellion.britannia_mod.event.ClientEventHandler;
-import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
-import com.seggellion.britannia_mod.ClientModSetup;
-import com.seggellion.britannia_mod.ModSounds;
-import com.seggellion.britannia_mod.magic.ManaHandler;
-import com.seggellion.britannia_mod.event.ForgeEventHandler;
-import com.seggellion.britannia_mod.spawner.DaemonSpawner;
-import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
-import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
-import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
-import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
-import com.seggellion.britannia_mod.client.BritainMusicHandler;
-import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
-import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
-import com.seggellion.britannia_mod.event.BreakSpeedHandler;
-import com.seggellion.britannia_mod.event.PopulationEventHandler;
-import com.seggellion.britannia_mod.event.InventoryHandler;
-import com.seggellion.britannia_mod.event.ChestHandler;
-import com.seggellion.britannia_mod.event.GlobalEventHandler;
-import com.seggellion.britannia_mod.event.WoodChopEventHandler;
-import com.seggellion.britannia_mod.event.PlayerEventHandler;
-import com.seggellion.britannia_mod.event.FishingEventHandler;
-import com.seggellion.britannia_mod.event.TreeKarmaHandler;
-import com.seggellion.britannia_mod.event.KarmaReductionHandler;
-import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
-import com.seggellion.britannia_mod.client.ModModelLayers;
-import com.seggellion.britannia_mod.event.BlockRestoreHandler;
-import com.seggellion.britannia_mod.event.CustomBlockBreakHandler;
-import com.seggellion.britannia_mod.event.ToolInteractionHandler;
-import com.seggellion.britannia_mod.event.CityGameModeHandler;
-//import com.seggellion.britannia_mod.villager.CustomVillagerProfessions;
-import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
-import com.seggellion.britannia_mod.villager.VillagerTradeUpdater;
-import com.seggellion.britannia_mod.network.NetworkHandler;
-import com.seggellion.britannia_mod.features.MobSpawnControl;
-import com.seggellion.britannia_mod.features.DiamondToolControl;
 import com.seggellion.britannia_mod.block.MoongateTickHandler;
-import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
-import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
-import com.seggellion.britannia_mod.structure.StructureProtectionHandler;
+import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.CommodityConsumer;
-import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.client.*;
+import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
+import com.seggellion.britannia_mod.event.*;
+import com.seggellion.britannia_mod.features.DiamondToolControl;
+import com.seggellion.britannia_mod.features.MobSpawnControl;
+import com.seggellion.britannia_mod.inventory.CityInventory;
+import com.seggellion.britannia_mod.magic.ManaHandler;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.registry.*;
+import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
+import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
+import com.seggellion.britannia_mod.spawner.DaemonSpawner;
+import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
+import com.seggellion.britannia_mod.structure.StructureProtectionHandler;
+import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
 import com.seggellion.britannia_mod.util.NameLoader;
-import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
-import com.seggellion.britannia_mod.client.ThinWallClient;
-
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.core.registries.Registries;
-
-import net.minecraft.server.MinecraftServer;
+import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
+import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
+import com.seggellion.britannia_mod.villager.VillagerTradeUpdater;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.network.chat.Component;
-
+import net.minecraft.world.entity.Entity;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
-
 import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.Map;
-import java.util.HashMap;
 
 @Mod(BritanniaMod.MODID)
 public class BritanniaMod {

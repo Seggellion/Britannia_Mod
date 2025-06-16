@@ -1,11 +1,11 @@
 
 package com.seggellion.britannia_mod.structure;
-import net.minecraft.core.Vec3i;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.phys.Vec3;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public record StructureBounds(BlockPos min, BlockPos max) {
 

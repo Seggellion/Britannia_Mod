@@ -1,19 +1,13 @@
 package com.seggellion.britannia_mod.entity;
 
-import com.seggellion.britannia_mod.city.City;
-import com.seggellion.britannia_mod.city.CityManager;
-import com.seggellion.britannia_mod.entity.ai.goal.RestrictedStrollGoal;
-import net.minecraft.server.level.ServerPlayer; 
-import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.market.MarketManager;
-import com.seggellion.britannia_mod.player.PlayerDataManager;
-import com.seggellion.britannia_mod.item.WeightedFishItem;
-import com.seggellion.britannia_mod.util.SendTransactionToAPI;
+import com.google.gson.JsonObject;
 import com.seggellion.britannia_mod.BritanniaMod;
-
-
 import com.seggellion.britannia_mod.ModAttributes;
+import com.seggellion.britannia_mod.entity.ai.goal.RestrictedStrollGoal;
+import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.util.SendTransactionToAPI;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -21,8 +15,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -34,18 +28,15 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.common.extensions.IEntityExtension;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import com.google.gson.JsonObject;
-
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EntityFishMerchant extends AbstractVillager implements IEntityExtension, ICityEntity  {
     private String cityName;

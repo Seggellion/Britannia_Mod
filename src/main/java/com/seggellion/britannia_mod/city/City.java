@@ -1,8 +1,8 @@
 package com.seggellion.britannia_mod.city;
 
 import com.seggellion.britannia_mod.inventory.CityInventory;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 
 public class City {

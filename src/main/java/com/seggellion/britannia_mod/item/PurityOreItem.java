@@ -1,25 +1,17 @@
 package com.seggellion.britannia_mod.item;
 
+import com.mojang.logging.LogUtils;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.level.Level;
-
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
-import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import net.minecraft.world.item.component.CustomModelData;
-
-import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.slf4j.Logger;
 
 public class PurityOreItem extends Item {
     private static final Logger LOGGER = LogUtils.getLogger();

@@ -1,28 +1,31 @@
 package com.seggellion.britannia_mod.block;
 
-import com.mojang.logging.LogUtils;
+import com.mojang.serialization.MapCodec;
+import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
+import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.core.Direction;
-import org.slf4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import com.mojang.serialization.MapCodec;
 
-public class CandelabraBlock extends HorizontalDirectionalBlock {
+public class CandelabraBlock extends HorizontalDirectionalBlock implements EntityBlock, INudgeable {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final MapCodec<CandelabraBlock> CODEC = simpleCodec(CandelabraBlock::new);
 
     public CandelabraBlock(Properties props) {
         super(props);
         this.registerDefaultState(this.defaultBlockState().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
@@ -54,5 +57,10 @@ public class CandelabraBlock extends HorizontalDirectionalBlock {
             level.getChunk(pos).setUnsaved(true);
             level.getLightEngine().checkBlock(pos);
         }
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new CandelabraBlockEntity(pos, state);
     }
 }

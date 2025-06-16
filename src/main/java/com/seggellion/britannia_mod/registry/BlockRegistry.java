@@ -1,73 +1,18 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
-import com.seggellion.britannia_mod.block.GravestoneBlock;
-import com.seggellion.britannia_mod.block.DoubleBedBlock;
-import com.seggellion.britannia_mod.block.MoongateBlock;
-import com.seggellion.britannia_mod.block.BrickFoundationBlock;
+import com.seggellion.britannia_mod.block.*;
+import com.seggellion.britannia_mod.block.entity.*;
 import com.seggellion.britannia_mod.structure.HouseSignBlock;
-import com.seggellion.britannia_mod.block.BaseOreBlock;
-import com.seggellion.britannia_mod.block.MoongateTopBlock;
-import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
-import com.seggellion.britannia_mod.block.CarpetDummyBlock;
-import com.seggellion.britannia_mod.block.SmallForgeBlock;
-import com.seggellion.britannia_mod.block.StatueBlock;
-import com.seggellion.britannia_mod.block.StatueCoupleBlock;
-import com.seggellion.britannia_mod.block.LargeForgeBlock;
-import com.seggellion.britannia_mod.block.BlueTentBlock;
-import com.seggellion.britannia_mod.block.PurpleTentBlock;
-import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
-import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
-import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
-import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
-import com.seggellion.britannia_mod.block.ChairBlock;
-import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
-import com.seggellion.britannia_mod.block.LichSpawnBlock;
-import com.seggellion.britannia_mod.block.WoodSpawnBlock;
-import com.seggellion.britannia_mod.block.MetalSpawnBlock;
-import com.seggellion.britannia_mod.block.StoneSpawnBlock;
-import com.seggellion.britannia_mod.block.FishSpawnBlock;
-import com.seggellion.britannia_mod.block.HorseSpawnBlock;
-import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
-import com.seggellion.britannia_mod.block.CandelabraBlock;
-import com.seggellion.britannia_mod.block.HalfBlock;
-import com.seggellion.britannia_mod.block.QuarterBlock;
-import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
-import com.seggellion.britannia_mod.block.HouseLotBlock;
-import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
-import com.seggellion.britannia_mod.block.WindowCollisionBlock;
-import com.seggellion.britannia_mod.block.Window2x3Block;
-import com.seggellion.britannia_mod.block.StoneFloorBlock;
-import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.FishSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
-import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
-import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
-import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
-import com.seggellion.britannia_mod.block.TopOakWallBlock;
-import com.seggellion.britannia_mod.block.MetalDoorBlock;
-import com.seggellion.britannia_mod.block.ThinWall;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.SlabBlock;
-
-
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 
 public class BlockRegistry {
@@ -717,6 +662,18 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR =
     BLOCKS.register("stone_floor",
         StoneFloorBlock::new
     );
+
+public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
+    BLOCKS.register("stone_floor_polished",
+        () -> new Block(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops()));
+
+public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.register(
+    "custom_stone_stairs", CustomStoneStairsBlock::new
+);
+
 
 public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
     BLOCKS.register("stone_wall_bottom", 

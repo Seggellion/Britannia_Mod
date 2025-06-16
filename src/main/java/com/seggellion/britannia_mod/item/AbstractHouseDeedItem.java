@@ -1,7 +1,10 @@
 package com.seggellion.britannia_mod.item;
 
-import com.seggellion.britannia_mod.item.DeedItem;
+import com.seggellion.britannia_mod.client.house.HouseRotationData;
+import com.seggellion.britannia_mod.structure.HouseStyle;
+import com.seggellion.britannia_mod.structure.StructurePlacer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -10,22 +13,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.network.chat.Component;
-import com.seggellion.britannia_mod.structure.HouseStyle;
-import com.seggellion.britannia_mod.structure.HouseSize;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.Properties;
-
-import com.seggellion.britannia_mod.structure.StructurePlacer;
-import com.seggellion.britannia_mod.client.house.HouseRotationData;
-
-import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
 public abstract class AbstractHouseDeedItem extends Item {
 
@@ -41,29 +30,46 @@ public abstract class AbstractHouseDeedItem extends Item {
 
    
     /* ---------- Right‑click = place ---------- */
-    @Override
-    public InteractionResultHolder<ItemStack> use(Level level,
-                                                  Player player,
-                                                  InteractionHand hand) {
-        ItemStack stack = player.getItemInHand(hand);
+@Override
+public InteractionResultHolder<ItemStack> use(Level level,
+                                              Player player,
+                                              InteractionHand hand) {
+    ItemStack stack = player.getItemInHand(hand);
 
-        if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
-            BlockPos origin = player.blockPosition();
-            int rotationDeg  = HouseRotationData.getRotation(player);
+    if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
+        HitResult hit = player.pick(5.0D, 0.0F, false);
 
-StructurePlacer.placeStructure((ServerLevel) level,
-                               origin,
-                               rotationDeg,
-                               houseStyle,
-                               player);
-              // 👈 changed signature
-            HouseRotationData.clear(player);
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            BlockPos  targetPos  = ((BlockHitResult) hit).getBlockPos();
+            int       rotationDeg = HouseRotationData.getRotation(player);
 
-            stack.shrink(1); // consume deed
-            return InteractionResultHolder.success(stack);
+            boolean placed = StructurePlacer.placeStructure(
+                    (ServerLevel) level,
+                    targetPos,
+                    rotationDeg,
+                    houseStyle,
+                    player
+            );
+
+            if (placed) {
+                stack.shrink(1);          // consume deed
+                HouseRotationData.clear(player);
+                return InteractionResultHolder.success(stack);   // ▶︎ only on success
+            } else {
+                return InteractionResultHolder.fail(stack);      // ▶︎ no swing → no rotate
+            }
         }
-        return InteractionResultHolder.pass(stack);
+
+        player.displayClientMessage(
+            Component.literal("❌ You must aim at a block to place this."), true);
+        return InteractionResultHolder.fail(stack);
     }
+
+    return InteractionResultHolder.pass(stack);
+}
+
+
+
 
     /* ---------- Left‑click = rotate ---------- */
     @SuppressWarnings("removal")

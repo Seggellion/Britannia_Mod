@@ -1,18 +1,16 @@
 // CarpetTeleporterBlockEntity.java
 package com.seggellion.britannia_mod.block.entity;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-import com.seggellion.britannia_mod.ModSounds;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
 
 public class CarpetTeleporterBlockEntity extends BlockEntity {
 

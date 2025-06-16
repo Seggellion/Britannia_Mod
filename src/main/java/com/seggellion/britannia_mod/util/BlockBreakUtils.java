@@ -1,9 +1,10 @@
 package com.seggellion.britannia_mod.util;
 
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+
 import java.util.HashMap;
 import java.util.Map;
 

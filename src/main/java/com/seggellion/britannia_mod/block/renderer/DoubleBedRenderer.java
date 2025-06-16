@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-
+import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -15,10 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.properties.BedPart;
-import net.minecraft.world.level.block.state.BlockState;
-
-
-import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
 
 public class DoubleBedRenderer implements BlockEntityRenderer<DoubleBedBlockEntity> {
 

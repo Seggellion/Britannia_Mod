@@ -1,9 +1,9 @@
 package com.seggellion.britannia_mod.util;
-import net.minecraft.server.level.ServerLevel;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.SavedData;
 
 
 public class CityAPITokenData extends SavedData {

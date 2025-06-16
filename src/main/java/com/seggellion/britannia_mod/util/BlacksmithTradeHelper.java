@@ -1,26 +1,21 @@
 package com.seggellion.britannia_mod.util;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
-import com.seggellion.britannia_mod.item.QualityToolItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import com.seggellion.britannia_mod.registry.SwordRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
-import com.google.gson.JsonArray;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.minecraft.world.item.Item;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.CustomModelData;
-import com.seggellion.britannia_mod.util.ToolQualityUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import com.google.gson.JsonElement;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class BlacksmithTradeHelper {

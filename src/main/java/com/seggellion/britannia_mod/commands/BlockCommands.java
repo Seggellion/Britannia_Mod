@@ -3,22 +3,18 @@ package com.seggellion.britannia_mod.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
-import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
+import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.Block;
 
-
-
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 

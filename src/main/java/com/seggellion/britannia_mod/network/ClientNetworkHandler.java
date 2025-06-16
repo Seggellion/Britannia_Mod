@@ -2,17 +2,10 @@ package com.seggellion.britannia_mod.network;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
-import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.slf4j.Logger;
 

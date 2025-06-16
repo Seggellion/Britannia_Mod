@@ -1,16 +1,16 @@
 package com.seggellion.britannia_mod.client.renderer.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.seggellion.britannia_mod.client.model.item.OrderShieldModel;
 import com.seggellion.britannia_mod.item.OrderShieldItem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import software.bernie.geckolib.renderer.GeoItemRenderer;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
+import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 
 public class OrderShieldRenderer extends GeoItemRenderer<OrderShieldItem> {

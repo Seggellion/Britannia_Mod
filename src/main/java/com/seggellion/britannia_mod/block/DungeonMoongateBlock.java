@@ -1,15 +1,16 @@
 package com.seggellion.britannia_mod.block;
 
 import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
-
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -22,12 +23,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundSource;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
 
 public class DungeonMoongateBlock extends Block implements EntityBlock {
 

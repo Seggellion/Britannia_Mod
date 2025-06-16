@@ -1,36 +1,39 @@
 package com.seggellion.britannia_mod.block;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
+import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
+import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.entity.LivingSeatEntity;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.core.Direction;
-import net.minecraft.world.ItemInteractionResult;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 import java.util.List;
 
-public class ChairBlock extends HorizontalDirectionalBlock {
+public class ChairBlock extends HorizontalDirectionalBlock implements EntityBlock, INudgeable {
 private static final Logger LOGGER = LogUtils.getLogger();
 
     
@@ -39,6 +42,16 @@ private static final Logger LOGGER = LogUtils.getLogger();
     public ChairBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new ChairBlockEntity(pos, state);
     }
 
 public static final MapCodec<ChairBlock> CODEC = simpleCodec(ChairBlock::new);

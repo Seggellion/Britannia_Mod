@@ -4,19 +4,16 @@ package com.seggellion.britannia_mod.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
+import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.structure.HouseStyle;
 import com.seggellion.britannia_mod.structure.StructureRecord;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.seggellion.britannia_mod.config.ModConfig;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
-import com.seggellion.britannia_mod.structure.HouseStyle;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,8 +23,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.Map;
-import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 
 public class HouseDataAPI {
 

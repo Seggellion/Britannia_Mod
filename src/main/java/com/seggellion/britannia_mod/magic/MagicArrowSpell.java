@@ -2,16 +2,14 @@ package com.seggellion.britannia_mod.magic;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
-import com.seggellion.britannia_mod.effects.SpellEffectHandler;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.AbstractArrow.Pickup;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;

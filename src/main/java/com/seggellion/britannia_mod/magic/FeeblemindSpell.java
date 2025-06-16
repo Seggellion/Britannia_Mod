@@ -1,9 +1,8 @@
 package com.seggellion.britannia_mod.magic;
 
-import com.seggellion.britannia_mod.BritanniaMod;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
-import com.seggellion.britannia_mod.magic.ManaHandler;  // Make sure to import ManaHandler
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -12,7 +11,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 public class FeeblemindSpell extends Spell {

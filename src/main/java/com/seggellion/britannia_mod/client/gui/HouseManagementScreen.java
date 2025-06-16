@@ -1,24 +1,20 @@
 package com.seggellion.britannia_mod.client.gui;
 
+import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.network.HouseManagementActionPayload;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.client.Minecraft;
-import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-
-import com.seggellion.britannia_mod.network.HouseManagementActionPayload;
-import java.util.UUID;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
-import org.slf4j.Logger;
-import net.minecraft.world.level.block.entity.BlockEntity;
-
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.core.BlockPos;
+import org.slf4j.Logger;
 
-import com.mojang.logging.LogUtils;
+import java.util.UUID;
 
 @OnlyIn(Dist.CLIENT)
 public class HouseManagementScreen extends Screen {

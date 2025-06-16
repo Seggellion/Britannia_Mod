@@ -1,13 +1,9 @@
 package com.seggellion.britannia_mod.item;
 
-import net.minecraft.world.item.Item;
 import com.seggellion.britannia_mod.structure.HouseStyle;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import com.seggellion.britannia_mod.registry.CreativeTabRegistry; // <- adjust package path
 
 
 public final class DeedItemFactory {

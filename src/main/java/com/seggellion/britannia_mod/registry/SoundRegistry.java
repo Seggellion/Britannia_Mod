@@ -1,9 +1,9 @@
 // SoundRegistry.java
 package com.seggellion.britannia_mod.registry;
 
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.minecraft.sounds.SoundEvent;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class SoundRegistry {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(

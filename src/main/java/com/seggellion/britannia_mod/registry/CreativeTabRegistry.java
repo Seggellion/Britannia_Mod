@@ -1,16 +1,14 @@
 // CreativeTabRegistry.java
 package com.seggellion.britannia_mod.registry;
 
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.structure.HouseStyle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
-import com.seggellion.britannia_mod.registry.ToolRegistry;
-import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import net.minecraft.world.item.Item;
-import com.seggellion.britannia_mod.structure.HouseStyle;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 
 public class CreativeTabRegistry {
@@ -50,10 +48,12 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_OAK_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SPRUCE_ITEM.get());
+                safeAccept(output, ItemRegistry.CUSTOM_STONE_STAIRS_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FOUNDATION_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_FOUNDATION_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_STONE_FOUNDATION_ITEM.get());
-                safeAccept(output, ItemRegistry.PLASTER_WOOD_FOUNDATION_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WOOD_FOUNDATION_ITEM.get());                
+                safeAccept(output, ItemRegistry.STONE_FLOOR_POLISHED_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FLOOR_ITEM.get());
 
                 // Walls

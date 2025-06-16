@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.magic;
 
-import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.world.item.ItemStack;
 

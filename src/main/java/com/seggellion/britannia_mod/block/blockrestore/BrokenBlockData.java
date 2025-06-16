@@ -1,10 +1,11 @@
 package com.seggellion.britannia_mod.blockrestore;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.state.BlockState;
+
 import java.util.UUID;
 
 public class BrokenBlockData {

@@ -5,7 +5,6 @@ package com.seggellion.britannia_mod.client.gui;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.trading.Merchant;
 
 public class FishMerchantScreen extends MerchantScreen {
 

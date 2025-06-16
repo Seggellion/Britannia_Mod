@@ -2,15 +2,15 @@
 package com.seggellion.britannia_mod.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.seggellion.britannia_mod.entity.ShadeEntity;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
-import net.minecraft.client.renderer.RenderType;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.entity.ShadeEntity;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import org.slf4j.Logger;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 public class ShadeRenderer extends GeoEntityRenderer<ShadeEntity> {
     private static final Logger LOGGER = LogUtils.getLogger();

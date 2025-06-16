@@ -1,14 +1,13 @@
 // ShadeSpawnBlockEntity.java
 package com.seggellion.britannia_mod.block.entity;
 
+import com.seggellion.britannia_mod.entity.ShadeEntity;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.registry.EntityRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-
-import com.seggellion.britannia_mod.entity.ShadeEntity;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
-import com.seggellion.britannia_mod.registry.EntityRegistry;
 
 public class ShadeSpawnBlockEntity extends BlockEntity {
 

@@ -2,9 +2,9 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.item.DyeColor;
 
 public class DoubleBedBlockEntity extends BlockEntity {
     public DoubleBedBlockEntity(BlockPos pos, BlockState state) {

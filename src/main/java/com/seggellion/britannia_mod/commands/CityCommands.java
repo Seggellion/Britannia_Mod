@@ -1,29 +1,28 @@
 package com.seggellion.britannia_mod.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.seggellion.britannia_mod.city.CityManager;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.util.CityAPITokenData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class CityCommands {
     private static final Logger LOGGER = LogManager.getLogger();

@@ -1,7 +1,7 @@
 package com.seggellion.britannia_mod.client.house;
 
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.HashMap;
 import java.util.Map;

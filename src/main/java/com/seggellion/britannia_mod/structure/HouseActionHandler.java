@@ -1,31 +1,21 @@
 package com.seggellion.britannia_mod.structure;
 
-import com.seggellion.britannia_mod.util.HouseDataAPI;
-import com.seggellion.britannia_mod.structure.StructureRegionManager;
-import com.seggellion.britannia_mod.structure.StructureRecord;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.util.HouseDataAPI;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.SectionPos;
-
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.registries.DeferredHolder;
-
-
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -71,31 +61,45 @@ public static void handleRedeed(ServerPlayer player) {
         LOGGER.info("minY: {}",minY);
 
         // ✅ Step 2: Restore basement (STONE layers below structure, GRASS on top)
+       // Step 2: Restore basement with natural fill material
         int basementStartY = minY - 10;
         int basementEndY = minY - 2;
         int grassY = minY - 1;
-              LOGGER.info("basementStartY: {}",basementStartY);
-        LOGGER.info("basementEndY: {}",basementEndY);
 
-        for (int y = basementStartY; y <= basementEndY; y++) {
-            for (int x = minX; x <= maxX; x++) {
-                for (int z = minZ; z <= maxZ; z++) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                BlockPos groundProbe = new BlockPos(x, basementEndY, z); // one below the basement
+                BlockState groundState = level.getBlockState(groundProbe);
+                Block groundBlock = groundState.getBlock();
+
+                // Determine the fill block based on what the natural ground is
+                Block backfillBlock = Blocks.STONE; // default
+                if (groundBlock == Blocks.SAND || groundBlock == Blocks.RED_SAND) {
+                    backfillBlock = Blocks.SAND;
+                } else if (groundBlock == Blocks.DIRT || groundBlock == Blocks.GRASS_BLOCK || groundBlock == Blocks.COARSE_DIRT) {
+                    backfillBlock = Blocks.DIRT;
+                }
+
+                // Fill basement with selected backfill material
+                for (int y = basementStartY; y <= basementEndY; y++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     if (level.isLoaded(pos)) {
-                        level.setBlock(pos, Blocks.STONE.defaultBlockState(), 3);
+                        level.setBlock(pos, backfillBlock.defaultBlockState(), 3);
+                    }
+                }
+
+                // Top layer becomes GRASS_BLOCK if it's dirt; otherwise, mimic the ground type
+                BlockPos topPos = new BlockPos(x, grassY, z);
+                if (level.isLoaded(topPos)) {
+                    if (backfillBlock == Blocks.DIRT) {
+                        level.setBlock(topPos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
+                    } else {
+                        level.setBlock(topPos, backfillBlock.defaultBlockState(), 3);
                     }
                 }
             }
         }
 
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                BlockPos pos = new BlockPos(x, grassY, z);
-                if (level.isLoaded(pos)) {
-                    level.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
-                }
-            }
-        }
 
         // ✅ Step 3: Unregister the structure
         StructureRegionManager.unregisterStructure(record);
@@ -106,10 +110,11 @@ public static void handleRedeed(ServerPlayer player) {
 ItemStack deedStack = ItemRegistry.ITEMS.getEntries().stream()
     .map(DeferredHolder::get)
     .filter(i -> i instanceof AbstractHouseDeedItem d
-                && d.getHouseStyle().getSize().id().equals(record.getSizeId()))
+        && d.getHouseStyle().name().equals(record.getStyleId()))   // ← match style
     .findFirst()
     .map(ItemStack::new)
     .orElse(ItemStack.EMPTY);
+
 
 
         player.getInventory().placeItemBackInInventory(deedStack);

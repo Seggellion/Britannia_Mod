@@ -1,17 +1,17 @@
 package com.seggellion.britannia_mod.client;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
-
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import com.mojang.logging.LogUtils;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import org.slf4j.Logger;
+
 import java.util.function.Function;
 
 public class ClientOnlyItemRegistry {

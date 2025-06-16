@@ -1,8 +1,9 @@
 package com.seggellion.britannia_mod.magic;
 
-import com.seggellion.britannia_mod.BritanniaMod;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.effects.SpellEffectHandler;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -11,8 +12,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 public class ClumsySpell extends Spell {

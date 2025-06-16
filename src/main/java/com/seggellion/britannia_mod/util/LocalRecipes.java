@@ -1,13 +1,13 @@
 package com.seggellion.britannia_mod.util;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**

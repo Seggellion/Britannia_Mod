@@ -1,10 +1,9 @@
 package com.seggellion.britannia_mod.block;
 
-import com.seggellion.britannia_mod.BritanniaMod;
-import software.bernie.geckolib.model.GeoModel;
+import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
+import software.bernie.geckolib.model.GeoModel;
 
 public class BlueTentModel extends GeoModel<BlueTentBlockEntity> {
                 private static final Logger LOGGER = LogUtils.getLogger();

@@ -1,14 +1,13 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.SimpleTier;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
 
-import java.util.Map;
-import java.util.function.Supplier;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Enum to unify metal types with their Tiers

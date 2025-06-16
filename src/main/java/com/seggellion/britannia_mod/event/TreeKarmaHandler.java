@@ -1,19 +1,18 @@
 package com.seggellion.britannia_mod.event;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.network.chat.Component;
-import net.minecraft.core.BlockPos;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.registries.RegistryManager;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class TreeKarmaHandler {
 

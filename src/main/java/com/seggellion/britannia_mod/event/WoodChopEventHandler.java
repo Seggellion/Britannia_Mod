@@ -1,25 +1,22 @@
 package com.seggellion.britannia_mod.event;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
-
 
 import java.util.HashMap;
 import java.util.Map;

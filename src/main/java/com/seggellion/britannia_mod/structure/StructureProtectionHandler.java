@@ -1,15 +1,11 @@
 package com.seggellion.britannia_mod.structure;
 
-import com.seggellion.britannia_mod.structure.StructureRecord;
-import com.seggellion.britannia_mod.structure.StructureRegionManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.level.BlockEvent;
 
 import java.util.List;
 import java.util.UUID;

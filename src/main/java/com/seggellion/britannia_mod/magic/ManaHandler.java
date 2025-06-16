@@ -1,14 +1,14 @@
 package com.seggellion.britannia_mod.magic;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.network.NetworkHandler;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
 public class ManaHandler {

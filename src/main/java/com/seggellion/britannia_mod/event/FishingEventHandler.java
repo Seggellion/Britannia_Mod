@@ -1,20 +1,17 @@
 package com.seggellion.britannia_mod.event;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
-
-import com.seggellion.britannia_mod.ModSounds;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3;
-
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.entity.player.ItemFishedEvent;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
-
+import net.neoforged.neoforge.event.entity.player.ItemFishedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

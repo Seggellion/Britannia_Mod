@@ -1,11 +1,11 @@
 package com.seggellion.britannia_mod.client.structure;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import java.util.Map;
-import java.util.HashMap;
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import org.slf4j.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class StructureCache {
 

@@ -1,9 +1,9 @@
 // DaemonCastMagicGoal.java
 package com.seggellion.britannia_mod.entity;
 
-import com.seggellion.britannia_mod.magic.MagicArrowSpell;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+
 import java.util.EnumSet;
 
 public class DaemonCastMagicGoal extends Goal {

@@ -1,11 +1,11 @@
 package com.seggellion.britannia_mod.market;
 
 import com.seggellion.britannia_mod.inventory.CityInventory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 

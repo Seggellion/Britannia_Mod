@@ -1,10 +1,9 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.commands.CityCommands;
 import com.seggellion.britannia_mod.commands.BlockCommands;
+import com.seggellion.britannia_mod.commands.CityCommands;
 import com.seggellion.britannia_mod.commands.LeaderboardCommands;
 import com.seggellion.britannia_mod.commands.PopulateOresCommand;
-
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 

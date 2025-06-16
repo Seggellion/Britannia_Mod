@@ -1,33 +1,13 @@
 // EntityRegistry.java
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
-import com.seggellion.britannia_mod.entity.LayEntity;
-import com.seggellion.britannia_mod.entity.LivingSeatEntity;
-import com.seggellion.britannia_mod.entity.MongbatEntity;
-import com.seggellion.britannia_mod.entity.LichEntity;
-import com.seggellion.britannia_mod.entity.RatEntity;
-import com.seggellion.britannia_mod.entity.CustomCatEntity;
-import com.seggellion.britannia_mod.entity.WraithEntity;
-import com.seggellion.britannia_mod.entity.GhoulEntity;
-import com.seggellion.britannia_mod.entity.WispEntity;
-import com.seggellion.britannia_mod.entity.ShadeEntity;
-import com.seggellion.britannia_mod.entity.EarthElementalEntity;
-import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
-import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
-import com.seggellion.britannia_mod.entity.DaemonEntity;
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
-import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
-import com.seggellion.britannia_mod.entity.EntityStoneMerchant;
-import com.seggellion.britannia_mod.entity.EntityMetalMerchant;
-import com.seggellion.britannia_mod.entity.TownPersonEntity;
-import net.minecraft.resources.ResourceLocation;
+import com.seggellion.britannia_mod.entity.*;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class EntityRegistry {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(
