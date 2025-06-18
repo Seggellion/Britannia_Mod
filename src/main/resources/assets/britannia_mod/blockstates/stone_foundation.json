@@ -1,6 +1,10 @@
 {
-    "variants": {
-      "": { "model": "britannia_mod:block/structure/stone_foundation" }
-    }
+  "variants": {
+    "": [
+      { "model": "britannia_mod:block/structure/stone_wall/stone_foundation1" },
+      { "model": "britannia_mod:block/structure/stone_wall/stone_foundation2" },
+      { "model": "britannia_mod:block/structure/stone_wall/stone_foundation3" },
+      { "model": "britannia_mod:block/structure/stone_wall/stone_foundation4" }
+    ]
   }
-  
+}

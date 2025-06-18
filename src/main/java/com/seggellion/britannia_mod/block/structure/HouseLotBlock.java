@@ -23,9 +23,9 @@ public class HouseLotBlock extends Block implements EntityBlock {
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new HouseLotBlockEntity(pos, state);
     }
-    @Override
-    public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
-    }
+   // @Override
+   // public RenderShape getRenderShape(BlockState state) {
+     //   return RenderShape.INVISIBLE;
+   // }
 
 }

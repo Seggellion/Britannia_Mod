@@ -230,10 +230,21 @@ BlockPos.betweenClosedStream(
     // You can keep your HouseLot logic unchanged
     // Lot block goes just inside the door (1 block behind)
     BlockPos baseLot = doorTarget.relative(playerFacing.getOpposite(), 1);
+
+// Step 1: Compute center-front position in unrotated structure space
+int centerX = rawSize.getX() / 2 + style.getLotOffsetX();;
+int yOffset = 1; // 1 block above ground
+int zOffset = 0; // front of structure (adjust if door is inset)
+
+BlockPos unrotatedLotOffset = new BlockPos(centerX, yOffset, zOffset);
+
+// Step 2: Rotate the lot offset based on the placed structure rotation
 BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
     new StructurePlaceSettings().setRotation(rotation),
-    new BlockPos(2, 1, 0)
+    unrotatedLotOffset
 );
+
+
 
 
    BlockPos lotPos = adjustedPos.offset(lotOffset); 
@@ -247,7 +258,7 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
         lotBE.setHouseStyle(style);
         lotBE.setHouseUuid(houseUuid);
         lotBE.setHouseType(style.getSize().id());
-        lotBE.setRegionName("Trinsic"); // TODO
+        lotBE.setRegionName("Blank"); // TODO
         lotBE.setForSale(false);
         lotBE.setPrice(0);
         lotBE.setPlacedAt(Instant.now());

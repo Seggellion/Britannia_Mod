@@ -381,6 +381,19 @@ public static final DeferredHolder<Item, BlockItem> STONE_WALL_BOTTOM_ITEM =
         ITEMS.register("stone_wall_bottom",
             () -> new BlockItem(BlockRegistry.STONE_WALL_BOTTOM.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_BOTTOM_BLOCK =
+    ITEMS.register("stone_wall_bottom_block",
+        () -> new BlockItem(BlockRegistry.STONE_WALL_BOTTOM_BLOCK.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_WINDOW_ITEM =
+    ITEMS.register("stone_wall_window",
+        () -> new BlockItem(BlockRegistry.STONE_WALL_WINDOW.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_TOP_BLOCK =
+    ITEMS.register("stone_wall_top_block",
+        () -> new BlockItem(BlockRegistry.STONE_WALL_TOP_BLOCK.get(), new Item.Properties()));
+
 public static final DeferredHolder<Item, BlockItem> STONE_WALL_TOP_ITEM =
         ITEMS.register("stone_wall_top",
             () -> new BlockItem(BlockRegistry.STONE_WALL_TOP.get(), new Item.Properties()));

@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.RotatingStoneWallBlock;
 import com.seggellion.britannia_mod.block.GravestoneBlock;
 import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.MoongateBlock;
@@ -730,6 +731,12 @@ public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.re
     "custom_stone_stairs", CustomStoneStairsBlock::new
 );
 
+public static final DeferredHolder<Block, Block> STONE_WALL_BOTTOM_BLOCK =
+    BLOCKS.register("stone_wall_bottom_block",
+        () -> new Block(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops()));
 
 public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
     BLOCKS.register("stone_wall_bottom", 
@@ -740,6 +747,18 @@ public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
             .noOcclusion()
         )
     );
+
+
+
+public static final DeferredHolder<Block, Block> STONE_WALL_WINDOW =
+BLOCKS.register("stone_wall_window", () -> new RotatingStoneWallBlock(BlockBehaviour.Properties.of().strength(2.0f)));
+
+public static final DeferredHolder<Block, Block> STONE_WALL_TOP_BLOCK =
+    BLOCKS.register("stone_wall_top_block",
+        () -> new Block(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(1.5F, 6.0F)
+            .requiresCorrectToolForDrops()));
 
     public static final DeferredHolder<Block, ThinWall> STONE_WALL_TOP =
     BLOCKS.register("stone_wall_top", 

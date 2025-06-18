@@ -12,13 +12,13 @@
         "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left", "y": 270 } },
   
       { "when": { "half": "lower", "hinge": "left", "open": true,  "facing": "east"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y": 270, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y": 90, "uvlock": true } },
       { "when": { "half": "lower", "hinge": "left", "open": true,  "facing": "south" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y":   0, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y":   180, "uvlock": true } },
       { "when": { "half": "lower", "hinge": "left", "open": true,  "facing": "west"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y":  90, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y":  270, "uvlock": true } },
       { "when": { "half": "lower", "hinge": "left", "open": true,  "facing": "north" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y": 180, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_left_open", "y": 0, "uvlock": true } },
   
 
       { "when": { "half": "lower", "hinge": "right", "open": false, "facing": "east"  },
@@ -31,13 +31,13 @@
         "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right", "y": 270 } },
   
       { "when": { "half": "lower", "hinge": "right", "open": true,  "facing": "east"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y":  90, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y":  270, "uvlock": true } },
       { "when": { "half": "lower", "hinge": "right", "open": true,  "facing": "south" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y": 180, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y": 0, "uvlock": true } },
       { "when": { "half": "lower", "hinge": "right", "open": true,  "facing": "west"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y": 270, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y": 90, "uvlock": true } },
       { "when": { "half": "lower", "hinge": "right", "open": true,  "facing": "north" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y":   0, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_bottom_right_open", "y":   180, "uvlock": true } },
   
 
       { "when": { "half": "upper", "hinge": "left", "open": false, "facing": "east"  },
@@ -50,13 +50,13 @@
         "apply": { "model": "britannia_mod:block/structure/metal_door_top_left", "y": 270 } },
   
       { "when": { "half": "upper", "hinge": "left", "open": true,  "facing": "east"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y": 270, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y": 90, "uvlock": true } },
       { "when": { "half": "upper", "hinge": "left", "open": true,  "facing": "south" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y":   0, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y":   180, "uvlock": true } },
       { "when": { "half": "upper", "hinge": "left", "open": true,  "facing": "west"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y":  90, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y":  270, "uvlock": true } },
       { "when": { "half": "upper", "hinge": "left", "open": true,  "facing": "north" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y": 180, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_left_open", "y": 0, "uvlock": true } },
   
 
       { "when": { "half": "upper", "hinge": "right", "open": false, "facing": "east"  },
@@ -69,13 +69,13 @@
         "apply": { "model": "britannia_mod:block/structure/metal_door_top_right", "y": 270 } },
   
       { "when": { "half": "upper", "hinge": "right", "open": true,  "facing": "east"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y":  90, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y":  270, "uvlock": true } },
       { "when": { "half": "upper", "hinge": "right", "open": true,  "facing": "south" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y": 180, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y": 0, "uvlock": true } },
       { "when": { "half": "upper", "hinge": "right", "open": true,  "facing": "west"  },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y": 270, "uvlock": true } },
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y": 90, "uvlock": true } },
       { "when": { "half": "upper", "hinge": "right", "open": true,  "facing": "north" },
-        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y":   0, "uvlock": true } }
+        "apply": { "model": "britannia_mod:block/structure/metal_door_top_right_open", "y":   180, "uvlock": true } }
     ]
   }
   

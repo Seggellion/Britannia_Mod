@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.magic.ManaHandler;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.spawner.DaemonSpawner;
+import com.seggellion.britannia_mod.client.model.ThinWallModels;
+
 import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
 import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
 import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
@@ -116,6 +118,7 @@ public class BritanniaMod {
         modEventBus.addListener(this::registerEntityAttributes); 
         modEventBus.register(NetworkHandler.class);
         modEventBus.register(ModSpawnPlacementRegistry.class);
+        modEventBus.register(ThinWallModels.class);
 
         ModSounds.register(modEventBus);
         CommandRegistry.register();
@@ -164,7 +167,8 @@ public class BritanniaMod {
             modEventBus.addListener(ClientModSetup::onRegisterItemColors);
             modEventBus.addListener(ClientModSetup::registerRenderers);
             modEventBus.addListener(ClientModSetup::registerGeometryLoaders);
-            
+            modEventBus.addListener(ClientModSetup::registerAdditionalModels);
+
             ClientEventHandler.register(modEventBus);
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);

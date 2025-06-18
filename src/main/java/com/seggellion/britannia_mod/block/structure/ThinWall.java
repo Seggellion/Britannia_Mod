@@ -16,6 +16,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Rotation;
 
 public class ThinWall extends Block {
@@ -99,6 +100,17 @@ public class ThinWall extends Block {
     }
 
     /* ─── shape & collision ─────────────────────────────────── */
+
+@Override
+public boolean skipRendering(BlockState state,
+                             BlockState adjacentState,
+                             Direction side) {
+    // keep the wall face when the neighbour is any kind of stairs
+    if (adjacentState.getBlock() instanceof StairBlock) {
+        return false;
+    }
+    return super.skipRendering(state, adjacentState, side);
+}
 
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {

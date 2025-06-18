@@ -65,6 +65,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.BRICK_WALL_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_TOP_ITEM.get());
+                safeAccept(output, ItemRegistry.STONE_WALL_TOP_BLOCK.get());
+                safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_BLOCK.get());
+                safeAccept(output, ItemRegistry.STONE_WALL_WINDOW_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.BIRCH_WALL_ITEM.get());

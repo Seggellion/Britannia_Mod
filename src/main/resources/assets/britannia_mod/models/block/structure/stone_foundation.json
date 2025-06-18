@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "britannia_mod:block/structure/stone_wall_foundation"
-  }
-}

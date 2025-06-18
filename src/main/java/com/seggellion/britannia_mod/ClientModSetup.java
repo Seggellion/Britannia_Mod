@@ -222,6 +222,14 @@ public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders ev
     );
 }
 
+@SubscribeEvent
+public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+    event.register(ModelResourceLocation.standalone(
+        ResourceLocation.parse("britannia_mod:block/structure/stone_wall/thin_wall_stair_fill")
+    ));
+}
+
+
 
 private static int applyBrightnessTint(int baseColor, float factor) {
     int r = (baseColor >> 16) & 0xFF;
