@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -73,26 +74,40 @@ protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
     }
 
     @Override
-protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-    if (!level.isClientSide()) {
-        List<LivingSeatEntity> existing = level.getEntitiesOfClass(
-            LivingSeatEntity.class,
-            new AABB(pos),
-            entity -> true
-        );
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide()) {
+            BlockEntity be = level.getBlockEntity(pos);
+            Vec3 offset = Vec3.ZERO;
+            if (be instanceof ChairBlockEntity chairEntity) {
+                offset = chairEntity.getOffset();
+            }
 
-        LivingSeatEntity seat = existing.isEmpty()
-            ? EntityRegistry.SEAT_ENTITY.get().spawn((ServerLevel) level, pos, MobSpawnType.TRIGGERED)
-            : existing.get(0);
+            Vec3 seatPos = new Vec3(pos.getX() + 0.5 + offset.x, pos.getY() + 0.3 + offset.y, pos.getZ() + 0.5 + offset.z);
 
-        if (seat != null && !player.isPassenger()) {
-            player.startRiding(seat);
+            List<LivingSeatEntity> existing = level.getEntitiesOfClass(
+                    LivingSeatEntity.class,
+                    new AABB(pos).inflate(1.0),
+                    entity -> true
+            );
+
+            LivingSeatEntity seat;
+            if (existing.isEmpty()) {
+                seat = EntityRegistry.SEAT_ENTITY.get().spawn((ServerLevel) level, pos, MobSpawnType.TRIGGERED);
+                if (seat != null) {
+                    seat.setPos(seatPos.x, seatPos.y, seatPos.z);
+                }
+            } else {
+                seat = existing.get(0);
+                seat.setPos(seatPos.x, seatPos.y, seatPos.z);
+            }
+
+            if (seat != null && !player.isPassenger()) {
+                player.startRiding(seat);
+            }
         }
+
+        return InteractionResult.SUCCESS;
     }
-
-    return InteractionResult.SUCCESS;
-}
-
 
 @Override
 protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
