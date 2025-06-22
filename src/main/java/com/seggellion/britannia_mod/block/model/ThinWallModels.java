@@ -1,57 +1,67 @@
 package com.seggellion.britannia_mod.client.model;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraft.resources.ResourceLocation;
-
+import org.slf4j.Logger;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 /**
- * Client-side cache for extra ThinWall model variants.
+ * Client-side cache for ThinWall helper meshes.
+ *  – caches stair-gap filler
+ *  – caches corner plug
+ *  – wraps every other thin-wall model with ThinWallBakedModel
  */
-public class ThinWallModels {
+public final class ThinWallModels {
 
-    private static BakedModel STAIR_FILL;
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    /**
-     * Called during model bake phase to cache additional models.
-     */
+    /* helper caches ---------------------------------------------------- */
+    private static BakedModel STAIR_FILL;
+    private static BakedModel CORNER_PLUG;
 
-@SubscribeEvent
-public static void onModifyBakingResults(ModelEvent.ModifyBakingResult event) {
-    Map<ModelResourceLocation, BakedModel> models = event.getModels();
+    /* helper file locations (relative path in the model-map) ----------- */
+    private static final String STAIR_PATH  = "block/structure/thin_wall_stair_fill";
+    private static final String CORNER_PATH = "block/structure/thin_wall_corner_fill";
 
-    for (Map.Entry<ModelResourceLocation, BakedModel> entry : models.entrySet()) {
-        ModelResourceLocation modelId = entry.getKey();
-        ResourceLocation id = modelId.id();
+    /* ------------------------------------------------------------------ */
 
-        if (id.getNamespace().equals("britannia_mod") && id.getPath().contains("thin_wall")) {
-            if (id.getPath().equals("block/structure/stone_wall/thin_wall_stair_fill")) {
-                setStairFillModel(entry.getValue()); // Cache the original model
-            } else {
-                BakedModel original = entry.getValue();
-                BakedModel wrapped = new ThinWallBakedModel(original);
-                models.put(modelId, wrapped); // ✅ Safe to write here
+    @SubscribeEvent
+    public static void onModifyBakingResults(ModelEvent.ModifyBakingResult event) {
+        Map<ModelResourceLocation, BakedModel> models = event.getModels();
+
+        for (Map.Entry<ModelResourceLocation, BakedModel> e : models.entrySet()) {
+
+            ModelResourceLocation mrl = e.getKey();
+            ResourceLocation id       = mrl.id();            // namespace:path
+            if (!"britannia_mod".equals(id.getNamespace()))  // only care about our mod
+                continue;
+
+            String path = id.getPath();                      // e.g. block/structure/stone_wall/stone_wall_top_south
+
+            /* —— 1.  pick up the two helper meshes -------------------- */
+            if (path.equals(STAIR_PATH)) {                   // stair-gap filler
+                STAIR_FILL = e.getValue();
+                continue;
+            }
+            if (path.equals(CORNER_PATH)) {                  // corner plug
+                CORNER_PLUG = e.getValue();
+                continue;
+            }
+
+            /* —— 2. wrap every other thin-wall model ------------------ */
+            if (path.contains("thin_wall")) {                // all regular variants
+                BakedModel original = e.getValue();
+                models.put(mrl, new ThinWallBakedModel(original));
             }
         }
     }
+
+    /* getters ---------------------------------------------------------- */
+    public static BakedModel stairFill()  { return STAIR_FILL;  }
+    public static BakedModel cornerFill() { return CORNER_PLUG; }
 }
-
-
-public static void setStairFillModel(BakedModel model) {
-    STAIR_FILL = model;
-}
-
-
-
-    public static BakedModel stairFill() {
-        return STAIR_FILL;
-    }
-}
-    

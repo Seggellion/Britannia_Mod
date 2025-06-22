@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_wall_half",
+      "y": 0
+    },
+    "facing=south,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_wall_half",
+      "y": 180
+    },
+    "facing=west,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_wall_half",
+      "y": 270
+    },
+    "facing=east,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_wall_half",
+      "y": 90
+    }
+  }
+}

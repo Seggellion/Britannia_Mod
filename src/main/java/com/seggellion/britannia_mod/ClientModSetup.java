@@ -225,7 +225,10 @@ public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders ev
 @SubscribeEvent
 public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
     event.register(ModelResourceLocation.standalone(
-        ResourceLocation.parse("britannia_mod:block/structure/stone_wall/thin_wall_stair_fill")
+        ResourceLocation.parse("britannia_mod:block/structure/thin_wall_stair_fill")
+    ));
+        event.register(ModelResourceLocation.standalone(
+        ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
     ));
 }
 

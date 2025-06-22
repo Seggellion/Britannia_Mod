@@ -38,6 +38,11 @@ public class ThinWall extends Block {
     private static final VoxelShape EAST_SHAPE  = Block.box(10.66,0,   0,   16,  16, 16);
     private static final VoxelShape FULL_SHAPE  = Shapes.block();
 
+private static final VoxelShape FILL_E = Block.box( 0, 0, 0, 16, 8, 16);
+private static final VoxelShape FILL_W = Block.box( 0, 0, 0, 16, 8, 16); // same, will be rotated
+private static final VoxelShape FILL_N = Block.box( 0, 0, 0, 16, 8, 16);
+private static final VoxelShape FILL_S = Block.box( 0, 0, 0, 16, 8, 16);
+
     /* ─── constructor & defaults ─────────────────────────────── */
 
     public ThinWall(BlockBehaviour.Properties props) {
@@ -55,9 +60,8 @@ public class ThinWall extends Block {
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         Direction face    = ctx.getHorizontalDirection().getOpposite();
         Direction gapSide = face.getOpposite();
-        boolean   filled  = !ctx.getLevel()
-                                .getBlockState(ctx.getClickedPos().relative(gapSide))
-                                .isAir();
+            BlockState rear    = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(gapSide));
+        boolean    filled  = fillsGap(rear);
 
         return defaultBlockState()
                 .setValue(FACING, face)
@@ -75,11 +79,14 @@ public class ThinWall extends Block {
 
         // corner check
         state = state.setValue(CORNER, isPivot(level, pos, state.getValue(FACING)));
+        boolean corner = isPivot(level, pos, state.getValue(FACING));
 
         // filled flag only changes if the neighbour on the gap‑side changes
         if (fromDir == state.getValue(FACING).getOpposite()) {
-            state = state.setValue(FILLED, !neighbour.isAir());
+            state = state.setValue(FILLED, fillsGap(neighbour)); 
         }
+
+
         return state;
     }
 
@@ -99,7 +106,17 @@ public class ThinWall extends Block {
         return false;
     }
 
-    /* ─── shape & collision ─────────────────────────────────── */
+/** rear gap counts as filled only by non-air, non-ThinWall blocks */
+private static boolean fillsGap(BlockState rear) {
+    if (rear.isAir()) return false;
+
+    if (rear.getBlock() instanceof ThinWall)
+        return rear.getValue(ThinWall.FILLED);
+
+    return true;        // any other solid block
+}
+
+
 
 @Override
 public boolean skipRendering(BlockState state,
@@ -125,6 +142,10 @@ public boolean skipRendering(BlockState state,
 
     @Override
     public VoxelShape getCollisionShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {
+      
+          if (s.getValue(CORNER))
+        return FULL_SHAPE;  
+      
         return getShape(s, w, p, c);   // outline equals collision
     }
 

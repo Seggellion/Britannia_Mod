@@ -68,6 +68,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.STONE_WALL_TOP_BLOCK.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_BLOCK.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.STONE_WALL_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.STONE_FINIAL_ITEM.get());
+                safeAccept(output, ItemRegistry.STONE_ARCH_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.BIRCH_WALL_ITEM.get());
@@ -116,6 +119,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.BRAZIER_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
                 safeAccept(output, ItemRegistry.DOUBLE_BED_ITEM.get());
+                safeAccept(output, ItemRegistry.CURTAIN_BOTTOM_ITEM.get());
+                safeAccept(output, ItemRegistry.CURTAIN_TOP_ITEM.get());
+                safeAccept(output, ItemRegistry.CURTAIN_FOUNDATION_ITEM.get());
 
                 // Graveyard items
                 safeAccept(output, ItemRegistry.BROKEN_WOODEN_GRAVE_CROSS.get());

@@ -324,6 +324,36 @@ public static final DeferredHolder<Block, Block> SKELETON_TORSO = BLOCKS.registe
 
 
 
+  public static final DeferredHolder<Block, ThinWall> CURTAIN_TOP =
+    BLOCKS.register("curtain_top", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+  public static final DeferredHolder<Block, ThinWall> CURTAIN_FOUNDATION =
+    BLOCKS.register("curtain_foundation", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+public static final DeferredHolder<Block, ThinWall> CURTAIN_BOTTOM =
+    BLOCKS.register("curtain_bottom", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
 // House deeds
 
 public static final DeferredHolder<Block, Block> HOUSE_LOT_BLOCK = BLOCKS.register(
@@ -558,6 +588,9 @@ public static final DeferredHolder<Block, Block> STONE_FOUNDATION = BLOCKS.regis
         .sound(SoundType.STONE))
 );
 
+public static final DeferredHolder<Block, Block> STONE_FINIAL = BLOCKS.register("stone_finial", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
 public static final DeferredHolder<Block, ThinWall> WINDOW_1X1 =
     BLOCKS.register("window_1x1", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
@@ -730,6 +763,27 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
 public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.register(
     "custom_stone_stairs", CustomStoneStairsBlock::new
 );
+
+
+  public static final DeferredHolder<Block, ThinWall> STONE_ARCH =
+    BLOCKS.register("stone_arch", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+  public static final DeferredHolder<Block, ThinWall> STONE_WALL_HALF =
+    BLOCKS.register("stone_wall_half", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
 
 public static final DeferredHolder<Block, Block> STONE_WALL_BOTTOM_BLOCK =
     BLOCKS.register("stone_wall_bottom_block",

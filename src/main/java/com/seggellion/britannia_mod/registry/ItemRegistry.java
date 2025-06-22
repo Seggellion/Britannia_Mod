@@ -376,6 +376,20 @@ public static final DeferredHolder<Item, BlockItem> STONE_FLOOR_ITEM =
         ITEMS.register("stone_floor",
             () -> new BlockItem(BlockRegistry.STONE_FLOOR.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> STONE_FINIAL_ITEM =
+        ITEMS.register("stone_finial",
+            () -> new BlockItem(BlockRegistry.STONE_FINIAL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_ARCH_ITEM =
+        ITEMS.register("stone_arch",
+            () -> new BlockItem(BlockRegistry.STONE_ARCH.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_HALF_ITEM =
+        ITEMS.register("stone_wall_half",
+            () -> new BlockItem(BlockRegistry.STONE_WALL_HALF.get(), new Item.Properties()));
+
 
 public static final DeferredHolder<Item, BlockItem> STONE_WALL_BOTTOM_ITEM =
         ITEMS.register("stone_wall_bottom",
@@ -534,6 +548,20 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_GRAVE_CROSS =
     ITEMS.register("wooden_grave_cross", () -> new BlockItem(BlockRegistry.WOODEN_GRAVE_CROSS.get(), new Item.Properties()));
 public static final DeferredHolder<Item, BlockItem> WOODEN_OPEN_COFFIN =
     ITEMS.register("wooden_open_coffin", () -> new BlockItem(BlockRegistry.WOODEN_OPEN_COFFIN.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> CURTAIN_BOTTOM_ITEM =
+        ITEMS.register("curtain_bottom",
+            () -> new BlockItem(BlockRegistry.CURTAIN_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CURTAIN_TOP_ITEM =
+        ITEMS.register("curtain_top",
+            () -> new BlockItem(BlockRegistry.CURTAIN_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CURTAIN_FOUNDATION_ITEM =
+        ITEMS.register("curtain_foundation",
+            () -> new BlockItem(BlockRegistry.CURTAIN_FOUNDATION.get(), new Item.Properties()));
+
 
 
 // Ingots / Metals

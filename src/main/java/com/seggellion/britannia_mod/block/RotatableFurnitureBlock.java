@@ -1,6 +1,9 @@
 package com.seggellion.britannia_mod.block;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
+import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
+import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurnitureBlockEntity;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,16 +14,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
-public class RotatableFurnitureBlock extends HorizontalDirectionalBlock {
+public class RotatableFurnitureBlock extends HorizontalDirectionalBlock implements EntityBlock, INudgeable {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -29,6 +34,16 @@ public class RotatableFurnitureBlock extends HorizontalDirectionalBlock {
     public RotatableFurnitureBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new RotatableFurnitureBlockEntity(pos, state);
     }
 
     @Override
