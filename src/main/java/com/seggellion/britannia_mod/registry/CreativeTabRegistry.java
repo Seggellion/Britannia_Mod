@@ -8,6 +8,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
+import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import net.minecraft.world.item.Item;
 import com.seggellion.britannia_mod.structure.HouseStyle;
@@ -122,7 +123,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CURTAIN_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.CURTAIN_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.CURTAIN_FOUNDATION_ITEM.get());
-
+                safeAccept(output, ItemRegistry.SERPENT_SHIELD_ITEM.get());
+                safeAccept(output, ItemRegistry.ANKH_ITEM.get());
+                
                 // Graveyard items
                 safeAccept(output, ItemRegistry.BROKEN_WOODEN_GRAVE_CROSS.get());
                 safeAccept(output, ItemRegistry.DAMAGED_WOODEN_GRAVE_CROSS.get());
@@ -162,6 +165,14 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_14_ITEM.get());
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_15_ITEM.get());
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_16_ITEM.get());
+
+                // signs
+                   safeAccept(output, ItemRegistry.HANGING_LANTERN_ITEM.get());
+
+                SignItemRegistry.STORE_SIGN_ITEMS.forEach((signType, holder) -> {
+                    safeAccept(output, holder.get());
+                });
+
             }).build());
 
     // Tab 3: Items, Tools, and Entities

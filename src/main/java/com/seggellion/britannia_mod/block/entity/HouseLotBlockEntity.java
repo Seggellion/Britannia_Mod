@@ -31,7 +31,10 @@ public class HouseLotBlockEntity extends BlockEntity {
     private String houseType;
     private String regionName;
     private String houseName;
-    
+    private boolean privateHouse;
+    @Nullable
+    private UUID deedUuid = null;
+
 
     public HouseLotBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.HOUSE_LOT.get(), pos, state);
@@ -44,7 +47,8 @@ public class HouseLotBlockEntity extends BlockEntity {
         this.placedAt = Instant.now();
         this.houseType = "";   
         this.regionName = "";   
-        this.houseName = "";   
+        this.houseName = "";
+        this.privateHouse = false;
     }
 
     // ----------------------------------
@@ -63,6 +67,15 @@ public class HouseLotBlockEntity extends BlockEntity {
         setOwner(ownerUsername);
     }
 
+@Nullable
+public UUID getDeedUuid() {
+    return deedUuid;
+}
+
+public void setDeedUuid(@Nullable UUID deedUuid) {
+    this.deedUuid = deedUuid;
+    setChanged();
+}
     public HouseStyle getHouseStyle() {
         return HouseStyle;
     }
@@ -72,9 +85,9 @@ public class HouseLotBlockEntity extends BlockEntity {
     }
 
     public UUID getHouseUuid() {
-
         return houseUuid;
     }
+
     public void setHouseUuid(UUID houseUuid) {
         this.houseUuid = houseUuid;
         setChanged();
@@ -83,6 +96,11 @@ public class HouseLotBlockEntity extends BlockEntity {
     public boolean isForSale() {
         return forSale;
     }
+
+        public boolean privateHouse() {
+        return privateHouse;
+    }
+
     public void setForSale(boolean forSale) {
         this.forSale = forSale;
         setChanged();
@@ -140,39 +158,9 @@ public class HouseLotBlockEntity extends BlockEntity {
     }
 
 
-
-    public void load(CompoundTag tag, HolderLookup.Provider provider) {
-        // If the superclass does not have this method, omit calling super.
-        if (tag.contains("Owner")) {
-            this.owner = tag.getString("Owner");
-        }
-        if (tag.contains("HouseStyle")) {
-            this.HouseStyle = HouseStyle.valueOf(tag.getString("HouseStyle"));
-        }
-        if (tag.contains("HouseUUID")) {
-            this.houseUuid = UUID.fromString(tag.getString("HouseUUID"));
-        }
-        if (tag.contains("HouseType")) {
-                this.houseType = tag.getString("HouseType");
-        }
-        if (tag.contains("HouseName")) {
-                this.houseName = tag.getString("HouseName");
-        }
-        this.forSale = tag.getBoolean("ForSale");
-        this.price = tag.getInt("Price");
-
-        if (tag.contains("AccessList", Tag.TAG_LIST)) {
-            ListTag listTag = tag.getList("AccessList", Tag.TAG_STRING);
-            this.accessList.clear();
-            for (int i = 0; i < listTag.size(); i++) {
-                this.accessList.add(listTag.getString(i));
-            }
-        }
-        if (tag.contains("PlacedAt")) {
-            this.placedAt = Instant.parse(tag.getString("PlacedAt"));
-        }
+   public void load(CompoundTag tag, HolderLookup.Provider provider) {
+        loadAdditional(tag, provider); // Delegate to standard loader
     }
-
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
@@ -207,6 +195,8 @@ public class HouseLotBlockEntity extends BlockEntity {
         if (tag.contains("PlacedAt")) {
             this.placedAt = Instant.parse(tag.getString("PlacedAt"));
         }
+        if (tag.contains("DeedUUID")) this.deedUuid = UUID.fromString(tag.getString("DeedUUID"));
+
     }
 
 
@@ -228,15 +218,16 @@ public class HouseLotBlockEntity extends BlockEntity {
         }
         tag.put("AccessList", listTag);
         tag.putString("PlacedAt", this.placedAt.toString());
-    }
+        if (this.deedUuid != null)
+                tag.putString("DeedUUID", this.deedUuid.toString());
+        }
 
-
-@Override
-public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-    CompoundTag tag = new CompoundTag();
-    this.saveAdditional(tag, provider);
-    return tag;
-}
+        @Override
+        public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+            CompoundTag tag = new CompoundTag();
+            this.saveAdditional(tag, provider);
+            return tag;
+        }
 
 
 @Nullable

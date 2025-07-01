@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_fletcher",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_fletcher"
+    },
+    "facing=south,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_fletcher",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_fletcher",
+      "y": 180
+    },
+    "facing=north,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_fletcher",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_fletcher"
+    },
+    "facing=south,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_fletcher",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_fletcher",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_fletcher",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_fletcher"
+    },
+    "facing=south,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_fletcher",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_fletcher",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_fletcher",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_fletcher"
+    },
+    "facing=south,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_fletcher",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_fletcher",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_fletcher",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_fletcher"
+    },
+    "facing=south,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_fletcher",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_fletcher",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_fletcher",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_fletcher"
+    },
+    "facing=south,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_fletcher",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_fletcher",
+      "y": 180
+    }
+  }
+}

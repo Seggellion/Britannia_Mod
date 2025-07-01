@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
+import java.util.Map;
 
 
 /**
@@ -70,6 +71,11 @@ chunkStructureMap.computeIfPresent(chunkKey, (k, list) -> {
         long chunkKey = ChunkPos.asLong(chunkX, chunkZ);
         return chunkStructureMap.getOrDefault(chunkKey, List.of());
     }
+
+
+public static Map<Long, List<StructureRecord>> getChunkStructureMap() {
+    return chunkStructureMap;
+}
 
     /**
      * Determines the range of chunk coordinates overlapped by the bounding box.

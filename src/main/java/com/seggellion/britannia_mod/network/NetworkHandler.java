@@ -9,9 +9,11 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
-
+import com.seggellion.britannia_mod.network.RenameStorePayload;
+import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
+import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
-
+import com.seggellion.britannia_mod.network.HousePlacementHandler;
 import com.seggellion.britannia_mod.structure.HouseActionHandler;
 
 
@@ -39,6 +41,37 @@ public class NetworkHandler {
                 }
             }
         );
+
+registrar.playToClient(
+    StoreSignScreenPayload.TYPE,
+    StoreSignScreenPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleStoreSignScreenOnClient
+        : (payload, context) -> {}  // dummy handler for server
+);
+
+
+        registrar.playToServer(
+            RenameStorePayload.TYPE,
+            RenameStorePayload.STREAM_CODEC,
+            (payload, context) -> context.enqueueWork(() -> {
+                if (context.player() instanceof ServerPlayer serverPlayer) {
+                    RenameStorePayload.handle(payload, serverPlayer);
+                }
+            })
+        );
+
+
+        registrar.playToServer(
+            HousePlacementPayload.TYPE,
+            HousePlacementPayload.STREAM_CODEC,
+            (payload, ctx) -> ctx.enqueueWork(() -> {
+                if (ctx.player() instanceof ServerPlayer serverPlayer) {
+                    HousePlacementHandler.handle(payload, serverPlayer);   // see step 3
+                }
+            })
+        );
+
 
         // ✅ Register: Spell cast (client → server)
         registrar.playToServer(
@@ -100,6 +133,14 @@ public static void sendToServer(SpellCastPayload payload) {
         Minecraft.getInstance().getConnection().send(new ServerboundCustomPayloadPacket(payload));
     }
 }
+
+   public static void sendToServer(HousePlacementPayload payload) {
+        if (FMLLoader.getDist().isClient()) {
+            Minecraft.getInstance()
+                     .getConnection()
+                     .send(new ServerboundCustomPayloadPacket(payload));
+        }
+    }
 
 
 

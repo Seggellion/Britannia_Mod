@@ -5,6 +5,10 @@ import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
+import com.seggellion.britannia_mod.network.RenameStorePayload;
+import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
+import com.seggellion.britannia_mod.client.screen.StoreSignScreen;
+
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 
 import net.minecraft.client.Minecraft;
@@ -35,6 +39,21 @@ public class ClientNetworkHandler {
             }
         });
     }
+
+public static void handleStoreSignScreenOnClient(StoreSignScreenPayload payload, IPayloadContext context) {
+    context.enqueueWork(() -> {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.level != null) {
+            mc.setScreen(new StoreSignScreen(
+                payload.pos(),
+                payload.storeName(),
+                payload.signType(),
+                payload.isAdmin()
+            ));
+        }
+    });
+}
+
 
     public static void handleManaSyncOnClient(ManaSyncPayload data, IPayloadContext context) {
         context.enqueueWork(() -> {

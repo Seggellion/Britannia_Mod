@@ -1,0 +1,18 @@
+{
+  "loader": "neoforge:composite",
+  "children": {
+    "holder": {
+      "parent": "britannia_mod:block/structure/sign/wooden_sign_holder_1"
+    },
+    "lantern": {
+      "parent": "britannia_mod:block/lantern",
+      "transform": {
+        "translation": [0.6, 0.2, 0]
+      }
+    }
+  },
+  "visibility": {
+    "holder": true,
+    "lantern": true
+  }
+}

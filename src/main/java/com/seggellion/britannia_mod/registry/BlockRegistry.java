@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.MoongateBlock;
 import com.seggellion.britannia_mod.block.BrickFoundationBlock;
 import com.seggellion.britannia_mod.structure.HouseSignBlock;
+import com.seggellion.britannia_mod.structure.StoreSignBlock;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
@@ -50,6 +51,7 @@ import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
+import com.seggellion.britannia_mod.block.HangingItemBlock;
 import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
 import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
@@ -57,6 +59,7 @@ import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
+import com.seggellion.britannia_mod.registry.SignBlockRegistry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -323,6 +326,13 @@ public static final DeferredHolder<Block, Block> SKELETON_TORSO = BLOCKS.registe
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
 
+public static final DeferredHolder<Block, Block> SERPENT_SHIELD = BLOCKS.register("serpent_shield", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+
+public static final DeferredHolder<Block, Block> ANKH = BLOCKS.register("ankh", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
 
   public static final DeferredHolder<Block, ThinWall> CURTAIN_TOP =
     BLOCKS.register("curtain_top", 
@@ -455,6 +465,15 @@ public static final DeferredHolder<Block, Block> LAMP_POST_FANCY = BLOCKS.regist
         .noOcclusion()
         .lightLevel(state -> 15))
 );
+
+public static final DeferredHolder<Block, HangingItemBlock> HANGING_LANTERN =
+    BLOCKS.register("hanging_lantern",
+        () -> new HangingItemBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL)
+            .strength(0.3f)
+            .noOcclusion()
+            .lightLevel(state -> 15)
+        ));
 
 
 public static final DeferredHolder<Block, Block> TORCH_WALL = BLOCKS.register(
@@ -1011,6 +1030,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
+        SignBlockRegistry.register(modEventBus);
 
     }
 }

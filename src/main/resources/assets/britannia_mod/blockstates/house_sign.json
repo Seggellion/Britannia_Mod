@@ -1741,9 +1741,7 @@
     "model": "britannia_mod:block/structure/sign/house_sign_metal_2_bank",
     "y": 270
   },
-
-
-        "facing=north,holder_type=metal_3,sign_type=default": {
+  "facing=north,holder_type=metal_3,sign_type=default": {
       "model": "britannia_mod:block/structure/sign/house_sign_metal_3_default"
     },
     "facing=east,holder_type=metal_3,sign_type=default": {
@@ -2613,6 +2611,2437 @@
   "facing=west,holder_type=metal_4,sign_type=merchant": {
     "model": "britannia_mod:block/structure/sign/house_sign_metal_4_merchant",
     "y": 270
-  }
+  },
+      "facing=north,holder_type=wood_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_archers"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_archers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_archers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_archers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_archers"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_archers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_archers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_archers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_archers"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_archers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_archers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_archers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_archers"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_archers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_archers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_archers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_archers"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_archers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_archers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_archers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_archers"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_archers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_archers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_archers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_archers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armaments"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armaments",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armaments",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armaments",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armaments"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armaments",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armaments",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armaments",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armaments"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armaments",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armaments",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armaments",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armaments"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armaments",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armaments",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armaments",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armaments"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armaments",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armaments",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armaments",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armaments"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armaments",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armaments",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_armaments": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armaments",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armorers"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armorers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armorers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_armorers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armorers"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armorers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armorers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_armorers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armorers"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armorers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armorers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_armorers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armorers"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armorers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armorers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_armorers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armorers"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armorers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armorers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_armorers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armorers"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armorers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armorers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_armorers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_armorers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_assassins"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_assassins",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_assassins",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_assassins",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_assassins"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_assassins",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_assassins",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_assassins",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_assassins"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_assassins",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_assassins",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_assassins",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_assassins"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_assassins",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_assassins",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_assassins",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_assassins"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_assassins",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_assassins",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_assassins",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_assassins"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_assassins",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_assassins",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_assassins": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_assassins",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_bardic"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_bardic",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_bardic",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_bardic",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_bardic"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_bardic",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_bardic",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_bardic",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_bardic"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_bardic",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_bardic",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_bardic",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_bardic"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_bardic",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_bardic",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_bardic",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_bardic"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_bardic",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_bardic",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_bardic",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_bardic"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_bardic",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_bardic",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_bardic": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_bardic",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_barters"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_barters",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_barters",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_barters",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_barters"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_barters",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_barters",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_barters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_barters"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_barters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_barters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_barters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_barters"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_barters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_barters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_barters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_barters"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_barters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_barters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_barters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_barters"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_barters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_barters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_barters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_barters",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_blacksmiths"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_blacksmiths",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_blacksmiths",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_blacksmiths",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_blacksmiths"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_blacksmiths",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_blacksmiths",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_blacksmiths",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_blacksmiths"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_blacksmiths",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_blacksmiths",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_blacksmiths",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_blacksmiths"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_blacksmiths",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_blacksmiths",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_blacksmiths",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_blacksmiths"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_blacksmiths",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_blacksmiths",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_blacksmiths",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_blacksmiths"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_blacksmiths",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_blacksmiths",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_blacksmiths": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_blacksmiths",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_calvary"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_calvary",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_calvary",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_calvary",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_calvary"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_calvary",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_calvary",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_calvary",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_calvary"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_calvary",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_calvary",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_calvary",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_calvary"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_calvary",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_calvary",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_calvary",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_calvary"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_calvary",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_calvary",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_calvary",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_calvary"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_calvary",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_calvary",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_calvary": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_calvary",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_cooks"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_cooks",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_cooks",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_cooks",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_cooks"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_cooks",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_cooks",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_cooks",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_cooks"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_cooks",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_cooks",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_cooks",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_cooks"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_cooks",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_cooks",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_cooks",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_cooks"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_cooks",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_cooks",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_cooks",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_cooks"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_cooks",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_cooks",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_cooks": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_cooks",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fighters"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fighters",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fighters",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fighters",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fighters"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fighters",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fighters",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fighters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fighters"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fighters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fighters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fighters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fighters"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fighters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fighters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fighters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fighters"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fighters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fighters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fighters",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fighters"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fighters",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fighters",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_fighters": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fighters",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fishermen"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fishermen",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fishermen",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_fishermen",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fishermen"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fishermen",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fishermen",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_fishermen",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fishermen"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fishermen",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fishermen",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_fishermen",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fishermen"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fishermen",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fishermen",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_fishermen",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fishermen"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fishermen",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fishermen",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_fishermen",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fishermen"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fishermen",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fishermen",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_fishermen": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_fishermen",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_healers"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_healers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_healers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_healers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_healers"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_healers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_healers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_healers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_healers"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_healers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_healers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_healers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_healers"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_healers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_healers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_healers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_healers"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_healers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_healers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_healers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_healers"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_healers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_healers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_healers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_healers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_illusionist"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_illusionist",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_illusionist",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_illusionist",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_illusionist"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_illusionist",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_illusionist",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_illusionist",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_illusionist"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_illusionist",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_illusionist",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_illusionist",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_illusionist"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_illusionist",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_illusionist",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_illusionist",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_illusionist"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_illusionist",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_illusionist",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_illusionist",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_illusionist"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_illusionist",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_illusionist",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_illusionist": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_illusionist",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_mages"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_mages",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_mages",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_mages",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_mages"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_mages",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_mages",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_mages",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_mages"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_mages",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_mages",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_mages",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_mages"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_mages",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_mages",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_mages",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_mages"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_mages",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_mages",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_mages",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_mages"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_mages",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_mages",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_mages": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_mages",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_miners"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_miners",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_miners",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_miners",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_miners"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_miners",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_miners",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_miners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_miners"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_miners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_miners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_miners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_miners"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_miners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_miners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_miners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_miners"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_miners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_miners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_miners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_miners"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_miners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_miners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_miners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_miners",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_provisioners"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_provisioners",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_provisioners",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_provisioners",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_provisioners"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_provisioners",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_provisioners",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_provisioners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_provisioners"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_provisioners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_provisioners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_provisioners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_provisioners"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_provisioners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_provisioners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_provisioners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_provisioners"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_provisioners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_provisioners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_provisioners",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_provisioners"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_provisioners",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_provisioners",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_provisioners": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_provisioners",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_rogues"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_rogues",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_rogues",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_rogues",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_rogues"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_rogues",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_rogues",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_rogues",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_rogues"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_rogues",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_rogues",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_rogues",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_rogues"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_rogues",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_rogues",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_rogues",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_rogues"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_rogues",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_rogues",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_rogues",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_rogues"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_rogues",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_rogues",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_rogues": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_rogues",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sailors"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sailors",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sailors",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sailors",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sailors"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sailors",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sailors",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sailors"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sailors"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sailors"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sailors"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_sailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sailors",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_seamens"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_seamens",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_seamens",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_seamens",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_seamens"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_seamens",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_seamens",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_seamens",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_seamens"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_seamens",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_seamens",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_seamens",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_seamens"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_seamens",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_seamens",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_seamens",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_seamens"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_seamens",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_seamens",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_seamens",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_seamens"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_seamens",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_seamens",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_seamens": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_seamens",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_shipwright"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_shipwright",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_shipwright",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_shipwright",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_shipwright"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_shipwright",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_shipwright",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_shipwright",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_shipwright"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_shipwright",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_shipwright",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_shipwright",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_shipwright"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_shipwright",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_shipwright",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_shipwright",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_shipwright"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_shipwright",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_shipwright",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_shipwright",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_shipwright"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_shipwright",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_shipwright",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_shipwright": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_shipwright",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sorcerers"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sorcerers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sorcerers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_sorcerers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sorcerers"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sorcerers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sorcerers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_sorcerers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sorcerers"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sorcerers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sorcerers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_sorcerers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sorcerers"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sorcerers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sorcerers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_sorcerers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sorcerers"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sorcerers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sorcerers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_sorcerers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sorcerers"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sorcerers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sorcerers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_sorcerers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_sorcerers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tailors"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tailors",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tailors",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tailors",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tailors"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tailors",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tailors",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tailors"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tailors"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tailors"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tailors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tailors"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tailors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tailors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_tailors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tailors",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_thieves"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_thieves",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_thieves",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_thieves",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_thieves"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_thieves",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_thieves",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_thieves",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_thieves"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_thieves",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_thieves",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_thieves",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_thieves"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_thieves",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_thieves",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_thieves",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_thieves"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_thieves",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_thieves",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_thieves",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_thieves"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_thieves",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_thieves",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_thieves": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_thieves",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tinkers"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tinkers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tinkers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_tinkers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tinkers"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tinkers",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tinkers",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_tinkers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tinkers"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tinkers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tinkers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_tinkers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tinkers"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tinkers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tinkers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_tinkers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tinkers"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tinkers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tinkers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_tinkers",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tinkers"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tinkers",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tinkers",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_tinkers": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_tinkers",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_traders"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_traders",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_traders",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_traders",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_traders"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_traders",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_traders",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_traders",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_traders"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_traders",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_traders",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_traders",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_traders"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_traders",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_traders",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_traders",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_traders"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_traders",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_traders",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_traders",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_traders"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_traders",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_traders",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_traders": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_traders",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_warriors"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_warriors",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_warriors",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_warriors",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_warriors"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_warriors",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_warriors",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_warriors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_warriors"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_warriors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_warriors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_warriors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_warriors"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_warriors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_warriors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_warriors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_warriors"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_warriors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_warriors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_warriors",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_warriors"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_warriors",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_warriors",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_warriors": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_warriors",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_weapons"
+    },
+    "facing=east,holder_type=wood_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_weapons",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_weapons",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_guild_weapons",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_weapons"
+    },
+    "facing=east,holder_type=wood_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_weapons",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_weapons",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_guild_weapons",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_weapons"
+    },
+    "facing=east,holder_type=metal_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_weapons",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_weapons",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_guild_weapons",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_weapons"
+    },
+    "facing=east,holder_type=metal_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_weapons",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_weapons",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_guild_weapons",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_weapons"
+    },
+    "facing=east,holder_type=metal_3,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_weapons",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_weapons",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_guild_weapons",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_weapons"
+    },
+    "facing=east,holder_type=metal_4,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_weapons",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_weapons",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=guild_weapons": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_weapons",
+      "y": 270
+    }
+  
 }
 }

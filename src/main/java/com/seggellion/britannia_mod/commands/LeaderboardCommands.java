@@ -118,9 +118,7 @@ private static double getCategoryContribution(PlayerData data, List<String> subT
             final int index = i;
             final PlayerData data = biggestFishCatchers.get(i);
             String playerName = getPlayerName(serverLevel, data.getPlayerUUID());
-            System.out.println("Biggest Fish Map: " + data.getBiggestFish());
-     LOGGER.info("Biggest Fish Map {}", data.getBiggestFish());
-     LOGGER.info("Requested Fish Type {}", fishType);
+
             source.sendSuccess(() -> Component.literal((index + 1) + ". " + playerName + ": " + data.getBiggestFish().get(fishType) + " stones"), false);
         }
 

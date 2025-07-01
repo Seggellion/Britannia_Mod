@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_blacksmith",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_blacksmith"
+    },
+    "facing=south,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_blacksmith",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_blacksmith",
+      "y": 180
+    },
+    "facing=north,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_blacksmith",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_blacksmith"
+    },
+    "facing=south,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_blacksmith",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_blacksmith",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_blacksmith",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_blacksmith"
+    },
+    "facing=south,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_blacksmith",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_blacksmith",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_blacksmith",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_blacksmith"
+    },
+    "facing=south,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_blacksmith",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_blacksmith",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_blacksmith",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_blacksmith"
+    },
+    "facing=south,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_blacksmith",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_blacksmith",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_blacksmith",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_blacksmith"
+    },
+    "facing=south,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_blacksmith",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_blacksmith",
+      "y": 180
+    }
+  }
+}

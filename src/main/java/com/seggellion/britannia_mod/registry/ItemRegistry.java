@@ -4,6 +4,7 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
 // import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
+import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
@@ -363,6 +364,11 @@ public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_2X3_ITEM =
             () -> new BlockItem(BlockRegistry.WINDOW_CROSS_2X3.get(), new Item.Properties()));
 
 
+public static final DeferredHolder<Item, BlockItem> HANGING_LANTERN_ITEM =
+    ITEMS.register("hanging_lantern",
+        () -> new BlockItem(BlockRegistry.HANGING_LANTERN.get(), new Item.Properties()));
+
+
 public static final DeferredHolder<Item, BlockItem> WINDOW_BIRCH_1X1_ITEM =
         ITEMS.register("window_birch_1x1",
             () -> new BlockItem(BlockRegistry.WINDOW_BIRCH_1X1.get(), new Item.Properties()));
@@ -549,6 +555,14 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_GRAVE_CROSS =
 public static final DeferredHolder<Item, BlockItem> WOODEN_OPEN_COFFIN =
     ITEMS.register("wooden_open_coffin", () -> new BlockItem(BlockRegistry.WOODEN_OPEN_COFFIN.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> ANKH_ITEM =
+        ITEMS.register("ankh",
+            () -> new BlockItem(BlockRegistry.ANKH.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> SERPENT_SHIELD_ITEM =
+        ITEMS.register("serpent_shield",
+            () -> new BlockItem(BlockRegistry.SERPENT_SHIELD.get(), new Item.Properties()));
 
 public static final DeferredHolder<Item, BlockItem> CURTAIN_BOTTOM_ITEM =
         ITEMS.register("curtain_bottom",
@@ -881,5 +895,6 @@ public static final DeferredHolder<Item, Item> CARPET_TELEPORTER_BLOCK_ITEM = IT
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
+        SignItemRegistry.register(modEventBus);
     }
 }

@@ -51,9 +51,10 @@ import com.seggellion.britannia_mod.city.CommodityConsumer;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.network.CityDataSync;
+import com.seggellion.britannia_mod.network.DeedHttpServer;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.client.ThinWallClient;
-
+import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -78,10 +79,12 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -94,14 +97,16 @@ public class BritanniaMod {
     private static final Logger LOGGER = LogUtils.getLogger();
     private int foodConsumptionTickCounter = 0; // Tick counter for food consumption
     private int starvationNotificationTickCounter = 0; // Tick counter for starvation notifications
+    private DeedHttpServer deedHttpServer;
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
         OreVeinLoader.loadOreVeins();
+          BlessedItemSyncHandler.init(); 
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
-        BlockEntityRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
+        BlockEntityRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
         SwordRegistry.register(modEventBus);
         ToolRegistry.register(modEventBus);
@@ -118,7 +123,6 @@ public class BritanniaMod {
         modEventBus.addListener(this::registerEntityAttributes); 
         modEventBus.register(NetworkHandler.class);
         modEventBus.register(ModSpawnPlacementRegistry.class);
-        modEventBus.register(ThinWallModels.class);
 
         ModSounds.register(modEventBus);
         CommandRegistry.register();
@@ -168,6 +172,7 @@ public class BritanniaMod {
             modEventBus.addListener(ClientModSetup::registerRenderers);
             modEventBus.addListener(ClientModSetup::registerGeometryLoaders);
             modEventBus.addListener(ClientModSetup::registerAdditionalModels);
+        modEventBus.register(ThinWallModels.class);
 
             ClientEventHandler.register(modEventBus);
             modEventBus.register(new ClientOnlyItemRegistry());
@@ -214,9 +219,25 @@ public class BritanniaMod {
         // This method can be removed or repurposed since notifications are handled in the tick handler
     }
 
-    public void onServerStarting(ServerStartingEvent event) {
-        NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
+    public void onServerStopping(ServerStoppingEvent event) {
+    if (deedHttpServer != null) {
+        deedHttpServer.stop();
+        LOGGER.info("🛑 DeedHttpServer stopped");
     }
+}
+
+public void onServerStarting(ServerStartingEvent event) {
+    NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
+
+    try {
+        deedHttpServer = new DeedHttpServer(8080, event.getServer());
+        deedHttpServer.start();
+        LOGGER.info("✅ DeedHttpServer started on port 8080");
+    } catch (IOException e) {
+        LOGGER.error("❌ Failed to start DeedHttpServer", e);
+    }
+}
+
 
 
 }

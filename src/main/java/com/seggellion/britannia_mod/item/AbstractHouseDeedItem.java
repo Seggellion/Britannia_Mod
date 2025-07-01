@@ -23,6 +23,9 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.Properties;
 
+import com.seggellion.britannia_mod.network.HousePlacementPayload;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+
 import com.seggellion.britannia_mod.structure.StructurePlacer;
 import com.seggellion.britannia_mod.client.house.HouseRotationData;
 
@@ -44,38 +47,26 @@ public abstract class AbstractHouseDeedItem extends Item {
    
     /* ---------- Right‑click = place ---------- */
 @Override
-public InteractionResultHolder<ItemStack> use(Level level,
-                                              Player player,
-                                              InteractionHand hand) {
+public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
     ItemStack stack = player.getItemInHand(hand);
 
-    if (!level.isClientSide && hand == InteractionHand.MAIN_HAND) {
+    /* ---------- CLIENT side: send placement request ---------- */
+    if (level.isClientSide && hand == InteractionHand.MAIN_HAND) {
         HitResult hit = player.pick(5.0D, 0.0F, false);
-
-        if (hit.getType() == HitResult.Type.BLOCK) {
-            BlockPos  targetPos  = ((BlockHitResult) hit).getBlockPos();
-            int       rotationDeg = HouseRotationData.getRotation(player);
-
-            boolean placed = StructurePlacer.placeStructure(
-                    (ServerLevel) level,
-                    targetPos,
-                    rotationDeg,
-                    houseStyle,
-                    player
-            );
-
-            if (placed) {
-                stack.shrink(1);          // consume deed
-                HouseRotationData.clear(player);
-                return InteractionResultHolder.success(stack);   // ▶︎ only on success
-            } else {
-                return InteractionResultHolder.fail(stack);      // ▶︎ no swing → no rotate
-            }
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            player.displayClientMessage(Component.literal("❌ You must aim at a block to place this."), true);
+            return InteractionResultHolder.fail(stack);
         }
 
-        player.displayClientMessage(
-            Component.literal("❌ You must aim at a block to place this."), true);
-        return InteractionResultHolder.fail(stack);
+        BlockPos pos     = ((BlockHitResult) hit).getBlockPos();
+        int      rotDeg  = HouseRotationData.getRotation(player);
+
+        HousePlacementPayload payload =
+            new HousePlacementPayload(pos, rotDeg, houseStyle.name());
+
+        NetworkHandler.sendToServer(payload); 
+
+        return InteractionResultHolder.success(stack); // swing animation etc.
     }
 
     return InteractionResultHolder.pass(stack);

@@ -41,6 +41,7 @@ private final BlockPos housePos;
     private final String houseType;
     private String houseName;
 
+
     public HouseManagementScreen(BlockPos housePos, UUID houseUuid, String ownerUsername, String houseType, @Nullable String houseName) {
         super(Component.literal("House Management"));
             this.housePos = housePos;
@@ -111,6 +112,14 @@ public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partia
     guiGraphics.drawString(this.font, "UUID: " + houseUuid.toString(), startX, startY, 0xCCCCCC);
     guiGraphics.drawString(this.font, "Owner: " + ownerUsername, startX, startY + 12, 0xCCCCCC);
     guiGraphics.drawString(this.font, "Type: " + houseType, startX, startY + 24, 0xCCCCCC);
+
+   // 🟡 Check for "Blessed" status
+    Minecraft mc = Minecraft.getInstance();
+if (mc.level != null && mc.level.getBlockEntity(housePos.below()) instanceof HouseLotBlockEntity lot) {
+        if (lot.getDeedUuid() != null) {
+            guiGraphics.drawCenteredString(this.font, "Blessed", this.width / 2, bannerY + 22, 0xFFD700); // Gold color
+        }
+    }
 
     super.render(guiGraphics, mouseX, mouseY, partialTick);
 }

@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "britannia_mod:avatar.ttf",
+      "shift": [0, 0],
+      "size": 24,
+      "oversample": 3
+    }
+  ]
+}

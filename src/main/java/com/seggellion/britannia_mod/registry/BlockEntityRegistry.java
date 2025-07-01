@@ -5,12 +5,14 @@ import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
 import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
+import com.seggellion.britannia_mod.block.entity.StoreSignBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurnitureBlockEntity;
 import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -22,6 +24,16 @@ public class BlockEntityRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HouseLotBlockEntity>> HOUSE_LOT =
         BLOCK_ENTITIES.register("house_lot", () ->
             BlockEntityType.Builder.of(HouseLotBlockEntity::new, BlockRegistry.HOUSE_LOT_BLOCK.get()).build(null));
+
+    /* ---------- STORE-SIGN  ✅ NEW IMPLEMENTATION ---------- */
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<StoreSignBlockEntity>> STORE_SIGN =
+            BLOCK_ENTITIES.register("store_sign", () -> BlockEntityType.Builder.of(
+                    StoreSignBlockEntity::new,
+                    /*  pull every sign block AFTER SignBlockRegistry has run  */
+                    SignBlockRegistry.STORE_SIGN_BLOCKS.values().stream()
+                            .map(DeferredHolder::get)
+                            .toArray(Block[]::new)
+            ).build(null));
 
 public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AdaptiveRoofBlockEntity>> ADAPTIVE_ROOF =
     BLOCK_ENTITIES.register("adaptive_roof", () ->

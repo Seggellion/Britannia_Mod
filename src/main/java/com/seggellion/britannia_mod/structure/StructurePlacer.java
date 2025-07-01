@@ -33,6 +33,9 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
 
 import java.io.DataInputStream;
 import java.util.Optional;
@@ -245,8 +248,6 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
 );
 
 
-
-
    BlockPos lotPos = adjustedPos.offset(lotOffset); 
 
 
@@ -264,6 +265,24 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
         lotBE.setPlacedAt(Instant.now());
         lotBE.setAccessList(new ArrayList<>());
         lotBE.setChanged();
+
+    // ✅ Apply deed_uuid if available
+    ItemStack heldItem = player.getMainHandItem();
+    if (!heldItem.isEmpty()) {
+        CustomData customData = heldItem.get(DataComponents.CUSTOM_DATA);
+        CompoundTag tag = (customData != null) ? customData.copyTag() : new CompoundTag();
+
+        if (tag != null && tag.contains("deed_id")) {
+            try {
+                UUID deedUuid = UUID.fromString(tag.getString("deed_id"));
+                lotBE.setDeedUuid(deedUuid);
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Invalid deed_uuid format in item: {}", tag.getString("deed_id"));
+            }
+        }
+    }
+
+
     }
 
     StructureRegionManager.registerStructure(
