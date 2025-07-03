@@ -119,6 +119,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TORCH_STANDING_ITEM.get());
                 safeAccept(output, ItemRegistry.BRAZIER_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
+                safeAccept(output, ItemRegistry.LORD_BRITISH_THRONE_ITEM.get());
                 safeAccept(output, ItemRegistry.DOUBLE_BED_ITEM.get());
                 safeAccept(output, ItemRegistry.CURTAIN_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.CURTAIN_TOP_ITEM.get());
