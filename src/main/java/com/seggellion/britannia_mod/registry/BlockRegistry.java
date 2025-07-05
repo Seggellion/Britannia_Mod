@@ -958,7 +958,8 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
         public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
             "magincia_style_throne",
-            () -> new ChairBlock(BlockBehaviour.Properties.of()
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -974,7 +975,8 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
         public static final DeferredHolder<Block, Block> LORD_BRITISH_THRONE = BLOCKS.register(
             "lord_british_throne",
-            () -> new ChairBlock(BlockBehaviour.Properties.of()
+            () -> new ChairBlock(0.45,
+                    BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
