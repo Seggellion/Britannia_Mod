@@ -88,6 +88,7 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
                 || entity instanceof EntityHorseMerchant
                 || entity instanceof CustomCatEntity
                 || entity instanceof EntityFishMerchant
+                 || entity instanceof ArchitectEntity
                 || entity instanceof TownPersonEntity;
     }
 

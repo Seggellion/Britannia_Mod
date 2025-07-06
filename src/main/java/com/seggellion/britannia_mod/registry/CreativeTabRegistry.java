@@ -235,6 +235,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.FISH_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.HORSE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.BLACKSMITH_SPAWN_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.ARCHITECT_SPAWN_BLOCK_ITEM.get());
+
             }).build());
 
     // Tab 4: Magic

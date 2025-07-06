@@ -1,7 +1,9 @@
 package com.seggellion.britannia_mod.block;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.entity.LivingSeatEntity;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import com.seggellion.britannia_mod.item.InteriorDecoratorToolItem;
@@ -36,13 +39,16 @@ import org.slf4j.Logger;
 import java.util.List;
 
 public class ChairBlock extends HorizontalDirectionalBlock implements EntityBlock, INudgeable {
-private static final Logger LOGGER = LogUtils.getLogger();
 
-    
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
-    public ChairBlock(Properties properties) {
+    private final double sittingHeight;
+
+    public ChairBlock(double sittingHeight, Properties properties) {
         super(properties);
+        this.sittingHeight = sittingHeight;
         this.registerDefaultState(this.defaultBlockState().setValue(FACING, Direction.NORTH));
     }
 
@@ -56,10 +62,14 @@ private static final Logger LOGGER = LogUtils.getLogger();
         return new ChairBlockEntity(pos, state);
     }
 
-public static final MapCodec<ChairBlock> CODEC = simpleCodec(ChairBlock::new);
+    public static final MapCodec<ChairBlock> CODEC = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(
+                    Codec.DOUBLE.fieldOf("sitting_height").forGetter(block -> block.sittingHeight)
+            ).apply(instance, height -> new ChairBlock(height, BlockBehaviour.Properties.of()))
+    );
 
-@Override
-protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
+    @Override
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
     return CODEC;
 }
 
@@ -88,7 +98,7 @@ protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
                 return InteractionResult.FAIL;
             }
 
-            Vec3 seatPos = new Vec3(pos.getX() + 0.5 + offset.x, pos.getY() + 0.1 + offset.y, pos.getZ() + 0.5 + offset.z);
+            Vec3 seatPos = new Vec3(pos.getX() + 0.5 + offset.x, pos.getY() + sittingHeight + offset.y, pos.getZ() + 0.5 + offset.z);
 
             List<LivingSeatEntity> existing = level.getEntitiesOfClass(
                     LivingSeatEntity.class,

@@ -6,10 +6,14 @@ import com.seggellion.britannia_mod.client.renderer.entity.DoubleBedRenderer;
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityFishMerchantRenderer;
+import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
+import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
+
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -410,6 +414,20 @@ private static int getTintForOreType(String oreType) {
 
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
+
+   
+
+        event.registerBlockEntityRenderer(
+    BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(),
+    CityNameBlockRenderer::new
+);
+
+event.registerBlockEntityRenderer(
+    BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(),
+    CityNameBlockRenderer::new
+);
+
+
     }
 
 
@@ -460,6 +478,9 @@ private static int getTintForOreType(String oreType) {
             EntityRenderers.register(EntityRegistry.STONE_MERCHANT_ENTITY.get(), EntityStoneMerchantRenderer::new);
             EntityRenderers.register(EntityRegistry.METAL_MERCHANT_ENTITY.get(), EntityMetalMerchantRenderer::new);
             EntityRenderers.register(EntityRegistry.TOWN_PERSON_ENTITY.get(), TownPersonEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
+
+
 
             // Register the blocking property for the Order Shield
             ItemProperties.register(

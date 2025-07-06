@@ -14,28 +14,33 @@ public class StructureRecord {
     private final AABB   fullBox;
     private final String sizeId;   // e.g. "small"
     private final String styleId;  // e.g. "SMALL_BRICK"
+    private final UUID deedId;
 
     /** Full constructor */
     public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
-                           UUID houseUuid, String sizeId, String styleId) {
+                           UUID houseUuid, String sizeId, String styleId, UUID deedId) {
         this.ownerUuid    = ownerUuid;
         this.structureBox = structureBox;
         this.fullBox      = fullBox;
         this.houseUuid    = houseUuid;
         this.sizeId       = sizeId;
         this.styleId      = styleId;
+        this.deedId = deedId;
     }
 
-    /** Legacy‑size constructor (kept for old call sites) */
+  public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
+                           UUID houseUuid, String sizeId, String styleId) {
+        this(ownerUuid, structureBox, fullBox, houseUuid, sizeId, styleId, null);
+    }
+
     public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
                            UUID houseUuid, String sizeId) {
-        this(ownerUuid, structureBox, fullBox, houseUuid, sizeId, "unknown");
+        this(ownerUuid, structureBox, fullBox, houseUuid, sizeId, "unknown", null);
     }
 
-    /** Oldest constructor (kept for deserialization etc.) */
     public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
                            UUID houseUuid) {
-        this(ownerUuid, structureBox, fullBox, houseUuid, "unknown", "unknown");
+        this(ownerUuid, structureBox, fullBox, houseUuid, "unknown", "unknown", null);
     }
 
     /* getters … */
@@ -45,4 +50,5 @@ public class StructureRecord {
     public AABB   getFullBox()     { return fullBox;    }
     public String getSizeId()      { return sizeId;     }
     public String getStyleId()     { return styleId;    }
+    public UUID getDeedId()        { return deedId; }
 }

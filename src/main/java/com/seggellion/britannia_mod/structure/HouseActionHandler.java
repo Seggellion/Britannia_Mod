@@ -87,9 +87,8 @@ public class HouseActionHandler {
 
             if (level.getBlockEntity(pos) instanceof HouseLotBlockEntity lot) {
                 lotPos = pos;
-     LOGGER.info("Just before DeedUUID");
 
-                UUID deedUuid = lot.getDeedUuid();
+                UUID deedUuid = (record.getDeedId() != null) ? record.getDeedId() : lot.getDeedUuid();
                 if (deedUuid != null) {
                     
                     CompoundTag tag = new CompoundTag();
@@ -102,7 +101,7 @@ public class HouseActionHandler {
                         .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1))
                         .collect(Collectors.joining(" "));
 
-                    deedStack.set(DataComponents.CUSTOM_NAME, Component.literal(prettyName + "Deed (Blessed)"));
+                    deedStack.set(DataComponents.CUSTOM_NAME, Component.literal(prettyName + " Deed (Blessed)"));
                 }
                 break;
             }

@@ -16,6 +16,7 @@ import com.seggellion.britannia_mod.entity.EarthElementalEntity;
 import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
 import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
+import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.EntityStoneMerchant;
@@ -54,6 +55,17 @@ public class EntityRegistry {
             .sized(0.6F, 1.95F)
             .build("britannia_mod:wood_merchant")
 );
+
+public static final DeferredHolder<EntityType<?>, EntityType<ArchitectEntity>>
+        ARCHITECT_ENTITY = ENTITIES.register(
+    "architect",
+    () -> EntityType.Builder                      
+              .<ArchitectEntity>of(ArchitectEntity::create, MobCategory.MISC)
+              .sized(0.6F, 1.95F)
+              .build("britannia_mod:architect")
+);
+
+
 
     public static final DeferredHolder<EntityType<?>, EntityType<EntityMetalMerchant>> METAL_MERCHANT_ENTITY = ENTITIES.register(
     "metal_merchant",
@@ -199,6 +211,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<LivingSeatEntity>> 
         event.put(WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchant.createAttributes().build());
         event.put(METAL_MERCHANT_ENTITY.get(), EntityMetalMerchant.createAttributes().build());
         event.put(STONE_MERCHANT_ENTITY.get(), EntityStoneMerchant.createAttributes().build());
+        event.put(ARCHITECT_ENTITY.get(), ArchitectEntity.createAttributes().build());
 
         event.put(TOWN_PERSON_ENTITY.get(), TownPersonEntity.createAttributes().build());
 

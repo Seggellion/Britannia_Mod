@@ -41,7 +41,7 @@ public class HouseDataAPI {
                 return;
             }
             UUID houseUuid = lot.getHouseUuid(); // ✅ Use the actual in-game UUID
-
+            UUID deedUuid = lot.getDeedUuid(); 
 
             // We'll assume "small" for the house_type, matching your MIGRATION (house_type can be "villa", "cottage", etc.)
             String houseType = lot.getHouseType();
@@ -65,7 +65,6 @@ public class HouseDataAPI {
 
             // Build JSON
             JsonObject payload = new JsonObject();
-
             // Required by House model:
             payload.addProperty("uuid", houseUuid.toString());           // e.g. "48e5-..."
             payload.addProperty("house_type", houseType);                // "small" for day 3
@@ -73,6 +72,9 @@ public class HouseDataAPI {
             payload.addProperty("x", housePos.getX());
             payload.addProperty("y", housePos.getY());
             payload.addProperty("z", housePos.getZ());
+            if (deedUuid != null) {
+                payload.addProperty("deed_id", deedUuid.toString());
+            }
 
             // belongs_to :shard_user => you must pass something that your Rails app uses to identify the shard_user
             // e.g. if your server finds shard_user by "player_uuid", or you have a known "shard_user_id"
@@ -139,6 +141,10 @@ public static void deleteHouseRecord(ServerPlayer player, StructureRecord record
         JsonObject payload = new JsonObject();
         payload.addProperty("owner", player.getName().getString());
         payload.addProperty("uuid", record.getHouseUuid().toString());
+
+        if (record.getDeedId() != null) {
+            payload.addProperty("deed_id", record.getDeedId().toString());
+        }
 
         try (OutputStream os = conn.getOutputStream()) {
             os.write(payload.toString().getBytes(StandardCharsets.UTF_8));

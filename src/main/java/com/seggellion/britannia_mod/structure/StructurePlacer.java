@@ -253,6 +253,7 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
 
     level.setBlock(lotPos,
         BlockRegistry.HOUSE_LOT_BLOCK.get().defaultBlockState(), 3);
+    UUID deedUuid = null;
 
     if (level.getBlockEntity(lotPos) instanceof HouseLotBlockEntity lotBE) {
         lotBE.setOwnerUsername(player.getName().getString());
@@ -267,6 +268,7 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
         lotBE.setChanged();
 
     // ✅ Apply deed_uuid if available
+
     ItemStack heldItem = player.getMainHandItem();
     if (!heldItem.isEmpty()) {
         CustomData customData = heldItem.get(DataComponents.CUSTOM_DATA);
@@ -274,7 +276,7 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
 
         if (tag != null && tag.contains("deed_id")) {
             try {
-                UUID deedUuid = UUID.fromString(tag.getString("deed_id"));
+                deedUuid = UUID.fromString(tag.getString("deed_id"));
                 lotBE.setDeedUuid(deedUuid);
             } catch (IllegalArgumentException e) {
                 LOGGER.warn("Invalid deed_uuid format in item: {}", tag.getString("deed_id"));
@@ -292,7 +294,8 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
             boxes.fullBox(),
             houseUuid,
             style.getSize().id(),
-            style.name()
+            style.name(),
+            deedUuid
         )
     );
 

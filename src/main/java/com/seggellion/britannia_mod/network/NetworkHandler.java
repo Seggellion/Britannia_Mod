@@ -15,7 +15,7 @@ import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
 import com.seggellion.britannia_mod.network.HousePlacementHandler;
 import com.seggellion.britannia_mod.structure.HouseActionHandler;
-
+import com.seggellion.britannia_mod.network.ClientboundOpenArchitectScreenPayload;
 
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -41,6 +41,12 @@ public class NetworkHandler {
                 }
             }
         );
+
+registrar.playToClient(ClientboundOpenArchitectScreenPayload.TYPE,
+    ClientboundOpenArchitectScreenPayload.STREAM_CODEC,
+    (payload, context) -> ClientboundOpenArchitectScreenPayload.handle(payload));
+
+
 
 registrar.playToClient(
     StoreSignScreenPayload.TYPE,

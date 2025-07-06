@@ -67,6 +67,7 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.SlabBlock;
+import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 
 
 import net.neoforged.bus.api.IEventBus;
@@ -84,6 +85,7 @@ public class BlockRegistry {
 
     public static final DeferredHolder<Block, Block> SHADE_SPAWN_BLOCK = BLOCKS.register(
             "shade_spawn_block", ShadeSpawnBlock::new);
+
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShadeSpawnBlockEntity>> SHADE_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
             "shade_spawn_block_entity",
@@ -205,6 +207,10 @@ public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
             "blacksmith_spawn_block",
             BlacksmithSpawnBlock::new 
     );
+
+    public static final DeferredHolder<Block, ArchitectSpawnBlock> ARCHITECT_SPAWN_BLOCK =
+    BLOCKS.register("architect_spawn_block", ArchitectSpawnBlock::new);
+
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlacksmithSpawnBlockEntity>> BLACKSMITH_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
             "blacksmith_spawn_block_entity",
@@ -956,9 +962,11 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
 // Furniture
 
+
         public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
             "magincia_style_throne",
-            () -> new ChairBlock(BlockBehaviour.Properties.of()
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -974,12 +982,14 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
         public static final DeferredHolder<Block, Block> LORD_BRITISH_THRONE = BLOCKS.register(
             "lord_british_throne",
-            () -> new ChairBlock(BlockBehaviour.Properties.of()
+            () -> new ChairBlock(0.45,
+                    BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
             )
         );
+
 
 // Ores
 

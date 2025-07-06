@@ -1,0 +1,32 @@
+package com.seggellion.britannia_mod.registry;
+
+import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.menu.ArchitectMenu;
+
+import net.minecraft.world.inventory.MenuType;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.bus.api.IEventBus;
+import net.minecraft.core.registries.Registries;
+
+public class MenuRegistry {
+
+    public static final DeferredRegister<MenuType<?>> MENUS =
+            DeferredRegister.create(Registries.MENU, BritanniaMod.MODID);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<ArchitectMenu>> ARCHITECT_MENU =
+            MENUS.register("architect", () ->
+                IMenuTypeExtension.create((id, playerInv, buf) -> {
+                    int entityId = buf.readInt();
+                    return new ArchitectMenu(id, playerInv,
+                        (com.seggellion.britannia_mod.entity.ArchitectEntity)
+                            playerInv.player.level().getEntity(entityId));
+                }));
+
+
+                
+    public static void register(IEventBus modEventBus) {
+        MENUS.register(modEventBus);
+    }
+}

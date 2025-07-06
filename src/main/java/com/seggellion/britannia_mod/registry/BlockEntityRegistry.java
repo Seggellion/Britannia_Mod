@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
 import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.StoreSignBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurnitureBlockEntity;
@@ -89,6 +90,12 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
                     () -> BlockEntityType.Builder
                             .of(DoubleBedBlockEntity::new, BlockRegistry.DOUBLE_BED.get())
                             .build(null));
+
+        public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ArchitectSpawnBlockEntity>> ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE =
+        BLOCK_ENTITIES.register("architect_spawn_block_entity",
+                () -> BlockEntityType.Builder.of(ArchitectSpawnBlockEntity::new,
+                BlockRegistry.ARCHITECT_SPAWN_BLOCK.get()).build(null));
+
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

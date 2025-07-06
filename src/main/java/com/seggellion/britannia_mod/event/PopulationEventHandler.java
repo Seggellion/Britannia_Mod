@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.world.phys.Vec3;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.WoodSpawnBlock;
+import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.MetalSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
@@ -65,6 +67,7 @@ public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         block instanceof BlacksmithSpawnBlock || 
             block instanceof MetalSpawnBlock || 
               block instanceof StoneSpawnBlock || 
+              block instanceof ArchitectSpawnBlock || 
           block instanceof HorseSpawnBlock)) {
      //   
      //     block instanceof FoodSpawnBlock
@@ -99,6 +102,8 @@ public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
                 metalSpawnBE.setCityName(nameOnTag);
             } else if (be instanceof StoneSpawnBlockEntity stoneSpawnBE) {
                 stoneSpawnBE.setCityName(nameOnTag);
+            } else if (be instanceof ArchitectSpawnBlockEntity architectSpawnBE) {
+                architectSpawnBE.setCityName(nameOnTag);
             } else {
                 return; // BlockEntity is not a recognized type
             }
