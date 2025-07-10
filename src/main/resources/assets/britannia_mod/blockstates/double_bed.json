@@ -1,21 +1,71 @@
 {
-  "multipart": [
-    { "when": { "part": "foot", "facing": "north" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 0 } },
-    { "when": { "part": "foot", "facing": "south" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 180 } },
-    { "when": { "part": "foot", "facing": "west" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 270 } },
-    { "when": { "part": "foot", "facing": "east" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_foot", "y": 90 } },
+  "variants": {
+    "facing=north,part=foot_left": {
+      "model": "minecraft:block/air",
+      "y": 180
+    },
+    "facing=north,part=foot_right": {
+      "model": "minecraft:block/air",
+      "y": 180
+    },
+    "facing=north,part=head_left": {
+      "model": "britannia_mod:block/furniture/double_bed",
+      "y": 180
+    },
+    "facing=north,part=head_right": {
+      "model": "minecraft:block/air",
+      "y": 180
+    },
 
-    { "when": { "part": "head", "facing": "north" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 0 } },
-    { "when": { "part": "head", "facing": "south" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 180 } },
-    { "when": { "part": "head", "facing": "west" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 270 } },
-    { "when": { "part": "head", "facing": "east" },
-      "apply": { "model": "britannia_mod:block/furniture/double_bed_head", "y": 90 } }
-  ]
+    "facing=south,part=foot_left": {
+      "model": "minecraft:block/air",
+      "y": 0
+    },
+    "facing=south,part=foot_right": {
+      "model": "minecraft:block/air",
+      "y": 0
+    },
+    "facing=south,part=head_left": {
+      "model": "britannia_mod:block/furniture/double_bed",
+      "y": 0
+    },
+    "facing=south,part=head_right": {
+      "model": "minecraft:block/air",
+      "y": 0
+    },
+
+    "facing=east,part=foot_left": {
+      "model": "minecraft:block/air",
+      "y": 270
+    },
+    "facing=east,part=foot_right": {
+      "model": "minecraft:block/air",
+      "y": 270
+    },
+    "facing=east,part=head_left": {
+      "model": "britannia_mod:block/furniture/double_bed",
+      "y": 270
+    },
+    "facing=east,part=head_right": {
+      "model": "minecraft:block/air",
+      "y": 270
+    },
+
+    "facing=west,part=foot_left": {
+      "model": "minecraft:block/air",
+      "y": 90
+    },
+    "facing=west,part=foot_right": {
+      "model": "minecraft:block/air",
+      "y": 90
+    },
+    "facing=west,part=head_left": {
+      "model": "britannia_mod:block/furniture/double_bed",
+      "y": 90
+    },
+    "facing=west,part=head_right": {
+      "model": "minecraft:block/air",
+      "y": 90
+    }
+  }
 }

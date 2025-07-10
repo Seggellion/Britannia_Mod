@@ -1,7 +1,8 @@
 {
     "texture_size": [128, 128],
       "render_type": "cutout_mipped", 
-    "textures": { "15": "britannia_mod:block/double_bed" },
+    "textures": { "15": "britannia_mod:block/double_bed",
+    "particles": "britannia_mod:block/double_bed" },
     "elements": [
         {
             "from": [-14, 0, -15],
@@ -492,15 +493,5 @@
                 "down": { "uv": [8.9375, 8.875, 7.5, 9.8125], "texture": "#15" }
             }
         }
-    ],
-    "display": {
-        "thirdperson_righthand": { "rotation": [73.15, 20.91, 3.31], "translation": [0, 3, 0], "scale": [0.3125, 0.3125, 0.3125] },
-        "thirdperson_lefthand": { "rotation": [73.15, 20.91, 3.31], "translation": [0, 3, 0], "scale": [0.3125, 0.3125, 0.3125] },
-        "firstperson_righthand": { "rotation": [170.6, 60.54, -176.46], "translation": [0.75, 2, 0], "scale": [0.15781, 0.15781, 0.15781] },
-        "firstperson_lefthand": { "rotation": [170.6, 60.54, -176.46], "translation": [0.75, 2, 0], "scale": [0.15781, 0.15781, 0.15781] },
-        "ground": { "translation": [0, 1.75, 0], "scale": [0.50586, 0.50586, 0.50586] },
-        "gui": { "rotation": [30, 225, 0], "translation": [-3, -1, 0], "scale": [0.33204, 0.33204, 0.33204] },
-        "head": { "rotation": [-180, 0, -180], "translation": [0, -30.4, 0.75], "scale": [1.6, 1.6, 1.6] },
-        "fixed": { "rotation": [-90, 180, 0], "translation": [0, 0, -16], "scale": [2.01, 2.01, 2.01] }
-    }
+    ]
 }

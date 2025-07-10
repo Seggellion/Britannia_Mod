@@ -2,7 +2,6 @@
 package com.seggellion.britannia_mod;
 
 import com.seggellion.britannia_mod.client.renderer.entity.EntityHorseMerchantRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.DoubleBedRenderer;
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityFishMerchantRenderer;
@@ -12,10 +11,7 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRe
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.neoforged.neoforge.client.model.obj.ObjLoader;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import com.seggellion.britannia_mod.block.LargeForgeRenderer;
@@ -33,7 +29,6 @@ import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.LichRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.RatRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
-import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.client.renderer.entity.WraithRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.GhoulRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.ShadeRenderer;
@@ -42,19 +37,13 @@ import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRende
 import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
-import net.minecraft.client.renderer.blockentity.BedRenderer;   
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.minecraft.world.item.Tier;
-import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
-import net.neoforged.neoforge.common.SimpleTier;
 import net.minecraft.world.item.component.CustomModelData;
-import net.neoforged.neoforge.client.event.ClientPlayerChangeGameTypeEvent;
-import net.minecraft.client.resources.model.BakedModel;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -65,30 +54,14 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.world.item.Item;
-import net.minecraft.client.Minecraft;
-import net.neoforged.neoforge.common.NeoForge;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.registry.SwordRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
-import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
-import net.minecraft.nbt.CompoundTag;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RegisterNamedRenderTypesEvent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-
-import java.util.Map;
-import java.util.HashMap;
 
 
 public class ClientModSetup {
