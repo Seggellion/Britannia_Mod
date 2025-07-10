@@ -82,6 +82,7 @@ public class CreativeTabRegistry {
                 // Windows
                 safeAccept(output, ItemRegistry.WINDOW_1X1_ITEM.get());
                 safeAccept(output, ItemRegistry.WINDOW_1X2_ITEM.get());
+                safeAccept(output, ItemRegistry.WINDOW_COBBLESTONE_1X2_ITEM.get());
                 safeAccept(output, ItemRegistry.WINDOW_1X3_ITEM.get());
                 safeAccept(output, ItemRegistry.WINDOW_2X2_ITEM.get());
                 safeAccept(output, ItemRegistry.WINDOW_2X3_ITEM.get());

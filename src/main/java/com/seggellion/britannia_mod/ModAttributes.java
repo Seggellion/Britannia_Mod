@@ -43,12 +43,6 @@ public class ModAttributes {
             () -> new RangedAttribute("attribute.name.britannia_mod.generic.burning_time", 1.0D, 0.0D, 1024.0D).setSyncable(true)
     );
 
-    // Add the nametag_distance attribute here
-    public static final DeferredHolder<Attribute, Attribute> NAMETAG_DISTANCE = ATTRIBUTES.register(
-            "generic.nametag_distance",
-            () -> new RangedAttribute("attribute.name.britannia_mod.generic.nametag_distance", 32.0D, 0.0D, 1024.0D).setSyncable(true)
-    );
-
     public static void register(IEventBus modEventBus) {
         ATTRIBUTES.register(modEventBus);
     }

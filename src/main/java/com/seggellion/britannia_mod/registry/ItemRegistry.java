@@ -331,6 +331,11 @@ public static final DeferredHolder<Item, BlockItem> WINDOW_1X2_ITEM =
         ITEMS.register("window_1x2",
             () -> new BlockItem(BlockRegistry.WINDOW_1X2.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> WINDOW_COBBLESTONE_1X2_ITEM =
+        ITEMS.register("window_cobblestone_1x2",
+            () -> new BlockItem(BlockRegistry.WINDOW_COBBLESTONE_1X2.get(), new Item.Properties()));
+
+
 public static final DeferredHolder<Item, BlockItem> WINDOW_1X3_ITEM =
         ITEMS.register("window_1x3",
             () -> new BlockItem(BlockRegistry.WINDOW_1X3.get(), new Item.Properties()));

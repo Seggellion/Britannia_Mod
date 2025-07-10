@@ -11,6 +11,7 @@ import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.util.SendTransactionToAPI;
 import com.seggellion.britannia_mod.BritanniaMod;
 
+import net.minecraft.resources.ResourceLocation;
 
 import com.seggellion.britannia_mod.ModAttributes;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -54,12 +55,25 @@ public class EntityFishMerchant extends AbstractVillager implements IEntityExten
     private static final Logger LOGGER = LogManager.getLogger();
     private static final double MESSAGE_RADIUS = 20.0;
 
+    private String gender = "unknown";
+    private String personalName = "Unnamed";
 
     public EntityFishMerchant(EntityType<? extends AbstractVillager> entityType, Level level) {
         super(entityType, level);
         this.setPersistenceRequired();
         this.cityName = ""; 
         this.spawnPosition = this.blockPosition();
+    }
+
+
+    public void setPersonalName(String personalName) {
+        this.personalName = personalName;
+        this.setCustomName(Component.literal(personalName));
+        this.setCustomNameVisible(true);
+    }
+
+    public String getPersonalName() {
+        return this.personalName;
     }
 
 
@@ -123,6 +137,7 @@ public void tick() {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putString("CityName", cityName);
+        tag.putString("personalName", personalName);
         tag.putLong("SpawnPosition", spawnPosition.asLong());
     }
 
@@ -130,8 +145,15 @@ public void tick() {
 public void readAdditionalSaveData(CompoundTag tag) {
     super.readAdditionalSaveData(tag);
     cityName = tag.getString("CityName");
+    this.personalName = tag.getString("personalName");
     spawnPosition = BlockPos.of(tag.getLong("SpawnPosition"));
     
+    String nameFromTag = tag.contains("personalName") ? tag.getString("personalName") : "Unnamed";
+    this.personalName = nameFromTag == null || nameFromTag.isEmpty() ? "Unnamed" : nameFromTag;
+    this.setCustomName(Component.literal(this.personalName));
+
+    this.setCustomNameVisible(true);
+
     if (!this.level().isClientSide) {
         setCityName(cityName);
     }
@@ -148,6 +170,14 @@ public void onAddedToLevel() {
     // Getter and Setter for cityName
     public String getCityName() {
         return this.cityName;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getGender() {
+        return this.gender;
     }
 
 
@@ -357,7 +387,9 @@ private String getFishType(Item item) {
                 .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
                 .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
                 .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D)
-                 .add(getAttributeHolder(ModAttributes.NAMETAG_DISTANCE.get()), 64.0D);
+.add(getAttributeHolder(BuiltInRegistries.ATTRIBUTE
+    .get(ResourceLocation.fromNamespaceAndPath("neoforge", "nametag_distance"))), 64.0D);
+
     }
 
     private static Holder<Attribute> getAttributeHolder(Attribute attribute) {
@@ -383,6 +415,8 @@ private String getFishType(Item item) {
         AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()));
         return instance != null ? (float) instance.getValue() : super.maxUpStep();
     }
+
+
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel serverLevel, AgeableMob ageableMob) {

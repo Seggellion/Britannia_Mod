@@ -14,8 +14,14 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
 import  net.neoforged.neoforge.common.NeoForgeMod;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import com.seggellion.britannia_mod.network.RailsCatalog;
+import net.minecraft.nbt.CompoundTag;
 
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
@@ -30,12 +36,15 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import java.util.ArrayList;
 
 import java.util.List;
-
 public class ArchitectEntity extends PathfinderMob {
     private String cityName = "";
+    private String gender = "unknown";
+    private String personalName = "Unnamed";
+    private final List<Product> catalog = new ArrayList<>();
 
     protected ArchitectEntity(EntityType<? extends PathfinderMob> t, Level lvl) {
         super(t, lvl);
+        this.setPersistenceRequired(); // Ensure it doesn't despawn
     }
 
     public static ArchitectEntity create(EntityType<ArchitectEntity> type, Level level) {
@@ -54,8 +63,16 @@ public class ArchitectEntity extends PathfinderMob {
     public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
         if (hand == InteractionHand.MAIN_HAND) {
             if (!level().isClientSide) {
-                // Server side → send screen open packet
-                ClientboundOpenArchitectScreenPayload.send((net.minecraft.server.level.ServerPlayer) player, this);
+                loadCatalogFromRails(); // Ensure the catalog is populated
+
+                MinecraftServer server = ((ServerLevel) level()).getServer();
+                server.execute(() -> {
+                    if (!catalog.isEmpty()) {
+                        ClientboundOpenArchitectScreenPayload.send((ServerPlayer) player, this);
+                    } else {
+                        player.sendSystemMessage(Component.literal("The Architect's catalog is still loading..."));
+                    }
+                });
             }
             return InteractionResult.CONSUME;
         }
@@ -74,14 +91,16 @@ public class ArchitectEntity extends PathfinderMob {
             .add(Attributes.MAX_ABSORPTION, 0.0D)
             .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
             .add(Attributes.BURNING_TIME, 5.0D)
-            .add(Attributes.JUMP_STRENGTH, 1.0D)
+            .add(Attributes.JUMP_STRENGTH, 0.2D)
             .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
             .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)
             .add(Attributes.WATER_MOVEMENT_EFFICIENCY, 1.0D)
             .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
-            .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
+            .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 1.0D)
             .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D)
-            .add(NeoForgeMod.SWIM_SPEED, 1.0D);
+            .add(NeoForgeMod.SWIM_SPEED, 1.0D).add(getAttributeHolder(BuiltInRegistries.ATTRIBUTE
+    .get(ResourceLocation.fromNamespaceAndPath("neoforge", "nametag_distance"))), 64.0D);
+
     }
 
     private static Holder<Attribute> getAttributeHolder(Attribute attribute) {
@@ -90,23 +109,44 @@ public class ArchitectEntity extends PathfinderMob {
             .orElseThrow(() -> new IllegalArgumentException("Attribute not registered: " + attribute));
     }
 
-    public Component getDisplayName() {
-        return Component.literal("Architect");
-    }
 
     public void setCityName(String city) {
         this.cityName = city;
     }
 
-    private final List<Product> catalog = new ArrayList<>();
+    public String city() {
+        return cityName;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getGender() {
+        return this.gender;
+    }
+
+    public void setPersonalName(String personalName) {
+        this.personalName = personalName;
+this.setCustomName(Component.literal(personalName + " the Architect"));
+        this.setCustomNameVisible(true);
+    }
+
+    public String getPersonalName() {
+        return this.personalName;
+    }
 
     public List<Product> catalog() {
         return catalog;
     }
 
-
-    public String city() {
-        return cityName;
+    public void loadCatalogFromRails() {
+        if (!level().isClientSide && catalog.isEmpty() && !city().isBlank()) {
+            RailsCatalog.fetch(city()).thenAcceptAsync(fetched -> {
+                this.catalog.clear();
+                this.catalog.addAll(fetched);
+            }, ((ServerLevel) level()).getServer());
+        }
     }
 
     @Override
@@ -125,5 +165,28 @@ public class ArchitectEntity extends PathfinderMob {
     public float maxUpStep() {
         AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()));
         return instance != null ? (float) instance.getValue() : super.maxUpStep();
+    }
+
+    // ----------------------------
+    // NBT Save/Load
+    // ----------------------------
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putString("cityName", cityName);
+        tag.putString("gender", gender);
+        tag.putString("personalName", personalName);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        this.cityName = tag.getString("cityName");
+        this.gender = tag.getString("gender");
+        this.personalName = tag.getString("personalName");
+
+        // Re-apply name for nametag display
+        this.setCustomName(Component.literal(personalName));
+        this.setCustomNameVisible(true);
     }
 }

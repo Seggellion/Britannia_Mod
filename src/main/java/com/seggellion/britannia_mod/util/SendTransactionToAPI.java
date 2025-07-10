@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.MerchantMenu;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -20,6 +21,9 @@ import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.config.ModConfig;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
+
 import net.minecraft.server.level.ServerLevel;
 
 import java.nio.charset.StandardCharsets;
@@ -36,8 +40,16 @@ public class SendTransactionToAPI {
     public static void send(ServerLevel serverLevel, String playerUuid, String cityName, List<JsonObject> items, String transactionType, String npcType, String npcId, String npcName, Player player) {
         try {
             JsonObject payload = createPayload(playerUuid, cityName, npcId, npcName, transactionType, items);
-            HttpURLConnection conn = initializeConnection(ModConfig.API_BASE_URL + "transactions", serverLevel);
+            double totalPrice = payload.has("total_price") ? payload.get("total_price").getAsDouble() : 0.0;
 
+            if ("purchase".equalsIgnoreCase(transactionType) && player instanceof ServerPlayer serverPlayer) {
+                if (!hasEnoughGold(serverPlayer, (int) totalPrice)) {
+                    player.sendSystemMessage(Component.literal("You do not have enough gold for this purchase."));
+                    return; // 🚫 Block before API request
+                }
+            }
+
+            HttpURLConnection conn = initializeConnection(ModConfig.API_BASE_URL + "transactions", serverLevel);
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
@@ -48,6 +60,22 @@ public class SendTransactionToAPI {
         }
     }
 
+    private static boolean hasEnoughGold(ServerPlayer player, int amount) {
+        int available = 0;
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
+                available += stack.getCount();
+            }
+        }
+        if (player.containerMenu instanceof MerchantMenu merchantMenu) {
+            ItemStack inputSlot = merchantMenu.getSlot(0).getItem();
+            if (inputSlot.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
+                available += inputSlot.getCount();
+            }
+        }
+        return available >= amount;
+    }
+
     private static JsonObject createPayload(String playerUuid, String cityName, String npcId, String npcName, String transactionType, List<JsonObject> items) {
         JsonObject payload = new JsonObject();
         payload.addProperty("player_uuid", playerUuid);
@@ -56,47 +84,42 @@ public class SendTransactionToAPI {
         payload.addProperty("npc_name", npcName);
         payload.addProperty("shard", "Britannia");
         payload.addProperty("transaction_type", transactionType);
-        
-   JsonArray itemsArray = new JsonArray();
-       JsonArray deductedCommodities = new JsonArray();
 
-    double totalChecksum = 0.0;
-    double totalPrice = 0.0;
+        JsonArray itemsArray = new JsonArray();
+        JsonArray deductedCommodities = new JsonArray();
+        double totalChecksum = 0.0;
+        double totalPrice = 0.0;
 
-    // Calculate total price from item details
-    for (JsonObject item : items) {
-        itemsArray.add(item);
+        for (JsonObject item : items) {
+            itemsArray.add(item);
+            String itemName = item.get("item_name").getAsString();
+            int quantity = item.has("quantity") ? item.get("quantity").getAsInt() : 1;
 
+            if ("purchase".equalsIgnoreCase(transactionType)) {
+                JsonObject recipeData = LocalRecipes.getDeductionsWithChecksum(itemName, quantity);
+                JsonArray itemDeductions = recipeData.getAsJsonArray("deductions");
+                double itemChecksum = recipeData.get("checksum").getAsDouble();
 
-        String itemName = item.get("item_name").getAsString();
-        int quantity = 1;
+                for (var deduction : itemDeductions) {
+                    deductedCommodities.add(deduction);
+                }
 
-
-        if (transactionType.equalsIgnoreCase("purchase")) {
-            JsonObject recipeData = LocalRecipes.getDeductionsWithChecksum(itemName, quantity);
-            JsonArray itemDeductions = recipeData.getAsJsonArray("deductions");
-            double itemChecksum = recipeData.get("checksum").getAsDouble();
-
-            for (var deduction : itemDeductions) {
-                deductedCommodities.add(deduction);
+                totalChecksum += itemChecksum;
             }
-            totalChecksum += itemChecksum;
+
+            if (item.has("price")) {
+                totalPrice += item.get("price").getAsDouble() * quantity;
+            }
         }
 
-        if (item.has("price")) {
-            totalPrice += item.get("price").getAsDouble() * item.get("quantity").getAsInt();
-        }
-    }
-
-        items.forEach(itemsArray::add);
         payload.add("transaction_items", itemsArray);
+        payload.add("deducted_commodities", deductedCommodities);
+        payload.addProperty("recipe_checksum", totalChecksum);
 
-           payload.add("deducted_commodities", deductedCommodities);
-            payload.addProperty("recipe_checksum", totalChecksum);
+        if ("purchase".equalsIgnoreCase(transactionType)) {
+            payload.addProperty("total_price", totalPrice);
+        }
 
-           if (transactionType.equalsIgnoreCase("purchase")) {
-        payload.addProperty("total_price", totalPrice);
-    }
         return payload;
     }
 
@@ -114,69 +137,104 @@ public class SendTransactionToAPI {
         return conn;
     }
 
-private static void handleResponse(HttpURLConnection conn, Player player, List<JsonObject> items) throws IOException {
-    int responseCode = conn.getResponseCode();
-    if (responseCode == HttpURLConnection.HTTP_OK) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-            JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();
-            double totalGold = response.get("total_gold").getAsDouble();
-            String transactionType = response.has("transaction_type") ? 
-                response.get("transaction_type").getAsString().toLowerCase() : "unknown";
+    private static void handleResponse(HttpURLConnection conn, Player player, List<JsonObject> items) throws IOException {
+        int responseCode = conn.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();
+                double totalGold = response.get("total_gold").getAsDouble();
+                String transactionType = response.has("transaction_type") ?
+                        response.get("transaction_type").getAsString().toLowerCase() : "unknown";
 
-            if (player instanceof ServerPlayer serverPlayer) {
-                if ("purchase".equals(transactionType)) {
-                    // ✅ Remove Gold from Player Inventory and Sync
-                    removeGoldCoins(serverPlayer, (int) totalGold);
-                } else if ("sell".equals(transactionType)) {
-                    // ✅ Give Gold for Sales and Remove Sold Items
-                    removeSoldItems(serverPlayer, items);
-                    giveGoldCoins(serverPlayer, (int) totalGold);                   
-                } else {
-                    LOGGER.warn("Unknown transaction type: {}", transactionType);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    if ("purchase".equals(transactionType)) {
+                        boolean success = removeGoldCoins(serverPlayer, (int) totalGold);
+                        if (success) {
+                            givePurchasedItems(serverPlayer, items);
+                        } else {
+                            player.sendSystemMessage(Component.literal("Transaction failed: Insufficient gold."));
+                        }
+                    } else if ("sell".equals(transactionType)) {
+                        removeSoldItems(serverPlayer, items);
+                        giveGoldCoins(serverPlayer, (int) totalGold);
+                    } else {
+                        LOGGER.info("Unknown transaction type: {}", transactionType);
+                    }
                 }
-            } else {
-                LOGGER.error("Player is not a ServerPlayer instance.");
+            }
+        } else {
+            LOGGER.warn("Failed to process transaction. Response Code: {}", responseCode);
+        }
+    }
+
+    private static boolean removeGoldCoins(ServerPlayer player, int amount) {
+        if (amount <= 0) return true;
+
+        int available = 0;
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
+                available += stack.getCount();
             }
         }
-    } else {
-        LOGGER.warn("Failed to process transaction. Response Code: {}", responseCode);
-    }
-}
 
-private static void removeGoldCoins(ServerPlayer player, int amount) {
-    if (amount <= 0) return;
-
-    // ✅ 1. Remove Gold from Player Inventory
-    for (ItemStack stack : player.getInventory().items) {
-        if (stack.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
-            int toRemove = Math.min(stack.getCount(), amount);
-            stack.shrink(toRemove);
-            amount -= toRemove;
-            if (amount <= 0) break;
+        if (player.containerMenu instanceof MerchantMenu merchantMenu) {
+            ItemStack inputSlot = merchantMenu.getSlot(0).getItem();
+            if (inputSlot.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
+                available += inputSlot.getCount();
+            }
         }
-    }
 
-    // ✅ 2. Remove Gold from Villager Trade Input Slot
-    if (player.containerMenu instanceof net.minecraft.world.inventory.MerchantMenu merchantMenu) {
-        ItemStack inputSlot = merchantMenu.getSlot(0).getItem(); // Slot 0: Input (Gold Coins)
-        if (inputSlot.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
-            int toRemove = Math.min(inputSlot.getCount(), amount);
-            inputSlot.shrink(toRemove);
-            merchantMenu.broadcastChanges();
-            LOGGER.info("Removed {} gold from Villager trade slot.", toRemove);
+        if (available < amount) {
+            LOGGER.warn("Player did not have enough gold coins. Has: {}, Needs: {}", available, amount);
+            return false;
         }
+
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
+                int toRemove = Math.min(stack.getCount(), amount);
+                stack.shrink(toRemove);
+                amount -= toRemove;
+                if (amount <= 0) break;
+            }
+        }
+
+        if (player.containerMenu instanceof MerchantMenu merchantMenu) {
+            ItemStack inputSlot = merchantMenu.getSlot(0).getItem();
+            if (inputSlot.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
+                int toRemove = Math.min(inputSlot.getCount(), amount);
+                inputSlot.shrink(toRemove);
+                merchantMenu.broadcastChanges();
+                LOGGER.info("Removed {} gold from Villager trade slot.", toRemove);
+            }
+        }
+
+        player.containerMenu.broadcastChanges();
+        player.inventoryMenu.broadcastFullState();
+        return true;
     }
 
-    // ✅ 3. Sync Player Inventory and Trade Slots
-    player.containerMenu.broadcastChanges();
-    player.inventoryMenu.broadcastFullState();
+    private static void givePurchasedItems(ServerPlayer player, List<JsonObject> items) {
+        for (JsonObject item : items) {
+            if (!item.has("item_id")) continue;
 
-    if (amount > 0) {
-        LOGGER.warn("Player did not have enough gold coins. Missing: {}", amount);
-    } else {
-        LOGGER.info("Successfully removed gold coins from player inventory and trade slot.");
+            String itemId = item.get("item_id").getAsString();
+            int quantity = item.has("quantity") && !item.get("quantity").isJsonNull()
+                    ? item.get("quantity").getAsInt() : 1;
+
+            ResourceLocation id = ResourceLocation.tryParse(itemId);
+            if (id == null) {
+                LOGGER.warn("Invalid item_id: {}", itemId);
+                continue;
+            }
+
+            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(id), quantity);
+            if (!player.getInventory().add(stack)) {
+                player.drop(stack, false);
+            }
+        }
+
+        player.inventoryMenu.broadcastChanges();
     }
-}
 
     private static void giveGoldCoins(Player player, int amount) {
         ItemStack coinStack = new ItemStack(ItemRegistry.GOLD_COIN.get());
@@ -195,24 +253,14 @@ private static void removeGoldCoins(ServerPlayer player, int amount) {
         items.forEach(item -> {
             String itemId = item.has("item_id") ? item.get("item_id").getAsString() : "";
             String itemName = item.has("item_name") ? item.get("item_name").getAsString() : "";
-            int quantity = item.has("quantity") && !item.get("quantity").isJsonNull() 
-                ? item.get("quantity").getAsInt() 
-                : 1;
+            int quantity = item.has("quantity") && !item.get("quantity").isJsonNull()
+                    ? item.get("quantity").getAsInt() : 1;
 
-            LOGGER.warn("removeSoldItems:{}-- {}, x {}",itemId,itemName, quantity);
             switch (itemId) {
-                case "britannia_mod:weighted_wood_item":
-                    removeItemsByType(player, itemName, quantity, WeightedWoodItem.class);
-                    break;
-                case "britannia_mod:weighted_fish_item":
-                    removeItemsByType(player, itemName, quantity, WeightedFishItem.class);
-                    break;
-                case "britannia_mod:purity_ore_item":
-                    removeItemsByType(player, itemName, quantity, PurityOreItem.class);
-                    break;
-                case "britannia_mod:grade_stone_item":
-                    removeItemsByType(player, itemName, quantity, GradeStoneItem.class);
-                    break;
+                case "britannia_mod:weighted_wood_item" -> removeItemsByType(player, itemName, quantity, WeightedWoodItem.class);
+                case "britannia_mod:weighted_fish_item" -> removeItemsByType(player, itemName, quantity, WeightedFishItem.class);
+                case "britannia_mod:purity_ore_item" -> removeItemsByType(player, itemName, quantity, PurityOreItem.class);
+                case "britannia_mod:grade_stone_item" -> removeItemsByType(player, itemName, quantity, GradeStoneItem.class);
             }
         });
     }
@@ -230,10 +278,10 @@ private static void removeGoldCoins(ServerPlayer player, int amount) {
                 }
             }
         }
-            // Sync inventory if player is a ServerPlayer
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.inventoryMenu.broadcastChanges();
-            }
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.inventoryMenu.broadcastChanges();
+        }
     }
 
     private static String getItemSubtype(ItemStack stack, Class<?> itemClass) {

@@ -1,4 +1,6 @@
 {
-    "parent": "britannia_mod:block/decorations/serpent_shield"
+    "parent": "item/generated",
+    "textures": {
+      "layer0": "britannia_mod:item/serpent_shield"
+    }
   }
-  

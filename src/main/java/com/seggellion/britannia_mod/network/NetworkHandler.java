@@ -11,6 +11,8 @@ import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
+import com.seggellion.britannia_mod.network.payload.BuyItemsC2SPayload;
+import com.seggellion.britannia_mod.network.payload.CloseScreenS2CPayload;
 import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
 import com.seggellion.britannia_mod.network.HousePlacementHandler;
@@ -46,6 +48,21 @@ registrar.playToClient(ClientboundOpenArchitectScreenPayload.TYPE,
     ClientboundOpenArchitectScreenPayload.STREAM_CODEC,
     (payload, context) -> ClientboundOpenArchitectScreenPayload.handle(payload));
 
+registrar.playToServer(
+    BuyItemsC2SPayload.TYPE,
+    BuyItemsC2SPayload.STREAM_CODEC,
+    (payload, context) -> context.enqueueWork(() -> {
+        if (context.player() instanceof ServerPlayer serverPlayer) {
+            BuyItemsC2SPayload.handle(payload, serverPlayer);
+        }
+    })
+);
+
+registrar.playToClient(
+    CloseScreenS2CPayload.TYPE,
+    CloseScreenS2CPayload.STREAM_CODEC,
+    (payload, context) -> CloseScreenS2CPayload.handle(payload, context)
+);
 
 
 registrar.playToClient(

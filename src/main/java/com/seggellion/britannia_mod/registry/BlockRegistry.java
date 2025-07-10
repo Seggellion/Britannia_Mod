@@ -636,6 +636,16 @@ public static final DeferredHolder<Block, ThinWall> WINDOW_1X2 =
         )
     );
 
+    public static final DeferredHolder<Block, ThinWall> WINDOW_COBBLESTONE_1X2 =
+    BLOCKS.register("window_cobblestone_1x2", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.0f)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+        )
+    );
+
 public static final DeferredHolder<Block, ThinWall> WINDOW_1X3 =
     BLOCKS.register("window_1x3", 
         () -> new ThinWall(BlockBehaviour.Properties.of()

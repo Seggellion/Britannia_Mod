@@ -99,24 +99,38 @@ public void tick() {
 
 private void spawnFishMerchant(ServerLevel serverLevel) {
     if (associatedNpcs.stream().map(serverLevel::getEntity).anyMatch(e -> e instanceof EntityFishMerchant)) return;
+
     EntityFishMerchant merchant = EntityRegistry.FISH_MERCHANT_ENTITY.get().create(serverLevel);
     BlockPos spawnPos = findNonWaterSpawnLocation(serverLevel);
     if (merchant != null && spawnPos != null) {
         merchant.setCityName(cityName);
         merchant.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, serverLevel.random.nextFloat() * 360F, 0);
+
+        // Generate random gender
+        String gender = serverLevel.random.nextBoolean() ? "male" : "female";
+        merchant.setGender(gender); // You'll need to implement this setter in your EntityFishMerchant class
+
+        // Use gender-appropriate random name
+        String randomName = gender.equals("male") ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName();
+       
+        merchant.setPersonalName(randomName);
+
+        String description = "A friendly fish merchant named " + randomName;
+
+        // Register and spawn
         serverLevel.addFreshEntity(merchant);
         associatedNpcs.add(merchant.getUUID());
-        // Use the random name loader
-        String randomName = NameLoader.getRandomMaleName();
-        String description = "A friendly fish merchant named " + randomName;
+
         int level = 1;
         int health = 100;
         int mana = 50;
         boolean isActive = true;
         String spawnLocation = String.format("[x=%.1f, y=%.1f, z=%.1f]", (double) spawnPos.getX(), (double) spawnPos.getY(), (double) spawnPos.getZ());
+
         CityDataSync.registerNpc(serverLevel, merchant.getUUID(), "fish_merchant", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
     }
 }
+
 
 private void spawnTownspersons(ServerLevel serverLevel, int count) {
     for (int i = 0; i < count; i++) {

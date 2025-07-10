@@ -25,9 +25,9 @@ import java.util.*;
 
 public class ArchitectScreen extends Screen {
     private static final ResourceLocation BG =
-        ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/gui/architect.png");
+        ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/buy_screen.png");
 
-    private static final int GUI_W = 238, GUI_H = 192, ROW_H = 20;
+    private static final int GUI_W = 238, GUI_H = 238, ROW_H = 20;
 
     private int guiLeft, guiTop;
 
@@ -139,6 +139,10 @@ public void render(GuiGraphics gg, int mx, int my, float pt) {
 
         gg.drawString(font, "Total: " + totalPrice + "g",
             guiLeft + 134, guiTop + GUI_H - 38, 0xFFFFFF, false);
+    }
+    
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // intentionally blank – skip blur shader
     }
 
     @Override

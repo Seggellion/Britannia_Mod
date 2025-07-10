@@ -24,24 +24,24 @@ public record BuyItemsC2SPayload(JsonArray items, int clientTotal, int architect
     public static final Type<BuyItemsC2SPayload> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath("britannia_mod", "buy_items"));
 
-    public static final StreamCodec<FriendlyByteBuf, BuyItemsC2SPayload> STREAM_CODEC = StreamCodec.of(
-        // encode
-        (buf, p) -> {
-            String json = p.items.toString();
-            buf.writeVarInt(json.getBytes(StandardCharsets.UTF_8).length);
-            buf.writeUtf(json, 32_000); // cap at 32k
-            buf.writeVarInt(p.clientTotal);
-            buf.writeVarInt(p.architectId);
-        },
-        // decode
-        buf -> {
-            String json = buf.readUtf(32_000);
-            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
-            int total = buf.readVarInt();
-            int architectId = buf.readVarInt();
-            return new BuyItemsC2SPayload(arr, total, architectId);
-        }
-    );
+public static final StreamCodec<FriendlyByteBuf, BuyItemsC2SPayload> STREAM_CODEC = StreamCodec.of(
+    // Encode
+    (buf, p) -> {
+        String json = p.items.toString();
+        buf.writeUtf(json, 32_000);  // ✅ only this
+        buf.writeVarInt(p.clientTotal());
+        buf.writeVarInt(p.architectId());
+    },
+    // Decode
+    buf -> {
+        String json = buf.readUtf(32_000);
+        JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
+        int total = buf.readVarInt();
+        int architectId = buf.readVarInt();
+        return new BuyItemsC2SPayload(arr, total, architectId);
+    }
+);
+
 
     @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
 
@@ -74,10 +74,10 @@ public record BuyItemsC2SPayload(JsonArray items, int clientTotal, int architect
             "purchase",
             "architect",
             npc.getUUID().toString(),
-            npc.getName().getString(),
+            npc.getPersonalName(),
             player
         );
-
+        CloseScreenS2CPayload.send(player);
         player.sendSystemMessage(Component.literal("Fare thee well, adventurer!"));
     }
 }
