@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class NudgeableBlockEntity extends BlockEntity {
-    private Vec3 offset = Vec3.ZERO;
+    protected Vec3 offset = Vec3.ZERO; // Changed from private to protected
 
     protected NudgeableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);

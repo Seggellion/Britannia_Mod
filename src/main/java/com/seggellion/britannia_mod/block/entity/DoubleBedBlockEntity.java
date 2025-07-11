@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.block.DoubleBedBlock;
+import com.seggellion.britannia_mod.block.nudgeable.NudgeableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
-public class DoubleBedBlockEntity extends BlockEntity {
+public class DoubleBedBlockEntity extends NudgeableBlockEntity {
     private UUID leftSleeper = null;
     private UUID rightSleeper = null;
 
@@ -66,12 +67,14 @@ public class DoubleBedBlockEntity extends BlockEntity {
                 rightSleeper = playerUUID;
             }
 
+            updateOccupiedStates(clickedState);
+            setChanged();
+
+            // Position player AFTER setting sleep state
             if (player instanceof ServerPlayer serverPlayer) {
                 positionPlayerInBed(serverPlayer, clickedPos, isLeftSide);
             }
 
-            updateOccupiedStates(clickedState);
-            setChanged();
             return InteractionResult.SUCCESS;
         }
     }
@@ -79,16 +82,33 @@ public class DoubleBedBlockEntity extends BlockEntity {
     private void positionPlayerInBed(ServerPlayer player, BlockPos clickedPos, boolean isLeftSide) {
         BlockState clickedState = level.getBlockState(clickedPos);
         Direction facing = clickedState.getValue(DoubleBedBlock.FACING);
-        DoubleBedBlock.BedPart part = clickedState.getValue(DoubleBedBlock.PART);
+        DoubleBedBlock.BedPart clickedPart = clickedState.getValue(DoubleBedBlock.PART);
 
-        BlockPos headPos = switch (part) {
-            case HEAD_LEFT, HEAD_RIGHT -> clickedPos; // Already head, use as-is
-            case FOOT_LEFT, FOOT_RIGHT -> clickedPos.relative(facing); // Move forward to head
-        };
+        // Get the MASTER position (HEAD_LEFT) and its offset
+        BlockPos masterPos = getMasterPosition(clickedPos, clickedState);
+        Vec3 masterOffset = Vec3.ZERO;
+        BlockEntity masterEntity = level.getBlockEntity(masterPos);
+        if (masterEntity instanceof DoubleBedBlockEntity masterBed) {
+            masterOffset = masterBed.getOffset();
+        }
 
-        double x = headPos.getX() + 0.5;
-        double y = headPos.getY() + 0.5625; // Proper bed height
-        double z = headPos.getZ() + 0.5;
+        // Calculate where the player should be positioned based on what they clicked
+        // ALL calculations are relative to the MASTER position + offset
+        Direction right = facing.getClockWise();
+
+        BlockPos targetHeadPos;
+        switch (clickedPart) {
+            case HEAD_LEFT -> targetHeadPos = masterPos; // Master is HEAD_LEFT
+            case HEAD_RIGHT -> targetHeadPos = masterPos.relative(right); // HEAD_RIGHT = master + right
+            case FOOT_LEFT -> targetHeadPos = masterPos; // Sleep at HEAD_LEFT
+            case FOOT_RIGHT -> targetHeadPos = masterPos.relative(right); // Sleep at HEAD_RIGHT
+            default -> targetHeadPos = masterPos;
+        }
+
+        // Apply master offset to the target head position
+        double x = targetHeadPos.getX() + 0.5 + masterOffset.x;
+        double y = targetHeadPos.getY() + 0.5625 + masterOffset.y;
+        double z = targetHeadPos.getZ() + 0.5 + masterOffset.z;
 
         player.setPos(x, y, z);
 
@@ -101,6 +121,19 @@ public class DoubleBedBlockEntity extends BlockEntity {
         };
         player.setYRot(yaw);
         player.setXRot(0.0f);
+    }
+
+    private BlockPos getMasterPosition(BlockPos clickedPos, BlockState clickedState) {
+        Direction facing = clickedState.getValue(DoubleBedBlock.FACING);
+        DoubleBedBlock.BedPart part = clickedState.getValue(DoubleBedBlock.PART);
+
+        // Find HEAD_LEFT position (master position)
+        return switch (part) {
+            case HEAD_LEFT -> clickedPos;
+            case HEAD_RIGHT -> clickedPos.relative(facing.getCounterClockWise());
+            case FOOT_LEFT -> clickedPos.relative(facing);
+            case FOOT_RIGHT -> clickedPos.relative(facing).relative(facing.getCounterClockWise());
+        };
     }
 
     private void wakeUpPlayer(Player player) {
@@ -121,19 +154,20 @@ public class DoubleBedBlockEntity extends BlockEntity {
         Direction facing = currentState.getValue(DoubleBedBlock.FACING);
         DoubleBedBlock.BedPart part = currentState.getValue(DoubleBedBlock.PART);
 
-        BlockPos footLeft = switch (part) {
-            case FOOT_LEFT -> getBlockPos();
-            case FOOT_RIGHT -> getBlockPos().relative(facing.getCounterClockWise());
-            case HEAD_LEFT -> getBlockPos().relative(facing.getOpposite());
-            case HEAD_RIGHT -> getBlockPos().relative(facing.getOpposite()).relative(facing.getCounterClockWise());
+        // Find HEAD_LEFT position (master position)
+        BlockPos headLeft = switch (part) {
+            case HEAD_LEFT -> getBlockPos();
+            case HEAD_RIGHT -> getBlockPos().relative(facing.getCounterClockWise());
+            case FOOT_LEFT -> getBlockPos().relative(facing);
+            case FOOT_RIGHT -> getBlockPos().relative(facing).relative(facing.getCounterClockWise());
         };
 
         Direction right = facing.getClockWise();
         BlockPos[] allPositions = {
-                footLeft,                                    // FOOT_LEFT
-                footLeft.relative(right),                    // FOOT_RIGHT
-                footLeft.relative(facing),                   // HEAD_LEFT
-                footLeft.relative(facing).relative(right)    // HEAD_RIGHT
+                headLeft.relative(facing.getOpposite()),                    // FOOT_LEFT
+                headLeft.relative(facing.getOpposite()).relative(right),    // FOOT_RIGHT
+                headLeft,                                                   // HEAD_LEFT (master)
+                headLeft.relative(right)                                    // HEAD_RIGHT
         };
 
         boolean anyOccupied = (leftSleeper != null || rightSleeper != null);
@@ -157,7 +191,7 @@ public class DoubleBedBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         if (leftSleeper != null) tag.putUUID("LeftSleeper", leftSleeper);
         if (rightSleeper != null) tag.putUUID("RightSleeper", rightSleeper);
