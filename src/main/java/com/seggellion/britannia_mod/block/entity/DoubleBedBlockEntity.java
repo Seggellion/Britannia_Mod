@@ -12,6 +12,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -27,6 +28,8 @@ public class DoubleBedBlockEntity extends NudgeableBlockEntity {
 
     public DoubleBedBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.DOUBLE_BED.get(), pos, state);
+        setAllowYNudging(false);
+        setReducedNudging(true);
     }
 
     public InteractionResult onPlayerInteract(Player player, BlockPos clickedPos, BlockState clickedState) {
@@ -37,6 +40,11 @@ public class DoubleBedBlockEntity extends NudgeableBlockEntity {
         }
 
         DoubleBedBlock.BedPart part = clickedState.getValue(DoubleBedBlock.PART);
+
+        if (part == DoubleBedBlock.BedPart.HEAD_LEFT || part == DoubleBedBlock.BedPart.HEAD_RIGHT) {
+            return InteractionResult.FAIL;
+        }
+
         boolean isLeftSide = (part == DoubleBedBlock.BedPart.FOOT_LEFT || part == DoubleBedBlock.BedPart.HEAD_LEFT);
 
         UUID playerUUID = player.getUUID();
@@ -84,30 +92,23 @@ public class DoubleBedBlockEntity extends NudgeableBlockEntity {
         Direction facing = clickedState.getValue(DoubleBedBlock.FACING);
         DoubleBedBlock.BedPart clickedPart = clickedState.getValue(DoubleBedBlock.PART);
 
-        // Get the MASTER position (HEAD_LEFT) and its offset
         BlockPos masterPos = getMasterPosition(clickedPos, clickedState);
+        Direction right = facing.getClockWise();
+
+        BlockPos targetHeadPos;
+        switch (clickedPart) {
+            case HEAD_RIGHT, FOOT_RIGHT -> targetHeadPos = masterPos.relative(right);
+            default -> targetHeadPos = masterPos;
+        }
+
         Vec3 masterOffset = Vec3.ZERO;
         BlockEntity masterEntity = level.getBlockEntity(masterPos);
         if (masterEntity instanceof DoubleBedBlockEntity masterBed) {
             masterOffset = masterBed.getOffset();
         }
 
-        // Calculate where the player should be positioned based on what they clicked
-        // ALL calculations are relative to the MASTER position + offset
-        Direction right = facing.getClockWise();
-
-        BlockPos targetHeadPos;
-        switch (clickedPart) {
-            case HEAD_LEFT -> targetHeadPos = masterPos; // Master is HEAD_LEFT
-            case HEAD_RIGHT -> targetHeadPos = masterPos.relative(right); // HEAD_RIGHT = master + right
-            case FOOT_LEFT -> targetHeadPos = masterPos; // Sleep at HEAD_LEFT
-            case FOOT_RIGHT -> targetHeadPos = masterPos.relative(right); // Sleep at HEAD_RIGHT
-            default -> targetHeadPos = masterPos;
-        }
-
-        // Apply master offset to the target head position
         double x = targetHeadPos.getX() + 0.5 + masterOffset.x;
-        double y = targetHeadPos.getY() + 0.5625 + masterOffset.y;
+        double y = targetHeadPos.getY() + 0.5625;
         double z = targetHeadPos.getZ() + 0.5 + masterOffset.z;
 
         player.setPos(x, y, z);

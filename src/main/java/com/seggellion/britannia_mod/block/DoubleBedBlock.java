@@ -23,12 +23,15 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+
+import static net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos;
 
 public class DoubleBedBlock extends Block implements EntityBlock, INudgeable {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -50,6 +53,8 @@ public class DoubleBedBlock extends Block implements EntityBlock, INudgeable {
 
     protected static final VoxelShape BASE = Block.box(0.0, 3.0, 0.0, 16.0, 8.5, 16.0);
     protected static final VoxelShape FULL_SHAPE = Shapes.or(BASE);
+
+
 
     public DoubleBedBlock(Properties props) {
         super(props);
