@@ -23,6 +23,7 @@ import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.structure.HouseStyle;
 import com.seggellion.britannia_mod.item.DeedItemFactory;
+import com.seggellion.britannia_mod.item.HouseKeyItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -484,6 +485,12 @@ public static final DeferredHolder<Item, Item> METAL_DOOR_ITEM = ITEMS.register(
     () -> new BlockItem(BlockRegistry.METAL_DOOR.get(), new Item.Properties().stacksTo(64))
 );
 
+public static final DeferredHolder<Item, Item> LOCKABLE_METAL_DOOR_ITEM = ITEMS.register(
+    "lockable_metal_door",
+    () -> new BlockItem(BlockRegistry.LOCKABLE_METAL_DOOR.get(), new Item.Properties())
+);
+
+
 // graveyard
 
 public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_1_ITEM =
@@ -807,6 +814,9 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
     "moongate_linking_wand",
     () -> new MoongateLinkingWand(new Item.Properties().stacksTo(1)));
 
+public static final DeferredHolder<Item, Item> HOUSE_KEY = ITEMS.register(
+        "house_key",
+        () -> new HouseKeyItem(new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> MOONGATE_BLOCK_ITEM = ITEMS.register(
             "moongate_block", () -> new BlockItem(BlockRegistry.MOONGATE_BLOCK.get(), new Item.Properties()));

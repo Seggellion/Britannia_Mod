@@ -192,6 +192,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.MANDRAKE_ROOT.get());
 
                 // General items
+                
+                safeAccept(output, ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.DUNGEON_MOONGATE_BLOCK_ITEM.get());

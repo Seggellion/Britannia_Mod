@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.registry;
 
-
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
 import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
@@ -11,6 +10,7 @@ import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlo
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurnitureBlockEntity;
 import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
+import com.seggellion.britannia_mod.block.entity.LockableDoorBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.Block;
@@ -96,6 +96,14 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
                 () -> BlockEntityType.Builder.of(ArchitectSpawnBlockEntity::new,
                 BlockRegistry.ARCHITECT_SPAWN_BLOCK.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LockableDoorBlockEntity>> LOCKABLE_DOOR =
+        BLOCK_ENTITIES.register("lockable_door", () ->
+            BlockEntityType.Builder.of(
+                    LockableDoorBlockEntity::new,
+                    /* All door blocks that should carry locks go here */
+                    BlockRegistry.LOCKABLE_METAL_DOOR.get()
+                    // , BlockRegistry.WOOD_DOOR.get()   ← add when registered
+            ).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

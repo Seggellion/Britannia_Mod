@@ -12,6 +12,9 @@ import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.network.payload.BuyItemsC2SPayload;
+import com.seggellion.britannia_mod.network.payload.RequestCatalogC2SPayload;
+import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
+import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.CloseScreenS2CPayload;
 import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
@@ -29,127 +32,134 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 
 public class NetworkHandler {
 
-    @SubscribeEvent
-    public static void register(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
+ @SubscribeEvent
+public static void register(final RegisterPayloadHandlersEvent event) {
+    final PayloadRegistrar registrar = event.registrar("1");
 
-        // Existing ManaSyncPayload registration
-        registrar.playToClient(
-            ManaSyncPayload.TYPE,
-            ManaSyncPayload.STREAM_CODEC,
-            (payload, context) -> {
-                if (FMLLoader.getDist().isClient()) {
-                    ClientNetworkHandler.handleManaSyncOnClient(payload, context);
-                }
+    /* ---------- packets that exist on BOTH sides or are SERVER-bound ---------- */
+
+    registrar.playToServer(
+        BuyItemsC2SPayload.TYPE, BuyItemsC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                BuyItemsC2SPayload.handle(payload, p);
             }
-        );
+        }));
 
-registrar.playToClient(ClientboundOpenArchitectScreenPayload.TYPE,
+    registrar.playToServer(
+        HousePlacementPayload.TYPE, HousePlacementPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                HousePlacementHandler.handle(payload, p);
+            }
+        }));
+
+    registrar.playToServer(
+        SpellCastPayload.TYPE, SpellCastPayload.STREAM_CODEC,
+        (data, ctx) -> handleSpellCastOnServer(data, ctx));
+
+    registrar.playToServer(
+        RenameStorePayload.TYPE, RenameStorePayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                RenameStorePayload.handle(payload, p);
+            }
+        }));
+
+    registrar.playToServer(
+        RenameHousePayload.TYPE, RenameHousePayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                RenameHouseHandler.handle(payload, p);
+            }
+        }));
+
+    registrar.playToServer(
+        UpdateSignStylePayload.TYPE, UpdateSignStylePayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                UpdateSignStyleHandler.handle(payload, p);
+            }
+        }));
+
+    registrar.playToServer(
+        HouseManagementActionPayload.TYPE, HouseManagementActionPayload.STREAM_CODEC,
+        (data, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p
+                    && data.action() == HouseManagementActionPayload.Action.REDEED) {
+                HouseActionHandler.handleRedeed(p);
+            }
+        }));
+
+    registrar.playToServer(
+        RequestCatalogC2SPayload.TYPE, RequestCatalogC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                RequestCatalogC2SPayload.handle(payload, p);
+            }
+        }));
+
+
+        // Mana sync
+       /* ---------- client-bound packets ---------- */
+// Mana sync
+registrar.playToClient(
+    ManaSyncPayload.TYPE,
+    ManaSyncPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleManaSyncOnClient
+        : (p, c) -> {});
+
+// Architect screen
+registrar.playToClient(
+    ClientboundOpenArchitectScreenPayload.TYPE,
     ClientboundOpenArchitectScreenPayload.STREAM_CODEC,
-    (payload, context) -> ClientboundOpenArchitectScreenPayload.handle(payload));
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleOpenArchitectScreen
+        : (p, c) -> {});
 
-registrar.playToServer(
-    BuyItemsC2SPayload.TYPE,
-    BuyItemsC2SPayload.STREAM_CODEC,
-    (payload, context) -> context.enqueueWork(() -> {
-        if (context.player() instanceof ServerPlayer serverPlayer) {
-            BuyItemsC2SPayload.handle(payload, serverPlayer);
-        }
-    })
-);
-
+// Close current screen
 registrar.playToClient(
     CloseScreenS2CPayload.TYPE,
     CloseScreenS2CPayload.STREAM_CODEC,
-    (payload, context) -> CloseScreenS2CPayload.handle(payload, context)
-);
+    FMLLoader.getDist().isClient()
+        ? CloseScreenS2CPayload::handle
+        : (p, c) -> {});
 
-
+// Store-sign screen
 registrar.playToClient(
     StoreSignScreenPayload.TYPE,
     StoreSignScreenPayload.STREAM_CODEC,
     FMLLoader.getDist().isClient()
         ? ClientNetworkHandler::handleStoreSignScreenOnClient
-        : (payload, context) -> {}  // dummy handler for server
-);
+        : (p, c) -> {});
 
+// Transaction success / failure
+registrar.playToClient(
+    TransactionSuccessS2CPayload.TYPE,
+    TransactionSuccessS2CPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? TransactionSuccessS2CPayload::handle
+        : (p, c) -> {});
 
-        registrar.playToServer(
-            RenameStorePayload.TYPE,
-            RenameStorePayload.STREAM_CODEC,
-            (payload, context) -> context.enqueueWork(() -> {
-                if (context.player() instanceof ServerPlayer serverPlayer) {
-                    RenameStorePayload.handle(payload, serverPlayer);
-                }
-            })
-        );
+registrar.playToClient(
+    TransactionFailedS2CPayload.TYPE,
+    TransactionFailedS2CPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? TransactionFailedS2CPayload::handle
+        : (p, c) -> {});
 
-
-        registrar.playToServer(
-            HousePlacementPayload.TYPE,
-            HousePlacementPayload.STREAM_CODEC,
-            (payload, ctx) -> ctx.enqueueWork(() -> {
-                if (ctx.player() instanceof ServerPlayer serverPlayer) {
-                    HousePlacementHandler.handle(payload, serverPlayer);   // see step 3
-                }
-            })
-        );
-
-
-        // ✅ Register: Spell cast (client → server)
-        registrar.playToServer(
-            SpellCastPayload.TYPE,
-            SpellCastPayload.STREAM_CODEC,
-            (data, context) -> handleSpellCastOnServer(data, context)
-        );
-
-        // Register for house renaming
-        registrar.playToServer(
-            RenameHousePayload.TYPE,
-            RenameHousePayload.STREAM_CODEC,
-            (payload, context) -> context.enqueueWork(() -> {
-                if (context.player() instanceof ServerPlayer serverPlayer) {
-                    RenameHouseHandler.handle(payload, serverPlayer);
-                }
-            })
-        );
-
+// House-management screen
 registrar.playToClient(
     HouseManagementScreenPayload.TYPE,
     HouseManagementScreenPayload.STREAM_CODEC,
-    (payload, context) -> {
-        if (FMLLoader.getDist().isClient()) {
-            ClientNetworkHandler.handleHouseScreenOnClient(payload, context);
-        }
-    }
-);
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleHouseScreenOnClient
+        : (p, c) -> {});
 
-        // Register for sign style update (sign_type + holder_type)
-        registrar.playToServer(
-            UpdateSignStylePayload.TYPE,
-            UpdateSignStylePayload.STREAM_CODEC,
-            (payload, context) -> context.enqueueWork(() -> {
-                if (context.player() instanceof ServerPlayer serverPlayer) {
-                    UpdateSignStyleHandler.handle(payload, serverPlayer);
-                }
-            })
-        );
+    
+}
 
-        // Register HouseManagementActionPayload (client → server)
-        registrar.playToServer(
-            HouseManagementActionPayload.TYPE,
-            HouseManagementActionPayload.STREAM_CODEC,
-            (data, context) -> context.enqueueWork(() -> {
-                if (context.player() instanceof ServerPlayer player) {
-                    if (data.action() == HouseManagementActionPayload.Action.REDEED) {
-                        HouseActionHandler.handleRedeed(player);
-                    }
-                }
-            })
-        );
-
-        // ✅ Do NOT register clientbound packets here! See ClientEventHandler.
-    }
 
 public static void sendToServer(SpellCastPayload payload) {
     if (FMLLoader.getDist().isClient()) {
@@ -164,6 +174,13 @@ public static void sendToServer(SpellCastPayload payload) {
                      .send(new ServerboundCustomPayloadPacket(payload));
         }
     }
+    
+
+public static void sendToServer(CustomPacketPayload payload) {
+    if (FMLLoader.getDist().isClient()) {
+        Minecraft.getInstance().getConnection().send(new ServerboundCustomPayloadPacket(payload));
+    }
+}
 
 
 

@@ -77,7 +77,6 @@ public static final StreamCodec<FriendlyByteBuf, BuyItemsC2SPayload> STREAM_CODE
             npc.getPersonalName(),
             player
         );
-        CloseScreenS2CPayload.send(player);
-        player.sendSystemMessage(Component.literal("Fare thee well, adventurer!"));
+
     }
 }

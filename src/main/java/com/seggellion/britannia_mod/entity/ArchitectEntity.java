@@ -22,7 +22,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import com.seggellion.britannia_mod.network.RailsCatalog;
 import net.minecraft.nbt.CompoundTag;
-
+import com.seggellion.britannia_mod.network.payload.RequestCatalogC2SPayload;
+import com.seggellion.britannia_mod.network.NetworkHandler;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -59,25 +60,19 @@ public class ArchitectEntity extends PathfinderMob {
         goalSelector.addGoal(4, new RandomLookAroundGoal(this));
     }
 
-    @Override
-    public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
-        if (hand == InteractionHand.MAIN_HAND) {
-            if (!level().isClientSide) {
-                loadCatalogFromRails(); // Ensure the catalog is populated
-
-                MinecraftServer server = ((ServerLevel) level()).getServer();
-                server.execute(() -> {
-                    if (!catalog.isEmpty()) {
-                        ClientboundOpenArchitectScreenPayload.send((ServerPlayer) player, this);
-                    } else {
-                        player.sendSystemMessage(Component.literal("The Architect's catalog is still loading..."));
-                    }
-                });
-            }
-            return InteractionResult.CONSUME;
-        }
-        return super.interactAt(player, hit, hand);
+  @Override
+public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
+    if (hand == InteractionHand.MAIN_HAND && player.level().isClientSide) {
+        NetworkHandler.sendToServer(new RequestCatalogC2SPayload(this.getId()));
+        return InteractionResult.SUCCESS;
     }
+    return super.interactAt(player, hit, hand);
+}
+
+public List<Product> getCatalog() {
+    return this.catalog;
+}
+
 
     public static AttributeSupplier.Builder createAttributes() {
         return AttributeSupplier.builder()
@@ -110,6 +105,7 @@ public class ArchitectEntity extends PathfinderMob {
     }
 
 
+
     public void setCityName(String city) {
         this.cityName = city;
     }
@@ -140,14 +136,19 @@ this.setCustomName(Component.literal(personalName + " the Architect"));
         return catalog;
     }
 
-    public void loadCatalogFromRails() {
-        if (!level().isClientSide && catalog.isEmpty() && !city().isBlank()) {
-            RailsCatalog.fetch(city()).thenAcceptAsync(fetched -> {
-                this.catalog.clear();
-                this.catalog.addAll(fetched);
-            }, ((ServerLevel) level()).getServer());
-        }
+public void loadCatalogFromRails(Runnable onComplete) {
+    if (!level().isClientSide && !city().isBlank()) {
+        RailsCatalog.fetch(city()).thenAcceptAsync(fetched -> {
+            this.catalog.clear();
+            this.catalog.addAll(fetched);
+            if (onComplete != null) onComplete.run();
+        }, ((ServerLevel) level()).getServer());
+    } else {
+        if (onComplete != null) onComplete.run();
     }
+}
+
+
 
     @Override
     public float getScale() {

@@ -8,6 +8,9 @@ import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.client.screen.StoreSignScreen;
+import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
+import com.seggellion.britannia_mod.entity.ArchitectEntity;
+import net.minecraft.world.entity.Entity;
 
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 
@@ -36,6 +39,21 @@ public class ClientNetworkHandler {
                 data.houseName()
             ));
 
+            }
+        });
+    }
+
+
+    public static void handleOpenArchitectScreen(
+            ClientboundOpenArchitectScreenPayload pkt, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null || mc.level == null) return;
+
+            Entity e = mc.level.getEntity(pkt.entityId());
+            if (e instanceof ArchitectEntity architect) {
+                mc.setScreen(new ArchitectScreen(
+                    pkt.catalog(), architect.getId(), mc.player));
             }
         });
     }

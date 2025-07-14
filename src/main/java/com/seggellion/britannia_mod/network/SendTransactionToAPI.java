@@ -23,6 +23,8 @@ import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.config.ModConfig;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
+import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
+import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 
 import net.minecraft.server.level.ServerLevel;
 
@@ -34,6 +36,7 @@ import java.net.HttpURLConnection;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+
 public class SendTransactionToAPI {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -151,8 +154,14 @@ public class SendTransactionToAPI {
                         boolean success = removeGoldCoins(serverPlayer, (int) totalGold);
                         if (success) {
                             givePurchasedItems(serverPlayer, items);
+
+                            // ✅ Send success payload (closes screen, plays sound, shows message)
+                            TransactionSuccessS2CPayload.send(serverPlayer);
+                          //  serverPlayer.sendSystemMessage(Component.literal("Fare thee well, adventurer!"));
+
+
                         } else {
-                            player.sendSystemMessage(Component.literal("Transaction failed: Insufficient gold."));
+                            TransactionFailedS2CPayload.send(serverPlayer, "Insufficient gold for this purchase.");
                         }
                     } else if ("sell".equals(transactionType)) {
                         removeSoldItems(serverPlayer, items);
@@ -163,7 +172,10 @@ public class SendTransactionToAPI {
                 }
             }
         } else {
-            LOGGER.warn("Failed to process transaction. Response Code: {}", responseCode);
+        LOGGER.warn("Failed to process transaction. Response Code: {}", responseCode);
+    if (player instanceof ServerPlayer serverPlayer) {
+        TransactionFailedS2CPayload.send(serverPlayer, "Transaction failed: Server error.");
+    }
         }
     }
 

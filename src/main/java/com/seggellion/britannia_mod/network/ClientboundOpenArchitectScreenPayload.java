@@ -21,17 +21,19 @@ import java.util.ArrayList;
 import java.util.List;  
 import org.slf4j.Logger;
 
-public record ClientboundOpenArchitectScreenPayload(int entityId, List<Product> catalog) implements CustomPacketPayload {
+public record ClientboundOpenArchitectScreenPayload(
+        int entityId, List<Product> catalog)
+        implements CustomPacketPayload {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Type<ClientboundOpenArchitectScreenPayload> TYPE =
+        new Type<>(ResourceLocation.fromNamespaceAndPath(
+            "britannia_mod", "open_architect_screen"));
 
-    public static final CustomPacketPayload.Type<ClientboundOpenArchitectScreenPayload> TYPE =
-            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("britannia_mod", "open_architect_screen"));
-
-    public static final StreamCodec<FriendlyByteBuf, ClientboundOpenArchitectScreenPayload> STREAM_CODEC =
-            StreamCodec.of(ClientboundOpenArchitectScreenPayload::encode, ClientboundOpenArchitectScreenPayload::decode);
-
-
+    public static final StreamCodec<FriendlyByteBuf,
+                                    ClientboundOpenArchitectScreenPayload>
+        STREAM_CODEC = StreamCodec.of(
+            ClientboundOpenArchitectScreenPayload::encode,
+            ClientboundOpenArchitectScreenPayload::decode);
 
 public static ClientboundOpenArchitectScreenPayload decode(FriendlyByteBuf buf) {
     int id = buf.readInt();
@@ -58,31 +60,13 @@ public static void encode(FriendlyByteBuf buf, ClientboundOpenArchitectScreenPay
     }
 }
 
-
-
-
     @Override
-    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
-        return TYPE;
-    }
-
-public static void handle(ClientboundOpenArchitectScreenPayload payload) {
-    Minecraft mc = Minecraft.getInstance();
-    if (mc.level == null) return;
-
-    Entity entity = mc.level.getEntity(payload.entityId());
-    if (entity instanceof ArchitectEntity architect) {
-        mc.setScreen(new ArchitectScreen(payload.catalog(), architect.getId()));
-    }
-}
-
+    public Type<? extends CustomPacketPayload> type() { return TYPE; }
 
     public static void send(ServerPlayer player, ArchitectEntity architect) {
-        NetworkHandler.sendToPlayer(player, new ClientboundOpenArchitectScreenPayload(
-            architect.getId(), architect.catalog()
-        ));
+        NetworkHandler.sendToPlayer(player,
+            new ClientboundOpenArchitectScreenPayload(
+                architect.getId(), architect.catalog()));
     }
-
-
 
 }

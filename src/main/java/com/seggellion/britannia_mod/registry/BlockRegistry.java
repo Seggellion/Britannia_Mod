@@ -58,6 +58,7 @@ import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
+import com.seggellion.britannia_mod.block.LockableDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.registry.SignBlockRegistry;
 import net.minecraft.world.level.block.Block;
@@ -1045,6 +1046,18 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
         public static final DeferredHolder<Block, Block> METAL_DOOR = BLOCKS.register(
         "metal_door", MetalDoorBlock::new);
+
+public static final DeferredHolder<Block, Block> LOCKABLE_METAL_DOOR = BLOCKS.register(
+    "lockable_metal_door",
+    () -> new LockableDoorBlock(
+        BritanniaBlockSetTypes.METAL_DOOR,
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.METAL)
+            .strength(5.0F)
+            .noOcclusion()
+            .sound(SoundType.METAL)
+    )
+);
 
 
     public static void register(IEventBus modEventBus) {

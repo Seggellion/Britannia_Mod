@@ -48,7 +48,7 @@ public class HouseLotBlockEntity extends BlockEntity {
         this.houseType = "";   
         this.regionName = "";   
         this.houseName = "";
-        this.privateHouse = false;
+        this.privateHouse = true;
     }
 
     // ----------------------------------
@@ -97,7 +97,7 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
         return forSale;
     }
 
-        public boolean privateHouse() {
+    public boolean privateHouse() {
         return privateHouse;
     }
 
@@ -162,6 +162,16 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
         loadAdditional(tag, provider); // Delegate to standard loader
     }
 
+
+    public boolean isPrivate() {          // <-- USED BY LockableDoorBlock
+        return privateHouse;
+    }
+
+    public void setPrivate(boolean flag) {
+        this.privateHouse = flag;
+        setChanged();
+    }
+
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         // If the superclass does not have this method, omit calling super.
@@ -176,6 +186,7 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
         }
         this.forSale = tag.getBoolean("ForSale");
         this.price = tag.getInt("Price");
+        this.privateHouse = tag.getBoolean("PrivateHouse");
 
         if (tag.contains("HouseType")) {
                 this.houseType = tag.getString("HouseType");
@@ -210,7 +221,7 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
         tag.putString("HouseUUID", this.houseUuid.toString());
         tag.putBoolean("ForSale", this.forSale);
         tag.putInt("Price", this.price);
-        
+        tag.putBoolean("PrivateHouse", this.privateHouse);
 
         ListTag listTag = new ListTag();
         for (String user : this.accessList) {
