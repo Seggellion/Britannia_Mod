@@ -47,7 +47,7 @@ public class NudgeableBlockEntityRenderer implements BlockEntityRenderer<Nudgeab
                 blockState,
                 pos,
                 poseStack,
-                bufferSource.getBuffer(RenderType.solid()),
+                bufferSource.getBuffer(RenderType.translucent()),
                 false,
                 random,
                 blockState.getSeed(pos),

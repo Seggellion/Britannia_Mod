@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
@@ -47,6 +48,9 @@ public class InteriorDecoratorToolItem extends Item {
                 if (!level.isClientSide()) {
                     BlockEntity be = level.getBlockEntity(pos);
                     if (be instanceof NudgeableBlockEntity nudgeable) {
+                        if (!nudgeable.allowYNudging && (face == Direction.UP || face == Direction.DOWN)) {
+                            return InteractionResult.FAIL;
+                        }
                         nudgeable.nudge(face);
                         player.displayClientMessage(Component.literal("Nudged " + face.getName()), true);
                     }
@@ -57,7 +61,7 @@ public class InteriorDecoratorToolItem extends Item {
 
         // Rotate horizontal blocks (except ThinWall)
         if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
-            if (!(state.getBlock() instanceof ThinWall)) {
+            if (!(state.getBlock() instanceof ThinWall) && !(state.getBlock() instanceof DoubleBedBlock)) {
                 if (!level.isClientSide()) {
                     Direction cur  = state.getValue(HorizontalDirectionalBlock.FACING);
                     Direction next = cur.getClockWise();
