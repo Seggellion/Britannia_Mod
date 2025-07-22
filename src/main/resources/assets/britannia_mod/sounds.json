@@ -307,6 +307,21 @@
   "sounds": [
       "britannia_mod:door_metal_open"
   ]
+},
+"door_wood_close": {
+  "sounds": [
+      "britannia_mod:door_wood_close"
+  ]
+},
+"door_wood_open": {
+  "sounds": [
+      "britannia_mod:door_wood_open"
+  ]
+},
+"door_lock": {
+  "sounds": [
+      "britannia_mod:door_lock"
+  ]
 }
 
 }

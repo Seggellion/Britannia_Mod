@@ -7,6 +7,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.Minecraft;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
+import com.seggellion.britannia_mod.network.payload.TogglePrivacyPayload;
+import com.seggellion.britannia_mod.network.NetworkHandler;
 
 import com.seggellion.britannia_mod.network.HouseManagementActionPayload;
 import java.util.UUID;
@@ -14,6 +16,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
 import org.slf4j.Logger;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.client.multiplayer.ClientLevel;
 
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.core.BlockPos;
@@ -35,11 +38,14 @@ public class HouseManagementScreen extends Screen {
 
     private final int backgroundWidth = 256;
     private final int backgroundHeight = 180;
-private final BlockPos housePos;
+    private final BlockPos housePos;
     private final UUID houseUuid;
     private final String ownerUsername;
     private final String houseType;
     private String houseName;
+    private Button signOptionsButton;
+    private Button privacyToggleButton;
+    private boolean isPrivate; 
 
 
     public HouseManagementScreen(BlockPos housePos, UUID houseUuid, String ownerUsername, String houseType, @Nullable String houseName) {
@@ -49,49 +55,73 @@ private final BlockPos housePos;
         this.ownerUsername = ownerUsername;
         this.houseType = houseType;
             this.houseName = (houseName != null && !houseName.trim().isEmpty()) ? houseName.trim() : "An unnamed house";
+        ClientLevel lvl = Minecraft.getInstance().level;
+                LOGGER.info("POS BritanniaMod {}", housePos);
+
+        if (lvl != null && lvl.getBlockEntity(housePos.below()) instanceof HouseLotBlockEntity lot) {
+                    LOGGER.info("Initialized HouseLotBlockEntity for Privacy");
+                    LOGGER.info("Is private?: {}", lot.isPrivate());
+            this.isPrivate = lot.isPrivate();
+        } else {
+            this.isPrivate = true; // sensible default
+        }
     }
 
-    @Override
-    protected void init() {
-        int centerX = this.width / 2;
-        int centerY = this.height / 2;
+@Override
+protected void init() {
+    int centerX = this.width  / 2;
+    int centerY = this.height / 2;
 
-        this.addRenderableWidget(
-            Button.builder(Component.literal("Re-deed House"), (button) -> {
-                HouseManagementActionPayload.sendAction(HouseManagementActionPayload.Action.REDEED);
-                this.onClose();
-            })
-            .bounds(centerX - 50, centerY - 10, 100, 20)
-            .build()
-        );
+    /* -------- privacy toggle button -------- */
+    this.privacyToggleButton = this.addRenderableWidget(
+        Button.builder(labelFor(isPrivate), btn -> {
+            isPrivate = !isPrivate;
+            btn.setMessage(labelFor(isPrivate));
+            if (signOptionsButton != null) signOptionsButton.visible = !isPrivate;
 
-        this.addRenderableWidget(
-            Button.builder(Component.literal("Rename House"), (button) -> {
-                Minecraft.getInstance().setScreen(new RenameHouseScreen(housePos,houseUuid, ownerUsername, houseType));
-            })
-            .bounds(centerX - 50, centerY - 40, 100, 20)
-            .build()
-        );
+            // send C → S
+            NetworkHandler.sendToServer(new TogglePrivacyPayload(housePos.below(), isPrivate));
+        })
+        .bounds(centerX - 50, centerY - 100, 100, 20)   // above “Sign Options”
+        .build());
 
-        this.addRenderableWidget(
-            Button.builder(Component.literal("Sign Options"), (button) -> {
-                Minecraft.getInstance().setScreen(
-                    new SignOptionsScreen(housePos, houseUuid, ownerUsername, houseType)
-                );
-            })
-            .bounds(centerX - 50, centerY - 70, 100, 20)
-            .build()
-        );
+    /* -------- sign-options button -------- */
+    this.signOptionsButton = this.addRenderableWidget(
+        Button.builder(Component.literal("Sign Options"),
+            b -> Minecraft.getInstance().setScreen(
+                     new SignOptionsScreen(housePos, houseUuid, ownerUsername, houseType)))
+        .bounds(centerX - 50, centerY - 70, 100, 20)
+        .build());
+    this.signOptionsButton.visible = !isPrivate;
 
+    /* -------- other existing buttons -------- */
+    this.addRenderableWidget(
+        Button.builder(Component.literal("Rename House"),
+            b -> Minecraft.getInstance().setScreen(
+                     new RenameHouseScreen(housePos, houseUuid, ownerUsername, houseType)))
+        .bounds(centerX - 50, centerY - 40, 100, 20)
+        .build());
 
-        this.addRenderableWidget(
-            Button.builder(Component.literal("Cancel"), (button) -> {
-                this.onClose();
-            })
-            .bounds(centerX - 50, centerY + 20, 100, 20)
-            .build()
-        );
-    }
+    this.addRenderableWidget(
+        Button.builder(Component.literal("Re-deed House"),
+            b -> { HouseManagementActionPayload.sendAction(
+                       HouseManagementActionPayload.Action.REDEED);
+                   this.onClose(); })
+        .bounds(centerX - 50, centerY - 10, 100, 20)
+        .build());
+
+    this.addRenderableWidget(
+        Button.builder(Component.literal("Cancel"),
+            b -> this.onClose())
+        .bounds(centerX - 50, centerY + 20, 100, 20)
+        .build());
+}
+
+/* helper for the toggle label */
+private static Component labelFor(boolean priv) {
+    return Component.literal(priv ? "Set house to public"
+                                  : "Set house to private");
+}
 
 @Override
 public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {

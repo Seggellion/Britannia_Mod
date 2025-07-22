@@ -11,6 +11,7 @@ import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
+import com.seggellion.britannia_mod.network.payload.TogglePrivacyPayload;
 import com.seggellion.britannia_mod.network.payload.BuyItemsC2SPayload;
 import com.seggellion.britannia_mod.network.payload.RequestCatalogC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
@@ -19,6 +20,10 @@ import com.seggellion.britannia_mod.network.payload.CloseScreenS2CPayload;
 import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
 import com.seggellion.britannia_mod.network.HousePlacementHandler;
+import com.seggellion.britannia_mod.structure.HousePrivacyHandler;
+import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
 import com.seggellion.britannia_mod.structure.HouseActionHandler;
 import com.seggellion.britannia_mod.network.ClientboundOpenArchitectScreenPayload;
 
@@ -27,8 +32,12 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.fml.loading.FMLLoader;
+
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+
+import java.util.UUID;
 
 public class NetworkHandler {
 
@@ -98,6 +107,20 @@ public static void register(final RegisterPayloadHandlersEvent event) {
                 RequestCatalogC2SPayload.handle(payload, p);
             }
         }));
+
+registrar.playToServer(
+    TogglePrivacyPayload.TYPE,
+    TogglePrivacyPayload.STREAM_CODEC,
+    (pkt, ctx) -> ctx.enqueueWork(() -> {
+
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerLevel level = player.serverLevel();
+
+        BlockEntity be = level.getBlockEntity(pkt.pos());
+        if (!(be instanceof HouseLotBlockEntity lot)) return;
+
+        HousePrivacyHandler.handle(player, lot, pkt.makePrivate());
+    }));
 
 
         // Mana sync

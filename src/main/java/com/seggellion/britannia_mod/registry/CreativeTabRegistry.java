@@ -48,7 +48,10 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SLATE_ROOF_2_FLAT_ITEM.get());
 
                 // Foundations, Walls, Floors
+                safeAccept(output, ItemRegistry.WOOD_DOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.LOCKABLE_WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.LOCKABLE_METAL_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_OAK_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SPRUCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CUSTOM_STONE_STAIRS_ITEM.get());

@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.structure.StructureRecord;
 import com.seggellion.britannia_mod.structure.StructureRegionManager;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -21,9 +23,37 @@ import net.minecraft.world.phys.Vec3;
  * in the same house.
  */
 public class LockableDoorBlockEntity extends BlockEntity {
+   private boolean locked = true; 
 
     public LockableDoorBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.LOCKABLE_DOOR.get(), pos, state);
+    }
+
+  public boolean isLocked() {
+        return locked;
+    }
+
+    public void toggleLock() {
+        this.locked = !this.locked;
+        setChanged();
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+        setChanged();
+    }
+    
+
+   @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        tag.putBoolean("Locked", locked);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        this.locked = tag.getBoolean("Locked");
     }
 
     /**

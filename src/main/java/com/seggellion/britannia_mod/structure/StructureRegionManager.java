@@ -92,4 +92,18 @@ public static Map<Long, List<StructureRecord>> getChunkStructureMap() {
      * Simple value type for a chunk range.
      */
     private record ChunkRange(int minChunkX, int maxChunkX, int minChunkZ, int maxChunkZ) {}
+
+@org.jetbrains.annotations.Nullable
+public static StructureRecord getStructureByUuid(java.util.UUID uuid) {
+    // ConcurrentHashMap values() is weakly-consistent; fine for a quick scan
+    for (var list : chunkStructureMap.values()) {
+        for (StructureRecord rec : list) {
+            if (rec.getHouseUuid().equals(uuid)) {
+                return rec;
+            }
+        }
+    }
+    return null;    // not found
+}
+
 }

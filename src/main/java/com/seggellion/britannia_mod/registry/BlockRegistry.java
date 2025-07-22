@@ -69,7 +69,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.SlabBlock;
 import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
-
+import net.minecraft.world.level.block.DoorBlock;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -1059,6 +1059,27 @@ public static final DeferredHolder<Block, Block> LOCKABLE_METAL_DOOR = BLOCKS.re
     )
 );
 
+public static final DeferredHolder<Block, Block> WOOD_DOOR = BLOCKS.register(
+    "wood_door",
+    () -> new DoorBlock(
+            BritanniaBlockSetTypes.WOOD_DOOR,
+            BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(3.0F)
+                .noOcclusion()
+                .sound(SoundType.WOOD))
+);
+
+public static final DeferredHolder<Block, Block> LOCKABLE_WOOD_DOOR = BLOCKS.register(
+    "lockable_wood_door",
+    () -> new LockableDoorBlock(
+            BritanniaBlockSetTypes.WOOD_DOOR,
+            BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(3.0F)
+                .noOcclusion()
+                .sound(SoundType.WOOD))
+);
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

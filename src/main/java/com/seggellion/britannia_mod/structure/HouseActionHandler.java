@@ -15,6 +15,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
+import com.seggellion.britannia_mod.item.HouseKeyItem;
+
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
@@ -89,6 +91,31 @@ public class HouseActionHandler {
                 lotPos = pos;
 
                 UUID deedUuid = (record.getDeedId() != null) ? record.getDeedId() : lot.getDeedUuid();
+
+                UUID houseUuid = record.getHouseUuid();
+
+                // ✅ Step 5: Remove matching key from inventory
+                if (houseUuid != null) {
+                    for (int i = 0; i < player.getInventory().items.size(); i++) {
+                        ItemStack stack = player.getInventory().items.get(i);
+                        if (stack.getItem() instanceof HouseKeyItem keyItem) {
+                            try {
+                                if (keyItem.matches(stack, houseUuid)) {
+                                    player.getInventory().items.set(i, ItemStack.EMPTY);
+                                    player.sendSystemMessage(Component.literal("The old key has been removed."));
+                                    LOGGER.info("Removed key matching house UUID: {}", houseUuid);
+                                    break;
+                                }
+                            } catch (Exception e) {
+                                LOGGER.warn("Error while checking key match: {}", e.getMessage());
+                            }
+                        }
+                    }
+                } else {
+                    LOGGER.warn("Skipping key removal — houseUuid is null.");
+                }
+
+
                 if (deedUuid != null) {
                     
                     CompoundTag tag = new CompoundTag();

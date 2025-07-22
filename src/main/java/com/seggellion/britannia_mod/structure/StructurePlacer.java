@@ -36,6 +36,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
+import com.seggellion.britannia_mod.item.HouseKeyItem;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+
 
 import java.io.DataInputStream;
 import java.util.Optional;
@@ -300,6 +303,11 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
     );
 
     HouseDataAPI.sendHouseDataToRails(level, lotPos, player, style);
+
+    HouseKeyItem keyItem = (HouseKeyItem) ItemRegistry.HOUSE_KEY.get();
+    ItemStack    key     = keyItem.createKey(houseUuid);
+    if (!player.addItem(key.copy())) player.drop(key, false);
+
     return true;
 
 }

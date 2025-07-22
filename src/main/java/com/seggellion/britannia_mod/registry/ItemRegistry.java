@@ -486,8 +486,18 @@ public static final DeferredHolder<Item, Item> METAL_DOOR_ITEM = ITEMS.register(
 );
 
 public static final DeferredHolder<Item, Item> LOCKABLE_METAL_DOOR_ITEM = ITEMS.register(
-    "lockable_metal_door",
+    "lockable_metal_door_item",
     () -> new BlockItem(BlockRegistry.LOCKABLE_METAL_DOOR.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> WOOD_DOOR_ITEM = ITEMS.register(
+    "wood_door_item",
+    () -> new BlockItem(BlockRegistry.WOOD_DOOR.get(), new Item.Properties().stacksTo(64))
+);
+
+public static final DeferredHolder<Item, Item> LOCKABLE_WOOD_DOOR_ITEM = ITEMS.register(
+    "lockable_wood_door_item",
+    () -> new BlockItem(BlockRegistry.LOCKABLE_WOOD_DOOR.get(), new Item.Properties())
 );
 
 

@@ -101,8 +101,8 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
             BlockEntityType.Builder.of(
                     LockableDoorBlockEntity::new,
                     /* All door blocks that should carry locks go here */
-                    BlockRegistry.LOCKABLE_METAL_DOOR.get()
-                    // , BlockRegistry.WOOD_DOOR.get()   ← add when registered
+                    BlockRegistry.LOCKABLE_METAL_DOOR.get(),
+                   BlockRegistry.LOCKABLE_WOOD_DOOR.get()
             ).build(null));
 
     public static void register(IEventBus eventBus) {
