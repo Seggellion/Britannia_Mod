@@ -19,5 +19,8 @@ public class ClientEventHandler {
 
         event.registerBlockEntityRenderer(BlockEntityRegistry.ROTATABLE_FURNITURE.get(),
                 NudgeableBlockEntityRenderer::new);
+
+        event.registerBlockEntityRenderer(BlockEntityRegistry.DOUBLE_BED.get(),
+                NudgeableBlockEntityRenderer::new);
     }
 }

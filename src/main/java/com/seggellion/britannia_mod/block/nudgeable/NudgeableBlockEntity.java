@@ -13,13 +13,27 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class NudgeableBlockEntity extends BlockEntity {
-    private Vec3 offset = Vec3.ZERO;
+    protected Vec3 offset = Vec3.ZERO;
+    public boolean allowYNudging = true;
+    public boolean reducedNudging = false;
 
     protected NudgeableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
+    public void setAllowYNudging(boolean allow) {
+        this.allowYNudging = allow;
+    }
+
+    public void setReducedNudging(boolean reduced) {
+        this.reducedNudging = reduced;
+    }
+
     public void nudge(Direction direction) {
+        if (!allowYNudging && (direction == Direction.UP || direction == Direction.DOWN)) {
+            return;
+        }
+
         Vec3 delta = Vec3.atLowerCornerOf(direction.getNormal()).scale(1.0 / 16.0);
         offset = offset.add(delta);
         offset = clampOffset(offset);
@@ -30,7 +44,7 @@ public class NudgeableBlockEntity extends BlockEntity {
     }
 
     private Vec3 clampOffset(Vec3 offset) {
-        double maxOffset = 16.0 / 16.0; // 16 voxels = 1 full block
+        double maxOffset = reducedNudging ? 0.5 : 1.0;
         return new Vec3(
                 Mth.clamp(offset.x, -maxOffset, maxOffset),
                 Mth.clamp(offset.y, -maxOffset, maxOffset),
