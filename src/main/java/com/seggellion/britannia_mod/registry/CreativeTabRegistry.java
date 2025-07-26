@@ -130,7 +130,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CURTAIN_FOUNDATION_ITEM.get());
                 safeAccept(output, ItemRegistry.SERPENT_SHIELD_ITEM.get());
                 safeAccept(output, ItemRegistry.ANKH_ITEM.get());
-                
+                safeAccept(output, ItemRegistry.PENTAGRAM_ITEM.get());
+
                 // Graveyard items
                 safeAccept(output, ItemRegistry.BROKEN_WOODEN_GRAVE_CROSS.get());
                 safeAccept(output, ItemRegistry.DAMAGED_WOODEN_GRAVE_CROSS.get());

@@ -55,6 +55,8 @@ import com.seggellion.britannia_mod.network.DeedHttpServer;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.client.ThinWallClient;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
+import com.seggellion.britannia_mod.sync.RegionSyncHandler;
+
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -103,6 +105,7 @@ public class BritanniaMod {
         LOGGER.info("Initializing BritanniaMod");
         OreVeinLoader.loadOreVeins();
           BlessedItemSyncHandler.init(); 
+                    RegionSyncHandler.init(); 
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);

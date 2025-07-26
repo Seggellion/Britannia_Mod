@@ -3,6 +3,11 @@ package com.seggellion.britannia_mod.event;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 
+import com.seggellion.britannia_mod.client.RegionCache;
+import com.seggellion.britannia_mod.util.RegionItemData;
+import com.seggellion.britannia_mod.util.WeightedPicker;
+import net.minecraft.resources.ResourceLocation;
+
 import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.BlockPos;
@@ -16,79 +21,100 @@ import net.neoforged.neoforge.event.entity.player.ItemFishedEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.mojang.logging.LogUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.List;
+
 
 public class FishingEventHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FishingEventHandler.class);
+    private static final Logger LOGGER = LogUtils.getLogger();
 
+    /* Keep your old FishData for variable mass range */
     private static Map<Item, FishData> fishDataMap;
 
     private static Map<Item, FishData> getFishDataMap() {
         if (fishDataMap == null) {
             fishDataMap = new HashMap<>();
-            fishDataMap.put(ItemRegistry.COD.get(), new FishData("cod", 0.7, 1.8));
-            fishDataMap.put(ItemRegistry.SALMON.get(), new FishData("salmon", 1.1, 2.1));
-            fishDataMap.put(ItemRegistry.TUNA.get(), new FishData("tuna", 7.1, 14.3));
-            fishDataMap.put(ItemRegistry.TROUT.get(), new FishData("trout", 0.1, 0.6));
-            fishDataMap.put(ItemRegistry.SWORDFISH.get(), new FishData("swordfish", 14.3, 42.9));
+            fishDataMap.put(ItemRegistry.COD.get(),       new FishData("cod",       0.7,  1.8));
+            fishDataMap.put(ItemRegistry.SALMON.get(),    new FishData("salmon",    1.1,  2.1));
+            fishDataMap.put(ItemRegistry.TUNA.get(),      new FishData("tuna",      7.1, 14.3));
+            fishDataMap.put(ItemRegistry.TROUT.get(),     new FishData("trout",     0.1,  0.6));
+            fishDataMap.put(ItemRegistry.SWORDFISH.get(), new FishData("swordfish",14.3, 42.9));
         }
         return fishDataMap;
     }
 
     @SubscribeEvent
     public void onItemFished(ItemFishedEvent event) {
-        LOGGER.info("onItemFished event called");
+        Player player = event.getEntity();
+        Level level   = player.level();
 
-        Player player = (Player) event.getEntity();
-        Level world = player.level();
+        // Server side only, please
+        if (level.isClientSide()) return;
 
-        LOGGER.info("Event drops size: {}", event.getDrops().size());
-        if (event.getDrops().isEmpty()) {
-            LOGGER.warn("No drops in ItemFishedEvent");
-            return;
-        }
-
-        // Clear the drops and cancel the event to prevent default behavior
+        // Kill vanilla drops
         event.getDrops().clear();
         event.setCanceled(true);
 
-        // Randomly select a fish type
+        BlockPos pos = player.blockPosition();
+   LOGGER.info("pos: {}", pos);
+        // 1) Pull region items of type "fish"
+        List<RegionItemData> fishPool = RegionCache.itemsFor(pos, "fish");
+        RegionItemData picked = (fishPool.isEmpty()) ? null : WeightedPicker.pick(fishPool);
+   LOGGER.info("FishPool: {}", fishPool);
+
+
+        ItemStack result;
+        if (picked != null) {
+            // 2) Resolve the namespaced item id -> Item
+            ResourceLocation id = ResourceLocation.parse(picked.key); // per your rule
+            Item fishItem = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id);
+
+            if (fishItem == null) {
+                LOGGER.info("Region fish item not found in registry: {}", picked.key);
+                result = fallbackRandomFish();
+            } else {
+                result = makeWeightedFishStack(fishItem);
+            }
+        } else {
+            // No region or empty list; fallback to your old random logic
+            result = fallbackRandomFish();
+        }
+
+        // 3) Give to player
+        if (!player.getInventory().add(result)) {
+            player.drop(result, false);
+        }
+
+        // 4) Play sound
+        level.playSound(null, pos, ModSounds.CATCH_FISH.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+    }
+
+    private ItemStack fallbackRandomFish() {
         Item fishItem = getRandomFish();
+        return makeWeightedFishStack(fishItem);
+    }
+
+    private ItemStack makeWeightedFishStack(Item fishItem) {
         FishData fishData = getFishDataMap().get(fishItem);
-
         if (fishData == null) {
-            LOGGER.error("FishData not found for item {}", fishItem);
-            return;
+            // If it’s not in your FishData map (maybe new content), just give a basic stack
+            return new ItemStack(fishItem);
         }
 
-        // Generate weight for the fish
         double weight = generateRandomWeight(fishData.minWeight, fishData.maxWeight);
-        LOGGER.info("Generated weight: {}", weight);
+        ItemStack stack = new ItemStack(fishItem);
 
-        // Create the WeightedFishItem stack
-        ItemStack weightedFishStack = new ItemStack(fishItem);
-        WeightedFishItem weightedFish = (WeightedFishItem) weightedFishStack.getItem();
-
-        // Set the weight and fish type into the WeightedFishItem
-        weightedFish.setWeight(weightedFishStack, weight);
-        weightedFish.setFishType(weightedFishStack, fishData.fishType);
-
-        // Give the weighted fish directly to the player
-        if (!player.getInventory().add(weightedFishStack)) {
-            player.drop(weightedFishStack, false);
+        if (stack.getItem() instanceof WeightedFishItem weighted) {
+            weighted.setWeight(stack, weight);
+            weighted.setFishType(stack, fishData.fishType);
         }
-        LOGGER.info("Gave WeightedFishItem (type: {}, weight: {}) directly to the player", fishData.fishType, weight);
 
-        // Play the custom catch_fish sound at the player's position
-        Vec3 playerPosVec = player.position();
-        BlockPos playerPos = new BlockPos((int) playerPosVec.x, (int) playerPosVec.y, (int) playerPosVec.z);
-        world.playSound(null, playerPos, ModSounds.CATCH_FISH.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-        LOGGER.info("Played catch_fish sound at player's position: {}", playerPos);
-
+        LOGGER.info("🎣 Caught {} ({} kg)", fishData.fishType, weight);
+        return stack;
     }
 
     private Item getRandomFish() {

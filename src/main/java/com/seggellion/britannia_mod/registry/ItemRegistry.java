@@ -500,6 +500,12 @@ public static final DeferredHolder<Item, Item> LOCKABLE_WOOD_DOOR_ITEM = ITEMS.r
     () -> new BlockItem(BlockRegistry.LOCKABLE_WOOD_DOOR.get(), new Item.Properties())
 );
 
+   public static final DeferredHolder<Item, BlockItem> PENTAGRAM_ITEM =
+        ITEMS.register("pentagram",
+            () -> new BlockItem(BlockRegistry.PENTAGRAM.get(),
+                    new Item.Properties()
+                        .stacksTo(64)  
+            ));
 
 // graveyard
 

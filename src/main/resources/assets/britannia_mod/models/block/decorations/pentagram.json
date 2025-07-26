@@ -1,0 +1,27 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"ambientocclusion": false,
+  "render_type": "minecraft:cutout", 
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "britannia_mod:block/decoration/pentagram_96",
+		"particle": "britannia_mod:block/decoration/pentagram_96",
+		"transparent": "britannia_mod:block/transparent" 
+	},
+	"elements": [
+		{
+			"from": [-16, -13, -16],
+			"to": [30, 1, 30],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-9, -6, -9]},
+			"faces": {
+				"north": {"uv": [0, 0, 16, 0], "texture": "#transparent"},
+				"east": {"uv": [0, 0, 16, 0], "texture": "#transparent"},
+				"south": {"uv": [0, 0, 16, 0], "texture": "#transparent"},
+				"west": {"uv": [0, 0, 16, 0], "texture": "#transparent"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#0"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#transparent"}
+			}
+		}
+	]
+}

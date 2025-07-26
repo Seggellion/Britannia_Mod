@@ -14,6 +14,7 @@ import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
 import com.seggellion.britannia_mod.block.StatueBlock;
+import com.seggellion.britannia_mod.block.FloorDecorationBlock;
 import com.seggellion.britannia_mod.block.StatueCoupleBlock;
 import com.seggellion.britannia_mod.block.LargeForgeBlock;
 import com.seggellion.britannia_mod.block.BlueTentBlock;
@@ -340,6 +341,14 @@ public static final DeferredHolder<Block, Block> SERPENT_SHIELD = BLOCKS.registe
 public static final DeferredHolder<Block, Block> ANKH = BLOCKS.register("ankh", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
+public static final DeferredHolder<Block, Block> PENTAGRAM =
+        BLOCKS.register("pentagram",
+            () -> new FloorDecorationBlock(
+                    BlockBehaviour.Properties.of()
+                            .strength(2.0F)
+                            .mapColor(MapColor.COLOR_RED)
+                            .noOcclusion()
+                            .sound(SoundType.STONE)));
 
   public static final DeferredHolder<Block, ThinWall> CURTAIN_TOP =
     BLOCKS.register("curtain_top", 
