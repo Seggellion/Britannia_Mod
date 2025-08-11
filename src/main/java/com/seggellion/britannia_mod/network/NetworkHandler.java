@@ -19,6 +19,8 @@ import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.CloseScreenS2CPayload;
 import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
+import com.seggellion.britannia_mod.network.SkillSyncPayload;
+
 import com.seggellion.britannia_mod.network.HousePlacementHandler;
 import com.seggellion.britannia_mod.structure.HousePrivacyHandler;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
@@ -123,6 +125,8 @@ registrar.playToServer(
     }));
 
 
+
+
         // Mana sync
        /* ---------- client-bound packets ---------- */
 // Mana sync
@@ -179,6 +183,14 @@ registrar.playToClient(
     FMLLoader.getDist().isClient()
         ? ClientNetworkHandler::handleHouseScreenOnClient
         : (p, c) -> {});
+
+    // skill system registration
+    registrar.playToClient(
+        SkillSyncPayload.TYPE,
+        SkillSyncPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? (payload, ctx) -> ctx.enqueueWork(() -> SkillSyncPayload.handle(payload))
+            : (p, c) -> {});
 
     
 }

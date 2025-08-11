@@ -1,0 +1,21 @@
+  {
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/fish/cape_cod",
+        "y": 0
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/fish/cape_cod",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/fish/cape_cod",
+        "y": 270
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/fish/cape_cod",
+        "y": 90
+      }
+    }
+  }
+  

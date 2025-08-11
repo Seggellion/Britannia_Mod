@@ -1,34 +1,36 @@
 package com.seggellion.britannia_mod.item;
 
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
+import net.minecraft.world.level.block.Block;
+
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class WeightedFishItem extends Item {
+public class WeightedFishItem extends BlockItem {
     private static final DataComponentType<CustomData> CUSTOM_DATA = DataComponents.CUSTOM_DATA;
 
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public WeightedFishItem(Item.Properties properties) {
-        super(properties);
+    public WeightedFishItem(Block block, Item.Properties properties) {
+        super(block, properties);
     }
 
     public void setWeight(ItemStack stack, double weight) {
         CustomData customData = stack.getOrDefault(CUSTOM_DATA, CustomData.of(new CompoundTag()));
         CompoundTag tag = customData.copyTag();
         tag.putDouble("FishWeight", weight);
-        CustomData updated = CustomData.of(tag);
-        stack.set(CUSTOM_DATA, updated);
+        stack.set(CUSTOM_DATA, CustomData.of(tag));
     }
 
     public double getWeight(ItemStack stack) {
@@ -44,8 +46,7 @@ public class WeightedFishItem extends Item {
         CustomData customData = stack.getOrDefault(CUSTOM_DATA, CustomData.of(new CompoundTag()));
         CompoundTag tag = customData.copyTag();
         tag.putString("FishType", fishType);
-        CustomData updated = CustomData.of(tag);
-        stack.set(CUSTOM_DATA, updated);
+        stack.set(CUSTOM_DATA, CustomData.of(tag));
     }
 
     public String getFishType(ItemStack stack) {

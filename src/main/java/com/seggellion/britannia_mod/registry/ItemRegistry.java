@@ -630,21 +630,29 @@ public static final DeferredHolder<Item, BlockItem> CURTAIN_FOUNDATION_ITEM =
         new Item(new Item.Properties())
         );
 
+//public static final DeferredHolder<Item, WeightedFishItem> FIRE_FISH =
+//    ITEMS.register("fire_fish",
+//        () -> new WeightedFishItem(BlockRegistry.FIRE_FISH.get(), new Item.Properties()));
 
-public static final DeferredHolder<Item, Item> COD = ITEMS.register("cod",
-        () -> new WeightedFishItem(new Item.Properties()));
+//public static final DeferredHolder<Item, WeightedFishItem> KOKANEE_SALMON =
+//    ITEMS.register("kokanee_salmon",
+ //       () -> new WeightedFishItem(BlockRegistry.KOKANEE_SALMON.get(), new Item.Properties()));
 
-public static final DeferredHolder<Item, Item> SALMON = ITEMS.register("salmon",
-        () -> new WeightedFishItem(new Item.Properties()));
 
-public static final DeferredHolder<Item, Item> TUNA = ITEMS.register("tuna",
-        () -> new WeightedFishItem(new Item.Properties()));
+//public static final DeferredHolder<Item, Item> COD = ITEMS.register("cod",
+//        () -> new WeightedFishItem(new Item.Properties()));
 
-public static final DeferredHolder<Item, Item> TROUT = ITEMS.register("trout",
-        () -> new WeightedFishItem(new Item.Properties()));
+//public static final DeferredHolder<Item, Item> SALMON = ITEMS.register("salmon",
+ //       () -> new WeightedFishItem(new Item.Properties()));
 
-public static final DeferredHolder<Item, Item> SWORDFISH = ITEMS.register("swordfish",
-        () -> new WeightedFishItem(new Item.Properties()));
+//public static final DeferredHolder<Item, Item> TUNA = ITEMS.register("tuna",
+//        () -> new WeightedFishItem(new Item.Properties()));
+
+// public static final DeferredHolder<Item, Item> TROUT = ITEMS.register("trout",
+//        () -> new WeightedFishItem(new Item.Properties()));
+
+// public static final DeferredHolder<Item, Item> SWORDFISH = ITEMS.register("swordfish",
+//        () -> new WeightedFishItem(new Item.Properties()));
 
 
 

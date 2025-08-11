@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.util.RegionData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 
 public class RegionCache {
     private static final List<RegionData> regions = new ArrayList<>();
@@ -28,5 +29,9 @@ public class RegionCache {
 
     public static void clear() {
         regions.clear();
+    }
+
+    public static List<RegionData> all() {
+        return Collections.unmodifiableList(new ArrayList<>(regions));
     }
 }

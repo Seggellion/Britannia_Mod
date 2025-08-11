@@ -54,7 +54,9 @@ public class ChairBlock extends HorizontalDirectionalBlock implements EntityBloc
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+            return RenderShape.MODEL;
+        //pineapple removed for iris compatibility
+        //return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override

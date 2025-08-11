@@ -11,7 +11,8 @@ import com.seggellion.britannia_mod.magic.ManaHandler;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
 import com.seggellion.britannia_mod.spawner.DaemonSpawner;
 import com.seggellion.britannia_mod.client.model.ThinWallModels;
-
+import com.seggellion.britannia_mod.client.Keybinds;
+import com.seggellion.britannia_mod.skill.SkillManager;
 import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
 import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
 import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
@@ -55,7 +56,7 @@ import com.seggellion.britannia_mod.network.DeedHttpServer;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.client.ThinWallClient;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
-import com.seggellion.britannia_mod.sync.RegionSyncHandler;
+import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 
 
 import net.minecraft.core.BlockPos;
@@ -105,13 +106,15 @@ public class BritanniaMod {
         LOGGER.info("Initializing BritanniaMod");
         OreVeinLoader.loadOreVeins();
           BlessedItemSyncHandler.init(); 
-                    RegionSyncHandler.init(); 
+                    WorldBootstrapHandler.init(); 
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
         SwordRegistry.register(modEventBus);
+        FishRegistry.register(modEventBus);
+
         ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
         BlacksmithProfessions.registerAll(modEventBus);
@@ -168,15 +171,16 @@ public class BritanniaMod {
 
 
         ManaHandler.register();
-
+          SkillManager.init(); 
         if (FMLLoader.getDist().isClient()) {
+            modEventBus.addListener(Keybinds::registerKeys);
             modEventBus.addListener(ClientModSetup::onClientSetup);
             modEventBus.addListener(ClientModSetup::onRegisterItemColors);
             modEventBus.addListener(ClientModSetup::registerRenderers);
             modEventBus.addListener(ClientModSetup::registerGeometryLoaders);
             modEventBus.addListener(ClientModSetup::registerAdditionalModels);
         modEventBus.register(ThinWallModels.class);
-
+  
             ClientEventHandler.register(modEventBus);
             modEventBus.register(new ClientOnlyItemRegistry());
             modEventBus.register(ModModelLayers.class);

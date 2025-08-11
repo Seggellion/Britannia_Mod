@@ -88,5 +88,8 @@
     "holder_type.metal_1": "Metal Style 1",
     "holder_type.metal_2": "Metal Style 2",
     "holder_type.metal_3": "Metal Style 3",
-    "holder_type.metal_4": "Metal Style 4"
+    "holder_type.metal_4": "Metal Style 4",
+
+    "block.britannia_mod.amberjack": "Amberjack",
+    "block.britannia_mod.kokanee_salmon": "Kokanee Salmon"
 }

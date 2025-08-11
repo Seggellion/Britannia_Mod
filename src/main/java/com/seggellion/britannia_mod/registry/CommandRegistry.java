@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.commands.CityCommands;
 import com.seggellion.britannia_mod.commands.BlockCommands;
+import com.seggellion.britannia_mod.commands.BootstrapCommands;
 
 import com.seggellion.britannia_mod.commands.StructureCommands;
 import com.seggellion.britannia_mod.commands.LeaderboardCommands;
@@ -22,6 +23,7 @@ public class CommandRegistry {
 
         LeaderboardCommands.register(event.getServer().getCommands().getDispatcher());
         BlockCommands.register(event.getServer().getCommands().getDispatcher());
+        BootstrapCommands.register(event.getServer().getCommands().getDispatcher());
         PopulateOresCommand.register(event.getServer().getCommands().getDispatcher());
         // Register additional command classes here
     }

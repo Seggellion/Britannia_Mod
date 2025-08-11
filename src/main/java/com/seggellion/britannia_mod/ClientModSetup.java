@@ -12,7 +12,7 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRe
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
-
+import com.seggellion.britannia_mod.client.Keybinds;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.entity.EntityType;
@@ -25,6 +25,7 @@ import com.seggellion.britannia_mod.block.PurpleTentRenderer;
 
 //import com.seggellion.britannia_mod.block.HouseSignRenderer;
 import com.seggellion.britannia_mod.block.SmallForgeRenderer;
+import com.seggellion.britannia_mod.block.ChairRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -70,7 +71,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
-  
+
 @SubscribeEvent
 public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
 
@@ -388,7 +389,8 @@ private static int getTintForOreType(String oreType) {
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
 
-   
+
+
 
         event.registerBlockEntityRenderer(
     BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(),
@@ -406,7 +408,7 @@ event.registerBlockEntityRenderer(
 
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {
-
+        Keybinds.registerInputHandler();
     Minecraft.getInstance().execute(() -> {
         try {
             LOGGER.info("✅ Loading shader: brightness_shader.json");
@@ -488,6 +490,7 @@ event.registerBlockEntityRenderer(
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SKELETON_TORSO.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
 
 
                ItemBlockRenderTypes.setRenderLayer(

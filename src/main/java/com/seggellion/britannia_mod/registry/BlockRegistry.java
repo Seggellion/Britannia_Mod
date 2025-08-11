@@ -146,6 +146,17 @@ public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
 
 
 // end of fraction blocks
+
+// fish registry
+
+//public static final DeferredHolder<Block, Block> FIRE_FISH = BLOCKS.register("fire_fish", () ->
+ //   new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.RED_SAND).noOcclusion()));
+
+//public static final DeferredHolder<Block, Block> KOKANEE_SALMON = BLOCKS.register("kokanee_salmon", () ->
+  //  new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.RED_SAND).noOcclusion()));
+
+
+// spawn blocks
    public static final DeferredHolder<Block, Block> LICH_SPAWN_BLOCK = BLOCKS.register(
             "lich_spawn_block", LichSpawnBlock::new);
 
@@ -993,12 +1004,6 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             )
         );
 
-    public static final DeferredHolder<Block, Block> DOUBLE_BED =
-            BLOCKS.register("double_bed",
-                    () -> new DoubleBedBlock(BlockBehaviour.Properties.of()
-                            .mapColor(MapColor.COLOR_LIGHT_BLUE) // pick any colour you like
-                            .strength(0.2F)
-                            .noOcclusion()));
 
         public static final DeferredHolder<Block, Block> LORD_BRITISH_THRONE = BLOCKS.register(
             "lord_british_throne",
@@ -1009,6 +1014,15 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
                     .noOcclusion()
             )
         );
+
+
+        public static final DeferredHolder<Block, Block> DOUBLE_BED =
+            BLOCKS.register("double_bed",
+                    () -> new DoubleBedBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.COLOR_LIGHT_BLUE) // pick any colour you like
+                            .strength(0.2F)
+                            .noOcclusion()));
+
 
 
 // Ores
