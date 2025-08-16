@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"1": "fishes:blue_grouper",
-		"particle": "fishes:blue_grouper"
+		"1": "fishes:red_grouper",
+		"particle": "fishes:red_grouper"
 	},
 	"elements": [
 		{
@@ -91,7 +91,7 @@
 		"thirdperson_righthand": {
 			"rotation": [74, 28, 81],
 			"translation": [0, -0.25, 0.5],
-			"scale": [1.55, 1.55, 1.55]
+			"scale": [1.35, 1.35, 1.35]
 		},
 		"thirdperson_lefthand": {
 			"rotation": [74.95, 0.95, 6.95],
