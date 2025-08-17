@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/kokanee_salmon",
+  "parent": "britannia_mod:block/fish/ground/kokanee_salmon",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

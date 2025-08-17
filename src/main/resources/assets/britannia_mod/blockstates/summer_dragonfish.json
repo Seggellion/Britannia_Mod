@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "britannia_mod:block/fish/ground/summer_dragonfish",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "britannia_mod:block/fish/ground/summer_dragonfish",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "britannia_mod:block/fish/ground/summer_dragonfish",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "britannia_mod:block/fish/ground/summer_dragonfish",
+      "y": 90
+    }
+  }
+}

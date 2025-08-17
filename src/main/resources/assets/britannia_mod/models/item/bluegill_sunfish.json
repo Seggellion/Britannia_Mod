@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/bluegill_sunfish",
+  "parent": "britannia_mod:block/fish/ground/bluegill_sunfish",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

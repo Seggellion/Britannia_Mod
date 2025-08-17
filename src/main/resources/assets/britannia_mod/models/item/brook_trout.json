@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/brook_trout",
+  "parent": "britannia_mod:block/fish/ground/brook_trout",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

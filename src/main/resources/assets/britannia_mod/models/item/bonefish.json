@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/bonefish",
+  "parent": "britannia_mod:block/fish/ground/bonefish",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

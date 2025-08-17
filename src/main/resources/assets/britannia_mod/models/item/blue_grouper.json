@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/blue_grouper",
+  "parent": "britannia_mod:block/fish/ground/blue_grouper",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

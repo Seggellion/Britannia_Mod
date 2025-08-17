@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/black_seabass",
+  "parent": "britannia_mod:block/fish/ground/black_seabass",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

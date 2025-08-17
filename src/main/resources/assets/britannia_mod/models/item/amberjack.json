@@ -1,5 +1,5 @@
 {
-  "parent": "britannia_mod:block/fish/amberjack",
+  "parent": "britannia_mod:block/fish/ground/amberjack",
   "display": {
     "gui": {
       "rotation": [90, 45, 0],

@@ -5,6 +5,9 @@ import com.seggellion.britannia_mod.block.entity.CarpetTeleporterBlockEntity;
 import com.seggellion.britannia_mod.block.entity.DoubleBedBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.StoreSignBlockEntity;
+import com.seggellion.britannia_mod.registry.FishRegistry;
+import com.seggellion.britannia_mod.block.entity.FishBlockEntity;
+
 import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
@@ -36,6 +39,14 @@ public class BlockEntityRegistry {
                             .toArray(Block[]::new)
             ).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FishBlockEntity>> FISH_BLOCK =
+        BLOCK_ENTITIES.register("fish_block", () ->
+            BlockEntityType.Builder.of(
+                FishBlockEntity::new,
+                com.seggellion.britannia_mod.registry.FishRegistry.FISH_BLOCKS
+                    .values().stream().map(DeferredHolder::get).toArray(Block[]::new)
+            ).build(null)
+        );
 public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AdaptiveRoofBlockEntity>> ADAPTIVE_ROOF =
     BLOCK_ENTITIES.register("adaptive_roof", () ->
         BlockEntityType.Builder.of(
