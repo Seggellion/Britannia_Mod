@@ -91,5 +91,10 @@
     "holder_type.metal_4": "Metal Style 4",
 
     "block.britannia_mod.amberjack": "Amberjack",
-    "block.britannia_mod.kokanee_salmon": "Kokanee Salmon"
+    "block.britannia_mod.kokanee_salmon": "Kokanee Salmon",
+
+        "tooltip.britannia_mod.painting.size.small": "Small",
+    "tooltip.britannia_mod.painting.size.medium": "Medium",
+    "tooltip.britannia_mod.painting.size.large": "Large"
+
 }

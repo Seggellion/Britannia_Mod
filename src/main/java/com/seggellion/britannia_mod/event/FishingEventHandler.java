@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.event;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.skill.SkillManager;
-
+import com.seggellion.britannia_mod.registry.PaintingRegistry;
 import com.seggellion.britannia_mod.client.RegionCache;
 import com.seggellion.britannia_mod.util.RegionItemData;
 import com.seggellion.britannia_mod.util.WeightedPicker;
@@ -12,6 +12,10 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.Component;
 import java.util.concurrent.ThreadLocalRandom;
+
+import net.minecraft.util.RandomSource;
+import net.neoforged.neoforge.registries.DeferredHolder;
+
 
 import com.seggellion.britannia_mod.util.FishCatalog;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -29,6 +33,7 @@ import net.minecraft.world.item.Items; // NEW: for leather boots
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.player.ItemFishedEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraft.util.Mth;
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -46,7 +51,35 @@ public class FishingEventHandler {
     private static final int REROLL_TRIES = 5;
 
     // NEW: chance to catch leather boots instead of a fish (e.g., 7%)
-    private static final double BOOT_CHANCE = 0.07;
+   /** Boot chance scales 0 skill -> 0.80, 100 skill -> 0.00 (clamped) */
+    private static double bootChanceFor(float skill) {
+        float s = Mth.clamp(skill, 0f, 100f);
+        return 0.80 * (1.0 - (s / 100.0));
+    }
+
+    /** Painting chance scales 0 skill -> 0.00, 100 skill -> 0.50 (clamped) */
+    private static double paintingChanceFor(float skill) {
+        float s = Mth.clamp(skill, 0f, 100f);
+        return 0.50 * (s / 100.0);
+    }
+
+    /** Pick a random painting itemstack from the registry, or EMPTY if none registered */
+    private static ItemStack randomPaintingStack(RandomSource rng) {
+        var values = PaintingRegistry.PAINTING_ITEMS.values(); // Collection<DeferredHolder<Item, Item>>
+        if (values.isEmpty()) return ItemStack.EMPTY;
+
+        int target = rng.nextInt(values.size());
+        int i = 0;
+        for (DeferredHolder<Item, Item> holder : values) {
+            if (i++ == target) {
+                Item item = holder.get();          // typed: Item
+                return new ItemStack(item);        // OK: Item implements ItemLike
+            }
+        }
+        return ItemStack.EMPTY; // should never hit
+    }
+
+
 
     @SubscribeEvent
     public void onItemFished(ItemFishedEvent event) {
@@ -77,14 +110,28 @@ public class FishingEventHandler {
         BlockPos pos = player.blockPosition();
         LOGGER.info("Fishing at pos: {}", pos);
 
-        // NEW: roll for junk catch (leather boots)
-        if (ThreadLocalRandom.current().nextDouble() < BOOT_CHANCE) {
+        // Try for a painting first (rarer treasure that scales up with skill)
+        // 0% at 0 skill, 50% at 100 skill
+        double paintingChance = paintingChanceFor(skill);
+        if (ThreadLocalRandom.current().nextDouble() < paintingChance) {
+            ItemStack painting = randomPaintingStack(level.getRandom());
+            if (!painting.isEmpty()) {
+                LOGGER.info("🎣 Caught painting (chance={}): {}", 
+                        String.format(Locale.ROOT, "%.2f%%", paintingChance * 100), 
+                        painting.getDescriptionId());
+                giveAndAnnounce(player, level, pos, painting);
+                return;
+            }
+        }
+
+        // Scaled junk chance (80% at 0 skill -> 0% at 100 skill)
+        double bootChance = bootChanceFor(skill);
+        if (ThreadLocalRandom.current().nextDouble() < bootChance) {
             ItemStack boots = new ItemStack(Items.LEATHER_BOOTS);
             if (ThreadLocalRandom.current().nextBoolean()) {
-                boots.setDamageValue(ThreadLocalRandom.current().nextInt(boots.getMaxDamage())); // random wear
+                boots.setDamageValue(ThreadLocalRandom.current().nextInt(boots.getMaxDamage()));
             }
-            
-            LOGGER.info("🎣 Caught junk: Leather Boots");
+            LOGGER.info("🎣 Caught junk: Leather Boots (chance={})", String.format(Locale.ROOT, "%.2f%%", bootChance * 100));
             giveAndAnnounce(player, level, pos, boots);
             return;
         }

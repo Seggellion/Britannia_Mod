@@ -1,5 +1,6 @@
 {
 	"credit": "Made with Blockbench",
+	"render_type": "minecraft:cutout",
 	"texture_size": [250, 250],
 	"textures": {
 		"1": "britannia_mod:block/statue_male_stand",

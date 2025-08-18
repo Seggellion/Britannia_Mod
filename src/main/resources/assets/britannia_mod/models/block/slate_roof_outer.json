@@ -1,5 +1,6 @@
 {
 	"credit": "Made with Blockbench",
+	"render_type": "minecraft:cutout",
 	"ambientocclusion": false,
 	"textures": {
 		"1": "britannia_mod:block/roof/slate_texture",

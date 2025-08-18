@@ -114,6 +114,7 @@ public class BritanniaMod {
         ItemRegistry.register(modEventBus);
         SwordRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
+        PaintingRegistry.register(modEventBus);
 
         ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
