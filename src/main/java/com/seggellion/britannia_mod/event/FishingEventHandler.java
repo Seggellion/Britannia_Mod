@@ -53,14 +53,35 @@ public class FishingEventHandler {
     // NEW: chance to catch leather boots instead of a fish (e.g., 7%)
    /** Boot chance scales 0 skill -> 0.80, 100 skill -> 0.00 (clamped) */
     private static double bootChanceFor(float skill) {
-        float s = Mth.clamp(skill, 0f, 100f);
-        return 0.80 * (1.0 - (s / 100.0));
+        float s = Mth.clamp(skill, 0f, 80f); // cap skill at 80
+        return 1.0 - (s / 80.0); // linearly scale from 1.0 → 0.0
     }
 
     /** Painting chance scales 0 skill -> 0.00, 100 skill -> 0.50 (clamped) */
-    private static double paintingChanceFor(float skill) {
-        float s = Mth.clamp(skill, 0f, 100f);
-        return 0.50 * (s / 100.0);
+        private static double paintingChanceFor(float skill) {
+            // Only allow a chance at exactly 100 skill
+            if (skill >= 100f) {
+                return 0.50; // 50% chance
+            }
+            return 0.0; // No chance otherwise
+        }
+
+
+/** Rarity Calculator */
+        private static double rarityMultiplier(int rarity) {
+        int r = Math.max(0, Math.min(10, rarity));
+        // Option A (default): hyperbolic — simple, predictable
+       // return 1.0 / (1.0 + r);
+
+        // Option B (gentler): exponential-ish falloff
+         return Math.pow(0.8, r);
+
+        // Option C (steeper): halve per rarity point
+        // return Math.pow(0.5, r);
+    }
+
+    private record EffectivePick(RegionItemData item, int weight) implements WeightedPicker.HasWeight {
+        @Override public int weight() { return weight; }
     }
 
     /** Pick a random painting itemstack from the registry, or EMPTY if none registered */
@@ -116,13 +137,14 @@ public class FishingEventHandler {
         if (ThreadLocalRandom.current().nextDouble() < paintingChance) {
             ItemStack painting = randomPaintingStack(level.getRandom());
             if (!painting.isEmpty()) {
-                LOGGER.info("🎣 Caught painting (chance={}): {}", 
-                        String.format(Locale.ROOT, "%.2f%%", paintingChance * 100), 
-                        painting.getDescriptionId());
+                LOGGER.info("🎨 Caught painting (chance={}): {}", 
+                    String.format(Locale.ROOT, "%.2f%%", paintingChance * 100), 
+                    painting.getDescriptionId());
                 giveAndAnnounce(player, level, pos, painting);
                 return;
             }
         }
+
 
         // Scaled junk chance (80% at 0 skill -> 0% at 100 skill)
         double bootChance = bootChanceFor(skill);
@@ -162,13 +184,25 @@ public class FishingEventHandler {
         LOGGER.info("FishPool size: {}", basePool.size());
         if (basePool.isEmpty()) return null;
 
+
+        // Build an effective pool where weight is scaled down by rarity.
+        List<EffectivePick> effectivePool = new java.util.ArrayList<>(basePool.size());
+        for (RegionItemData d : basePool) {
+            double mult = rarityMultiplier(d.rarity);
+            // ensure at least weight 1 so ultra-rare still can be picked
+            int eff = Math.max(1, (int)Math.round(d.weight * mult));
+            effectivePool.add(new EffectivePick(d, eff));
+            LOGGER.debug("Fish key={} baseW={} rarity={} -> effW={}",
+                    d.key, d.weight, d.rarity, eff);
+        }
+
         int playerSkill = (int) SkillManager.getSkill(sp, "fishing");
 
         // Try a few times to find an eligible fish
         for (int tries = 0; tries < REROLL_TRIES; tries++) {
-            RegionItemData picked = WeightedPicker.pick(basePool);
-            LOGGER.info("Picked: {}", picked);
-            if (picked == null) break;
+            EffectivePick pickedEff = WeightedPicker.pick(effectivePool);
+            if (pickedEff == null) break;
+            RegionItemData picked = pickedEff.item();
 
             int required = requiredSkillFor(picked);
             if (playerSkill < required) {

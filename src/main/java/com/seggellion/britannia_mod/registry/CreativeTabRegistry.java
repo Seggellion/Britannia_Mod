@@ -73,6 +73,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_BLOCK.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_WINDOW_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FINIAL_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_ARCH_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_BOTTOM_ITEM.get());
@@ -208,6 +209,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SMALL_FORGE_BLOCK_ENTITY.get());
                 safeAccept(output, ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                 safeAccept(output, ItemRegistry.YEW_TABLE_ITEM.get());
+                safeAccept(output, ItemRegistry.SMALL_TABLE_ITEM.get());
+                safeAccept(output, ItemRegistry.COUNTER_ITEM.get());
                 safeAccept(output, ItemRegistry.GOLD_COIN.get());
 
                 // Tools & weapons

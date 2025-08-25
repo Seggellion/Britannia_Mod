@@ -106,7 +106,7 @@ public class BritanniaMod {
         LOGGER.info("Initializing BritanniaMod");
         OreVeinLoader.loadOreVeins();
           BlessedItemSyncHandler.init(); 
-                    WorldBootstrapHandler.init(); 
+        WorldBootstrapHandler.init(); 
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);

@@ -541,6 +541,21 @@ public static final DeferredHolder<Block, Block> BRAZIER_SMALL = BLOCKS.register
                 .noOcclusion())
         );
 
+        public static final DeferredHolder<Block, Block> SMALL_TABLE = BLOCKS.register(
+        "small_table",
+        () -> new RotatableFurnitureBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(0.3f)
+                .noOcclusion())
+        );
+
+                public static final DeferredHolder<Block, Block> COUNTER = BLOCKS.register(
+        "counter",
+        () -> new RotatableFurnitureBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(0.3f)
+                .noOcclusion())
+        );
 
 // Roof blocks
 
@@ -858,6 +873,15 @@ public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
         )
     );
 
+public static final DeferredHolder<Block, ThinWall> DARK_STONE_WALL_BOTTOM =
+    BLOCKS.register("dark_stone_wall_bottom", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
 
 
 public static final DeferredHolder<Block, Block> STONE_WALL_WINDOW =

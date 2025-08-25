@@ -432,6 +432,9 @@ public static final DeferredHolder<Item, BlockItem> COBBLESTONE_WALL_TOP_ITEM =
         ITEMS.register("cobblestone_wall_top",
             () -> new BlockItem(BlockRegistry.COBBLESTONE_WALL_TOP.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("dark_stone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_WALL_BOTTOM.get(), new Item.Properties()));
 
 
 public static final DeferredHolder<Item, BlockItem> OAK_WALL_BOTTOM_ITEM =
@@ -895,6 +898,15 @@ public static final DeferredHolder<Item, Item> CARPET_TELEPORTER_BLOCK_ITEM = IT
 
     public static final DeferredHolder<Item, Item> YEW_TABLE_ITEM = ITEMS.register(
             "yew_table", () -> new BlockItem(BlockRegistry.YEW_TABLE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> SMALL_TABLE_ITEM = ITEMS.register(
+            "small_table", () -> new BlockItem(BlockRegistry.SMALL_TABLE.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> COUNTER_ITEM = ITEMS.register(
+            "counter", () -> new BlockItem(BlockRegistry.COUNTER.get(), new Item.Properties()));
+
+
 
         // Custom Ore Items
         public static final DeferredHolder<Item, Item> COPPER_ORE_ITEM = ITEMS.register(

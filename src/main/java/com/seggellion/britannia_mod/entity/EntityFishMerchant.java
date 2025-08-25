@@ -43,20 +43,45 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import com.google.gson.JsonObject;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.AnimationController;
 
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class EntityFishMerchant extends AbstractVillager implements IEntityExtension, ICityEntity  {
+public class EntityFishMerchant extends AbstractVillager implements IEntityExtension, ICityEntity, GeoEntity   {
     private String cityName;
     private BlockPos spawnPosition;
     private int maxHomeDistance = 5; // Set to match the spawner's radius
     private static final Logger LOGGER = LogManager.getLogger();
     private static final double MESSAGE_RADIUS = 20.0;
 
-    private String gender = "unknown";
+    private static final EntityDataAccessor<String> DATA_GENDER =
+        SynchedEntityData.defineId(EntityFishMerchant.class, EntityDataSerializers.STRING);
+
+    private String gender = "female";
     private String personalName = "Unnamed";
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    private static final RawAnimation IDLE  = RawAnimation.begin().thenLoop("animation.fish_merchant.idle");
+    private static final RawAnimation WALK  = RawAnimation.begin().thenLoop("animation.fish_merchant.walk");
+
+    private static final EntityDataAccessor<Boolean> DATA_BLINK =
+        SynchedEntityData.defineId(EntityFishMerchant.class, EntityDataSerializers.BOOLEAN);
+
+    private int blinkTicks = 0; // local timer for how long we keep eyes closed
+
 
     public EntityFishMerchant(EntityType<? extends AbstractVillager> entityType, Level level) {
         super(entityType, level);
@@ -66,6 +91,35 @@ public class EntityFishMerchant extends AbstractVillager implements IEntityExten
     }
 
 
+
+ // Getter/Setter now read/write the synced field
+    public void setGender(String gender) {
+        String g = normalizeGender(gender);
+        this.gender = g;
+        this.entityData.set(DATA_GENDER, g);
+    }
+    
+
+    public String getGender() {
+        // read from synced data; fallback to local/“female”
+        String g = this.entityData.get(DATA_GENDER);
+        if (g == null || g.isEmpty()) g = "female";
+        return g;
+    }
+
+    private static String normalizeGender(String in) {
+        if (in == null) return "female";
+        String s = in.trim().toLowerCase();
+        return (s.equals("male") || s.equals("m")) ? "male" : "female"; // default → female
+    }
+
+
+   @Override
+protected void defineSynchedData(SynchedEntityData.Builder builder) {
+    super.defineSynchedData(builder);
+    builder.define(DATA_GENDER, "female"); // default -> female
+    builder.define(DATA_BLINK, false);
+}
     public void setPersonalName(String personalName) {
         this.personalName = personalName;
         this.setCustomName(Component.literal(personalName));
@@ -76,6 +130,31 @@ public class EntityFishMerchant extends AbstractVillager implements IEntityExten
         return this.personalName;
     }
 
+public boolean isBlinking() {
+    return this.entityData.get(DATA_BLINK);
+}
+
+private void setBlinking(boolean blinking) {
+    this.entityData.set(DATA_BLINK, blinking);
+}
+
+@Override
+public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+    controllers.add(new AnimationController<>(
+        this,
+        "base",            // controller name (any string)
+        0,                 // transition length in ticks
+        (AnimationState<EntityFishMerchant> state) -> {
+            boolean moving = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-4;
+            return state.setAndContinue(moving ? WALK : IDLE);
+        }
+    ));
+}
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return geoCache;
+    }
 
 @Override
 public void tick() {
@@ -104,6 +183,20 @@ public void tick() {
             }
         }
     }
+
+    if (!level().isClientSide) {
+        if (blinkTicks > 0) {
+            blinkTicks--;
+            if (blinkTicks == 0) setBlinking(false);
+        } else {
+            // ~0.5% chance per tick ≈ every ~5 seconds at 20 TPS (tune to taste)
+            if (this.random.nextFloat() < 0.005f) {
+                blinkTicks = 3;       // eyes closed for ~3 ticks (≈150 ms)
+                setBlinking(true);
+            }
+        }
+    }
+
 }
 
 
@@ -139,6 +232,7 @@ public void tick() {
         tag.putString("CityName", cityName);
         tag.putString("personalName", personalName);
         tag.putLong("SpawnPosition", spawnPosition.asLong());
+        tag.putString("Gender", getGender());
     }
 
 @Override
@@ -153,6 +247,10 @@ public void readAdditionalSaveData(CompoundTag tag) {
     this.setCustomName(Component.literal(this.personalName));
 
     this.setCustomNameVisible(true);
+
+      // Restore gender (default female if missing)
+        String savedGender = tag.contains("Gender") ? tag.getString("Gender") : "female";
+        setGender(savedGender);
 
     if (!this.level().isClientSide) {
         setCityName(cityName);
@@ -172,13 +270,6 @@ public void onAddedToLevel() {
         return this.cityName;
     }
 
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public String getGender() {
-        return this.gender;
-    }
 
 
     @Override
@@ -384,7 +475,7 @@ private String getFishType(Item item) {
                 .add(Attributes.JUMP_STRENGTH, 1.0D)
                 .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
                 .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)
-                .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
+                .add(getAttributeHolder(ModAttributes.SCALE.get()), 0.5D)
                 .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
                 .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D)
 .add(getAttributeHolder(BuiltInRegistries.ATTRIBUTE

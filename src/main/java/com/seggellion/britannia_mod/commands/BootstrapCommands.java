@@ -6,10 +6,15 @@ import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.client.RegionCache;
 import com.seggellion.britannia_mod.util.RegionData;
 import com.seggellion.britannia_mod.util.RegionItemData;
+import net.minecraft.server.level.ServerPlayer;
+import com.google.gson.JsonParser;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import com.seggellion.britannia_mod.player.PlayerData;
+import com.seggellion.britannia_mod.player.PlayerDataStore;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +29,7 @@ public final class BootstrapCommands {
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.literal("fish").executes(ctx -> dumpFish(ctx.getSource())))
                 .then(Commands.literal("regions").executes(ctx -> dumpRegions(ctx.getSource())))
+                .then(Commands.literal("stats").executes(ctx -> dumpStats(ctx.getSource())))
         );
     }
 
@@ -42,13 +48,35 @@ public final class BootstrapCommands {
             .forEach(e -> {
                 ResourceLocation key = e.getKey();
                 FishCatalog.FishMeta m = e.getValue();
-                String line = String.format(" - %s | name=%s | weight=%.2f..%.2f kg | min_skill=%d",
-                        key, m.name, m.minWeight, m.maxWeight, m.minSkill);
+                String line = String.format(" - %s | name=%s | weight=%.2f..%.2f | min_skill=%d | rarity=%d",
+                        key, m.name, m.minWeight, m.maxWeight, m.minSkill, m.rarity);
                 source.sendSuccess(() -> Component.literal(line), false);
             });
 
         source.sendSuccess(() -> Component.literal("[Bootstrap] Total fish: " + map.size()), false);
         return map.size();
+    }
+
+ public static int dumpStats(CommandSourceStack source) {
+        ServerPlayer player;
+        try {
+            player = source.getPlayerOrException();
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("[Bootstrap] Run this as a player."));
+            return 0;
+        }
+
+        PlayerData pd = PlayerDataStore.get(player);
+
+        source.sendSuccess(() -> Component.literal("[Bootstrap] ShardUser:"), false);
+        source.sendSuccess(() -> Component.literal(" - gender: " + pd.getGender()), false);
+        source.sendSuccess(() -> Component.literal(" - fame: " + pd.getFame()), false);
+        source.sendSuccess(() -> Component.literal(" - karma: " + pd.getKarma()), false);
+        source.sendSuccess(() -> Component.literal(" - murder_count: " + pd.getMurderCount()), false);
+        source.sendSuccess(() -> Component.literal(" - inventory: " + pd.inventoryOneLine()), false);
+        source.sendSuccess(() -> Component.literal(" - stats: " + pd.statsOneLine()), false);
+
+        return 1;
     }
 
     private static int dumpRegions(CommandSourceStack source) {

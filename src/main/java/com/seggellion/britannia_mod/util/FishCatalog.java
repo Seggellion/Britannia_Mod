@@ -9,11 +9,14 @@ public final class FishCatalog {
         public final String name;
         public final double minWeight, maxWeight;
         public final int minSkill;
-        public FishMeta(String name, double minWeight, double maxWeight, int minSkill) {
+        public final int rarity;
+
+        public FishMeta(String name, double minWeight, double maxWeight, int minSkill, int rarity) {
             this.name = name;
             this.minWeight = minWeight;
             this.maxWeight = maxWeight;
             this.minSkill = minSkill;
+            this.rarity = rarity;
         }
     }
 

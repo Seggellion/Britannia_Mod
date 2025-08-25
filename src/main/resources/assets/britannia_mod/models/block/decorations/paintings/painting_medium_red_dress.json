@@ -141,6 +141,11 @@
 		"thirdperson_righthand": {
 			"rotation": [72, 3, 1],
 			"translation": [0, 7.25, 2.25]
+		},
+		"gui": {
+			"rotation": [0, 180, 0],
+			"translation": [0, -3.25, 0],
+			"scale": [0.54, 0.54, 0.54]
 		}
 	}
 }

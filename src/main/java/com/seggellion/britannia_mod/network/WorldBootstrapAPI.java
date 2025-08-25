@@ -9,7 +9,7 @@ import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.util.RegionData;
 import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.util.RegionItemData;
-
+import com.seggellion.britannia_mod.player.PlayerDataStore;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -28,18 +28,18 @@ public final class WorldBootstrapAPI {
     public static WorldBootstrapData fetch(ServerPlayer player) {
         try {
             // Resolve shard (pick your source of truth)
-            // Option A: from config
             String shard = ModConfig.SHARD_NAME != null && !ModConfig.SHARD_NAME.isBlank()
                     ? ModConfig.SHARD_NAME
                     : "Britannia"; // sensible default
 
-            // If you have a server-level source, swap it in:
-            // String shard = ShardNameResolver.get(player.serverLevel());
+            String playerUuid = player.getUUID().toString();
 
             String encodedShard = URLEncoder.encode(shard, StandardCharsets.UTF_8);
+            String encodedUuid  = URLEncoder.encode(playerUuid, StandardCharsets.UTF_8);
+
             String base = ModConfig.API_BASE_URL;
             if (!base.endsWith("/")) base += "/";
-            final String urlString = base + "world_bootstrap/" + encodedShard;
+            final String urlString = base + "world_bootstrap/" + encodedShard + "?player_uuid=" + encodedUuid;
 
             HttpURLConnection conn = (HttpURLConnection) new URL(urlString).openConnection();
             conn.setRequestMethod("GET");
@@ -75,7 +75,8 @@ public final class WorldBootstrapAPI {
                         double minW = f.get("min_weight").getAsDouble();
                         double maxW = f.get("max_weight").getAsDouble();
                         int minSkill = f.has("min_skill") ? f.get("min_skill").getAsInt() : 0;
-                        fishMap.put(key, new FishCatalog.FishMeta(name, minW, maxW, minSkill));
+                        int rarity = f.has("rarity") ? f.get("rarity").getAsInt() : 0;
+                        fishMap.put(key, new FishCatalog.FishMeta(name, minW, maxW, minSkill, rarity));
                     }
                 }
 
@@ -103,7 +104,8 @@ public final class WorldBootstrapAPI {
                                         io.has("min_skill_override") && !io.get("min_skill_override").isJsonNull()
                                                 ? io.get("min_skill_override").getAsInt()
                                                 : null;
-                                items.add(new RegionItemData(type, key, weight, minSkillOverride));
+                                int rarity = 0;
+                                items.add(new RegionItemData(type, key, weight, minSkillOverride, rarity));
                             }
                         }
 
@@ -111,7 +113,29 @@ public final class WorldBootstrapAPI {
                     }
                 }
 
-                return new WorldBootstrapData(fishMap, regions);
+                // 3) ShardUser data
+                ShardUserData shardUser = null;
+                if (root.has("shard_user") && root.get("shard_user").isJsonObject()) {
+                    JsonObject su = root.getAsJsonObject("shard_user");
+                    String gender        = su.get("gender").getAsString();
+                    int fame             = su.get("fame").getAsInt();
+                    int karma            = su.get("karma").getAsInt();
+                    int murderCount      = su.get("murder_count").getAsInt();
+                    JsonObject inventory = su.getAsJsonObject("inventory");
+                    JsonObject stats     = su.getAsJsonObject("stats");
+
+                    shardUser = new ShardUserData(gender, fame, karma, murderCount, inventory, stats);
+                        if (shardUser != null) {
+                        com.seggellion.britannia_mod.player.PlayerData pd =
+                            com.seggellion.britannia_mod.player.PlayerDataStore.get(player);
+                        pd.setPlayerName(player.getGameProfile().getName()); // optional
+                        pd.syncFromShardUser(shardUser);
+                        com.seggellion.britannia_mod.player.PlayerDataStore.save(player, pd);
+                    }
+                }
+
+                // Return once, outside the if-block
+                return new WorldBootstrapData(fishMap, regions, shardUser);
             }
         } catch (Exception e) {
             LOGGER.error("Failed world bootstrap", e);
@@ -121,8 +145,20 @@ public final class WorldBootstrapAPI {
 
     public record WorldBootstrapData(
             Map<ResourceLocation, FishCatalog.FishMeta> fish,
-            List<RegionData> regions
+            List<RegionData> regions,
+            ShardUserData shardUser
     ) {
-        public static WorldBootstrapData empty() { return new WorldBootstrapData(Map.of(), List.of()); }
+        public static WorldBootstrapData empty() {
+            return new WorldBootstrapData(Map.of(), List.of(), null);
+        }
     }
+
+    public record ShardUserData(
+            String gender,
+            int fame,
+            int karma,
+            int murderCount,
+            JsonObject inventory,
+            JsonObject stats
+    ) {}
 }

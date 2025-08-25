@@ -85,8 +85,12 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RotatableFurnitureBlockEntity>> ROTATABLE_FURNITURE =
             BLOCK_ENTITIES.register("rotatable_furniture", () ->
                     BlockEntityType.Builder.of(RotatableFurnitureBlockEntity::new,
-                            BlockRegistry.YEW_TABLE.get()
+                            BlockRegistry.YEW_TABLE.get(),
+                            BlockRegistry.SMALL_TABLE.get(),
+                            BlockRegistry.COUNTER.get()
                     ).build(null));
+
+
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChairBlockEntity>> CHAIR =
             BLOCK_ENTITIES.register("chair", () ->

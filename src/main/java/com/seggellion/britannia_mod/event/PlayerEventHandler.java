@@ -44,8 +44,8 @@ public class PlayerEventHandler {
             double x = serverPlayer.getX(), z = serverPlayer.getZ();
             if (x <= 0) teleportPlayer(serverPlayer, 14999, serverPlayer.getY(), z);
             else if (x >= 15000) teleportPlayer(serverPlayer, 1, serverPlayer.getY(), z);
-            if (z <= 0) teleportPlayer(serverPlayer, x, serverPlayer.getY(), 9998);
-            else if (z >= 9999) teleportPlayer(serverPlayer, x, serverPlayer.getY(), 1);
+            if (z <= 0) teleportPlayer(serverPlayer, x, serverPlayer.getY(), 11998);
+            else if (z >= 11999) teleportPlayer(serverPlayer, x, serverPlayer.getY(), 1);
         }
     }
 
