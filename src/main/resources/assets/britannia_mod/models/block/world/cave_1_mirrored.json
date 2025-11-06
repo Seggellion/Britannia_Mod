@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "britannia_mod:block/world/cave_floor_1"
+  },
+  "x": 0,
+  "y": 180,
+  "uvlock": true
+}

@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "": [
+      { "model": "minecraft:block/brick1" },
+      { "model": "minecraft:block/brick2" },
+      { "model": "minecraft:block/brick3" },
+      { "model": "minecraft:block/brick4" },
+      { "model": "minecraft:block/brick5" },
+      { "model": "minecraft:block/brick6" },
+      { "model": "minecraft:block/brick7" },
+      { "model": "minecraft:block/brick8" },
+      { "model": "minecraft:block/brick9" },
+      { "model": "minecraft:block/brick10" },
+      { "model": "minecraft:block/brick11" }
+    ]
+  }
+}

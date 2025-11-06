@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "axis=y,waterlogged=false": { "model": "britannia_mod:block/decorations/rope" },
+    "axis=y,waterlogged=true":  { "model": "britannia_mod:block/decorations/rope" },
+
+    "axis=x,waterlogged=false": { "model": "britannia_mod:block/decorations/rope_horizontal" },
+    "axis=x,waterlogged=true":  { "model": "britannia_mod:block/decorations/rope_horizontal" },
+
+    "axis=z,waterlogged=false": { "model": "britannia_mod:block/decorations/rope_horizontal", "x": 90 },
+    "axis=z,waterlogged=true":  { "model": "britannia_mod:block/decorations/rope_horizontal", "x": 90 }
+  }
+}

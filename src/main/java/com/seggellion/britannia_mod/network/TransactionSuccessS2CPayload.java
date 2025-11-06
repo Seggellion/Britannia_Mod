@@ -31,7 +31,6 @@ public record TransactionSuccessS2CPayload() implements CustomPacketPayload {
             if (mc.screen != null) mc.setScreen(null);
             if (mc.player != null) {
                 mc.player.playSound(ModSounds.TRANSACTION.get(), 1.0F, 1.0F);
-                mc.player.displayClientMessage(Component.literal("Transaction complete!"), false);
             }
         });
     }

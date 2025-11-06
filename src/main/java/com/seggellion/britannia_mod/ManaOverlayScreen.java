@@ -38,6 +38,7 @@ public class ManaOverlayScreen {
     @SubscribeEvent
     public void onRenderGuiLayer(RenderGuiLayerEvent.Post event) {
         if (mc.player == null) return;
+         if (mc.options.hideGui) return;
 
         int screenWidth = mc.getWindow().getGuiScaledWidth();
         int screenHeight = mc.getWindow().getGuiScaledHeight();

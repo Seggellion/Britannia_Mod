@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "variant=0,mirrored=false": { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_0" },
+    "variant=0,mirrored=true":  { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_0_mirrored" },
+    "variant=1,mirrored=false": { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_1" },
+    "variant=1,mirrored=true":  { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_1_mirrored" },
+    "variant=2,mirrored=false": { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_2" },
+    "variant=2,mirrored=true":  { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_2_mirrored" },
+    "variant=3,mirrored=false": { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_3" },
+    "variant=3,mirrored=true":  { "model": "britannia_mod:block/structure/dungeon_wall/dungeon_wall_3_mirrored" }
+  }
+}

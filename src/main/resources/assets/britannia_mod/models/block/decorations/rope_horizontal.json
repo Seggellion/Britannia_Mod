@@ -1,0 +1,20 @@
+{
+  "elements": [
+    {
+      "from": [0, 6, 6],
+      "to": [16, 10, 10],
+      "faces": {
+        "north": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "east":  { "texture": "#all" },
+        "west":  { "texture": "#all" },
+        "up":    { "texture": "#all" },
+        "down":  { "texture": "#all" }
+      }
+    }
+  ],
+  "textures": {
+    "all": "britannia_mod:block/decoration/rope",
+    "particle": "britannia_mod:block/decoration/rope"
+  }
+}

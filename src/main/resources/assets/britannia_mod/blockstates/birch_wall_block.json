@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "variant=0,mirrored=false": { "model": "britannia_mod:block/structure/birch_wall/birch_wall" },
+    "variant=0,mirrored=true":  { "model": "britannia_mod:block/structure/birch_wall/birch_wall_mirrored" }
+  }
+}

@@ -38,21 +38,48 @@ public class PlayerEventHandler {
         handlePlayerPosition(event.getEntity());
 
     }
+// Enable/disable wraparound globally
+private static final boolean WRAPAROUND_ENABLED = true;
 
-    private void handlePlayerPosition(Player player) {
-        if (player instanceof ServerPlayer serverPlayer && !serverPlayer.level().isClientSide()) {
-            double x = serverPlayer.getX(), z = serverPlayer.getZ();
-            if (x <= 0) teleportPlayer(serverPlayer, 14999, serverPlayer.getY(), z);
-            else if (x >= 15000) teleportPlayer(serverPlayer, 1, serverPlayer.getY(), z);
-            if (z <= 0) teleportPlayer(serverPlayer, x, serverPlayer.getY(), 11998);
-            else if (z >= 11999) teleportPlayer(serverPlayer, x, serverPlayer.getY(), 1);
-        }
-    }
+// Added frame: 500 west/east (→ +1000 X), 1000 north/south (→ +2000 Z)
+private static final int WORLD_WIDTH  = 16_000;   // 15,000 + 1,000
+private static final int WORLD_HEIGHT = 12_000;   // 10,000 + 2,000
 
-    private void teleportPlayer(ServerPlayer player, double x, double y, double z) {
-        LOGGER.info("Teleporting player {} to coordinates: {}, {}, {}", player.getName().getString(), x, y, z);
-        player.teleportTo(x, y, z);
+// Offsets (west = -X, north = -Z)
+private static final int OFFSET_X = -500;         // 500 blocks added to the west
+private static final int OFFSET_Z = -1_000;       // 1000 blocks added to the north
+
+// Derived inclusive bounds
+private static final int MIN_X = OFFSET_X;                                // -500
+private static final int MAX_X = OFFSET_X + WORLD_WIDTH  - 1;             // 15,499
+private static final int MIN_Z = OFFSET_Z;                                // -1,000
+private static final int MAX_Z = OFFSET_Z + WORLD_HEIGHT - 1;             // 10,999
+
+private void handlePlayerPosition(Player player) {
+    if (!WRAPAROUND_ENABLED) return;
+
+    if (player instanceof ServerPlayer sp && !sp.level().isClientSide()) {
+        double x = sp.getX(), y = sp.getY(), z = sp.getZ();
+        double newX = x, newZ = z;
+
+        // Wrap X
+        if (x <= MIN_X)       newX = MAX_X - 1;
+        else if (x >= MAX_X)  newX = MIN_X + 1;
+
+        // Wrap Z
+        if (z <= MIN_Z)       newZ = MAX_Z - 1;
+        else if (z >= MAX_Z)  newZ = MIN_Z + 1;
+
+        if (newX != x || newZ != z) teleportPlayer(sp, newX, y, newZ);
     }
+}
+
+private void teleportPlayer(ServerPlayer player, double x, double y, double z) {
+    LOGGER.info("Teleporting player {} to coordinates: {}, {}, {}",
+            player.getName().getString(), x, y, z);
+    player.teleportTo(x, y, z);
+}
+
 
     // Detect when the player picks up or interacts with the gold coin
 @SubscribeEvent

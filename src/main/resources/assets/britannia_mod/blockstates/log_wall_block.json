@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "variant=0,mirrored=false": { "model": "britannia_mod:block/structure/log_wall/log_wall" },
+    "variant=0,mirrored=true":  { "model": "britannia_mod:block/structure/log_wall/log_wall_mirrored" }
+  }
+}

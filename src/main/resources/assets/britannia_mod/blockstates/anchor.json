@@ -1,0 +1,21 @@
+  {
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/decorations/anchor",
+        "y": 0
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/decorations/anchor",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/decorations/anchor",
+        "y": 270
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/decorations/anchor",
+        "y": 90
+      }
+    }
+  }
+  

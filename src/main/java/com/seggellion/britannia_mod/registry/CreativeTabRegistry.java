@@ -18,6 +18,7 @@ public class CreativeTabRegistry {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(
             net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, "britannia_mod");
 
+
     // Tab 1: World & Building Blocks
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WORLD_TAB = CREATIVE_TABS.register(
         "britannia_world_tab", () -> CreativeModeTab.builder()
@@ -25,6 +26,7 @@ public class CreativeTabRegistry {
             .icon(() -> Item.BY_BLOCK.get(BlockRegistry.QUARTER_DIRT_BLOCK.get()).getDefaultInstance())
             .displayItems((parameters, output) -> {
                 // Construction blocks
+                safeAccept(output, ItemRegistry.CAVE_FLOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.QUARTER_DIRT_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.HALF_DIRT_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.THREE_QUARTER_DIRT_BLOCK_ITEM.get());
@@ -48,6 +50,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SLATE_ROOF_2_FLAT_ITEM.get());
 
                 // Foundations, Walls, Floors
+                safeAccept(output, ItemRegistry.WOODEN_BOARD_FLOOR_ITEM.get());
+                 safeAccept(output, ItemRegistry.WOODEN_PLANK_FLOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.LOCKABLE_WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
@@ -56,32 +60,63 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SPRUCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CUSTOM_STONE_STAIRS_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FOUNDATION_ITEM.get());
+                safeAccept(output, ItemRegistry.COBBLESTONE_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_FOUNDATION_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_STONE_FOUNDATION_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_FOUNDATION_ITEM.get());                
                 safeAccept(output, ItemRegistry.STONE_FLOOR_POLISHED_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FLOOR_ITEM.get());
 
+                // Containers
+                safeAccept(output, ItemRegistry.CHEST_WOODEN_ITEM.get());
+                safeAccept(output, ItemRegistry.ARMOIRE_BROWN_ITEM.get());
+                safeAccept(output, ItemRegistry.ARMOIRE_RED_ITEM.get());
+                safeAccept(output, ItemRegistry.CHEST_OF_DRAWERS_BROWN_ITEM.get());
+                safeAccept(output, ItemRegistry.CHEST_OF_DRAWERS_RED_ITEM.get());
+                safeAccept(output, ItemRegistry.CHEST_METAL_ITEM.get());
+                safeAccept(output, ItemRegistry.CHEST_METAL_BRONZE_ITEM.get());
+
                 // Walls
+                safeAccept(output, ItemRegistry.CAVE_ITEM.get());
+                safeAccept(output, ItemRegistry.DUNGEON_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.DUNGEON_STAIRS_ITEM.get());
+                safeAccept(output, ItemRegistry.OAK_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.OAK_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.OAK_WALL_TOP_ITEM.get());
+                safeAccept(output, ItemRegistry.BRICK_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_WALL_TOP_ITEM.get());
+                safeAccept(output, ItemRegistry.STONE_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_TOP_BLOCK.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_BOTTOM_BLOCK.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_WINDOW_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_WALL_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_STAIRS_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_WALL_HALF_ITEM.get());
                 safeAccept(output, ItemRegistry.DARK_STONE_WALL_BOTTOM_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_FINIAL_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FINIAL_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_BUTTRESS_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_ARCH_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_ARCH_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_WALL_BOTTOM_CURVE_LEFT_ITEM.get());
+                safeAccept(output, ItemRegistry.DARK_STONE_WALL_BOTTOM_CURVE_RIGHT_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.BIRCH_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.BIRCH_WALL_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.LOG_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.LOG_WALL_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_STONE_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_TOP_ITEM.get());
+                safeAccept(output, ItemRegistry.CORRAL_CORNER_FENCE_ITEM.get());
+                safeAccept(output, ItemRegistry.CORRAL_FENCE_ITEM.get());
+                safeAccept(output, ItemRegistry.CORRAL_PILLAR_ITEM.get());
 
                 // Windows
                 safeAccept(output, ItemRegistry.WINDOW_1X1_ITEM.get());
@@ -104,7 +139,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.STATUE_MAN_ITEM.get());
                 safeAccept(output, ItemRegistry.STATUE_STAND_ITEM.get());
 
-                // Lamps
+                // Lamps                
+                safeAccept(output, ItemRegistry.WOODEN_POST_ITEM.get());
+                safeAccept(output, ItemRegistry.LAMP_POST_WOODEN_ITEM.get());
                 safeAccept(output, ItemRegistry.LAMP_POST_FANCY_ITEM.get());
                 safeAccept(output, ItemRegistry.LAMP_POST_REGULAR_ITEM.get());
             }).build());
@@ -118,12 +155,40 @@ public class CreativeTabRegistry {
             .icon(() -> ItemRegistry.GRAVESTONE_TYPE_1_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 // Decorative items
+            BlockRegistry.STALAGMITES.values().forEach(holder -> {
+                    Item item = Item.BY_BLOCK.get(holder.get());
+                    if (item != null) safeAccept(output, item);
+                });
+                safeAccept(output, ItemRegistry.FLOWSTONE_1_ITEM.get());
+                safeAccept(output, ItemRegistry.FLOWSTONE_2_ITEM.get());
+                safeAccept(output, ItemRegistry.FLOWSTONE_3_ITEM.get());
+                safeAccept(output, ItemRegistry.FLOWSTONE_4_ITEM.get());
+                safeAccept(output, ItemRegistry.PIER.get());
+                safeAccept(output, ItemRegistry.WALL_SCONCE_ITEM.get());
+                safeAccept(output, ItemRegistry.CANDLE_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_TALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TORCH_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TORCH_STANDING_ITEM.get());
                 safeAccept(output, ItemRegistry.BRAZIER_SMALL_ITEM.get());
+                safeAccept(output, ItemRegistry.TABLE_SETTING_ITEM.get());
+                safeAccept(output, ItemRegistry.SPITTOON_ITEM.get());
+                safeAccept(output, ItemRegistry.DECORATIVE_WEAPONS_1_ITEM.get());
+                safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_1_ITEM.get());
+                safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_2_ITEM.get());
+                safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_1BW_ITEM.get());
+                safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_2BW_ITEM.get());
+                safeAccept(output, ItemRegistry.WATER_TROUGH_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.WATER_BARREL_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_CHAIR_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_THRONE_ITEM.get());
+                safeAccept(output, ItemRegistry.BENCH_ITEM.get());
+                safeAccept(output, ItemRegistry.STOOL_ITEM.get());
+                safeAccept(output, ItemRegistry.FOOTSTOOL_ITEM.get());
+                safeAccept(output, ItemRegistry.CHAIR_TRINSIC_ITEM.get());
+                safeAccept(output, ItemRegistry.CHAIR_VESPER_ITEM.get());
+                safeAccept(output, ItemRegistry.STRAW_CHAIR_ITEM.get());
                 safeAccept(output, ItemRegistry.LORD_BRITISH_THRONE_ITEM.get());
                 safeAccept(output, ItemRegistry.DOUBLE_BED_ITEM.get());
                 safeAccept(output, ItemRegistry.CURTAIN_BOTTOM_ITEM.get());
@@ -132,6 +197,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SERPENT_SHIELD_ITEM.get());
                 safeAccept(output, ItemRegistry.ANKH_ITEM.get());
                 safeAccept(output, ItemRegistry.PENTAGRAM_ITEM.get());
+                safeAccept(output, ItemRegistry.ROPE_ITEM.get());
 
                 // Graveyard items
                 safeAccept(output, ItemRegistry.BROKEN_WOODEN_GRAVE_CROSS.get());
@@ -140,8 +206,10 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.DEAD_GRAVE_FLOWERS.get());
                 safeAccept(output, ItemRegistry.GRAVE_FLOWERS.get());
                 safeAccept(output, ItemRegistry.IRON_CEMETERY_GATE_ARCH.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_1.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_2.get());
+                safeAccept(output, ItemRegistry.ANCHOR.get());
+                safeAccept(output, ItemRegistry.IRON_FENCE_TOP.get());
+                safeAccept(output, ItemRegistry.IRON_FENCE_MIDDLE.get());
+                safeAccept(output, ItemRegistry.IRON_FENCE_BOTTOM.get());
                 safeAccept(output, ItemRegistry.LYING_SKELETON.get());
                 safeAccept(output, ItemRegistry.SITTING_SKELETON.get());
                 safeAccept(output, ItemRegistry.SKELETON_ARM.get());
@@ -238,12 +306,13 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
 
                 // NPC spawn blocks
+                safeAccept(output, ItemRegistry.MONSTER_SPAWN_BLOCK_ITEM.get());   
+                safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());                     
                 safeAccept(output, ItemRegistry.SHADE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.LICH_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_SPAWN_BLOCK_ITEM.get());
-                safeAccept(output, ItemRegistry.FISH_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.HORSE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.BLACKSMITH_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.ARCHITECT_SPAWN_BLOCK_ITEM.get());

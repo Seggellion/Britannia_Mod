@@ -4,7 +4,9 @@ package com.seggellion.britannia_mod;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityHorseMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.EntityFishMerchantRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.FishTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.SalvageTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.CitizenEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRenderer;
@@ -13,6 +15,7 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRe
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
+import com.seggellion.britannia_mod.client.screen.MonsterSpawnScreen;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.entity.EntityType;
@@ -22,7 +25,9 @@ import com.seggellion.britannia_mod.block.LargeForgeRenderer;
 import com.seggellion.britannia_mod.block.BlueTentRenderer;
 import com.seggellion.britannia_mod.block.AdaptiveRoofRenderer;
 import com.seggellion.britannia_mod.block.PurpleTentRenderer;
-
+import com.seggellion.britannia_mod.block.renderer.ArmoireRenderer;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 //import com.seggellion.britannia_mod.block.HouseSignRenderer;
 import com.seggellion.britannia_mod.block.SmallForgeRenderer;
 import com.seggellion.britannia_mod.block.ChairRenderer;
@@ -42,6 +47,7 @@ import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRende
 import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
+import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -74,6 +80,7 @@ public class ClientModSetup {
 
 @SubscribeEvent
 public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+
 
     event.register((stack, tintIndex) -> {
         if (!(stack.getItem() instanceof GradeStoneItem gradeStoneItem)) {
@@ -377,7 +384,6 @@ private static int getTintForOreType(String oreType) {
 
 
 
-
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
 
@@ -385,6 +391,8 @@ private static int getTintForOreType(String oreType) {
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
             event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE.get(), ThreeHeightLightRenderer::new);
 
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
@@ -401,6 +409,7 @@ event.registerBlockEntityRenderer(
     BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(),
     CityNameBlockRenderer::new
 );
+
 
 
     }
@@ -447,14 +456,16 @@ event.registerBlockEntityRenderer(
             EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchantRenderer::new);
-            EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), EntityFishMerchantRenderer::new);
+           // EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), FishTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchantRenderer::new);
             //EntityRenderers.register(EntityRegistry.JOURNEYMAN_BLACKSMITH_ENTITY.get(), EntityJourneymanBlacksmithRenderer::new);
             EntityRenderers.register(EntityRegistry.STONE_MERCHANT_ENTITY.get(), EntityStoneMerchantRenderer::new);
             EntityRenderers.register(EntityRegistry.METAL_MERCHANT_ENTITY.get(), EntityMetalMerchantRenderer::new);
-            EntityRenderers.register(EntityRegistry.TOWN_PERSON_ENTITY.get(), TownPersonEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.TOWNSPERSON.get(), CitizenEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
-
+            EntityRenderers.register(EntityRegistry.FISH_TRADER.get(), FishTraderEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.MEAT_TRADER.get(), EntityMetalMerchantRenderer::new);
 
 
             // Register the blocking property for the Order Shield
@@ -481,8 +492,7 @@ event.registerBlockEntityRenderer(
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X3.get(), RenderType.cutout());
 
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_BIRCH_1X1.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_FENCE_1.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_FENCE_2.get(), RenderType.cutout());
+
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), RenderType.cutout());
 
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LYING_SKELETON.get(), RenderType.cutout());
@@ -491,6 +501,8 @@ event.registerBlockEntityRenderer(
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
                 ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.CAVE_FLOOR_BLOCK.get(), RenderType.solid());
 
 
                ItemBlockRenderTypes.setRenderLayer(

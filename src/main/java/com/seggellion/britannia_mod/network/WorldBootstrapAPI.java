@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.util.RegionData;
 import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.util.RegionItemData;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
+import com.seggellion.britannia_mod.network.ClientboundSyncCityTokenPayload;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -48,6 +50,7 @@ public final class WorldBootstrapAPI {
             CityAPITokenData tok = CityAPITokenData.getOrCreate(player.serverLevel());
             if (!tok.getApiToken().isEmpty()) {
                 conn.setRequestProperty("Authorization", "Bearer " + tok.getApiToken());
+                ClientboundSyncCityTokenPayload.send(player, tok.getApiToken());
             }
 
             int code = conn.getResponseCode();

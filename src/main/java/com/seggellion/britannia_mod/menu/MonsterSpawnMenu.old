@@ -1,0 +1,51 @@
+package com.seggellion.britannia_mod.menu;
+
+import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.payload.UpdateSpawnerConfigC2SPayload;
+import com.seggellion.britannia_mod.registry.MenuRegistry;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
+public class MonsterSpawnMenu extends AbstractContainerMenu {
+    private final ContainerLevelAccess access;
+    private final BlockPos pos;
+    private final MonsterSpawnBlockEntity be; // may be null on client if not resolved
+
+    public MonsterSpawnMenu(int id, Inventory inv, ContainerLevelAccess access, BlockPos pos, MonsterSpawnBlockEntity be) {
+        super(MenuRegistry.MONSTER_SPAWN_MENU.get(), id);
+        this.access = access;
+        this.pos = pos.immutable();
+        this.be = be;
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        // Allow if within range and, if present, the BE at pos matches
+        return access.evaluate((level, p) -> {
+            BlockEntity at = level.getBlockEntity(p);
+            boolean sameBe = (be == null) || (at == be);
+            return sameBe && player.distanceToSqr(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5) <= 64.0;
+        }, true);
+    }
+
+    // Required in 1.21.x: shift-click transfer. No slots here, so nothing to move.
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        return ItemStack.EMPTY;
+    }
+
+public void requestSave(ResourceLocation entityId, int radius, int minTicks, int maxTicks, boolean nightOnly) {
+    NetworkHandler.sendToServer(
+        new UpdateSpawnerConfigC2SPayload(pos, entityId, radius, minTicks, maxTicks, nightOnly)
+    );
+}
+    public MonsterSpawnBlockEntity getBE() { return be; }
+}

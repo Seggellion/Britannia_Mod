@@ -30,6 +30,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.storage.loot.LootTable;
+import org.jetbrains.annotations.Nullable;
 
 
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -37,9 +38,9 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.constant.DefaultAnimations;
-import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -108,8 +109,6 @@ public class MongbatEntity extends Monster implements GeoAnimatable {
 
     // Spawn conditions
     public static boolean canSpawn(EntityType<MongbatEntity> type, ServerLevelAccessor world, MobSpawnType spawnReason, BlockPos pos, RandomSource random) {
-        //return Monster.isDarkEnoughToSpawn(world, pos, random) && Monster.checkMobSpawnRules(type, world, spawnReason, pos, random);
-         //   LOGGER.info("Mongbat canSpawn called at position {}: always returning true for testing", pos);
     return true;
     }
 
@@ -137,17 +136,6 @@ public class MongbatEntity extends Monster implements GeoAnimatable {
     }
 
 
-    // Override getDefaultLootTable
-/*@Override
-protected ResourceKey<LootTable> getDefaultLootTable() {
-    ResourceKey<LootTable> lootTableKey = ResourceKey.create(
-            Registries.LOOT_TABLE,
-            ResourceLocation.fromNamespaceAndPath("britannia_mod", "entities/mongbat")
-    );
-    LOGGER.info("MongbatEntity using loot table: {}", lootTableKey);
-    return lootTableKey;
-}*/
-
 @Override
 protected ResourceKey<LootTable> getDefaultLootTable() {
     return ResourceKey.create(
@@ -155,6 +143,12 @@ protected ResourceKey<LootTable> getDefaultLootTable() {
         ResourceLocation.fromNamespaceAndPath("britannia_mod", "entities/mongbat")
     );
 }
+
+@Override
+protected void dropExperience(@Nullable Entity killer) {
+    // Do nothing → prevents XP orbs
+}
+
 
     @Override
     public boolean doHurtTarget(Entity target) {

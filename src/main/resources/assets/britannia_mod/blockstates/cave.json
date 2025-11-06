@@ -1,0 +1,14 @@
+{
+  "variants": {
+    "variant=0,mirrored=false": { "model": "britannia_mod:block/world/cave_0" },
+    "variant=0,mirrored=true":  { "model": "britannia_mod:block/world/cave_0_mirrored" },
+    "variant=1,mirrored=false": { "model": "britannia_mod:block/world/cave_1" },
+    "variant=1,mirrored=true":  { "model": "britannia_mod:block/world/cave_1_mirrored" },
+    "variant=2,mirrored=false": { "model": "britannia_mod:block/world/cave_2" },
+    "variant=2,mirrored=true":  { "model": "britannia_mod:block/world/cave_2_mirrored" },
+    "variant=3,mirrored=false": { "model": "britannia_mod:block/world/cave_3" },
+    "variant=3,mirrored=true":  { "model": "britannia_mod:block/world/cave_3_mirrored" },
+    "variant=4,mirrored=false": { "model": "britannia_mod:block/world/cave_4" },
+    "variant=4,mirrored=true":  { "model": "britannia_mod:block/world/cave_4_mirrored" }
+  }
+}

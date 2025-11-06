@@ -1,32 +1,32 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.menu.ArchitectMenu;
-
-import net.minecraft.world.inventory.MenuType;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
-import net.neoforged.bus.api.IEventBus;
+import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.menu.MonsterSpawnMenu;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.bus.api.IEventBus;
+
 
 public class MenuRegistry {
-
     public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(Registries.MENU, BritanniaMod.MODID);
+            DeferredRegister.create(Registries.MENU, "britannia_mod");
 
-    public static final DeferredHolder<MenuType<?>, MenuType<ArchitectMenu>> ARCHITECT_MENU =
-            MENUS.register("architect", () ->
-                IMenuTypeExtension.create((id, playerInv, buf) -> {
-                    int entityId = buf.readInt();
-                    return new ArchitectMenu(id, playerInv,
-                        (com.seggellion.britannia_mod.entity.ArchitectEntity)
-                            playerInv.player.level().getEntity(entityId));
-                }));
+    public static final DeferredHolder<MenuType<?>, MenuType<MonsterSpawnMenu>> MONSTER_SPAWN_MENU =
+            MENUS.register("monster_spawn_menu", () ->
+                    IMenuTypeExtension.create((id, inv, buf) -> {
+                        BlockPos pos = buf.readBlockPos();
+                        var level = inv.player.level();
+                        MonsterSpawnBlockEntity be = level.getBlockEntity(pos) instanceof MonsterSpawnBlockEntity m ? m : null;
+                        return new MonsterSpawnMenu(id, inv, ContainerLevelAccess.create(level, pos), pos, be);
+                    })
+            );
 
-
-                
-    public static void register(IEventBus modEventBus) {
-        MENUS.register(modEventBus);
+    public static void register(IEventBus bus) {
+        MENUS.register(bus);
     }
 }

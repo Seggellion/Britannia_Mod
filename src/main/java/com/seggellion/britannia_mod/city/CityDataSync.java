@@ -10,7 +10,6 @@ import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataManager;
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.config.ModConfig;
 
@@ -134,7 +133,7 @@ public class CityDataSync {
             return new ArrayList<>();
         }
 
-    public static void registerNpc(ServerLevel serverLevel, UUID npcId, String npcType, String cityName, String name, String description, int level, int health, int mana, boolean isActive, String spawnLocation) {
+    public static void registerNpc(ServerLevel serverLevel, UUID npcId, String npcType, String cityName, String name, String description, int level, int health, int mana, boolean isActive, String spawnLocation, String gender) {
         try {
             URL url = new URL(ModConfig.API_BASE_URL + "/npcs");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -158,6 +157,8 @@ public class CityDataSync {
             payload.addProperty("mana", mana);
             payload.addProperty("is_active", isActive);
             payload.addProperty("spawn_location", spawnLocation);
+            payload.addProperty("gender", gender);
+            payload.addProperty("shard", data.getShardSecret());
 
             connection.getOutputStream().write(payload.toString().getBytes());
             int responseCode = connection.getResponseCode();

@@ -27,7 +27,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.Level;
-import com.seggellion.britannia_mod.block.FishSpawnBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.InvisibleInAdventureMode;
 import net.neoforged.bus.api.IEventBus;
@@ -171,7 +170,7 @@ private static void handleLeftClick(Minecraft mc) {
             BlockPos pos = player.blockPosition();
 
             // Iterate over a small area around the player to ensure nearby blocks are updated
-            int range = 5; // Update blocks within 5 blocks of the player
+            int range = 10; // Update blocks within 5 blocks of the player
             for (int x = -range; x <= range; x++) {
                 for (int y = -range; y <= range; y++) {
                     for (int z = -range; z <= range; z++) {

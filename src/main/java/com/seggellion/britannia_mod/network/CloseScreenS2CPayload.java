@@ -30,7 +30,6 @@ public record CloseScreenS2CPayload() implements CustomPacketPayload {
             Minecraft mc = Minecraft.getInstance();
             if (mc.screen != null) {
                 mc.setScreen(null); // Closes the screen
-                mc.player.displayClientMessage(Component.literal("Transaction complete!"), false);
             }
         });
     }

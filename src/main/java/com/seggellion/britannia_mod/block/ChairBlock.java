@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.block;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -34,9 +33,11 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-
 import java.util.List;
+
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
 
 public class ChairBlock extends HorizontalDirectionalBlock implements EntityBlock, INudgeable {
 

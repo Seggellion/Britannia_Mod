@@ -3,7 +3,6 @@
 	"credit": "Made with Blockbench",
 	"render_type": "minecraft:cutout",
 	"ambientocclusion": false,
-  "render_type": "minecraft:cutout", 
 	"texture_size": [32, 32],
 	"textures": {
 		"0": "britannia_mod:block/decoration/pentagram_96",

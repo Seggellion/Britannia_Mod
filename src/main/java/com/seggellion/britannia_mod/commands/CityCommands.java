@@ -31,7 +31,7 @@ public class CityCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("cityinventory")
             .requires(source -> source.hasPermission(2))
-            .then(Commands.argument("cityName", StringArgumentType.string())
+                .then(Commands.argument("city", StringArgumentType.greedyString())
                 // Original command to show inventory
                 .executes(CityCommands::showCityInventory)
                 // Category and subcategory logic

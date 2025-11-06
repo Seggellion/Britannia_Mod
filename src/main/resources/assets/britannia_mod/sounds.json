@@ -322,6 +322,16 @@
   "sounds": [
       "britannia_mod:door_lock"
   ]
+},
+"chest_open": {
+  "sounds": [
+      "britannia_mod:chest_open"
+  ]
+},
+"chest_close": {
+  "sounds": [
+      "britannia_mod:chest_close"
+  ]
 }
 
 }

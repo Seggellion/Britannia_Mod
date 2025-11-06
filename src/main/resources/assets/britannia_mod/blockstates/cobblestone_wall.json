@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "variant=0,mirrored=false": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_foundation" },
+    "variant=0,mirrored=true":  { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_foundation_mirrored" },
+    "variant=1,mirrored=false": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_top" },
+    "variant=1,mirrored=true":  { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_top_mirrored" },
+    "variant=2,mirrored=false": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom" },
+    "variant=2,mirrored=true":  { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_mirrored" }
+  }
+}

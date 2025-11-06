@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "britannia_mod:block/structure/oak_wall_bottom"
+  },
+  "x": 0,
+  "y": 180,
+  "uvlock": true
+}

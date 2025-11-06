@@ -1,9 +1,11 @@
 package com.seggellion.britannia_mod.inventory;
 
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.entity.FishTraderEntity;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.ICityEntity;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
+import com.seggellion.britannia_mod.city.CityManager;
+
 import net.minecraft.world.entity.Entity;
 
 import net.minecraft.core.BlockPos;
@@ -27,14 +29,41 @@ import org.apache.logging.log4j.Logger;
 public class CityInventory {
 
     private static final Logger LOGGER = LogManager.getLogger();
-    
+    private CityManager manager; // optional back-reference
+
 private boolean isStarving = false;
 private final Map<BlockPos, List<Entity>> blockNpcAssociations = new HashMap<>();
+
+// === City Supply Tracking ===
+private double foodSupply = 0.0;
+private double woodSupply = 0.0;
+private double metalSupply = 0.0;
+private double stoneSupply = 0.0;
+private double textileSupply = 0.0;
+private double alcoholSupply = 0.0;
+private double technologySupply = 0.0;
+
+private int goldAmount = 0;
+private int silverAmount = 0;
+private int copperAmount = 0;
+
+
+public double getFoodSupply() { return foodSupply; }
+public double getWoodSupply() { return woodSupply; }
+public double getMetalSupply() { return metalSupply; }
+public double getStoneSupply() { return stoneSupply; }
+public double getTextileSupply() { return textileSupply; }
+public double getAlcoholSupply() { return alcoholSupply; }
+public double getTechnologySupply() { return technologySupply; }
+
 
 public boolean isStarving() {
     return isStarving;
 }
 
+public void setManager(CityManager manager) {
+    this.manager = manager;
+}
 
     private String cityName; // Store the name of the city this inventory belongs to
 
@@ -78,6 +107,16 @@ private final List<UUID> associatedNpcs = new ArrayList<>();
         LOGGER.info("Associated NPC {} with block {} in city {}. New population: {}", 
                     npc.getUUID(), blockPos, getCityName(), getNpcCount());
     }
+
+
+public int getCurrencyAmount(String currency) {
+    return switch (currency.toLowerCase()) {
+        case "gold" -> goldAmount;
+        case "silver" -> silverAmount;
+        case "copper" -> copperAmount;
+        default -> 0;
+    };
+}
 
 
   public void removeNpcsForBlock(BlockPos blockPos) {
@@ -162,7 +201,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
     });
 }
 
-    public void removeMerchant(EntityFishMerchant merchant) {
+    public void removeMerchant(FishTraderEntity merchant) {
         if (associatedNpcs.remove(merchant)) {
             npcCount = Math.max(0, npcCount - 1);
             LOGGER.warn("Merchant {} removed from city {}. New population: {}", merchant.getUUID(), cityName, npcCount);
@@ -280,6 +319,9 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
             weightsTag.put(category, subcategoriesTag);
         }
         tag.put("CommodityWeights", weightsTag);
+        tag.putInt("GoldAmount", goldAmount);
+        tag.putInt("SilverAmount", silverAmount);
+        tag.putInt("CopperAmount", copperAmount);
 
         // Save population count
         tag.putInt("Population", npcCount);
@@ -333,9 +375,20 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
 
         // Load population count
         this.npcCount = tag.getInt("Population");
+        if (tag.contains("GoldAmount")) goldAmount = tag.getInt("GoldAmount");
+        if (tag.contains("SilverAmount")) silverAmount = tag.getInt("SilverAmount");
+        if (tag.contains("CopperAmount")) copperAmount = tag.getInt("CopperAmount");
 
         LOGGER.warn("Loaded commodities, weights, and population for city {} from NBT.", cityName);
     }
+
+public void updateTreasury(int gold, int silver, int copper) {
+    this.goldAmount = gold;
+    this.silverAmount = silver;
+    this.copperAmount = copper;
+    LOGGER.info("Updated treasury for {}: {}g {}s {}c", cityName, gold, silver, copper);
+}
+
 
     public void clearPopulation() {
         // Clear the list of associated merchants
@@ -389,6 +442,18 @@ public int getPopulation() {
     return associatedNpcs.size();
 }
 
+public void updateSupplies(double food, double wood, double metal, double stone, double textile, double alcohol, double tech) {
+    LOGGER.info("Updating supplies for {}: food={}, wood={}, metal={}, stone={}, textile={}, alcohol={}, tech={}",
+        cityName, food, wood, metal, stone, textile, alcohol, tech);
+    this.foodSupply = food;
+    this.woodSupply = wood;
+    this.metalSupply = metal;
+    this.stoneSupply = stone;
+    this.textileSupply = textile;
+    this.alcoholSupply = alcohol;
+    this.technologySupply = tech;
+}
+
 
 public List<Entity> getAssociatedEntities(ServerLevel serverLevel) {
     List<Entity> entities = new ArrayList<>();
@@ -410,7 +475,7 @@ public List<Entity> getAssociatedEntities(ServerLevel serverLevel) {
 
 
 
-public void associateMerchant(EntityFishMerchant merchant) {
+public void associateMerchant(FishTraderEntity merchant) {
     associateNpc(merchant); // Delegate to associateNpc
 }
 
@@ -423,7 +488,11 @@ public void associateMerchant(EntityFishMerchant merchant) {
     }
 
     // Placeholder setDirty() method
-    private void setDirty() {
-        // Implement saving logic if required, e.g., marking the data as dirty for persistence
+private void setDirty() {
+    if (manager != null) {
+        manager.setDirty();
     }
+}
+
+
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_10"
+  },
+  "y": 0
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "britannia_mod:block/world/cave_floor_3"
+  }
+}

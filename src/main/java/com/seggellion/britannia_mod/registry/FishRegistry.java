@@ -96,7 +96,7 @@ public final class FishRegistry {
         "dungeon_pike",
         "giant_samurai_fish",
         "golden_tuna",
-        "kingfish",
+        "king_fish",
         "lantern_fish",
         "rainbow_fish",
         "seeker_fish",

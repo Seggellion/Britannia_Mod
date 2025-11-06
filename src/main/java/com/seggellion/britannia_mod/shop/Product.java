@@ -58,6 +58,11 @@ public final class Product {
         return itemId.hashCode();
     }
 
+public String getItemId() {
+    return itemId;
+}
+
+
     private static ItemStack makeStackFromId(String id) {
         Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
         if (item == Items.AIR) item = Items.BARRIER;

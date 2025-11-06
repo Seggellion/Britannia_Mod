@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/containers/armoire_red", "y": 180, "x": 0, "transform": { "translation": [0, 8, 0] } },
+    "facing=south": { "model": "britannia_mod:block/containers/armoire_red", "y": 0,   "x": 0, "transform": { "translation": [0, 8, 0] } },
+    "facing=west":  { "model": "britannia_mod:block/containers/armoire_red", "y": 90,  "x": 0, "transform": { "translation": [0, 8, 0] } },
+    "facing=east":  { "model": "britannia_mod:block/containers/armoire_red", "y": 270, "x": 0, "transform": { "translation": [0, 8, 0] } }
+  }
+}

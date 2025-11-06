@@ -1,0 +1,21 @@
+{
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/furniture/footstool",
+        "y": 270
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/furniture/footstool",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/furniture/footstool",
+        "y": 0
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/furniture/footstool",
+        "y": 90
+      }
+    }
+  }
+  

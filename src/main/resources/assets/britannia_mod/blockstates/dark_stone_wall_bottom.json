@@ -1,14 +1,63 @@
 {
-    "variants": {
-      "corner=false,facing=north": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_north" },
-      "corner=false,facing=south": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_south" },
-      "corner=false,facing=west": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_west" },
-      "corner=false,facing=east": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_east" },
-  
-      "corner=true,facing=north": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_north_corner" },
-      "corner=true,facing=south": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_south_corner" },
-      "corner=true,facing=west": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_west_corner" },
-      "corner=true,facing=east": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom_east_corner" }
-    }
+  "variants": {
+    "corner=false,facing=north": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_rev", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_rev", "uvlock": true }
+
+    ],
+
+    "corner=false,facing=south": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_rev","y": 180,  "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_rev", "y": 180,  "uvlock": true }
+
+    ],
+
+    "corner=false,facing=west": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_rev", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_rev", "y": 270, "uvlock": true }
+    ],
+
+    "corner=false,facing=east": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_rev", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_rev", "y": 90, "uvlock": true }
+
+    ],
+
+    "corner=true,facing=north": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner_rev", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner_rev", "uvlock": true }
+
+    ],
+
+    "corner=true,facing=south": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner_rev", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner_rev", "y": 180, "uvlock": true }
+    ],
+
+    "corner=true,facing=west": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner_rev", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner_rev", "y": 270, "uvlock": true }
+    ],
+
+    "corner=true,facing=east": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom1_corner_rev", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_wall_bottom2_corner_rev", "y": 90, "uvlock": true }
+    ]
   }
-  
+}

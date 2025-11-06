@@ -157,14 +157,13 @@ private void spawnArchitect(ServerLevel sl) {
 
     String spawnLoc = String.format("[x=%d, y=%d, z=%d]", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
 
-    CityDataSync.registerNpc(sl, arch.getUUID(), "architect",
-            cityName, randomName, description, 1, 100, 0, true, spawnLoc);
+   // CityDataSync.registerNpc(sl, arch.getUUID(), "architect", cityName, randomName, description, 1, 100, 0, true, spawnLoc);
 }
 
 
     private void spawnTownspersons(ServerLevel sl, int count) {
         for (int i = 0; i < count; i++) {
-            TownPersonEntity person = EntityRegistry.TOWN_PERSON_ENTITY.get().create(sl);
+            TownPersonEntity person = EntityRegistry.TOWNSPERSON.get().create(sl);
             if (person == null) continue;
 
             BlockPos spawnPos = Util.findGround(sl, worldPosition, 10);
@@ -178,8 +177,7 @@ private void spawnArchitect(ServerLevel sl) {
             String randName = NameLoader.getRandomMaleName();
             String loc = String.format("[x=%d, y=%d, z=%d]", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
 
-            CityDataSync.registerNpc(sl, person.getUUID(), "town_person", cityName, randName,
-                    "A friendly townsman named " + randName, 1, 100, 0, true, loc);
+         //   CityDataSync.registerNpc(sl, person.getUUID(), "town_person", cityName, randName, "A friendly townsman named " + randName, 1, 100, 0, true, loc);
         }
     }
 

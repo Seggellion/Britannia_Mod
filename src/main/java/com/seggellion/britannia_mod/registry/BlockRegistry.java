@@ -1,6 +1,9 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.TallDecorativeBlock;
+import com.seggellion.britannia_mod.block.TallDecorative3Block;
+import com.seggellion.britannia_mod.block.HorizontalTallBlock;
 import com.seggellion.britannia_mod.block.RotatingStoneWallBlock;
 import com.seggellion.britannia_mod.block.GravestoneBlock;
 import com.seggellion.britannia_mod.block.DoubleBedBlock;
@@ -9,16 +12,32 @@ import com.seggellion.britannia_mod.block.BrickFoundationBlock;
 import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import com.seggellion.britannia_mod.structure.StoreSignBlock;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
+import com.seggellion.britannia_mod.block.BritanniaChestBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlock;
 import com.seggellion.britannia_mod.block.StatueBlock;
+import com.seggellion.britannia_mod.block.WaterTroughBlock;
+import com.seggellion.britannia_mod.block.ArmoireBlock;
+import com.seggellion.britannia_mod.block.WaterBarrelBlock;
 import com.seggellion.britannia_mod.block.FloorDecorationBlock;
 import com.seggellion.britannia_mod.block.StatueCoupleBlock;
 import com.seggellion.britannia_mod.block.LargeForgeBlock;
 import com.seggellion.britannia_mod.block.BlueTentBlock;
 import com.seggellion.britannia_mod.block.PurpleTentBlock;
+import com.seggellion.britannia_mod.block.CobbleStoneWallBlock;
+import com.seggellion.britannia_mod.block.OakWallBlock;
+import com.seggellion.britannia_mod.block.FloorBlock;
+import com.seggellion.britannia_mod.block.DungeonWallBlock;
+import com.seggellion.britannia_mod.block.CaveBlock;
+import com.seggellion.britannia_mod.block.LogWallBlock;
+import com.seggellion.britannia_mod.block.BirchWallBlock;
+import com.seggellion.britannia_mod.block.PlasterWoodWallBlock;
+import com.seggellion.britannia_mod.block.PlasterStoneWallBlock;
+import com.seggellion.britannia_mod.block.DarkStoneWallBlock;
+import com.seggellion.britannia_mod.block.StoneWallBlock;
+import com.seggellion.britannia_mod.block.BrickWallBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
 import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
@@ -29,7 +48,6 @@ import com.seggellion.britannia_mod.block.LichSpawnBlock;
 import com.seggellion.britannia_mod.block.WoodSpawnBlock;
 import com.seggellion.britannia_mod.block.MetalSpawnBlock;
 import com.seggellion.britannia_mod.block.StoneSpawnBlock;
-import com.seggellion.britannia_mod.block.FishSpawnBlock;
 import com.seggellion.britannia_mod.block.HorseSpawnBlock;
 import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
 import com.seggellion.britannia_mod.block.CandelabraBlock;
@@ -47,10 +65,17 @@ import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.FishSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
+import com.seggellion.britannia_mod.block.MonsterSpawnBlock;
+import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.TraderSpawnBlock;
+import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.DecorativeItems3x3Block;
+
 import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
 import com.seggellion.britannia_mod.block.HangingItemBlock;
 import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
@@ -61,6 +86,8 @@ import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
 import com.seggellion.britannia_mod.block.LockableDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
+import com.seggellion.britannia_mod.block.ThreeHeightLightBlock;
+import com.seggellion.britannia_mod.block.CaveFloorBlock;
 import com.seggellion.britannia_mod.registry.SignBlockRegistry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -69,6 +96,7 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.ChainBlock;
 import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 import net.minecraft.world.level.block.DoorBlock;
 
@@ -77,6 +105,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
+import java.util.Map;
+import java.util.HashMap;
 
 public class BlockRegistry {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(
@@ -84,6 +114,17 @@ public class BlockRegistry {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(
             net.minecraft.core.registries.Registries.BLOCK_ENTITY_TYPE, "britannia_mod");
+
+
+
+// Spawn Blocks
+
+    public static final DeferredHolder<Block, TraderSpawnBlock> TRADER_SPAWN_BLOCK =
+            BLOCKS.register("trader_spawn_block", TraderSpawnBlock::new);
+
+
+    public static final DeferredHolder<Block, MonsterSpawnBlock> MONSTER_SPAWN_BLOCK =
+            BLOCKS.register("monster_spawn_block", MonsterSpawnBlock::new);
 
     public static final DeferredHolder<Block, Block> SHADE_SPAWN_BLOCK = BLOCKS.register(
             "shade_spawn_block", ShadeSpawnBlock::new);
@@ -94,15 +135,23 @@ public class BlockRegistry {
             () -> BlockEntityType.Builder.of(ShadeSpawnBlockEntity::new, SHADE_SPAWN_BLOCK.get()).build(null));
 
 // Custom fraction blocks
+    public static final DeferredHolder<Block, Block> CAVE_FLOOR_BLOCK = BLOCKS.register(
+        "cave_floor",
+        () -> new CaveFloorBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.DIRT)
+            .strength(0.8f)
+            .noOcclusion())
+    );
+
         public static final DeferredHolder<Block, Block> QUARTER_DIRT_BLOCK = BLOCKS.register(
         "quarter_dirt_block", 
         () -> new QuarterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
         );
 
-public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
-    BLOCKS.register("house_sign", HouseSignBlock::new);
+        public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
+            BLOCKS.register("house_sign", HouseSignBlock::new);
 
-
+    
        public static final DeferredHolder<Block, Block> HALF_DIRT_BLOCK = BLOCKS.register(
         "half_dirt_block", 
         () -> new HalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.5f))
@@ -196,17 +245,6 @@ public static final DeferredHolder<Block, HouseSignBlock> HOUSE_SIGN_BLOCK =
 
 
 
-
-    public static final DeferredHolder<Block, Block> FISH_SPAWN_BLOCK = BLOCKS.register(
-            "fish_spawn_block",
-            FishSpawnBlock::new 
-    );
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FishSpawnBlockEntity>> FISH_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
-            "fish_spawn_block_entity",
-            () -> BlockEntityType.Builder.of(FishSpawnBlockEntity::new, FISH_SPAWN_BLOCK.get()).build(null));
-
-
     public static final DeferredHolder<Block, Block> HORSE_SPAWN_BLOCK = BLOCKS.register(
             "horse_spawn_block",
             HorseSpawnBlock::new 
@@ -279,6 +317,87 @@ public static final DeferredHolder<Block, Block> STATUE_MAN = BLOCKS.register("s
         .strength(1.0f))
 );
 
+    // Armoire Blocks
+
+public static final DeferredHolder<Block, Block> ARMOIRE_BROWN = BLOCKS.register("armoire_brown", () ->
+            new ArmoireBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion() // chest-like
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> ARMOIRE_RED = BLOCKS.register("armoire_red", () ->
+            new ArmoireBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion() // chest-like
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CHEST_OF_DRAWERS_BROWN = BLOCKS.register("chest_of_drawers_brown", () ->
+            new ArmoireBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion() // chest-like
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CHEST_OF_DRAWERS_RED = BLOCKS.register("chest_of_drawers_red", () ->
+            new ArmoireBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion() // chest-like
+            )
+    );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ArmoireBlockEntity>> ARMOIRE_BLOCK_ENTITY_TYPE =
+            BLOCK_ENTITY_TYPES.register("armoire", () ->
+                    BlockEntityType.Builder.of(ArmoireBlockEntity::new,
+                            ARMOIRE_BROWN.get(), ARMOIRE_RED.get(), CHEST_OF_DRAWERS_BROWN.get(),CHEST_OF_DRAWERS_RED.get()
+                    ).build(null)
+            );
+
+
+   // Chest blocks
+    public static final DeferredHolder<Block, Block> CHEST_WOODEN = BLOCKS.register("chest_wooden", () ->
+            new BritanniaChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion() // chest-like
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CHEST_METAL = BLOCKS.register("chest_metal", () ->
+            new BritanniaChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY)
+                    .strength(5.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+            )
+    );
+
+    public static final DeferredHolder<Block, Block> CHEST_METAL_BRONZE = BLOCKS.register("chest_metal_bronze", () ->
+            new BritanniaChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_ORANGE)
+                    .strength(4.0f)
+                    .sound(SoundType.COPPER) // close enough; or custom BlockSoundGroup
+                    .noOcclusion()
+            )
+    );
+
+  // One block entity type shared by all three
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BritanniaChestBlockEntity>> BRITANNIA_CHEST_BLOCK_ENTITY_TYPE =
+            BLOCK_ENTITY_TYPES.register("britannia_chest", () ->
+                    BlockEntityType.Builder.of(BritanniaChestBlockEntity::new,
+                            CHEST_WOODEN.get(), CHEST_METAL.get(), CHEST_METAL_BRONZE.get()
+                    ).build(null)
+            );
 
 // Graveyard
 
@@ -317,21 +436,47 @@ public static final DeferredHolder<Block, Block> WOODEN_COFFIN_SKELETON = BLOCKS
 
 public static final DeferredHolder<Block, Block> IRON_CEMETERY_GATE_ARCH = BLOCKS.register("iron_cemetery_gate_arch", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
-public static final DeferredHolder<Block, Block> IRON_FENCE_1 = BLOCKS.register("iron_fence_1", () ->
+
+
+public static final DeferredHolder<Block, Block> IRON_FENCE_BOTTOM = BLOCKS.register("iron_fence_bottom", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
-public static final DeferredHolder<Block, Block> IRON_FENCE_2 = BLOCKS.register("iron_fence_2", () ->
+public static final DeferredHolder<Block, Block> IRON_FENCE_MIDDLE = BLOCKS.register("iron_fence_middle", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> IRON_FENCE_TOP = BLOCKS.register("iron_fence_top", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
+  public static final DeferredHolder<Block, ThinWall> CORRAL_CORNER_FENCE =
+    BLOCKS.register("corral_corner_fence", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(2.0f)
+            .sound(SoundType.WOOD)
+            .noOcclusion()
+        )
+    );
+
+
+public static final DeferredHolder<Block, Block> ANCHOR = BLOCKS.register("anchor", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+
+
+public static final DeferredHolder<Block, Block> CORRAL_FENCE = BLOCKS.register("corral_fence", () ->
+    new HorizontalTallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
+
+public static final DeferredHolder<Block, Block> CORRAL_PILLAR = BLOCKS.register("corral_pillar", () ->
+    new HorizontalTallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
+
+
 public static final DeferredHolder<Block, Block> DEAD_GRAVE_FLOWER_VASE = BLOCKS.register("dead_grave_flower_vase", () ->
-    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 public static final DeferredHolder<Block, Block> DEAD_GRAVE_FLOWERS = BLOCKS.register("dead_grave_flowers", () ->
-    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.DEAD_BUSH).noOcclusion()));
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DEAD_BUSH).noOcclusion()));
 public static final DeferredHolder<Block, Block> GRAVE_FLOWERS = BLOCKS.register("grave_flowers", () ->
-    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.POPPY).noOcclusion()));
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.POPPY).noOcclusion()));
 public static final DeferredHolder<Block, Block> WILTED_GRAVE_FLOWER_VASE = BLOCKS.register("wilted_grave_flower_vase", () ->
-    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 public static final DeferredHolder<Block, Block> WILTED_GRAVE_FLOWERS = BLOCKS.register("wilted_grave_flowers", () ->
-    new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.DEAD_BUSH).noOcclusion()));
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DEAD_BUSH).noOcclusion()));
 
 public static final DeferredHolder<Block, Block> LYING_SKELETON = BLOCKS.register("lying_skeleton", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
@@ -345,8 +490,97 @@ public static final DeferredHolder<Block, Block> SKELETON_TORSO = BLOCKS.registe
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
 
+public static final DeferredHolder<Block, TallDecorative3Block> FLOWSTONE_1 =
+    BLOCKS.register("flowstone_1", () ->
+        new TallDecorative3Block(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                .noOcclusion()
+                .strength(1.5f)
+                .isViewBlocking((s, r, p) -> false)
+        ));
+
+public static final DeferredHolder<Block, TallDecorativeBlock> FLOWSTONE_2 =
+    BLOCKS.register("flowstone_2", () ->
+        new TallDecorativeBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                .noOcclusion()
+                .strength(1.5f)
+                .isViewBlocking((s, r, p) -> false)
+        ));
+
+        
+public static final DeferredHolder<Block, TallDecorativeBlock> FLOWSTONE_3 =
+    BLOCKS.register("flowstone_3", () ->
+        new TallDecorativeBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                .noOcclusion()
+                .strength(1.5f)
+                .isViewBlocking((s, r, p) -> false)
+        ));
+
+
+        public static final DeferredHolder<Block, TallDecorative3Block> FLOWSTONE_4 =
+    BLOCKS.register("flowstone_4", () ->
+        new TallDecorative3Block(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                .noOcclusion()
+                .strength(1.5f)
+                .isViewBlocking((s, r, p) -> false)
+        ));
+
+
+    public static final Map<Integer, DeferredHolder<Block, TallDecorativeBlock>> STALAGMITES = new HashMap<>();
+
+    static {
+        for (int i = 1; i <= 7; i++) {
+            int index = i;
+            STALAGMITES.put(index,
+                BLOCKS.register("stalagmite_" + index, () ->
+                    new TallDecorativeBlock(
+                        BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                            .noOcclusion()
+                            .strength(1.5f)
+                            .isViewBlocking((s, r, p) -> false)
+                    )
+                )
+            );
+        }
+    }
+
+
+
+public static final DeferredHolder<Block, Block> TABLE_SETTING = BLOCKS.register("table_setting", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+
+public static final DeferredHolder<Block, Block> SPITTOON =
+    BLOCKS.register("spittoon", () ->
+        new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+            .noOcclusion()
+        )
+    );
+
+public static final DeferredHolder<Block, Block> DECORATIVE_SHIELD_1 = BLOCKS.register("decorative_shield_1", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DECORATIVE_SHIELD_2 = BLOCKS.register("decorative_shield_2", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DECORATIVE_SHIELD_1BW = BLOCKS.register("decorative_shield_1bw", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DECORATIVE_SHIELD_2BW = BLOCKS.register("decorative_shield_2bw", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+
 public static final DeferredHolder<Block, Block> SERPENT_SHIELD = BLOCKS.register("serpent_shield", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DECORATIVE_WEAPONS_1 = BLOCKS.register("decorative_weapons_1", 
+    () -> new DecorativeItems3x3Block(BlockBehaviour.Properties.of()
+        .strength(1.5F)
+        .sound(SoundType.WOOD)
+        .noOcclusion()));
 
 
 public static final DeferredHolder<Block, Block> ANKH = BLOCKS.register("ankh", () ->
@@ -360,6 +594,21 @@ public static final DeferredHolder<Block, Block> PENTAGRAM =
                             .mapColor(MapColor.COLOR_RED)
                             .noOcclusion()
                             .sound(SoundType.STONE)));
+
+
+public static final DeferredHolder<Block, WaterTroughBlock> WATER_TROUGH_BLOCK =
+    BLOCKS.register("water_trough",
+        () -> new WaterTroughBlock(BlockBehaviour.Properties.of()
+            .strength(2.0f)
+            .noOcclusion()
+            .sound(SoundType.WOOD)));
+
+public static final DeferredHolder<Block, WaterBarrelBlock> WATER_BARREL_BLOCK =
+    BLOCKS.register("water_barrel",
+        () -> new WaterBarrelBlock(BlockBehaviour.Properties.of()
+            .strength(2.0f)
+            .noOcclusion()
+            .sound(SoundType.WOOD)));
 
   public static final DeferredHolder<Block, ThinWall> CURTAIN_TOP =
     BLOCKS.register("curtain_top", 
@@ -455,6 +704,24 @@ public static final DeferredHolder<Block, Block> CARPET_DUMMY_BLOCK = BLOCKS.reg
 
 // light sources
 
+public static final DeferredHolder<Block, Block> WALL_SCONCE = BLOCKS.register(
+    "wall_sconce",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 10))
+);
+
+public static final DeferredHolder<Block, Block> CANDLE = BLOCKS.register(
+    "candle",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 12))
+);
+
 
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
     "candelabra_small",
@@ -473,6 +740,21 @@ public static final DeferredHolder<Block, Block> CANDELABRA_TALL = BLOCKS.regist
         .noOcclusion()
         .lightLevel(state -> 15))
 );
+
+
+public static final DeferredHolder<Block, Block> ROPE = BLOCKS.register("rope",
+    () -> new ChainBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.CHAIN)));
+
+
+public static final DeferredHolder<Block, Block> WOODEN_POST = BLOCKS.register("wooden_post", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> WOODEN_LAMP_POST = BLOCKS.register("wooden_lamp_post",
+        () -> new ThreeHeightLightBlock(BlockBehaviour.Properties.of()
+                .strength(0.5F)
+                .sound(SoundType.GLASS)
+                .lightLevel(s -> 15)
+                .noOcclusion()));
 
 
 public static final DeferredHolder<Block, Block> LAMP_POST_REGULAR = BLOCKS.register(
@@ -652,6 +934,19 @@ public static final DeferredHolder<Block, Block> STONE_FOUNDATION = BLOCKS.regis
 public static final DeferredHolder<Block, Block> STONE_FINIAL = BLOCKS.register("stone_finial", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
 
+public static final DeferredHolder<Block, Block> DARK_STONE_FINIAL = BLOCKS.register("dark_stone_finial", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DARK_STONE_BUTTRESS = BLOCKS.register("dark_stone_buttress", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+
+public static final DeferredHolder<Block, Block> DARK_STONE_WALL_BOTTOM_CURVE_LEFT = BLOCKS.register("dark_stone_wall_bottom_curve_left", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
+public static final DeferredHolder<Block, Block> DARK_STONE_WALL_BOTTOM_CURVE_RIGHT = BLOCKS.register("dark_stone_wall_bottom_curve_right", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+
 public static final DeferredHolder<Block, ThinWall> WINDOW_1X1 =
     BLOCKS.register("window_1x1", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
@@ -779,6 +1074,48 @@ public static final DeferredHolder<Block, Window2x3Block> WINDOW_2X3 =
         )
     );
 
+  public static final DeferredHolder<Block, CaveBlock> CAVE =
+        BLOCKS.register("cave", () ->
+            new CaveBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
+public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR =
+    BLOCKS.register("wooden_plank_floor", () ->
+        new FloorBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                .strength(2.0f)
+                .sound(SoundType.WOOD)
+                .noOcclusion()
+        ));
+
+public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
+    BLOCKS.register("wooden_board_floor", () ->
+        new FloorBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                .strength(2.0f)
+                .sound(SoundType.WOOD)
+                .noOcclusion()
+        ));
+
+  public static final DeferredHolder<Block, DungeonWallBlock> DUNGEON_WALL =
+        BLOCKS.register("dungeon_wall", () ->
+            new DungeonWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
+  public static final DeferredHolder<Block, OakWallBlock> OAK_WALL =
+        BLOCKS.register("oak_wall", () ->
+            new OakWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
 public static final DeferredHolder<Block, ThinWall> OAK_WALL_BOTTOM =
     BLOCKS.register("oak_wall_bottom", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
@@ -798,6 +1135,14 @@ public static final DeferredHolder<Block, ThinWall> OAK_WALL_BOTTOM =
             .noOcclusion()
         )
     );
+
+  public static final DeferredHolder<Block, BrickWallBlock> BRICK_WALL =
+        BLOCKS.register("brick_wall", () ->
+            new BrickWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+    ));
 
     public static final DeferredHolder<Block, ThinWall> BRICK_WALL_BOTTOM =
     BLOCKS.register("brick_wall_bottom", 
@@ -831,13 +1176,32 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
             .strength(1.5F, 6.0F)
             .requiresCorrectToolForDrops()));
 
-public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.register(
-    "custom_stone_stairs", CustomStoneStairsBlock::new
-);
+    public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.register(
+        "custom_stone_stairs", CustomStoneStairsBlock::new
+    );
+
+    public static final DeferredHolder<Block, Block> DARK_STONE_STAIRS = BLOCKS.register(
+        "dark_stone_stairs", CustomStoneStairsBlock::new
+    );
+
+    public static final DeferredHolder<Block, Block> DUNGEON_STAIRS = BLOCKS.register(
+        "dungeon_stairs", CustomStoneStairsBlock::new
+    );
+
 
 
   public static final DeferredHolder<Block, ThinWall> STONE_ARCH =
     BLOCKS.register("stone_arch", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+  public static final DeferredHolder<Block, ThinWall> DARK_STONE_ARCH =
+    BLOCKS.register("dark_stone_arch", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
             .mapColor(MapColor.STONE)
             .strength(2.0f)
@@ -856,6 +1220,24 @@ public static final DeferredHolder<Block, Block> CUSTOM_STONE_STAIRS = BLOCKS.re
         )
     );
 
+  public static final DeferredHolder<Block, ThinWall> DARK_STONE_WALL_HALF =
+    BLOCKS.register("dark_stone_wall_half", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+  public static final DeferredHolder<Block, StoneWallBlock> STONE_WALL =
+        BLOCKS.register("stone_wall", () ->
+            new StoneWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+    ));
+
 public static final DeferredHolder<Block, Block> STONE_WALL_BOTTOM_BLOCK =
     BLOCKS.register("stone_wall_bottom_block",
         () -> new Block(BlockBehaviour.Properties.of()
@@ -872,6 +1254,15 @@ public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
             .noOcclusion()
         )
     );
+
+  public static final DeferredHolder<Block, DarkStoneWallBlock> DARK_STONE_WALL =
+        BLOCKS.register("dark_stone_wall", () ->
+            new DarkStoneWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
 
 public static final DeferredHolder<Block, ThinWall> DARK_STONE_WALL_BOTTOM =
     BLOCKS.register("dark_stone_wall_bottom", 
@@ -903,6 +1294,24 @@ public static final DeferredHolder<Block, Block> STONE_WALL_TOP_BLOCK =
             .noOcclusion()
         )
     );
+
+public static final DeferredHolder<Block, Block> PIER =
+    BLOCKS.register("pier", () ->
+        new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+            .noOcclusion()
+        )
+    );
+
+
+
+  public static final DeferredHolder<Block, CobbleStoneWallBlock> COBBLESTONE_WALL =
+        BLOCKS.register("cobblestone_wall", () ->
+            new CobbleStoneWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.COBBLESTONE)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
 
     public static final DeferredHolder<Block, ThinWall> COBBLESTONE_FOUNDATION =
     BLOCKS.register("cobblestone_foundation", 
@@ -945,6 +1354,15 @@ public static final DeferredHolder<Block, ThinWall> COBBLESTONE_WALL_BOTTOM =
     );
 
     
+  public static final DeferredHolder<Block, BirchWallBlock> BIRCH_WALL_BLOCK =
+        BLOCKS.register("birch_wall_block", () ->
+            new BirchWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
+    
     public static final DeferredHolder<Block, ThinWall> LOG_WALL =
     BLOCKS.register("log_wall", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
@@ -954,6 +1372,24 @@ public static final DeferredHolder<Block, ThinWall> COBBLESTONE_WALL_BOTTOM =
             .noOcclusion()
         )
     );
+
+  public static final DeferredHolder<Block, LogWallBlock> LOG_WALL_BLOCK =
+        BLOCKS.register("log_wall_block", () ->
+            new LogWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
+
+
+  public static final DeferredHolder<Block, PlasterStoneWallBlock> PLASTER_STONE_WALL =
+        BLOCKS.register("plaster_stone_wall", () ->
+            new PlasterStoneWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
 
 public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_FOUNDATION =
     BLOCKS.register("plaster_stone_foundation", 
@@ -984,6 +1420,15 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_WALL_BOTTOM =
             .noOcclusion()
         )
     );
+
+  public static final DeferredHolder<Block, PlasterWoodWallBlock> PLASTER_WOOD_WALL =
+        BLOCKS.register("plaster_wood_wall", () ->
+            new PlasterWoodWallBlock(
+                BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                    .strength(2.5f)
+                    .requiresCorrectToolForDrops()
+            ));
+
 
 public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_FOUNDATION =
     BLOCKS.register("plaster_wood_foundation", 
@@ -1020,6 +1465,87 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
         public static final DeferredHolder<Block, Block> MAGINCIA_STYLE_THRONE = BLOCKS.register(
             "magincia_style_throne",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+
+        public static final DeferredHolder<Block, Block> WOODEN_THRONE = BLOCKS.register(
+            "wooden_throne",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> CHAIR_TRINSIC = BLOCKS.register(
+            "chair_trinsic",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> CHAIR_VESPER = BLOCKS.register(
+            "chair_vesper",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> WOODEN_CHAIR = BLOCKS.register(
+            "wooden_chair",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> STRAW_CHAIR = BLOCKS.register(
+            "straw_chair",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> STOOL = BLOCKS.register(
+            "stool",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> FOOTSTOOL = BLOCKS.register(
+            "footstool",
+            () -> new ChairBlock(0.1,
+                    BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.3f)
+                    .noOcclusion()
+            )
+        );
+
+        public static final DeferredHolder<Block, Block> BENCH = BLOCKS.register(
+            "bench",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
                     .mapColor(MapColor.WOOD)

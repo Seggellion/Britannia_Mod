@@ -7,13 +7,15 @@ import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.StoreSignBlockEntity;
 import com.seggellion.britannia_mod.registry.FishRegistry;
 import com.seggellion.britannia_mod.block.entity.FishBlockEntity;
-
+import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurnitureBlockEntity;
 import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LockableDoorBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ThreeHeightLightBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.Block;
@@ -66,6 +68,14 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
                                    BlockRegistry.CARPET_TELEPORTER_BLOCK.get())
                                .build(null));
 
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeightLightBlockEntity>> THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE =
+    BLOCK_ENTITIES.register("three_height_light_block_entity", () ->
+        BlockEntityType.Builder.of(
+                ThreeHeightLightBlockEntity::new,
+                BlockRegistry.WOODEN_LAMP_POST.get()
+        ).build(null));
+
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HouseSignBlockEntity>> HOUSE_SIGN =
         BLOCK_ENTITIES.register("house_sign", () ->
             BlockEntityType.Builder.of(HouseSignBlockEntity::new, BlockRegistry.HOUSE_SIGN_BLOCK.get()).build(null));
@@ -73,6 +83,8 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CandelabraBlockEntity>> CANDELABRA =
             BLOCK_ENTITIES.register("candelabra", () ->
                     BlockEntityType.Builder.of(CandelabraBlockEntity::new,
+                                BlockRegistry.WALL_SCONCE.get(),
+                        BlockRegistry.CANDLE.get(),
                             BlockRegistry.CANDELABRA_SMALL.get(),
                             BlockRegistry.CANDELABRA_TALL.get(),
                             BlockRegistry.LAMP_POST_REGULAR.get(),
@@ -96,6 +108,14 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
             BLOCK_ENTITIES.register("chair", () ->
                     BlockEntityType.Builder.of(ChairBlockEntity::new,
                             BlockRegistry.MAGINCIA_STYLE_THRONE.get(),
+                                BlockRegistry.WOODEN_CHAIR.get(),
+                                BlockRegistry.WOODEN_THRONE.get(),
+                                BlockRegistry.STOOL.get(),
+                                BlockRegistry.FOOTSTOOL.get(),
+                                BlockRegistry.BENCH.get(),
+                                BlockRegistry.CHAIR_TRINSIC.get(),
+                                BlockRegistry.STRAW_CHAIR.get(),
+                                BlockRegistry.CHAIR_VESPER.get(),
                             BlockRegistry.LORD_BRITISH_THRONE.get()
                     ).build(null));
 
@@ -105,6 +125,22 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CarpetTel
                     () -> BlockEntityType.Builder
                             .of(DoubleBedBlockEntity::new, BlockRegistry.DOUBLE_BED.get())
                             .build(null));
+
+// Spawn Blocks
+
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TraderSpawnBlockEntity>>
+            TRADER_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
+                "trader_spawn_block_entity",
+                () -> BlockEntityType.Builder.of(
+                        TraderSpawnBlockEntity::new,
+                        BlockRegistry.TRADER_SPAWN_BLOCK.get()
+                ).build(null)
+            );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MonsterSpawnBlockEntity>> MONSTER_SPAWN_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("monster_spawn_block_entity",
+                    () -> BlockEntityType.Builder.of(MonsterSpawnBlockEntity::new, BlockRegistry.MONSTER_SPAWN_BLOCK.get()).build(null));
 
         public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ArchitectSpawnBlockEntity>> ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE =
         BLOCK_ENTITIES.register("architect_spawn_block_entity",
