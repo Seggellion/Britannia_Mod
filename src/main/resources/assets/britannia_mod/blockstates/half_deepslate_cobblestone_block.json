@@ -1,6 +1,10 @@
 {
-    "variants": {
-      "": { "model": "britannia_mod:block/half_deepslate_cobblestone_block" }
-    }
+  "variants": {
+    "": [
+      { "model": "britannia_mod:block/fractional/half_cobbled_path1" },
+      { "model": "britannia_mod:block/fractional/half_cobbled_path2" },
+      { "model": "britannia_mod:block/fractional/half_cobbled_path3" },
+      { "model": "britannia_mod:block/fractional/half_cobbled_path4" }
+    ]
   }
-  
+}

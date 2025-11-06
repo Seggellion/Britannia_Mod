@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/decorations/cave/stalagmite_6" },
+    "facing=south": { "model": "britannia_mod:block/decorations/cave/stalagmite_6", "y": 180 },
+    "facing=west":  { "model": "britannia_mod:block/decorations/cave/stalagmite_6", "y": 270 },
+    "facing=east":  { "model": "britannia_mod:block/decorations/cave/stalagmite_6", "y": 90 }
+  }
+}

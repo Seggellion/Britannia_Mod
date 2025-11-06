@@ -2,21 +2,35 @@
 package com.seggellion.britannia_mod;
 
 import com.seggellion.britannia_mod.client.renderer.entity.EntityHorseMerchantRenderer;
-
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.EntityFishMerchantRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.FishTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.SalvageTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.CitizenEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
+import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
+import com.seggellion.britannia_mod.client.Keybinds;
+import com.seggellion.britannia_mod.client.screen.MonsterSpawnScreen;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import com.seggellion.britannia_mod.block.LargeForgeRenderer;
 import com.seggellion.britannia_mod.block.BlueTentRenderer;
+import com.seggellion.britannia_mod.block.AdaptiveRoofRenderer;
+import com.seggellion.britannia_mod.block.PurpleTentRenderer;
+import com.seggellion.britannia_mod.block.renderer.ArmoireRenderer;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+//import com.seggellion.britannia_mod.block.HouseSignRenderer;
 import com.seggellion.britannia_mod.block.SmallForgeRenderer;
+import com.seggellion.britannia_mod.block.ChairRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -25,7 +39,6 @@ import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.LichRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.RatRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
-import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.client.renderer.entity.WraithRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.GhoulRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.ShadeRenderer;
@@ -34,17 +47,14 @@ import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRende
 import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
+import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
+import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.minecraft.world.item.Tier;
-import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
-import net.neoforged.neoforge.common.SimpleTier;
 import net.minecraft.world.item.component.CustomModelData;
-import net.neoforged.neoforge.client.event.ClientPlayerChangeGameTypeEvent;
-import net.minecraft.client.resources.model.BakedModel;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -55,39 +65,22 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.CustomData;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.world.item.Item;
-import net.minecraft.client.Minecraft;
-import net.neoforged.neoforge.common.NeoForge;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.registry.SwordRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
-import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
-import net.minecraft.nbt.CompoundTag;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RegisterNamedRenderTypesEvent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.neoforged.neoforge.client.event.ModelEvent;
-
-
-import java.util.Map;
-import java.util.HashMap;
 
 
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
-  
+
 @SubscribeEvent
 public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+
 
     event.register((stack, tintIndex) -> {
         if (!(stack.getItem() instanceof GradeStoneItem gradeStoneItem)) {
@@ -205,6 +198,26 @@ event.register((stack, tintIndex) -> {
     SwordRegistry.VIKING_SWORD.get());
 
 }
+
+@SubscribeEvent
+public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+    event.register(
+        ResourceLocation.fromNamespaceAndPath("britannia_mod", "stone_floor_loader"),
+        StoneFloorGeometryLoader.INSTANCE
+    );
+}
+
+@SubscribeEvent
+public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+    event.register(ModelResourceLocation.standalone(
+        ResourceLocation.parse("britannia_mod:block/structure/thin_wall_stair_fill")
+    ));
+        event.register(ModelResourceLocation.standalone(
+        ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
+    ));
+}
+
+
 
 private static int applyBrightnessTint(int baseColor, float factor) {
     int r = (baseColor >> 16) & 0xFF;
@@ -369,18 +382,42 @@ private static int getTintForOreType(String oreType) {
         };
     };
 
+
+
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
 
         event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
+            event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE.get(), ThreeHeightLightRenderer::new);
+
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
+
+
+
+
+        event.registerBlockEntityRenderer(
+    BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(),
+    CityNameBlockRenderer::new
+);
+
+event.registerBlockEntityRenderer(
+    BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(),
+    CityNameBlockRenderer::new
+);
+
+
+
     }
+
 
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {
-
+        Keybinds.registerInputHandler();
     Minecraft.getInstance().execute(() -> {
         try {
             LOGGER.info("✅ Loading shader: brightness_shader.json");
@@ -405,7 +442,7 @@ private static int getTintForOreType(String oreType) {
 
             // Register the entity renderers
             EntityRenderers.register(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
-
+            EntityRenderers.register(EntityRegistry.LAY_ENTITY.get(), EmptyRenderer::new);
             EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
             EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), DaemonRenderer::new);
             EntityRenderers.register(EntityRegistry.LICH_ENTITY.get(), LichRenderer::new);
@@ -419,12 +456,17 @@ private static int getTintForOreType(String oreType) {
             EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalRenderer::new);
             EntityRenderers.register(EntityRegistry.HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchantRenderer::new);
-            EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), EntityFishMerchantRenderer::new);
+           // EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), FishTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchantRenderer::new);
             //EntityRenderers.register(EntityRegistry.JOURNEYMAN_BLACKSMITH_ENTITY.get(), EntityJourneymanBlacksmithRenderer::new);
             EntityRenderers.register(EntityRegistry.STONE_MERCHANT_ENTITY.get(), EntityStoneMerchantRenderer::new);
             EntityRenderers.register(EntityRegistry.METAL_MERCHANT_ENTITY.get(), EntityMetalMerchantRenderer::new);
-            EntityRenderers.register(EntityRegistry.TOWN_PERSON_ENTITY.get(), TownPersonEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.TOWNSPERSON.get(), CitizenEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
+            EntityRenderers.register(EntityRegistry.FISH_TRADER.get(), FishTraderEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.MEAT_TRADER.get(), EntityMetalMerchantRenderer::new);
+
 
             // Register the blocking property for the Order Shield
             ItemProperties.register(
@@ -434,6 +476,39 @@ private static int getTintForOreType(String oreType) {
                     return entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F;
                 }
             );
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X1.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X3.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X3.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_COBBLESTONE_1X2.get(), RenderType.cutout());
+
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X1.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X3.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X2.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X3.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_BIRCH_1X1.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LYING_SKELETON.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SITTING_SKELETON.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SKELETON_TORSO.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
+
+                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.CAVE_FLOOR_BLOCK.get(), RenderType.solid());
+
+
+               ItemBlockRenderTypes.setRenderLayer(
+                    BlockRegistry.STATUE_MAN.get(),
+                    RenderType.translucent()
+                );
 
             // Register custom model data for GradeStoneItem
             registry.registerModelData(

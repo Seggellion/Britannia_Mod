@@ -33,6 +33,7 @@ dependencies {
     implementation 'net.neoforged:neoforge:21.1.72'
     implementation "software.bernie.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}"
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+    implementation 'org.nanohttpd:nanohttpd:2.2.0'
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     implementation "io.github.llamalad7:mixinextras-common:0.3.5"
     annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
@@ -43,12 +44,18 @@ runs {
         workingDirectory = file("run")
         systemProperty "neoforge.enabledGameTestNamespaces", mod_id
         arguments "--username", "Dev"
+        dependencies {
+            runtime 'org.nanohttpd:nanohttpd:2.2.0'
+        }
     }
 
     server {
         workingDirectory = file("run/server")
         arguments "--nogui"
         systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+        dependencies {
+            runtime 'org.nanohttpd:nanohttpd:2.2.0'
+        }
     }
 
 
@@ -62,7 +69,10 @@ jarJar {
 
     dependencies {
         // Add GeckoLib to be included inside the Jar using Jar-in-Jar
+                if (!project.hasProperty('dev')) {
         jarJar "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+                }
+                                 jarJar "org.nanohttpd:nanohttpd:2.2.0"
     }
 }
 

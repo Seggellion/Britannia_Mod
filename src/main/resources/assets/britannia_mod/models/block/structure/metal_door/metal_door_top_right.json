@@ -1,0 +1,6 @@
+{
+    "parent": "block/door_top_right",
+    "textures": {
+        "top": "britannia_mod:block/structure/metal_door_top"
+    }
+}

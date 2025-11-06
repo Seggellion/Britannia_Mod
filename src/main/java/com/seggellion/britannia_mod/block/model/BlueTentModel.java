@@ -11,14 +11,12 @@ public class BlueTentModel extends GeoModel<BlueTentBlockEntity> {
 
     @Override
     public ResourceLocation getModelResource(BlueTentBlockEntity animatable) {
-            LOGGER.info("📦 Loading model resource for BlueTent");
 
         return ResourceLocation.fromNamespaceAndPath("britannia_mod", "geo/blue_tent.geo.json");
     }
 
     @Override
     public ResourceLocation getTextureResource(BlueTentBlockEntity animatable) {
-            LOGGER.info("🎨 Loading texture resource for BlueTent");
 
         return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/block/blue_tent.png");
     }

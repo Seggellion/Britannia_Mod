@@ -1,0 +1,13 @@
+{
+    "variants": {
+      "corner=false,facing=north": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_north" },
+      "corner=false,facing=south": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_south" },
+      "corner=false,facing=west": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_west" },
+      "corner=false,facing=east": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_east" },
+      "corner=true,facing=north": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_north_corner" },
+      "corner=true,facing=south": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_south_corner" },
+      "corner=true,facing=west": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_west_corner" },
+      "corner=true,facing=east": { "model": "britannia_mod:block/structure/cobblestone_wall/cobblestone_wall_bottom_east_corner" }
+    }
+  }
+  

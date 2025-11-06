@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "variant=0,mirrored=false": { "model": "britannia_mod:block/structure/oak_wall/oak_wall_top" },
+    "variant=0,mirrored=true":  { "model": "britannia_mod:block/structure/oak_wall/oak_wall_top_mirrored" },
+    "variant=1,mirrored=false": { "model": "britannia_mod:block/structure/oak_wall/oak_wall_bottom" },
+    "variant=1,mirrored=true":  { "model": "britannia_mod:block/structure/oak_wall/oak_wall_bottom_mirrored" }
+  }
+}

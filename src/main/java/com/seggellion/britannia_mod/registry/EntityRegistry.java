@@ -2,7 +2,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
-//import com.seggellion.britannia_mod.entity.EntityJourneymanBlacksmith;
+import com.seggellion.britannia_mod.entity.LayEntity;
 import com.seggellion.britannia_mod.entity.LivingSeatEntity;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
@@ -16,7 +16,9 @@ import com.seggellion.britannia_mod.entity.EarthElementalEntity;
 import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
 import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
-import com.seggellion.britannia_mod.entity.EntityFishMerchant;
+import com.seggellion.britannia_mod.entity.ArchitectEntity;
+import com.seggellion.britannia_mod.entity.FishTraderEntity;
+import com.seggellion.britannia_mod.entity.SalvageTraderEntity;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.EntityStoneMerchant;
 import com.seggellion.britannia_mod.entity.EntityMetalMerchant;
@@ -40,13 +42,24 @@ public class EntityRegistry {
                     .build("britannia_mod:horse_merchant")
     );
 
+public static final DeferredHolder<EntityType<?>, EntityType<FishTraderEntity>> FISH_TRADER =
+        ENTITIES.register("fish_trader",
+            () -> EntityType.Builder.of(FishTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:fish_trader"));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<EntityFishMerchant>> FISH_MERCHANT_ENTITY = ENTITIES.register(
-    "fish_merchant",
-    () -> EntityType.Builder.of(EntityFishMerchant::new, MobCategory.MISC)
-            .sized(0.6F, 1.95F)
-            .build("britannia_mod:fish_merchant")
-);
+public static final DeferredHolder<EntityType<?>, EntityType<SalvageTraderEntity>> SALVAGE_TRADER =
+        ENTITIES.register("salvage_trader",
+            () -> EntityType.Builder.of(SalvageTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:salvage_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<EntityMetalMerchant>> MEAT_TRADER =
+        ENTITIES.register("meat_trader",
+            () -> EntityType.Builder.of(EntityMetalMerchant::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:meat_trader"));
+
 
     public static final DeferredHolder<EntityType<?>, EntityType<EntityWoodMerchant>> WOOD_MERCHANT_ENTITY = ENTITIES.register(
     "wood_merchant",
@@ -54,6 +67,17 @@ public class EntityRegistry {
             .sized(0.6F, 1.95F)
             .build("britannia_mod:wood_merchant")
 );
+
+public static final DeferredHolder<EntityType<?>, EntityType<ArchitectEntity>>
+        ARCHITECT_ENTITY = ENTITIES.register(
+    "architect",
+    () -> EntityType.Builder                      
+              .<ArchitectEntity>of(ArchitectEntity::create, MobCategory.MISC)
+              .sized(0.6F, 1.95F)
+              .build("britannia_mod:architect")
+);
+
+
 
     public static final DeferredHolder<EntityType<?>, EntityType<EntityMetalMerchant>> METAL_MERCHANT_ENTITY = ENTITIES.register(
     "metal_merchant",
@@ -69,14 +93,20 @@ public class EntityRegistry {
             .build("britannia_mod:stone_merchant")
 );
 
-public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> TOWN_PERSON_ENTITY = ENTITIES.register(
+public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> TOWNSPERSON = ENTITIES.register(
     "town_person",
     () -> EntityType.Builder.of(TownPersonEntity::new, MobCategory.MISC)
         .sized(0.6F, 1.95F)
         .build("britannia_mod:town_person")
 );
 
-
+    public static final DeferredHolder<EntityType<?>, EntityType<LayEntity>> LAY_ENTITY =
+            ENTITIES.register("lay",
+                    () -> EntityType.Builder.<LayEntity>of(LayEntity::new, MobCategory.MISC)
+                            .sized(0.0F, 0.0F)         
+                            .clientTrackingRange(256)   
+                            .updateInterval(20)
+                            .build("britannia_mod:lay"));
 
     public static final DeferredHolder<EntityType<?>, EntityType<MongbatEntity>> MONGBAT_ENTITY = ENTITIES.register(
             "mongbat",
@@ -189,12 +219,17 @@ public static final DeferredHolder<EntityType<?>, EntityType<LivingSeatEntity>> 
         event.put(RAT_ENTITY.get(), RatEntity.createAttributes().build());
         event.put(WISP_ENTITY.get(), WispEntity.createAttributes().build());
         event.put(HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchant.createAttributes().build());
-        event.put(FISH_MERCHANT_ENTITY.get(), EntityFishMerchant.createAttributes().build());
+      //  event.put(FISH_MERCHANT_ENTITY.get(), FishTraderEntity.createAttributes().build());
         event.put(WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchant.createAttributes().build());
         event.put(METAL_MERCHANT_ENTITY.get(), EntityMetalMerchant.createAttributes().build());
         event.put(STONE_MERCHANT_ENTITY.get(), EntityStoneMerchant.createAttributes().build());
+        event.put(ARCHITECT_ENTITY.get(), ArchitectEntity.createAttributes().build());
+        event.put(FISH_TRADER.get(), FishTraderEntity.createAttributes().build());
+        event.put(SALVAGE_TRADER.get(), SalvageTraderEntity.createAttributes().build());
+        event.put(MEAT_TRADER.get(), EntityMetalMerchant.createAttributes().build());
 
-        event.put(TOWN_PERSON_ENTITY.get(), TownPersonEntity.createAttributes().build());
+
+        event.put(TOWNSPERSON.get(), TownPersonEntity.createAttributes().build());
 
     }
 }

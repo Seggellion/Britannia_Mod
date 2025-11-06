@@ -1,0 +1,499 @@
+{
+  "variants": {
+    "layers=1,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_1"
+    },
+    "layers=1,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_1_flipped"
+    },
+    "layers=1,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_1"
+    },
+    "layers=1,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_1_flipped"
+    },
+    "layers=1,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_1"
+    },
+    "layers=1,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_1_flipped"
+    },
+    "layers=1,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_1"
+    },
+    "layers=1,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_1_flipped"
+    },
+    "layers=1,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_1"
+    },
+    "layers=1,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_1_flipped"
+    },
+
+    "layers=2,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_2"
+    },
+    "layers=2,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_2_flipped"
+    },
+    "layers=2,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_2"
+    },
+    "layers=2,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_2_flipped"
+    },
+    "layers=2,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_2"
+    },
+    "layers=2,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_2_flipped"
+    },
+    "layers=2,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_2"
+    },
+    "layers=2,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_2_flipped"
+    },
+    "layers=2,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_2"
+    },
+    "layers=2,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_2_flipped"
+    },
+
+    "layers=3,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_3"
+    },
+    "layers=3,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_3_flipped"
+    },
+    "layers=3,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_3"
+    },
+    "layers=3,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_3_flipped"
+    },
+    "layers=3,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_3"
+    },
+    "layers=3,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_3_flipped"
+    },
+    "layers=3,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_3"
+    },
+    "layers=3,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_3_flipped"
+    },
+    "layers=3,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_3"
+    },
+    "layers=3,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_3_flipped"
+    },
+
+    "layers=4,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_4"
+    },
+    "layers=4,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_4_flipped"
+    },
+    "layers=4,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_4"
+    },
+    "layers=4,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_4_flipped"
+    },
+    "layers=4,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_4"
+    },
+    "layers=4,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_4_flipped"
+    },
+    "layers=4,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_4"
+    },
+    "layers=4,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_4_flipped"
+    },
+    "layers=4,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_4"
+    },
+    "layers=4,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_4_flipped"
+    },
+
+    "layers=5,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_5"
+    },
+    "layers=5,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_5_flipped"
+    },
+    "layers=5,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_5"
+    },
+    "layers=5,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_5_flipped"
+    },
+    "layers=5,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_5"
+    },
+    "layers=5,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_5_flipped"
+    },
+    "layers=5,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_5"
+    },
+    "layers=5,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_5_flipped"
+    },
+    "layers=5,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_5"
+    },
+    "layers=5,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_5_flipped"
+    },
+
+    "layers=6,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_6"
+    },
+    "layers=6,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_6_flipped"
+    },
+    "layers=6,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_6"
+    },
+    "layers=6,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_6_flipped"
+    },
+    "layers=6,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_6"
+    },
+    "layers=6,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_6_flipped"
+    },
+    "layers=6,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_6"
+    },
+    "layers=6,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_6_flipped"
+    },
+    "layers=6,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_6"
+    },
+    "layers=6,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_6_flipped"
+    },
+
+    "layers=7,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_7"
+    },
+    "layers=7,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_7_flipped"
+    },
+    "layers=7,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_7"
+    },
+    "layers=7,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_7_flipped"
+    },
+    "layers=7,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_7"
+    },
+    "layers=7,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_7_flipped"
+    },
+    "layers=7,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_7"
+    },
+    "layers=7,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_7_flipped"
+    },
+    "layers=7,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_7"
+    },
+    "layers=7,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_7_flipped"
+    },
+
+    "layers=8,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_8"
+    },
+    "layers=8,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_8_flipped"
+    },
+    "layers=8,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_8"
+    },
+    "layers=8,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_8_flipped"
+    },
+    "layers=8,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_8"
+    },
+    "layers=8,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_8_flipped"
+    },
+    "layers=8,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_8"
+    },
+    "layers=8,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_8_flipped"
+    },
+    "layers=8,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_8"
+    },
+    "layers=8,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_8_flipped"
+    },
+
+    "layers=9,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_9"
+    },
+    "layers=9,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_9_flipped"
+    },
+    "layers=9,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_9"
+    },
+    "layers=9,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_9_flipped"
+    },
+    "layers=9,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_9"
+    },
+    "layers=9,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_9_flipped"
+    },
+    "layers=9,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_9"
+    },
+    "layers=9,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_9_flipped"
+    },
+    "layers=9,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_9"
+    },
+    "layers=9,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_9_flipped"
+    },
+
+    "layers=10,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_10"
+    },
+    "layers=10,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_10_flipped"
+    },
+    "layers=10,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_10"
+    },
+    "layers=10,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_10_flipped"
+    },
+    "layers=10,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_10"
+    },
+    "layers=10,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_10_flipped"
+    },
+    "layers=10,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_10"
+    },
+    "layers=10,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_10_flipped"
+    },
+    "layers=10,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_10"
+    },
+    "layers=10,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_10_flipped"
+    },
+
+    "layers=11,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_11"
+    },
+    "layers=11,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_11_flipped"
+    },
+    "layers=11,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_11"
+    },
+    "layers=11,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_11_flipped"
+    },
+    "layers=11,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_11"
+    },
+    "layers=11,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_11_flipped"
+    },
+    "layers=11,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_11"
+    },
+    "layers=11,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_11_flipped"
+    },
+    "layers=11,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_11"
+    },
+    "layers=11,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_11_flipped"
+    },
+
+    "layers=12,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_12"
+    },
+    "layers=12,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_12_flipped"
+    },
+    "layers=12,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_12"
+    },
+    "layers=12,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_12_flipped"
+    },
+    "layers=12,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_12"
+    },
+    "layers=12,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_12_flipped"
+    },
+    "layers=12,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_12"
+    },
+    "layers=12,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_12_flipped"
+    },
+    "layers=12,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_12"
+    },
+    "layers=12,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_12_flipped"
+    },
+
+    "layers=13,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_13"
+    },
+    "layers=13,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_13_flipped"
+    },
+    "layers=13,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_13"
+    },
+    "layers=13,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_13_flipped"
+    },
+    "layers=13,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_13"
+    },
+    "layers=13,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_13_flipped"
+    },
+    "layers=13,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_13"
+    },
+    "layers=13,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_13_flipped"
+    },
+    "layers=13,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_13"
+    },
+    "layers=13,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_13_flipped"
+    },
+
+    "layers=14,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_14"
+    },
+    "layers=14,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_14_flipped"
+    },
+    "layers=14,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_14"
+    },
+    "layers=14,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_14_flipped"
+    },
+    "layers=14,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_14"
+    },
+    "layers=14,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_14_flipped"
+    },
+    "layers=14,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_14"
+    },
+    "layers=14,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_14_flipped"
+    },
+    "layers=14,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_14"
+    },
+    "layers=14,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_14_flipped"
+    },
+
+    "layers=15,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_15"
+    },
+    "layers=15,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_15_flipped"
+    },
+    "layers=15,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_15"
+    },
+    "layers=15,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_15_flipped"
+    },
+    "layers=15,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_15"
+    },
+    "layers=15,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_15_flipped"
+    },
+    "layers=15,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_15"
+    },
+    "layers=15,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_15_flipped"
+    },
+    "layers=15,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_15"
+    },
+    "layers=15,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_15_flipped"
+    },
+
+    "layers=16,variant=0,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_16"
+    },
+    "layers=16,variant=0,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_0_layer_16_flipped"
+    },
+    "layers=16,variant=1,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_16"
+    },
+    "layers=16,variant=1,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_1_layer_16_flipped"
+    },
+    "layers=16,variant=2,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_16"
+    },
+    "layers=16,variant=2,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_2_layer_16_flipped"
+    },
+    "layers=16,variant=3,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_16"
+    },
+    "layers=16,variant=3,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_3_layer_16_flipped"
+    },
+    "layers=16,variant=4,flip=0": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_16"
+    },
+    "layers=16,variant=4,flip=1": {
+      "model": "britannia_mod:block/world/cave_floor_4_layer_16_flipped"
+    }
+  }
+}

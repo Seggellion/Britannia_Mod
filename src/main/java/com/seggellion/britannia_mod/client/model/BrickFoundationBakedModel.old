@@ -1,0 +1,173 @@
+package com.seggellion.britannia_mod.client.model;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
+import org.jetbrains.annotations.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+public class BrickFoundationBakedModel implements BakedModel {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static final ModelProperty<BlockAndTintGetter> LEVEL_PROP = new ModelProperty<>();
+    private static final ModelProperty<BlockPos> POS_PROP = new ModelProperty<>();
+
+    private final ModelBaker baker;
+    private final ModelState modelState;
+    private final ResourceLocation baseModelId;
+    private BakedModel base; // lazy-loaded
+
+    public BrickFoundationBakedModel(ModelBaker baker, ModelState modelState, ResourceLocation baseModelId) {
+        this.baker = baker;
+        this.modelState = modelState;
+        this.baseModelId = baseModelId;
+    }
+
+    private void ensureBaseModel() {
+        if (this.base == null) {
+            LOGGER.info("🔁 Lazy-baking base model: {}", baseModelId);
+            this.base = baker.bake(baseModelId, modelState);
+            LOGGER.info("🧱 Baked base model class: {}", base.getClass().getName());
+        }
+    }
+
+    @Override
+    public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource rand) {
+        return getQuads(state, side, rand, ModelData.EMPTY, null);
+    }
+
+    @Override
+    public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource rand, ModelData data, RenderType layer) {
+        ensureBaseModel();
+
+        LOGGER.info("BrickFoundation getQuads ▸ layer={}, side={}, state={}, dataValid={}",
+                rtName(layer), dirName(side),
+                state != null ? state.getBlock().getName().getString() : "null",
+                data.has(LEVEL_PROP) && data.has(POS_PROP));
+
+        boolean isUp = (side == Direction.UP);
+        boolean isNull = (side == null);  // full‑cube pass
+
+        if (!isUp && !isNull || state == null) {
+            return base.getQuads(state, side, rand, data, layer);
+        }
+
+        BlockAndTintGetter level = data.get(LEVEL_PROP);
+        BlockPos pos = data.get(POS_PROP);
+        if (level == null || pos == null) {
+            return base.getQuads(state, side, rand, data, layer);
+        }
+
+        TextureAtlasSprite newSprite = null;
+        Block self = state.getBlock();
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockState nb = level.getBlockState(pos.relative(dir));
+            if (!nb.isAir() && nb.getBlock() != self) {
+                newSprite = fetchSpriteFor(nb);
+                break;
+            }
+        }
+        if (newSprite == null) {
+            return base.getQuads(state, side, rand, data, layer);
+        }
+
+        List<BakedQuad> src = base.getQuads(state, side, rand, data, layer);
+        if (src.isEmpty()) src = base.getQuads(state, null, rand, data, layer);
+        if (src.isEmpty()) src = base.getQuads(state, null, rand, data, null);
+
+        List<BakedQuad> out = new ArrayList<>(src.size());
+
+        LOGGER.info("vanilla cube FULL dump = {} quads", src.size());
+        LOGGER.info("BrickFoundation ▸ layer={}, side={}, isUp={}, isNull={}", rtName(layer), dirName(side), isUp, isNull);
+        LOGGER.info("   vanilla cube returned {} quads in this pass", src.size());
+        LOGGER.info("   base model class = {}", base.getClass().getName());
+
+        boolean printed = false;
+        for (BakedQuad q : src) {
+            if (q.getDirection() != Direction.UP) {
+                out.add(q);
+                continue;
+            }
+
+            TextureAtlasSprite oldSprite = q.getSprite();
+            int[] vd = q.getVertices().clone();
+            int stride = vd.length / 4;
+
+            if (!printed) {
+                LOGGER.info("   patching a quad; stride={}, oldSprite={}, newSprite={}",
+                        stride, oldSprite.contents().name(), newSprite.contents().name());
+                printed = true;
+            }
+
+            int uBaseOff = 4, vBaseOff = 5;
+            for (int v = 0; v < 4; v++) {
+                int uOff = uBaseOff + v * stride;
+                int vOff = vBaseOff + v * stride;
+
+                float absU = Float.intBitsToFloat(vd[uOff]);
+                float absV = Float.intBitsToFloat(vd[vOff]);
+
+                float relU = 16f * (absU - oldSprite.getU0()) / (oldSprite.getU1() - oldSprite.getU0());
+                float relV = 16f * (absV - oldSprite.getV0()) / (oldSprite.getV1() - oldSprite.getV0());
+
+                vd[uOff] = Float.floatToRawIntBits(newSprite.getU(relU));
+                vd[vOff] = Float.floatToRawIntBits(newSprite.getV(relV));
+            }
+
+            out.add(new BakedQuad(vd, q.getTintIndex(), q.getDirection(), newSprite, q.isShade()));
+        }
+
+        return out;
+    }
+
+    private static TextureAtlasSprite fetchSpriteFor(BlockState neighbourState) {
+        BlockModelShaper shaper = Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
+        BakedModel nbModel = shaper.getBlockModel(neighbourState);
+
+        List<BakedQuad> quads = nbModel.getQuads(neighbourState, Direction.UP, RandomSource.create(), ModelData.EMPTY, null);
+        if (!quads.isEmpty()) {
+            return quads.get(0).getSprite();
+        }
+        return nbModel.getParticleIcon();
+    }
+
+    @Override
+    public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData data) {
+        LOGGER.info("getModelData for Brick Foundation at {}", pos);
+        return data.derive().with(LEVEL_PROP, level).with(POS_PROP, pos).build();
+    }
+
+    @Override public boolean useAmbientOcclusion() { ensureBaseModel(); return base.useAmbientOcclusion(); }
+    @Override public boolean isGui3d()            { ensureBaseModel(); return base.isGui3d(); }
+    @Override public boolean usesBlockLight()     { ensureBaseModel(); return base.usesBlockLight(); }
+    @Override public boolean isCustomRenderer()   { ensureBaseModel(); return base.isCustomRenderer(); }
+    @Override public ItemOverrides getOverrides() { ensureBaseModel(); return base.getOverrides(); }
+    @Override public TextureAtlasSprite getParticleIcon() { ensureBaseModel(); return base.getParticleIcon(); }
+
+    private static String rtName(@Nullable RenderType rt) {
+        return rt == null ? "null" : rt.toString();
+    }
+
+    private static String dirName(@Nullable Direction d) {
+        return d == null ? "null" : d.getName();
+    }
+}

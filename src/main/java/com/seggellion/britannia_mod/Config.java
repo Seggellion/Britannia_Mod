@@ -55,6 +55,12 @@ private static final ModConfigSpec.BooleanValue DISABLE_TRADER_LLAMA_SPAWNING = 
         .comment("Set to true to prevent Trader Llamas from spawning.")
         .define("disableTraderLlamaSpawning", true);
 
+private static final ModConfigSpec.BooleanValue DISABLE_ALL_MONSTERS = BUILDER
+        .comment("Set to true to prevent all vanilla monsters from spawning.")
+        .define("disableAllVanillaMonsters", true);
+
+public static boolean disableAllVanillaMonsters;
+
 
     static final ModConfigSpec SPEC = BUILDER.build();
 
@@ -81,6 +87,7 @@ public static boolean disableTraderLlamaSpawning;
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();
+        disableAllVanillaMonsters = DISABLE_ALL_MONSTERS.get();
 
         // convert the list of strings into a set of items
         items = ITEM_STRINGS.get().stream()

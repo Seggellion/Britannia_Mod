@@ -192,6 +192,7 @@ if (poiList.isEmpty()) {
         (double) spawnPos.getZ()
     );
 
+/*
     CityDataSync.registerNpc(
         serverLevel,
         villager.getUUID(),
@@ -205,12 +206,13 @@ if (poiList.isEmpty()) {
         isActive,
         spawnLocation
     );
+    */
 }
 
 
     private void spawnTownspersons(ServerLevel serverLevel, int count) {
     for (int i = 0; i < count; i++) {
-        TownPersonEntity person = EntityRegistry.TOWN_PERSON_ENTITY.get().create(serverLevel);
+        TownPersonEntity person = EntityRegistry.TOWNSPERSON.get().create(serverLevel);
         BlockPos spawnPos = findNonWaterSpawnLocation(serverLevel);
         if (spawnPos == null) {
             continue;
@@ -230,7 +232,7 @@ if (poiList.isEmpty()) {
             boolean isActive = true;
             String spawnLocation = String.format("[x=%.1f, y=%.1f, z=%.1f]", (float) spawnPos.getX(), (float) spawnPos.getY(), (float) spawnPos.getZ());
 
-            CityDataSync.registerNpc(serverLevel, person.getUUID(), "town_person", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
+//            CityDataSync.registerNpc(serverLevel, person.getUUID(), "town_person", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
         }
     }
 }

@@ -3,20 +3,28 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 
-import com.seggellion.britannia_mod.item.SmallHouseDeedItem;
+// import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
+import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
+import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.InteriorDecoratorToolItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.ModToolTiers;
 import com.seggellion.britannia_mod.item.OrderShieldItem;
 import com.seggellion.britannia_mod.item.MoongateLinkingWand;
+import com.seggellion.britannia_mod.item.CarpetTeleporterItem;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
+import com.seggellion.britannia_mod.structure.HouseStyle;
+import com.seggellion.britannia_mod.item.DeedItemFactory;
+import com.seggellion.britannia_mod.item.HouseKeyItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -67,6 +75,11 @@ import java.util.Optional;
 import java.util.List;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.Map;
+import java.util.EnumMap;
+import java.util.HashMap;
+
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -79,7 +92,45 @@ public class ItemRegistry {
     // General Items
     public static final DeferredHolder<Item, Item> GOLD_COIN = ITEMS.register("gold_coin",
             () -> new Item(new Item.Properties().stacksTo(99)));
+        public static final DeferredHolder<Item, Item> COPPER_COIN = ITEMS.register("copper_coin",
+            () -> new Item(new Item.Properties().stacksTo(99)));
+        public static final DeferredHolder<Item, Item> SILVER_COIN = ITEMS.register("silver_coin",
+            () -> new Item(new Item.Properties().stacksTo(99)));
     
+    // Quality Jewlery
+
+    // ItemRegistry.java (snippet)
+public static final DeferredHolder<Item, Item> COPPER_NECKLACE = ITEMS.register("copper_necklace",
+    () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.NECKLACE,
+        MaterialQualityJewelryItem.UOMaterial.COPPER,
+        new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> COPPER_NECKLACE_2 = ITEMS.register("copper_necklace_2",
+    () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.NECKLACE,
+        MaterialQualityJewelryItem.UOMaterial.COPPER,
+        new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> COPPER_EARRINGS = ITEMS.register("copper_earrings",
+    () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.EARRINGS,
+        MaterialQualityJewelryItem.UOMaterial.COPPER,
+        new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> COPPER_BRACELET = ITEMS.register("copper_bracelet",
+    () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.BRACELET,
+        MaterialQualityJewelryItem.UOMaterial.COPPER,
+        new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> COPPER_RING = ITEMS.register("copper_ring",
+    () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.RING,
+        MaterialQualityJewelryItem.UOMaterial.COPPER,
+        new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> COPPER_BEADS = ITEMS.register("copper_beads",
+    () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.BEADS,
+        MaterialQualityJewelryItem.UOMaterial.COPPER,
+        new Item.Properties()));
+
+
     // Spell Ingredients
     public static final DeferredHolder<Item, Item> SPIDERS_SILK = ITEMS.register("spiders_silk",
             () -> new Item(new Item.Properties()));
@@ -117,6 +168,11 @@ public class ItemRegistry {
 
 // custom fraction blocks
 
+    public static final DeferredHolder<Item, BlockItem> CAVE_FLOOR_ITEM = ITEMS.register(
+        "cave_floor",
+        () -> new BlockItem(BlockRegistry.CAVE_FLOOR_BLOCK.get(), new Item.Properties())
+    );
+
 public static final DeferredHolder<Item, Item> QUARTER_DIRT_BLOCK_ITEM = ITEMS.register(
     "quarter_dirt_block",
     () -> new BlockItem(BlockRegistry.QUARTER_DIRT_BLOCK.get(), new Item.Properties())
@@ -148,6 +204,10 @@ public static final DeferredHolder<Item, Item> THREE_QUARTER_GRASS_BLOCK_ITEM = 
     () -> new BlockItem(BlockRegistry.THREE_QUARTER_GRASS_BLOCK.get(), new Item.Properties())
 );
 
+// ✅ Register matching block item for your Cobblestone Wall
+    public static final DeferredHolder<Item, Item> COBBLESTONE_WALL_ITEM =
+        ITEMS.register("cobblestone_wall", () ->
+            new BlockItem(BlockRegistry.COBBLESTONE_WALL.get(), new Item.Properties()));
 
 public static final DeferredHolder<Item, Item> QUARTER_DEEPSLATE_COBBLESTONE_BLOCK_ITEM = ITEMS.register(
     "quarter_deepslate_cobblestone_block",
@@ -166,16 +226,61 @@ public static final DeferredHolder<Item, Item> THREE_QUARTER_DEEPSLATE_COBBLESTO
 
 
         // Housing tools
-    public static final DeferredHolder<Item, Item> INTERIOR_DECORATOR_TOOL = ITEMS.register("interior_decorator_tool",
-            () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> INTERIOR_DECORATOR_TOOL =
+        ITEMS.register("interior_decorator_tool",
+            () -> new InteriorDecoratorToolItem(
+                    new Item.Properties()
+                        .stacksTo(1)            // one tool per slot
+                        .durability(1)));
 
 
-    public static final DeferredHolder<Item, Item> DEED_ITEM = ITEMS.register("deed_item",
-        () -> new DeedItem(new Item.Properties()));
+public static final DeferredHolder<Item, Item> DEED_ITEM =
+    ITEMS.register("deed_item",
+        () -> new DeedItem(new Item.Properties()
+            .stacksTo(1)));  // ✅ no creative tab here
 
 
-public static final DeferredHolder<Item, Item> SMALL_HOUSE_DEED = ITEMS.register("small_deed",
-    () -> new SmallHouseDeedItem(new Item.Properties()));
+    /* ------------- 2) NEW: all house deeds in one map --------- */
+public static final Map<HouseStyle, DeferredHolder<Item, Item>> HOUSE_DEEDS =
+        new EnumMap<>(HouseStyle.class); // ✅ now by HouseStyle
+
+    static {
+        for (HouseStyle style : HouseStyle.values()) {
+            HOUSE_DEEDS.put(style, DeedItemFactory.register(ITEMS, style));
+        }
+    }
+
+    /** Returns the actual Item for the given style; safe after registry events have fired. */
+    public static Item deedFor(HouseStyle style) {
+        return HOUSE_DEEDS.get(style).get();
+    }
+
+
+// statues
+
+public static final DeferredHolder<Item, BlockItem> STATUE_STAND_ITEM = ITEMS.register("statue_stand", () ->
+    new BlockItem(BlockRegistry.STATUE_STAND.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> PILLAR_ITEM = ITEMS.register(
+    "statue_pillar", () -> new BlockItem(BlockRegistry.STATUE_PILLAR.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> STATUE_WOMAN_ITEM = ITEMS.register(
+    "statue_woman", () -> new BlockItem(BlockRegistry.STATUE_WOMAN.get(), new Item.Properties())
+);
+
+  public static final DeferredHolder<Item, Item> STATUE_COUPLE_ITEM = ITEMS.register(
+    "statue_couple", () -> new BlockItem(BlockRegistry.STATUE_COUPLE.get(), new Item.Properties())
+);
+  
+  public static final DeferredHolder<Item, Item> STATUE_MAN_ITEM = ITEMS.register(
+    "statue_man", () -> new BlockItem(BlockRegistry.STATUE_MAN.get(), new Item.Properties())
+);
+  
+    /* ------------- convenience getters ----------------------- */
+
+
 
 
 public static final DeferredHolder<Item, Item> BLUE_TENT_ITEM = ITEMS.register(
@@ -185,6 +290,550 @@ public static final DeferredHolder<Item, Item> BLUE_TENT_ITEM = ITEMS.register(
 public static final DeferredHolder<Item, Item> BLUE_TENT_DEED = ITEMS.register(
     "blue_tent_deed", () -> new BlueTentDeedItem(new Item.Properties())
 );
+
+public static final DeferredHolder<Item, Item> PURPLE_TENT_ITEM = ITEMS.register(
+    "purple_tent", () -> new BlockItem(BlockRegistry.PURPLE_TENT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> PURPLE_TENT_DEED = ITEMS.register(
+    "purple_tent_deed", () -> new PurpleTentDeedItem(new Item.Properties())
+);
+
+// roofing items
+
+public static final DeferredHolder<Item, BlockItem> TILE_ROOF_ITEM = ITEMS.register("tile_roof", () ->
+    new BlockItem(BlockRegistry.TILE_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> THATCH_ROOF_ITEM = ITEMS.register("thatch_roof", () ->
+    new BlockItem(BlockRegistry.THATCH_ROOF.get(), new Item.Properties())
+);
+
+
+public static final DeferredHolder<Item, BlockItem> CEDAR_ROOF_ITEM = ITEMS.register("cedar_roof", () ->
+    new BlockItem(BlockRegistry.CEDAR_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_ITEM = ITEMS.register("slate_roof", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> TILE_ROOF_FLAT_ITEM = ITEMS.register("tile_roof_flat", () ->
+    new BlockItem(BlockRegistry.TILE_ROOF_FLAT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_FLAT_ITEM = ITEMS.register("slate_roof_flat", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF_FLAT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_1_FLAT_ITEM = ITEMS.register("slate_roof_1_flat", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF_1_FLAT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> SLATE_ROOF_2_FLAT_ITEM = ITEMS.register("slate_roof_2_flat", () ->
+    new BlockItem(BlockRegistry.SLATE_ROOF_2_FLAT.get(), new Item.Properties())
+);
+
+
+public static final DeferredHolder<Item, BlockItem> THATCH_ROOF_FLAT_ITEM = ITEMS.register("thatch_roof_flat", () ->
+    new BlockItem(BlockRegistry.THATCH_ROOF_FLAT.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> CEDAR_ROOF_FLAT_ITEM = ITEMS.register("cedar_roof_flat", () ->
+    new BlockItem(BlockRegistry.CEDAR_ROOF_FLAT.get(), new Item.Properties())
+);
+
+// structure items
+public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_OAK_ITEM =
+        ITEMS.register("brick_foundation_oak",
+            () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_OAK.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_SPRUCE_ITEM =
+        ITEMS.register("brick_foundation_spruce",
+            () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_SPRUCE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> CUSTOM_STONE_STAIRS_ITEM = ITEMS.register(
+    "custom_stone_stairs",
+    () -> new BlockItem(BlockRegistry.CUSTOM_STONE_STAIRS.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> DARK_STONE_STAIRS_ITEM = ITEMS.register(
+    "dark_stone_stairs",
+    () -> new BlockItem(BlockRegistry.DARK_STONE_STAIRS.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, BlockItem> STONE_FLOOR_POLISHED_ITEM =
+    ITEMS.register("stone_floor_polished",
+        () -> new BlockItem(BlockRegistry.STONE_FLOOR_POLISHED.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_FOUNDATION_ITEM =
+        ITEMS.register("stone_foundation",
+            () -> new BlockItem(BlockRegistry.STONE_FOUNDATION.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> COBBLESTONE_FOUNDATION_ITEM =
+        ITEMS.register("cobblestone_foundation",
+            () -> new BlockItem(BlockRegistry.COBBLESTONE_FOUNDATION.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BIRCH_WALL_ITEM =
+        ITEMS.register("birch_wall",
+            () -> new BlockItem(BlockRegistry.BIRCH_WALL.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> BIRCH_WALL_BLOCK_ITEM =
+        ITEMS.register("birch_wall_block", () ->
+            new BlockItem(BlockRegistry.BIRCH_WALL_BLOCK.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> CORRAL_CORNER_FENCE_ITEM =
+    ITEMS.register("corral_corner_fence", () -> new BlockItem(BlockRegistry.CORRAL_CORNER_FENCE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CORRAL_FENCE_ITEM =
+    ITEMS.register("corral_fence", () -> new BlockItem(BlockRegistry.CORRAL_FENCE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CORRAL_PILLAR_ITEM =
+    ITEMS.register("corral_pillar", () -> new BlockItem(BlockRegistry.CORRAL_PILLAR.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_1X1_ITEM =
+        ITEMS.register("window_1x1",
+            () -> new BlockItem(BlockRegistry.WINDOW_1X1.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_1X2_ITEM =
+        ITEMS.register("window_1x2",
+            () -> new BlockItem(BlockRegistry.WINDOW_1X2.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_COBBLESTONE_1X2_ITEM =
+        ITEMS.register("window_cobblestone_1x2",
+            () -> new BlockItem(BlockRegistry.WINDOW_COBBLESTONE_1X2.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_1X3_ITEM =
+        ITEMS.register("window_1x3",
+            () -> new BlockItem(BlockRegistry.WINDOW_1X3.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_2X2_ITEM =
+        ITEMS.register("window_2x2",
+            () -> new BlockItem(BlockRegistry.WINDOW_2X2.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_2X3_ITEM =
+        ITEMS.register("window_2x3",
+            () -> new BlockItem(BlockRegistry.WINDOW_2X3.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_1X1_ITEM =
+        ITEMS.register("window_cross_1x1",
+            () -> new BlockItem(BlockRegistry.WINDOW_CROSS_1X1.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_1X2_ITEM =
+        ITEMS.register("window_cross_1x2",
+            () -> new BlockItem(BlockRegistry.WINDOW_CROSS_1X2.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_1X3_ITEM =
+        ITEMS.register("window_cross_1x3",
+            () -> new BlockItem(BlockRegistry.WINDOW_CROSS_1X3.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_2X2_ITEM =
+        ITEMS.register("window_cross_2x2",
+            () -> new BlockItem(BlockRegistry.WINDOW_CROSS_2X2.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_CROSS_2X3_ITEM =
+        ITEMS.register("window_cross_2x3",
+            () -> new BlockItem(BlockRegistry.WINDOW_CROSS_2X3.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PIER =
+    ITEMS.register("pier", () ->
+        new BlockItem(BlockRegistry.PIER.get(), new Item.Properties())
+    );
+
+public static final DeferredHolder<Item, BlockItem> FLOWSTONE_1_ITEM =
+    ITEMS.register("flowstone_1", () ->
+        new BlockItem(BlockRegistry.FLOWSTONE_1.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> FLOWSTONE_2_ITEM =
+    ITEMS.register("flowstone_2", () ->
+        new BlockItem(BlockRegistry.FLOWSTONE_2.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> FLOWSTONE_3_ITEM =
+    ITEMS.register("flowstone_3", () ->
+        new BlockItem(BlockRegistry.FLOWSTONE_3.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> FLOWSTONE_4_ITEM =
+    ITEMS.register("flowstone_4", () ->
+        new BlockItem(BlockRegistry.FLOWSTONE_4.get(), new Item.Properties()));
+
+
+  public static final Map<Integer, DeferredHolder<Item, BlockItem>> STALAGMITE_ITEMS = new HashMap<>();
+
+    static {
+        for (int i = 1; i <= 7; i++) {
+            int index = i;
+            STALAGMITE_ITEMS.put(index,
+                ITEMS.register("stalagmite_" + index, () ->
+                    new BlockItem(BlockRegistry.STALAGMITES.get(index).get(), new Item.Properties()))
+            );
+        }
+    }
+
+public static final DeferredHolder<Item, BlockItem> HANGING_LANTERN_ITEM =
+    ITEMS.register("hanging_lantern",
+        () -> new BlockItem(BlockRegistry.HANGING_LANTERN.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> WINDOW_BIRCH_1X1_ITEM =
+        ITEMS.register("window_birch_1x1",
+            () -> new BlockItem(BlockRegistry.WINDOW_BIRCH_1X1.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> LOG_WALL_ITEM =
+        ITEMS.register("log_wall",
+            () -> new BlockItem(BlockRegistry.LOG_WALL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> LOG_WALL_BLOCK_ITEM =
+        ITEMS.register("log_wall_block",
+            () -> new BlockItem(BlockRegistry.LOG_WALL_BLOCK.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_FLOOR_ITEM =
+        ITEMS.register("stone_floor",
+            () -> new BlockItem(BlockRegistry.STONE_FLOOR.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_FINIAL_ITEM =
+        ITEMS.register("stone_finial",
+            () -> new BlockItem(BlockRegistry.STONE_FINIAL.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_FINIAL_ITEM =
+        ITEMS.register("dark_stone_finial",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_FINIAL.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_BUTTRESS_ITEM =
+        ITEMS.register("dark_stone_buttress",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_BUTTRESS.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_ARCH_ITEM =
+        ITEMS.register("stone_arch",
+            () -> new BlockItem(BlockRegistry.STONE_ARCH.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_ARCH_ITEM =
+        ITEMS.register("dark_stone_arch",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_ARCH.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_WALL_BOTTOM_CURVE_LEFT_ITEM =
+        ITEMS.register("dark_stone_wall_bottom_curve_left",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_WALL_BOTTOM_CURVE_LEFT.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_WALL_BOTTOM_CURVE_RIGHT_ITEM =
+        ITEMS.register("dark_stone_wall_bottom_curve_right",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_WALL_BOTTOM_CURVE_RIGHT.get(), new Item.Properties()));
+
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_HALF_ITEM =
+        ITEMS.register("stone_wall_half",
+            () -> new BlockItem(BlockRegistry.STONE_WALL_HALF.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> DARK_STONE_WALL_ITEM =
+        ITEMS.register("dark_stone_wall", () ->
+            new BlockItem(BlockRegistry.DARK_STONE_WALL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_WALL_HALF_ITEM =
+        ITEMS.register("dark_stone_wall_half",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_WALL_HALF.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> STONE_WALL_ITEM =
+        ITEMS.register("stone_wall", () ->
+            new BlockItem(BlockRegistry.STONE_WALL.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("stone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.STONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_BOTTOM_BLOCK =
+    ITEMS.register("stone_wall_bottom_block",
+        () -> new BlockItem(BlockRegistry.STONE_WALL_BOTTOM_BLOCK.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_WINDOW_ITEM =
+    ITEMS.register("stone_wall_window",
+        () -> new BlockItem(BlockRegistry.STONE_WALL_WINDOW.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_TOP_BLOCK =
+    ITEMS.register("stone_wall_top_block",
+        () -> new BlockItem(BlockRegistry.STONE_WALL_TOP_BLOCK.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> STONE_WALL_TOP_ITEM =
+        ITEMS.register("stone_wall_top",
+            () -> new BlockItem(BlockRegistry.STONE_WALL_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> COBBLESTONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("cobblestone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.COBBLESTONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> COBBLESTONE_WALL_TOP_ITEM =
+        ITEMS.register("cobblestone_wall_top",
+            () -> new BlockItem(BlockRegistry.COBBLESTONE_WALL_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("dark_stone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WOODEN_PLANK_FLOOR_ITEM =
+    ITEMS.register("wooden_plank_floor", () ->
+        new BlockItem(BlockRegistry.WOODEN_PLANK_FLOOR.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WOODEN_BOARD_FLOOR_ITEM =
+    ITEMS.register("wooden_board_floor", () ->
+        new BlockItem(BlockRegistry.WOODEN_BOARD_FLOOR.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> CAVE_ITEM =
+        ITEMS.register("cave", () ->
+            new BlockItem(BlockRegistry.CAVE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> DUNGEON_WALL_ITEM =
+        ITEMS.register("dungeon_wall", () ->
+            new BlockItem(BlockRegistry.DUNGEON_WALL.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> DUNGEON_STAIRS_ITEM =
+        ITEMS.register("dungeon_stairs", () ->
+            new BlockItem(BlockRegistry.DUNGEON_STAIRS.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> OAK_WALL_ITEM =
+        ITEMS.register("oak_wall", () ->
+            new BlockItem(BlockRegistry.OAK_WALL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> OAK_WALL_BOTTOM_ITEM =
+        ITEMS.register("oak_wall_bottom",
+            () -> new BlockItem(BlockRegistry.OAK_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> OAK_WALL_TOP_ITEM =
+        ITEMS.register("oak_wall_top",
+            () -> new BlockItem(BlockRegistry.OAK_WALL_TOP.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> BRICK_WALL_ITEM =
+        ITEMS.register("brick_wall", () ->
+            new BlockItem(BlockRegistry.BRICK_WALL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> BRICK_WALL_BOTTOM_ITEM =
+        ITEMS.register("brick_wall_bottom",
+            () -> new BlockItem(BlockRegistry.BRICK_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BRICK_WALL_TOP_ITEM =
+        ITEMS.register("brick_wall_top",
+            () -> new BlockItem(BlockRegistry.BRICK_WALL_TOP.get(), new Item.Properties()));
+
+
+
+    public static final DeferredHolder<Item, Item> PLASTER_STONE_WALL_ITEM =
+        ITEMS.register("plaster_stone_wall", () ->
+            new BlockItem(BlockRegistry.PLASTER_STONE_WALL.get(), new Item.Properties()));
+
+
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_FOUNDATION_ITEM =
+        ITEMS.register("plaster_stone_foundation",
+            () -> new BlockItem(BlockRegistry.PLASTER_STONE_FOUNDATION.get(), new Item.Properties()));
+
+
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_BOTTOM_ITEM =
+        ITEMS.register("plaster_stone_wall_bottom",
+            () -> new BlockItem(BlockRegistry.PLASTER_STONE_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_TOP_ITEM =
+        ITEMS.register("plaster_stone_wall_top",
+            () -> new BlockItem(BlockRegistry.PLASTER_STONE_WALL_TOP.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> PLASTER_WOOD_WALL_ITEM =
+        ITEMS.register("plaster_wood_wall", () ->
+            new BlockItem(BlockRegistry.PLASTER_WOOD_WALL.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_FOUNDATION_ITEM =
+        ITEMS.register("plaster_wood_foundation",
+            () -> new BlockItem(BlockRegistry.PLASTER_WOOD_FOUNDATION.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_WALL_BOTTOM_ITEM =
+        ITEMS.register("plaster_wood_wall_bottom",
+            () -> new BlockItem(BlockRegistry.PLASTER_WOOD_WALL_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_WALL_TOP_ITEM =
+        ITEMS.register("plaster_wood_wall_top",
+            () -> new BlockItem(BlockRegistry.PLASTER_WOOD_WALL_TOP.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, Item> METAL_DOOR_ITEM = ITEMS.register(
+    "metal_door_item",
+    () -> new BlockItem(BlockRegistry.METAL_DOOR.get(), new Item.Properties().stacksTo(64))
+);
+
+public static final DeferredHolder<Item, Item> LOCKABLE_METAL_DOOR_ITEM = ITEMS.register(
+    "lockable_metal_door_item",
+    () -> new BlockItem(BlockRegistry.LOCKABLE_METAL_DOOR.get(), new Item.Properties())
+);
+
+public static final DeferredHolder<Item, Item> WOOD_DOOR_ITEM = ITEMS.register(
+    "wood_door_item",
+    () -> new BlockItem(BlockRegistry.WOOD_DOOR.get(), new Item.Properties().stacksTo(64))
+);
+
+public static final DeferredHolder<Item, Item> LOCKABLE_WOOD_DOOR_ITEM = ITEMS.register(
+    "lockable_wood_door_item",
+    () -> new BlockItem(BlockRegistry.LOCKABLE_WOOD_DOOR.get(), new Item.Properties())
+);
+
+   public static final DeferredHolder<Item, BlockItem> PENTAGRAM_ITEM =
+        ITEMS.register("pentagram",
+            () -> new BlockItem(BlockRegistry.PENTAGRAM.get(),
+                    new Item.Properties()
+                        .stacksTo(64)  
+            ));
+
+// chests
+
+    public static final DeferredHolder<Item, Item> CHEST_WOODEN_ITEM =
+            ITEMS.register("chest_wooden", () -> new BlockItem(BlockRegistry.CHEST_WOODEN.get(),
+                    new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CHEST_METAL_ITEM =
+            ITEMS.register("chest_metal", () -> new BlockItem(BlockRegistry.CHEST_METAL.get(),
+                    new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CHEST_METAL_BRONZE_ITEM =
+            ITEMS.register("chest_metal_bronze", () -> new BlockItem(BlockRegistry.CHEST_METAL_BRONZE.get(),
+                    new Item.Properties()));
+
+// containers
+
+    public static final DeferredHolder<Item, Item> ARMOIRE_BROWN_ITEM =
+            ITEMS.register("armoire_brown", () -> new BlockItem(BlockRegistry.ARMOIRE_BROWN.get(),
+                    new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> ARMOIRE_RED_ITEM =
+            ITEMS.register("armoire_red", () -> new BlockItem(BlockRegistry.ARMOIRE_RED.get(),
+                    new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CHEST_OF_DRAWERS_BROWN_ITEM =
+            ITEMS.register("chest_of_drawers_brown", () -> new BlockItem(BlockRegistry.CHEST_OF_DRAWERS_BROWN.get(),
+                    new Item.Properties()));
+
+                     public static final DeferredHolder<Item, Item> CHEST_OF_DRAWERS_RED_ITEM =
+            ITEMS.register("chest_of_drawers_red", () -> new BlockItem(BlockRegistry.CHEST_OF_DRAWERS_RED.get(),
+                    new Item.Properties()));
+
+
+// graveyard
+
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_1_ITEM =
+    ITEMS.register("gravestone_type_1", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_1.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_2_ITEM =
+    ITEMS.register("gravestone_type_2", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_2.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_3_ITEM =
+    ITEMS.register("gravestone_type_3", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_3.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_4_ITEM =
+    ITEMS.register("gravestone_type_4", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_4.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_5_ITEM =
+    ITEMS.register("gravestone_type_5", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_5.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_6_ITEM =
+    ITEMS.register("gravestone_type_6", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_6.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_7_ITEM =
+    ITEMS.register("gravestone_type_7", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_7.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_8_ITEM =
+    ITEMS.register("gravestone_type_8", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_8.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_9_ITEM =
+    ITEMS.register("gravestone_type_9", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_9.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_10_ITEM =
+    ITEMS.register("gravestone_type_10", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_10.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_11_ITEM =
+    ITEMS.register("gravestone_type_11", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_11.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_12_ITEM =
+    ITEMS.register("gravestone_type_12", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_12.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_13_ITEM =
+    ITEMS.register("gravestone_type_13", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_13.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_14_ITEM =
+    ITEMS.register("gravestone_type_14", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_14.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_15_ITEM =
+    ITEMS.register("gravestone_type_15", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_15.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVESTONE_TYPE_16_ITEM =
+    ITEMS.register("gravestone_type_16", () -> new BlockItem(BlockRegistry.GRAVESTONE_TYPE_16.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BROKEN_WOODEN_GRAVE_CROSS =
+    ITEMS.register("broken_wooden_grave_cross", () -> new BlockItem(BlockRegistry.BROKEN_WOODEN_GRAVE_CROSS.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> DAMAGED_WOODEN_GRAVE_CROSS =
+    ITEMS.register("damaged_wooden_grave_cross", () -> new BlockItem(BlockRegistry.DAMAGED_WOODEN_GRAVE_CROSS.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> DEAD_GRAVE_FLOWER_VASE =
+    ITEMS.register("dead_grave_flower_vase", () -> new BlockItem(BlockRegistry.DEAD_GRAVE_FLOWER_VASE.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> DEAD_GRAVE_FLOWERS =
+    ITEMS.register("dead_grave_flowers", () -> new BlockItem(BlockRegistry.DEAD_GRAVE_FLOWERS.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> GRAVE_FLOWERS =
+    ITEMS.register("grave_flowers", () -> new BlockItem(BlockRegistry.GRAVE_FLOWERS.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> IRON_CEMETERY_GATE_ARCH =
+    ITEMS.register("iron_cemetery_gate_arch", () -> new BlockItem(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> ANCHOR =
+    ITEMS.register("anchor", () -> new BlockItem(BlockRegistry.ANCHOR.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> IRON_FENCE_TOP =
+    ITEMS.register("iron_fence_top", () -> new BlockItem(BlockRegistry.IRON_FENCE_TOP.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, BlockItem> IRON_FENCE_BOTTOM =
+    ITEMS.register("iron_fence_bottom", () -> new BlockItem(BlockRegistry.IRON_FENCE_BOTTOM.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> IRON_FENCE_MIDDLE =
+    ITEMS.register("iron_fence_middle", () -> new BlockItem(BlockRegistry.IRON_FENCE_MIDDLE.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> LYING_SKELETON =
+    ITEMS.register("lying_skeleton", () -> new BlockItem(BlockRegistry.LYING_SKELETON.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> SITTING_SKELETON =
+    ITEMS.register("sitting_skeleton", () -> new BlockItem(BlockRegistry.SITTING_SKELETON.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> SKELETON_ARM =
+    ITEMS.register("skeleton_arm", () -> new BlockItem(BlockRegistry.SKELETON_ARM.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> SKELETON_LEG =
+    ITEMS.register("skeleton_leg", () -> new BlockItem(BlockRegistry.SKELETON_LEG.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> SKELETON_TORSO =
+    ITEMS.register("skeleton_torso", () -> new BlockItem(BlockRegistry.SKELETON_TORSO.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WILTED_GRAVE_FLOWER_VASE =
+    ITEMS.register("wilted_grave_flower_vase", () -> new BlockItem(BlockRegistry.WILTED_GRAVE_FLOWER_VASE.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WILTED_GRAVE_FLOWERS =
+    ITEMS.register("wilted_grave_flowers", () -> new BlockItem(BlockRegistry.WILTED_GRAVE_FLOWERS.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WOODEN_COFFIN_LID =
+    ITEMS.register("wooden_coffin_lid", () -> new BlockItem(BlockRegistry.WOODEN_COFFIN_LID.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WOODEN_COFFIN_SKELETON =
+    ITEMS.register("wooden_coffin_skeleton", () -> new BlockItem(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WOODEN_COFFIN =
+    ITEMS.register("wooden_coffin", () -> new BlockItem(BlockRegistry.WOODEN_COFFIN.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WOODEN_GRAVE_CROSS =
+    ITEMS.register("wooden_grave_cross", () -> new BlockItem(BlockRegistry.WOODEN_GRAVE_CROSS.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> WOODEN_OPEN_COFFIN =
+    ITEMS.register("wooden_open_coffin", () -> new BlockItem(BlockRegistry.WOODEN_OPEN_COFFIN.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> ANKH_ITEM =
+        ITEMS.register("ankh",
+            () -> new BlockItem(BlockRegistry.ANKH.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> SERPENT_SHIELD_ITEM =
+        ITEMS.register("serpent_shield",
+            () -> new BlockItem(BlockRegistry.SERPENT_SHIELD.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CURTAIN_BOTTOM_ITEM =
+        ITEMS.register("curtain_bottom",
+            () -> new BlockItem(BlockRegistry.CURTAIN_BOTTOM.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CURTAIN_TOP_ITEM =
+        ITEMS.register("curtain_top",
+            () -> new BlockItem(BlockRegistry.CURTAIN_TOP.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CURTAIN_FOUNDATION_ITEM =
+        ITEMS.register("curtain_foundation",
+            () -> new BlockItem(BlockRegistry.CURTAIN_FOUNDATION.get(), new Item.Properties()));
+
 
 
 // Ingots / Metals
@@ -210,23 +859,6 @@ public static final DeferredHolder<Item, Item> BLUE_TENT_DEED = ITEMS.register(
         public static final DeferredHolder<Item, Item> TIN_INGOT = ITEMS.register("tin_ingot", () ->
         new Item(new Item.Properties())
         );
-
-
-public static final DeferredHolder<Item, Item> COD = ITEMS.register("cod",
-        () -> new WeightedFishItem(new Item.Properties()));
-
-public static final DeferredHolder<Item, Item> SALMON = ITEMS.register("salmon",
-        () -> new WeightedFishItem(new Item.Properties()));
-
-public static final DeferredHolder<Item, Item> TUNA = ITEMS.register("tuna",
-        () -> new WeightedFishItem(new Item.Properties()));
-
-public static final DeferredHolder<Item, Item> TROUT = ITEMS.register("trout",
-        () -> new WeightedFishItem(new Item.Properties()));
-
-public static final DeferredHolder<Item, Item> SWORDFISH = ITEMS.register("swordfish",
-        () -> new WeightedFishItem(new Item.Properties()));
-
 
 
         public static final DeferredHolder<Item, DeferredSpawnEggItem> DAEMON_SPAWN_EGG = ITEMS.register(
@@ -363,6 +995,28 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
     
     // Block Items
 
+ public static final DeferredHolder<Item, Item> HOUSE_SIGN_BLOCK_ITEM = ITEMS.register(
+            "house_sign", () -> new BlockItem(BlockRegistry.HOUSE_SIGN_BLOCK.get(), new Item.Properties()));
+
+
+
+// spawners
+
+    public static final DeferredHolder<Item, BlockItem> TRADER_SPAWN_BLOCK_ITEM =
+            ITEMS.register("trader_spawn_block", () ->
+                    new BlockItem(BlockRegistry.TRADER_SPAWN_BLOCK.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, BlockItem> MONSTER_SPAWN_BLOCK_ITEM =
+            ITEMS.register("monster_spawn_block", () ->
+                    new BlockItem(BlockRegistry.MONSTER_SPAWN_BLOCK.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, BlockItem> ARCHITECT_SPAWN_BLOCK_ITEM =
+            ITEMS.register("architect_spawn_block", () ->
+                    new BlockItem(BlockRegistry.ARCHITECT_SPAWN_BLOCK.get(),
+                            new Item.Properties())); 
+
         public static final DeferredHolder<Item, Item> SHADE_SPAWN_BLOCK_ITEM = ITEMS.register(
             "shade_spawn_block", () -> new BlockItem(BlockRegistry.SHADE_SPAWN_BLOCK.get(), new Item.Properties()));
 
@@ -379,14 +1033,13 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
             "stone_spawn_block", () -> new BlockItem(BlockRegistry.STONE_SPAWN_BLOCK.get(), new Item.Properties()));
 
 
-        public static final DeferredHolder<Item, Item> FISH_SPAWN_BLOCK_ITEM = ITEMS.register(
-            "fish_spawn_block", () -> new BlockItem(BlockRegistry.FISH_SPAWN_BLOCK.get(), new Item.Properties()));
-
         public static final DeferredHolder<Item, Item> HORSE_SPAWN_BLOCK_ITEM = ITEMS.register(
             "horse_spawn_block", () -> new BlockItem(BlockRegistry.HORSE_SPAWN_BLOCK.get(), new Item.Properties()));
 
         public static final DeferredHolder<Item, Item> BLACKSMITH_SPAWN_BLOCK_ITEM = ITEMS.register(
             "blacksmith_spawn_block", () -> new BlockItem(BlockRegistry.BLACKSMITH_SPAWN_BLOCK.get(), new Item.Properties()));
+
+// teleporters
 
 public static final DeferredHolder<Item, Item> DUNGEON_MOONGATE_BLOCK_ITEM = ITEMS.register(
         "dungeon_moongate_block", () -> new BlockItem(BlockRegistry.DUNGEON_MOONGATE_BLOCK.get(), new Item.Properties()));
@@ -400,12 +1053,20 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
     "moongate_linking_wand",
     () -> new MoongateLinkingWand(new Item.Properties().stacksTo(1)));
 
+public static final DeferredHolder<Item, Item> HOUSE_KEY = ITEMS.register(
+        "house_key",
+        () -> new HouseKeyItem(new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> MOONGATE_BLOCK_ITEM = ITEMS.register(
             "moongate_block", () -> new BlockItem(BlockRegistry.MOONGATE_BLOCK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MOONGATE_TOP_ITEM = ITEMS.register(
             "moongate_top", () -> new BlockItem(BlockRegistry.MOONGATE_TOP.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, Item> CARPET_TELEPORTER_BLOCK_ITEM = ITEMS.register(
+    "carpet_teleporter_block", () ->
+        new CarpetTeleporterItem(new Item.Properties()));
+
+// end of teleporters
     public static final DeferredHolder<Item, Item> LARGE_FORGE_BLOCK_ENTITY = ITEMS.register(
             "large_forge_item", () -> new BlockItem(BlockRegistry.LARGE_FORGE_BLOCK.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SMALL_FORGE_BLOCK_ENTITY = ITEMS.register(
@@ -413,17 +1074,125 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
 
 // decorations
 
+
+public static final DeferredHolder<Item, BlockItem> ROPE_ITEM =
+    ITEMS.register("rope", () -> new BlockItem(BlockRegistry.ROPE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> SPITTOON_ITEM =
+        ITEMS.register("spittoon",
+            () -> new BlockItem(BlockRegistry.SPITTOON.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> TABLE_SETTING_ITEM =
+        ITEMS.register("table_setting",
+            () -> new BlockItem(BlockRegistry.TABLE_SETTING.get(), new Item.Properties()));
+
+
+public static final DeferredHolder<Item, BlockItem> WOODEN_POST_ITEM =
+    ITEMS.register("wooden_post", () -> new BlockItem(BlockRegistry.WOODEN_POST.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LAMP_POST_WOODEN_ITEM = ITEMS.register(
+            "lamp_post_wooden", () -> new BlockItem(BlockRegistry.WOODEN_LAMP_POST.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LAMP_POST_REGULAR_ITEM = ITEMS.register(
+            "lamp_post_regular", () -> new BlockItem(BlockRegistry.LAMP_POST_REGULAR.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LAMP_POST_FANCY_ITEM = ITEMS.register(
+            "lamp_post_fancy", () -> new BlockItem(BlockRegistry.LAMP_POST_FANCY.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> WALL_SCONCE_ITEM = ITEMS.register(
+            "wall_sconce", () -> new BlockItem(BlockRegistry.WALL_SCONCE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CANDLE_ITEM = ITEMS.register(
+            "candle", () -> new BlockItem(BlockRegistry.CANDLE.get(), new Item.Properties()));
+
     public static final DeferredHolder<Item, Item> CANDELABRA_SMALL_ITEM = ITEMS.register(
             "candelabra_small", () -> new BlockItem(BlockRegistry.CANDELABRA_SMALL.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> CANDELABRA_TALL_ITEM = ITEMS.register(
             "candelabra_tall", () -> new BlockItem(BlockRegistry.CANDELABRA_TALL.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> TORCH_WALL_ITEM = ITEMS.register(
+            "torch_wall", () -> new BlockItem(BlockRegistry.TORCH_WALL.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> TORCH_STANDING_ITEM = ITEMS.register(
+            "torch_standing", () -> new BlockItem(BlockRegistry.TORCH_STANDING.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> BRAZIER_SMALL_ITEM = ITEMS.register(
+            "brazier_small", () -> new BlockItem(BlockRegistry.BRAZIER_SMALL.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> DECORATIVE_WEAPONS_1_ITEM = ITEMS.register(
+            "decorative_weapons_1", () -> new BlockItem(BlockRegistry.DECORATIVE_WEAPONS_1.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_1_ITEM =
+        ITEMS.register("decorative_shield_1",
+            () -> new BlockItem(BlockRegistry.DECORATIVE_SHIELD_1.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2_ITEM =
+        ITEMS.register("decorative_shield_2",
+            () -> new BlockItem(BlockRegistry.DECORATIVE_SHIELD_2.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_1BW_ITEM =
+        ITEMS.register("decorative_shield_1bw",
+            () -> new BlockItem(BlockRegistry.DECORATIVE_SHIELD_1BW.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
+        ITEMS.register("decorative_shield_2bw",
+            () -> new BlockItem(BlockRegistry.DECORATIVE_SHIELD_2BW.get(), new Item.Properties()));
+// Furniture
+
+    public static final DeferredHolder<Item, Item> DOUBLE_BED_ITEM =
+            ITEMS.register("double_bed",
+                    () -> new BlockItem(BlockRegistry.DOUBLE_BED.get(),
+                                        new Item.Properties().stacksTo(1)));
+
+
+    public static final DeferredHolder<Item, Item> WATER_TROUGH_BLOCK_ITEM = ITEMS.register(
+            "water_trough", () -> new BlockItem(BlockRegistry.WATER_TROUGH_BLOCK.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> WATER_BARREL_BLOCK_ITEM = ITEMS.register(
+            "water_barrel", () -> new BlockItem(BlockRegistry.WATER_BARREL_BLOCK.get(), new Item.Properties()));
+
+
     public static final DeferredHolder<Item, Item> MAGINCIA_STYLE_THRONE_ITEM = ITEMS.register(
             "magincia_style_throne", () -> new BlockItem(BlockRegistry.MAGINCIA_STYLE_THRONE.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> STRAW_CHAIR_ITEM = ITEMS.register(
+            "straw_chair", () -> new BlockItem(BlockRegistry.STRAW_CHAIR.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> WOODEN_THRONE_ITEM = ITEMS.register(
+            "wooden_throne", () -> new BlockItem(BlockRegistry.WOODEN_THRONE.get(), new Item.Properties()));
+
+  public static final DeferredHolder<Item, Item> BENCH_ITEM = ITEMS.register(
+            "bench", () -> new BlockItem(BlockRegistry.BENCH.get(), new Item.Properties()));
+
+  public static final DeferredHolder<Item, Item> FOOTSTOOL_ITEM = ITEMS.register(
+            "footstool", () -> new BlockItem(BlockRegistry.FOOTSTOOL.get(), new Item.Properties()));
+
+  public static final DeferredHolder<Item, Item> STOOL_ITEM = ITEMS.register(
+            "stool", () -> new BlockItem(BlockRegistry.STOOL.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CHAIR_VESPER_ITEM = ITEMS.register(
+            "chair_vesper", () -> new BlockItem(BlockRegistry.CHAIR_VESPER.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> CHAIR_TRINSIC_ITEM = ITEMS.register(
+            "chair_trinsic", () -> new BlockItem(BlockRegistry.CHAIR_TRINSIC.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> WOODEN_CHAIR_ITEM = ITEMS.register(
+            "wooden_chair", () -> new BlockItem(BlockRegistry.WOODEN_CHAIR.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LORD_BRITISH_THRONE_ITEM = ITEMS.register(
+            "lord_british_throne", () -> new BlockItem(BlockRegistry.LORD_BRITISH_THRONE.get(), new Item.Properties()));
+
     public static final DeferredHolder<Item, Item> YEW_TABLE_ITEM = ITEMS.register(
             "yew_table", () -> new BlockItem(BlockRegistry.YEW_TABLE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> SMALL_TABLE_ITEM = ITEMS.register(
+            "small_table", () -> new BlockItem(BlockRegistry.SMALL_TABLE.get(), new Item.Properties()));
+
+
+    public static final DeferredHolder<Item, Item> COUNTER_ITEM = ITEMS.register(
+            "counter", () -> new BlockItem(BlockRegistry.COUNTER.get(), new Item.Properties()));
+
+
 
         // Custom Ore Items
         public static final DeferredHolder<Item, Item> COPPER_ORE_ITEM = ITEMS.register(
@@ -469,5 +1238,6 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);
+        SignItemRegistry.register(modEventBus);
     }
 }

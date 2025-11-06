@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      { "model": "minecraft:block/grass_block1" },
+      { "model": "minecraft:block/grass_block2" },
+      { "model": "minecraft:block/grass_block3" },
+      { "model": "minecraft:block/grass_block4" }
+    ]
+  }
+}

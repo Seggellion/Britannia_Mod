@@ -31,7 +31,7 @@ public class CityCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("cityinventory")
             .requires(source -> source.hasPermission(2))
-            .then(Commands.argument("cityName", StringArgumentType.string())
+                .then(Commands.argument("city", StringArgumentType.greedyString())
                 // Original command to show inventory
                 .executes(CityCommands::showCityInventory)
                 // Category and subcategory logic
@@ -380,7 +380,7 @@ private static int clearCityPopulation(CommandContext<CommandSourceStack> contex
             return 0;
         }
 
-        Item fishItem = getFishItemByType(fishType);
+        Item fishItem = null;
         if (fishItem == null) {
             source.sendFailure(Component.literal("Invalid fish type: " + fishType));
             return 0;
@@ -403,23 +403,6 @@ private static int clearCityPopulation(CommandContext<CommandSourceStack> contex
         LOGGER.info("Gave WeightedFishItem (type: {}, weight: {}) directly to the player", fishType, weight);
 
         return 1;
-    }
-
-    private static Item getFishItemByType(String fishType) {
-        switch (fishType) {
-            case "cod":
-                return ItemRegistry.COD.get();
-            case "salmon":
-                return ItemRegistry.SALMON.get();
-            case "tuna":
-                return ItemRegistry.TUNA.get();
-            case "trout":
-                return ItemRegistry.TROUT.get();
-            case "swordfish":
-                return ItemRegistry.SWORDFISH.get();
-            default:
-                return null;
-        }
     }
 
 

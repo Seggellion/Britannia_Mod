@@ -1,0 +1,9 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "all": "britannia_mod:block/world/cave_floor4"
+  },
+  "elements": [
+    { "from": [0, 0, 0], "to": [16, 1, 16], "faces": { "up": { "texture": "#all", "cullface": "none" }, "down": { "texture": "#all", "cullface": "none" } } }
+  ]
+}

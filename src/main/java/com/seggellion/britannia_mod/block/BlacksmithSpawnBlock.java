@@ -50,9 +50,6 @@ public class BlacksmithSpawnBlock extends Block implements EntityBlock, Invisibl
         // Provide some default properties (e.g., let's use a generic "strength(1.5F)" and "noOcclusion()").
         super(BlockBehaviour.Properties.of()
               .strength(1.5F));
-
-        LOGGER.info("BlacksmithSpawnBlock");
-
     }
 
 @Override
@@ -64,7 +61,6 @@ public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntit
         );
 
         serverLevel.getPoiManager().add(pos, poiHolder);
-        LOGGER.info("Registered POI for Journeyman Blacksmith at {}", pos);
     }
     super.setPlacedBy(level, pos, state, placer, stack);
 }

@@ -1,0 +1,54 @@
+{
+  "variants": {
+    "facing=north,style=0": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_left",
+      "y": 0
+    },
+    "facing=south,style=0": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_left",
+      "y": 180
+    },
+    "facing=west,style=0": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_left",
+      "y": 270
+    },
+    "facing=east,style=0": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_left",
+      "y": 90
+    },
+
+    "facing=north,style=1": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_middle",
+      "y": 0
+    },
+    "facing=south,style=1": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_middle",
+      "y": 180
+    },
+    "facing=west,style=1": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_middle",
+      "y": 270
+    },
+    "facing=east,style=1": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_middle",
+      "y": 90
+    },
+
+    "facing=north,style=2": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_right",
+      "y": 0
+    },
+    "facing=south,style=2": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_right",
+      "y": 180
+    },
+    "facing=west,style=2": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_right",
+      "y": 270
+    },
+    "facing=east,style=2": {
+      "model": "britannia_mod:block/decorations/curtain/curtain_top_right",
+      "y": 90
+    }
+  }
+}

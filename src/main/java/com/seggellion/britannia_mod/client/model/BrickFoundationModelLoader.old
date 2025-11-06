@@ -1,0 +1,21 @@
+package com.seggellion.britannia_mod.client.model;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonObject;
+import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
+
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+
+public class BrickFoundationModelLoader implements IGeometryLoader<BrickFoundationUnbakedModel> {
+     private static final Logger LOGGER = LogUtils.getLogger();
+
+    
+    @Override
+    public BrickFoundationUnbakedModel read(JsonObject jsonObject, JsonDeserializationContext context) {
+        LOGGER.info("Baked Model Loader Loaded!");
+
+        return new BrickFoundationUnbakedModel();
+    }
+}

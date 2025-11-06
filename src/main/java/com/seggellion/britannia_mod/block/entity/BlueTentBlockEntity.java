@@ -30,6 +30,8 @@ import java.util.function.Supplier;
 import java.util.HashMap;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+import net.minecraft.world.phys.AABB;
+
 
 
 public class BlueTentBlockEntity extends BlockEntity implements GeoBlockEntity {
@@ -48,6 +50,11 @@ public class BlueTentBlockEntity extends BlockEntity implements GeoBlockEntity {
 
     public Direction getFacing() {
     return this.getBlockState().getValue(BlueTentBlock.FACING);
+}
+
+
+public AABB getRenderBoundingBox() {
+    return new AABB(this.getBlockPos()).inflate(9); // Adjust the inflate size as needed
 }
 
 

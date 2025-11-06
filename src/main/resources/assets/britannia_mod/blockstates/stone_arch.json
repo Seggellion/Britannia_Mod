@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch",
+      "y": 0
+    },
+    "facing=south,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch",
+      "y": 180
+    },
+    "facing=west,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch",
+      "y": 270
+    },
+    "facing=east,style=0": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch",
+      "y": 90
+    },
+
+	    "facing=north,style=1": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch_shifted",
+      "y": 0
+    },
+    "facing=south,style=1": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch_shifted",
+      "y": 180
+    },
+    "facing=west,style=1": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch_shifted",
+      "y": 270
+    },
+    "facing=east,style=1": {
+      "model": "britannia_mod:block/structure/stone_wall/stone_arch_shifted",
+      "y": 90
+    },
+
+	"facing=north,style=2": { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored", "y": 0 },
+    "facing=south,style=2": { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored", "y": 180 },
+    "facing=west,style=2":  { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored", "y": 270 },
+    "facing=east,style=2":  { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored", "y": 90 },
+
+	"facing=north,style=3": { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored_shifted", "y": 0 },
+    "facing=south,style=3": { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored_shifted", "y": 180 },
+    "facing=west,style=3":  { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored_shifted", "y": 270 },
+    "facing=east,style=3":  { "model": "britannia_mod:block/structure/stone_wall/stone_arch_mirrored_shifted", "y": 90 }
+
+
+  }
+}

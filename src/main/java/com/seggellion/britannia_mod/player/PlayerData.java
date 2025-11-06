@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Optional; 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,6 +33,46 @@ public class PlayerData {
     private final Map<String, Map<String, Double>> cityContributions = new HashMap<>();
     // Optional: If you also want "biggest item" per city and commodity:
     private final Map<String, Map<String, Double>> cityBiggest = new HashMap<>();
+
+
+    // === NEW: shard_user fields ===
+    private String gender = "female";
+    private int fame = 0;
+    private int karma = 0;
+    private int murderCount = 0;
+    // Store as JSON (string). Safer than ad-hoc NBT mapping for nested structures.
+    private String inventoryJson = "{}";
+    private String statsJson = "{}";
+
+    // --- NEW: getters ---
+    public String getGender() { return gender; }
+    public int getFame() { return fame; }
+    public int getKarma() { return karma; }
+    public int getMurderCount() { return murderCount; }
+    public JsonObject getInventory() { return JsonParser.parseString(inventoryJson).getAsJsonObject(); }
+    public JsonObject getStats() { return JsonParser.parseString(statsJson).getAsJsonObject(); }
+
+    // --- NEW: setters / sync method ---
+    public void syncFromShardUser(String gender, int fame, int karma, int murderCount,
+                                  JsonObject inventory, JsonObject stats) {
+        if (gender != null && !gender.isBlank()) this.gender = gender;
+        this.fame = fame;
+        this.karma = karma;
+        this.murderCount = murderCount;
+        this.inventoryJson = (inventory != null) ? inventory.toString() : "{}";
+        this.statsJson = (stats != null) ? stats.toString() : "{}";
+    }
+
+    // Convenience overload if you pass the record directly
+    public void syncFromShardUser(com.seggellion.britannia_mod.sync.WorldBootstrapAPI.ShardUserData su) {
+        if (su == null) return;
+        syncFromShardUser(
+            su.gender(), su.fame(), su.karma(), su.murderCount(),
+            su.inventory(), su.stats()
+        );
+    }
+
+
 
     public static String getPlayerName(ServerLevel serverLevel, UUID playerUUID) {
     // Try to find an online player first
@@ -154,6 +196,15 @@ public class PlayerData {
 
         tag.putString("UUID", playerUUID.toString());
 
+       CompoundTag su = new CompoundTag();
+        su.putString("Gender", gender);
+        su.putInt("Fame", fame);
+        su.putInt("Karma", karma);
+        su.putInt("MurderCount", murderCount);
+        su.putString("InventoryJson", inventoryJson);
+        su.putString("StatsJson", statsJson);
+        tag.put("ShardUser", su);
+
         // 3.2) NEW: cityContributions
         // We'll store as: "CityContributions" -> cityName -> commodityMap -> commodityName -> double
         CompoundTag cityContribTag = new CompoundTag();
@@ -186,6 +237,19 @@ public class PlayerData {
     public static PlayerData load(CompoundTag tag) {
         UUID uuid = UUID.fromString(tag.getString("UUID"));
         PlayerData data = new PlayerData(uuid);
+
+  // NEW: shard_user
+        if (tag.contains("ShardUser")) {
+            CompoundTag su = tag.getCompound("ShardUser");
+            data.gender = su.getString("Gender");
+            data.fame = su.getInt("Fame");
+            data.karma = su.getInt("Karma");
+            data.murderCount = su.getInt("MurderCount");
+            data.inventoryJson = su.getString("InventoryJson");
+            if (data.inventoryJson == null || data.inventoryJson.isBlank()) data.inventoryJson = "{}";
+            data.statsJson = su.getString("StatsJson");
+            if (data.statsJson == null || data.statsJson.isBlank()) data.statsJson = "{}";
+        }
 
         // Original overall fields
         CompoundTag contributionsTag = tag.getCompound("TotalContributions");
@@ -227,6 +291,15 @@ public class PlayerData {
         }
 
         return data;
+    }
+
+    public String inventoryOneLine() {
+        String s = inventoryJson != null ? inventoryJson : "{}";
+        return s.length() > 200 ? s.substring(0, 197) + "…" : s;
+    }
+    public String statsOneLine() {
+        String s = statsJson != null ? statsJson : "{}";
+        return s.length() > 200 ? s.substring(0, 197) + "…" : s;
     }
 
     public UUID getPlayerUUID() {

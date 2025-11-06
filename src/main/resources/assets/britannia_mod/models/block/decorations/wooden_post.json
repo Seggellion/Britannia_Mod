@@ -1,0 +1,64 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"texture_size": [256, 256],
+	"textures": {
+		"0": "britannia_mod:block/decoration/meidevalmarket_vol1",
+		"particle": "britannia_mod:block/decoration/meidevalmarket_vol1"
+	},
+	"elements": [
+		{
+			"from": [6.475, 0, 10.975],
+			"to": [9.475, 16, 13.975],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.475, 8.75, 6.1]},
+			"faces": {
+				"north": {"uv": [0.1875, 11.0625, 0, 13.1875], "texture": "#0"},
+				"east": {"uv": [0, 11.0625, 0.1875, 13.1875], "texture": "#0"},
+				"south": {"uv": [0.1875, 11.0625, 0, 13.1875], "texture": "#0"},
+				"west": {"uv": [0, 11.0625, 0.1875, 13.1875], "texture": "#0"},
+				"up": {"uv": [0, 13.1875, 0.1875, 13.375], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [0, 13.375, 0.1875, 13.5625], "rotation": 90, "texture": "#0"}
+			}
+		}
+	],
+	"gui_light": "front",
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [0, 2.25, 0],
+			"scale": [0.2, 0.2, 0.2]
+		},
+		"thirdperson_lefthand": {
+			"translation": [0, 2.25, 0],
+			"scale": [0.2, 0.2, 0.2]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, 26, 0],
+			"translation": [1.75, 2, 0],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, 26, 0],
+			"translation": [1.75, 2, 0],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"ground": {
+			"rotation": [55, 0, 0],
+			"translation": [0, 2.75, 0],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"gui": {
+			"rotation": [32, 145, 0],
+			"translation": [0, -0.5, 0],
+			"scale": [0.35, 0.35, 0.35]
+		},
+		"head": {
+			"translation": [0, -5, 0],
+			"scale": [1.6, 1.6, 1.56]
+		},
+		"fixed": {
+			"rotation": [-90, 0, 0],
+			"translation": [0, 0, -48],
+			"scale": [2, 2, 2]
+		}
+	}
+}

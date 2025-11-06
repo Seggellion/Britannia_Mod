@@ -1,0 +1,33 @@
+{
+  "parent": "block/block",
+  "textures": {
+     "end":  "britannia_mod:block/structure/plaster_wood_wall_top",
+    "side": "britannia_mod:block/structure/plaster_wood_wall_top"
+  },
+  "elements": [
+    {
+      "from": [8, 0, 0],  
+      "to":   [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west":  { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "up":    { "texture": "#end"  },
+        "down":  { "texture": "#end"  }
+      }
+    },
+    {
+      "from": [0, 0, 0], 
+      "to":   [16, 16, 8],
+      "faces": {
+        "west":  { "texture": "#side" },
+        "east":  { "texture": "#side" },
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "up":    { "texture": "#end"  },
+        "down":  { "texture": "#end"  }
+      }
+    }
+  ]
+}

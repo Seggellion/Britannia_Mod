@@ -1,0 +1,82 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "all": "britannia_mod:block/world/cave_floor_0"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        4,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#all",
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ],
+          "cullface": "none"
+        },
+        "down": {
+          "texture": "#all",
+          "uv": [
+            16,
+            0,
+            0,
+            16
+          ],
+          "cullface": "none"
+        },
+        "north": {
+          "texture": "#all",
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#all",
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#all",
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#all",
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

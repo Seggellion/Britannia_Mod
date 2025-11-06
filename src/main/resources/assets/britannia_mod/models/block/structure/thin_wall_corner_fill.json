@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": { "all": "britannia_mod:block/structure/stone_floor_1" },
+
+  "elements": [
+    {
+   "from": [ 8.66, 0, 8.66 ],
+      "to":   [ 16,   16, 16   ],
+
+      "faces": {
+        "north": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "east":  { "texture": "#all" },
+        "west":  { "texture": "#all" },
+        "up":    { "texture": "#all" },
+        "down":  { "texture": "#all" }
+      }
+    }
+  ]
+}

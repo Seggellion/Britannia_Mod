@@ -1,0 +1,42 @@
+package com.seggellion.britannia_mod.client.model;
+
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.FaceBakery;
+import net.minecraft.client.renderer.block.model.BlockElementFace;
+import net.minecraft.client.renderer.block.model.BlockElement;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
+
+import java.util.Collections;
+import java.util.List;
+
+public class SimpleBakedModelUtil {
+
+    private static final FaceBakery FACE_BAKERY = new FaceBakery();
+
+    public static List<BakedQuad> createQuadForFace(Direction face, TextureAtlasSprite sprite) {
+        // Define the cube face as a flat square from (0,0,0) to (16,16,16)
+        Vector3f from = new Vector3f(0, 0, 0);
+        Vector3f to = new Vector3f(16, 16, 16);
+
+        // Adjust the face to render as a 2D square depending on direction
+        BlockElementFace elementFace = new BlockElementFace(null, -1, "", new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
+        BlockElement dummyElement = new BlockElement(from, to, Collections.singletonMap(face, elementFace), null, null, false);
+
+        // Make the quad
+        BakedQuad quad = FACE_BAKERY.bakeQuad(
+            dummyElement.from, dummyElement.to,
+            elementFace,
+            sprite,
+            face,
+            null,
+            null,
+            true
+        );
+
+        return List.of(quad);
+    }
+}

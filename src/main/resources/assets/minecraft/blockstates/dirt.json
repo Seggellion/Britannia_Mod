@@ -1,0 +1,14 @@
+{
+  "variants": {
+    "": [
+      { "model": "minecraft:block/dirt_block1" },
+      { "model": "minecraft:block/dirt_block2" },
+      { "model": "minecraft:block/dirt_block3" },
+      { "model": "minecraft:block/dirt_block4" },
+      { "model": "minecraft:block/dirt_block5" },
+      { "model": "minecraft:block/dirt_block6" },
+      { "model": "minecraft:block/dirt_block7" },
+      { "model": "minecraft:block/dirt_block8" }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "up": "britannia_mod:block/structure/stone_floor_1",
+    "down": "britannia_mod:block/structure/stone_wall_foundation",
+    "north": "britannia_mod:block/structure/stone_wall_foundation",
+    "south": "britannia_mod:block/structure/stone_wall_foundation",
+    "east": "britannia_mod:block/structure/stone_wall_foundation",
+    "west": "britannia_mod:block/structure/stone_wall_foundation"
+  }
+}

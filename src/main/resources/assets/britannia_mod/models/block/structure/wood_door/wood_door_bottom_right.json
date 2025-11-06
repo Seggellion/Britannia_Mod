@@ -1,0 +1,6 @@
+{
+    "parent": "block/door_bottom_right",
+    "textures": {
+        "bottom": "britannia_mod:block/structure/wood_door_bottom"
+    }
+}

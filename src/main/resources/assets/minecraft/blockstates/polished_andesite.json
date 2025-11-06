@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      { "model": "minecraft:block/polished_andesite_block1" },
+      { "model": "minecraft:block/polished_andesite_block2" },
+      { "model": "minecraft:block/polished_andesite_block3" },
+      { "model": "minecraft:block/polished_andesite_block4" }
+    ]
+  }
+}

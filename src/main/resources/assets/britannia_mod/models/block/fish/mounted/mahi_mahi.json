@@ -1,0 +1,130 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"render_type": "minecraft:cutout",
+	"texture_size": [32, 32],
+	"textures": {
+		"1": "britannia_mod:block/fish/mahi_mahi",
+		"particle": "britannia_mod:block/fish/mahi_mahi"
+	},
+	"elements": [
+		{
+			"from": [4, 5.9, 5.5],
+			"to": [9, 9.9, 7.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 9.5, 4.5]},
+			"faces": {
+				"north": {"uv": [1, 12, 7, 16], "texture": "#1"},
+				"east": {"uv": [13.5, 13.5, 14.5, 16], "texture": "#1"},
+				"south": {"uv": [14.5, 12, 8, 16], "texture": "#1"},
+				"west": {"uv": [10, 0, 12, 5.5], "texture": "#1"},
+				"up": {"uv": [10, 0, 12, 5.5], "rotation": 90, "texture": "#1"},
+				"down": {"uv": [14.5, 12, 16, 16], "rotation": 270, "texture": "#1"}
+			}
+		},
+		{
+			"from": [9, 5, 4.5],
+			"to": [18, 10, 8.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.5, 8.5, 4.5]},
+			"faces": {
+				"north": {"uv": [8.5, 7.5, 16, 12], "texture": "#1"},
+				"east": {"uv": [6.5, 7.5, 8.5, 12.5], "texture": "#1"},
+				"south": {"uv": [16, 7.5, 8.5, 12], "texture": "#1"},
+				"west": {"uv": [14, 0, 16, 5.5], "texture": "#1"},
+				"up": {"uv": [12, 5.5, 10, 0], "rotation": 90, "texture": "#1"},
+				"down": {"uv": [10, 0, 8, 5.5], "rotation": 270, "texture": "#1"}
+			}
+		},
+		{
+			"from": [11, 10, 6.5],
+			"to": [17, 14, 6.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [12.5, 8.5, 4.5]},
+			"faces": {
+				"north": {"uv": [3.5, 4, 8, 7.5], "texture": "#1"},
+				"east": {"uv": [8, 0, 8, 2.5], "texture": "#1"},
+				"south": {"uv": [8, 4, 3.5, 7.5], "texture": "#1"},
+				"west": {"uv": [8, 0, 8, 2.5], "texture": "#1"},
+				"up": {"uv": [8, 3, 8, 0], "rotation": 90, "texture": "#1"},
+				"down": {"uv": [8, 0, 8, 3], "rotation": 270, "texture": "#1"}
+			}
+		},
+		{
+			"from": [7, 10, 6.5],
+			"to": [11, 12, 6.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.5, 8.5, 4.5]},
+			"faces": {
+				"north": {"uv": [8, 5.5, 11, 7.5], "texture": "#1"},
+				"east": {"uv": [8, 0, 8, 2.5], "texture": "#1"},
+				"south": {"uv": [11, 5.5, 8, 7.5], "texture": "#1"},
+				"west": {"uv": [8, 0, 8, 2.5], "texture": "#1"},
+				"up": {"uv": [8, 3, 8, 0], "rotation": 90, "texture": "#1"},
+				"down": {"uv": [8, 0, 8, 3], "rotation": 270, "texture": "#1"}
+			}
+		},
+		{
+			"from": [5, 4, 6.5],
+			"to": [9, 6, 6.5],
+			"rotation": {"angle": 0, "axis": "x", "origin": [8, 6, 6.5]},
+			"faces": {
+				"north": {"uv": [8, 4, 4.5, 2], "rotation": 270, "texture": "#1"},
+				"east": {"uv": [8, 0, 10, 0], "rotation": 90, "texture": "#1"},
+				"south": {"uv": [8, 2, 4.5, 4], "rotation": 270, "texture": "#1"},
+				"west": {"uv": [8, 0, 10, 0], "rotation": 270, "texture": "#1"},
+				"up": {"uv": [8, 0, 11, 0], "texture": "#1"},
+				"down": {"uv": [8, 0, 11, 0], "rotation": 180, "texture": "#1"}
+			}
+		},
+		{
+			"from": [-3, 4.3, 6.5],
+			"to": [4, 13.3, 6.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6.5, 9.5, 4.5]},
+			"faces": {
+				"north": {"uv": [0, 0, 4.5, 5.5], "texture": "#1"},
+				"east": {"uv": [8, 0, 8, 4.5], "texture": "#1"},
+				"south": {"uv": [4.5, 0, 0, 5.5], "texture": "#1"},
+				"west": {"uv": [8, 0, 8, 4.5], "texture": "#1"},
+				"up": {"uv": [8, 3.5, 8, 0], "rotation": 90, "texture": "#1"},
+				"down": {"uv": [8, 0, 8, 3.5], "rotation": 270, "texture": "#1"}
+			}
+		}
+	],
+	"gui_light": "front",
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [74.95, 12, 39],
+			"translation": [-4.75, -0.75, 1.25],
+			"scale": [2, 2, 2]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [74.95, 0.95, 6.95],
+			"translation": [0, -0.25, -2.5],
+			"scale": [0.75, 0.75, 0.75]
+		},
+		"firstperson_righthand": {
+			"rotation": [-180, 37, -180],
+			"translation": [0, 4, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"firstperson_lefthand": {
+			"rotation": [-180, 37, -180],
+			"translation": [0, 4, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"ground": {
+			"translation": [0, 3, 0],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"gui": {
+			"rotation": [30, -135, 0],
+			"translation": [-1, 0, 0],
+			"scale": [1.00195, 1.00195, 1.00195]
+		},
+		"head": {
+			"translation": [0, 14.5, 0],
+			"scale": [0.915, 0.915, 0.915]
+		},
+		"fixed": {
+			"translation": [0, 0, -1],
+			"scale": [2, 2, 2]
+		}
+	}
+}

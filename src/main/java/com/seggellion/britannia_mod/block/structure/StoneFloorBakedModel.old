@@ -1,0 +1,73 @@
+package com.seggellion.britannia_mod.client.model;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.minecraft.client.renderer.RenderType;
+
+import java.util.*;
+
+public class StoneFloorBakedModel implements BakedModel {
+
+    private final BakedModel original;
+
+    public StoneFloorBakedModel(BakedModel original) {
+        this.original = original;
+    }
+
+    @Override
+    public List<BakedQuad> getQuads(net.minecraft.world.level.block.state.BlockState state, Direction side, RandomSource rand, ModelData data, RenderType renderType) {
+        if (side == null) return Collections.emptyList();
+
+        // Get the original quads for the face
+        List<BakedQuad> baseQuads = original.getQuads(state, side, rand, data, renderType);
+        if (baseQuads.isEmpty()) return baseQuads;
+
+        // Choose a texture based on side
+        int variant = rand.nextInt(4) + 1;
+        String textureName = side == Direction.UP
+            ? "britannia_mod:block/stone_floor_" + variant
+            : "britannia_mod:block/stone_wall_" + variant;
+
+        TextureAtlasSprite newSprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(
+            ResourceLocation.parse(textureName)
+        );
+
+        // Remap each BakedQuad to use the new sprite
+        List<BakedQuad> remapped = new ArrayList<>(baseQuads.size());
+        for (BakedQuad quad : baseQuads) {
+            BakedQuad newQuad = new BakedQuad(
+                quad.getVertices().clone(),
+                quad.getTintIndex(),
+                quad.getDirection(),
+                newSprite,
+                quad.isShade()
+            );
+            remapped.add(newQuad);
+        }
+
+        return remapped;
+    }
+
+    @Override public boolean useAmbientOcclusion() { return original.useAmbientOcclusion(); }
+    @Override public boolean isGui3d() { return original.isGui3d(); }
+    @Override public boolean usesBlockLight() { return original.usesBlockLight(); }
+    @Override public boolean isCustomRenderer() { return original.isCustomRenderer(); }
+@Override
+public TextureAtlasSprite getParticleIcon() {
+    return original.getParticleIcon();
+}
+
+
+    @Override public net.minecraft.client.renderer.block.model.ItemTransforms getTransforms() { return original.getTransforms(); }
+    @Override public net.minecraft.client.renderer.block.model.ItemOverrides getOverrides() { return original.getOverrides(); }
+}

@@ -14,7 +14,6 @@ import com.seggellion.britannia_mod.ModAttributes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -43,12 +43,6 @@ import java.util.ArrayList;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
 
-
-
-
-/**
- * Wood merchant that buys WeightedWoodItem from players and updates city inventory accordingly.
- */
 public class EntityWoodMerchant extends AbstractVillager  implements ICityEntity {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -288,7 +282,6 @@ private void removeNpcFromSpawnBlock() {
         LOGGER.warn("No valid WoodSpawnBlockEntity found at {}", spawnPos);
     }
 }
-
 
 
     @Override

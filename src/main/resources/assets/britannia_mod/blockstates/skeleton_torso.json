@@ -1,0 +1,21 @@
+  {
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/decorations/graveyard/skeleton_torso",
+        "y": 0
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/decorations/graveyard/skeleton_torso",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/decorations/graveyard/skeleton_torso",
+        "y": 270
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/decorations/graveyard/skeleton_torso",
+        "y": 90
+      }
+    }
+  }
+  

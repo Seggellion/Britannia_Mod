@@ -91,15 +91,16 @@ private void spawnHorseMerchant(ServerLevel serverLevel) {
         int mana = 50;
         boolean isActive = true;
         String spawnLocation = String.format("[x=%.1f, y=%.1f, z=%.1f]", (double) spawnPos.getX(), (double) spawnPos.getY(), (double) spawnPos.getZ());
-
+/*
         CityDataSync.registerNpc(serverLevel, merchant.getUUID(), "horse_merchant", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
+ */
     }
 }
 
 
     private void spawnTownspersons(ServerLevel serverLevel, int count) {
     for (int i = 0; i < count; i++) {
-        TownPersonEntity person = EntityRegistry.TOWN_PERSON_ENTITY.get().create(serverLevel);
+        TownPersonEntity person = EntityRegistry.TOWNSPERSON.get().create(serverLevel);
         BlockPos spawnPos = findNonWaterSpawnLocation(serverLevel);
         if (spawnPos == null) {
             continue;
@@ -118,8 +119,9 @@ private void spawnHorseMerchant(ServerLevel serverLevel) {
             int mana = 50;
             boolean isActive = true;
             String spawnLocation = String.format("[x=%.1f, y=%.1f, z=%.1f]", (float) spawnPos.getX(), (float) spawnPos.getY(), (float) spawnPos.getZ());
-
+/*
             CityDataSync.registerNpc(serverLevel, person.getUUID(), "town_person", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
+    */
         }
     }
 }

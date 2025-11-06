@@ -1,0 +1,78 @@
+{
+  "variants": {
+    "facing=north,variation=0": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_0", "y": 0 },
+    "facing=east,variation=0":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_0", "y": 90 },
+    "facing=south,variation=0": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_0", "y": 180 },
+    "facing=west,variation=0":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_0", "y": 270 },
+
+    "facing=north,variation=1": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_1", "y": 0 },
+    "facing=east,variation=1":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_1", "y": 90 },
+    "facing=south,variation=1": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_1", "y": 180 },
+    "facing=west,variation=1":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_1", "y": 270 },
+
+    "facing=north,variation=2": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_2", "y": 0 },
+    "facing=east,variation=2":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_2", "y": 90 },
+    "facing=south,variation=2": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_2", "y": 180 },
+    "facing=west,variation=2":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_2", "y": 270 },
+
+    "facing=north,variation=3": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_3", "y": 0 },
+    "facing=east,variation=3":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_3", "y": 90 },
+    "facing=south,variation=3": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_3", "y": 180 },
+    "facing=west,variation=3":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_3", "y": 270 },
+
+    "facing=north,variation=4": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_4", "y": 0 },
+    "facing=east,variation=4":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_4", "y": 90 },
+    "facing=south,variation=4": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_4", "y": 180 },
+    "facing=west,variation=4":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_4", "y": 270 },
+
+    "facing=north,variation=5": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_5", "y": 0 },
+    "facing=east,variation=5":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_5", "y": 90 },
+    "facing=south,variation=5": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_5", "y": 180 },
+    "facing=west,variation=5":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_5", "y": 270 },
+
+    "facing=north,variation=6": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_6", "y": 0 },
+    "facing=east,variation=6":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_6", "y": 90 },
+    "facing=south,variation=6": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_6", "y": 180 },
+    "facing=west,variation=6":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_6", "y": 270 },
+
+    "facing=north,variation=7": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7", "y": 0 },
+    "facing=east,variation=7":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7", "y": 90 },
+    "facing=south,variation=7": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7", "y": 180 },
+    "facing=west,variation=7":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7", "y": 270 },
+
+    "facing=north,variation=8": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_8", "y": 0 },
+    "facing=east,variation=8":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_8", "y": 90 },
+    "facing=south,variation=8": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_8", "y": 180 },
+    "facing=west,variation=8":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_8", "y": 270 },
+
+    "facing=north,variation=9": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_9", "y": 0 },
+    "facing=east,variation=9":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_9", "y": 90 },
+    "facing=south,variation=9": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_9", "y": 180 },
+    "facing=west,variation=9":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_9", "y": 270 },
+
+    "facing=north,variation=10": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_10", "y": 0 },
+    "facing=east,variation=10":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_10", "y": 90 },
+    "facing=south,variation=10": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_10", "y": 180 },
+    "facing=west,variation=10":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_10", "y": 270 },
+
+    "facing=north,variation=11": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_11", "y": 0 },
+    "facing=east,variation=11":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_11", "y": 90 },
+    "facing=south,variation=11": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_11", "y": 180 },
+    "facing=west,variation=11":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_11", "y": 270 },
+
+    "facing=north,variation=12": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_12", "y": 0 },
+    "facing=east,variation=12":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_12", "y": 90 },
+    "facing=south,variation=12": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_12", "y": 180 },
+    "facing=west,variation=12":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_12", "y": 270 },
+
+    "facing=north,variation=13": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_13", "y": 0 },
+    "facing=east,variation=13":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_13", "y": 90 },
+    "facing=south,variation=13": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_13", "y": 180 },
+    "facing=west,variation=13":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_13", "y": 270 },
+
+    "facing=north,variation=14": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_14", "y": 0 },
+    "facing=east,variation=14":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_14", "y": 90 },
+    "facing=south,variation=14": { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_14", "y": 180 },
+    "facing=west,variation=14":  { "model": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_14", "y": 270 }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    { "rolls": 1, "entries": [ { "type": "minecraft:item", "name": "britannia_mod:chest_wooden" } ] }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "loader": "neoforge:obj",
+  "model": "britannia_mod:models/block/decorations/lamp_post_regular.obj",
+  "render_type": "translucent",
+  "textures": {
+    "texture0": "britannia_mod:block/lamp_post_fancy_on"
+  },
+  "automatic_culling": false,
+  "shade_quads": false,
+  "flip_v": true,
+  "emissive_ambient": false
+}

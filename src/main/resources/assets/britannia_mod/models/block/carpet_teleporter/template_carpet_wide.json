@@ -1,0 +1,18 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": { "tex": "britannia_mod:block/carpet_teleporter" },
+  "elements": [
+    {
+      "from": [ 0, 0, 0 ],
+      "to":   [ 16, 1, 16 ],
+      "faces": {
+        "up":   { "texture": "#tex", "cullface": "up"   },
+        "down": { "texture": "#tex", "cullface": "down" },
+                "north": { "texture": "#tex" },
+        "south": { "texture": "#tex" },
+        "west":  { "texture": "#tex" },
+        "east":  { "texture": "#tex" }
+      }
+    }
+  ]
+}

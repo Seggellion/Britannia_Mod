@@ -1,0 +1,21 @@
+  {
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/decorations/table_setting",
+        "y": 0
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/decorations/table_setting",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/decorations/table_setting",
+        "y": 270
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/decorations/table_setting",
+        "y": 90
+      }
+    }
+  }
+  

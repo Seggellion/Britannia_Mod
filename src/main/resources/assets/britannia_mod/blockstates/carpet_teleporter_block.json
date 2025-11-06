@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "style=0": { "model": "britannia_mod:block/carpet_teleporter/carpet_c" },
+    "style=1": { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt1" },
+    "style=2": { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt2" },
+    "style=3": { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt3" },
+    "style=4": { "model": "britannia_mod:block/carpet_teleporter/carpet_c_alt4" }
+  }
+}

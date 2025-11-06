@@ -1,0 +1,71 @@
+{
+  "variants": {
+    "facing=north,style=0": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2", "uvlock": true }
+    ],
+    "facing=south,style=0": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2", "y": 180, "uvlock": true }
+    ],
+    "facing=west,style=0": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2", "y": 270, "uvlock": true }
+    ],
+    "facing=east,style=0": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2", "y": 90, "uvlock": true }
+    ],
+
+    "facing=north,style=1": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_shifted", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_shifted", "uvlock": true }
+    ],
+    "facing=south,style=1": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_shifted", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_shifted", "y": 180, "uvlock": true }
+    ],
+    "facing=west,style=1": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_shifted", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_shifted", "y": 270, "uvlock": true }
+    ],
+    "facing=east,style=1": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_shifted", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_shifted", "y": 90, "uvlock": true }
+    ],
+
+    "facing=north,style=2": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored", "uvlock": true }
+    ],
+    "facing=south,style=2": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored", "y": 180, "uvlock": true }
+    ],
+    "facing=west,style=2": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored", "y": 270, "uvlock": true }
+    ],
+    "facing=east,style=2": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored", "y": 90, "uvlock": true }
+    ],
+
+    "facing=north,style=3": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored_shifted", "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored_shifted", "uvlock": true }
+    ],
+    "facing=south,style=3": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored_shifted", "y": 180, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored_shifted", "y": 180, "uvlock": true }
+    ],
+    "facing=west,style=3": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored_shifted", "y": 270, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored_shifted", "y": 270, "uvlock": true }
+    ],
+    "facing=east,style=3": [
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch1_mirrored_shifted", "y": 90, "uvlock": true },
+      { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_arch2_mirrored_shifted", "y": 90, "uvlock": true }
+    ]
+  }
+}

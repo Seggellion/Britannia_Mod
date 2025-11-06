@@ -1,0 +1,64 @@
+package com.seggellion.britannia_mod.menu;
+
+import com.seggellion.britannia_mod.entity.ArchitectEntity;
+import com.seggellion.britannia_mod.network.RailsCatalog;
+import com.seggellion.britannia_mod.shop.Product;
+import com.seggellion.britannia_mod.registry.MenuRegistry;
+
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class ArchitectMenu extends AbstractContainerMenu {
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    private final ArchitectEntity  npc;
+    private final SimpleContainer  cart    = new SimpleContainer(27);
+    private       List<Product>    catalog = List.of();   // filled async
+public ArchitectEntity getNpc() { return npc; }
+
+    /* ------------------------------------------------------------------ */
+    /* ctor                                                               */
+    /* ------------------------------------------------------------------ */
+    public ArchitectMenu(int id, Inventory pinv, ArchitectEntity npc) {
+        super(MenuRegistry.ARCHITECT_MENU.get(), id);
+        this.npc = npc;
+  LOGGER.info("[ArchitectMenu] Constructed for NPC: {}", npc.getName().getString());
+
+        /* async fetch catalogue; run callback on the server thread      */
+        RailsCatalog.fetch(npc.city()).thenAcceptAsync(list -> {
+            this.catalog = list;
+              LOGGER.info("[ArchitectMenu] Catalog loaded with {} products",  list.size() );
+
+            broadcastChanges();          // sync to client
+        }, pinv.player.getServer());      // <-- MinecraftServer implements Executor
+
+        /* “catalog ready” flag so the screen knows when to build rows   */
+        addDataSlot(new DataSlot() {
+            @Override public int  get()              { return catalog.isEmpty() ? 0 : 1; }
+            @Override public void set(int ignored)   { /* client never writes */ }
+        });
+    }
+
+    public List<Product>   catalog() { return catalog; }
+    public SimpleContainer cart()    { return cart;    }
+
+    @Override public boolean stillValid(Player player) { return npc.isAlive(); }
+
+    /* ------------------------------------------------------------------ */
+    /* mandatory: quick-move / shift-click handler (return empty for now) */
+    /* ------------------------------------------------------------------ */
+    @Override
+    public ItemStack quickMoveStack(Player player, int slotIndex) {
+        return ItemStack.EMPTY;          // no shift-click behaviour yet
+    }
+}

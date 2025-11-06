@@ -1,0 +1,21 @@
+{
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/furniture/chair_trinsic",
+        "y": 270
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/furniture/chair_trinsic",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/furniture/chair_trinsic",
+        "y": 0
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/furniture/chair_trinsic",
+        "y": 90
+      }
+    }
+  }
+  

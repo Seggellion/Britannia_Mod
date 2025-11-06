@@ -1,0 +1,37 @@
+{
+  "parent": "block/block",
+
+  "textures": {
+    "side": "britannia_mod:block/structure/plaster_wood_wall_corner",
+    "end" : "britannia_mod:block/structure/plaster_wood_wall_corner"
+  },
+
+  "elements": [
+    {
+      "from": [8, 0, 0],
+      "to":   [16, 16, 16],
+
+      "faces": {
+    
+        "south": { "texture": "#side", "uv": [0, 16, 16, 0] },
+        "west" : { "texture": "#side", "uv": [16, 16, 0, 0] },
+        "east" : { "texture": "#side", "uv": [0, 16, 16, 0] },
+
+        "up"   : { "texture": "#end",  "uv": [0, 16, 16, 0] },
+        "down" : { "texture": "#end",  "uv": [0, 16, 16, 0] }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to":   [16, 16, 8],
+
+      "faces": {
+        "north": { "texture": "#side", "uv": [16, 16, 0, 0] },
+        "south": { "texture": "#side", "uv": [0, 16, 16, 0] },
+
+        "up"   : { "texture": "#end",  "uv": [0, 16, 16, 0] },
+        "down" : { "texture": "#end",  "uv": [0, 16, 16, 0] }
+      }
+    }
+  ]
+}

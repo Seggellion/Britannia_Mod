@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": { "type": "minecraft:uniform", "min": 1, "max": 2 },
+      "entries": [
+        { "type": "minecraft:item", "name": "britannia_mod:copper_necklace" },
+        { "type": "minecraft:item", "name": "britannia_mod:copper_necklace_2" },
+        { "type": "minecraft:item", "name": "britannia_mod:copper_earrings" },
+        { "type": "minecraft:item", "name": "britannia_mod:copper_bracelet" },
+        { "type": "minecraft:item", "name": "britannia_mod:copper_ring" },
+        { "type": "minecraft:item", "name": "britannia_mod:copper_beads" }
+      ],
+      "conditions": [
+        { "condition": "minecraft:random_chance", "chance": 0.75 }
+      ]
+    }
+  ]
+}

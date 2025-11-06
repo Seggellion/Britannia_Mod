@@ -1,0 +1,123 @@
+package com.seggellion.britannia_mod.npc;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.seggellion.britannia_mod.api.RailsApi;
+import com.seggellion.britannia_mod.shop.Product;
+import com.seggellion.britannia_mod.item.WeightedFishItem;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import com.seggellion.britannia_mod.item.PurityOreItem;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+
+public class TraderRoleHandler implements NpcRoleHandler {
+    private final String role;
+    private final String city;
+
+    public TraderRoleHandler(String role, String city) {
+        this.role = role;
+        this.city = city;
+    }
+
+    @Override
+    public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
+        JsonArray inventoryData = collectInventoryForRole(player);
+        RailsApi.fetchTraderCatalog(city, role, inventoryData, callback);
+    }
+
+    @Override
+    public void performTransaction(Player player, int entityId,
+                                   Map<Product, Integer> cart,
+                                   int totalPrice,
+                                   Runnable onSuccess) {
+        RailsApi.sellItems(player, city, role, entityId, cart, totalPrice, success -> {
+            if (success) onSuccess.run();
+        });
+    }
+
+    @Override
+    public String getActionLabel() {
+        return "Sell";
+    }
+
+    @Override
+    public ResourceLocation getBackground() {
+        return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/sell_screen.png");
+    }
+
+    // ==========================================================
+    // Generic inventory collection logic
+    // ==========================================================
+    private JsonArray collectInventoryForRole(Player player) {
+        String normalizedRole = role.toLowerCase();
+
+        if (normalizedRole.contains("fish")) {
+            return collectFishFromInventory(player);
+        } else if (normalizedRole.contains("metal") || normalizedRole.contains("miner")) {
+            return collectOreFromInventory(player);
+        } else if (normalizedRole.contains("hunter") || normalizedRole.contains("butcher")) {
+            return collectAnimalDrops(player);
+        } else {
+            // fallback: collect everything for testing or generic traders
+            return collectGenericInventory(player);
+        }
+    }
+
+    private JsonArray collectFishFromInventory(Player player) {
+        JsonArray arr = new JsonArray();
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof WeightedFishItem fishItem) {
+                JsonObject j = new JsonObject();
+                j.addProperty("item_id", fishItem.getDescriptionId());
+                j.addProperty("weight", fishItem.getWeight(stack));
+                j.addProperty("quantity", stack.getCount());
+                arr.add(j);
+            }
+        }
+        return arr;
+    }
+
+    private JsonArray collectOreFromInventory(Player player) {
+        JsonArray arr = new JsonArray();
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof PurityOreItem oreItem) {
+                JsonObject j = new JsonObject();
+                j.addProperty("item_id", oreItem.getDescriptionId());
+                j.addProperty("purity", oreItem.getPurity(stack));
+                j.addProperty("quantity", stack.getCount());
+                arr.add(j);
+            }
+        }
+        return arr;
+    }
+
+    private JsonArray collectAnimalDrops(Player player) {
+        JsonArray arr = new JsonArray();
+        for (ItemStack stack : player.getInventory().items) {
+            String id = stack.getDescriptionId().toLowerCase();
+            if (id.contains("meat") || id.contains("hide") || id.contains("pelt")) {
+                JsonObject j = new JsonObject();
+                j.addProperty("item_id", id);
+                j.addProperty("quantity", stack.getCount());
+                arr.add(j);
+            }
+        }
+        return arr;
+    }
+
+    private JsonArray collectGenericInventory(Player player) {
+        JsonArray arr = new JsonArray();
+        for (ItemStack stack : player.getInventory().items) {
+            JsonObject j = new JsonObject();
+            j.addProperty("item_id", stack.getDescriptionId());
+            j.addProperty("quantity", stack.getCount());
+            arr.add(j);
+        }
+        return arr;
+    }
+}

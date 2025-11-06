@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/decorations/paintings/painting_medium_red_dress", "y": 0 },
+    "facing=south": { "model": "britannia_mod:block/decorations/paintings/painting_medium_red_dress", "y": 180 },
+    "facing=west":  { "model": "britannia_mod:block/decorations/paintings/painting_medium_red_dress", "y": 270 },
+    "facing=east":  { "model": "britannia_mod:block/decorations/paintings/painting_medium_red_dress", "y": 90 }
+  }
+}

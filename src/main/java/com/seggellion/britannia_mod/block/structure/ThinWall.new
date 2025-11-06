@@ -1,0 +1,93 @@
+package com.seggellion.britannia_mod.block;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.PaneBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+/**
+ * A ⅓‑block‑thick wall that connects like a glass pane.
+ * <p>
+ * * Width ≈ 5.33 px (T)  
+ * * When a solid neighbour is placed on any of the four horizontal sides,
+ *   the wall grows a matching "arm", eliminating the visual and collision gap.
+ */
+public class ThinWall extends PaneBlock {
+
+    private static final double T = 5.33 / 16.0;   // strip thickness 1/3 block
+
+    /* central post: 1 px pole (always present so the block is visible alone) */
+    private static final VoxelShape POST = block(7.5, 0, 7.5, 8.5, 16, 8.5);
+
+    /* connection arms (added per side when canConnect(...) == true) */
+    private static final VoxelShape NORTH = block(8 - T / 2, 0, 0, 8 + T / 2, 16, 8);
+    private static final VoxelShape SOUTH = block(8 - T / 2, 0, 8, 8 + T / 2, 16, 16);
+    private static final VoxelShape WEST  = block(0, 0, 8 - T / 2, 8, 16, 8 + T / 2);
+    private static final VoxelShape EAST  = block(8, 0, 8 - T / 2, 16, 16, 8 + T / 2);
+
+    public ThinWall(BlockBehaviour.Properties props) {
+        super(props.noOcclusion());          // thin walls never fully block view
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Shape & collision: merge post + any connected arms                   */
+    /* --------------------------------------------------------------------- */
+    @Override
+    public VoxelShape getShape(BlockState s, BlockGetter g,
+                               BlockPos p, net.minecraft.world.phys.shapes.CollisionContext ctx) {
+        VoxelShape shape = POST;
+        if (s.getValue(NORTH)) shape = Shapes.or(shape, NORTH);
+        if (s.getValue(SOUTH)) shape = Shapes.or(shape, SOUTH);
+        if (s.getValue(WEST )) shape = Shapes.or(shape, WEST );
+        if (s.getValue(EAST )) shape = Shapes.or(shape, EAST );
+        return shape;
+    }
+
+    @Override
+    public VoxelShape getCollisionShape(BlockState s, BlockGetter g,
+                                        BlockPos p, net.minecraft.world.phys.shapes.CollisionContext ctx) {
+        return getShape(s, g, p, ctx);       // same as outline
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Placement & neighbour updates: delegate to PaneBlock logic           */
+    /* --------------------------------------------------------------------- */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return updateConnections(defaultBlockState(), ctx.getLevel(), ctx.getClickedPos());
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction dir, BlockState nbr,
+                                  LevelAccessor level, BlockPos pos, BlockPos nbrPos) {
+        return updateConnections(state, level, pos);
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*  Utilities                                                            */
+    /* --------------------------------------------------------------------- */
+    private BlockState updateConnections(BlockState base, LevelAccessor level, BlockPos pos) {
+        return base.setValue(NORTH, connects(level, pos.north()))
+                   .setValue(SOUTH, connects(level, pos.south()))
+                   .setValue(WEST,  connects(level, pos.west()))
+                   .setValue(EAST,  connects(level, pos.east()));
+    }
+
+    /** Connect to anything non‑air (blocks, panes, other thin walls). */
+    private static boolean connects(LevelAccessor level, BlockPos neighbour) {
+        return !level.getBlockState(neighbour).isAir();
+    }
+
+    /** Convenience for concise VoxelShape creation. */
+    private static VoxelShape block(double x1, double y1, double z1,
+                                    double x2, double y2, double z2) {
+        return Shapes.box(x1 / 16.0, y1 / 16.0, z1 / 16.0,
+                          x2 / 16.0, y2 / 16.0, z2 / 16.0);
+    }
+}

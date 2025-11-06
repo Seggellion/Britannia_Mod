@@ -1,6 +1,14 @@
 {
-    "variants": {
-      "": { "model": "britannia_mod:block/half_dirt_block" }
-    }
+  "variants": {
+    "": [
+      { "model": "britannia_mod:block/fractional/half_dirt1" },
+      { "model": "britannia_mod:block/fractional/half_dirt2" },
+      { "model": "britannia_mod:block/fractional/half_dirt3" },
+      { "model": "britannia_mod:block/fractional/half_dirt4" },
+      { "model": "britannia_mod:block/fractional/half_dirt5" },
+      { "model": "britannia_mod:block/fractional/half_dirt6" },
+      { "model": "britannia_mod:block/fractional/half_dirt7" },
+      { "model": "britannia_mod:block/fractional/half_dirt8" }
+    ]
   }
-  
+}

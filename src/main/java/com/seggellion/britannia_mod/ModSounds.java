@@ -285,6 +285,46 @@ public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENT
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chop_tree"))
     );
 
+// containers
+
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> CHEST_OPEN = SOUND_EVENTS.register(
+            "chest_open",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chest_open"))
+    );
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> CHEST_CLOSE = SOUND_EVENTS.register(
+            "chest_close",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chest_close"))
+    );
+// structure sounds
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_OPEN = SOUND_EVENTS.register(
+            "metal_door_open",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_open"))
+    );
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_CLOSE = SOUND_EVENTS.register(
+            "metal_door_close",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_close"))
+    );
+
+    
+        public static final DeferredHolder<SoundEvent, SoundEvent> WOOD_DOOR_OPEN = SOUND_EVENTS.register(
+            "wood_door_open",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_wood_open"))
+    );
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> WOOD_DOOR_CLOSE = SOUND_EVENTS.register(
+            "wood_door_close",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_wood_close"))
+    );
+
+        public static final DeferredHolder<SoundEvent, SoundEvent> DOOR_LOCK = SOUND_EVENTS.register(
+            "door_lock",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_lock"))
+    );
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);

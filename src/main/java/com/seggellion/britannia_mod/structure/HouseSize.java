@@ -1,30 +1,24 @@
-package com.seggellion.britannia_mod.house;
+package com.seggellion.britannia_mod.structure;
 
 public enum HouseSize {
-    SMALL(9, 9, 8),
-    MEDIUM(9, 7, 9),
-    LARGE(13, 7, 13),
-    CASTLE(25, 15, 25);
 
-    private final int width;
-    private final int height;
-    private final int depth;
+    SMALL ("small",   9,  8,  9),
+    MEDIUM("medium",  9,  7,  9),
+    TOWER ("tower",  13,  7, 13),
+    CASTLE("castle", 34, 20, 35);
 
-    HouseSize(int width, int height, int depth) {
-        this.width = width;
+    private final String id; // lowercase string → used for Rails, logic, etc.
+    private final int width, height, depth;
+
+    HouseSize(String id, int width, int height, int depth) {
+        this.id = id;
+        this.width  = width;
         this.height = height;
-        this.depth = depth;
+        this.depth  = depth;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
+    public String id()         { return id; }
+    public int getWidth()      { return width; }
+    public int getHeight()     { return height; }
+    public int getDepth()      { return depth; }
 }

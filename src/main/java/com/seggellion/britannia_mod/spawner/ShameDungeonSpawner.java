@@ -202,6 +202,9 @@ public class ShameDungeonSpawner {
     }
 
 private static boolean isGroundSolid(Level level, BlockPos pos) {
+    if (!level.hasChunkAt(pos)) {
+        return false;
+    }
     BlockState state = level.getBlockState(pos);
     Block block = state.getBlock();
 
@@ -220,6 +223,9 @@ private static boolean isGroundSolid(Level level, BlockPos pos) {
 private static boolean isAreaClear(Level level, BlockPos pos, int height) {
     for (int offsetY = 0; offsetY < height; offsetY++) {
         BlockPos checkPos = pos.above(offsetY);
+        if (!level.hasChunkAt(checkPos)) {
+            return false;
+        }
         BlockState state = level.getBlockState(checkPos);
         if (!state.isAir()) {
    //         LOGGER.info("Block at ({}, {}, {}) is obstructing spawn ({}).", checkPos.getX(), checkPos.getY(), checkPos.getZ(), BuiltInRegistries.BLOCK.getKey(state.getBlock()));
@@ -228,4 +234,6 @@ private static boolean isAreaClear(Level level, BlockPos pos, int height) {
     }
     return true;
 }
+
+
 }

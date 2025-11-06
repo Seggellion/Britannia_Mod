@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "britannia_mod:block/structure/oak_wall_top",
+    "wall": "britannia_mod:block/structure/oak_wall_top"
+  },
+  "elements": [
+    {
+      "from": [1, 8, 6],
+      "to": [15, 16, 10],
+      "faces": {
+        "north": { "texture": "#wall" },
+        "south": { "texture": "#wall" },
+        "west": { "texture": "#wall" },
+        "east": { "texture": "#wall" },
+        "up": { "texture": "#wall" },
+        "down": { "texture": "#wall" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+    "parent": "item/handheld",
+    "textures": {
+      "layer0": "britannia_mod:item/gold_key"
+    }
+  }
+  

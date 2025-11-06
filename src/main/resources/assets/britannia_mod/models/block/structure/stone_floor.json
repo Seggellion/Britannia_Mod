@@ -1,0 +1,7 @@
+{
+  "loader": "britannia_mod:stone_floor_loader",
+  "textures": {
+    "wall": "britannia_mod:block/structure/stone_wall_foundation",
+    "floor": "britannia_mod:block/structure/stone_floor_1"
+  }
+}

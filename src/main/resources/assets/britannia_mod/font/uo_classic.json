@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "britannia_mod:uo_classic.ttf",
+      "shift": [0, 0],
+      "size": 9,
+      "oversample": 3
+    }
+  ]
+}

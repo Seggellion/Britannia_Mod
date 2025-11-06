@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_beekeeper",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_beekeeper"
+    },
+    "facing=south,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_beekeeper",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_beekeeper",
+      "y": 180
+    },
+    "facing=north,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_beekeeper",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_beekeeper"
+    },
+    "facing=south,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_beekeeper",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_beekeeper",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_beekeeper",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_beekeeper"
+    },
+    "facing=south,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_beekeeper",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_beekeeper",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_beekeeper",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_beekeeper"
+    },
+    "facing=south,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_beekeeper",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_beekeeper",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_beekeeper",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_beekeeper"
+    },
+    "facing=south,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_beekeeper",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_beekeeper",
+      "y": 180
+    },
+    "facing=north,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_beekeeper",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_beekeeper"
+    },
+    "facing=south,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_beekeeper",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_beekeeper",
+      "y": 180
+    }
+  }
+}

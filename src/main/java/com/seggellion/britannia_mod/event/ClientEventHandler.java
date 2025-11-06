@@ -4,6 +4,8 @@ import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.SpellCastPayload;
 import com.seggellion.britannia_mod.magic.Spell;
 import com.seggellion.britannia_mod.magic.SpellRegistry;
+import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -12,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -21,13 +24,21 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerChangeGameTypeEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.Level;
-import com.seggellion.britannia_mod.block.FishSpawnBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.InvisibleInAdventureMode;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+
+import java.util.function.Predicate;
+
 
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,9 +49,19 @@ import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import com.seggellion.britannia_mod.network.ManaSyncPayload;
+import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
+
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
+
 import net.minecraft.nbt.CompoundTag;
 
+
+import java.util.List;
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -55,6 +76,7 @@ public class ClientEventHandler {
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(ClientEventHandler::onClientSetup);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
@@ -62,28 +84,36 @@ public class ClientEventHandler {
         // Register client-specific things here, like renderers or key bindings
     }
 
-    @SubscribeEvent
-    public void onClientTick(ClientTickEvent.Post event) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) {
-            return;
-        }
 
-    if (!StructureCache.hasLoadedGhostStructure()) {
-        loadGhostStructure(mc);
-        StructureCache.setGhostStructureLoaded(true);
+
+ @SubscribeEvent
+public static void onClientTick(ClientTickEvent.Post event) {
+    Minecraft mc = Minecraft.getInstance();
+    if (mc.player == null || mc.level == null) {
+        return;
     }
 
-        boolean isAttackPressed = mc.options.keyAttack.isDown();
+   ItemStack held = mc.player.getMainHandItem();
+if (held.getItem() instanceof AbstractHouseDeedItem deed) {
+    String structureName = deed.getHouseStyle().getStructureFile().replace(".nbt", ""); // ✅ uses HouseStyle
 
-        if (isAttackPressed && !wasAttackPressed) {
-            handleLeftClick(mc);
-        }
+    if (StructureCache.get(structureName) == null) {
+        LOGGER.info("🔍 Ghost structure '{}' not yet cached, loading...", structureName);
+        loadGhostStructure(mc, structureName);  // dynamically load the correct structure
+    }
+}
 
-        wasAttackPressed = isAttackPressed;
+    boolean isAttackPressed = mc.options.keyAttack.isDown();
+
+    if (isAttackPressed && !wasAttackPressed) {
+        handleLeftClick(mc);
     }
 
-    private void handleLeftClick(Minecraft mc) {
+    wasAttackPressed = isAttackPressed;
+}
+
+
+private static void handleLeftClick(Minecraft mc) {
         LocalPlayer player = mc.player;
         ItemStack itemStack = player.getMainHandItem();
         Spell spell = SpellRegistry.getSpell(itemStack);
@@ -122,6 +152,13 @@ public class ClientEventHandler {
         }
     }
 
+    @SubscribeEvent
+    public static void registerClientPackets(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+
+
+    }
+
   @SubscribeEvent
      public static void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
         LOGGER.info("Game mode change detected!");
@@ -133,7 +170,7 @@ public class ClientEventHandler {
             BlockPos pos = player.blockPosition();
 
             // Iterate over a small area around the player to ensure nearby blocks are updated
-            int range = 5; // Update blocks within 5 blocks of the player
+            int range = 10; // Update blocks within 5 blocks of the player
             for (int x = -range; x <= range; x++) {
                 for (int y = -range; y <= range; y++) {
                     for (int z = -range; z <= range; z++) {
@@ -150,30 +187,30 @@ public class ClientEventHandler {
             }
         }
     }
+private static void loadGhostStructure(Minecraft mc, String structureName) {
+    LOGGER.info("🔍 Attempting to manually load ghost structure '{}' from resource stream...", structureName);
 
-    private void loadGhostStructure(Minecraft mc) {
-    ResourceLocation structureId = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/small_house.nbt");
+    ResourceLocation resource = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/" + structureName + ".nbt");
 
-    try (InputStream stream = mc.getResourceManager().getResourceOrThrow(structureId).open()) {
+    try (InputStream stream = mc.getResourceManager().getResourceOrThrow(resource).open()) {
         CompoundTag tag = NbtIo.readCompressed(stream, NbtAccounter.unlimitedHeap());
-
-        if (mc.getConnection() == null) {
-            LOGGER.warn("Skipping ghost structure load: registryAccess not available yet.");
-            return;
-        }
-
-        RegistryAccess registryAccess = mc.getConnection().registryAccess();
+        RegistryAccess registryAccess = mc.level.registryAccess(); // client-side
 
         StructureTemplate template = new StructureTemplate();
-        template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag);
+        template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag); // ✅ Load the structure
 
-        StructureCache.setSmallHouseTemplate(template);
-        LOGGER.info("✅ Ghost structure loaded: {}", structureId);
+        // Save it to cache with the *right* structure name
+        StructureCache.put(structureName, template);
+
+        if (template.getSize().equals(Vec3i.ZERO)) {
+            LOGGER.warn("⚠️ Loaded structure '{}' has size Vec3i.ZERO (likely empty)", structureName);
+        } else {
+            LOGGER.info("✅ Structure '{}' loaded with size: {}", structureName, template.getSize());
+        }
+
     } catch (IOException e) {
-        LOGGER.error("❌ Failed to load ghost structure: {}", structureId, e);
+        LOGGER.error("❌ Failed to load structure '{}'", structureName, e);
     }
 }
-
-
 
 }

@@ -1,0 +1,26 @@
+{
+  "loader": "neoforge:composite",
+  "children": {
+    "holder": {
+      "parent": "britannia_mod:block/structure/sign/metal_sign_holder_2"
+    },
+    "sign": {
+      "loader": "neoforge:obj",
+      "model": "britannia_mod:models/block/sign/rectangle_base.obj",
+      "automatic_culling": false,
+      "shade_quads": false,
+      "flip_v": true,
+      "emissive_ambient": false,
+      "textures": {
+        "texture0": "britannia_mod:block/sign/rectangular_sign_stables",
+        "texture1": "britannia_mod:block/sign/chain",
+        "texture2": "britannia_mod:block/sign/rectangle_frame",
+        "particle": "britannia_mod:block/sign/rectangle_frame"
+      }
+    }
+  },
+  "visibility": {
+    "holder": true,
+    "sign": true
+  }
+}
