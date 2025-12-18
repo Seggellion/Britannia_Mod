@@ -40,6 +40,7 @@ public class SmallForgeBlock extends Block implements EntityBlock {
         "verite ore", () -> ItemRegistry.VERITE_INGOT.get(),
         "agapite ore", () -> ItemRegistry.AGAPITE_INGOT.get(),
         "copper ore", () -> ItemRegistry.COPPER_INGOT.get(),
+        "silver ore", () -> ItemRegistry.SILVER_INGOT.get(),
         "tin ore", () -> ItemRegistry.TIN_INGOT.get()
     );
 

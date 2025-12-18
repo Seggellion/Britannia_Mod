@@ -50,7 +50,7 @@ public final class WorldBootstrapAPI {
             CityAPITokenData tok = CityAPITokenData.getOrCreate(player.serverLevel());
             if (!tok.getApiToken().isEmpty()) {
                 conn.setRequestProperty("Authorization", "Bearer " + tok.getApiToken());
-                ClientboundSyncCityTokenPayload.send(player, tok.getApiToken());
+                ClientboundSyncCityTokenPayload.send(player, tok.getApiToken(), tok.getShardSecret());
             }
 
             int code = conn.getResponseCode();

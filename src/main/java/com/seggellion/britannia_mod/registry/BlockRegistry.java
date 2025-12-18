@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.IronFenceBlock;
 import com.seggellion.britannia_mod.block.TallDecorativeBlock;
 import com.seggellion.britannia_mod.block.TallDecorative3Block;
 import com.seggellion.britannia_mod.block.HorizontalTallBlock;
@@ -438,12 +439,8 @@ public static final DeferredHolder<Block, Block> IRON_CEMETERY_GATE_ARCH = BLOCK
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
 
 
-public static final DeferredHolder<Block, Block> IRON_FENCE_BOTTOM = BLOCKS.register("iron_fence_bottom", () ->
-    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
-public static final DeferredHolder<Block, Block> IRON_FENCE_MIDDLE = BLOCKS.register("iron_fence_middle", () ->
-    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
-public static final DeferredHolder<Block, Block> IRON_FENCE_TOP = BLOCKS.register("iron_fence_top", () ->
-    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> IRON_FENCE = BLOCKS.register("iron_fence", () ->
+    new IronFenceBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
   public static final DeferredHolder<Block, ThinWall> CORRAL_CORNER_FENCE =
     BLOCKS.register("corral_corner_fence", 

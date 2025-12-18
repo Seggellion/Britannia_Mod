@@ -295,10 +295,11 @@ registrar.playToClient(
     ClientboundSyncCityTokenPayload.TYPE,
     ClientboundSyncCityTokenPayload.STREAM_CODEC,
     (payload, context) -> {
+        // Update both token and secret on the client
         com.seggellion.britannia_mod.util.CityAPITokenData.setClientToken(payload.token());
+        com.seggellion.britannia_mod.util.CityAPITokenData.setClientShardSecret(payload.shardSecret());
     }
 );
-
 
 // Close current screen
 registrar.playToClient(

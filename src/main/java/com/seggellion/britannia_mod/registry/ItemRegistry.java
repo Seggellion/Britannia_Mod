@@ -782,12 +782,9 @@ public static final DeferredHolder<Item, BlockItem> IRON_CEMETERY_GATE_ARCH =
     ITEMS.register("iron_cemetery_gate_arch", () -> new BlockItem(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), new Item.Properties()));
 public static final DeferredHolder<Item, BlockItem> ANCHOR =
     ITEMS.register("anchor", () -> new BlockItem(BlockRegistry.ANCHOR.get(), new Item.Properties()));
-public static final DeferredHolder<Item, BlockItem> IRON_FENCE_TOP =
-    ITEMS.register("iron_fence_top", () -> new BlockItem(BlockRegistry.IRON_FENCE_TOP.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, BlockItem> IRON_FENCE_BOTTOM =
-    ITEMS.register("iron_fence_bottom", () -> new BlockItem(BlockRegistry.IRON_FENCE_BOTTOM.get(), new Item.Properties()));
-public static final DeferredHolder<Item, BlockItem> IRON_FENCE_MIDDLE =
-    ITEMS.register("iron_fence_middle", () -> new BlockItem(BlockRegistry.IRON_FENCE_MIDDLE.get(), new Item.Properties()));
+public static final DeferredHolder<Item, BlockItem> IRON_FENCE =
+    ITEMS.register("iron_fence", () -> new BlockItem(BlockRegistry.IRON_FENCE.get(), new Item.Properties()));
+
 public static final DeferredHolder<Item, BlockItem> LYING_SKELETON =
     ITEMS.register("lying_skeleton", () -> new BlockItem(BlockRegistry.LYING_SKELETON.get(), new Item.Properties()));
 public static final DeferredHolder<Item, BlockItem> SITTING_SKELETON =

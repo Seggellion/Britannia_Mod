@@ -21,10 +21,9 @@ import org.apache.logging.log4j.Logger;
 
 public final class RailsCatalog {
   
-   private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogManager.getLogger();
 
-    public static CompletableFuture<List<Product>>
-           fetch(String city) {
+    public static CompletableFuture<List<Product>> fetch(String city) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 LOGGER.info("[RailsCatalog] LOADING!" );
@@ -32,22 +31,28 @@ public final class RailsCatalog {
                           + "products?npc_type=architect&city=" + city + "&shard="+ ModConfig.SHARD_NAME);
                 HttpURLConnection c = (HttpURLConnection) url.openConnection();
                 c.setRequestMethod("GET");
-                /* token header identical to SendTransactionToAPI … */
-                try (Reader r = new InputStreamReader(c.getInputStream(),
-                                                      StandardCharsets.UTF_8)) {
-                        LOGGER.info("[RailsCatalog] Reader! {}", r );
+                /* token header identical to SendTransactionToAPI ... */
+                
+                try (Reader r = new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8)) {
+                    LOGGER.info("[RailsCatalog] Reader! {}", r );
                     JsonArray arr = JsonParser.parseReader(r).getAsJsonArray();
                     List<Product> out = new ArrayList<>();
-                                  LOGGER.info("[RailsCatalog] arr {}",  arr );
+                    LOGGER.info("[RailsCatalog] arr {}",  arr );
 
                     for (JsonElement e : arr) {
                         JsonObject o = e.getAsJsonObject();
+                        
+                        // [FIX] Extract currency, default to copper
+                        String currency = o.has("currency") ? o.get("currency").getAsString() : "copper";
+
+                        // [FIX] Pass currency to the constructor
                         out.add(new Product(
                             o.get("item_id").getAsString(),
                             o.get("item_name").getAsString(),
                             (int) Math.round(o.get("price").getAsDouble()),
-                            ResourceLocation.parse(o.get("icon").getAsString())   // ← FIX
-                    ));
+                            currency, // <--- Added this argument
+                            ResourceLocation.parse(o.get("icon").getAsString())
+                        ));
                     }
                     return out;
                 }

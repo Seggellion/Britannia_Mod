@@ -11,7 +11,7 @@ public class CityAPITokenData extends SavedData {
     private String apiToken = "";
     private String shardSecret = "";
     private static String clientToken = ""; // <-- client-side cache
-
+    private static String clientShardSecret = "";
     public CityAPITokenData() {}
 
     // Server-side loading
@@ -75,4 +75,13 @@ public class CityAPITokenData extends SavedData {
     public static boolean hasClientToken() {
         return !clientToken.isEmpty();
     }
+
+    public static void setClientShardSecret(String secret) {
+        clientShardSecret = secret;
+    }
+
+    public static String getClientShardSecret() {
+        return clientShardSecret;
+    }
+
 }

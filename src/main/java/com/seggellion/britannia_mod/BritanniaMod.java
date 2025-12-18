@@ -172,7 +172,6 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(new BlacksmithPOIHandler());
         NeoForge.EVENT_BUS.register(new SurvivalZoneHandler());
           NeoForge.EVENT_BUS.register(new StructureProtectionHandler());
-
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
 
 

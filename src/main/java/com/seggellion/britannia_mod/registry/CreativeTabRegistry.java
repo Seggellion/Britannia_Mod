@@ -207,9 +207,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GRAVE_FLOWERS.get());
                 safeAccept(output, ItemRegistry.IRON_CEMETERY_GATE_ARCH.get());
                 safeAccept(output, ItemRegistry.ANCHOR.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_TOP.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_MIDDLE.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_BOTTOM.get());
+                safeAccept(output, ItemRegistry.IRON_FENCE.get());
                 safeAccept(output, ItemRegistry.LYING_SKELETON.get());
                 safeAccept(output, ItemRegistry.SITTING_SKELETON.get());
                 safeAccept(output, ItemRegistry.SKELETON_ARM.get());

@@ -1,0 +1,67 @@
+{
+  "multipart": [
+    {
+      "when": { "OR": [
+          {"facing": "north", "part": "bottom"},
+          {"facing": "north", "part": "single"}
+      ]},
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_bottom", "y": 0 }
+    },
+    {
+      "when": { "facing": "north", "part": "middle" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_middle", "y": 0 }
+    },
+    {
+      "when": { "facing": "north", "part": "top" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_top", "y": 0 }
+    },
+
+    {
+      "when": { "OR": [
+          {"facing": "east", "part": "bottom"},
+          {"facing": "east", "part": "single"}
+      ]},
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_bottom", "y": 90 }
+    },
+    {
+      "when": { "facing": "east", "part": "middle" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_middle", "y": 90 }
+    },
+    {
+      "when": { "facing": "east", "part": "top" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_top", "y": 90 }
+    },
+
+    {
+      "when": { "OR": [
+          {"facing": "south", "part": "bottom"},
+          {"facing": "south", "part": "single"}
+      ]},
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_bottom", "y": 180 }
+    },
+    {
+      "when": { "facing": "south", "part": "middle" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_middle", "y": 180 }
+    },
+    {
+      "when": { "facing": "south", "part": "top" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_top", "y": 180 }
+    },
+
+    {
+      "when": { "OR": [
+          {"facing": "west", "part": "bottom"},
+          {"facing": "west", "part": "single"}
+      ]},
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_bottom", "y": 270 }
+    },
+    {
+      "when": { "facing": "west", "part": "middle" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_middle", "y": 270 }
+    },
+    {
+      "when": { "facing": "west", "part": "top" },
+      "apply": { "model": "britannia_mod:block/decorations/iron_fence_top", "y": 270 }
+    }
+  ]
+}

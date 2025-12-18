@@ -29,6 +29,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import com.seggellion.britannia_mod.InvisibleInAdventureMode;
+import com.seggellion.britannia_mod.item.QualityToolItem;
+import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -118,6 +120,10 @@ private static void handleLeftClick(Minecraft mc) {
         ItemStack itemStack = player.getMainHandItem();
         Spell spell = SpellRegistry.getSpell(itemStack);
 
+        if (itemStack.getItem() instanceof com.seggellion.britannia_mod.item.QualityToolItem) {
+            return; // Let vanilla handle the left click (mining)
+        }
+
         if (spell != null) {
             // Perform an entity ray trace
             double reachDistance = 20.0D; // Set the reach distance to 20 blocks
@@ -159,18 +165,30 @@ private static void handleLeftClick(Minecraft mc) {
 
     }
 
-  @SubscribeEvent
-     public static void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
-        LOGGER.info("Game mode change detected!");
+    @SubscribeEvent
+    public static void onGameModeChange(ClientPlayerChangeGameTypeEvent event) {
+        // LOGGER.info("Game mode change detected! event: {} ", event);
 
         Player player = Minecraft.getInstance().player;
         Level level = Minecraft.getInstance().level;
 
         if (player != null && level != null) {
+            
+            // --- FIX START ---
+            // Check if the player is holding a tool that requires breaking blocks.
+            // If so, we SKIP the block update loop. This prevents mining progress from 
+            // resetting to 0 when the game mode switches.
+            ItemStack heldItem = player.getMainHandItem();
+            if (heldItem.getItem() instanceof QualityToolItem || 
+                heldItem.getItem() instanceof TwoHandedAxeItem) {
+                return; 
+            }
+            // --- FIX END ---
+
             BlockPos pos = player.blockPosition();
 
             // Iterate over a small area around the player to ensure nearby blocks are updated
-            int range = 10; // Update blocks within 5 blocks of the player
+            int range = 10; 
             for (int x = -range; x <= range; x++) {
                 for (int y = -range; y <= range; y++) {
                     for (int z = -range; z <= range; z++) {
@@ -179,7 +197,7 @@ private static void handleLeftClick(Minecraft mc) {
                         Block block = blockState.getBlock();
 
                         if (block instanceof InvisibleInAdventureMode) {
-                            LOGGER.info("Forcing block update at {}", checkPos);
+                            // LOGGER.info("Forcing block update at {}", checkPos);
                             level.sendBlockUpdated(checkPos, blockState, blockState, 3);
                         }
                     }
@@ -187,6 +205,7 @@ private static void handleLeftClick(Minecraft mc) {
             }
         }
     }
+
 private static void loadGhostStructure(Minecraft mc, String structureName) {
     LOGGER.info("🔍 Attempting to manually load ghost structure '{}' from resource stream...", structureName);
 
