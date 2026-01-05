@@ -332,6 +332,66 @@
   "sounds": [
       "britannia_mod:chest_close"
   ]
-}
+},
+"lap_harp_play": {
+    "sounds": [
+      "britannia_mod:lap_harp_play"
+    ]
+  },
+  "lap_harp_fail": {
+    "sounds": [
+      "britannia_mod:lap_harp_fail"
+    ]
+  },
+  "standing_harp_play": {
+    "sounds": [
+      "britannia_mod:standing_harp_play"
+    ]
+  },
+  "standing_harp_fail": {
+    "sounds": [
+      "britannia_mod:standing_harp_fail"
+    ]
+  },
+  "lute_play": {
+    "sounds": [
+      "britannia_mod:lute_play"
+    ]
+  },
+  "lute_fail": {
+    "sounds": [
+      "britannia_mod:lute_fail"
+    ]
+  },
+  "drum_play": {
+    "sounds": [
+      "britannia_mod:drum_play"
+    ]
+  },
+  "drum_fail": {
+    "sounds": [
+      "britannia_mod:drum_fail"
+    ]
+  },
+  "violin_play": {
+    "sounds": [
+      "britannia_mod:violin_play"
+    ]
+  },
+  "violin_fail": {
+    "sounds": [
+      "britannia_mod:violin_fail"
+    ]
+  },
+  "tambourine_play": {
+    "sounds": [
+      "britannia_mod:tambourine_play"
+    ]
+  },
+  "tambourine_fail": {
+    "sounds": [
+      "britannia_mod:tambourine_fail"
+    ]
+  }
 
 }

@@ -14,7 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Item;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
-
+import net.minecraft.nbt.CompoundTag;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,6 +37,10 @@ import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload;
+import com.seggellion.britannia_mod.component.WineData;
+import com.seggellion.britannia_mod.item.WineBottleItem;
+import com.seggellion.britannia_mod.registry.DataComponentRegistry;
+
 
 public class RailsApi {
     private static final String BASE_URL = ModConfig.API_BASE_URL;
@@ -153,113 +157,191 @@ public class RailsApi {
         });
     }
 
-    // ========================================================================
-    // 3. SELL TRANSACTION (Payout logic)
-    // ========================================================================
-    public static void sellItems(Player player, String city, String role, int entityId,
-                                 Map<Product, Integer> cart,
-                                 int totalPrice,
-                                 Consumer<Boolean> callback) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                URL url = new URL(BASE_URL + "trader_transactions");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setDoOutput(true);
-                conn.setRequestProperty("Content-Type", "application/json");
-                attachAuthToken(conn);
 
-                JsonObject payload = new JsonObject();
-                payload.addProperty("city", city);
-                payload.addProperty("role", role);
-                payload.addProperty("entity_id", entityId);
-                payload.addProperty("transaction_type", "sell");
-                payload.addProperty("total_price", totalPrice);
-                payload.addProperty("player_uuid", getLocalPlayerUUID());
-                JsonArray itemsArr = new JsonArray();
+// ========================================================================
+// 3. SELL TRANSACTION (Payout logic)
+// ========================================================================
+public static void sellItems(Player player, String city, String role, int entityId,
+                             Map<Product, Integer> cart,
+                             int totalPrice,
+                             Consumer<Boolean> callback) {
+    CompletableFuture.runAsync(() -> {
+        try {
+            // This list will hold the payload WITH the NBT data
+            List<GrantCoinsC2SPayload.SoldItem> pendingSoldItems = new ArrayList<>();
+            
+            URL url = new URL(BASE_URL + "trader_transactions");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json");
+            attachAuthToken(conn);
 
-                for (Map.Entry<Product, Integer> e : cart.entrySet()) {
-                    JsonObject obj = new JsonObject();
-                    obj.addProperty("item_id", e.getKey().itemId());
-                    obj.addProperty("item_name", e.getKey().name());
-                    obj.addProperty("quantity", e.getValue());
+            JsonObject payload = new JsonObject();
+            payload.addProperty("city", city);
+            payload.addProperty("role", role);
+            payload.addProperty("entity_id", entityId);
+            payload.addProperty("transaction_type", "sell");
+            payload.addProperty("total_price", totalPrice);
+            payload.addProperty("player_uuid", getLocalPlayerUUID());
+            JsonArray itemsArr = new JsonArray();
 
-                    double weightValue = 0.0;
-                    // Match player's inventory item for weight
-                    for (ItemStack invStack : player.getInventory().items) {
-                        if (invStack.getItem() instanceof WeightedFishItem fishItem) {
-                            String invId = BuiltInRegistries.ITEM.getKey(invStack.getItem()).toString();
-                            String productId = e.getKey().itemId()
-                                    .replace("block.", "")
-                                    .replace("item.", "")
-                                    .replace('.', ':');
+            for (Map.Entry<Product, Integer> e : cart.entrySet()) {
+                Product product = e.getKey();
+                int quantity = e.getValue();
+                
+                JsonObject obj = new JsonObject();
+                obj.addProperty("item_id", product.itemId());
+                obj.addProperty("item_name", product.name());
+                obj.addProperty("quantity", quantity);
 
-                            if (invId.endsWith(productId.replace("britannia_mod:", "")) ||
-                                invId.equalsIgnoreCase(productId) ||
-                                productId.endsWith(invId)) {
-                                double w = fishItem.getWeight(invStack);
-                                weightValue = w;
-                                break;
-                            }
-                        }
-                    }
+                double weightValue = 0.0;
+                boolean dataFound = false;
+                boolean correctItemFound = false;
+                
+                // Variable to capture the NBT tag
+                CompoundTag itemTag = null;
 
-                    obj.addProperty("weight", weightValue);
-                    itemsArr.add(obj);
-                }
-
-                payload.add("items", itemsArr);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
-                }
-
-                boolean success = conn.getResponseCode() == 200;
-                if (success) {
-                    try (InputStream in = conn.getInputStream();
-                         Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-                        JsonObject resp = JsonParser.parseReader(reader).getAsJsonObject();
+                // Scan player inventory to find the actual item source
+                for (ItemStack invStack : player.getInventory().items) {
+                    if (invStack.isEmpty()) continue;
+                    
+                    String invId = BuiltInRegistries.ITEM.getKey(invStack.getItem()).toString();
+                    LOGGER.info("inventory check data? {}", product.name());
+                    // Simple ID match check
+                    if (invId.equals(product.itemId()) || invId.endsWith(":" + product.name())) {
                         
-                        // Parse Payout
-                        if (resp.has("payout")) {
-                            JsonObject payout = resp.getAsJsonObject("payout");
-                            int gold   = payout.has("gold")   ? payout.get("gold").getAsInt()   : 0;
-                            int silver = payout.has("silver") ? payout.get("silver").getAsInt() : 0;
-                            int copper = payout.has("copper") ? payout.get("copper").getAsInt() : 0;
-
-                            String receipt = resp.has("receipt_id") ? resp.get("receipt_id").getAsString() : "";
-                            JsonArray soldItemsArr = payload.getAsJsonArray("items");
-
-                            Minecraft.getInstance().execute(() -> {
-                                List<GrantCoinsC2SPayload.SoldItem> soldList = new ArrayList<>();
-                                for (JsonElement e : soldItemsArr ) {
-                                    JsonObject o = e.getAsJsonObject();
-                                    soldList.add(new GrantCoinsC2SPayload.SoldItem(
-                                        o.get("item_id").getAsString(),
-                                        o.get("item_name").getAsString(),
-                                        o.get("quantity").getAsInt(),
-                                        o.has("weight") ? o.get("weight").getAsDouble() : 0.0
-                                    ));
+                        // --- CHECK: IS THIS THE EXACT DATA MATCH? ---
+                        // If the product name implies strict data (starts with "DATA|"), verify it.
+                        if (product.stack().has(DataComponentRegistry.WINE_DATA)) {
+                                    // If the inventory item doesn't have data, or the data doesn't match exactly -> Skip
+                                    if (!invStack.has(DataComponentRegistry.WINE_DATA) || 
+                                        !isMatchingWineData(invStack, product.stack())) {
+                                        continue; 
+                                    }
                                 }
-                                LOGGER.info("Sold List {}", soldList);
 
-                                // Send packet to server to grant coins
-                                com.seggellion.britannia_mod.network.NetworkHandler.sendToServer(
-                                    new GrantCoinsC2SPayload(gold, silver, copper, city, receipt, soldList)
-                                );
-                            });
+                        // We found the correct item stack!
+                        correctItemFound = true;
+                        
+                        // Capture NBT
+                        itemTag = (CompoundTag) invStack.save(player.registryAccess());
+                        
+                        // 1. Recover Weight (Fish)
+                        if (invStack.getItem() instanceof WeightedFishItem fishItem) {
+                            weightValue = fishItem.getWeight(invStack);
                         }
+
+                        // 2. Recover Wine Data (Alcohol)
+                        if (invStack.has(DataComponentRegistry.WINE_DATA)) {
+                            WineData data = WineBottleItem.getWineData(invStack);
+                            
+                            LOGGER.info("FOUND WINE DATA: Winery={}, Year={}, label_color={}", data.wineryName(), data.year(), data.labelColor());
+
+                            obj.addProperty("winery_name", data.wineryName());
+                            obj.addProperty("grape_type", data.grapeType());
+                            obj.addProperty("year", data.year());
+                            obj.addProperty("region", data.region());
+                            obj.addProperty("quality", data.quality());
+                            obj.addProperty("label_color", data.labelColor());
+
+                            String bottleColor = "green"; 
+                            if (invId.contains("green")) bottleColor = "green";
+                            else if (invId.contains("red")) bottleColor = "red";
+                            else if (invId.contains("clear")) bottleColor = "clear";
+                            else if (invId.contains("brown")) bottleColor = "brown";
+                            
+                            obj.addProperty("bottle_color", bottleColor);
+                            
+                            dataFound = true; 
+                        }
+                        
+                        // Break once we found the item, so we use this specific item's NBT
+                        break; 
                     }
                 }
 
-                Minecraft.getInstance().execute(() -> callback.accept(success));
+                if (!correctItemFound && product.itemId().contains("wine")) {
+                    LOGGER.warn("WARNING: Selling wine but could not find matching WINE_DATA for ID: {}", product.itemId());
+                }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                Minecraft.getInstance().execute(() -> callback.accept(false));
+                obj.addProperty("weight", weightValue);
+                itemsArr.add(obj);
+
+                // Add to the list we will send to the server later
+                pendingSoldItems.add(new GrantCoinsC2SPayload.SoldItem(
+                    product.itemId(),
+                    product.name(),
+                    quantity,
+                    weightValue,
+                    itemTag 
+                ));
+            }   
+
+            payload.add("items", itemsArr);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
-        });
+
+            boolean success = conn.getResponseCode() == 200;
+            if (success) {
+                try (InputStream in = conn.getInputStream();
+                     Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                    JsonObject resp = JsonParser.parseReader(reader).getAsJsonObject();
+                    
+                    if (resp.has("payout")) {
+                        JsonObject payout = resp.getAsJsonObject("payout");
+                        int gold   = payout.has("gold")   ? payout.get("gold").getAsInt()   : 0;
+                        int silver = payout.has("silver") ? payout.get("silver").getAsInt() : 0;
+                        int copper = payout.has("copper") ? payout.get("copper").getAsInt() : 0;
+                        String receipt = resp.has("receipt_id") ? resp.get("receipt_id").getAsString() : "";
+
+                        Minecraft.getInstance().execute(() -> {
+                            LOGGER.info("Sold List {}", pendingSoldItems);
+
+                            // Send packet to server using the list we built earlier (which has NBT)
+                            com.seggellion.britannia_mod.network.NetworkHandler.sendToServer(
+                                new GrantCoinsC2SPayload(gold, silver, copper, city, receipt, pendingSoldItems)
+                            );
+                        });
+                    }
+                }
+            }
+
+            Minecraft.getInstance().execute(() -> callback.accept(success));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Minecraft.getInstance().execute(() -> callback.accept(false));
+        }
+    });
+}
+
+/**
+ * Helper method to check if an inventory item matches the specific data signature 
+ * expected by the API product.
+ */
+/**
+ * Strict comparison of Wine Data between two ItemStacks.
+ */
+private static boolean isMatchingWineData(ItemStack invStack, ItemStack productStack) {
+    // Safety check
+    if (!invStack.has(DataComponentRegistry.WINE_DATA) || 
+        !productStack.has(DataComponentRegistry.WINE_DATA)) {
+        return false;
     }
+
+    WineData invData = invStack.get(DataComponentRegistry.WINE_DATA);
+    WineData prodData = productStack.get(DataComponentRegistry.WINE_DATA);
+
+    // Compare all relevant fields strictly
+    return invData.wineryName().equals(prodData.wineryName()) &&
+           invData.grapeType().equals(prodData.grapeType()) &&
+           invData.year() == prodData.year() &&
+           invData.quality() == prodData.quality() &&
+           invData.labelColor().equalsIgnoreCase(prodData.labelColor());
+}
 
     // (Helper methods remain unchanged)
     private static void giveCoinsToPlayer(ServerPlayer player, int gold, int silver, int copper) {

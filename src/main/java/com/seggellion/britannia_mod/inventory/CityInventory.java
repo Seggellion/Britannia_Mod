@@ -379,7 +379,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
         if (tag.contains("SilverAmount")) silverAmount = tag.getInt("SilverAmount");
         if (tag.contains("CopperAmount")) copperAmount = tag.getInt("CopperAmount");
 
-        LOGGER.warn("Loaded commodities, weights, and population for city {} from NBT.", cityName);
+        LOGGER.info("Loaded commodities, weights, and population for city {} from NBT.", cityName);
     }
 
 public void updateTreasury(int gold, int silver, int copper) {
@@ -387,6 +387,7 @@ public void updateTreasury(int gold, int silver, int copper) {
     this.silverAmount = silver;
     this.copperAmount = copper;
     LOGGER.info("Updated treasury for {}: {}g {}s {}c", cityName, gold, silver, copper);
+    setDirty();
 }
 
 

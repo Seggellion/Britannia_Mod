@@ -88,7 +88,8 @@ public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatab
         // Prevent traders or temporary NPCs from being saved between sessions
         return !(this instanceof FishTraderEntity
             || this instanceof SalvageTraderEntity
-            || this instanceof MeatTraderEntity);
+            || this instanceof MeatTraderEntity
+            || this instanceof AlcoholTraderEntity);
     }
 
 
@@ -109,6 +110,7 @@ public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatab
             .add(Attributes.FOLLOW_RANGE, 35.0D)
             .add(Attributes.ATTACK_DAMAGE, 2.0D)
             .add(Attributes.ARMOR, 10.0D)
+             .add(Attributes.ARMOR_TOUGHNESS, 0.0D)
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.5D)
             .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
             .add(Attributes.JUMP_STRENGTH, 1.0D)

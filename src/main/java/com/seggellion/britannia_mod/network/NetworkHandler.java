@@ -133,6 +133,7 @@ registrar.playToServer(
 
         // ✅ Grant payout
         giveCoins(player, payload.gold(), payload.silver(), payload.copper());
+        LOGGER.info("Remove items: {}",payload.soldItems());
         removeSoldItems(player, payload.soldItems());
 
         // ✅ Update city treasury
@@ -225,18 +226,23 @@ registrar.playToServer(
     TraderSpawnConfigC2SPayload.STREAM_CODEC,
     (payload, ctx) -> ctx.enqueueWork(() -> {
         if (!(ctx.player() instanceof ServerPlayer player)) return;
+
+        LOGGER.info("Network TraderSpawnConfig received");
+
         ServerLevel level = player.serverLevel();
         if (level == null) return;
 
         var be = level.getBlockEntity(payload.pos());
-        if (be instanceof com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity spawner) {
-            spawner.setTraderType(payload.traderType());
-            spawner.setCityName(payload.cityName());
-            spawner.setTownPersonAmount(payload.townPersonAmount());
-            spawner.setChanged();
+        if (be instanceof TraderSpawnBlockEntity spawner) {
+            spawner.applyAndResync(
+                payload.traderType(),
+                payload.cityName(),
+                payload.townPersonAmount()
+            );
         }
     })
 );
+
 
 
 registrar.playToServer(
@@ -332,6 +338,13 @@ registrar.playToClient(
         ? TransactionFailedS2CPayload::handle
         : (p, c) -> {});
 
+// Winery Bottling Logic
+    registrar.playToServer(
+        com.seggellion.britannia_mod.network.payload.BottlingPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.BottlingPayload.STREAM_CODEC,
+        com.seggellion.britannia_mod.network.ServerPayloadHandler::handleBottling
+    );
+
 // House-management screen
 registrar.playToClient(
     HouseManagementScreenPayload.TYPE,
@@ -394,52 +407,70 @@ private static boolean idMatches(ItemStack stack, String soldIdNormalized) {
 }
 
 // --- main removal ---------------------------------------------------
-
 private static void removeSoldItems(
         net.minecraft.server.level.ServerPlayer player,
         java.util.List<com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload.SoldItem> soldItems
 ) {
     for (var sold : soldItems) {
-        String targetId = normalizeId(sold.itemId()); // handles "block.britannia_mod.cape_cod" -> "britannia_mod:cape_cod"
         int remaining = sold.quantity();
-        double targetWeight = sold.weight(); // 0 for non-weighted
+        
+        // 1. Prepare Target: Try to reconstruct the EXACT item from NBT
+        net.minecraft.world.item.ItemStack specificTarget = net.minecraft.world.item.ItemStack.EMPTY;
+        
+        // Note: Using parseOptional is safer for 1.20.6/1.21+ NeoForge
+        if (sold.nbt() != null) {
+            specificTarget = net.minecraft.world.item.ItemStack.parseOptional(player.registryAccess(), sold.nbt());
+        }
 
-        // pass 1: exact id (and weight if applicable)
+        String targetId = normalizeId(sold.itemId()); 
+        double targetWeight = sold.weight();
+
+        // 2. Scan Inventory
         for (int i = 0; i < player.getInventory().items.size() && remaining > 0; i++) {
             net.minecraft.world.item.ItemStack stack = player.getInventory().items.get(i);
             if (stack.isEmpty()) continue;
-            if (!idMatches(stack, targetId)) continue;
 
-            if (stack.getItem() instanceof com.seggellion.britannia_mod.item.WeightedFishItem fishItem) {
-                // weighted items are typically unstackable; remove per-item matching weight (±0.01)
-                double w = fishItem.getWeight(stack);
-                if (Math.abs(w - targetWeight) > 0.01) continue;
-                stack.shrink(1);
-                remaining -= 1;
-                if (stack.isEmpty()) player.getInventory().items.set(i, net.minecraft.world.item.ItemStack.EMPTY);
-            } else {
+            boolean match = false;
+
+            // --- STRATEGY A: Strict NBT Match (Best for Wine/Special Items) ---
+            if (!specificTarget.isEmpty()) {
+                // Checks if ID and ALL Components (Wine Data, etc) match exactly
+                if (net.minecraft.world.item.ItemStack.isSameItemSameComponents(stack, specificTarget)) {
+                    match = true;
+                }
+            } 
+            
+            // --- STRATEGY B: Fallback (Your original logic) ---
+            // used if NBT is missing or for simple items
+            else if (idMatches(stack, targetId)) {
+                if (stack.getItem() instanceof com.seggellion.britannia_mod.item.WeightedFishItem fishItem) {
+                    // Check weight tolerance for fish
+                    if (Math.abs(fishItem.getWeight(stack) - targetWeight) <= 0.01) {
+                        match = true;
+                    }
+                } else {
+                    // Standard item match
+                    match = true;
+                }
+            }
+
+            // 3. Execute Removal
+            if (match) {
                 int toRemove = Math.min(stack.getCount(), remaining);
                 stack.shrink(toRemove);
                 remaining -= toRemove;
-                if (stack.isEmpty()) player.getInventory().items.set(i, net.minecraft.world.item.ItemStack.EMPTY);
+
+                // Immediately clear the slot if empty to prevent ghost items
+                if (stack.isEmpty()) {
+                    player.getInventory().items.set(i, net.minecraft.world.item.ItemStack.EMPTY);
+                }
             }
         }
-
-        // (optional) pass 2: if still remaining and item is not weighted, allow looser match (same id, ignore weight)
-        if (remaining > 0 && targetWeight == 0.0) {
-            for (int i = 0; i < player.getInventory().items.size() && remaining > 0; i++) {
-                net.minecraft.world.item.ItemStack stack = player.getInventory().items.get(i);
-                if (stack.isEmpty()) continue;
-                if (!idMatches(stack, targetId)) continue;
-                int toRemove = Math.min(stack.getCount(), remaining);
-                stack.shrink(toRemove);
-                remaining -= toRemove;
-                if (stack.isEmpty()) player.getInventory().items.set(i, net.minecraft.world.item.ItemStack.EMPTY);
-            }
+        
+        if (remaining > 0) {
+            // Optional: Log that we couldn't find enough items to remove
+            // LOGGER.warn("Failed to remove full quantity for: {}", sold.itemId());
         }
-
-        // You can log if anything was left unmatched
-        // if (remaining > 0) LOGGER.warn("Could not remove {}x of {}", remaining, targetId);
     }
 
     player.inventoryMenu.broadcastChanges();

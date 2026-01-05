@@ -38,7 +38,7 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-
+import net.minecraft.client.renderer.item.ItemProperties;
 import java.util.function.Predicate;
 
 
@@ -56,6 +56,12 @@ import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
+
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.block.entity.WineBarrelBlockEntity;
+import com.seggellion.britannia_mod.client.screen.WineryScreen;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -79,12 +85,84 @@ public class ClientEventHandler {
         modEventBus.addListener(ClientEventHandler::onClientSetup);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onBlockRightClick);
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
         LOGGER.info("Client setup event called. Registering client-side handlers.");
-        // Register client-specific things here, like renderers or key bindings
-    }
+// Register the Item Property for the Grapes texture switching
+        event.enqueueWork(() -> {
+            net.minecraft.client.renderer.item.ItemProperties.register(
+                com.seggellion.britannia_mod.registry.ItemRegistry.GRAPES.get(), 
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", "grape_type"), 
+                (stack, level, entity, seed) -> {
+                    // 1. Get the Variety ID from the Item NBT
+                    String varietyId = com.seggellion.britannia_mod.item.GrapesItem.getVariety(stack);
+                    
+                    // 2. Get the Variety Object
+                    com.seggellion.britannia_mod.winery.GrapeVariety variety = 
+                        com.seggellion.britannia_mod.winery.GrapeVarietyManager.getVariety(varietyId);
+                    
+                    // 3. Determine if it should be Red (1.0) or Green (0.0)
+                    return isRedGrape(variety.colorType()) ? 1.0f : 0.0f;
+                });
+
+// --- 2. NEW: Wine Bottle Label Logic ---
+            // Define the property getter once to reuse for all 3 bottles
+            net.minecraft.client.renderer.item.ClampedItemPropertyFunction labelProperty = (stack, level, entity, seed) -> {
+                // Check if the item has wine data
+                if (!stack.has(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA)) return 0.0f;
+                
+                // Get the color string from the data component
+                String color = com.seggellion.britannia_mod.item.WineBottleBlockItem.getWineData(stack).labelColor();
+
+                // Map string to float for the model predicate
+return switch (color) {
+    case "red"    -> 0.01f;
+    case "green"  -> 0.02f;
+    case "orange" -> 0.03f;
+    case "yellow" -> 0.04f;
+    case "blue"   -> 0.05f;
+    case "gold"   -> 0.06f;
+    case "pink"   -> 0.07f;
+    case "brown"  -> 0.08f;
+    case "white"  -> 0.09f;
+    case "silver" -> 0.10f;
+    case "black"  -> 0.11f;
+    default       -> 0.00f; // NONE
+};
+            };
+
+            // Register for Green Bottle
+            net.minecraft.client.renderer.item.ItemProperties.register(
+                com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_GREEN.get(),
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", "label_variant"),
+                labelProperty
+            );
+
+            // Register for Brown Bottle
+            net.minecraft.client.renderer.item.ItemProperties.register(
+                com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_BROWN.get(),
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", "label_variant"),
+                labelProperty
+            );
+
+            // Register for Blue Bottle
+            net.minecraft.client.renderer.item.ItemProperties.register(
+                com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_BLUE.get(),
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", "label_variant"),
+                labelProperty
+            );
+
+            // Register for Clear Bottle
+            net.minecraft.client.renderer.item.ItemProperties.register(
+                com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_CLEAR.get(),
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", "label_variant"),
+                labelProperty
+            );
+
+        });
+            }
 
 
 
@@ -114,6 +192,45 @@ if (held.getItem() instanceof AbstractHouseDeedItem deed) {
     wasAttackPressed = isAttackPressed;
 }
 
+
+    private static boolean isRedGrape(com.seggellion.britannia_mod.winery.GrapeColor color) {
+        if (color == null) return false; // Safety check
+        
+        return switch (color) {
+            case PURPLE, DARK_PURPLE, BLUE -> true;  // Maps to Red Texture
+            default -> false; 
+        };
+    }
+
+public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
+        // 1. Safety Checks
+        if (!event.getLevel().isClientSide) return;
+        
+        // 2. Check if we clicked a Wine Barrel
+        if (event.getLevel().getBlockState(event.getPos()).getBlock() == BlockRegistry.WINE_BARREL.get()) {
+            
+            ItemStack stack = event.getItemStack();
+            // 3. Check if holding a bottle (Brown, Green, or Clear)
+            boolean isBottle = stack.is(com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_BROWN.get()) || 
+                                stack.is(com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_BLUE.get()) ||
+                               stack.is(com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_GREEN.get()) ||
+                               stack.is(com.seggellion.britannia_mod.registry.ItemRegistry.WINE_BOTTLE_CLEAR.get());
+
+            if (isBottle) {
+                Level level = event.getLevel();
+                BlockPos pos = event.getPos();
+                BlockEntity be = level.getBlockEntity(pos);
+
+                if (be instanceof WineBarrelBlockEntity barrel && barrel.isReady()) {
+                    // 4. Open the Screen (Safe here because this class is Client-Only)
+                    Minecraft.getInstance().setScreen(new WineryScreen(pos));
+                    
+                    // Swing hand visually so it looks responsive
+                    event.getEntity().swing(event.getHand());
+                }
+            }
+        }
+    }
 
 private static void handleLeftClick(Minecraft mc) {
         LocalPlayer player = mc.player;

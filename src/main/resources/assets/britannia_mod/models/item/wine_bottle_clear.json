@@ -1,0 +1,17 @@
+{
+  "parent": "britannia_mod:block/wine_bottles/wine_bottle_clear",
+  "overrides": [
+    { "predicate": { "britannia_mod:label_variant": 1.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_red" },
+    { "predicate": { "britannia_mod:label_variant": 2.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_green" },
+    { "predicate": { "britannia_mod:label_variant": 3.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_orange" },
+    { "predicate": { "britannia_mod:label_variant": 4.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_yellow" },
+    { "predicate": { "britannia_mod:label_variant": 5.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_blue" },
+    { "predicate": { "britannia_mod:label_variant": 6.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_gold" },
+    { "predicate": { "britannia_mod:label_variant": 7.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_pink" },
+
+    { "predicate": { "britannia_mod:label_variant": 8.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_brown" },
+    { "predicate": { "britannia_mod:label_variant": 9.0 },  "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_white" },
+    { "predicate": { "britannia_mod:label_variant": 10.0 }, "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_silver" },
+    { "predicate": { "britannia_mod:label_variant": 11.0 }, "model": "britannia_mod:block/wine_bottles/wine_bottle_clear_black" }
+  ]
+}

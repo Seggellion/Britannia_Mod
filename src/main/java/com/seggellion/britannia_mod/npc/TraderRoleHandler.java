@@ -14,10 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+
 
 public class TraderRoleHandler implements NpcRoleHandler {
     private final String role;
     private final String city;
+    
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public TraderRoleHandler(String role, String city) {
         this.role = role;
@@ -27,6 +33,7 @@ public class TraderRoleHandler implements NpcRoleHandler {
     @Override
     public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
         JsonArray inventoryData = collectInventoryForRole(player);
+        LOGGER.info("Generic Role Handler loading.");
         RailsApi.fetchTraderCatalog(city, role, inventoryData, callback);
     }
 

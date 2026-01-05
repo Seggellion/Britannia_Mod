@@ -1,0 +1,8 @@
+{
+  "parent": "block/template_farmland",
+  "textures": {
+    "particle": "britannia_mod:block/farmland/farmland_0",
+    "dirt": "minecraft:block/dirt",
+    "top": "britannia_mod:block/farmland/farmland_0"
+  }
+}

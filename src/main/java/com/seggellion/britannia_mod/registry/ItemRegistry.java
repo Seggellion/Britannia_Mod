@@ -2,9 +2,11 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
-
+import com.seggellion.britannia_mod.ModSounds;
 // import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
 import com.seggellion.britannia_mod.registry.SignItemRegistry;
+import com.seggellion.britannia_mod.item.InstrumentItem;
+import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
@@ -25,6 +27,13 @@ import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.structure.HouseStyle;
 import com.seggellion.britannia_mod.item.DeedItemFactory;
 import com.seggellion.britannia_mod.item.HouseKeyItem;
+import com.seggellion.britannia_mod.item.PitcherJuiceItem;
+import com.seggellion.britannia_mod.item.WineBottleItem;
+import net.minecraft.world.item.ItemNameBlockItem;
+    import net.minecraft.world.item.HoeItem;
+import com.seggellion.britannia_mod.item.GrapeSeedsItem;
+import com.seggellion.britannia_mod.item.WineBottleBlockItem;
+
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -51,7 +60,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.Items; // Example item
+import net.minecraft.world.item.Items;
 
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
@@ -146,6 +155,125 @@ public static final DeferredHolder<Item, Item> COPPER_BEADS = ITEMS.register("co
             () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> GINSENG = ITEMS.register("ginseng",
             () -> new Item(new Item.Properties()));
+
+/* =========================================================
+       MUSICAL INSTRUMENTS
+       Trigger "musicianship" skill gain on right-click.
+       ========================================================= */
+
+    // 1. Lap Harp
+    public static final DeferredHolder<Item, Item> LAP_HARP = ITEMS.register("lap_harp",
+            () -> new InstrumentItem(
+                    new Item.Properties().stacksTo(1),
+                    ModSounds.LAP_HARP_PLAY, // You must define these in ModSounds
+                    ModSounds.LAP_HARP_FAIL
+            ));
+
+    // 3. Tamborine
+    public static final DeferredHolder<Item, Item> TAMBORINE = ITEMS.register("tamborine",
+            () -> new InstrumentItem(
+                    new Item.Properties().stacksTo(1),
+                    ModSounds.TAMBORINE_PLAY,
+                    ModSounds.TAMBORINE_FAIL
+            ));
+
+                public static final DeferredHolder<Item, Item> TAMBORINE_RIBBON = ITEMS.register("tamborine_ribbon",
+            () -> new InstrumentItem(
+                    new Item.Properties().stacksTo(1),
+                    ModSounds.TAMBORINE_PLAY,
+                    ModSounds.TAMBORINE_FAIL
+            ));
+
+    // 3. Lute
+    public static final DeferredHolder<Item, Item> LUTE = ITEMS.register("lute",
+            () -> new InstrumentItem(
+                    new Item.Properties().stacksTo(1),
+                    ModSounds.LUTE_PLAY,
+                    ModSounds.LUTE_FAIL
+            ));
+
+    // 4. Drums
+    public static final DeferredHolder<Item, Item> DRUMS = ITEMS.register("drums",
+            () -> new InstrumentItem(
+                    new Item.Properties().stacksTo(1),
+                    ModSounds.DRUM_PLAY,
+                    ModSounds.DRUM_FAIL
+            ));
+
+    // 5. Violin
+    public static final DeferredHolder<Item, Item> VIOLIN = ITEMS.register("violin",
+            () -> new InstrumentItem(
+                    new Item.Properties().stacksTo(1),
+                    ModSounds.VIOLIN_PLAY,
+                    ModSounds.VIOLIN_FAIL
+            ));
+
+public static final DeferredHolder<Item, Item> GRAPES = ITEMS.register("grapes",
+    () -> new GrapesItem(new Item.Properties().food( // <--- FIX: Uses your custom class
+            new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.3f).build()
+    )));
+    
+public static final DeferredHolder<Item, Item> FARMING_BLOCK_ITEM = ITEMS.register("farming_block",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.FARMING_BLOCK.get(), new Item.Properties()));
+
+    // 2. Grape Seeds (Connects to the Block)
+public static final DeferredHolder<Item, GrapeSeedsItem> GRAPE_SEEDS = ITEMS.register("grape_seeds",
+    () -> new GrapeSeedsItem(new Item.Properties()));
+
+    // The Juice Press Output
+// Keep this one as a standard BlockItem (so clicking air with an empty pitcher does nothing)
+    public static final DeferredHolder<Item, BlockItem> PITCHER_EMPTY = ITEMS.register("pitcher_empty",
+            () -> new BlockItem(BlockRegistry.PITCHER_EMPTY_BLOCK.get(), new Item.Properties().stacksTo(1)));
+
+    // Update these to use your new PitcherJuiceItem class
+    public static final DeferredHolder<Item, BlockItem> PITCHER_RED_GRAPE_JUICE = ITEMS.register("pitcher_red_grape_juice",
+            () -> new PitcherJuiceItem(BlockRegistry.PITCHER_RED_GRAPE_JUICE_BLOCK.get(), new Item.Properties().stacksTo(1)));
+
+    public static final DeferredHolder<Item, BlockItem> PITCHER_WHITE_GRAPE_JUICE = ITEMS.register("pitcher_white_grape_juice",
+            () -> new PitcherJuiceItem(BlockRegistry.PITCHER_WHITE_GRAPE_JUICE_BLOCK.get(), new Item.Properties().stacksTo(1)));
+
+
+
+    // 4. Winery Hoe
+    public static final DeferredHolder<Item, Item> VINTNER_HOE = ITEMS.register("vintner_hoe",
+            () -> new HoeItem(Tiers.IRON, new Item.Properties().attributes(
+                    HoeItem.createAttributes(Tiers.IRON, -2.0F, -1.0F))));
+
+    // 6. Block Items (To place the Press and Barrel)
+    public static final DeferredHolder<Item, Item> JUICE_PRESS_ITEM = ITEMS.register("juice_press",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.JUICE_PRESS.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> WINE_BARREL_ITEM = ITEMS.register("wine_barrel",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.WINE_BARREL.get(), new Item.Properties()));
+
+// Note: We register this as a WineBottleBlockItem, passing the BLOCK from above
+// Green Bottle
+public static final DeferredHolder<Item, WineBottleBlockItem> WINE_BOTTLE_GREEN = ITEMS.register("wine_bottle_green",
+        () -> new WineBottleBlockItem(BlockRegistry.WINE_BOTTLE_GREEN_BLOCK.get(), new Item.Properties().stacksTo(16)));
+
+// Brown Bottle
+public static final DeferredHolder<Item, WineBottleBlockItem> WINE_BOTTLE_BROWN = ITEMS.register("wine_bottle_brown",
+        () -> new WineBottleBlockItem(BlockRegistry.WINE_BOTTLE_BROWN_BLOCK.get(), new Item.Properties().stacksTo(16)));
+
+// Blue Bottle
+public static final DeferredHolder<Item, WineBottleBlockItem> WINE_BOTTLE_BLUE = ITEMS.register("wine_bottle_blue",
+        () -> new WineBottleBlockItem(BlockRegistry.WINE_BOTTLE_BLUE_BLOCK.get(), new Item.Properties().stacksTo(16)));
+
+
+// Clear Bottle
+public static final DeferredHolder<Item, WineBottleBlockItem> WINE_BOTTLE_CLEAR = ITEMS.register("wine_bottle_clear",
+        () -> new WineBottleBlockItem(BlockRegistry.WINE_BOTTLE_CLEAR_BLOCK.get(), new Item.Properties().stacksTo(16)));
+
+    // Tools
+        public static final DeferredHolder<Item, Item> SCISSORS = ITEMS.register("scissors",
+                () -> new net.minecraft.world.item.ShearsItem(new Item.Properties().durability(238))); 
+
+        public static final DeferredHolder<Item, Item> TURQUOISE_POWDER = ITEMS.register("turquoise_powder",
+                () -> new Item(new Item.Properties()));
+                
+        public static final DeferredHolder<Item, Item> TRELLIS_ITEM = ITEMS.register("trellis",
+                () -> new net.minecraft.world.item.BlockItem(com.seggellion.britannia_mod.registry.BlockRegistry.TRELLIS_BLOCK.get(), new Item.Properties()));
+
 
     // Magic Items
     public static final DeferredHolder<Item, Item> NIGHT_SIGHT_ITEM = ITEMS.register("night_sight_item",

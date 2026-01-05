@@ -29,6 +29,7 @@ public class CityManager extends SavedData {
         for (int i = 0; i < citiesList.size(); i++) {
             CompoundTag cityTag = citiesList.getCompound(i);
             City city = City.load(cityTag);
+            city.getInventory().setManager(manager);
             manager.cities.put(city.getName(), city);
         }
         return manager;
@@ -62,7 +63,9 @@ public class CityManager extends SavedData {
             return;
         }
         if (!cities.containsKey(name)) {
-            cities.put(name, new City(name));
+            City city = new City(name);
+            city.getInventory().setManager(this); 
+            cities.put(name, city);
             this.setDirty();
         }
     }

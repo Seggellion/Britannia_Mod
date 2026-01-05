@@ -1,7 +1,6 @@
 // BritanniaMod.java
 package com.seggellion.britannia_mod;
 
-import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.*;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
@@ -52,7 +51,7 @@ import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.network.DeedHttpServer;
 import com.seggellion.britannia_mod.network.RailsUpdateServer;
 import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
-
+import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.client.ThinWallClient;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
@@ -91,6 +90,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -112,6 +112,7 @@ public class BritanniaMod {
         OreVeinLoader.loadOreVeins();
           BlessedItemSyncHandler.init(); 
         WorldBootstrapHandler.init(); 
+        GrapeVarietyManager.init();
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
@@ -125,7 +126,7 @@ public class BritanniaMod {
         ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
         BlacksmithProfessions.registerAll(modEventBus);
-    
+        DataComponentRegistry.register(modEventBus);
         // CommandRegistry.register(modEventBus);
         CreativeTabRegistry.register(modEventBus);
 

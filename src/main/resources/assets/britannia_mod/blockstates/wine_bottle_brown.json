@@ -1,0 +1,63 @@
+{
+  "variants": {
+    "facing=north,label=none":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown" },
+    "facing=east,label=none":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown", "y": 90 },
+    "facing=south,label=none":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown", "y": 180 },
+    "facing=west,label=none":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown", "y": 270 },
+
+    "facing=north,label=red":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_red" },
+    "facing=east,label=red":     { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_red", "y": 90 },
+    "facing=south,label=red":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_red", "y": 180 },
+    "facing=west,label=red":     { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_red", "y": 270 },
+
+    "facing=north,label=green":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_green" },
+    "facing=east,label=green":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_green", "y": 90 },
+    "facing=south,label=green":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_green", "y": 180 },
+    "facing=west,label=green":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_green", "y": 270 },
+
+    "facing=north,label=orange": { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_orange" },
+    "facing=east,label=orange":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_orange", "y": 90 },
+    "facing=south,label=orange": { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_orange", "y": 180 },
+    "facing=west,label=orange":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_orange", "y": 270 },
+
+    "facing=north,label=yellow": { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_yellow" },
+    "facing=east,label=yellow":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_yellow", "y": 90 },
+    "facing=south,label=yellow": { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_yellow", "y": 180 },
+    "facing=west,label=yellow":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_yellow", "y": 270 },
+
+    "facing=north,label=blue":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_blue" },
+    "facing=east,label=blue":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_blue", "y": 90 },
+    "facing=south,label=blue":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_blue", "y": 180 },
+    "facing=west,label=blue":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_blue", "y": 270 },
+
+    "facing=north,label=gold":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_gold" },
+    "facing=east,label=gold":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_gold", "y": 90 },
+    "facing=south,label=gold":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_gold", "y": 180 },
+    "facing=west,label=gold":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_gold", "y": 270 },
+
+    "facing=north,label=pink":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_pink" },
+    "facing=east,label=pink":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_pink", "y": 90 },
+    "facing=south,label=pink":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_pink", "y": 180 },
+    "facing=west,label=pink":    { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_pink", "y": 270 },
+
+    "facing=north,label=brown":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_brown" },
+    "facing=east,label=brown":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_brown", "y": 90 },
+    "facing=south,label=brown":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_brown", "y": 180 },
+    "facing=west,label=brown":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_brown", "y": 270 },
+
+    "facing=north,label=white":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_white" },
+    "facing=east,label=white":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_white", "y": 90 },
+    "facing=south,label=white":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_white", "y": 180 },
+    "facing=west,label=white":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_white", "y": 270 },
+
+    "facing=north,label=silver": { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_silver" },
+    "facing=east,label=silver":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_silver", "y": 90 },
+    "facing=south,label=silver": { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_silver", "y": 180 },
+    "facing=west,label=silver":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_silver", "y": 270 },
+
+    "facing=north,label=black":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_black" },
+    "facing=east,label=black":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_black", "y": 90 },
+    "facing=south,label=black":  { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_black", "y": 180 },
+    "facing=west,label=black":   { "model": "britannia_mod:block/wine_bottles/wine_bottle_brown_black", "y": 270 }
+  }
+}

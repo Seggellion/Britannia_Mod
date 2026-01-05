@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.FishTraderEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.SalvageTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.AlcoholTraderEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CitizenEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
@@ -465,6 +466,7 @@ event.registerBlockEntityRenderer(
             EntityRenderers.register(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
             EntityRenderers.register(EntityRegistry.FISH_TRADER.get(), FishTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.ALCOHOL_TRADER.get(), AlcoholTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.MEAT_TRADER.get(), EntityMetalMerchantRenderer::new);
 
 

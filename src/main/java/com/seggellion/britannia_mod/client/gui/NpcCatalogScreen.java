@@ -1,14 +1,15 @@
 package com.seggellion.britannia_mod.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.component.CustomData;
@@ -18,21 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Locale;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.npc.NpcRoleHandler;
-import com.seggellion.britannia_mod.item.WeightedFishItem;
-import com.seggellion.britannia_mod.npc.TraderRoleHandler;
-import com.seggellion.britannia_mod.npc.SalvageTraderRoleHandler;
-import com.seggellion.britannia_mod.npc.MerchantRoleHandler;
 import com.seggellion.britannia_mod.npc.NpcType;
-import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
-import com.seggellion.britannia_mod.item.QualitySwordItem; 
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
@@ -41,9 +32,14 @@ public class NpcCatalogScreen extends Screen {
     private final NpcRoleHandler roleHandler;
     private final NpcType type;
     
-    private static final int GUI_W = 255, GUI_H = 250, ROW_H = 20;
-    private static final int TEXT_PADDING = (int) (GUI_W * 0.15);
+    // Increased row height slightly to comfortably fit 2 lines of wrapped text
+    private static final int GUI_W = 255, GUI_H = 250, ROW_H = 28; 
     private static final float COLUMN_SCALE = 0.75f;
+
+    // Viewport & Layout Constants
+    private static final int LIST_TOP_OFFSET = 33;
+    private static final int LIST_WIDTH = 100; 
+    private static final int VIEWPORT_HEIGHT = 90; 
 
     private int guiLeft, guiTop;
     private final Player player;
@@ -67,25 +63,18 @@ public class NpcCatalogScreen extends Screen {
     private Product lastClickedProduct = null;
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public NpcCatalogScreen(NpcType type, String role, String city, int entityId, Player player) {
+    // Scrolling Variables
+    private float scrollOffset = 0;
+    private boolean isScrolling = false;
+
+    public NpcCatalogScreen(NpcType type, String role, String city, int entityId, Player player, NpcRoleHandler roleHandler, List<Product> preFetchedCatalog) {
         super(Component.literal((type == NpcType.TRADER ? "Sell" : "Buy") + " Vendor"));
         this.role = role;
         this.city = city;
         this.entityId = entityId;
         this.player = player;
         this.type = type;
-        
-        switch (type) {
-            case TRADER -> {
-                if (role.toLowerCase(Locale.ROOT).contains("salvage")) {
-                    this.roleHandler = new SalvageTraderRoleHandler(role, city);
-                } else {
-                    this.roleHandler = new TraderRoleHandler(role, city);
-                }
-            }
-            case MERCHANT -> this.roleHandler = new MerchantRoleHandler(role, city);
-            default -> throw new IllegalArgumentException("Unsupported NPC type: " + type);
-        }
+        this.roleHandler = roleHandler;
     }
 
     @Override
@@ -110,6 +99,8 @@ public class NpcCatalogScreen extends Screen {
     private void fetchCatalogFromRails() {
         roleHandler.fetchCatalog(player, city, fetched -> {
             this.catalog = fetched != null ? aggregateCatalog(fetched) : List.of();
+            // Reset scroll when catalog reloads
+            this.scrollOffset = 0;
             rebuildRowButtons();
         });
     }
@@ -118,39 +109,74 @@ public class NpcCatalogScreen extends Screen {
         Map<String, Product> byId = new HashMap<>();
 
         for (Product p : fetched) {
-            byId.putIfAbsent(p.itemId(), p);
+            String compositeKey = p.itemId() + "::" + p.name();
+            byId.putIfAbsent(compositeKey, p);
         }
 
         List<Product> unique = new ArrayList<>();
         
         for (Product p : byId.values()) {
             ItemStack templateStack = p.stack();
-            int totalCount = 0;
+            if (templateStack.isEmpty()) continue;
 
-            // Count player inventory to set max sale quantity
-            for (ItemStack invStack : player.getInventory().items) {
-                if (invStack.isEmpty()) continue;
-                if (invStack.getItem() == templateStack.getItem()) {
-                    totalCount += invStack.getCount();
+            String displayName = p.name();
+            
+            // --- Metadata Parsing Logic (Wine) ---
+            if (displayName.startsWith("DATA|")) {
+                try {
+                    String[] parts = displayName.substring(5).split("\\|");
+                    if (parts.length >= 5) {
+                        String winery = parts[0];
+                        String grape = parts[1];
+                        int year = Integer.parseInt(parts[2]);
+                        int quality = Integer.parseInt(parts[3]);
+                        String labelColor = parts[4];
+                        
+                        var reconstructedData = new com.seggellion.britannia_mod.component.WineData(
+                            winery, grape, year, quality, "", labelColor
+                        );
+                        templateStack.set(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA, reconstructedData);
+                        displayName = winery + " " + grape + " '" + year + " (Q" + quality + ")";
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Failed to parse wine metadata", e);
                 }
             }
 
-            CompoundTag tag = new CompoundTag();
-            tag.putInt("max_quantity", totalCount);
-            templateStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            // --- Inventory Counting Logic ---
+            boolean isWineProduct = templateStack.has(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
+            int totalCount = 0;
 
-            // [CHANGE] Pass p.currency() to preserve the currency type from Rails
-            unique.add(new Product(p.itemId(), p.name(), p.price(), p.currency(), templateStack));
+            for (ItemStack invStack : player.getInventory().items) {
+                if (invStack.isEmpty()) continue;
+                if (invStack.getItem() != templateStack.getItem()) continue;
+
+                if (isWineProduct) {
+                    if (!invStack.has(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA)) continue;
+                    var templateData = templateStack.get(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
+                    var invData = invStack.get(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
+
+                    if (!invData.wineryName().equals(templateData.wineryName()) ||
+                        !invData.grapeType().equals(templateData.grapeType()) ||
+                        invData.year() != templateData.year() ||
+                        invData.quality() != templateData.quality() ||
+                        !invData.labelColor().equalsIgnoreCase(templateData.labelColor())) { 
+                        continue;
+                    }
+                }
+                totalCount += invStack.getCount();
+            }
+
+            if (totalCount > 0) {
+                CompoundTag tag = new CompoundTag();
+                tag.putInt("max_quantity", totalCount);
+                templateStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+                unique.add(new Product(p.itemId(), displayName, p.price(), p.currency(), templateStack));
+            }
         }
-
         return unique;
     }
 
-    // ... [collectPlayerFish and collectPlayerSalvageItems remain unchanged] ...
-    private JsonArray collectPlayerFish() { /* ... */ return new JsonArray(); } 
-    private JsonArray collectPlayerSalvageItems() { /* ... */ return new JsonArray(); }
-    
-    // --- Helper for Currency Display ---
     private String getCurrencySuffix(String currency) {
         if (currency == null) return "c";
         return switch (currency.toLowerCase()) {
@@ -159,15 +185,53 @@ public class NpcCatalogScreen extends Screen {
             default -> "c";
         };
     }
+
+    // --- SCROLLING LOGIC ---
     
-    private int getCurrencyColor(String currency) {
-        if (currency == null) return 0x9f3215; // default copper color
-        return switch (currency.toLowerCase()) {
-            case "gold" -> 0xFFD700;   // Gold
-            case "silver" -> 0xC0C0C0; // Silver
-            default -> 0x9f3215;       // Copper/Bronze
-        };
+    private int getMaxScroll() {
+
+        return Math.max(0, (this.catalog.size() * ROW_H) - VIEWPORT_HEIGHT);
     }
+
+    // [DIAGRAM: Scroll Logic] 
+    // If you imagine the list as a long paper strip, 'scrollOffset' moves the viewport down.
+    // 'scrollY' from the mouse is usually +1.0 (up) or -1.0 (down).
+    
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+
+        if (this.getMaxScroll() > 0) {
+            float scrollAmount = (float) (scrollY * ROW_H / 2.0);
+            this.scrollOffset = Mth.clamp(this.scrollOffset - scrollAmount, 0, this.getMaxScroll());
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.isScrolling && this.getMaxScroll() > 0) {
+            int scrollBarH = (int) ((float) (VIEWPORT_HEIGHT * VIEWPORT_HEIGHT) / (this.catalog.size() * ROW_H));
+            scrollBarH = Mth.clamp(scrollBarH, 32, VIEWPORT_HEIGHT);
+            
+            double maxScrollbarMovement = VIEWPORT_HEIGHT - scrollBarH;
+            double scrollFactor = this.getMaxScroll() / maxScrollbarMovement;
+            
+            this.scrollOffset = Mth.clamp(this.scrollOffset + (float) (dragY * scrollFactor), 0, getMaxScroll());
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            this.isScrolling = false;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    // --- RENDERING ---
 
     protected void renderBg(GuiGraphics gg, float pt, int mx, int my) {
         Minecraft.getInstance().getTextureManager().bindForSetup(roleHandler.getBackground());
@@ -181,38 +245,79 @@ public class NpcCatalogScreen extends Screen {
             return;
         }
 
-        // === LEFT COLUMN: PRODUCT LIST ===
-        int y = guiTop + 18+15;
+        // === LEFT COLUMN: SCROLLABLE PRODUCT LIST ===
+        int listX = guiLeft + 18;
+        int listY = guiTop + LIST_TOP_OFFSET;
+        
+        // [FIX] Manual Scissor Enable
+        enableScissor(listX, listY, listX + LIST_WIDTH + 35, listY + VIEWPORT_HEIGHT);
+
+        PoseStack pose = gg.pose();
+        pose.pushPose();
+        pose.translate(0, -scrollOffset, 0);
+
+        int y = listY;
+        
         for (Product p : catalog) {
-            ItemStack stack = p.stack();
+            // Optimization + Scissor Safety:
+            // Only draw if the item is within the visible window (plus a small buffer)
+            if (y + ROW_H > listY + scrollOffset && y < listY + VIEWPORT_HEIGHT + scrollOffset) {
+                
+                ItemStack stack = p.stack();
+                
+                // Draw Icon
+                gg.renderItem(stack, listX, y + 2);
+                gg.renderItemDecorations(font, stack, listX, y + 2);
 
-            gg.renderItem(stack, guiLeft + 18, y+4);
-            gg.renderItemDecorations(font, stack, guiLeft + 8, y);
+                int textX = listX + 22; 
 
-            int textX = guiLeft + (int)(TEXT_PADDING * COLUMN_SCALE);
-            gg.drawString(font, p.name(), textX + 20, y + 4, textColor, false);
-            
-            // [CHANGE] Render Price with currency suffix and color
-            String priceStr = p.price() + getCurrencySuffix(p.currency());
-            int priceColor = 0x9f3215;
-            
-            gg.drawString(font, priceStr, textX + 20, y + 14, priceColor, false);
-
+                // [FIX] Text Wrapping - Use split to limit lines
+                // We manually get the lines so we can force it to stop at 2 lines
+                var splitText = font.split(Component.literal(p.name()), LIST_WIDTH);
+                
+                int lineY = y + 2;
+                for (int i = 0; i < Math.min(2, splitText.size()); i++) {
+                    gg.drawString(font, splitText.get(i), textX, lineY, textColor, false);
+                    lineY += 9;
+                }
+                
+                // Draw Price below name
+                String priceStr = p.price() + getCurrencySuffix(p.currency());
+                int priceColor = 0x9f3215; 
+                gg.drawString(font, priceStr, textX, y + 20, priceColor, false);
+            }
             y += ROW_H;
+        }
+
+        pose.popPose();
+        
+        // [FIX] Manual Scissor Disable
+        RenderSystem.disableScissor();
+
+        // === SCROLLBAR (Visual) ===
+        if (getMaxScroll() > 0) {
+            int scrollBarH = (int) ((float) (VIEWPORT_HEIGHT * VIEWPORT_HEIGHT) / (this.catalog.size() * ROW_H));
+            scrollBarH = Mth.clamp(scrollBarH, 32, VIEWPORT_HEIGHT);
+            int scrollBarX = listX + LIST_WIDTH + 28;
+            int scrollBarY = listY + (int) ((scrollOffset / getMaxScroll()) * (VIEWPORT_HEIGHT - scrollBarH));
+            
+            gg.fill(scrollBarX, listY, scrollBarX + 2, listY + VIEWPORT_HEIGHT, 0xFF000000); // Track
+            gg.fill(scrollBarX, scrollBarY, scrollBarX + 2, scrollBarY + scrollBarH, 0xFF888888); // Handle
         }
 
         // === RIGHT COLUMN: CART ===
         int cartY = guiTop + GUI_H / 2 + 28;
-        int cartX = (guiLeft + GUI_W / 2 + (int)(10 * COLUMN_SCALE))-22;
+        int cartX = (guiLeft + GUI_W / 2 + (int)(10 * COLUMN_SCALE)) - 22;
 
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             Product p = entry.getKey();
             int q = entry.getValue();
 
-            // [CHANGE] Displaying item count and name
             String text = "  " + q + "   " + p.name();
+            if (font.width(text) > 90) {
+                text = font.substrByWidth(Component.literal(text), 85).getString() + "...";
+            }
             gg.drawString(font, text, cartX - 10, cartY + 4, textColor, false);
-
             cartY += ROW_H;
         }
 
@@ -220,55 +325,68 @@ public class NpcCatalogScreen extends Screen {
         int bottomY = guiTop + GUI_H - 37;
         int totalX = cartX + 27;
 
-        // [CHANGE] Dynamic totals calculation
         String cartTotal = calculateCartTotalDisplay();
         String walletTotal = formatWalletDisplay();
 
-        PoseStack pose = gg.pose();
         pose.pushPose();
         pose.translate(totalX, bottomY, 0);
         pose.scale(0.8f, 0.8f, 1.0f); 
 
-        // Display Total Owed
         gg.drawString(font, "Total: " + cartTotal, 0, 0, 0x000000, false);
-        // Display Player Wallet below it
         gg.drawString(font, "Wallet: " + walletTotal, 0, 10, 0x555555, false);
         
         pose.popPose();
     }
     
-    // Calculate the bill by summing specific currencies separately
-  private String calculateCartTotalDisplay() {
-        int gold = 0, silver = 0, copper = 0;
+    /**
+     * [FIX] Robust Scissor Helper
+     * Calculates the raw window coordinates for glScissor, accounting for GUI Scale.
+     * This fixes "bleeding" issues where GuiGraphics.enableScissor fails or is misconfigured.
+     */
+    private void enableScissor(int x, int y, int x2, int y2) {
+        double scale = Minecraft.getInstance().getWindow().getGuiScale();
+        int windowHeight = Minecraft.getInstance().getWindow().getHeight();
+        
+        // Calculate width and height
+        int w = x2 - x;
+        int h = y2 - y;
 
+        // Convert to window coordinates (Raw Pixels)
+        int sX = (int)(x * scale);
+        int sY = (int)(windowHeight - (y + h) * scale); // GL Scissor Y is from BOTTOM
+        int sW = (int)(w * scale);
+        int sH = (int)(h * scale);
+        
+        // Apply Scissor directly to RenderSystem
+        RenderSystem.enableScissor(sX, sY, sW, sH);
+    }
+    
+    // ... [calculateCartTotalDisplay and formatWalletDisplay methods unchanged] ...
+    private String calculateCartTotalDisplay() {
+        int gold = 0, silver = 0, copper = 0;
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             Product p = entry.getKey();
             int qty = entry.getValue();
             String c = p.currency() == null ? "copper" : p.currency().toLowerCase();
-
             switch (c) {
                 case "gold" -> gold += p.price() * qty;
                 case "silver" -> silver += p.price() * qty;
                 default -> copper += p.price() * qty;
             }
         }
-
         List<String> parts = new ArrayList<>();
         if (gold > 0) parts.add(gold + "g");
         if (silver > 0) parts.add(silver + "s");
         if (copper > 0) parts.add(copper + "c");
-        
         if (parts.isEmpty()) return "0c";
         return String.join(" ", parts);
     }
     
-    // Calculate player wallet
-private String formatWalletDisplay() {
+    private String formatWalletDisplay() {
         List<String> parts = new ArrayList<>();
         if (playerGoldCount > 0) parts.add(playerGoldCount + "g");
         if (playerSilverCount > 0) parts.add(playerSilverCount + "s");
         if (playerCopperCount > 0) parts.add(playerCopperCount + "c");
-        
         if (parts.isEmpty()) return "Empty";
         return String.join(" ", parts);
     }
@@ -284,7 +402,7 @@ private String formatWalletDisplay() {
         for (Product p : cart.keySet()) {
             if (!cart.containsKey(p)) continue;
 
-            int cartX = (guiLeft + GUI_W / 2 + (int)(10 * COLUMN_SCALE))-10;
+            int cartX = (guiLeft + GUI_W / 2 + (int)(10 * COLUMN_SCALE)) - 10;
             int buttonOffset = (int)(110 * COLUMN_SCALE);
 
             Button plus = Button.builder(Component.literal("+"), b -> modifyCart(p, +1))
@@ -305,38 +423,48 @@ private String formatWalletDisplay() {
         }
     }
 
-    // --- Wallet Update Logic ---
     private void updatePlayerWallet() {
         playerGoldCount = 0;
         playerSilverCount = 0;
         playerCopperCount = 0;
-        
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
-            
-            // Check items against Registry (assuming Registry names match)
-            if (stack.getItem() == ItemRegistry.GOLD_COIN.get()) {
-                playerGoldCount += stack.getCount();
-            } else if (stack.getItem() == ItemRegistry.SILVER_COIN.get()) {
-                playerSilverCount += stack.getCount();
-            } else if (stack.getItem() == ItemRegistry.COPPER_COIN.get()) {
-                playerCopperCount += stack.getCount();
-            }
+            if (stack.getItem() == ItemRegistry.GOLD_COIN.get()) playerGoldCount += stack.getCount();
+            else if (stack.getItem() == ItemRegistry.SILVER_COIN.get()) playerSilverCount += stack.getCount();
+            else if (stack.getItem() == ItemRegistry.COPPER_COIN.get()) playerCopperCount += stack.getCount();
         }
     }
 
-    // ... [mouseClicked and getMaxQuantity unchanged] ...
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-         if (button == 1) {
+        if (button == 1) {
              Minecraft.getInstance().setScreen(null);
              return true;
-         }
-        int y = guiTop + 18;
-        for (Product p : catalog) {
-            int px = guiLeft + 8, py = y + 15;
-            if (mouseX >= px && mouseX < px + 120 && mouseY >= py && mouseY < py + ROW_H) {
+        }
+
+        int listX = guiLeft + 18;
+        int listY = guiTop + LIST_TOP_OFFSET;
+        int scrollBarX = listX + LIST_WIDTH + 28;
+    
+        // Check if mouse is on the scrollbar track
+        if (mouseX >= scrollBarX && mouseX <= scrollBarX + 6 && 
+            mouseY >= listY && mouseY < listY + VIEWPORT_HEIGHT) {
+            this.isScrolling = true;
+            return true;
+        }
+        this.isScrolling = false; 
+
+        // Check if mouse is within the viewport
+        if (mouseX >= listX && mouseX < listX + LIST_WIDTH + 30 &&
+            mouseY >= listY && mouseY < listY + VIEWPORT_HEIGHT) {
+            
+            double absoluteY = mouseY - listY + scrollOffset;
+            int index = (int) (absoluteY / ROW_H);
+
+            if (index >= 0 && index < catalog.size()) {
+                Product p = catalog.get(index);
                 long now = System.currentTimeMillis();
+                
                 if (lastClickedProduct == p && now - lastClickTime < 400) {
                     modifyCart(p, 1);
                     lastClickedProduct = null;
@@ -344,9 +472,9 @@ private String formatWalletDisplay() {
                     lastClickedProduct = p;
                     lastClickTime = now;
                 }
-                break;
+                Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                return true;
             }
-            y += ROW_H;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -365,24 +493,15 @@ private String formatWalletDisplay() {
     private void modifyCart(Product p, int delta) {
         int current = cart.getOrDefault(p, 0);
         int maxQty = getMaxQuantity(p);
-
         int newQty = current + delta;
         if (newQty > maxQty) newQty = maxQty;
         if (newQty <= 0) cart.remove(p);
         else cart.put(p, newQty);
-
-        // Note: We removed the integer 'totalPrice' calculation here 
-        // because it is now calculated dynamically in renderBg.
-        
         rebuildRowButtons();
     }
 
     private void sendTransaction() {
-        // We need to calculate a 'dummy' total price if the API requires an integer.
-        // However, looking at your Rails code, it recalculates price based on items anyway.
-        // So passing 0 or an approximate copper value is likely fine.
-        int approximateTotal = 0; // The controller will calculate the real total.
-        
+        int approximateTotal = 0; 
         roleHandler.performTransaction(player, entityId, cart, approximateTotal, () -> {
             cart.clear();
             rebuildRowButtons();

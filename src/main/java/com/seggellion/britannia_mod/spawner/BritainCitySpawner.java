@@ -89,6 +89,7 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
                 || entity instanceof CustomCatEntity
                 || entity instanceof FishTraderEntity
                 || entity instanceof SalvageTraderEntity
+                  || entity instanceof AlcoholTraderEntity
                  || entity instanceof ArchitectEntity
                 || entity instanceof TownPersonEntity;
     }
