@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.IronFenceBlock;
 import com.seggellion.britannia_mod.block.TallDecorativeBlock;
 import com.seggellion.britannia_mod.block.TallDecorative3Block;
 import com.seggellion.britannia_mod.block.HorizontalTallBlock;
@@ -38,6 +39,7 @@ import com.seggellion.britannia_mod.block.PlasterStoneWallBlock;
 import com.seggellion.britannia_mod.block.DarkStoneWallBlock;
 import com.seggellion.britannia_mod.block.StoneWallBlock;
 import com.seggellion.britannia_mod.block.BrickWallBlock;
+import com.seggellion.britannia_mod.block.PitcherBlock;
 import com.seggellion.britannia_mod.block.SmallForgeBlockEntity;
 import com.seggellion.britannia_mod.block.LargeForgeBlockEntity;
 import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
@@ -89,6 +91,14 @@ import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.ThreeHeightLightBlock;
 import com.seggellion.britannia_mod.block.CaveFloorBlock;
 import com.seggellion.britannia_mod.registry.SignBlockRegistry;
+import com.seggellion.britannia_mod.block.GrapeVineBlock;
+import com.seggellion.britannia_mod.block.JuicePressBlock;
+import com.seggellion.britannia_mod.block.WineBarrelBlock;
+import com.seggellion.britannia_mod.block.WineBottleBlock;
+import com.seggellion.britannia_mod.block.FarmingBlock;
+import com.seggellion.britannia_mod.block.TrellisBlock;
+
+
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -115,7 +125,91 @@ public class BlockRegistry {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(
             net.minecraft.core.registries.Registries.BLOCK_ENTITY_TYPE, "britannia_mod");
 
+// Farming: Grapes
+public static final DeferredHolder<Block, GrapeVineBlock> GRAPE_VINE_BLOCK = BLOCKS.register(
+    "grape_vine_block",
+    () -> new GrapeVineBlock(GrapeVineBlock.getProperties())
+);
 
+    // Processing: Juice Press
+    public static final DeferredHolder<Block, JuicePressBlock> JUICE_PRESS = BLOCKS.register(
+            "juice_press",
+            () -> new JuicePressBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.0f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion())
+    );
+
+    // Storage: Wine Barrel
+    public static final DeferredHolder<Block, WineBarrelBlock> WINE_BARREL = BLOCKS.register(
+            "wine_barrel",
+            () -> new WineBarrelBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion())
+    );
+
+private static BlockBehaviour.Properties bottleProps() {
+    return BlockBehaviour.Properties.of()
+            .mapColor(net.minecraft.world.level.material.MapColor.COLOR_GREEN)
+            .strength(0.5f)
+            .sound(net.minecraft.world.level.block.SoundType.GLASS)
+            .noOcclusion();
+}
+
+public static final DeferredHolder<Block, WineBottleBlock> WINE_BOTTLE_GREEN_BLOCK = BLOCKS.register("wine_bottle_green",
+        () -> new WineBottleBlock(bottleProps()));
+
+public static final DeferredHolder<Block, WineBottleBlock> WINE_BOTTLE_BROWN_BLOCK = BLOCKS.register("wine_bottle_brown",
+        () -> new WineBottleBlock(bottleProps()));
+
+public static final DeferredHolder<Block, WineBottleBlock> WINE_BOTTLE_BLUE_BLOCK = BLOCKS.register("wine_bottle_blue",
+        () -> new WineBottleBlock(bottleProps()));
+
+public static final DeferredHolder<Block, WineBottleBlock> WINE_BOTTLE_CLEAR_BLOCK = BLOCKS.register("wine_bottle_clear",
+        () -> new WineBottleBlock(bottleProps()));
+
+// Custom Soil
+    public static final DeferredHolder<Block, FarmingBlock> FARMING_BLOCK = BLOCKS.register(
+            "farming_block",
+            () -> new FarmingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.GRAVEL)
+                    .isViewBlocking((state, level, pos) -> true)
+                    .isSuffocating((state, level, pos) -> true))
+    );
+
+public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.register(
+            "trellis_block",
+            () -> new TrellisBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).noOcclusion())
+    );
+
+
+    // --- Pitchers (Blocks) ---
+
+    public static final DeferredHolder<Block, PitcherBlock> PITCHER_EMPTY_BLOCK = BLOCKS.register(
+            "pitcher_empty",
+            () -> new PitcherBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.TERRACOTTA_ORANGE)
+                    .strength(1.0f)
+                    .noOcclusion())
+    );
+
+    // Red Grape Juice
+    public static final DeferredHolder<Block, PitcherBlock> PITCHER_RED_GRAPE_JUICE_BLOCK = BLOCKS.register(
+            "pitcher_red_grape_juice",
+            () -> new PitcherBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(1.0f).noOcclusion())
+    );
+
+    // White Grape Juice
+    public static final DeferredHolder<Block, PitcherBlock> PITCHER_WHITE_GRAPE_JUICE_BLOCK = BLOCKS.register(
+            "pitcher_white_grape_juice",
+            () -> new PitcherBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(1.0f).noOcclusion())
+    );
+    
 
 // Spawn Blocks
 
@@ -438,12 +532,8 @@ public static final DeferredHolder<Block, Block> IRON_CEMETERY_GATE_ARCH = BLOCK
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
 
 
-public static final DeferredHolder<Block, Block> IRON_FENCE_BOTTOM = BLOCKS.register("iron_fence_bottom", () ->
-    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
-public static final DeferredHolder<Block, Block> IRON_FENCE_MIDDLE = BLOCKS.register("iron_fence_middle", () ->
-    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
-public static final DeferredHolder<Block, Block> IRON_FENCE_TOP = BLOCKS.register("iron_fence_top", () ->
-    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+public static final DeferredHolder<Block, Block> IRON_FENCE = BLOCKS.register("iron_fence", () ->
+    new IronFenceBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
   public static final DeferredHolder<Block, ThinWall> CORRAL_CORNER_FENCE =
     BLOCKS.register("corral_corner_fence", 

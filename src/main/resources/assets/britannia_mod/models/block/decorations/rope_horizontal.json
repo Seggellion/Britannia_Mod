@@ -1,20 +1,23 @@
 {
-  "elements": [
-    {
-      "from": [0, 6, 6],
-      "to": [16, 10, 10],
-      "faces": {
-        "north": { "texture": "#all" },
-        "south": { "texture": "#all" },
-        "east":  { "texture": "#all" },
-        "west":  { "texture": "#all" },
-        "up":    { "texture": "#all" },
-        "down":  { "texture": "#all" }
-      }
-    }
-  ],
-  "textures": {
-    "all": "britannia_mod:block/decoration/rope",
-    "particle": "britannia_mod:block/decoration/rope"
-  }
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "britannia_mod:block/decoration/rope",
+		"all": "britannia_mod:block/decoration/rope"
+	},
+	"elements": [
+		{
+			"from": [0, 7, 7],
+			"to": [16, 9, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 1, 1]},
+			"faces": {
+				"north": {"uv": [0, 7, 16, 9], "texture": "#all"},
+				"east": {"uv": [7, 8, 9, 10], "texture": "#all"},
+				"south": {"uv": [0, 7, 16, 9], "texture": "#all"},
+				"west": {"uv": [7, 8, 9, 10], "texture": "#all"},
+				"up": {"uv": [0, 7, 16, 9], "texture": "#all"},
+				"down": {"uv": [0, 7, 16, 9], "texture": "#all"}
+			}
+		}
+	]
 }

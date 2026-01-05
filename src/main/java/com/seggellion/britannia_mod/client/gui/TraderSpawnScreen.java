@@ -13,7 +13,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TraderSpawnScreen extends Screen {
     private final BlockPos pos;
@@ -24,9 +25,9 @@ public class TraderSpawnScreen extends Screen {
     private EditBox cityNameBox;
     private EditBox townPersonBox;
     private Button traderButton;
-    private Button resyncButton;
+    private static final Logger LOGGER = LogManager.getLogger();
 
-    private final List<String> traderTypes = List.of("fish_trader", "salvage_trader", "meat_trader");
+    private final List<String> traderTypes = List.of("fish_trader", "salvage_trader", "alcohol_trader", "meat_trader");
     private int idx = 0;
 
     public TraderSpawnScreen(BlockPos pos, String traderType, String cityName, int townPersonAmount) {
@@ -62,9 +63,6 @@ public class TraderSpawnScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("Save"), b -> saveAndClose())
                 .bounds(cx - 110, cy + 40, 80, 20).build());
 
-        resyncButton = Button.builder(Component.literal("ReSync"), b -> sendResync())
-                .bounds(cx + 30, cy + 40, 80, 20).build();
-        addRenderableWidget(resyncButton);
 
         addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
                 .bounds(cx - 40, cy + 70, 80, 20).build());
@@ -74,6 +72,7 @@ public class TraderSpawnScreen extends Screen {
         try {
             String newCity = cityNameBox.getValue().trim();
             int townCount = Math.max(0, Integer.parseInt(townPersonBox.getValue().trim()));
+            LOGGER.info("send to networkhandler");
             NetworkHandler.sendToServer(new TraderSpawnConfigC2SPayload(
                 pos, traderTypes.get(idx), newCity, townCount
             ));

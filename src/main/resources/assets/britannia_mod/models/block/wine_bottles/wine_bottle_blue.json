@@ -1,0 +1,168 @@
+{
+	"format_version": "1.21.11",
+	"credit": "MadewithBlockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "britannia_mod:block/wine_bottles/wine_bottle_blue_red",
+		"particle": "britannia_mod:block/wine_bottles/wine_bottle_blue_red"
+	},
+	"elements": [
+		{
+			"name": "Top",
+			"from": [7.9, 6.24, 7.9],
+			"to": [8.42, 8.84, 8.42],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [0.25, 0, 0.75, 2.5], "texture": "#0"},
+				"east": {"uv": [0.25, 0, 0.75, 2.5], "texture": "#0"},
+				"south": {"uv": [0.25, 0, 0.75, 2.5], "texture": "#0"},
+				"west": {"uv": [0.25, 0, 0.75, 2.5], "texture": "#0"},
+				"up": {"uv": [5.5, 6, 5, 5.5], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [8, 7.5, 7.5, 8], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"from": [7.64, 5.72, 8.68],
+			"to": [8.68, 6.24, 9.2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [7, 4, 8, 4.5], "rotation": 180, "texture": "#0"},
+				"east": {"uv": [2, 8, 2.5, 8.5], "texture": "#0"},
+				"south": {"uv": [5, 7.5, 6, 8], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [8, 2, 8.5, 2.5], "texture": "#0"},
+				"up": {"uv": [7.5, 5.5, 8, 6.5], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [7.5, 6, 7, 5], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"from": [7.64, 5.72, 7.64],
+			"to": [8.68, 6.76, 8.68],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [2, 8.5, 3, 9.5], "texture": "#0"},
+				"east": {"uv": [2, 8.5, 3, 9.5], "texture": "#0"},
+				"south": {"uv": [2, 8.5, 3, 9.5], "texture": "#0"},
+				"west": {"uv": [2, 8.5, 3, 9.5], "texture": "#0"},
+				"up": {"uv": [8, 2, 7, 1], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [8, 2, 7, 3], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"from": [7.64, 5.72, 7.12],
+			"to": [8.68, 6.24, 7.64],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [5, 7.5, 6, 8], "texture": "#0"},
+				"east": {"uv": [8, 2, 8.5, 2.5], "texture": "#0"},
+				"south": {"uv": [7.5, 5, 8.5, 5.5], "texture": "#0"},
+				"west": {"uv": [2, 8, 2.5, 8.5], "texture": "#0"},
+				"up": {"uv": [8, 6.5, 7.5, 5.5], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [7.5, 7.5, 7, 8.5], "rotation": 90, "texture": "#0"}
+			}
+		},
+		{
+			"from": [7.12, 5.72, 7.64],
+			"to": [7.64, 6.24, 8.68],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [8, 2, 8.5, 2.5], "texture": "#0"},
+				"east": {"uv": [7.5, 5, 8.5, 5.5], "texture": "#0"},
+				"south": {"uv": [2, 8, 2.5, 8.5], "texture": "#0"},
+				"west": {"uv": [5, 7.5, 6, 8], "texture": "#0"},
+				"up": {"uv": [8, 6.5, 7.5, 5.5], "rotation": 180, "texture": "#0"},
+				"down": {"uv": [7.5, 7.5, 7, 8.5], "rotation": 180, "texture": "#0"}
+			}
+		},
+		{
+			"from": [8.68, 5.72, 7.64],
+			"to": [9.2, 6.24, 8.68],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [2, 8, 2.5, 8.5], "texture": "#0"},
+				"east": {"uv": [5, 7.5, 6, 8], "texture": "#0"},
+				"south": {"uv": [8, 2, 8.5, 2.5], "texture": "#0"},
+				"west": {"uv": [7.5, 5, 8.5, 5.5], "texture": "#0"},
+				"up": {"uv": [8, 6.5, 7.5, 5.5], "texture": "#0"},
+				"down": {"uv": [7.5, 7.5, 7, 8.5], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Bottle",
+			"from": [7.12, 0, 7.12],
+			"to": [9.2, 5.72, 9.2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.29, 4.849, 8.68]},
+			"faces": {
+				"north": {"uv": [0, 5.5, 2, 11], "texture": "#0"},
+				"east": {"uv": [0, 0, 2, 5.5], "texture": "#0"},
+				"south": {"uv": [0, 0, 2, 5.5], "texture": "#0"},
+				"west": {"uv": [0, 0, 2, 5.5], "texture": "#0"},
+				"up": {"uv": [6, 7.5, 4, 5.5], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [6, 5.5, 4, 7.5], "rotation": 90, "texture": "#0"}
+			}
+		}
+	],
+	"gui_light": "front",
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [55, 0, 0],
+			"translation": [0, 4.25, 5.25],
+			"scale": [1.5, 1.5, 1.5]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [63, 0, 0],
+			"translation": [-0.5, 2.75, 6.25],
+			"scale": [1.55, 1.55, 1.55]
+		},
+		"firstperson_righthand": {
+			"rotation": [-180, 61.5, -180],
+			"translation": [7.75, 11.25, -7.75],
+			"scale": [2.45, 2.45, 2.45]
+		},
+		"firstperson_lefthand": {
+			"rotation": [-180, 61.5, -180],
+			"translation": [6.75, 11.75, -7],
+			"scale": [2.55, 2.55, 2.55]
+		},
+		"ground": {
+			"translation": [0, 5.75, 0],
+			"scale": [0.64453, 0.64453, 0.64453]
+		},
+		"gui": {
+			"rotation": [23, 145, 0],
+			"translation": [0, 5.75, 0],
+			"scale": [1.8, 1.8, 1.8]
+		},
+		"head": {
+			"translation": [0, 15.25, 0],
+			"scale": [0, 0, 0]
+		},
+		"fixed": {
+			"rotation": [-90, 0, 0],
+			"translation": [0.25, -0.5, -12.75],
+			"scale": [1.6, 1.6, 1.6]
+		}
+	},
+	"groups": [
+		{
+			"name": "All-Winebottle",
+			"origin": [0, 0, 0],
+			"color": 0,
+			"children": [
+				{
+					"name": "Brand",
+					"origin": [8.25, 9.325, 9],
+					"color": 0,
+					"children": []
+				},
+				0,
+				{
+					"name": "Neck",
+					"origin": [0, 0, 0],
+					"color": 0,
+					"children": [1, 2, 3, 4, 5]
+				},
+				6
+			]
+		}
+	]
+}

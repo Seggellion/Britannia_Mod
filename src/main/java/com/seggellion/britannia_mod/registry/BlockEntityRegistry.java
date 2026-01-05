@@ -16,6 +16,13 @@ import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurn
 import com.seggellion.britannia_mod.structure.HouseSignBlockEntity;
 import com.seggellion.britannia_mod.block.entity.LockableDoorBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ThreeHeightLightBlockEntity;
+import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
+import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WineBarrelBlockEntity;
+import com.seggellion.britannia_mod.block.entity.JuicePressBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WineBottleBlockEntity;
+
+
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.Block;
@@ -125,6 +132,47 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                     () -> BlockEntityType.Builder
                             .of(DoubleBedBlockEntity::new, BlockRegistry.DOUBLE_BED.get())
                             .build(null));
+// === Winery Block Entities ===
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<GrapeVineBlockEntity>> GRAPE_VINE_BE =
+            BLOCK_ENTITIES.register("grape_vine_be",
+                    () -> BlockEntityType.Builder.of(
+                            GrapeVineBlockEntity::new,
+                            BlockRegistry.GRAPE_VINE_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FarmingBlockEntity>> FARMING_BLOCK_BE =
+            BLOCK_ENTITIES.register("farming_block_be", // NOTE: Ensure you use BLOCK_ENTITIES here if that is your register name
+                    () -> BlockEntityType.Builder.of(
+                            FarmingBlockEntity::new,
+                            BlockRegistry.FARMING_BLOCK.get()
+                    ).build(null));
+
+                    // Inside your BlockRegistry class, in the BLOCK_ENTITIES section:
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<JuicePressBlockEntity>> JUICE_PRESS_BE =
+        BLOCK_ENTITIES.register("juice_press_be",
+                () -> BlockEntityType.Builder.of(
+                        JuicePressBlockEntity::new,
+                        BlockRegistry.JUICE_PRESS.get()
+                ).build(null));
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WineBarrelBlockEntity>> WINE_BARREL_BE =
+        BLOCK_ENTITIES.register("wine_barrel_be",
+                () -> BlockEntityType.Builder.of(
+                        WineBarrelBlockEntity::new,
+                        BlockRegistry.WINE_BARREL.get()
+                ).build(null));
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WineBottleBlockEntity>> WINE_BOTTLE_BE = BLOCK_ENTITIES.register("wine_bottle",
+    () -> BlockEntityType.Builder.of(
+        WineBottleBlockEntity::new,
+        BlockRegistry.WINE_BOTTLE_GREEN_BLOCK.get(),
+        BlockRegistry.WINE_BOTTLE_BROWN_BLOCK.get(),
+        BlockRegistry.WINE_BOTTLE_BLUE_BLOCK.get(),
+        BlockRegistry.WINE_BOTTLE_CLEAR_BLOCK.get()
+    ).build(null)
+);
 
 // Spawn Blocks
 

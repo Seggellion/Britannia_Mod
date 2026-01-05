@@ -7,7 +7,7 @@ import com.seggellion.britannia_mod.commands.APITokenCommands;
 import com.seggellion.britannia_mod.commands.StructureCommands;
 import com.seggellion.britannia_mod.commands.LeaderboardCommands;
 import com.seggellion.britannia_mod.commands.PopulateOresCommand;
-
+import com.seggellion.britannia_mod.commands.RandomizeWallsCommand;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
@@ -27,6 +27,8 @@ public class CommandRegistry {
         BlockCommands.register(event.getServer().getCommands().getDispatcher());
         BootstrapCommands.register(event.getServer().getCommands().getDispatcher());
         PopulateOresCommand.register(event.getServer().getCommands().getDispatcher());
+        RandomizeWallsCommand.register(event.getServer().getCommands().getDispatcher());
+
         // Register additional command classes here
     }
 }

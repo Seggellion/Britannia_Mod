@@ -9,6 +9,8 @@ import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.npc.TraderRoleHandler;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
+import com.seggellion.britannia_mod.npc.NpcRoleHandler;
+
 
 import com.seggellion.britannia_mod.network.payload.MonsterSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.MonsterSpawnScreen;
@@ -67,7 +69,24 @@ public static void handleOpenNpcScreen(ClientboundOpenNpcScreenPayload pkt, IPay
         if (mc.player == null || mc.level == null) return;
 
         Player player = mc.player;
-        TraderRoleHandler roleHandler = new TraderRoleHandler(pkt.role(), pkt.city());
+// 1. Determine the CORRECT handler type ONCE
+        NpcRoleHandler roleHandler;
+        String lowerRole = pkt.role().toLowerCase(java.util.Locale.ROOT);
+        
+        if (pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT) {
+             roleHandler = new com.seggellion.britannia_mod.npc.MerchantRoleHandler(pkt.role(), pkt.city());
+        } else {
+             if (lowerRole.contains("salvage")) {
+                 roleHandler = new com.seggellion.britannia_mod.npc.SalvageTraderRoleHandler(pkt.role(), pkt.city());
+             } 
+             // [CRITICAL] Catch the Alcohol Trader specific logic
+             else if (lowerRole.contains("alcohol") || lowerRole.contains("wine") || lowerRole.contains("vintner")) {
+                 roleHandler = new com.seggellion.britannia_mod.npc.AlcoholTraderRoleHandler(pkt.role(), pkt.city());
+             } 
+             else {
+                 roleHandler = new com.seggellion.britannia_mod.npc.TraderRoleHandler(pkt.role(), pkt.city());
+             }
+        }
 
         // Fetch catalog before opening the screen
         roleHandler.fetchCatalog(player, pkt.city(), products -> {
@@ -85,7 +104,9 @@ public static void handleOpenNpcScreen(ClientboundOpenNpcScreenPayload pkt, IPay
                 pkt.role(),
                 pkt.city(),
                 pkt.entityId(),
-                player
+                player,
+                roleHandler,
+                products
             ));
         });
     });

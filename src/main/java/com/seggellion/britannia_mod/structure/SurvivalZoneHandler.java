@@ -11,7 +11,8 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
-
+import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
+import com.seggellion.britannia_mod.item.QualityToolItem; 
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -39,13 +40,17 @@ private static final Logger LOGGER = LogManager.getLogger();
                 continue;
             }
 
+            // [FIX] Check if holding a tool that grants Survival rights
+            boolean isHoldingTool = (player.getMainHandItem().getItem() instanceof QualityToolItem) || 
+                                    (player.getMainHandItem().getItem() instanceof TwoHandedAxeItem);
+
             BlockPos playerPos = player.blockPosition();
             int chunkX = SectionPos.blockToSectionCoord(playerPos.getX());
             int chunkZ = SectionPos.blockToSectionCoord(playerPos.getZ());
 
             List<StructureRecord> structuresInChunk = StructureRegionManager.getStructuresInChunk(chunkX, chunkZ);
             if (structuresInChunk.isEmpty()) {
-                if (currentMode != GameType.ADVENTURE) {
+                if (currentMode != GameType.ADVENTURE && !isHoldingTool) {
                     player.setGameMode(GameType.ADVENTURE);
                 }
                 continue;
@@ -70,7 +75,7 @@ private static final Logger LOGGER = LogManager.getLogger();
                     player.setGameMode(GameType.SURVIVAL);
                 }
             } else {
-                if (currentMode != GameType.ADVENTURE) {
+                if (currentMode != GameType.ADVENTURE && !isHoldingTool) {
                     player.setGameMode(GameType.ADVENTURE);
                 }
             }

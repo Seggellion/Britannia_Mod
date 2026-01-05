@@ -19,6 +19,7 @@ import com.seggellion.britannia_mod.entity.DaemonEntity;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.entity.FishTraderEntity;
 import com.seggellion.britannia_mod.entity.SalvageTraderEntity;
+import com.seggellion.britannia_mod.entity.AlcoholTraderEntity;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.EntityStoneMerchant;
 import com.seggellion.britannia_mod.entity.EntityMetalMerchant;
@@ -53,6 +54,12 @@ public static final DeferredHolder<EntityType<?>, EntityType<SalvageTraderEntity
             () -> EntityType.Builder.of(SalvageTraderEntity::new, MobCategory.MISC)
                     .sized(0.6F, 1.95F)
                     .build("britannia_mod:salvage_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<AlcoholTraderEntity>> ALCOHOL_TRADER =
+        ENTITIES.register("alcohol_trader",
+            () -> EntityType.Builder.of(AlcoholTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:alcohol_trader"));
 
 public static final DeferredHolder<EntityType<?>, EntityType<EntityMetalMerchant>> MEAT_TRADER =
         ENTITIES.register("meat_trader",
@@ -227,6 +234,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<LivingSeatEntity>> 
         event.put(FISH_TRADER.get(), FishTraderEntity.createAttributes().build());
         event.put(SALVAGE_TRADER.get(), SalvageTraderEntity.createAttributes().build());
         event.put(MEAT_TRADER.get(), EntityMetalMerchant.createAttributes().build());
+        event.put(ALCOHOL_TRADER.get(), AlcoholTraderEntity.createAttributes().build());
 
 
         event.put(TOWNSPERSON.get(), TownPersonEntity.createAttributes().build());

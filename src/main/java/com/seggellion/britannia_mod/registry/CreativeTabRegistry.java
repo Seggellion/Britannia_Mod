@@ -10,7 +10,12 @@ import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
+import com.seggellion.britannia_mod.winery.GrapeVariety;
+
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+
 import com.seggellion.britannia_mod.structure.HouseStyle;
 
 
@@ -66,6 +71,51 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_FOUNDATION_ITEM.get());                
                 safeAccept(output, ItemRegistry.STONE_FLOOR_POLISHED_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FLOOR_ITEM.get());
+
+         // ============================================
+                // === NEW: WINERY SECTION (Added to end) ===
+                // ============================================
+                
+                // 1. Tools & Utility
+                safeAccept(output, ItemRegistry.VINTNER_HOE.get());
+                safeAccept(output, ItemRegistry.SCISSORS.get());
+                
+                // 2. Farming Blocks
+                safeAccept(output, ItemRegistry.FARMING_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.TRELLIS_ITEM.get());
+                
+                // 3. Processing Blocks
+                safeAccept(output, ItemRegistry.JUICE_PRESS_ITEM.get());
+                safeAccept(output, ItemRegistry.WINE_BARREL_ITEM.get());
+                
+                // 4. Fertilizers
+                safeAccept(output, ItemRegistry.TURQUOISE_POWDER.get());
+                safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());
+
+                // 5. Glassware
+                safeAccept(output, ItemRegistry.PITCHER_EMPTY.get());
+                safeAccept(output, ItemRegistry.WINE_BOTTLE_GREEN.get());
+                safeAccept(output, ItemRegistry.WINE_BOTTLE_BROWN.get());
+                safeAccept(output, ItemRegistry.WINE_BOTTLE_BLUE.get());
+                safeAccept(output, ItemRegistry.WINE_BOTTLE_CLEAR.get());
+                safeAccept(output, ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get());
+                safeAccept(output, ItemRegistry.PITCHER_RED_GRAPE_JUICE.get());
+
+                // 6. Dynamic Seeds & Grapes (The fix for the error)
+              // 6. Dynamic Seeds
+                for (com.seggellion.britannia_mod.winery.GrapeVariety variety : com.seggellion.britannia_mod.winery.GrapeVarietyManager.getAllVarieties()) {
+                    
+                    // Add Seed Packet
+                    ItemStack seedStack = new ItemStack(ItemRegistry.GRAPE_SEEDS.get());
+                    com.seggellion.britannia_mod.item.GrapeSeedsItem.setVariety(seedStack, variety.id());
+                    
+                    // Set Name
+                    seedStack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, 
+                        Component.literal(variety.displayName() + " Seeds"));
+                    
+                    output.accept(seedStack);
+                }
+   
 
                 // Containers
                 safeAccept(output, ItemRegistry.CHEST_WOODEN_ITEM.get());
@@ -207,9 +257,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GRAVE_FLOWERS.get());
                 safeAccept(output, ItemRegistry.IRON_CEMETERY_GATE_ARCH.get());
                 safeAccept(output, ItemRegistry.ANCHOR.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_TOP.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_MIDDLE.get());
-                safeAccept(output, ItemRegistry.IRON_FENCE_BOTTOM.get());
+                safeAccept(output, ItemRegistry.IRON_FENCE.get());
                 safeAccept(output, ItemRegistry.LYING_SKELETON.get());
                 safeAccept(output, ItemRegistry.SITTING_SKELETON.get());
                 safeAccept(output, ItemRegistry.SKELETON_ARM.get());
@@ -285,7 +333,14 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
-
+                // Musical Instruments
+                safeAccept(output, ItemRegistry.LAP_HARP.get());
+//                safeAccept(output, ItemRegistry.STANDING_HARP.get());
+                safeAccept(output, ItemRegistry.LUTE.get());
+                safeAccept(output, ItemRegistry.DRUMS.get());
+                safeAccept(output, ItemRegistry.VIOLIN.get());
+                safeAccept(output, ItemRegistry.TAMBORINE.get());
+                safeAccept(output, ItemRegistry.TAMBORINE_RIBBON.get());
                 // House items
                 safeAccept(output, ItemRegistry.HOUSE_SIGN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.BLUE_TENT_DEED.get());

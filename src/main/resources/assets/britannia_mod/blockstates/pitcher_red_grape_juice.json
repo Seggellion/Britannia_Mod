@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/pitcher_red_grape_juice" },
+    "facing=east":  { "model": "britannia_mod:block/pitcher_red_grape_juice", "y": 90 },
+    "facing=south": { "model": "britannia_mod:block/pitcher_red_grape_juice", "y": 180 },
+    "facing=west":  { "model": "britannia_mod:block/pitcher_red_grape_juice", "y": 270 }
+  }
+}

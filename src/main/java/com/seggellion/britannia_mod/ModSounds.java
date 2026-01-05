@@ -325,6 +325,66 @@ public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENT
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_lock"))
     );
 
+    // 1. Lap Harp
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAP_HARP_PLAY = SOUND_EVENTS.register(
+            "lap_harp_play",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lap_harp_play"))
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> LAP_HARP_FAIL = SOUND_EVENTS.register(
+            "lap_harp_fail",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lap_harp_fail"))
+    );
+
+    // 2. Standing Harp
+    public static final DeferredHolder<SoundEvent, SoundEvent> STANDING_HARP_PLAY = SOUND_EVENTS.register(
+            "standing_harp_play",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":standing_harp_play"))
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> STANDING_HARP_FAIL = SOUND_EVENTS.register(
+            "standing_harp_fail",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":standing_harp_fail"))
+    );
+
+    // 3. Lute
+    public static final DeferredHolder<SoundEvent, SoundEvent> LUTE_PLAY = SOUND_EVENTS.register(
+            "lute_play",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lute_play"))
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> LUTE_FAIL = SOUND_EVENTS.register(
+            "lute_fail",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lute_fail"))
+    );
+
+    // 4. Drums
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRUM_PLAY = SOUND_EVENTS.register(
+            "drum_play",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":drum_play"))
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRUM_FAIL = SOUND_EVENTS.register(
+            "drum_fail",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":drum_fail"))
+    );
+
+    // 5. Violin
+    public static final DeferredHolder<SoundEvent, SoundEvent> VIOLIN_PLAY = SOUND_EVENTS.register(
+            "violin_play",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":violin_play"))
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> VIOLIN_FAIL = SOUND_EVENTS.register(
+            "violin_fail",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":violin_fail"))
+    );
+
+        // 5. Tamborine
+    public static final DeferredHolder<SoundEvent, SoundEvent> TAMBORINE_PLAY = SOUND_EVENTS.register(
+            "tamborine_play",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":tamborine_play"))
+    );
+    public static final DeferredHolder<SoundEvent, SoundEvent> TAMBORINE_FAIL = SOUND_EVENTS.register(
+            "tamborine_fail",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":tamborine_fail"))
+    );
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);

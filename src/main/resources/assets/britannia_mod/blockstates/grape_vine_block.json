@@ -1,0 +1,51 @@
+{
+  "multipart": [
+    {
+      "when": { "age": "0" },
+      "apply": { "model": "britannia_mod:block/trellis" }
+    },
+    {
+      "when": { "age": "1" },
+      "apply": { "model": "britannia_mod:block/crops/grape_vine_stage1" }
+    },
+    {
+      "when": { "age": "2" },
+      "apply": { "model": "britannia_mod:block/crops/grape_vine_stage2" }
+    },
+    {
+      "when": { "age": "3" },
+      "apply": { "model": "britannia_mod:block/crops/grape_vine_stage3" }
+    },
+    {
+      "when": { "age": "4" },
+      "apply": { "model": "britannia_mod:block/crops/grape_vine_stage4" }
+    },
+    
+    { "when": { "age": "5", "color": "blue" }, "apply": { "model": "britannia_mod:block/crops/grape_blue_trellis_5" } },
+    { "when": { "age": "5", "color": "dark_green" }, "apply": { "model": "britannia_mod:block/crops/grape_dark_green_trellis_5" } },
+    { "when": { "age": "5", "color": "dark_purple" }, "apply": { "model": "britannia_mod:block/crops/grape_dark_purple_trellis_5" } },
+    { "when": { "age": "5", "color": "green" }, "apply": { "model": "britannia_mod:block/crops/grape_green_trellis_5" } },
+    { "when": { "age": "5", "color": "light_green" }, "apply": { "model": "britannia_mod:block/crops/grape_light_green_trellis_5" } },
+    { "when": { "age": "5", "color": "purple" }, "apply": { "model": "britannia_mod:block/crops/grape_purple_trellis_5" } },
+        { "when": { "age": "5", "color": "yellow" }, "apply": { "model": "britannia_mod:block/crops/grape_yellow_trellis_5" } },
+        { "when": { "age": "5", "color": "red" }, "apply": { "model": "britannia_mod:block/crops/grape_red_trellis_5" } },
+
+    { "when": { "age": "6", "color": "blue" }, "apply": { "model": "britannia_mod:block/crops/grape_blue_trellis_6" } },
+    { "when": { "age": "6", "color": "dark_green" }, "apply": { "model": "britannia_mod:block/crops/grape_dark_green_trellis_6" } },
+    { "when": { "age": "6", "color": "dark_purple" }, "apply": { "model": "britannia_mod:block/crops/grape_dark_purple_trellis_6" } },
+    { "when": { "age": "6", "color": "green" }, "apply": { "model": "britannia_mod:block/crops/grape_green_trellis_6" } },
+    { "when": { "age": "6", "color": "light_green" }, "apply": { "model": "britannia_mod:block/crops/grape_light_green_trellis_6" } },
+    { "when": { "age": "6", "color": "purple" }, "apply": { "model": "britannia_mod:block/crops/grape_purple_trellis_6" } },
+    { "when": { "age": "6", "color": "red" }, "apply": { "model": "britannia_mod:block/crops/grape_red_trellis_6" } },
+    { "when": { "age": "6", "color": "yellow" }, "apply": { "model": "britannia_mod:block/crops/grape_yellow_trellis_6" } },
+
+    { "when": { "age": "7", "color": "blue" }, "apply": { "model": "britannia_mod:block/crops/grape_blue_trellis_6" } },
+    { "when": { "age": "7", "color": "dark_green" }, "apply": { "model": "britannia_mod:block/crops/grape_dark_green_trellis_6" } },
+    { "when": { "age": "7", "color": "dark_purple" }, "apply": { "model": "britannia_mod:block/crops/grape_dark_purple_trellis_6" } },
+    { "when": { "age": "7", "color": "green" }, "apply": { "model": "britannia_mod:block/crops/grape_green_trellis_6" } },
+    { "when": { "age": "7", "color": "light_green" }, "apply": { "model": "britannia_mod:block/crops/grape_light_green_trellis_6" } },
+    { "when": { "age": "7", "color": "purple" }, "apply": { "model": "britannia_mod:block/crops/grape_purple_trellis_6" } },
+    { "when": { "age": "7", "color": "red" }, "apply": { "model": "britannia_mod:block/crops/grape_red_trellis_6" } },
+    { "when": { "age": "7", "color": "yellow" }, "apply": { "model": "britannia_mod:block/crops/grape_yellow_trellis_6" } }
+  ]
+}

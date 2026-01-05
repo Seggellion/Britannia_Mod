@@ -35,6 +35,7 @@ public class LargeForgeBlock extends Block implements EntityBlock {
 private static final Map<String, Supplier<Item>> ORE_TYPE_TO_INGOT = Map.of(
     "iron ore", () -> Items.IRON_INGOT,
     "gold ore", () -> Items.GOLD_INGOT,
+    "silver ore", () -> ItemRegistry.SILVER_INGOT.get(),
     "shadow iron ore", () -> ItemRegistry.SHADOW_IRON_INGOT.get(),
     "valorite ore", () -> ItemRegistry.VALORITE_INGOT.get(),
     "verite ore", () -> ItemRegistry.VERITE_INGOT.get(),

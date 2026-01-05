@@ -1,17 +1,15 @@
 package com.seggellion.britannia_mod.network.payload;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
-
 
 public record GrantCoinsC2SPayload(
         int gold,
@@ -22,7 +20,14 @@ public record GrantCoinsC2SPayload(
         List<SoldItem> soldItems
 ) implements CustomPacketPayload {
 
-    public static record SoldItem(String itemId, String itemName, int quantity, double weight) {}
+    // ✅ Added @Nullable CompoundTag nbt to the record
+    public static record SoldItem(
+        String itemId, 
+        String itemName, 
+        int quantity, 
+        double weight, 
+        @Nullable CompoundTag nbt
+    ) {}
 
     public static final ResourceLocation TYPE_ID =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "grant_coins_c2s");
@@ -36,18 +41,19 @@ public record GrantCoinsC2SPayload(
             int copper = ByteBufCodecs.VAR_INT.decode(buf);
             String city = ByteBufCodecs.STRING_UTF8.decode(buf);
             String receipt = ByteBufCodecs.STRING_UTF8.decode(buf);
-            String json = ByteBufCodecs.STRING_UTF8.decode(buf);
+
+            // ✅ Native List Decoding (No JSON)
+            int listSize = buf.readVarInt();
+            List<SoldItem> sold = new ArrayList<>(listSize);
             
-            List<SoldItem> sold = new ArrayList<>();
-            JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
-            for (JsonElement e : arr) {
-                var o = e.getAsJsonObject();
-                sold.add(new SoldItem(
-                        o.get("item_id").getAsString(),
-                        o.get("item_name").getAsString(),
-                        o.get("quantity").getAsInt(),
-                        o.has("weight") ? o.get("weight").getAsDouble() : 0.0
-                ));
+            for (int i = 0; i < listSize; i++) {
+                String itemId = buf.readUtf();
+                String itemName = buf.readUtf();
+                int quantity = buf.readVarInt();
+                double weight = buf.readDouble();
+                CompoundTag nbt = buf.readNbt(); // Reads the tag or null automatically
+
+                sold.add(new SoldItem(itemId, itemName, quantity, weight, nbt));
             }
 
             return new GrantCoinsC2SPayload(gold, silver, copper, city, receipt, sold);
@@ -60,16 +66,16 @@ public record GrantCoinsC2SPayload(
             ByteBufCodecs.VAR_INT.encode(buf, pkt.copper);
             ByteBufCodecs.STRING_UTF8.encode(buf, pkt.city);
             ByteBufCodecs.STRING_UTF8.encode(buf, pkt.receipt);
-            JsonArray arr = new JsonArray();
+
+            // ✅ Native List Encoding (No JSON)
+            buf.writeVarInt(pkt.soldItems.size());
             for (SoldItem i : pkt.soldItems) {
-                var o = new com.google.gson.JsonObject();
-                o.addProperty("item_id", i.itemId());
-                o.addProperty("item_name", i.itemName());
-                o.addProperty("quantity", i.quantity());
-                o.addProperty("weight", i.weight());
-                arr.add(o);
+                buf.writeUtf(i.itemId());
+                buf.writeUtf(i.itemName());
+                buf.writeVarInt(i.quantity());
+                buf.writeDouble(i.weight());
+                buf.writeNbt(i.nbt()); // Native NBT support
             }
-            ByteBufCodecs.STRING_UTF8.encode(buf, arr.toString());
         }
     };
 

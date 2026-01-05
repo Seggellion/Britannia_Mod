@@ -1,4 +1,3 @@
-// WorldBootstrapHandler.java
 package com.seggellion.britannia_mod.event;
 
 import com.mojang.logging.LogUtils;
@@ -9,6 +8,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import com.seggellion.britannia_mod.sync.WorldBootstrapAPI;
 import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.client.RegionCache;
+import com.seggellion.britannia_mod.inventory.CityInventory;
+import com.seggellion.britannia_mod.city.CityManager;
 
 import org.slf4j.Logger;
 
@@ -28,11 +29,53 @@ public final class WorldBootstrapHandler {
         CompletableFuture
             .supplyAsync(() -> WorldBootstrapAPI.fetch(player))
             .thenAcceptAsync(data -> {
-                // apply on main thread
+                // 1. Existing Logic
                 FishCatalog.clear();
                 data.fish().forEach(FishCatalog::put);
                 RegionCache.update(data.regions());
-                LOGGER.info("🌐 World bootstrap loaded: {} fish, {} regions", data.fish().size(), data.regions().size());
+
+                // 2. NEW: City Synchronization
+                if (!data.cities().isEmpty()) {
+                    CityManager manager = CityManager.get(player.serverLevel());
+                    
+                    for (WorldBootstrapAPI.CityBootstrapData c : data.cities()) {
+                        // Get or create the city
+                        var city = manager.getCity(c.name());
+                        if (city == null) continue; // Or create if your logic allows
+
+                        CityInventory inv = city.getInventory();
+                        
+                        // Update basic stats
+                        inv.updateSupplies(c.food(), c.wood(), c.metal(), c.stone(), c.textile(), c.alcohol(), c.tech());
+                        inv.updateTreasury(c.gold(), c.silver(), c.copper());
+
+                        // Full overwrite of market data to ensure sync with Rails
+                        inv.clearAllCommodities(); 
+                        
+                        // Re-populate Commodities (Integers)
+                        // FIX: Use .quantities() to match the Record definition
+                        c.quantities().forEach((cat, subs) -> 
+                            subs.forEach((sub, items) -> 
+                                items.forEach((item, qty) -> inv.addCommodity(cat, sub, item, qty))
+                            )
+                        );
+
+                        // Re-populate Weights (Doubles)
+                        c.weights().forEach((cat, subs) -> 
+                            subs.forEach((sub, items) -> 
+                                items.forEach((item, w) -> inv.addCommodityWeight(cat, sub, item, w))
+                            )
+                        );
+                    }
+                    
+                    // Mark dirty to save to disk immediately
+                    manager.setDirty();
+                    LOGGER.info("Synced {} cities from Rails.", data.cities().size());
+                }
+
+                LOGGER.info("🌐 World bootstrap loaded: {} fish, {} regions, {} cities", 
+                    data.fish().size(), data.regions().size(), data.cities().size());
+
             }, player.server);
     }
 }

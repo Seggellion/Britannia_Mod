@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "britannia_mod:item/crops/grape_green"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "britannia_mod:grape_type": 1.0
+      },
+      "model": "britannia_mod:item/grapes_red"
+    }
+  ]
+}

@@ -35,7 +35,7 @@ import java.util.UUID;
 public class TraderSpawnBlockEntity extends BlockEntity {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final int TRADER_RADIUS = 4; // adjust as needed
+    private static final int TRADER_RADIUS = 1; // adjust as needed
     private static final int BOUNDARY_MARGIN = 1;
     private final Map<UUID, Integer> outsideTicks = new HashMap<>();
     private static final int OUTSIDE_DESPAWN_TICKS = 20 * 60; // 1 minute safety
@@ -73,13 +73,16 @@ private static final class SavedNpc {
 }
 
 private int getRequiredCopper() {
+     LOGGER.info("traderType Copper! {}",traderType);
     return switch (traderType) {
         case "fish_trader" -> 200;
         case "meat_trader" -> 500;
+        case "alcohol_trader" -> 500;
         case "salvage_trader" -> 0;
         default -> 100;
     };
 }
+
 
 
     public TraderSpawnBlockEntity(BlockPos pos, BlockState state) {
@@ -124,6 +127,7 @@ public void serverTick() {
         .filter(e -> e != null && (
             e.getType() == EntityRegistry.FISH_TRADER.get() ||
             e.getType() == EntityRegistry.SALVAGE_TRADER.get() ||
+            e.getType() == EntityRegistry.ALCOHOL_TRADER.get() ||
             e.getType() == EntityRegistry.MEAT_TRADER.get()))
         .count();
 
@@ -148,6 +152,7 @@ public void serverTick() {
 
 private boolean isTraderType(net.minecraft.resources.ResourceLocation typeId) {
     return typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.FISH_TRADER.get())) ||
+        typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.ALCOHOL_TRADER.get())) ||
            typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.SALVAGE_TRADER.get())) ||
            typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.MEAT_TRADER.get()));
 }
@@ -253,7 +258,8 @@ private void spawnTrader(ServerLevel sl) {
         int gold = inv.getCurrencyAmount("gold");
         int silver = inv.getCurrencyAmount("silver");
         int copper = inv.getCurrencyAmount("copper");
-        // Convert all to copper equivalent
+              LOGGER.warn("CityInventory! {}",inv);
+               LOGGER.warn("city! {}",city);
         this.treasuryCopper = copper;
     } else {
         this.treasuryCopper = 0;
@@ -262,6 +268,8 @@ private void spawnTrader(ServerLevel sl) {
 
     // === Threshold check using latest synced treasury ===
     int requiredCopper = getRequiredCopper();
+         LOGGER.warn("COPPER CHECK! {}",treasuryCopper);
+          LOGGER.warn("COPPER CHECK! Required: {}",requiredCopper);
     if (treasuryCopper < requiredCopper) {
         return;
     }
@@ -270,6 +278,7 @@ private void spawnTrader(ServerLevel sl) {
     Mob trader = switch (traderType) {
         case "fish_trader" -> EntityRegistry.FISH_TRADER.get().create(sl);
         case "salvage_trader" -> EntityRegistry.SALVAGE_TRADER.get().create(sl);
+        case "alcohol_trader" -> EntityRegistry.ALCOHOL_TRADER.get().create(sl);
         case "meat_trader" -> EntityRegistry.MEAT_TRADER.get().create(sl);
         default -> null;
     };
@@ -383,6 +392,7 @@ private void spawnTrader(ServerLevel sl) {
             if (e.getType() == EntityRegistry.TOWNSPERSON.get()) npcType = "townsperson";
             else if (e.getType() == EntityRegistry.FISH_TRADER.get()) npcType = "fish_trader";
             else if (e.getType() == EntityRegistry.SALVAGE_TRADER.get()) npcType = "salvage_trader";
+            else if (e.getType() == EntityRegistry.ALCOHOL_TRADER.get()) npcType = "alcohol_trader";
             else if (e.getType() == EntityRegistry.MEAT_TRADER.get()) npcType = "meat_trader";
 
             String gender = "unknown";
@@ -431,6 +441,33 @@ private void spawnTrader(ServerLevel sl) {
             spawnTrader(sl);
         }
     }
+
+    public void applyAndResync(
+        String traderType,
+        String cityName,
+        int townPersonAmount
+    ) {
+        if (!(level instanceof ServerLevel sl)) return;
+
+        // 1. Apply config
+        this.traderType = traderType;
+        this.cityName = cityName;
+        this.townPersonAmount = townPersonAmount;
+
+        // 2. Clear ALL transient state
+        spawnCooldown = 0;
+        coldStartTicks = 0;
+        treasuryCopper = 0;
+
+        saved.clear();
+        despawnAssociatedNpcs(sl);
+
+        // 3. Force a fresh evaluation
+        spawnTrader(sl);
+
+        setChanged();
+    }
+
 
     @Override
     public void setRemoved() {
@@ -563,6 +600,7 @@ int requiredCopper = getRequiredCopper();
             .filter(e -> e != null && (
                     e.getType() == EntityRegistry.FISH_TRADER.get() ||
                     e.getType() == EntityRegistry.SALVAGE_TRADER.get() ||
+                    e.getType() == EntityRegistry.ALCOHOL_TRADER.get() ||
                     e.getType() == EntityRegistry.MEAT_TRADER.get()))
             .count();
 
