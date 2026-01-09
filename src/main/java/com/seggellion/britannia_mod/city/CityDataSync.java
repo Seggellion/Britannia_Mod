@@ -142,10 +142,15 @@ public class CityDataSync {
             connection.setRequestProperty("Content-Type", "application/json");
             CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
             String apiToken = data.getApiToken(); // Might be empty if not set
-                // Include the token in a header, for example, "Authorization: Bearer <token>"
-                if (!apiToken.isEmpty()) {
-                    connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-                }
+            // Include the token in a header, for example, "Authorization: Bearer <token>"
+            if (!apiToken.isEmpty()) {
+                connection.setRequestProperty("Authorization", "Bearer " + apiToken);
+            }
+            String secret = CityAPITokenData.getClientShardSecret();
+            if (secret != null && !secret.isEmpty()) {
+                connection.setRequestProperty("Shard-Secret", secret);
+            }
+
             JsonObject payload = new JsonObject();
             payload.addProperty("npc_id", npcId.toString());
             payload.addProperty("npc_type", npcType);

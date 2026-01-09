@@ -113,7 +113,7 @@ public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatab
              .add(Attributes.ARMOR_TOUGHNESS, 0.0D)
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.5D)
             .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
-            .add(Attributes.JUMP_STRENGTH, 1.0D)
+            .add(Attributes.JUMP_STRENGTH, 0.1D)
             .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
             .add(Attributes.MAX_ABSORPTION, 0.0D)
             .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)

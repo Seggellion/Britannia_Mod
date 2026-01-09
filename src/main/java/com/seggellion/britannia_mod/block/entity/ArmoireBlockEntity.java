@@ -1,18 +1,21 @@
-// com/seggellion/britannia_mod/block/entity/ArmoireBlockEntity.java
 package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,14 +23,13 @@ import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ArmoireBlockEntity extends BlockEntity implements MenuProvider, Container {
-    public static final int SIZE = 36; // 9x4 storage
+    
+    // Adjusted to 27 to match ChestMenu.threeRows (Vanilla UI). 
+    // If you want 36+ slots, you must create a custom MenuType, as Vanilla has no 4-row UI.
+    public static final int SIZE = 27; 
 
-    private final SimpleContainer items = new SimpleContainer(SIZE) {
-        @Override
-        public boolean stillValid(Player player) {
-            return ArmoireBlockEntity.this.stillValid(player);
-        }
-    };
+    // Replaced SimpleContainer with direct NonNullList (The Vanilla Way)
+    private NonNullList<ItemStack> items = NonNullList.withSize(SIZE, ItemStack.EMPTY);
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         @Override
@@ -57,7 +59,89 @@ public class ArmoireBlockEntity extends BlockEntity implements MenuProvider, Con
         super(type, pos, state);
     }
 
-    // ----- MenuProvider -----
+    // =============================================================
+    //   DATA PERSISTENCE (The Fix)
+    // =============================================================
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        // Writes the inventory list to the NBT tag
+        ContainerHelper.saveAllItems(tag, this.items, registries);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        // Resets list and reads from NBT tag
+        this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, this.items, registries);
+    }
+
+    // =============================================================
+    //   CONTAINER IMPLEMENTATION
+    // =============================================================
+
+    @Override
+    public int getContainerSize() {
+        return SIZE;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        for (ItemStack stack : this.items) {
+            if (!stack.isEmpty()) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public ItemStack getItem(int slot) {
+        return this.items.get(slot);
+    }
+
+    @Override
+    public ItemStack removeItem(int slot, int amount) {
+        ItemStack result = ContainerHelper.removeItem(this.items, slot, amount);
+        if (!result.isEmpty()) {
+            this.setChanged(); // Ensures the game knows to save
+        }
+        return result;
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int slot) {
+        ItemStack result = ContainerHelper.takeItem(this.items, slot);
+        if (!result.isEmpty()) {
+            this.setChanged();
+        }
+        return result;
+    }
+
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        this.items.set(slot, stack);
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize());
+        }
+        this.setChanged(); // Ensures the game knows to save
+    }
+
+    @Override
+    public void clearContent() {
+        this.items.clear();
+        this.setChanged();
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return Container.stillValidBlockEntity(this, player);
+    }
+
+    // =============================================================
+    //   MENU & EVENTS
+    // =============================================================
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("container.armoire");
@@ -65,37 +149,18 @@ public class ArmoireBlockEntity extends BlockEntity implements MenuProvider, Con
 
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInv, Player player) {
-        // Vanilla only supports 3-row chests by default; 4 rows requires custom menu if desired
-        // For simplicity, still use 3-row UI — easy to swap later if you want a taller GUI
         return ChestMenu.threeRows(id, playerInv, this);
     }
 
-    // ----- Container delegation -----
-    @Override public int getContainerSize() { return items.getContainerSize(); }
-    @Override public boolean isEmpty() { return items.isEmpty(); }
-    @Override public net.minecraft.world.item.ItemStack getItem(int slot) { return items.getItem(slot); }
-    @Override public net.minecraft.world.item.ItemStack removeItem(int slot, int amount) { return items.removeItem(slot, amount); }
-    @Override public net.minecraft.world.item.ItemStack removeItemNoUpdate(int slot) { return items.removeItemNoUpdate(slot); }
-    @Override public void setItem(int slot, net.minecraft.world.item.ItemStack stack) { items.setItem(slot, stack); setChanged(); }
-    @Override public void clearContent() { items.clearContent(); }
-
-    @Override
-    public boolean stillValid(Player player) {
-        if (this.level == null || this.level.getBlockEntity(this.worldPosition) != this) return false;
-        return player.distanceToSqr(
-                (double)this.worldPosition.getX() + 0.5D,
-                (double)this.worldPosition.getY() + 0.5D,
-                (double)this.worldPosition.getZ() + 0.5D) <= 64.0D;
-    }
-
-    // ----- Open/close management -----
     public void startOpen(Player player) {
-        if (this.level == null || this.level.isClientSide) return;
-        this.openersCounter.incrementOpeners(player, this.level, this.worldPosition, this.getBlockState());
+        if (this.level != null && !this.level.isClientSide) {
+            this.openersCounter.incrementOpeners(player, this.level, this.worldPosition, this.getBlockState());
+        }
     }
 
     public void stopOpen(Player player) {
-        if (this.level == null || this.level.isClientSide) return;
-        this.openersCounter.decrementOpeners(player, this.level, this.worldPosition, this.getBlockState());
+        if (this.level != null && !this.level.isClientSide) {
+            this.openersCounter.decrementOpeners(player, this.level, this.worldPosition, this.getBlockState());
+        }
     }
 }

@@ -33,7 +33,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class JuicePressBlock extends HorizontalDirectionalBlock implements EntityBlock {
-    // 1. Define the MapCodec
     public static final MapCodec<JuicePressBlock> CODEC = simpleCodec(JuicePressBlock::new);
 
     public JuicePressBlock(Properties properties) {
@@ -41,7 +40,6 @@ public class JuicePressBlock extends HorizontalDirectionalBlock implements Entit
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    // 2. Override the codec method
     @Override
     protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return CODEC;
@@ -71,58 +69,86 @@ public class JuicePressBlock extends HorizontalDirectionalBlock implements Entit
         if (!(be instanceof JuicePressBlockEntity press)) return ItemInteractionResult.FAIL;
 
         // 1. Insert Grapes
-        if (stack.getItem() instanceof GrapesItem && !press.hasGrapes()) {
+        if (stack.getItem() instanceof GrapesItem) {
+            // If the press is already full, stop here
+            if (press.isFull()) {
+                player.displayClientMessage(Component.literal("The press is full (50/50). Use an empty pitcher."), true);
+                return ItemInteractionResult.SUCCESS;
+            }
+
+            // Check compatibility before attempting logic
             String variety = GrapesItem.getVariety(stack);
             String region = GrapesItem.getRegion(stack);
+            
+            // If press has grapes, prevent mixing
+            if (!press.isEmpty() && (!press.getVariety().equals(variety))) {
+                player.displayClientMessage(Component.literal("Cannot mix grape varieties! Press contains: " + press.getVariety()), true);
+                return ItemInteractionResult.SUCCESS;
+            }
+
             CompoundTag itemTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
             int quality = itemTag.contains("Quality") ? itemTag.getInt("Quality") : 50;
 
-            press.addGrapes(variety, quality, region);
-            
-            stack.shrink(1);
-            level.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 1.0f);
-            player.displayClientMessage(Component.literal("Pressed " + variety + " grapes."), true);
+            // Attempt to add as many as possible from the hand
+            int amountToAdd = stack.getCount();
+            int consumed = press.addGrapes(variety, quality, region, amountToAdd);
+
+            if (consumed > 0) {
+                stack.shrink(consumed);
+                level.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 1.0f);
+                
+                // Feedback message
+                player.displayClientMessage(Component.literal("Added " + consumed + " " + variety + " grapes. (" + press.getGrapeCount() + "/50)"), true);
+            }
             return ItemInteractionResult.SUCCESS;
         }
 
         // 2. Extract Juice
-        if (stack.getItem() == ItemRegistry.PITCHER_EMPTY.get() && press.hasGrapes()) {
-            JuicePressBlockEntity.JuiceData data = press.extractJuice();
-            stack.shrink(1);
+        if (stack.getItem() == ItemRegistry.PITCHER_EMPTY.get()) {
+            if (press.isFull()) {
+                JuicePressBlockEntity.JuiceData data = press.extractJuice();
+                stack.shrink(1);
 
-            // DETERMINE OUTPUT ITEM BASED ON COLOR
-            GrapeVariety varietyInfo = GrapeVarietyManager.getVariety(data.variety());
-            
-            // Default to Red Juice
-            Item resultItem = ItemRegistry.PITCHER_RED_GRAPE_JUICE.get(); 
-            
-            if (varietyInfo != null) {
-                GrapeColor color = varietyInfo.colorType(); 
+                // DETERMINE OUTPUT ITEM BASED ON COLOR
+                GrapeVariety varietyInfo = GrapeVarietyManager.getVariety(data.variety());
                 
-                if (color == GrapeColor.GREEN || 
-                    color == GrapeColor.YELLOW || 
-                    color == GrapeColor.LIGHT_GREEN || 
-                    color == GrapeColor.DARK_GREEN) {
+                // Default to Red Juice
+                Item resultItem = ItemRegistry.PITCHER_RED_GRAPE_JUICE.get(); 
+                
+                if (varietyInfo != null) {
+                    GrapeColor color = varietyInfo.colorType(); 
                     
-                    resultItem = ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get();
+                    if (color == GrapeColor.GREEN || 
+                        color == GrapeColor.YELLOW || 
+                        color == GrapeColor.LIGHT_GREEN || 
+                        color == GrapeColor.DARK_GREEN) {
+                        
+                        resultItem = ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get();
+                    }
                 }
-            }
 
-            // Create the specific pitcher
-            ItemStack fullPitcher = new ItemStack(resultItem);
-            
-            CompoundTag newTag = new CompoundTag();
-            newTag.putString("GrapeVariety", data.variety());
-            newTag.putInt("Quality", data.quality());
-            newTag.putString("GrapeRegion", data.region());
-            fullPitcher.set(DataComponents.CUSTOM_DATA, CustomData.of(newTag));
-            
-            if (!player.getInventory().add(fullPitcher)) {
-                player.drop(fullPitcher, false);
-            }
+                // Create the specific pitcher
+                ItemStack fullPitcher = new ItemStack(resultItem);
+                
+                CompoundTag newTag = new CompoundTag();
+                newTag.putString("GrapeVariety", data.variety());
+                newTag.putInt("Quality", data.quality());
+                newTag.putString("GrapeRegion", data.region());
+                fullPitcher.set(DataComponents.CUSTOM_DATA, CustomData.of(newTag));
+                
+                if (!player.getInventory().add(fullPitcher)) {
+                    player.drop(fullPitcher, false);
+                }
 
-            level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0f, 1.0f);
-            return ItemInteractionResult.SUCCESS;
+                level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0f, 1.0f);
+                return ItemInteractionResult.SUCCESS;
+            } else {
+                // Feedback if they try to extract too early
+                if (!press.isEmpty()) {
+                    player.displayClientMessage(Component.literal("Not enough grapes! (" + press.getGrapeCount() + "/50)"), true);
+                }
+                return ItemInteractionResult.SUCCESS;
+            }
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
