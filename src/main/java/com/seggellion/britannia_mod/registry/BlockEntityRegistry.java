@@ -148,6 +148,7 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                             BlockRegistry.FARMING_BLOCK.get()
                     ).build(null));
 
+
                     // Inside your BlockRegistry class, in the BLOCK_ENTITIES section:
 
 public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<JuicePressBlockEntity>> JUICE_PRESS_BE =

@@ -6,8 +6,9 @@ import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeColor;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
-import com.mojang.serialization.MapCodec; // Import this
+import com.mojang.serialization.MapCodec;
 
+import net.minecraft.ChatFormatting; 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags; 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -68,68 +70,67 @@ public class JuicePressBlock extends HorizontalDirectionalBlock implements Entit
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof JuicePressBlockEntity press)) return ItemInteractionResult.FAIL;
 
-        // 1. Insert Grapes
+        // 1. Clean with Shovel (NEW FEATURE)
+        // We check against the Tag so it works with Diamond, Iron, Wood, or Modded shovels
+        if (stack.is(ItemTags.SHOVELS)) {
+            if (!press.isEmpty()) {
+                press.clearContent();
+                
+                // Play a satisfying "cleaning" sound
+                level.playSound(null, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0f, 1.0f);
+                
+                player.displayClientMessage(Component.literal("You cleared the press contents.").withStyle(ChatFormatting.YELLOW), true);
+                
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+
+        // 2. Insert Grapes
         if (stack.getItem() instanceof GrapesItem) {
-            // If the press is already full, stop here
             if (press.isFull()) {
-                player.displayClientMessage(Component.literal("The press is full (50/50). Use an empty pitcher."), true);
+                player.displayClientMessage(Component.literal("The press is full (50/50). Use an empty pitcher.").withStyle(ChatFormatting.RED), true);
                 return ItemInteractionResult.SUCCESS;
             }
 
-            // Check compatibility before attempting logic
             String variety = GrapesItem.getVariety(stack);
             String region = GrapesItem.getRegion(stack);
             
-            // If press has grapes, prevent mixing
             if (!press.isEmpty() && (!press.getVariety().equals(variety))) {
-                player.displayClientMessage(Component.literal("Cannot mix grape varieties! Press contains: " + press.getVariety()), true);
+                player.displayClientMessage(Component.literal("Cannot mix varieties! Press contains: " + press.getVariety()).withStyle(ChatFormatting.RED), true);
                 return ItemInteractionResult.SUCCESS;
             }
 
             CompoundTag itemTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
             int quality = itemTag.contains("Quality") ? itemTag.getInt("Quality") : 50;
 
-            // Attempt to add as many as possible from the hand
             int amountToAdd = stack.getCount();
             int consumed = press.addGrapes(variety, quality, region, amountToAdd);
 
             if (consumed > 0) {
                 stack.shrink(consumed);
                 level.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 1.0f);
-                
-                // Feedback message
                 player.displayClientMessage(Component.literal("Added " + consumed + " " + variety + " grapes. (" + press.getGrapeCount() + "/50)"), true);
             }
             return ItemInteractionResult.SUCCESS;
         }
 
-        // 2. Extract Juice
+        // 3. Extract Juice
         if (stack.getItem() == ItemRegistry.PITCHER_EMPTY.get()) {
             if (press.isFull()) {
                 JuicePressBlockEntity.JuiceData data = press.extractJuice();
                 stack.shrink(1);
 
-                // DETERMINE OUTPUT ITEM BASED ON COLOR
                 GrapeVariety varietyInfo = GrapeVarietyManager.getVariety(data.variety());
-                
-                // Default to Red Juice
                 Item resultItem = ItemRegistry.PITCHER_RED_GRAPE_JUICE.get(); 
                 
                 if (varietyInfo != null) {
                     GrapeColor color = varietyInfo.colorType(); 
-                    
-                    if (color == GrapeColor.GREEN || 
-                        color == GrapeColor.YELLOW || 
-                        color == GrapeColor.LIGHT_GREEN || 
-                        color == GrapeColor.DARK_GREEN) {
-                        
+                    if (color == GrapeColor.GREEN || color == GrapeColor.YELLOW || color == GrapeColor.LIGHT_GREEN || color == GrapeColor.DARK_GREEN) {
                         resultItem = ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get();
                     }
                 }
 
-                // Create the specific pitcher
                 ItemStack fullPitcher = new ItemStack(resultItem);
-                
                 CompoundTag newTag = new CompoundTag();
                 newTag.putString("GrapeVariety", data.variety());
                 newTag.putInt("Quality", data.quality());
@@ -143,7 +144,6 @@ public class JuicePressBlock extends HorizontalDirectionalBlock implements Entit
                 level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0f, 1.0f);
                 return ItemInteractionResult.SUCCESS;
             } else {
-                // Feedback if they try to extract too early
                 if (!press.isEmpty()) {
                     player.displayClientMessage(Component.literal("Not enough grapes! (" + press.getGrapeCount() + "/50)"), true);
                 }

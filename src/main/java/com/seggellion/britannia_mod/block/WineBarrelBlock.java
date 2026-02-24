@@ -17,7 +17,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
@@ -91,9 +90,6 @@ public class WineBarrelBlock extends HorizontalDirectionalBlock implements Entit
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        // FIX: Removed the early "isClientSide" return here. 
-        // We let the code flow down so the client can trigger the screen opening.
-
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof WineBarrelBlockEntity barrel)) return ItemInteractionResult.FAIL;
 
@@ -102,36 +98,55 @@ public class WineBarrelBlock extends HorizontalDirectionalBlock implements Entit
         boolean isWhiteJuice = stack.getItem() == ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get();
 
         if (isRedJuice || isWhiteJuice) {
-            if (barrel.isFermenting() || barrel.isReady()) {
-                if (!level.isClientSide) { // Only show message on server
-                    player.displayClientMessage(Component.literal("This barrel is already in use!").withStyle(ChatFormatting.RED), true);
-                }
-                return ItemInteractionResult.SUCCESS; // Return SUCCESS to stop placement
-            }
+            
+            // Check NBT data on the pitcher
+            CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
+            String variety = tag.contains("GrapeVariety") ? tag.getString("GrapeVariety") : "Wild";
+            String region = tag.contains("GrapeRegion") ? tag.getString("GrapeRegion") : "Britannia";
+            int quality = tag.contains("Quality") ? tag.getInt("Quality") : 50;
 
             if (!level.isClientSide) {
-                CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-                String variety = tag.contains("GrapeVariety") ? tag.getString("GrapeVariety") : "Wild";
-                String region = tag.contains("GrapeRegion") ? tag.getString("GrapeRegion") : "Britannia";
-                int quality = tag.contains("Quality") ? tag.getInt("Quality") : 50;
+                // Try to add the juice
+                int result = barrel.tryAddJuice(variety, quality, region);
 
-                barrel.startFermentation(variety, quality, region);
-
-                stack.shrink(1);
-                ItemStack emptyPitcher = new ItemStack(ItemRegistry.PITCHER_EMPTY.get());
-                if (!player.getInventory().add(emptyPitcher)) {
-                    player.drop(emptyPitcher, false);
+                if (result == -1) {
+                    // Barrel Busy
+                    player.displayClientMessage(Component.literal("The barrel is sealed and busy fermenting!").withStyle(ChatFormatting.RED), true);
+                } 
+                else if (result == -2) {
+                    // Mixing Mismatch
+                    player.displayClientMessage(
+                        Component.literal("Do not mix wine! Barrel contains: " + barrel.getVariety() + " (" + barrel.getRegion() + ")").withStyle(ChatFormatting.DARK_RED), true
+                    );
+                } 
+                else if (result == -3) {
+                    // Should be covered by ready check, but just in case
+                     player.displayClientMessage(Component.literal("The barrel is full.").withStyle(ChatFormatting.RED), true);
                 }
-                
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
-                player.displayClientMessage(Component.literal("Fermentation started for " + variety + " wine."), true);
+                else {
+                    // Success (0 or 1)
+                    stack.shrink(1);
+                    ItemStack emptyPitcher = new ItemStack(ItemRegistry.PITCHER_EMPTY.get());
+                    if (!player.getInventory().add(emptyPitcher)) {
+                        player.drop(emptyPitcher, false);
+                    }
+                    level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0f, 1.0f);
+
+                    if (result == 1) {
+                        player.displayClientMessage(Component.literal("Barrel full! Fermentation started.").withStyle(ChatFormatting.GREEN), true);
+                        level.playSound(null, pos, SoundEvents.BARREL_CLOSE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                    } else {
+                        // Filling progress
+                        int current = barrel.getPitchersStored();
+                        int max = WineBarrelBlockEntity.MAX_PITCHERS_TO_FILL;
+                        player.displayClientMessage(Component.literal("Added " + variety + " (" + current + "/" + max + ")"), true);
+                    }
+                }
             }
             return ItemInteractionResult.SUCCESS;
         }
 
         // 2. Check "Bottling" (Open Screen)
-        // If you are using custom items (like "empty brown bottle"), add them to this check!
-// Ensure these exist in your ItemRegistry!
         boolean isBlueBottle = stack.getItem() == ItemRegistry.WINE_BOTTLE_BLUE.get(); 
         boolean isBrownBottle = stack.getItem() == ItemRegistry.WINE_BOTTLE_BROWN.get(); 
         boolean isGreenBottle = stack.getItem() == ItemRegistry.WINE_BOTTLE_GREEN.get(); 
@@ -139,9 +154,6 @@ public class WineBarrelBlock extends HorizontalDirectionalBlock implements Entit
 
         if (isBrownBottle || isGreenBottle || isBlueBottle || isClearBottle) {
             if (barrel.isReady()) {
-                // SERVER & CLIENT: Return SUCCESS. 
-                // This stops the block placement/default action.
-                // The ClientEventHandler will handle opening the screen separately.
                 return ItemInteractionResult.sidedSuccess(level.isClientSide);
             } else {
                 if (!level.isClientSide) {
@@ -153,16 +165,13 @@ public class WineBarrelBlock extends HorizontalDirectionalBlock implements Entit
 
         // 3. Check "Bubbler" Status (Empty Hand)
         if (stack.isEmpty()) {
-            if (level.isClientSide) {
-                // Optional: You could play a sound here on client if you wanted
-            } else {
+            if (!level.isClientSide) {
                 String status = barrel.getBubblerStatus();
                 player.displayClientMessage(Component.literal(status).withStyle(ChatFormatting.AQUA), true);
             }
             return ItemInteractionResult.SUCCESS;
         }
 
-        // If nothing matched, allow default behavior (like placing a block if you are holding one)
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 }

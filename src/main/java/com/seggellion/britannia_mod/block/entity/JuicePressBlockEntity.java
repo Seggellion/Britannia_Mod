@@ -38,6 +38,14 @@ public class JuicePressBlockEntity extends BlockEntity {
         return grapeCount == 0;
     }
 
+public void clearContent() {
+        this.grapeCount = 0;
+        this.grapeVariety = "";
+        this.region = "Britannia";
+        this.quality = 0;
+        this.setChanged();
+    }
+
     public int addGrapes(String variety, int itemQuality, String region, int amountToAdd) {
         // If press is not empty, ensure variety and region match
         if (!isEmpty()) {

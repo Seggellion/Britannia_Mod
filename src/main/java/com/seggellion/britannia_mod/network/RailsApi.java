@@ -130,7 +130,7 @@ public class RailsApi {
                         products.add(new Product(
                             itemIdStr,
                             obj.get("item_name").getAsString(),
-                            obj.get("price").getAsInt(),
+                            (int) Math.round(obj.get("price").getAsDouble()),
                             currency, // Pass currency
                             stack 
                         ));

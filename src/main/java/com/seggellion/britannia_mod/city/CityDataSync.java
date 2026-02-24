@@ -185,6 +185,12 @@ public class CityDataSync {
                 if (!apiToken.isEmpty()) {
                     connection.setRequestProperty("Authorization", "Bearer " + apiToken);
                 }
+
+            String secret = data.getShardSecret();
+            if (secret != null && !secret.isEmpty()) {
+                connection.setRequestProperty("Shard-Secret", secret);
+            }
+
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
             }

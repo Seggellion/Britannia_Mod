@@ -84,13 +84,11 @@ public class FarmingBlock extends Block implements EntityBlock {
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         
         BlockEntity be = level.getBlockEntity(pos);
-            LOGGER.info("Interaction!");
 // 1. TRELLIS PLACEMENT OVERRIDE (Adventure Mode Fix)
         // We check if the player is holding the Trellis Item and clicking the Soil
         if (stack.is(ItemRegistry.TRELLIS_ITEM.get())) {
             BlockPos abovePos = pos.above();
             BlockState aboveState = level.getBlockState(abovePos);
-            LOGGER.info("Trellis item used");
             // Check if the space above is empty (Air or replaceable fluid)
             if (aboveState.canBeReplaced()) {
                 if (!level.isClientSide) {
@@ -192,8 +190,6 @@ public class FarmingBlock extends Block implements EntityBlock {
         }
     }
 
-    // --- Growth Logic ---
-
     @Override
     public boolean isRandomlyTicking(BlockState state) {
         return true;
@@ -210,33 +206,22 @@ public class FarmingBlock extends Block implements EntityBlock {
 
         // 2. Growth / Germination Logic
         if (currentHydration > 0) {
-            LOGGER.info("Hydration Greater than 0");
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof FarmingBlockEntity farmBe) {
-                LOGGER.info("FarmingBlockEntity Exists");
 
                 // CHECK: Do we have seeds waiting?
                 if (state.getValue(HAS_SEEDS)) {
                     BlockPos abovePos = pos.above();
                     BlockState aboveState = level.getBlockState(abovePos);
-                LOGGER.info("Has seeds");
 
                     // REQUIREMENT: Must have a Trellis above to germinate
                     if (aboveState.getBlock() instanceof TrellisBlock) {
-                                        LOGGER.info("Trellis Exists");
 
                         // 1. Retrieve the stored seed ID
                         String varietyId = farmBe.getStoredSeed();
                         
                         // 2. Look up the color
                         GrapeColor color = GrapeVarietyManager.getVariety(varietyId).colorType();
-
-LOGGER.info("GERMINATION ATTEMPT at {}", pos);
-
-LOGGER.info("varietyId {}", varietyId);
-
-LOGGER.info("color {}", color);
-
 
                         // 3. Create the Vine State WITH the color
                         BlockState vineState = BlockRegistry.GRAPE_VINE_BLOCK.get().defaultBlockState()
@@ -267,14 +252,7 @@ LOGGER.info("color {}", color);
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof FarmingBlockEntity farmBe) {
                 int quality = farmBe.calculateQualityScore();
-                
-                // If the block had a crop (logic would usually be on the crop itself, 
-                // but if breaking soil breaks crop, handle drops here if needed).
-                // Usually we just drop the soil itself or nothing.
-                // The requirements asked to drop Grapes, but grapes grow on the Vine, not the Soil.
-                // Assuming this is still desired for "Harvesting" the soil block itself? 
-                // Keeping previous logic as requested:
-                
+
                 ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get());
                 CompoundTag dataTag = new CompoundTag();
                 dataTag.putInt("QualityScore", quality);
