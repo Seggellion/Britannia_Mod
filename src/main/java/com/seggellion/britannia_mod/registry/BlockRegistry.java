@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
 import com.seggellion.britannia_mod.block.IronFenceBlock;
+import com.seggellion.britannia_mod.block.TallThinBlock;
 import com.seggellion.britannia_mod.block.TallDecorativeBlock;
 import com.seggellion.britannia_mod.block.TallDecorative3Block;
 import com.seggellion.britannia_mod.block.HorizontalTallBlock;
@@ -1310,6 +1311,17 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
             .noOcclusion()
         )
     );
+
+  public static final DeferredHolder<Block, TallThinBlock> DARK_STONE_WINDOW =
+    BLOCKS.register("dark_stone_window", 
+        () -> new TallThinBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
 
   public static final DeferredHolder<Block, ThinWall> DARK_STONE_WALL_HALF =
     BLOCKS.register("dark_stone_wall_half", 

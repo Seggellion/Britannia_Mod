@@ -715,6 +715,10 @@ public static final DeferredHolder<Item, BlockItem> COBBLESTONE_WALL_TOP_ITEM =
         ITEMS.register("cobblestone_wall_top",
             () -> new BlockItem(BlockRegistry.COBBLESTONE_WALL_TOP.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> DARK_STONE_WINDOW =
+        ITEMS.register("dark_stone_window",
+            () -> new BlockItem(BlockRegistry.DARK_STONE_WINDOW.get(), new Item.Properties()));
+
 public static final DeferredHolder<Item, BlockItem> DARK_STONE_WALL_BOTTOM_ITEM =
         ITEMS.register("dark_stone_wall_bottom",
             () -> new BlockItem(BlockRegistry.DARK_STONE_WALL_BOTTOM.get(), new Item.Properties()));

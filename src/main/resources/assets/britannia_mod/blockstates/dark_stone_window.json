@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "facing=north,half=lower": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_bottom", "uvlock": true },
+    "facing=south,half=lower": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_bottom", "y": 180, "uvlock": true },
+    "facing=east,half=lower":  { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_bottom", "y": 270, "uvlock": true },
+    "facing=west,half=lower":  { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_bottom", "y": 90, "uvlock": true },
+    
+    "facing=north,half=upper": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_top", "uvlock": true },
+    "facing=south,half=upper": { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_top", "y": 180, "uvlock": true },
+    "facing=east,half=upper":  { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_top", "y": 270, "uvlock": true },
+    "facing=west,half=upper":  { "model": "britannia_mod:block/structure/dark_stone_wall/dark_stone_window_top", "y": 90, "uvlock": true }
+  }
+}
