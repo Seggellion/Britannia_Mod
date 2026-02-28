@@ -58,6 +58,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.WOODEN_BOARD_FLOOR_ITEM.get());
                  safeAccept(output, ItemRegistry.WOODEN_PLANK_FLOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOOD_DOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_GATE_ITEM.get());
+                safeAccept(output, ItemRegistry.IRON_FENCE_GATE_ITEM.get());
                 safeAccept(output, ItemRegistry.LOCKABLE_WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.LOCKABLE_METAL_DOOR_ITEM.get());
@@ -167,6 +169,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CORRAL_CORNER_FENCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CORRAL_FENCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CORRAL_PILLAR_ITEM.get());
+                safeAccept(output, ItemRegistry.CORRAL_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.CORRAL_WALL_POLE_ITEM.get());
 
                 // Windows
                 safeAccept(output, ItemRegistry.WINDOW_1X1_ITEM.get());

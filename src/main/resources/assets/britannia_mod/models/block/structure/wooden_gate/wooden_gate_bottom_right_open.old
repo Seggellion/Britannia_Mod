@@ -1,0 +1,7 @@
+{
+    "parent": "block/door_bottom_right_open",
+    "textures": {
+        "bottom": "britannia_mod:block/structure/corral_texture"
+
+    }
+}

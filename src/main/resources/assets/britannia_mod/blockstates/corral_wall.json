@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "corner=false,facing=north": [
+      { "model": "britannia_mod:block/structure/corral_fence/corral_wall", "uvlock": true }
+
+    ],
+
+    "corner=false,facing=south": [
+      { "model": "britannia_mod:block/structure/corral_fence/corral_wall", "y": 180, "uvlock": true }
+    ],
+
+    "corner=false,facing=west": [
+      { "model": "britannia_mod:block/structure/corral_fence/corral_wall", "y": 270, "uvlock": true }
+    ],
+
+    "corner=false,facing=east": [
+      { "model": "britannia_mod:block/structure/corral_fence/corral_wall", "y": 90, "uvlock": true }
+    ]
+  }
+}

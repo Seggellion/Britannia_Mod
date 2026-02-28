@@ -512,6 +512,13 @@ public static final DeferredHolder<Item, BlockItem> BIRCH_WALL_ITEM =
         ITEMS.register("birch_wall_block", () ->
             new BlockItem(BlockRegistry.BIRCH_WALL_BLOCK.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> CORRAL_WALL_ITEM =
+        ITEMS.register("corral_wall",
+            () -> new BlockItem(BlockRegistry.CORRAL_WALL.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> CORRAL_WALL_POLE_ITEM =
+        ITEMS.register("corral_wall_pole",
+            () -> new BlockItem(BlockRegistry.CORRAL_WALL_POLE.get(), new Item.Properties()));
 
 public static final DeferredHolder<Item, BlockItem> CORRAL_CORNER_FENCE_ITEM =
     ITEMS.register("corral_corner_fence", () -> new BlockItem(BlockRegistry.CORRAL_CORNER_FENCE.get(), new Item.Properties()));
@@ -814,6 +821,17 @@ public static final DeferredHolder<Item, Item> LOCKABLE_METAL_DOOR_ITEM = ITEMS.
 public static final DeferredHolder<Item, Item> WOOD_DOOR_ITEM = ITEMS.register(
     "wood_door_item",
     () -> new BlockItem(BlockRegistry.WOOD_DOOR.get(), new Item.Properties().stacksTo(64))
+);
+
+public static final DeferredHolder<Item, Item> WOODEN_GATE_ITEM = ITEMS.register(
+    "wooden_gate_item",
+    () -> new BlockItem(BlockRegistry.WOODEN_GATE.get(), new Item.Properties().stacksTo(64))
+);
+
+
+public static final DeferredHolder<Item, Item> IRON_FENCE_GATE_ITEM = ITEMS.register(
+    "iron_fence_gate",
+    () -> new BlockItem(BlockRegistry.IRON_FENCE_GATE.get(), new Item.Properties().stacksTo(64))
 );
 
 public static final DeferredHolder<Item, Item> LOCKABLE_WOOD_DOOR_ITEM = ITEMS.register(

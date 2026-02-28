@@ -1,4 +1,3 @@
-// BritanniaBlockSetTypes.java
 package com.seggellion.britannia_mod.registry;
 
 import net.minecraft.world.level.block.state.properties.BlockSetType;
@@ -25,9 +24,42 @@ public class BritanniaBlockSetTypes {
         ModSounds.METAL_DOOR_OPEN.get()         // buttonClickOn (reuse open)
     );
 
+    public static final BlockSetType IRON_FENCE_GATE = new BlockSetType(
+        "iron_fence_gate",
+        true,
+        false, 
+        false,
+        PressurePlateSensitivity.EVERYTHING,
+        SoundType.METAL,
+        ModSounds.METAL_DOOR_CLOSE.get(),
+        ModSounds.METAL_DOOR_OPEN.get(),
+        ModSounds.METAL_DOOR_CLOSE.get(),
+        ModSounds.METAL_DOOR_OPEN.get(),
+        ModSounds.METAL_DOOR_CLOSE.get(),
+        ModSounds.METAL_DOOR_OPEN.get(),
+        ModSounds.METAL_DOOR_CLOSE.get(),
+        ModSounds.METAL_DOOR_OPEN.get()
+    );
 
     public static final BlockSetType WOOD_DOOR = new BlockSetType(
         "wood_door", 
+        true,
+        false,
+        false,
+        PressurePlateSensitivity.EVERYTHING,
+        SoundType.WOOD,
+        ModSounds.WOOD_DOOR_CLOSE.get(),
+        ModSounds.WOOD_DOOR_OPEN.get(),
+        ModSounds.WOOD_DOOR_CLOSE.get(),
+        ModSounds.WOOD_DOOR_OPEN.get(), 
+        ModSounds.WOOD_DOOR_CLOSE.get(),
+        ModSounds.WOOD_DOOR_OPEN.get(), 
+        ModSounds.WOOD_DOOR_CLOSE.get(),
+        ModSounds.WOOD_DOOR_OPEN.get()
+    );
+
+    public static final BlockSetType WOODEN_GATE = new BlockSetType(
+        "wooden_gate", 
         true,
         false,
         false,

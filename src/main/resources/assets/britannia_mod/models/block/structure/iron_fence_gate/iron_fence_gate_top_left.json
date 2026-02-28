@@ -1,0 +1,7 @@
+{
+    "parent": "block/door_top_left",
+    "render_type": "minecraft:cutout",
+    "textures": {
+        "top": "britannia_mod:block/decoration/iron_fence_top"
+    }
+}

@@ -189,6 +189,9 @@ protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockSt
         if (item == Item.byBlock(BlockRegistry.DARK_STONE_WALL.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/dark_stone_wall_bottom2");
         }
+        if (item == Item.byBlock(BlockRegistry.CORRAL_WALL.get())) {
+                return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/corral_texture");
+        }
         if (item == Item.byBlock(BlockRegistry.PLASTER_WOOD_FOUNDATION.get())) {
                 return ResourceLocation.fromNamespaceAndPath("britannia_mod", "block/structure/plaster_wood_foundation");
         }

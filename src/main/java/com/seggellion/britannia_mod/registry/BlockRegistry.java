@@ -86,6 +86,7 @@ import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.block.TopOakWallBlock;
 import com.seggellion.britannia_mod.block.MetalDoorBlock;
+import com.seggellion.britannia_mod.block.TripleMetalDoorBlock;
 import com.seggellion.britannia_mod.block.LockableDoorBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.ThreeHeightLightBlock;
@@ -1345,6 +1346,26 @@ public static final DeferredHolder<Block, ThinWall> STONE_WALL_BOTTOM =
         )
     );
 
+    public static final DeferredHolder<Block, ThinWall> CORRAL_WALL =
+    BLOCKS.register("corral_wall", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
+    public static final DeferredHolder<Block, ThinWall> CORRAL_WALL_POLE =
+    BLOCKS.register("corral_wall_pole", 
+        () -> new ThinWall(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE)
+            .strength(2.0f)
+            .sound(SoundType.STONE)
+            .noOcclusion()
+        )
+    );
+
   public static final DeferredHolder<Block, DarkStoneWallBlock> DARK_STONE_WALL =
         BLOCKS.register("dark_stone_wall", () ->
             new DarkStoneWallBlock(
@@ -1721,6 +1742,22 @@ public static final DeferredHolder<Block, Block> LOCKABLE_METAL_DOOR = BLOCKS.re
             .sound(SoundType.METAL)
     )
 );
+
+public static final DeferredHolder<Block, Block> WOODEN_GATE = BLOCKS.register(
+    "wooden_gate",
+    () -> new DoorBlock(
+            BritanniaBlockSetTypes.WOODEN_GATE,
+            BlockBehaviour.Properties.of()
+                .mapColor(MapColor.WOOD)
+                .strength(3.0F)
+                .noOcclusion()
+                .sound(SoundType.WOOD))
+);
+
+public static final DeferredHolder<Block, Block> IRON_FENCE_GATE = BLOCKS.register("iron_fence_gate", 
+    () -> new TripleMetalDoorBlock());
+
+
 
 public static final DeferredHolder<Block, Block> WOOD_DOOR = BLOCKS.register(
     "wood_door",
