@@ -1,0 +1,33 @@
+{
+  "variants": {
+    "facing=north,style=0": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_1" },
+    "facing=east,style=0":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_1", "y": 90 },
+    "facing=south,style=0": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_1", "y": 180 },
+    "facing=west,style=0":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_1", "y": 270 },
+
+    "facing=north,style=1": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_2" },
+    "facing=east,style=1":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_2", "y": 90 },
+    "facing=south,style=1": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_2", "y": 180 },
+    "facing=west,style=1":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_2", "y": 270 },
+
+    "facing=north,style=2": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_3" },
+    "facing=east,style=2":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_3", "y": 90 },
+    "facing=south,style=2": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_3", "y": 180 },
+    "facing=west,style=2":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_3", "y": 270 },
+
+    "facing=north,style=3": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_4" },
+    "facing=east,style=3":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_4", "y": 90 },
+    "facing=south,style=3": { "model": "britannia_mod:block/structure/sign/metal_sign_holder_4", "y": 180 },
+    "facing=west,style=3":  { "model": "britannia_mod:block/structure/sign/metal_sign_holder_4", "y": 270 },
+
+    "facing=north,style=4": { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1" },
+    "facing=east,style=4":  { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 90 },
+    "facing=south,style=4": { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 180 },
+    "facing=west,style=4":  { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_1", "y": 270 },
+
+    "facing=north,style=5": { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_2" },
+    "facing=east,style=5":  { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_2", "y": 90 },
+    "facing=south,style=5": { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_2", "y": 180 },
+    "facing=west,style=5":  { "model": "britannia_mod:block/structure/sign/wooden_sign_holder_2", "y": 270 }
+  }
+}

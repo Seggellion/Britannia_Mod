@@ -294,6 +294,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_14_ITEM.get());
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_15_ITEM.get());
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_16_ITEM.get());
+                safeAccept(output, ItemRegistry.BLANK_SIGN_HOLDER.get());
 
                 // signs
                    safeAccept(output, ItemRegistry.HANGING_LANTERN_ITEM.get());

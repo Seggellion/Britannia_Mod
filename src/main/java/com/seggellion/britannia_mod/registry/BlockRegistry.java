@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.block.MoongateBlock;
 import com.seggellion.britannia_mod.block.BrickFoundationBlock;
 import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import com.seggellion.britannia_mod.structure.StoreSignBlock;
+import com.seggellion.britannia_mod.block.BlankSignHolder;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.BritanniaChestBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
@@ -1794,6 +1795,14 @@ public static final DeferredHolder<Block, Block> LOCKABLE_WOOD_DOOR = BLOCKS.reg
                 .noOcclusion()
                 .sound(SoundType.WOOD))
 );
+
+public static final DeferredHolder<Block, BlankSignHolder> BLANK_SIGN_HOLDER = BLOCKS.register(
+            "blank_sign_holder",
+            () -> new BlankSignHolder(BlockBehaviour.Properties.of()
+                    .strength(2.0f, 3.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion())
+            );
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.block.BlankSignHolder;
 import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
@@ -59,9 +60,11 @@ public class InteriorDecoratorToolItem extends Item {
             }
         }
 
-        // Rotate horizontal blocks (except ThinWall)
+        // Rotate horizontal blocks (except ThinWall, DoubleBedBlock, and BlankSignHolder)
         if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
-            if (!(state.getBlock() instanceof ThinWall) && !(state.getBlock() instanceof DoubleBedBlock)) {
+            if (!(state.getBlock() instanceof ThinWall) 
+             && !(state.getBlock() instanceof DoubleBedBlock)
+             && !(state.getBlock() instanceof BlankSignHolder)) {
                 if (!level.isClientSide()) {
                     Direction cur  = state.getValue(HorizontalDirectionalBlock.FACING);
                     Direction next = cur.getClockWise();
@@ -102,6 +105,16 @@ public class InteriorDecoratorToolItem extends Item {
                 int next = (state.getValue(ThinWall.STYLE) + 1) % 3;
                 level.setBlock(pos, state.setValue(ThinWall.STYLE, next), 3);
                 LOGGER.info("🎨 InteriorDecoratorTool toggled wall style at {}", pos);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+
+        // BlankSignHolder style cycling
+        if (state.getBlock() instanceof BlankSignHolder signHolder) {
+            if (!level.isClientSide()) {
+                int next = (state.getValue(BlankSignHolder.STYLE) + 1) % 6;
+                level.setBlock(pos, state.setValue(BlankSignHolder.STYLE, next), 3);
+                LOGGER.info("🎨 InteriorDecoratorTool toggled sign holder style at {}", pos);
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
