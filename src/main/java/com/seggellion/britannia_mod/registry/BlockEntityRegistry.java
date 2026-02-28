@@ -97,6 +97,7 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                             BlockRegistry.LAMP_POST_REGULAR.get(),
                             BlockRegistry.LAMP_POST_FANCY.get(),
                             BlockRegistry.TORCH_WALL.get(),
+                        BlockRegistry.WOODEN_CHANDELIER.get(),
                             BlockRegistry.TORCH_STANDING.get(),
                             BlockRegistry.BRAZIER_SMALL.get()
                     ).build(null));

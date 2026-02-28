@@ -1252,8 +1252,12 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_POST_ITEM =
     public static final DeferredHolder<Item, Item> CANDLE_ITEM = ITEMS.register(
             "candle", () -> new BlockItem(BlockRegistry.CANDLE.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> WOODEN_CHANDELIER = ITEMS.register(
+            "wooden_chandelier", () -> new BlockItem(BlockRegistry.WOODEN_CHANDELIER.get(), new Item.Properties()));
+
     public static final DeferredHolder<Item, Item> CANDELABRA_SMALL_ITEM = ITEMS.register(
             "candelabra_small", () -> new BlockItem(BlockRegistry.CANDELABRA_SMALL.get(), new Item.Properties()));
+
 
     public static final DeferredHolder<Item, Item> CANDELABRA_TALL_ITEM = ITEMS.register(
             "candelabra_tall", () -> new BlockItem(BlockRegistry.CANDELABRA_TALL.get(), new Item.Properties()));

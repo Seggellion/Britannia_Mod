@@ -815,6 +815,15 @@ public static final DeferredHolder<Block, Block> CANDLE = BLOCKS.register(
 );
 
 
+public static final DeferredHolder<Block, Block> WOODEN_CHANDELIER = BLOCKS.register(
+    "wooden_chandelier",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 12))
+);
+
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
     "candelabra_small",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
@@ -1102,9 +1111,7 @@ public static final DeferredHolder<Block, Window2x3Block> WINDOW_2X3 =
     public static final DeferredHolder<Block, Block> WINDOW_COLLISION = BLOCKS.register(
         "window_collision", WindowCollisionBlock::new);
                 
-
-    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_1X1 =
-    BLOCKS.register("window_cross_1x1", 
+    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_1X1 = BLOCKS.register("window_cross_1x1", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
@@ -1280,8 +1287,6 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
         "dungeon_stairs", CustomStoneStairsBlock::new
     );
 
-
-
   public static final DeferredHolder<Block, ThinWall> STONE_ARCH =
     BLOCKS.register("stone_arch", 
         () -> new ThinWall(BlockBehaviour.Properties.of()
@@ -1398,8 +1403,7 @@ public static final DeferredHolder<Block, ThinWall> DARK_STONE_WALL_BOTTOM =
     );
 
 
-public static final DeferredHolder<Block, Block> STONE_WALL_WINDOW =
-BLOCKS.register("stone_wall_window", () -> new RotatingStoneWallBlock(BlockBehaviour.Properties.of().strength(2.0f)));
+public static final DeferredHolder<Block, Block> STONE_WALL_WINDOW = BLOCKS.register("stone_wall_window", () -> new RotatingStoneWallBlock(BlockBehaviour.Properties.of().strength(2.0f)));
 
 public static final DeferredHolder<Block, Block> STONE_WALL_TOP_BLOCK =
     BLOCKS.register("stone_wall_top_block",
@@ -1424,8 +1428,6 @@ public static final DeferredHolder<Block, Block> PIER =
             .noOcclusion()
         )
     );
-
-
 
   public static final DeferredHolder<Block, CobbleStoneWallBlock> COBBLESTONE_WALL =
         BLOCKS.register("cobblestone_wall", () ->

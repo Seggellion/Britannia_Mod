@@ -221,6 +221,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PIER.get());
                 safeAccept(output, ItemRegistry.WALL_SCONCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDLE_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_CHANDELIER.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_TALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TORCH_WALL_ITEM.get());
