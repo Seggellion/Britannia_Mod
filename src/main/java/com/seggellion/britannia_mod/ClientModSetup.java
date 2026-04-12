@@ -5,6 +5,8 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityHorseMerchantRe
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.FishTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.QuestGiverEntityRenderer;
+
 import com.seggellion.britannia_mod.client.renderer.entity.SalvageTraderEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.AlcoholTraderEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CitizenEntityRenderer;
@@ -16,7 +18,7 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRe
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
-import com.seggellion.britannia_mod.client.screen.MonsterSpawnScreen;
+import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.entity.EntityType;
@@ -35,19 +37,9 @@ import com.seggellion.britannia_mod.block.ChairRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
-import com.seggellion.britannia_mod.client.renderer.entity.MongbatRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.LichRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.RatRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.BaseBritanniaRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.WraithRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.GhoulRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.ShadeRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.ShadowOreElementalRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
 import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -444,18 +436,76 @@ event.registerBlockEntityRenderer(
             // Register the entity renderers
             EntityRenderers.register(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
             EntityRenderers.register(EntityRegistry.LAY_ENTITY.get(), EmptyRenderer::new);
-            EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
-            EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), DaemonRenderer::new);
-            EntityRenderers.register(EntityRegistry.LICH_ENTITY.get(), LichRenderer::new);
-            EntityRenderers.register(EntityRegistry.RAT_ENTITY.get(), RatRenderer::new);
-            EntityRenderers.register(EntityRegistry.WRAITH_ENTITY.get(), WraithRenderer::new);
-            EntityRenderers.register(EntityRegistry.GHOUL_ENTITY.get(), GhoulRenderer::new);
-            EntityRenderers.register(EntityRegistry.SHADE_ENTITY.get(), ShadeRenderer::new);
-            EntityRenderers.register(EntityRegistry.WISP_ENTITY.get(), WispRenderer::new);
-            EntityRenderers.register(EntityRegistry.CUSTOM_CAT_ENTITY.get(), CatRenderer::new);
-            EntityRenderers.register(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), EarthElementalRenderer::new);
-            EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalRenderer::new);
-            EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalRenderer::new);
+            EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.5F, 0.25F)); 
+            
+
+// Animal
+EntityRenderers.register(EntityRegistry.HIND_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.3F));
+
+EntityRenderers.register(EntityRegistry.GIANT_RAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.3F));
+
+// Monsters
+EntityRenderers.register(EntityRegistry.ALLIGATOR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.6F));
+EntityRenderers.register(EntityRegistry.ETTIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.5F, 0.8F)); // Upscaled
+EntityRenderers.register(EntityRegistry.SERPENT_GIANT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F)); // Downscaled
+EntityRenderers.register(EntityRegistry.SERPENT_LAVA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+EntityRenderers.register(EntityRegistry.SERPENT_ICE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+EntityRenderers.register(EntityRegistry.SERPENT_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+EntityRenderers.register(EntityRegistry.SERPENT_DEEP_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+EntityRenderers.register(EntityRegistry.SERPENT_CRYSTAL_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+
+EntityRenderers.register(EntityRegistry.FIRE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+EntityRenderers.register(EntityRegistry.WATER_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+EntityRenderers.register(EntityRegistry.POISON_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+EntityRenderers.register(EntityRegistry.ACID_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+EntityRenderers.register(EntityRegistry.BLOOD_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+EntityRenderers.register(EntityRegistry.AIR_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+
+EntityRenderers.register(EntityRegistry.SERPENT_SILVER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+EntityRenderers.register(EntityRegistry.SCORPION_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+EntityRenderers.register(EntityRegistry.LIZARDMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+EntityRenderers.register(EntityRegistry.RATMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.4F));
+EntityRenderers.register(EntityRegistry.RATMAN_ARCHER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.4F));
+EntityRenderers.register(EntityRegistry.RATMAN_ASSASSIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.4F));
+
+EntityRenderers.register(EntityRegistry.HARPY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.4F));
+EntityRenderers.register(EntityRegistry.HEADLESS_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+
+EntityRenderers.register(EntityRegistry.OGRE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
+EntityRenderers.register(EntityRegistry.OGRE_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
+EntityRenderers.register(EntityRegistry.OGRE_LORD_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
+EntityRenderers.register(EntityRegistry.OGRE_LORD_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
+
+
+EntityRenderers.register(EntityRegistry.TROLL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 0.7F)); // Upscaled
+EntityRenderers.register(EntityRegistry.GARGOYLE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GARGOYLE_DESTROYER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GARGOYLE_ENFORCER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GARGOYLE_STONE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+
+
+//needs resizing
+EntityRenderers.register(EntityRegistry.HIND_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GREAT_HART_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.BEAR_BROWN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.BEAR_BLACK_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.BEAR_POLAR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.BEAR_GRIZZLY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.TURKEY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GORILLA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+
+
+EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.LICH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.RAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.WRAITH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GHOUL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.SHADE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.WISP_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+
             EntityRenderers.register(EntityRegistry.HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchantRenderer::new);
            // EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), FishTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchantRenderer::new);
@@ -465,6 +515,7 @@ event.registerBlockEntityRenderer(
             EntityRenderers.register(EntityRegistry.TOWNSPERSON.get(), CitizenEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
             EntityRenderers.register(EntityRegistry.FISH_TRADER.get(), FishTraderEntityRenderer::new);
+            EntityRenderers.register(EntityRegistry.QUEST_GIVER.get(), QuestGiverEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.ALCOHOL_TRADER.get(), AlcoholTraderEntityRenderer::new);
             EntityRenderers.register(EntityRegistry.MEAT_TRADER.get(), EntityMetalMerchantRenderer::new);

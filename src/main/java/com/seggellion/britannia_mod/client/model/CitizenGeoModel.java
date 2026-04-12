@@ -17,13 +17,13 @@ public class CitizenGeoModel extends GeoModel<CitizenEntity> {
         };
     }
 
-    @Override
+@Override
     public ResourceLocation getTextureResource(CitizenEntity entity) {
-        // Different texture per gender
+        // Updated to match your exact folder structure
         return switch (entity.getGender().toLowerCase()) {
-            case "male" -> ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/human_male.png");
-            case "female" -> ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/human_female.png");
-            default -> ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/human_female.png");
+            case "male" -> ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/human/male/base.png");
+            case "female" -> ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/human/female/base.png");
+            default -> ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/human/female/base.png");
         };
     }
 

@@ -6,12 +6,101 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.bus.api.IEventBus;
 
+import java.util.Map;
+import java.util.HashMap;
 
 public class ModSounds {
 
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
             DeferredRegister.create(net.minecraft.core.registries.Registries.SOUND_EVENT, BritanniaMod.MODID);
 
+    // This map lets our base entity classes look up their sounds automatically!
+    public static final Map<String, EntitySoundGroup> ENTITY_SOUNDS = new HashMap<>();
+
+    public record EntitySoundGroup(
+            DeferredHolder<SoundEvent, SoundEvent> ambient,
+            DeferredHolder<SoundEvent, SoundEvent> angry,
+            DeferredHolder<SoundEvent, SoundEvent> attack,
+            DeferredHolder<SoundEvent, SoundEvent> hurt,
+            DeferredHolder<SoundEvent, SoundEvent> death
+    ) {}
+
+    // The Magic Helper Method
+    private static EntitySoundGroup registerEntitySounds(String name) {
+        EntitySoundGroup group = new EntitySoundGroup(
+            SOUND_EVENTS.register(name + "_ambient", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name + "_ambient"))),
+            SOUND_EVENTS.register(name + "_angry", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name + "_angry"))),
+            SOUND_EVENTS.register(name + "_attack", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name + "_attack"))),
+            SOUND_EVENTS.register(name + "_hurt", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name + "_hurt"))),
+            SOUND_EVENTS.register(name + "_death", () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name + "_death")))
+        );
+        
+        ENTITY_SOUNDS.put(name, group);
+        return group;
+    }
+
+    // =========================================
+    // AUTOMATED ENTITY SOUND REGISTRATIONS
+    // =========================================
+    // The Original List
+    public static final EntitySoundGroup MONGBAT = registerEntitySounds("mongbat");
+    public static final EntitySoundGroup LICH = registerEntitySounds("lich");
+    public static final EntitySoundGroup DAEMON = registerEntitySounds("daemon");
+    public static final EntitySoundGroup GHOST = registerEntitySounds("ghost");
+    public static final EntitySoundGroup EARTH_ELEMENTAL = registerEntitySounds("earth_elemental");
+    public static final EntitySoundGroup RAT = registerEntitySounds("rat");
+    public static final EntitySoundGroup WISP = registerEntitySounds("wisp");
+
+    // The New Batch
+        public static final EntitySoundGroup HIND = registerEntitySounds("hind");
+    public static final EntitySoundGroup GREAT_HART = registerEntitySounds("great_hart");
+    public static final EntitySoundGroup BEAR_BROWN = registerEntitySounds("bear_brown");
+    public static final EntitySoundGroup BEAR_BLACK = registerEntitySounds("bear_black");
+    public static final EntitySoundGroup BEAR_GRIZZLY = registerEntitySounds("bear_grizzly");
+    public static final EntitySoundGroup BEAR_POLAR = registerEntitySounds("bear_polar");
+    public static final EntitySoundGroup GORILLA = registerEntitySounds("gorilla");
+    public static final EntitySoundGroup TURKEY = registerEntitySounds("turkey");
+
+
+    public static final EntitySoundGroup GIANT_RAT = registerEntitySounds("giant_rat");
+    public static final EntitySoundGroup ALLIGATOR = registerEntitySounds("alligator");
+    public static final EntitySoundGroup ETTIN = registerEntitySounds("ettin");
+    public static final EntitySoundGroup SERPENT_GIANT = registerEntitySounds("serpent_giant");
+        public static final EntitySoundGroup SERPENT_SILVER = registerEntitySounds("serpent_silver");
+public static final EntitySoundGroup SERPENT_LAVA = registerEntitySounds("serpent_lava");
+public static final EntitySoundGroup SERPENT_GIANT_ICE = registerEntitySounds("serpent_giant_ice");
+public static final EntitySoundGroup SERPENT_SEA = registerEntitySounds("serpent_sea");
+public static final EntitySoundGroup SERPENT_DEEP_SEA = registerEntitySounds("serpent_deep_sea");
+public static final EntitySoundGroup SERPENT_CRYSTAL_SEA= registerEntitySounds("serpent_crystal_sea");
+
+    public static final EntitySoundGroup SCORPION = registerEntitySounds("scorpion");
+    public static final EntitySoundGroup LIZARDMAN = registerEntitySounds("lizardman");
+    public static final EntitySoundGroup RATMAN = registerEntitySounds("ratman");
+public static final EntitySoundGroup RATMAN_ARCHER = registerEntitySounds("ratman_archer");
+public static final EntitySoundGroup RATMAN_ASSASSIN = registerEntitySounds("ratman_assassin");
+
+    public static final EntitySoundGroup ELEMENTAL_AIR = registerEntitySounds("elemental_air");
+public static final EntitySoundGroup ELEMENTAL_FIRE = registerEntitySounds("elemental_fire");
+public static final EntitySoundGroup ELEMENTAL_WATER = registerEntitySounds("elemental_water");
+public static final EntitySoundGroup ELEMENTAL_POISON = registerEntitySounds("elemental_poison");
+public static final EntitySoundGroup ELEMENTAL_ACID = registerEntitySounds("elemental_acid");
+public static final EntitySoundGroup ELEMENTAL_BLOOD = registerEntitySounds("elemental_blood");
+
+    public static final EntitySoundGroup HARPY = registerEntitySounds("harpy");
+    public static final EntitySoundGroup HEADLESS = registerEntitySounds("headless");
+    public static final EntitySoundGroup OGRE = registerEntitySounds("ogre");
+public static final EntitySoundGroup OGRE_ARCTIC = registerEntitySounds("ogre_arctic");
+    public static final EntitySoundGroup OGRE_LORD = registerEntitySounds("ogre_lord");
+    public static final EntitySoundGroup OGRE_LORD_ARCTIC = registerEntitySounds("ogre_lord_arctic");
+    public static final EntitySoundGroup TROLL = registerEntitySounds("troll");
+    public static final EntitySoundGroup GARGOYLE = registerEntitySounds("gargoyle");
+public static final EntitySoundGroup GARGOYLE_ENFORCER = registerEntitySounds("gargoyle_enforcer");
+public static final EntitySoundGroup GARGOYLE_DESTROYER = registerEntitySounds("gargoyle_destroyer");
+public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("gargoyle_stone");
+
+    // =========================================
+    // ENVIRONMENT, SPELLS, AND UI SOUNDS
+    // =========================================
     public static final DeferredHolder<SoundEvent, SoundEvent> MOONGATE_HUM = SOUND_EVENTS.register(
             "moongate_hum", 
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":moongate_hum"))
@@ -22,309 +111,114 @@ public class ModSounds {
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":moongate_teleport"))
     );
 
-public static final DeferredHolder<SoundEvent, SoundEvent> HEAL_SPELL_CAST = SOUND_EVENTS.register(
-    "heal_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":heal_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> MAGIC_ARROW_SPELL_CAST = SOUND_EVENTS.register(
-    "magic_arrow_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":magic_arrow_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> CLUMSY_SPELL_CAST = SOUND_EVENTS.register(
-    "clumsy_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":clumsy_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> NIGHT_SIGHT_SPELL_CAST = SOUND_EVENTS.register(
-    "night_sight_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":night_sight_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> FEEBLEMIND_SPELL_CAST = SOUND_EVENTS.register(
-    "feeblemind_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feeblemind_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> WEAKNESS_SPELL_CAST = SOUND_EVENTS.register(
-    "weakness_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":weakness_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> CREATE_FOOD_SPELL_CAST = SOUND_EVENTS.register(
-    "create_food_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":create_food_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAST = SOUND_EVENTS.register(
-    "reactive_armor_spell_cast", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":reactive_armor_spell_cast"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> TRANSACTION = SOUND_EVENTS.register(
-    "transaction", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":transaction"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> MINING1 = SOUND_EVENTS.register(
-    "mining1", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mining1"))
-);
-
-public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENTS.register(
-    "mining2", 
-    () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mining2"))
-);
-
-
-// Adding Mongbat Sounds
-    public static final DeferredHolder<SoundEvent, SoundEvent> MONGBAT_AMBIENT = SOUND_EVENTS.register(
-            "mongbat_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mongbat_ambient"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> HEAL_SPELL_CAST = SOUND_EVENTS.register(
+        "heal_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":heal_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> MONGBAT_ANGRY = SOUND_EVENTS.register(
-            "mongbat_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mongbat_angry"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> MAGIC_ARROW_SPELL_CAST = SOUND_EVENTS.register(
+        "magic_arrow_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":magic_arrow_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> MONGBAT_ATTACK = SOUND_EVENTS.register(
-            "mongbat_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mongbat_attack"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> CLUMSY_SPELL_CAST = SOUND_EVENTS.register(
+        "clumsy_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":clumsy_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> MONGBAT_HURT = SOUND_EVENTS.register(
-            "mongbat_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mongbat_hurt"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> NIGHT_SIGHT_SPELL_CAST = SOUND_EVENTS.register(
+        "night_sight_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":night_sight_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> MONGBAT_DEATH = SOUND_EVENTS.register(
-            "mongbat_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mongbat_death"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> FEEBLEMIND_SPELL_CAST = SOUND_EVENTS.register(
+        "feeblemind_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feeblemind_spell_cast"))
     );
 
-
-    // Adding Mongbat Sounds
-    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_AMBIENT = SOUND_EVENTS.register(
-            "daemon_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_ambient"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEAKNESS_SPELL_CAST = SOUND_EVENTS.register(
+        "weakness_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":weakness_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_ANGRY = SOUND_EVENTS.register(
-            "daemon_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_angry"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> CREATE_FOOD_SPELL_CAST = SOUND_EVENTS.register(
+        "create_food_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":create_food_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_ATTACK = SOUND_EVENTS.register(
-            "daemon_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_attack"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> REACT_ARMOR_SPELL_CAST = SOUND_EVENTS.register(
+        "reactive_armor_spell_cast", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":reactive_armor_spell_cast"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_HURT = SOUND_EVENTS.register(
-            "daemon_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_hurt"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRANSACTION = SOUND_EVENTS.register(
+        "transaction", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":transaction"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> DAEMON_DEATH = SOUND_EVENTS.register(
-            "daemon_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":daemon_death"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> MINING1 = SOUND_EVENTS.register(
+        "mining1", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mining1"))
     );
 
-      // Adding Lich Sounds
-    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_AMBIENT = SOUND_EVENTS.register(
-            "lich_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_ambient"))
+    public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENTS.register(
+        "mining2", 
+        () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":mining2"))
     );
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_ANGRY = SOUND_EVENTS.register(
-            "lich_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_angry"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_ATTACK = SOUND_EVENTS.register(
-            "lich_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_attack"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_HURT = SOUND_EVENTS.register(
-            "lich_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_hurt"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> LICH_DEATH = SOUND_EVENTS.register(
-            "lich_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lich_death"))
-    );
-
-         // Adding ghost monster Sounds
-    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_AMBIENT = SOUND_EVENTS.register(
-            "ghost_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_ambient"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_ANGRY = SOUND_EVENTS.register(
-            "ghost_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_angry"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_ATTACK = SOUND_EVENTS.register(
-            "ghost_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_attack"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_HURT = SOUND_EVENTS.register(
-            "ghost_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_hurt"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> GHOST_DEATH = SOUND_EVENTS.register(
-            "ghost_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":ghost_death"))
-    );
-
-      // Adding Earth Elemental monster Sounds
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_AMBIENT = SOUND_EVENTS.register(
-            "earth_elemental_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_ambient"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_ANGRY = SOUND_EVENTS.register(
-            "earth_elemental_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_angry"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_ATTACK = SOUND_EVENTS.register(
-            "earth_elemental_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_attack"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_HURT = SOUND_EVENTS.register(
-            "earth_elemental_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_hurt"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> EARTH_ELEMENTAL_DEATH = SOUND_EVENTS.register(
-            "earth_elemental_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":earth_elemental_death"))
-    );
-
-
-  // Adding Rat Sounds
-    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_AMBIENT = SOUND_EVENTS.register(
-            "rat_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_ambient"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_ANGRY = SOUND_EVENTS.register(
-            "rat_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_angry"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_ATTACK = SOUND_EVENTS.register(
-            "rat_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_attack"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_HURT = SOUND_EVENTS.register(
-            "rat_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_hurt"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_DEATH = SOUND_EVENTS.register(
-            "rat_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":rat_death"))
-    );
-
-  // Adding Wisp Sounds
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_AMBIENT = SOUND_EVENTS.register(
-            "wisp_ambient",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_ambient"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_ANGRY = SOUND_EVENTS.register(
-            "wisp_angry",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_angry"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_ATTACK = SOUND_EVENTS.register(
-            "wisp_attack",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_attack"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_HURT = SOUND_EVENTS.register(
-            "wisp_hurt",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_hurt"))
-    );
-
-    public static final DeferredHolder<SoundEvent, SoundEvent> WISP_DEATH = SOUND_EVENTS.register(
-            "wisp_death",
-            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":wisp_death"))
-    );
-
-    // Added gold coin sound
-
-        public static final DeferredHolder<SoundEvent, SoundEvent> GOLD_COIN = SOUND_EVENTS.register(
+    public static final DeferredHolder<SoundEvent, SoundEvent> GOLD_COIN = SOUND_EVENTS.register(
             "gold_coin",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":gold_coin"))
     );
 
-        // Added catch fish sound
-
-        public static final DeferredHolder<SoundEvent, SoundEvent> CATCH_FISH = SOUND_EVENTS.register(
+    public static final DeferredHolder<SoundEvent, SoundEvent> CATCH_FISH = SOUND_EVENTS.register(
             "catch_fish",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":catch_fish"))
     );
 
-        // Added tree chop sound
-
-        public static final DeferredHolder<SoundEvent, SoundEvent> CHOP_TREE = SOUND_EVENTS.register(
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHOP_TREE = SOUND_EVENTS.register(
             "chop_tree",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chop_tree"))
     );
 
-// containers
-
-
-        public static final DeferredHolder<SoundEvent, SoundEvent> CHEST_OPEN = SOUND_EVENTS.register(
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHEST_OPEN = SOUND_EVENTS.register(
             "chest_open",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chest_open"))
     );
 
-        public static final DeferredHolder<SoundEvent, SoundEvent> CHEST_CLOSE = SOUND_EVENTS.register(
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHEST_CLOSE = SOUND_EVENTS.register(
             "chest_close",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chest_close"))
     );
-// structure sounds
 
-        public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_OPEN = SOUND_EVENTS.register(
-            "metal_door_open",
+    public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_OPEN = SOUND_EVENTS.register(
+            "door_metal_open",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_open"))
     );
 
-        public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_CLOSE = SOUND_EVENTS.register(
-            "metal_door_close",
+    public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_CLOSE = SOUND_EVENTS.register(
+            "door_metal_close",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_close"))
     );
 
-    
-        public static final DeferredHolder<SoundEvent, SoundEvent> WOOD_DOOR_OPEN = SOUND_EVENTS.register(
-            "wood_door_open",
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOD_DOOR_OPEN = SOUND_EVENTS.register(
+            "door_wood_open",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_wood_open"))
     );
 
-        public static final DeferredHolder<SoundEvent, SoundEvent> WOOD_DOOR_CLOSE = SOUND_EVENTS.register(
-            "wood_door_close",
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOD_DOOR_CLOSE = SOUND_EVENTS.register(
+            "door_wood_close",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_wood_close"))
     );
 
-        public static final DeferredHolder<SoundEvent, SoundEvent> DOOR_LOCK = SOUND_EVENTS.register(
+    public static final DeferredHolder<SoundEvent, SoundEvent> DOOR_LOCK = SOUND_EVENTS.register(
             "door_lock",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_lock"))
     );
 
+    // =========================================
+    // INSTRUMENTS
+    // =========================================
     // 1. Lap Harp
     public static final DeferredHolder<SoundEvent, SoundEvent> LAP_HARP_PLAY = SOUND_EVENTS.register(
             "lap_harp_play",
@@ -375,7 +269,7 @@ public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENT
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":violin_fail"))
     );
 
-        // 5. Tamborine
+    // 6. Tamborine
     public static final DeferredHolder<SoundEvent, SoundEvent> TAMBORINE_PLAY = SOUND_EVENTS.register(
             "tamborine_play",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":tamborine_play"))
@@ -385,9 +279,18 @@ public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENT
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":tamborine_fail"))
     );
 
+        public static final DeferredHolder<SoundEvent, SoundEvent> FEET12A = SOUND_EVENTS.register(
+            "feet12a",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet12a"))
+    );
+
+public static final DeferredHolder<SoundEvent, SoundEvent> FEET12B = SOUND_EVENTS.register(
+            "feet12b",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet12b"))
+    );
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);
     }
-
 }

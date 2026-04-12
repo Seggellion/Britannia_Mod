@@ -236,6 +236,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_2BW_ITEM.get());
                 safeAccept(output, ItemRegistry.WATER_TROUGH_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.WATER_BARREL_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.TRASH_BARREL_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_CHAIR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_THRONE_ITEM.get());
@@ -338,6 +339,7 @@ public class CreativeTabRegistry {
 
                 // Tools & weapons
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
+                safeAccept(output, ItemRegistry.SMITHS_HAMMER.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
                 // Musical Instruments
@@ -368,10 +370,10 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
 
                 // NPC spawn blocks
-                safeAccept(output, ItemRegistry.MONSTER_SPAWN_BLOCK_ITEM.get());   
-                safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());                     
-                safeAccept(output, ItemRegistry.SHADE_SPAWN_BLOCK_ITEM.get());
-                safeAccept(output, ItemRegistry.LICH_SPAWN_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.BRITANNIA_SPAWN_BLOCK_ITEM.get());   
+                safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());   
+                safeAccept(output, ItemRegistry.QUEST_GIVER_SPAWN_BLOCK_ITEM.get());     
+                safeAccept(output, ItemRegistry.QUEST_DESTINATION_BLOCK_ITEM.get());                                                                         
                 safeAccept(output, ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_SPAWN_BLOCK_ITEM.get());

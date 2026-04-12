@@ -8,7 +8,9 @@ import com.seggellion.britannia_mod.block.entity.StoreSignBlockEntity;
 import com.seggellion.britannia_mod.registry.FishRegistry;
 import com.seggellion.britannia_mod.block.entity.FishBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.QuestDestinationBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
@@ -19,6 +21,7 @@ import com.seggellion.britannia_mod.block.entity.ThreeHeightLightBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WineBarrelBlockEntity;
+import com.seggellion.britannia_mod.block.entity.TrashBarrelBlockEntity;
 import com.seggellion.britannia_mod.block.entity.JuicePressBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WineBottleBlockEntity;
 
@@ -188,9 +191,27 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WineBottl
                 ).build(null)
             );
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MonsterSpawnBlockEntity>> MONSTER_SPAWN_BLOCK_ENTITY =
-            BLOCK_ENTITIES.register("monster_spawn_block_entity",
-                    () -> BlockEntityType.Builder.of(MonsterSpawnBlockEntity::new, BlockRegistry.MONSTER_SPAWN_BLOCK.get()).build(null));
+        public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestGiverSpawnBlockEntity>>
+            QUEST_GIVER_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
+                "quest_giver_spawn_block_entity",
+                () -> BlockEntityType.Builder.of(
+                        QuestGiverSpawnBlockEntity::new,
+                        BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get()
+                ).build(null)
+            );
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestDestinationBlockEntity>> QUEST_DESTINATION_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("quest_destination_block_entity", () ->
+                    BlockEntityType.Builder.of(QuestDestinationBlockEntity::new, BlockRegistry.QUEST_DESTINATION_BLOCK.get()).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BritanniaSpawnBlockEntity>> BRITANNIA_SPAWN_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("britannia_spawn_block_entity",
+                    () -> BlockEntityType.Builder.of(BritanniaSpawnBlockEntity::new, BlockRegistry.BRITANNIA_SPAWN_BLOCK.get()).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TrashBarrelBlockEntity>> TRASH_BARREL_BE =
+            BLOCK_ENTITIES.register("trash_barrel_block_entity",
+                    () -> BlockEntityType.Builder.of(TrashBarrelBlockEntity::new, BlockRegistry.TRASH_BARREL_BLOCK.get()).build(null));
+
 
         public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ArchitectSpawnBlockEntity>> ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE =
         BLOCK_ENTITIES.register("architect_spawn_block_entity",

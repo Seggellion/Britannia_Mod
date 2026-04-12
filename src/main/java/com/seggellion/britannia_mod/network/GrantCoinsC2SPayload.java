@@ -20,7 +20,6 @@ public record GrantCoinsC2SPayload(
         List<SoldItem> soldItems
 ) implements CustomPacketPayload {
 
-    // ✅ Added @Nullable CompoundTag nbt to the record
     public static record SoldItem(
         String itemId, 
         String itemName, 

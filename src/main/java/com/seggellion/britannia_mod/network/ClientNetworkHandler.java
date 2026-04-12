@@ -12,8 +12,10 @@ import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.npc.NpcRoleHandler;
 
 
-import com.seggellion.britannia_mod.network.payload.MonsterSpawnScreenS2CPayload;
-import com.seggellion.britannia_mod.client.screen.MonsterSpawnScreen;
+import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
+import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
+import com.seggellion.britannia_mod.client.screen.BlacksmithyScreen;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.network.ClientboundOpenNpcScreenPayload;
 import com.seggellion.britannia_mod.client.screen.TraderSpawnScreen;
@@ -59,6 +61,14 @@ public class ClientNetworkHandler {
             ));
 
             }
+        });
+    }
+
+public static void handleOpenBlacksmithGui(OpenBlacksmithGuiS2CPayload payload, IPayloadContext context) {
+        // enqueueWork ensures this runs on the main client rendering thread
+        context.enqueueWork(() -> {
+            // Open the screen and pass it the ingotId we sent from the server
+            Minecraft.getInstance().setScreen(new BlacksmithyScreen(payload.ingotId()));
         });
     }
 
@@ -128,12 +138,12 @@ public static void handleStoreSignScreenOnClient(StoreSignScreenPayload payload,
     });
 }
 
-public static void handleMonsterSpawnScreen(MonsterSpawnScreenS2CPayload p,
+public static void handleBritanniaSpawnScreen(BritanniaSpawnScreenS2CPayload p,
                                             net.neoforged.neoforge.network.handling.IPayloadContext ctx) {
     ctx.enqueueWork(() -> {
         var mc = Minecraft.getInstance();
         if (mc.player == null) return;
-        mc.setScreen(new MonsterSpawnScreen(
+        mc.setScreen(new BritanniaSpawnScreen(
                 p.pos(),
                 p.entityId(),
                 p.radius(),

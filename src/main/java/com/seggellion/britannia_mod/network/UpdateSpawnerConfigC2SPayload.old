@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.network.payload;
 
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -44,7 +44,7 @@ public record UpdateSpawnerConfigC2SPayload(
 
         Level level = player.level();
         var be = level.getBlockEntity(pkt.pos());
-        if (be instanceof MonsterSpawnBlockEntity spawner) {
+        if (be instanceof BritanniaSpawnBlockEntity spawner) {
             spawner.applyConfig(pkt.entityId(), pkt.radius(), pkt.minTicks(), pkt.maxTicks(), pkt.nightOnly());
         }
     }

@@ -75,7 +75,7 @@ public static String getMaterialFromModelData(int modelData) {
         case 1001 -> "gold";
         case 1002 -> "iron";
         case 1003 -> "valorite";
-        default -> null;
+        default -> "iron";
     };
 }
 

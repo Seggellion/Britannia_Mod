@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.commands.CityCommand;
+import com.seggellion.britannia_mod.commands.QuestCommand;
+import com.seggellion.britannia_mod.commands.SetSkillCommand;
 import com.seggellion.britannia_mod.commands.BlockCommands;
 import com.seggellion.britannia_mod.commands.BootstrapCommands;
 import com.seggellion.britannia_mod.commands.APITokenCommands;
@@ -20,6 +22,8 @@ public class CommandRegistry {
     private static void onServerStarting(ServerStartingEvent event) {
        // CityCommands.register(event.getServer().getCommands().getDispatcher());
         CityCommand.register(event.getServer().getCommands().getDispatcher());
+        QuestCommand.register(event.getServer().getCommands().getDispatcher());
+        SetSkillCommand.register(event.getServer().getCommands().getDispatcher());
         APITokenCommands.register(event.getServer().getCommands().getDispatcher());
         StructureCommands.register(event.getServer().getCommands().getDispatcher());
 

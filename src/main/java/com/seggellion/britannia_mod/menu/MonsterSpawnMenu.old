@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.menu;
 
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.payload.UpdateSpawnerConfigC2SPayload;
 import com.seggellion.britannia_mod.registry.MenuRegistry;
@@ -14,12 +14,12 @@ import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class MonsterSpawnMenu extends AbstractContainerMenu {
+public class BritanniaSpawnMenu extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final BlockPos pos;
-    private final MonsterSpawnBlockEntity be; // may be null on client if not resolved
+    private final BritanniaSpawnBlockEntity be; // may be null on client if not resolved
 
-    public MonsterSpawnMenu(int id, Inventory inv, ContainerLevelAccess access, BlockPos pos, MonsterSpawnBlockEntity be) {
+    public BritanniaSpawnMenu(int id, Inventory inv, ContainerLevelAccess access, BlockPos pos, BritanniaSpawnBlockEntity be) {
         super(MenuRegistry.MONSTER_SPAWN_MENU.get(), id);
         this.access = access;
         this.pos = pos.immutable();
@@ -47,5 +47,5 @@ public void requestSave(ResourceLocation entityId, int radius, int minTicks, int
         new UpdateSpawnerConfigC2SPayload(pos, entityId, radius, minTicks, maxTicks, nightOnly)
     );
 }
-    public MonsterSpawnBlockEntity getBE() { return be; }
+    public BritanniaSpawnBlockEntity getBE() { return be; }
 }

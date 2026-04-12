@@ -33,7 +33,7 @@ import net.minecraft.world.item.ItemNameBlockItem;
     import net.minecraft.world.item.HoeItem;
 import com.seggellion.britannia_mod.item.GrapeSeedsItem;
 import com.seggellion.britannia_mod.item.WineBottleBlockItem;
-
+import com.seggellion.britannia_mod.item.SmithsHammerItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -138,6 +138,12 @@ public static final DeferredHolder<Item, Item> COPPER_BEADS = ITEMS.register("co
     () -> new MaterialQualityJewelryItem(MaterialQualityJewelryItem.JewelryType.BEADS,
         MaterialQualityJewelryItem.UOMaterial.COPPER,
         new Item.Properties()));
+
+        // Tools
+
+public static final DeferredHolder<Item, Item> SMITHS_HAMMER = ITEMS.register("smiths_hammer", 
+        () -> new SmithsHammerItem(new Item.Properties().stacksTo(1))
+);
 
 
     // Spell Ingredients
@@ -1145,7 +1151,9 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
  public static final DeferredHolder<Item, Item> HOUSE_SIGN_BLOCK_ITEM = ITEMS.register(
             "house_sign", () -> new BlockItem(BlockRegistry.HOUSE_SIGN_BLOCK.get(), new Item.Properties()));
 
-
+public static final DeferredHolder<Item, BlockItem> QUEST_DESTINATION_BLOCK_ITEM =
+            ITEMS.register("quest_destination_block", () ->
+                    new BlockItem(BlockRegistry.QUEST_DESTINATION_BLOCK.get(), new Item.Properties()));
 
 // spawners
 
@@ -1153,22 +1161,19 @@ public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEM
             ITEMS.register("trader_spawn_block", () ->
                     new BlockItem(BlockRegistry.TRADER_SPAWN_BLOCK.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, BlockItem> QUEST_GIVER_SPAWN_BLOCK_ITEM =
+            ITEMS.register("quest_giver_spawn_block", () ->
+                    new BlockItem(BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get(), new Item.Properties()));
 
-    public static final DeferredHolder<Item, BlockItem> MONSTER_SPAWN_BLOCK_ITEM =
-            ITEMS.register("monster_spawn_block", () ->
-                    new BlockItem(BlockRegistry.MONSTER_SPAWN_BLOCK.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, BlockItem> BRITANNIA_SPAWN_BLOCK_ITEM =
+            ITEMS.register("britannia_spawn_block", () ->
+                    new BlockItem(BlockRegistry.BRITANNIA_SPAWN_BLOCK.get(), new Item.Properties()));
 
 
     public static final DeferredHolder<Item, BlockItem> ARCHITECT_SPAWN_BLOCK_ITEM =
             ITEMS.register("architect_spawn_block", () ->
                     new BlockItem(BlockRegistry.ARCHITECT_SPAWN_BLOCK.get(),
                             new Item.Properties())); 
-
-        public static final DeferredHolder<Item, Item> SHADE_SPAWN_BLOCK_ITEM = ITEMS.register(
-            "shade_spawn_block", () -> new BlockItem(BlockRegistry.SHADE_SPAWN_BLOCK.get(), new Item.Properties()));
-
-        public static final DeferredHolder<Item, Item> LICH_SPAWN_BLOCK_ITEM = ITEMS.register(
-            "lich_spawn_block", () -> new BlockItem(BlockRegistry.LICH_SPAWN_BLOCK.get(), new Item.Properties()));
 
         public static final DeferredHolder<Item, Item> WOOD_SPAWN_BLOCK_ITEM = ITEMS.register(
             "wood_spawn_block", () -> new BlockItem(BlockRegistry.WOOD_SPAWN_BLOCK.get(), new Item.Properties()));
@@ -1301,6 +1306,9 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
 
     public static final DeferredHolder<Item, Item> WATER_BARREL_BLOCK_ITEM = ITEMS.register(
             "water_barrel", () -> new BlockItem(BlockRegistry.WATER_BARREL_BLOCK.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> TRASH_BARREL_BLOCK_ITEM = ITEMS.register(
+            "trash_barrel", () -> new BlockItem(BlockRegistry.TRASH_BARREL_BLOCK.get(), new Item.Properties()));
 
 
     public static final DeferredHolder<Item, Item> MAGINCIA_STYLE_THRONE_ITEM = ITEMS.register(
