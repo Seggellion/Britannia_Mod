@@ -13,11 +13,11 @@ import net.neoforged.neoforge.common.Tags;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
-public class SmithsHammerItem extends Item {
+public class BlackSmithsHammerItem extends Item {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public SmithsHammerItem(Properties properties) {
+    public BlackSmithsHammerItem(Properties properties) {
         super(properties);
     }
 

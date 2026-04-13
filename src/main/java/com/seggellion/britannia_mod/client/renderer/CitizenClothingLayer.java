@@ -24,13 +24,13 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
     };
 
     private static final Map<String, List<String>> SLOT_BONES = Map.of(
-        "shirt", List.of("shirtRightShoulder", "shirtLeftShoulder", "shirtTop", "shirtBottom", "shirtSides", "shirtNeck"),
-        "pants", List.of("pantRightAnkle", "pantRightKnee", "pantLeftAnkle", "pantLeftKnee", "pantsBeltBuckle", "pantsRoot"),
-        "shoes", List.of("shoesLeftTop", "shoesAnkleLeft", "shoesRightTop", "shoesAnkleRight", "shoesLeftFront", "shoesRight", "shoesRightHeel", "shoesLeftHeel", "shoesRightBase", "shoesLeftBase"),
+        "shirt", List.of("shirtRightShoulder", "shirtLeftShoulder", "shirtTop", "shirtBottom", "shirtSides", "shirtCollar", "shirtNeck", "shirtHips", "shirtLeftElbow", "shirtRightElbow"),
+        "pants", List.of("pantRightAnkle", "pantRightKnee", "pantLeftAnkle", "pantLeftKnee", "pantsBeltBuckle", "pantsRoot","pantLeftHip","pantRightHip"),
+        "shoes", List.of("shoesLeftTop", "shoesAnkleLeft", "shoesRightTop", "shoesAnkleRight", "shoesLeftFront", "shoesRightFront", "shoesRight", "shoesRightHeel", "shoesLeftHeel", "shoesRightBase", "shoesLeftBase"),
         "hair", List.of("hair"),
         "facial_hair", List.of("facial_hair"),
         "cape", List.of("capeChest", "cape", "cape2", "shirtNeck"),
-        "chest", List.of("chest_main")
+        "chest", List.of("chest_main", "capeChest", "shirtTop")
     );
 
     public CitizenClothingLayer(GeoRenderer<T> entityRendererIn) {

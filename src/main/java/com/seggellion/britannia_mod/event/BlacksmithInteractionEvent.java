@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.event;
 
-import com.seggellion.britannia_mod.item.SmithsHammerItem;
+import com.seggellion.britannia_mod.item.BlackSmithsHammerItem;
 import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.ChatFormatting;
@@ -33,7 +33,7 @@ public class BlacksmithInteractionEvent {
         ItemStack offHand = event.getEntity().getOffhandItem();
 
         // 2. Are they holding the Smith's Hammer?
-        if (mainHand.getItem() instanceof SmithsHammerItem) {
+        if (mainHand.getItem() instanceof BlackSmithsHammerItem) {
             LOGGER.info("Hammer detected on Anvil! Intercepting...");
 
             // Let the client know the action was successful so it swings the arm

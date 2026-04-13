@@ -823,6 +823,44 @@ public static final DeferredHolder<Block, Block> WOODEN_CHANDELIER = BLOCKS.regi
         .lightLevel(state -> 12))
 );
 
+public static final DeferredHolder<Block, Block> LARGE_WOODEN_CHANDELIER = BLOCKS.register(
+    "large_wooden_chandelier",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 12))
+);
+
+public static final DeferredHolder<Block, Block> SMALL_WOODEN_CHANDELIER = BLOCKS.register(
+    "small_wooden_chandelier",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 12))
+);
+
+public static final DeferredHolder<Block, Block> SMALL_IRON_CHANDELIER = BLOCKS.register(
+    "small_iron_chandelier",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 12))
+);
+
+public static final DeferredHolder<Block, Block> LARGE_IRON_CHANDELIER = BLOCKS.register(
+    "large_iron_chandelier",
+    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 12))
+);
+
+
+
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
     "candelabra_small",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()

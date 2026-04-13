@@ -339,7 +339,7 @@ public class CreativeTabRegistry {
 
                 // Tools & weapons
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
-                safeAccept(output, ItemRegistry.SMITHS_HAMMER.get());
+                safeAccept(output, ItemRegistry.BLACKSMITHS_HAMMER.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
                 // Musical Instruments

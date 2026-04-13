@@ -141,8 +141,8 @@ public static final DeferredHolder<Item, Item> COPPER_BEADS = ITEMS.register("co
 
         // Tools
 
-public static final DeferredHolder<Item, Item> SMITHS_HAMMER = ITEMS.register("smiths_hammer", 
-        () -> new SmithsHammerItem(new Item.Properties().stacksTo(1))
+public static final DeferredHolder<Item, Item> BLACKSMITHS_HAMMER = ITEMS.register("blacksmiths_hammer", 
+        () -> new BlackSmithsHammerItem(new Item.Properties().stacksTo(1))
 );
 
 
@@ -1259,6 +1259,18 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_POST_ITEM =
 
     public static final DeferredHolder<Item, Item> WOODEN_CHANDELIER = ITEMS.register(
             "wooden_chandelier", () -> new BlockItem(BlockRegistry.WOODEN_CHANDELIER.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> SMALL_WOODEN_CHANDELIER = ITEMS.register(
+            "small_wooden_chandelier", () -> new BlockItem(BlockRegistry.SMALL_WOODEN_CHANDELIER.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LARGE_WOODEN_CHANDELIER = ITEMS.register(
+            "large_wooden_chandelier", () -> new BlockItem(BlockRegistry.LARGE_WOODEN_CHANDELIER.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> LARGE_IRON_CHANDELIER = ITEMS.register(
+            "large_iron_chandelier", () -> new BlockItem(BlockRegistry.LARGE_IRON_CHANDELIER.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> SMALL_IRON_CHANDELIER = ITEMS.register(
+            "small_iron_chandelier", () -> new BlockItem(BlockRegistry.SMALL_IRON_CHANDELIER.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> CANDELABRA_SMALL_ITEM = ITEMS.register(
             "candelabra_small", () -> new BlockItem(BlockRegistry.CANDELABRA_SMALL.get(), new Item.Properties()));
