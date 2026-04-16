@@ -59,13 +59,15 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         this.bodyComponent = Component.literal(bodyText).withStyle(UO_STYLE);
 
         int portraitX = 30;
-        int textX = portraitX + 64 + 25;
+        int visibleSize = 108;
+        //int visibleSize = 108;
+        int textX = portraitX + visibleSize + 25;
         int buttonWidth = 140;
         int buttonStartX = this.width - buttonWidth - 20;
         
         this.maxTextWidth = buttonStartX - textX - 20; 
         
-        int col1Height = 64 + 5 + this.font.lineHeight; 
+        int col1Height = visibleSize + 5 + this.font.lineHeight;
         int textLineCount = this.font.split(this.bodyComponent, this.maxTextWidth).size();
         int col2Height = textLineCount * this.font.lineHeight; 
         
@@ -156,23 +158,29 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         super.render(graphics, mouseX, mouseY, partialTick);
 
         // 2. Now render your text and portraits so they are crystal clear on top
-        int portraitSize = 64;
         int portraitX = 30; 
         int textOpaqueColor = 0xFF111111;
+        int textureSize = 108; 
+       // int textureSize = 128; 
+        int cropMargin = 10;
+        int visibleSize = textureSize - (cropMargin * 2);
 
         if (npcName != null && !npcName.isEmpty()) {
             // dynamically fetch the portrait        
             ResourceLocation currentPortrait = PortraitDownloader.getPortrait(npcName, this.npcGender);
             
-            graphics.blit(currentPortrait, portraitX, this.portraitY, 0, 0, portraitSize, portraitSize, portraitSize, portraitSize);
-            
+            graphics.blit(currentPortrait, portraitX, this.portraitY, cropMargin, cropMargin, visibleSize, visibleSize, textureSize, textureSize);
+
             Component nameComponent = Component.literal(npcName).withStyle(UO_STYLE);
             int nameWidth = this.font.width(nameComponent);
-            int nameX = portraitX + (portraitSize / 2) - (nameWidth / 2);
-            int nameY = this.portraitY + portraitSize + 3;
+            
+            // FIX: Replaced portraitSize with visibleSize
+            int nameX = portraitX + (visibleSize / 2) - (nameWidth / 2);
+            int nameY = this.portraitY + visibleSize + 3;
             graphics.drawString(this.font, nameComponent, nameX, nameY, textOpaqueColor, false);
             
-            int textX = portraitX + portraitSize + 25;
+            // FIX: Replaced portraitSize with visibleSize
+            int textX = portraitX + visibleSize + 25;
             graphics.drawWordWrap(this.font, this.bodyComponent, textX, this.textY, this.maxTextWidth, textOpaqueColor);
         } else {
             String titleText = (questState.currentNode != null && questState.currentNode.title != null) 
@@ -182,7 +190,8 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
             Component nameComponent = Component.literal(titleText).withStyle(UO_STYLE);
             graphics.drawString(this.font, nameComponent, portraitX, this.portraitY, textOpaqueColor, false);
             
-            graphics.drawWordWrap(this.font, this.bodyComponent, portraitX, this.textY + 15, this.maxTextWidth + portraitSize, textOpaqueColor);
+            // FIX: Replaced portraitSize with visibleSize
+            graphics.drawWordWrap(this.font, this.bodyComponent, portraitX, this.textY + 15, this.maxTextWidth + visibleSize, textOpaqueColor);
         }
     }
 

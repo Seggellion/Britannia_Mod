@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.entity.LayEntity;
 import com.seggellion.britannia_mod.entity.LivingSeatEntity;
 import com.seggellion.britannia_mod.entity.MongbatEntity;
 import com.seggellion.britannia_mod.entity.OrcEntity;
+import com.seggellion.britannia_mod.entity.OrcClubEntity;
 import com.seggellion.britannia_mod.entity.HarpyEntity;
 import com.seggellion.britannia_mod.entity.TrollEntity;
 import com.seggellion.britannia_mod.entity.OgreEntity;
@@ -302,6 +303,21 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
             () -> EntityType.Builder.of(HeadlessEntity::new, MobCategory.MONSTER)
                     .sized(0.8F, 1.5F) // Slightly shorter because, well, no head
                     .build("britannia_mod:headless")
+    );
+
+
+    public static final DeferredHolder<EntityType<?>, EntityType<OrcEntity>> ORC_ENTITY = ENTITIES.register(
+            "orc",
+            () -> EntityType.Builder.of(OrcEntity::new, MobCategory.MONSTER)
+                    .sized(0.7F, 1.5F)
+                    .build("britannia_mod:orc")
+    );
+
+        public static final DeferredHolder<EntityType<?>, EntityType<OrcClubEntity>> ORC_CLUB_ENTITY = ENTITIES.register(
+            "orc_club",
+            () -> EntityType.Builder.of(OrcClubEntity::new, MobCategory.MONSTER)
+                    .sized(0.7F, 1.5F)
+                    .build("britannia_mod:orc_club")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<OgreEntity>> OGRE_ENTITY = ENTITIES.register(
@@ -631,6 +647,9 @@ event.put(EntityRegistry.RATMAN_ASSASSIN_ENTITY.get(), RatmanAssassinEntity.crea
 
     event.put(EntityRegistry.HARPY_ENTITY.get(), HarpyEntity.createAttributes().build());
     event.put(EntityRegistry.HEADLESS_ENTITY.get(), HeadlessEntity.createAttributes().build());
+        event.put(EntityRegistry.ORC_ENTITY.get(), OrcEntity.createAttributes().build());
+        event.put(EntityRegistry.ORC_CLUB_ENTITY.get(), OrcClubEntity.createAttributes().build());
+
     event.put(EntityRegistry.OGRE_ENTITY.get(), OgreEntity.createAttributes().build());
         event.put(EntityRegistry.OGRE_LORD_ENTITY.get(), OgreLordEntity.createAttributes().build());
         event.put(EntityRegistry.OGRE_ARCTIC_ENTITY.get(), OgreArcticEntity.createAttributes().build());

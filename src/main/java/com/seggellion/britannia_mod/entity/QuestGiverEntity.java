@@ -4,21 +4,26 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
-import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 
+// FATAL CLIENT IMPORTS HAVE BEEN REMOVED
 
 public class QuestGiverEntity extends CitizenEntity {
 
     public QuestGiverEntity(EntityType<? extends QuestGiverEntity> type, Level level) {
         super(type, level);
     }
+
+private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+
+private static final Style UO_STYLE = Style.EMPTY
+            .withFont(FONT_UO_CLASSIC)
+            .withColor(0x2194A5);
 
     @Override
     protected String getRoleTitle() {
@@ -29,7 +34,7 @@ public class QuestGiverEntity extends CitizenEntity {
         return CitizenEntity.baseAttributes();
     }
 
-@Override
+    @Override
     public InteractionResult interactAt(Player player, net.minecraft.world.phys.Vec3 hit, InteractionHand hand) {
         if (hand == InteractionHand.MAIN_HAND && player.level().isClientSide) {
             
@@ -49,19 +54,22 @@ public class QuestGiverEntity extends CitizenEntity {
             final String displayNpcName = parsedDisplayName;
 
             System.out.println("Initiating conversation visually with: " + displayNpcName + ", fetching API ID: " + internalApiId);
-            
-            ResourceLocation portrait = getPortraitForNpc(displayNpcName);
 
             String gender = this.getGender(); 
             if (gender == null || gender.isEmpty()) {
                 gender = "unknown";
             }
             final String finalGender = gender;
+            
             // Ask Rails for the quest using the decoded internalApiId!
             QuestClient.interactWithNpc(internalApiId, response -> {
                 if (response != null && response.error == null) {
-                    // NEW: Pass this.getUUID() as the 4th argument!
-                    Minecraft.getInstance().setScreen(new QuestDecisionScreen(response, displayNpcName, finalGender, this.getUUID()));
+                    // SAFELY ROUTED: Let the client handler open the screen
+                    if (net.neoforged.fml.loading.FMLLoader.getDist().isClient()) {
+                        com.seggellion.britannia_mod.network.ClientNetworkHandler.openQuestDecisionScreen(
+                            response, displayNpcName, finalGender, this.getUUID()
+                        );
+                    }
                 } else {
                     String errMsg = (response != null && response.error != null) ? response.error : "I am busy, traveler.";
                     player.displayClientMessage(Component.literal("§e" + displayNpcName + " says: '" + errMsg + "'"), false);
@@ -79,33 +87,18 @@ public class QuestGiverEntity extends CitizenEntity {
     public Component getName() {
         String raw = this.getPersonalName();
         if (raw != null && raw.contains(":")) {
-            return Component.literal(raw.split(":", 2)[0]); 
+           return Component.literal(raw.split(":", 2)[0]).withStyle(UO_STYLE);
         }
-        return super.getName();
+        return super.getName().copy().withStyle(UO_STYLE);
     }
 
     @Override
     public Component getDisplayName() {
         String raw = this.getPersonalName();
         if (raw != null && raw.contains(":")) {
-            return Component.literal(raw.split(":", 2)[0]); 
+            return Component.literal(raw.split(":", 2)[0]).withStyle(UO_STYLE);
         }
-        return super.getDisplayName();
-    }
-
-    // NEW: Fallback Portrait Logic
-    private ResourceLocation getPortraitForNpc(String name) {
-        String safeName = name.toLowerCase().replaceAll("[^a-z0-9.\\-]", "_");
-        
-        ResourceLocation specificPortrait = ResourceLocation.fromNamespaceAndPath(
-            "britannia_mod", "textures/screens/portraits/" + safeName + ".png"
-        );
-
-        if (!Minecraft.getInstance().getResourceManager().getResource(specificPortrait).isPresent()) {
-            return ResourceLocation.fromNamespaceAndPath(
-                "britannia_mod", "textures/screens/portraits/generic_peasant.png"
-            );
-        }
-        return specificPortrait;
+        Component superName = super.getDisplayName();
+        return superName != null ? superName.copy().withStyle(UO_STYLE) : Component.empty();
     }
 }

@@ -222,6 +222,10 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.WALL_SCONCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDLE_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.LARGE_WOODEN_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.SMALL_WOODEN_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.LARGE_IRON_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.SMALL_IRON_CHANDELIER.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_TALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TORCH_WALL_ITEM.get());
@@ -339,7 +343,7 @@ public class CreativeTabRegistry {
 
                 // Tools & weapons
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
-                safeAccept(output, ItemRegistry.BLACKSMITHS_HAMMER.get());
+                safeAccept(output, ItemRegistry.BLACKSMITH_HAMMER.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
                 // Musical Instruments

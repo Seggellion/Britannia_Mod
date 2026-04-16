@@ -280,6 +280,7 @@ registrar.playToServer(
     })
 );
 
+
 registrar.playToServer(
     TraderSpawnConfigC2SPayload.TYPE,
     TraderSpawnConfigC2SPayload.STREAM_CODEC,
@@ -333,20 +334,6 @@ registrar.playToServer(
     })
 );
 
-// Client bound (S2C) - When admin right-clicks the block
-registrar.playToClient(
-    QuestDestinationScreenS2CPayload.TYPE,
-    QuestDestinationScreenS2CPayload.STREAM_CODEC,
-    (payload, ctx) -> ctx.enqueueWork(() -> {
-        // Enqueue work on the client thread to open the GUI safely
-        net.minecraft.client.Minecraft.getInstance().setScreen(
-            new com.seggellion.britannia_mod.client.screen.QuestDestinationScreen(
-                payload.pos(),
-                payload.cityName()
-            )
-        );
-    })
-);
 
 registrar.playToServer(
         SpawnEscortC2SPayload.TYPE,
@@ -388,6 +375,14 @@ registrar.playToServer(
 // blacksmithing window
 
 registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleTriggerQuest
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
     OpenBlacksmithGuiS2CPayload.TYPE,
     OpenBlacksmithGuiS2CPayload.STREAM_CODEC,
     FMLLoader.getDist().isClient() 
@@ -425,36 +420,6 @@ registrar.playToClient(
     }
 );
 
-// Client bound (S2C) - When the escort arrives at the destination block
-        registrar.playToClient(
-            EscortArrivedS2CPayload.TYPE,
-            EscortArrivedS2CPayload.STREAM_CODEC,
-            (payload, ctx) -> ctx.enqueueWork(() -> {
-                
-                // 1. Make the HTTP call from the Client safely
-                com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
-                    if (response != null && response.success) {
-                        
-                        // 2. If Rails gave us items, send a packet back to the server to claim them
-                        if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                            net.minecraft.client.Minecraft.getInstance().getConnection().send(
-                                new com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload(response.granted_items)
-                            );
-                        }
-
-                        // 3. Open the QuestDecisionScreen to show the "Thank You" message and Portrait!
-                        net.minecraft.client.Minecraft.getInstance().setScreen(
-                            new com.seggellion.britannia_mod.client.screen.QuestDecisionScreen(
-                                response, 
-                                payload.npcName(), 
-                                payload.npcGender(),
-                                payload.npcUuid()
-                            )
-                        );
-                    }
-                });
-            })
-        );
 
 // Close current screen
 registrar.playToClient(
@@ -532,20 +497,29 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
+// ✅ Safe Registration
+registrar.playToClient(
+    QuestDestinationScreenS2CPayload.TYPE,
+    QuestDestinationScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleQuestDestinationScreen
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    EscortArrivedS2CPayload.TYPE,
+    EscortArrivedS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleEscortArrived
+        : (p, c) -> {}
+);
+
 registrar.playToClient(
     QuestGiverSpawnScreenS2CPayload.TYPE,
     QuestGiverSpawnScreenS2CPayload.STREAM_CODEC,
-    (payload, ctx) -> ctx.enqueueWork(() -> {
-        // Enqueue work on the client thread to open the GUI safely
-        net.minecraft.client.Minecraft.getInstance().setScreen(
-            new com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen(
-                payload.pos(),
-                payload.npcName(),
-                payload.cityName(),
-                payload.customApiId()
-            )
-        );
-    })
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleQuestGiverSpawnScreen
+        : (p, c) -> {}
 );
 
 

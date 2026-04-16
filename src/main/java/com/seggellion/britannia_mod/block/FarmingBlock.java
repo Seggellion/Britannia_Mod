@@ -145,6 +145,13 @@ public class FarmingBlock extends Block implements EntityBlock {
                 setHydration(level, pos, state, 5);
                 level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
+            
+            // Swap the water bucket for an empty bucket if not in Creative mode
+            if (!player.getAbilities().instabuild) {
+                ItemStack emptyBucket = new ItemStack(Items.BUCKET);
+                player.setItemInHand(hand, net.minecraft.world.item.ItemUtils.createFilledResult(stack, player, emptyBucket));
+            }
+            
             return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 

@@ -27,8 +27,6 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-
-
 public abstract class BaseBritanniaMonster extends Monster implements IBritanniaEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     
@@ -58,8 +56,6 @@ public abstract class BaseBritanniaMonster extends Monster implements IBritannia
         }
     }
 
-// Add these to BaseBritanniaMonster and BaseBritanniaAnimal:
-
     @Override
     protected SoundEvent getAmbientSound() {
         var group = ModSounds.ENTITY_SOUNDS.get(this.getEntityName());
@@ -80,11 +76,9 @@ public abstract class BaseBritanniaMonster extends Monster implements IBritannia
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
-        // Based on your earlier code, you used 'angry' for footsteps
-        var group = ModSounds.ENTITY_SOUNDS.get(this.getEntityName());
-        if (group != null) {
-            this.playSound(group.angry().get(), 0.15F, 1.0F);
-        }
+        // Randomly choose between feet13a and feet13b
+        SoundEvent stepSound = this.getRandom().nextBoolean() ? ModSounds.FEET13A.get() : ModSounds.FEET13B.get();
+        this.playSound(stepSound, 0.15F, 1.0F);
     }
 
     @Override

@@ -13,8 +13,8 @@ public class ModConfig {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final String CONFIG_FILE_PATH = "config/britannia_mod.properties";
     private static Properties properties = new Properties();
- //   public static final String API_BASE_URL = "http://127.0.0.1:3000/api/";
-    public static final String API_BASE_URL = "https://ultimacraft-c079bdcd2cd0.herokuapp.com/api/";
+    public static final String API_BASE_URL = "http://127.0.0.1:3000/api/";
+ //   public static final String API_BASE_URL = "https://ultimacraft-c079bdcd2cd0.herokuapp.com/api/";
  public static final String SHARD_NAME = "Britannia";
 
     public static int exampleValue = 10;

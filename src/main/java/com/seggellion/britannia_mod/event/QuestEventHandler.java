@@ -1,10 +1,12 @@
 package com.seggellion.britannia_mod.event;
 
-import com.seggellion.britannia_mod.quest.network.QuestClient;
+// Notice: We ONLY import QuestServerAPI. QuestClient is completely removed.
+import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.core.registries.BuiltInRegistries; // NEW IMPORT
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -50,7 +52,9 @@ public class QuestEventHandler {
                 if (player != null) {
                     player.sendSystemMessage(Component.literal("§cYour ward has fallen in battle! You have failed to protect them."));
                     player.connection.send(new ClientboundCustomPayloadPacket(new CloseScreenS2CPayload()));
-                    QuestClient.sendTrigger(questId, "escort_died", response -> {});
+                    
+                    // FIXED: Using QuestServerAPI and passing the server instance
+                    QuestServerAPI.sendTrigger(player.server, playerUuidStr, questId, "escort_died", response -> {});
                 }
             } catch (IllegalArgumentException e) {
                 // The UUID tag was somehow malformed, safely ignore
@@ -65,10 +69,10 @@ public class QuestEventHandler {
             // Extract the mob's registry name (e.g., "mongbat", "zombie")
             String mobType = BuiltInRegistries.ENTITY_TYPE.getKey(deceased.getType()).getPath();
             
-            // Dispatch the API call to Rails to increment the counter
-            QuestClient.recordKill(player.getUUID(), mobType, response -> {
+            // FIXED: Passing the MinecraftServer object and converting the UUID to a String
+            QuestServerAPI.recordKill(player.server, player.getUUID().toString(), mobType, response -> {
                 // Optional: If Rails returns a new count, display a message
-                // e.g., if (response.success) player.sendSystemMessage(...);
+                // e.g., if (response != null && response.success) player.sendSystemMessage(...);
             });
         }
     }

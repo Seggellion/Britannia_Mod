@@ -470,6 +470,9 @@ EntityRenderers.register(EntityRegistry.RATMAN_ASSASSIN_ENTITY.get(), context ->
 
 EntityRenderers.register(EntityRegistry.HARPY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.4F));
 EntityRenderers.register(EntityRegistry.HEADLESS_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+EntityRenderers.register(EntityRegistry.ORC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F)); 
+EntityRenderers.register(EntityRegistry.ORC_CLUB_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
+
 
 EntityRenderers.register(EntityRegistry.OGRE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
 EntityRenderers.register(EntityRegistry.OGRE_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled

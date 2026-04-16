@@ -53,39 +53,36 @@ public class QuestClient {
         });
     }
 
-    public static void sendTrigger(long questId, String triggerKey, Consumer<QuestModels.QuestResponse> callback) {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    URL url = new URL(BASE_URL + "quests/" + questId + "/trigger_node");
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setDoOutput(true);
-                    conn.setRequestProperty("Content-Type", "application/json");
-                    
-                    attachAuthToken(conn);
+public static void sendTrigger(long questId, String triggerKey, Consumer<QuestModels.QuestResponse> callback) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                URL url = new URL(BASE_URL + "quests/" + questId + "/trigger_node");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json");
+                
+                attachAuthToken(conn);
 
-                    JsonObject payload = new JsonObject();
-                    payload.addProperty("player_uuid", getLocalPlayerUUID());
-                    payload.addProperty("trigger_key", triggerKey);
+                JsonObject payload = new JsonObject();
+                payload.addProperty("player_uuid", getLocalPlayerUUID());
+                payload.addProperty("trigger_key", triggerKey);
 
-                    try (OutputStream os = conn.getOutputStream()) {
-                        os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
-                    }
-
-                    handleResponse(conn, callback);
-                } catch (Exception e) {
-                    LOGGER.error("Failed to send trigger to Quest API", e);
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
                 }
-            });
-        }
 
-    /**
-     * Processes a transition (choice or trigger) via POST /api/transitions/:edge_id
-     */
+                handleResponse(conn, callback);
+            } catch (Exception e) {
+                LOGGER.error("Failed to send trigger to Quest API", e);
+            }
+        });
+    }
+
    /**
      * Processes a transition (choice or trigger) via POST /api/quests/:id/choose
      */
-public static void sendTransition(long questId, String choiceId, JsonObject context, Consumer<QuestModels.QuestResponse> callback) {
+    public static void sendTransition(long questId, String choiceId, JsonObject context, Consumer<QuestModels.QuestResponse> callback) {
         CompletableFuture.runAsync(() -> {
             try {
                 // Point to the correct Rails endpoint!
@@ -116,40 +113,6 @@ public static void sendTransition(long questId, String choiceId, JsonObject cont
         });
     }
 
-
-// Add to QuestClient.java
-    public static void recordKill(UUID playerUuid, String mobType, Consumer<QuestModels.QuestResponse> callback) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                URL url = new URL(BASE_URL + "quests/record_kill");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setDoOutput(true);
-                conn.setRequestProperty("Content-Type", "application/json");
-
-                attachAuthToken(conn);
-
-                JsonObject payload = new JsonObject();
-                payload.addProperty("player_uuid", playerUuid.toString());
-                payload.addProperty("mob_type", mobType);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
-                }
-
-                handleResponse(conn, callback);
-            } catch (Exception e) {
-                LOGGER.error("Failed to connect to Quest API for recordKill", e);
-                
-                // Fallback error handling
-                Minecraft.getInstance().execute(() -> {
-                    QuestModels.QuestResponse err = new QuestModels.QuestResponse();
-                    err.error = "Failed to record kill: " + e.getMessage();
-                    callback.accept(err);
-                });
-            }
-        });
-    }
 
     /**
      * Tells the server to abort the interaction if the player walked away from the offer.

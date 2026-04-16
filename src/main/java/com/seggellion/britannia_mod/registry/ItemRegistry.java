@@ -33,7 +33,7 @@ import net.minecraft.world.item.ItemNameBlockItem;
     import net.minecraft.world.item.HoeItem;
 import com.seggellion.britannia_mod.item.GrapeSeedsItem;
 import com.seggellion.britannia_mod.item.WineBottleBlockItem;
-import com.seggellion.britannia_mod.item.SmithsHammerItem;
+import com.seggellion.britannia_mod.item.BlackSmithsHammerItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -141,7 +141,7 @@ public static final DeferredHolder<Item, Item> COPPER_BEADS = ITEMS.register("co
 
         // Tools
 
-public static final DeferredHolder<Item, Item> BLACKSMITHS_HAMMER = ITEMS.register("blacksmiths_hammer", 
+public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.register("blacksmith_hammer", 
         () -> new BlackSmithsHammerItem(new Item.Properties().stacksTo(1))
 );
 

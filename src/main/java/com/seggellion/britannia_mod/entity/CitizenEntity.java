@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Style;
 
 // clothing
 import net.minecraft.world.entity.SpawnGroupData;
@@ -67,6 +68,9 @@ import java.util.List;
 public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatable  {
     private String gender = "unknown";
     private boolean stepToggle = false;
+
+private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+    private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 
     protected String getRoleTitle() {
         return "Citizen";
@@ -248,7 +252,8 @@ public void setGender(String gender) {
 
 protected void updateDisplayName() {
         // Fetch the name from the SynchedEntityData via our getter
-        this.setCustomName(Component.literal(this.getPersonalName()));
+        Component styledName = Component.literal(this.getPersonalName()).withStyle(UO_STYLE);
+        this.setCustomName(styledName);
         this.setCustomNameVisible(true);
     }
 

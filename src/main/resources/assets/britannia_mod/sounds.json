@@ -326,6 +326,18 @@
     "ogre_lord_arctic_hurt": { "sounds": [ "britannia_mod:ogre_hurt" ] },
     "ogre_lord_arctic_death": { "sounds": [ "britannia_mod:ogre_death" ] },
 
+   "orc_club_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
+    "orc_club_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
+    "orc_club_attack": { "sounds": [ "britannia_mod:orc_attack" ] },
+    "orc_club_hurt": { "sounds": [ "britannia_mod:orc_hurt" ] },
+    "orc_club_death": { "sounds": [ "britannia_mod:orc_death" ] },
+
+       "orc_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
+    "orc_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
+    "orc_attack": { "sounds": [ "britannia_mod:orc_attack" ] },
+    "orc_hurt": { "sounds": [ "britannia_mod:orc_hurt" ] },
+    "orc_death": { "sounds": [ "britannia_mod:orc_death" ] },
+
     "troll_ambient": { "sounds": [ "britannia_mod:troll_ambient" ] },
     "troll_angry": { "sounds": [ "britannia_mod:troll_angry" ] },
     "troll_attack": { "sounds": [ "britannia_mod:troll_attack" ] },
@@ -624,6 +636,31 @@
   "feet12b": {
     "sounds": [
       { "name" :"britannia_mod:feet12b"}
+    ]
+  },
+    "feet13a": {
+    "sounds": [
+      { "name" :"britannia_mod:feet13a"}
+    ]
+  },
+  "feet13b": {
+    "sounds": [
+      { "name" :"britannia_mod:feet13b"}
+    ]
+  },
+    "feet15c": {
+    "sounds": [
+      { "name" :"britannia_mod:feet15c"}
+    ]
+  },
+  "feet15d": {
+    "sounds": [
+      { "name" :"britannia_mod:feet15d"}
+    ]
+  },
+   "anvil": {
+    "sounds": [
+      { "name" :"britannia_mod:anvil"}
     ]
   }
 }

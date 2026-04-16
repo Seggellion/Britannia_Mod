@@ -11,7 +11,6 @@ import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.npc.NpcRoleHandler;
 
-
 import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
@@ -22,6 +21,16 @@ import com.seggellion.britannia_mod.client.screen.TraderSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.StoreSignScreen;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
+
+// --- NEW IMPORTS START ---
+import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
+import com.seggellion.britannia_mod.client.screen.QuestDestinationScreen;
+import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload;
+import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
+import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
+// --- NEW IMPORTS END ---
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -46,25 +55,44 @@ public class ClientNetworkHandler {
     private static final TextColor GRAY_848484 = TextColor.fromRgb(0x848484);
     private static final ResourceLocation FONT_UO_CLASSIC =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+// 1. Your existing 4-argument method for NPCs
+    public static void openQuestDecisionScreen(
+        com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse response, 
+        String npcName, 
+        String gender, 
+        java.util.UUID npcUuid
+    ) {
+        net.minecraft.client.Minecraft.getInstance().setScreen(
+            new com.seggellion.britannia_mod.client.screen.QuestDecisionScreen(response, npcName, gender, npcUuid)
+        );
+    }
 
+    // 2. ADD THIS: The 3-argument fallback for Environmental Triggers
+    public static void openQuestDecisionScreen(
+        com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse response, 
+        String title, 
+        java.util.UUID npcUuid
+    ) {
+        // Automatically passes "unknown" for the gender so the 4-arg method is happy
+        openQuestDecisionScreen(response, title, "unknown", npcUuid);
+    }
 
     public static void handleHouseScreenOnClient(HouseManagementScreenPayload data, IPayloadContext context) {
         context.enqueueWork(() -> {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && mc.level != null) {
-                            mc.setScreen(new HouseManagementScreen(
-                data.pos(), // BlockPos
-                data.uuid(),    // UUID
-                data.username(),
-                data.houseType(),
-                data.houseName()
-            ));
-
+                mc.setScreen(new HouseManagementScreen(
+                    data.pos(), // BlockPos
+                    data.uuid(),    // UUID
+                    data.username(),
+                    data.houseType(),
+                    data.houseName()
+                ));
             }
         });
     }
 
-public static void handleOpenBlacksmithGui(OpenBlacksmithGuiS2CPayload payload, IPayloadContext context) {
+    public static void handleOpenBlacksmithGui(OpenBlacksmithGuiS2CPayload payload, IPayloadContext context) {
         // enqueueWork ensures this runs on the main client rendering thread
         context.enqueueWork(() -> {
             // Open the screen and pass it the ingotId we sent from the server
@@ -72,102 +100,113 @@ public static void handleOpenBlacksmithGui(OpenBlacksmithGuiS2CPayload payload, 
         });
     }
 
+    public static void handleOpenNpcScreen(ClientboundOpenNpcScreenPayload pkt, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null || mc.level == null) return;
 
-public static void handleOpenNpcScreen(ClientboundOpenNpcScreenPayload pkt, IPayloadContext ctx) {
-    ctx.enqueueWork(() -> {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
-
-        Player player = mc.player;
-// 1. Determine the CORRECT handler type ONCE
-        NpcRoleHandler roleHandler;
-        String lowerRole = pkt.role().toLowerCase(java.util.Locale.ROOT);
-        
-        if (pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT) {
-             roleHandler = new com.seggellion.britannia_mod.npc.MerchantRoleHandler(pkt.role(), pkt.city());
-        } else {
-             if (lowerRole.contains("salvage")) {
-                 roleHandler = new com.seggellion.britannia_mod.npc.SalvageTraderRoleHandler(pkt.role(), pkt.city());
-             } 
-             // [CRITICAL] Catch the Alcohol Trader specific logic
-             else if (lowerRole.contains("alcohol") || lowerRole.contains("wine") || lowerRole.contains("vintner")) {
-                 roleHandler = new com.seggellion.britannia_mod.npc.AlcoholTraderRoleHandler(pkt.role(), pkt.city());
-             } 
-             else {
-                 roleHandler = new com.seggellion.britannia_mod.npc.TraderRoleHandler(pkt.role(), pkt.city());
-             }
-        }
-
-        // Fetch catalog before opening the screen
-        roleHandler.fetchCatalog(player, pkt.city(), products -> {
-          if (products == null || products.isEmpty()) {
-                String msg = pkt.role() + " says: 'I am not interested in anything you have.'";
-                Style style = Style.EMPTY
-                        .withFont(FONT_UO_CLASSIC)
-                        .withColor(GRAY_848484);
-                player.sendSystemMessage(Component.literal(msg).withStyle(style));
-                return; // Cancel screen open
+            Player player = mc.player;
+            // 1. Determine the CORRECT handler type ONCE
+            NpcRoleHandler roleHandler;
+            String lowerRole = pkt.role().toLowerCase(java.util.Locale.ROOT);
+            
+            if (pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT) {
+                 roleHandler = new com.seggellion.britannia_mod.npc.MerchantRoleHandler(pkt.role(), pkt.city());
+            } else {
+                 if (lowerRole.contains("salvage")) {
+                     roleHandler = new com.seggellion.britannia_mod.npc.SalvageTraderRoleHandler(pkt.role(), pkt.city());
+                 } 
+                 // [CRITICAL] Catch the Alcohol Trader specific logic
+                 else if (lowerRole.contains("alcohol") || lowerRole.contains("wine") || lowerRole.contains("vintner")) {
+                     roleHandler = new com.seggellion.britannia_mod.npc.AlcoholTraderRoleHandler(pkt.role(), pkt.city());
+                 } 
+                 else {
+                     roleHandler = new com.seggellion.britannia_mod.npc.TraderRoleHandler(pkt.role(), pkt.city());
+                 }
             }
 
-            mc.setScreen(new NpcCatalogScreen(
-                pkt.npcType(),
-                pkt.role(),
-                pkt.city(),
-                pkt.entityId(),
-                player,
-                roleHandler,
-                products
+            // Fetch catalog before opening the screen
+            roleHandler.fetchCatalog(player, pkt.city(), products -> {
+              if (products == null || products.isEmpty()) {
+                    String msg = pkt.role() + " says: 'I am not interested in anything you have.'";
+                    Style style = Style.EMPTY
+                            .withFont(FONT_UO_CLASSIC)
+                            .withColor(GRAY_848484);
+                    player.sendSystemMessage(Component.literal(msg).withStyle(style));
+                    return; // Cancel screen open
+                }
+
+                mc.setScreen(new NpcCatalogScreen(
+                    pkt.npcType(),
+                    pkt.role(),
+                    pkt.city(),
+                    pkt.entityId(),
+                    player,
+                    roleHandler,
+                    products
+                ));
+            });
+        });
+    }
+
+    public static void handleStoreSignScreenOnClient(StoreSignScreenPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null && mc.level != null) {
+                mc.setScreen(new StoreSignScreen(
+                    payload.pos(),
+                    payload.storeName(),
+                    payload.signType(),
+                    payload.isAdmin()
+                ));
+            }
+        });
+    }
+
+    public static void handleBritanniaSpawnScreen(BritanniaSpawnScreenS2CPayload p, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            var mc = Minecraft.getInstance();
+            if (mc.player == null) return;
+            mc.setScreen(new BritanniaSpawnScreen(
+                    p.pos(),
+                    p.entityId(),
+                    p.radius(),
+                    p.minTicks(),
+                    p.maxTicks(),
+                    p.nightOnly(),
+                    p.maxEntities(),
+                    p.activeEntities() // ✅ added
             ));
+        });
+    }
+
+public static void handleTriggerQuest(com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload payload, IPayloadContext ctx) {
+    ctx.enqueueWork(() -> {
+        com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
+            if (response != null && response.success) {
+                // Claim items if the API granted any
+                if (response.granted_items != null && !response.granted_items.isEmpty()) {
+                    sendToServer(new ClaimQuestRewardC2SPayload(response.granted_items));
+                }
+                
+                // Open the screen
+                openQuestDecisionScreen(response, "Environment", null);
+            }
         });
     });
 }
 
-
-
-public static void handleStoreSignScreenOnClient(StoreSignScreenPayload payload, IPayloadContext context) {
-    context.enqueueWork(() -> {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && mc.level != null) {
-            mc.setScreen(new StoreSignScreen(
+    public static void handleTraderSpawnScreen(TraderSpawnScreenS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            mc.setScreen(new TraderSpawnScreen(
                 payload.pos(),
-                payload.storeName(),
-                payload.signType(),
-                payload.isAdmin()
+                payload.traderType(),
+                payload.cityName(),
+                payload.townPersonAmount()
             ));
-        }
-    });
-}
-
-public static void handleBritanniaSpawnScreen(BritanniaSpawnScreenS2CPayload p,
-                                            net.neoforged.neoforge.network.handling.IPayloadContext ctx) {
-    ctx.enqueueWork(() -> {
-        var mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-        mc.setScreen(new BritanniaSpawnScreen(
-                p.pos(),
-                p.entityId(),
-                p.radius(),
-                p.minTicks(),
-                p.maxTicks(),
-                p.nightOnly(),
-                p.maxEntities(),
-                p.activeEntities() // ✅ added
-        ));
-    });
-}
-
-public static void handleTraderSpawnScreen(TraderSpawnScreenS2CPayload payload, IPayloadContext ctx) {
-    ctx.enqueueWork(() -> {
-        Minecraft mc = Minecraft.getInstance();
-        mc.setScreen(new TraderSpawnScreen(
-            payload.pos(),
-            payload.traderType(),
-            payload.cityName(),
-            payload.townPersonAmount()
-        ));
-    });
-}
-
+        });
+    }
 
     public static void handleManaSyncOnClient(ManaSyncPayload data, IPayloadContext context) {
         context.enqueueWork(() -> {
@@ -177,4 +216,59 @@ public static void handleTraderSpawnScreen(TraderSpawnScreenS2CPayload payload, 
             }
         });
     }
+
+    // --- NEW HANDLERS START ---
+    
+    public static void handleQuestDestinationScreen(QuestDestinationScreenS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft.getInstance().setScreen(
+                new QuestDestinationScreen(
+                    payload.pos(),
+                    payload.cityName()
+                )
+            );
+        });
+    }
+
+    public static void handleEscortArrived(EscortArrivedS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
+                if (response != null && response.success) {
+                    if (response.granted_items != null && !response.granted_items.isEmpty()) {
+                        sendToServer(new ClaimQuestRewardC2SPayload(response.granted_items));
+                    }
+                    Minecraft.getInstance().setScreen(
+                        new QuestDecisionScreen(
+                            response, 
+                            payload.npcName(), 
+                            payload.npcGender(),
+                            payload.npcUuid()
+                        )
+                    );
+                }
+            });
+        });
+    }
+
+    public static void handleQuestGiverSpawnScreen(QuestGiverSpawnScreenS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft.getInstance().setScreen(
+                new QuestGiverSpawnScreen(
+                    payload.pos(),
+                    payload.npcName(),
+                    payload.cityName(),
+                    payload.customApiId()
+                )
+            );
+        });
+    }
+
+    // Helper method to safely send packets to the server from the client side
+    public static void sendToServer(CustomPacketPayload payload) {
+        if (Minecraft.getInstance().getConnection() != null) {
+            Minecraft.getInstance().getConnection().send(payload);
+        }
+    }
+    
+    // --- NEW HANDLERS END ---
 }

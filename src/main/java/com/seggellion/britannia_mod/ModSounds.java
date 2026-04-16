@@ -88,7 +88,9 @@ public static final EntitySoundGroup ELEMENTAL_BLOOD = registerEntitySounds("ele
 
     public static final EntitySoundGroup HARPY = registerEntitySounds("harpy");
     public static final EntitySoundGroup HEADLESS = registerEntitySounds("headless");
-    public static final EntitySoundGroup OGRE = registerEntitySounds("ogre");
+    public static final EntitySoundGroup ORC = registerEntitySounds("orc");
+        public static final EntitySoundGroup ORC_CLUB = registerEntitySounds("orc_club");
+        public static final EntitySoundGroup OGRE = registerEntitySounds("ogre");
 public static final EntitySoundGroup OGRE_ARCTIC = registerEntitySounds("ogre_arctic");
     public static final EntitySoundGroup OGRE_LORD = registerEntitySounds("ogre_lord");
     public static final EntitySoundGroup OGRE_LORD_ARCTIC = registerEntitySounds("ogre_lord_arctic");
@@ -288,6 +290,34 @@ public static final DeferredHolder<SoundEvent, SoundEvent> FEET12B = SOUND_EVENT
             "feet12b",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet12b"))
     );
+
+            public static final DeferredHolder<SoundEvent, SoundEvent> FEET13A = SOUND_EVENTS.register(
+            "feet13a",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet13a"))
+    );
+
+public static final DeferredHolder<SoundEvent, SoundEvent> FEET13B = SOUND_EVENTS.register(
+            "feet13b",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet13b"))
+    );
+
+            public static final DeferredHolder<SoundEvent, SoundEvent> FEET15C = SOUND_EVENTS.register(
+            "feet15c",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet15c"))
+    );
+
+public static final DeferredHolder<SoundEvent, SoundEvent> FEET15D = SOUND_EVENTS.register(
+            "feet15d",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":feet15d"))
+    );
+
+
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANVIL = SOUND_EVENTS.register(
+            "anvil",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":anvil"))
+    );
+
 
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
