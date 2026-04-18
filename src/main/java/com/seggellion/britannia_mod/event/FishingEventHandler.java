@@ -61,7 +61,7 @@ public class FishingEventHandler {
         private static double paintingChanceFor(float skill) {
             // Only allow a chance at exactly 100 skill
             if (skill >= 100f) {
-                return 0.50; // 50% chance
+                return 0.01; // 50% chance
             }
             return 0.0; // No chance otherwise
         }
