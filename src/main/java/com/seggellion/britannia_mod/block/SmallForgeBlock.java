@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block;
 
-import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.item.PurityOreItem;
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
@@ -10,39 +11,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.level.block.RenderShape;
-import com.seggellion.britannia_mod.item.PurityOreItem;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Item;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.ItemInteractionResult;
-import java.util.Map;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import java.util.function.Supplier;
 
 public class SmallForgeBlock extends Block implements EntityBlock {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-
-    private static final Map<String, Supplier<Item>> ORE_TYPE_TO_INGOT = Map.of(
-        "iron ore", () -> Items.IRON_INGOT,
-        "gold ore", () -> Items.GOLD_INGOT,
-        "shadow iron ore", () -> ItemRegistry.SHADOW_IRON_INGOT.get(),
-        "valorite ore", () -> ItemRegistry.VALORITE_INGOT.get(),
-        "verite ore", () -> ItemRegistry.VERITE_INGOT.get(),
-        "agapite ore", () -> ItemRegistry.AGAPITE_INGOT.get(),
-        "copper ore", () -> ItemRegistry.COPPER_INGOT.get(),
-        "silver ore", () -> ItemRegistry.SILVER_INGOT.get(),
-        "tin ore", () -> ItemRegistry.TIN_INGOT.get()
-    );
 
     public SmallForgeBlock() {
         super(BlockBehaviour.Properties.of()
@@ -67,6 +47,7 @@ public class SmallForgeBlock extends Block implements EntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                               Player player, InteractionHand hand, BlockHitResult hit) {
+        
         if (!(stack.getItem() instanceof PurityOreItem purityOre)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
@@ -77,20 +58,26 @@ public class SmallForgeBlock extends Block implements EntityBlock {
         }
 
         int purity = purityOre.getPurity(stack);
-        String oreType = purityOre.getOreType(stack).toLowerCase();
+        String fullOreType = purityOre.getOreType(stack).toLowerCase(); // e.g. "valorite ore"
+        
+        // Strip out " ore" to get the raw metal name (e.g. "valorite")
+        String metalName = fullOreType.replace(" ore", "");
 
         LOGGER.info("Used The Small Forge");
-        LOGGER.info("Ore Type: {}", oreType);
+        LOGGER.info("Ore Type: {}, Metal: {}", fullOreType, metalName);
         LOGGER.info("Purity: {}", purity);
 
-        Supplier<Item> ingotSupplier = ORE_TYPE_TO_INGOT.get(oreType);
-        if (ingotSupplier == null) {
-            LOGGER.warn("Unknown ore type: {}", oreType);
+        // Ask our Enum for the matching material
+        UOMetalToolMaterial metal = UOMetalToolMaterial.getMaterialByName(metalName);
+        
+        if (metal == null) {
+            LOGGER.warn("Unknown ore/metal type: {}", metalName);
             return ItemInteractionResult.FAIL;
         }
 
         if (!level.isClientSide) {
-            forgeEntity.addPurity(oreType, purity, ingotSupplier);
+            // Pass the ingot supplier safely through
+            forgeEntity.addPurity(fullOreType, purity, metal.getIngotSupplier());
             stack.shrink(1);
             if (stack.isEmpty()) {
                 player.setItemInHand(hand, ItemStack.EMPTY);

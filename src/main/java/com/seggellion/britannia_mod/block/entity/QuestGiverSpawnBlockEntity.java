@@ -59,6 +59,7 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
         Entity currentNpc = spawnedNpcId != null ? sl.getEntity(spawnedNpcId) : null;
 
         if (currentNpc == null || !currentNpc.isAlive()) {
+            this.savedNpcData = null;
             spawnOrRestoreNpc(sl);
             // If the NPC was just killed or taken as an escort, put spawner on a longer cooldown!
             // E.g., spawnCooldown = 6000; // 5 minutes 
@@ -67,25 +68,27 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
         }
     }
 
-    private void spawnOrRestoreNpc(ServerLevel sl) {
+private void spawnOrRestoreNpc(ServerLevel sl) {
         BlockPos spawnPos = Util.findGround(sl, worldPosition, 5);
         if (spawnPos == null) return;
 
         QuestGiverEntity npc;
+        boolean isFreshSpawn = false; // Add a flag to track this
         
-        // Restore from NBT if we have a saved snapshot
         if (savedNpcData != null) {
             CompoundTag tag = savedNpcData.copy();
-            tag.remove("UUID"); // Force new UUID
+            tag.remove("UUID"); 
             Entity restored = net.minecraft.world.entity.EntityType.loadEntityRecursive(tag, sl, e -> e);
             if (restored instanceof QuestGiverEntity qg) {
                 npc = qg;
             } else {
                 npc = EntityRegistry.QUEST_GIVER.get().create(sl);
+                isFreshSpawn = true;
             }
         } else {
             // Fresh spawn
             npc = EntityRegistry.QUEST_GIVER.get().create(sl);
+            isFreshSpawn = true;
         }
 
         if (npc == null) return;
@@ -93,74 +96,58 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
         npc.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, sl.random.nextFloat() * 360F, 0);
         npc.setPersistenceRequired();
         
-// NEW: Identity Logic with Random Destinations!
-        if ("Generic Escort".equals(npcName)) {
-            // 1. Generate a random name
-            boolean isMale = sl.random.nextBoolean();
-            String assignedGender = isMale ? "male" : "female";
-            
-            // 2. Generate a random name based on the coin flip
-            String randomName = isMale ? 
-                com.seggellion.britannia_mod.util.NameLoader.getRandomMaleName() : 
-                com.seggellion.britannia_mod.util.NameLoader.getRandomFemaleName();
-            
-            // 3. SET THE GENDER so it syncs to the client!
-            npc.setGender(assignedGender);
-
-            // 2. Format the Origin City (Where the block is placed)
-            String safeOrigin = cityName != null ? cityName.toLowerCase().replace(" ", "_") : "unknown";
-            
-            // 3. Pick a Random Destination (that is NOT the current city)
-            java.util.List<String> validDestinations = ESCORT_DESTINATIONS.stream()
-                .filter(d -> !d.equalsIgnoreCase(cityName))
-                .toList();
+        // ONLY generate a new identity if this is a brand new NPC
+        if (isFreshSpawn) {
+            if ("Generic Escort".equals(npcName)) {
+                boolean isMale = sl.random.nextBoolean();
+                String assignedGender = isMale ? "male" : "female";
+                String randomName = isMale ? 
+                    com.seggellion.britannia_mod.util.NameLoader.getRandomMaleName() : 
+                    com.seggellion.britannia_mod.util.NameLoader.getRandomFemaleName();
                 
-            String randomDest = "unknown";
-            if (!validDestinations.isEmpty()) {
-                randomDest = validDestinations.get(sl.random.nextInt(validDestinations.size()));
+                npc.setGender(assignedGender);
+
+                String safeOrigin = cityName != null ? cityName.toLowerCase().replace(" ", "_") : "unknown";
+                java.util.List<String> validDestinations = ESCORT_DESTINATIONS.stream()
+                    .filter(d -> !d.equalsIgnoreCase(cityName))
+                    .toList();
+                    
+                String randomDest = "unknown";
+                if (!validDestinations.isEmpty()) {
+                    randomDest = validDestinations.get(sl.random.nextInt(validDestinations.size()));
+                }
+                String safeDest = randomDest.toLowerCase().replace(" ", "_");
+                
+                npc.setPersonalName(randomName + ":escort_" + safeOrigin + "_to_" + safeDest);
+                npc.addTag("generic_escort");
+                npc.addTag("origin_" + safeOrigin);
+                npc.addTag("destination_" + safeDest);
+
+            } else if ("Generic Combat".equals(npcName)) {
+                String safeApiId = customApiId != null && !customApiId.isEmpty() ? customApiId.trim() : "unknown_combat_npc";
+                String visualName = "Fighter";
+                if (safeApiId.contains("_")) {
+                    String rawPrefix = safeApiId.split("_")[0];
+                    if (!rawPrefix.isEmpty()) {
+                        visualName = rawPrefix.substring(0, 1).toUpperCase() + rawPrefix.substring(1).toLowerCase();
+                    }
+                } else {
+                    visualName = safeApiId.substring(0, 1).toUpperCase() + safeApiId.substring(1).toLowerCase();
+                }
+
+                npc.setGender("male");
+                npc.setCityName(cityName);
+                npc.setPersonalName(visualName + ":" + safeApiId);
+                npc.addTag("generic_combat");
+
+            } else {
+                // It's a story NPC. 
+                // Note: You aren't setting a gender here, so they will default to "female"
+                // which will cause your UI to fetch a female profile image!
+                npc.setPersonalName(npcName);
+                npc.setCityName(cityName);
             }
-            String safeDest = randomDest.toLowerCase().replace(" ", "_");
-            
-            // 4. ENCODE the FULL route into the name! (e.g., "Harrison:escort_britain_to_jhelom")
-            npc.setPersonalName(randomName + ":escort_" + safeOrigin + "_to_" + safeDest);
-
-            // Add server-side tags for the death event listener
-            npc.addTag("generic_escort");
-            npc.addTag("origin_" + safeOrigin);
-            npc.addTag("destination_" + safeDest);
-        } else if ("Generic Combat".equals(npcName)) {
-        // 1. Get the exact database ID you typed into the UI
-        String safeApiId = customApiId != null && !customApiId.isEmpty() ? customApiId.trim() : "unknown_combat_npc";
-
-        // 2. Derive the visual name from the API ID! 
-        // e.g., "kane_combat_1" -> splits at "_" -> takes "kane" -> capitalizes to "Kane"
-        String visualName = "Fighter";
-        if (safeApiId.contains("_")) {
-            String rawPrefix = safeApiId.split("_")[0];
-            if (!rawPrefix.isEmpty()) {
-                visualName = rawPrefix.substring(0, 1).toUpperCase() + rawPrefix.substring(1).toLowerCase();
-            }
-        } else {
-            // Fallback if they just typed "kane" with no underscores
-            visualName = safeApiId.substring(0, 1).toUpperCase() + safeApiId.substring(1).toLowerCase();
         }
-
-        // 3. Set a default gender for combat voice lines (or randomize if you prefer)
-        npc.setGender("male");
-        npc.setCityName(cityName);
-
-        // 4. ENCODE them together! (VisualName:DatabaseID)
-        // This will result in exactly: "Kane:kane_combat_1"
-        npc.setPersonalName(visualName + ":" + safeApiId);
-        npc.addTag("generic_combat");
-
-        } else {
-            // It's a story NPC, set the explicit name
-            npc.setPersonalName(npcName);
-            npc.setCityName(cityName);
-        }
-
-        npc.setCityName(cityName);
 
         sl.addFreshEntity(npc);
         spawnedNpcId = npc.getUUID();

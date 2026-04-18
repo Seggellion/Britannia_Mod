@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -89,7 +90,11 @@ public class BlacksmithyScreen extends Screen {
         this.craftButton = Button.builder(Component.literal("Craft"), b -> {
             if (this.selectedDef != null) {
                 // Send the network packet to the server to perform the craft
+                Minecraft.getInstance().getSoundManager().play(
+                    SimpleSoundInstance.forUI(ModSounds.ANVIL.get(), 1.0F, 1.0F)
+                );
                 NetworkHandler.sendToServer(new CraftBlacksmithItemC2SPayload(this.selectedDef.id()));
+            this.onClose();
             }
         }).bounds(cx - 40, cy + 90, 80, 20).build();
         

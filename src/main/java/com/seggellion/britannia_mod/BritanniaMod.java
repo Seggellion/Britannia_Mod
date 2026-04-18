@@ -122,7 +122,7 @@ CraftableRegistry.init();
         BlockEntityRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
 
-        SwordRegistry.register(modEventBus);
+        WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
         PaintingRegistry.register(modEventBus);
       //  MenuRegistry.register(modEventBus);

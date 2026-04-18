@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.network.chat.Component;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import net.minecraft.network.chat.Style;
+import com.seggellion.britannia_mod.entity.ai.EscortPlayerGoal;
 import net.minecraft.resources.ResourceLocation;
 
 // FATAL CLIENT IMPORTS HAVE BEEN REMOVED
@@ -35,48 +36,52 @@ private static final Style UO_STYLE = Style.EMPTY
     }
 
     @Override
+    protected void registerGoals() {
+        super.registerGoals(); // Inherits the float and stroll goals from CitizenEntity
+        
+        // Priority 0: Always follow the player if the escort tag exists!
+        // speedModifier = 1.2, stopDistance = 3 blocks, teleportDistance = 20 blocks
+        this.goalSelector.addGoal(0, new EscortPlayerGoal(this, 1.2D, 3.0F, 20.0F));
+    }
+
+@Override
     public InteractionResult interactAt(Player player, net.minecraft.world.phys.Vec3 hit, InteractionHand hand) {
-        if (hand == InteractionHand.MAIN_HAND && player.level().isClientSide) {
-            
-            String rawName = this.getPersonalName(); 
-            if (rawName == null || rawName.isEmpty()) rawName = "Traveler";
-            
-            String parsedDisplayName = rawName;
-            String internalApiId = rawName;
+        if (hand == InteractionHand.MAIN_HAND) {
+            // Only run the UI logic on the client
+            if (player.level().isClientSide) {
+                String rawName = this.getPersonalName(); 
+                if (rawName == null || rawName.isEmpty()) rawName = "Traveler";
+                
+                String parsedDisplayName = rawName;
+                String internalApiId = rawName;
 
-            // DECODE the internal API ID if it was injected by the spawner
-            if (rawName.contains(":")) {
-                String[] parts = rawName.split(":", 2); // Split into exactly 2 pieces max
-                parsedDisplayName = parts[0]; 
-                internalApiId = parts[1];
-            }
-
-            final String displayNpcName = parsedDisplayName;
-
-            System.out.println("Initiating conversation visually with: " + displayNpcName + ", fetching API ID: " + internalApiId);
-
-            String gender = this.getGender(); 
-            if (gender == null || gender.isEmpty()) {
-                gender = "unknown";
-            }
-            final String finalGender = gender;
-            
-            // Ask Rails for the quest using the decoded internalApiId!
-            QuestClient.interactWithNpc(internalApiId, response -> {
-                if (response != null && response.error == null) {
-                    // SAFELY ROUTED: Let the client handler open the screen
-                    if (net.neoforged.fml.loading.FMLLoader.getDist().isClient()) {
-                        com.seggellion.britannia_mod.network.ClientNetworkHandler.openQuestDecisionScreen(
-                            response, displayNpcName, finalGender, this.getUUID()
-                        );
-                    }
-                } else {
-                    String errMsg = (response != null && response.error != null) ? response.error : "I am busy, traveler.";
-                    player.displayClientMessage(Component.literal("§e" + displayNpcName + " says: '" + errMsg + "'"), false);
+                if (rawName.contains(":")) {
+                    String[] parts = rawName.split(":", 2); 
+                    parsedDisplayName = parts[0]; 
+                    internalApiId = parts[1];
                 }
-            });
+
+                final String displayNpcName = parsedDisplayName;
+                String gender = this.getGender(); 
+                if (gender == null || gender.isEmpty()) gender = "unknown";
+                final String finalGender = gender;
+                
+                QuestClient.interactWithNpc(internalApiId, response -> {
+                    if (response != null && response.error == null) {
+                        if (net.neoforged.fml.loading.FMLLoader.getDist().isClient()) {
+                            com.seggellion.britannia_mod.network.ClientNetworkHandler.openQuestDecisionScreen(
+                                response, displayNpcName, finalGender, this.getUUID()
+                            );
+                        }
+                    } else {
+                        String errMsg = (response != null && response.error != null) ? response.error : "I am busy, traveler.";
+                        player.displayClientMessage(Component.literal("§e" + displayNpcName + " says: '" + errMsg + "'"), false);
+                    }
+                });
+            }
             
-            return InteractionResult.SUCCESS;
+            // Return SUCCESS on both sides to prevent desyncs and block-clicks!
+            return InteractionResult.sidedSuccess(player.level().isClientSide);
         }
         
         return super.interactAt(player, hit, hand);

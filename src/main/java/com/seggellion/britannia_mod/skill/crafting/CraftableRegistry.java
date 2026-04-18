@@ -321,10 +321,10 @@ public class CraftableRegistry {
         register("cutlass", "Bladed", "Cutlass", "cutlass", false,
                 new IngredientRequirement[]{ ing("ingot", 8) },
                 new SkillRequirement[]{ skill("blacksmith", 24.3f) });
-
+        
         register("dagger", "Bladed", "Dagger", "dagger", false,
-                new IngredientRequirement[]{ ing("ingot", 3) },
-                new SkillRequirement[]{ skill("blacksmith", 0.0f) });
+            new IngredientRequirement[]{ ing("ingot", 3) },
+            new SkillRequirement[]{ skill("blacksmithy", 0.0f) });
 
         register("daisho", "Bladed", "Daisho", "daisho", false,
                 new IngredientRequirement[]{ ing("ingot", 15) },

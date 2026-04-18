@@ -26,7 +26,10 @@ public class ToolRegistry {
     public static ItemStack createPickaxe(UOMetalToolMaterial material, int quality) {
         ItemStack stack = new ItemStack(PICKAXE.get());
         QualityToolItem.setQuality(stack, quality);
-        QualityToolItem.setMaterialModelData(stack, material);
+        
+        // Updated this line to use the new string-based material system!
+        QualityToolItem.setMaterial(stack, material); 
+        
         return stack;
     }
 

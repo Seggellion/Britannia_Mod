@@ -138,7 +138,18 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
                             net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
                             if (connection != null) {
                                 java.util.UUID safeUuid = (this.npcUuid != null) ? this.npcUuid : new java.util.UUID(0, 0);
-                                connection.send(new com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload(action.entity_type, newResponse.quest_id, safeUuid));
+
+                                String safeName = this.npcName != null ? this.npcName : "Unknown";
+                                String safeGender = this.npcGender != null ? this.npcGender : "unknown";
+
+                                connection.send(new com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload(
+                                    action.entity_type, 
+                                    newResponse.quest_id, 
+                                    safeUuid, 
+                                    safeName, 
+                                    safeGender
+                                ));
+
                             }
                         }
                     }

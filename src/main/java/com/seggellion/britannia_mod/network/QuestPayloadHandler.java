@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public class QuestPayloadHandler {
@@ -14,24 +15,40 @@ public class QuestPayloadHandler {
             ServerPlayer player = (ServerPlayer) context.player();
             ServerLevel level = player.serverLevel();
 
+            // Default to the payload data in case the original entity has already unloaded
+            String finalName = payload.npcName();
+            String finalGender = payload.npcGender();
+            com.seggellion.britannia_mod.entity.QuestGiverEntity oldQg = null;
+
             // 1. Find and DELETE the original NPC
             Entity oldEntity = level.getEntity(payload.npcUuid());
-            String npcName = "Traveler";
 
-            if (oldEntity instanceof com.seggellion.britannia_mod.entity.QuestGiverEntity oldQg) {
-                npcName = oldQg.getName().getString(); // Safely gets the stripped name (e.g., "Mitexi")
-                oldEntity.discard(); // Deleting this frees up the Spawner Block to generate a new escort!
+            if (oldEntity instanceof com.seggellion.britannia_mod.entity.QuestGiverEntity foundQg) {
+                oldQg = foundQg;
+                // Grab the raw database name so we don't lose the encoded API routing data
+                finalName = oldQg.getPersonalName();
+                finalGender = oldQg.getGender();
+                oldEntity.discard(); // Deleting this frees up the Spawner Block to generate a new escort
             }
 
-            // 2. Spawn a NEW QuestGiverEntity so it visually matches your mod
+            // 2. Spawn a NEW QuestGiverEntity
             com.seggellion.britannia_mod.entity.QuestGiverEntity escort = com.seggellion.britannia_mod.registry.EntityRegistry.QUEST_GIVER.get().create(level);
             
             if (escort != null) {
-                // Move it to the player
+                // If we successfully found the old NPC, clone its exact appearance (clothing, name, gender) via NBT!
+                if (oldQg != null) {
+                    CompoundTag tag = new CompoundTag();
+                    oldQg.saveWithoutId(tag);
+                    tag.remove("UUID"); // Strip the old UUID so it generates a fresh one
+                    escort.load(tag);
+                } else {
+                    // Fallback: apply the data explicitly from the payload
+                    escort.setPersonalName(finalName);
+                    escort.setGender(finalGender);
+                }
+
+                // Move it to the player's exact location
                 escort.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0F);
-                
-                // Set the exact same name
-                escort.setPersonalName(npcName);
                 
                 // Apply our tracking tags
                 escort.addTag("quest_escort_" + player.getUUID().toString());
@@ -42,7 +59,10 @@ public class QuestPayloadHandler {
                 escort.goalSelector.addGoal(2, new FollowPlayerGoal(escort, player, 1.2D, 5.0F, 2.0F));
 
                 level.addFreshEntity(escort);
-                player.sendSystemMessage(Component.literal("§e" + npcName + " joins your side. Lead the way."));
+
+                // Format the chat message so it doesn't print raw database IDs
+                String displayString = finalName != null && finalName.contains(":") ? finalName.split(":", 2)[0] : finalName;
+                player.sendSystemMessage(Component.literal("§e" + displayString + " joins your side. Lead the way."));
             }
         });
     }

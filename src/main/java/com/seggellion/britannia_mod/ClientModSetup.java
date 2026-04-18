@@ -62,7 +62,7 @@ import net.minecraft.core.component.DataComponents;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.minecraft.world.item.Item;
 import com.seggellion.britannia_mod.item.PurityOreItem;
-import com.seggellion.britannia_mod.registry.SwordRegistry;
+import com.seggellion.britannia_mod.registry.WeaponRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -73,6 +73,24 @@ public class ClientModSetup {
 
 @SubscribeEvent
 public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+
+// -- Weapon Tints --
+event.register((stack, tintIndex) -> {
+    if (tintIndex != 0) return -1;
+
+    String materialName = "iron"; // fallback
+    if (stack.getItem() instanceof QualitySwordItem) {
+        materialName = QualitySwordItem.getMaterial(stack);
+    } else if (stack.getItem() instanceof QualityToolItem) {
+        materialName = QualityToolItem.getMaterial(stack);
+    }
+
+    // Get the base tint
+    int tint = getTintForOreType(materialName);
+    // Force Alpha to 100% and strip any existing alpha data
+    return 0xFF000000 | (tint & 0xFFFFFF);
+    
+}, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get());
 
 
     event.register((stack, tintIndex) -> {
@@ -136,12 +154,11 @@ event.register((stack, tintIndex) -> {
     if (!(stack.getItem() instanceof QualityToolItem tool)) return -1;
     
     if (tintIndex == 0) {
-        int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
-        String material = QualityToolItem.getMaterialFromModelData(modelData);
+                    String metalType = QualityToolItem.getMaterial(stack);
 
-        if (material == null) return -1; // ✅ prevent crash
+        if (metalType == null) return -1; // ✅ prevent crash
 
-        int tint = switch (material.toLowerCase()) {
+        int tint = switch (metalType.toLowerCase()) {
             case "gold"     -> 0xFFD700;
             case "iron"     -> 0xC6C6C6;
             case "valorite" -> 0x3BA4B9;
@@ -158,37 +175,6 @@ event.register((stack, tintIndex) -> {
 
     return -1;
 }, ToolRegistry.PICKAXE.get());
-
-
-// Sword tinting
-    event.register((stack, tintIndex) -> {
-        
-        if (!(stack.getItem() instanceof QualitySwordItem swordItem)) {
-            return -1; // Default (no tint)
-        }
-
-        if (tintIndex == 0) { // Blade tinting
- 
-        int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
-        String metalType = QualitySwordItem.getMaterialFromModelData(modelData);
-
-        int tint = switch (metalType) {
-                case "tin"        -> adjustBrightness(desaturateColor(0xC0C0C0, 0.6), 0.95); // Desaturated gray
-                case "silver"     -> adjustBrightness(desaturateColor(0xC0C0C0, 0.5), 3.0); // Brightened silver
-                case "gold" -> 0xCEAD39;       // Gold tint
-                case "iron" -> 0xC6C6C6;       // Iron tint
-                case "valorite" -> 0x3BA4B9;   // Valorite tint
-                case "agapite"    -> 0xE07EA3;  // Pink/magenta hue
-                case "verite"     -> 0x40A050;  // Green hue
-                case "copper"     -> 0xB87333;  // Brownish copper color
-                default -> 0xFFFFFF;           // Default tint (white)
-            };
-            return tint | 0xFF000000; // Ensure full opacity
-        }
-
-        return -1; // No tint for other layers
-    }, 
-    SwordRegistry.VIKING_SWORD.get());
 
 }
 
@@ -350,20 +336,22 @@ private static int getTintForIngotItem(Item item) {
 };
 
 private static int getTintForOreType(String oreType) {
-    return switch (oreType.toLowerCase()) {
-        case "tin ore"        -> applyHueShift(applyGreyscaleTint(0xC0C0C0), 0.1f, 0.8f); // Light grey, slightly desaturated
-        case "silver ore"     -> applyHueShift(applyGreyscaleTint(0xC0C0C0), 0.1f, 3.0f); // Bright silver
-        case "gold ore"       -> 0xDBD748; // Example: golden
-        case "shadow iron ore"-> 0x5C5C5C; // Darker gray
-        case "valorite ore"   -> 0x3E92E3; 
-        case "iron ore"   -> 0xFFFFFF; 
-        case "agapite ore"    -> 0xF4A6C0;  // Pink/magenta hue
-        case "verite ore"     -> 0x40A050;  // Green hue
-        case "copper ore"     -> 0x8F4A14;  // Brownish copper color
-        default -> 0xFFFFFF;              // fallback
+    // Remove " ore" if it exists so "Valorite Ore" and "valorite" both become "valorite"
+    String type = oreType.toLowerCase().replace(" ore", "").trim();
+    
+    return switch (type) {
+        case "tin"        -> adjustBrightness(desaturateColor(0xC0C0C0, 0.6), 0.95);
+        case "silver"     -> adjustBrightness(desaturateColor(0xC0C0C0, 0.5), 3.0);
+        case "gold"       -> 0xCEAD39;
+        case "iron"       -> 0xC6C6C6;
+        case "shadow iron"-> 0x303030; 
+        case "valorite"   -> 0x3BA4B9;
+        case "agapite"    -> 0xE07EA3;
+        case "verite"     -> 0x40A050;
+        case "copper"     -> 0xB87333;
+        default           -> 0xFFFFFF; // Pure white
     };
-}
-
+};
 
     private static int getTintForStoneType(String stoneType) {
         return switch (stoneType.toLowerCase()) {
@@ -411,17 +399,7 @@ event.registerBlockEntityRenderer(
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {
         Keybinds.registerInputHandler();
-    Minecraft.getInstance().execute(() -> {
-        try {
-            LOGGER.info("✅ Loading shader: brightness_shader.json");
-            Minecraft.getInstance().gameRenderer.loadEffect(
-                ResourceLocation.fromNamespaceAndPath("britannia_mod", "shaders/core/brightness_shader.json")
-            );
-            LOGGER.info("✅ Shader loaded successfully.");
-        } catch (Exception e) {
-            LOGGER.error("❌ Error loading shader: {}", e.getMessage());
-        }
-    });
+ 
 
 
 // Initialize the ClientOnlyItemRegistry

@@ -111,19 +111,18 @@ public class VillagerTradeUpdater {
     }
 
 private static boolean materialAvailableForItem(ItemStack stack, JsonArray metalSupply) {
-    int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
     String material = null;
 
     if (stack.getItem() instanceof QualitySwordItem) {
-        material = QualitySwordItem.getMaterialFromModelData(modelData);
+        material = QualitySwordItem.getMaterial(stack);
     } else if (stack.getItem() instanceof QualityToolItem) {
-        material = QualityToolItem.getMaterialFromModelData(modelData);
+        material = QualityToolItem.getMaterial(stack);
     } else {
         return false; // Not a known quality item
     }
 
     if (material == null) {
-        LOGGER.warn("Unknown material for modelData: {}", modelData);
+        LOGGER.warn("Unknown material for item: {}", BuiltInRegistries.ITEM.getKey(stack.getItem()));
         return false;
     }
 
@@ -148,30 +147,26 @@ private static boolean materialAvailableForItem(ItemStack stack, JsonArray metal
     return false;
 }
 
-
-
 private static double computePriceFromRecipes(ItemStack stack, JsonObject marketPrices) {
-    int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
     String material = null;
     int quality = 1;
 
     if (stack.getItem() instanceof QualitySwordItem) {
-        material = QualitySwordItem.getMaterialFromModelData(modelData);
+        material = QualitySwordItem.getMaterial(stack);
         quality = QualitySwordItem.getQuality(stack);
     } else if (stack.getItem() instanceof QualityToolItem) {
-        material = QualityToolItem.getMaterialFromModelData(modelData);
+        material = QualityToolItem.getMaterial(stack);
         quality = QualityToolItem.getQuality(stack);
     }
 
     String itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
     String shortKey = itemKey.contains(":") ? itemKey.split(":")[1] : itemKey;
 
-
     if (material == null) {
-        LOGGER.warn("computePriceFromRecipes: Material was null for item: {}, modelData: {}", itemKey, modelData);
+        // Updated log to remove the old modelData reference
+        LOGGER.warn("computePriceFromRecipes: Material was null for item: {}", itemKey);
         return 10.0;
     }
-
 
     String fullRecipeKey = shortKey + "_" + material;
     Map<String, Double> recipe = LocalRecipes.getRecipe(fullRecipeKey);
@@ -182,15 +177,16 @@ private static double computePriceFromRecipes(ItemStack stack, JsonObject market
         LOGGER.info("computePriceFromRecipes: Using recipe for '{}': {}", fullRecipeKey, recipe);
     }
 
-
     double basePrice = marketPrices.has(material) ? marketPrices.get(material).getAsDouble() : 10.0;
     double totalCost = 0.0;
+    
     for (Map.Entry<String, Double> entry : recipe.entrySet()) {
         String ingredient = entry.getKey();
         double quantity = entry.getValue();
         double pricePerUnit = marketPrices.has(ingredient) ? marketPrices.get(ingredient).getAsDouble() : 10.0;
         totalCost += quantity * pricePerUnit;
     }
+    
     double finalPrice = Math.ceil(totalCost * (1.0 + (quality - 1) * 0.2));
 
     LOGGER.info("Pricing item: {}, material: {}, quality: {}, basePrice: {}, finalPrice: {}",
@@ -199,7 +195,6 @@ private static double computePriceFromRecipes(ItemStack stack, JsonObject market
 
     return finalPrice;
 }
-
 
  private static String getVillagerCityName(Villager villager) {
         // Read from persistent NBT with fallback

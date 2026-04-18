@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Maintains "Viking Swords" for different metals (IRON, VALORITE, etc.).
  */
-public class SwordRegistry {
+public class WeaponRegistry {
     public static final DeferredRegister<Item> SWORDS = DeferredRegister.create(
         net.minecraft.core.registries.Registries.ITEM,
         BritanniaMod.MODID

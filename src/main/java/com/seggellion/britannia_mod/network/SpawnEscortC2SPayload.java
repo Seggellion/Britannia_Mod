@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record SpawnEscortC2SPayload(String entityType, long questId, java.util.UUID npcUuid) implements CustomPacketPayload {
+public record SpawnEscortC2SPayload(String entityType, long questId, java.util.UUID npcUuid, String npcName, String npcGender) implements CustomPacketPayload {
 
     public static final ResourceLocation TYPE_ID = 
         ResourceLocation.fromNamespaceAndPath("britannia_mod", "spawn_escort");
@@ -20,7 +20,10 @@ public record SpawnEscortC2SPayload(String entityType, long questId, java.util.U
                 String entityType = ByteBufCodecs.STRING_UTF8.decode(buf);
                 long questId = ByteBufCodecs.VAR_LONG.decode(buf);
                 java.util.UUID npcUuid = buf.readUUID(); // Read the UUID
-                return new SpawnEscortC2SPayload(entityType, questId, npcUuid);
+                String npcName = ByteBufCodecs.STRING_UTF8.decode(buf);
+                String npcGender = ByteBufCodecs.STRING_UTF8.decode(buf);
+
+                return new SpawnEscortC2SPayload(entityType, questId, npcUuid, npcName, npcGender);
             }
 
             @Override
@@ -28,6 +31,8 @@ public record SpawnEscortC2SPayload(String entityType, long questId, java.util.U
                 ByteBufCodecs.STRING_UTF8.encode(buf, payload.entityType);
                 ByteBufCodecs.VAR_LONG.encode(buf, payload.questId);
                 buf.writeUUID(payload.npcUuid); // Write the UUID
+                ByteBufCodecs.STRING_UTF8.encode(buf, payload.npcName());
+                ByteBufCodecs.STRING_UTF8.encode(buf, payload.npcGender());
             }
         };
 
