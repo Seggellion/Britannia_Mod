@@ -95,15 +95,15 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
                         sl.random.nextFloat() * 360F, 0);
                 pmob.restrictTo(this.worldPosition, Math.max(1, this.spawnRadius - BOUNDARY_MARGIN));
                 pmob.goalSelector.addGoal(1, new MoveTowardsRestrictionGoal(pmob, 1.1));
-              //  pmob.setPersistenceRequired();
                 sl.addFreshEntity(pmob);
                 spawned.add(pmob.getUUID());
+                this.setChanged(); // <--- ADD THIS
             } else if (e instanceof Mob mob) {
                 mob.moveTo(spawnAt.getX() + 0.5, spawnAt.getY(), spawnAt.getZ() + 0.5,
                         sl.random.nextFloat() * 360F, 0);
-               // mob.setPersistenceRequired();
                 sl.addFreshEntity(mob);
                 spawned.add(mob.getUUID());
+                this.setChanged(); // <--- ADD THIS
             }
         }
 
@@ -152,17 +152,25 @@ private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin
 
 private void pruneSpawned(ServerLevel sl) {
     if (spawned.isEmpty()) return;
+    boolean changed = false; // <--- Track if we modified the list
     Iterator<UUID> it = spawned.iterator();
     while (it.hasNext()) {
         UUID id = it.next();
         Entity e = sl.getEntity(id);
         
+        // e is null if the entity is simply unloaded; we ignore nulls to keep them in memory
         if (e != null) {
             if (!(e instanceof Mob mob) || !mob.isAlive() || mob.isRemoved()) {
                 it.remove();
                 outsideTicks.remove(id);
+                changed = true; // <--- Mark as changed
             }
         }
+    }
+    
+    // Save state if entities died/were removed
+    if (changed) {
+        this.setChanged(); // <--- ADD THIS
     }
 }
 
@@ -218,6 +226,7 @@ private void pruneSpawned(ServerLevel sl) {
                 mob.discard();
                 spawned.remove(id);
                 outsideTicks.remove(id);
+                this.setChanged();
             }
         }
     }
@@ -277,14 +286,6 @@ private void pruneSpawned(ServerLevel sl) {
         }
     }
 
-
-    @Override
-    public void onChunkUnloaded() {
-        super.onChunkUnloaded();
-        if (level instanceof ServerLevel sl) {
-            cleanupOnRemove(sl);
-        }
-    }
 
     // ===== Config application =====
 public void applyConfig(ResourceLocation id, int radius, int minTicks, int maxTicks,

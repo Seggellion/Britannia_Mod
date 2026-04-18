@@ -3,6 +3,8 @@ package com.seggellion.britannia_mod.entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvent;
 import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.util.RandomSource;
@@ -30,6 +32,13 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public abstract class BaseBritanniaMonster extends Monster implements IBritanniaEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     
+private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+    
+    // Red color for monsters, or use 0x2194A5 if you want them to match the QuestGiver
+    private static final Style MONSTER_STYLE = Style.EMPTY
+            .withFont(FONT_UO_CLASSIC)
+            .withColor(0x848484); // Standard Minecraft Red
+
     // Pass the internal name (e.g., "orc", "troll") to automate loot tables
     private final String entityName;
 
@@ -60,6 +69,30 @@ public abstract class BaseBritanniaMonster extends Monster implements IBritannia
     protected SoundEvent getAmbientSound() {
         var group = ModSounds.ENTITY_SOUNDS.get(this.getEntityName());
         return group != null ? group.ambient().get() : null;
+    }
+
+@Override
+    public Component getName() {
+        // This looks for "entity.britannia_mod.orc" in your lang JSON files
+        String langKey = "entity.britannia_mod." + this.entityName;
+        return Component.translatable(langKey).withStyle(MONSTER_STYLE);
+    }
+
+    /**
+     * This handles the actual hover-text/display name used in the world.
+     */
+    @Override
+    public Component getDisplayName() {
+        return this.getName();
+    }
+
+    /**
+     * To make the name always visible (like a Quest Giver), override this.
+     * If you only want it to show when looked at, remove this method.
+     */
+    @Override
+    public boolean shouldShowName() {
+        return true; 
     }
 
     @Override

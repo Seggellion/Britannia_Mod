@@ -58,11 +58,19 @@ public class BritanniaSpawnBlock extends Block implements EntityBlock, Invisible
     }
 
     // Only show an outline to admins (creative or permission level >=2). Others get no hitbox ⇒ effectively hidden.
-    @Override public VoxelShape getShape(BlockState s, BlockGetter g, BlockPos p, CollisionContext c) {
-        Player player = c instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec && ec.getEntity() instanceof Player pl ? (Player) ec.getEntity() : null;
-        if (player == null) return Shapes.empty();
-        boolean isAdmin = player.isCreative() || (player instanceof ServerPlayer sp && sp.hasPermissions(2));
-        return isAdmin ? Block.box(0, 0, 0, 16, 1, 16) : Shapes.empty();
+// Only show an outline to admins (creative or permission level >=2). Others get no hitbox ⇒ effectively hidden.
+    @Override 
+    public VoxelShape getShape(BlockState s, BlockGetter g, BlockPos p, CollisionContext c) {
+        // If the context contains an entity (like a player looking at the block)
+        if (c instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec && ec.getEntity() != null) {
+            if (ec.getEntity() instanceof Player player) {
+                boolean isAdmin = player.isCreative() || (player instanceof ServerPlayer sp && sp.hasPermissions(2));
+                return isAdmin ? Block.box(0, 0, 0, 16, 1, 16) : Shapes.empty();
+            }
+            return Shapes.empty(); // Mobs, arrows, etc. see no shape
+        }
+
+        return Block.box(0, 0, 0, 16, 1, 16);
     }
 
     // Prevent placement by non-admins.
