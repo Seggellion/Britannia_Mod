@@ -56,6 +56,7 @@ import com.seggellion.britannia_mod.entity.SerpentIceEntity;
 import com.seggellion.britannia_mod.entity.LichEntity;
 import com.seggellion.britannia_mod.entity.RatEntity;
 import com.seggellion.britannia_mod.entity.CustomCatEntity;
+import com.seggellion.britannia_mod.entity.BritanniaCatEntity;
 import com.seggellion.britannia_mod.entity.WraithEntity;
 import com.seggellion.britannia_mod.entity.GhoulEntity;
 import com.seggellion.britannia_mod.entity.WispEntity;
@@ -412,6 +413,14 @@ public static final DeferredHolder<EntityType<?>, EntityType<OgreArcticEntity>> 
                     .build("britannia_mod:custom_cat")
     );
 
+                public static final DeferredHolder<EntityType<?>, EntityType<BritanniaCatEntity>> BRITANNIA_CAT_ENTITY = ENTITIES.register(
+            "britannia_cat",
+            () -> EntityType.Builder.of(BritanniaCatEntity::new, MobCategory.CREATURE)
+                .sized(0.6F, 0.7F)
+                    .build("britannia_mod:britannia_cat")
+    );
+
+
 public static final DeferredHolder<EntityType<?>, EntityType<TurkeyEntity>> TURKEY_ENTITY = ENTITIES.register(
             "turkey",
             () -> EntityType.Builder.of(TurkeyEntity::new, MobCategory.CREATURE)
@@ -590,6 +599,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<LivingSeatEntity>> 
         event.put(SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalEntity.createAttributes().build());
         event.put(GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalEntity.createAttributes().build());
         event.put(CUSTOM_CAT_ENTITY.get(), CustomCatEntity.createAttributes().build());
+        event.put(BRITANNIA_CAT_ENTITY.get(), BritanniaCatEntity.createAttributes().build());
         event.put(DAEMON_ENTITY.get(), DaemonEntity.createAttributes().build());
          event.put(LICH_ENTITY.get(), LichEntity.createAttributes().build());
         event.put(GORILLA_ENTITY.get(), GorillaEntity.createAttributes().build());

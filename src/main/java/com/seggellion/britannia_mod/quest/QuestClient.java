@@ -17,6 +17,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 
 import java.util.UUID;
 
@@ -152,7 +155,7 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
                 status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream(), 
                 StandardCharsets.UTF_8
             );
-            
+            LOGGER.info("RESPONSE RECEIVED!");
             StringBuilder sb = new StringBuilder();
             int cp;
             while ((cp = reader.read()) != -1) {
@@ -184,7 +187,47 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
 
             // Always execute the callback on the main Minecraft thread to safely update UI
             final QuestModels.QuestResponse finalResponse = response;
-            Minecraft.getInstance().execute(() -> callback.accept(finalResponse));
+            Minecraft.getInstance().execute(() -> {
+                // --- NEW: Process Client Actions (like Achievements) ---
+                if (finalResponse != null && finalResponse.success && finalResponse.client_actions != null) {
+                    for (QuestModels.ClientAction action : finalResponse.client_actions) {
+                        if ("achievement".equals(action.type)) {
+                            // 1. Display the Vanilla-style pop-up in the top right
+                                Minecraft.getInstance().getToasts().addToast(
+                                    SystemToast.multiline(
+                                        Minecraft.getInstance(),
+                                        SystemToast.SystemToastId.PERIODIC_NOTIFICATION, 
+                                        Component.literal("§6Achievement Unlocked!"), // Gold text
+                                        Component.literal(action.name != null ? action.name : "Quest Completed")
+                                    )
+                                );
+                            // 2. Play the satisfying Level Up / Challenge Complete sound
+                            if (Minecraft.getInstance().player != null) {
+                                Minecraft.getInstance().player.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
+                            }
+                        }
+
+                        // 2. Check for Stat Gains (Un-nested!)
+                        else if ("stat_gain".equals(action.type)) {
+                            LOGGER.info("attempting stat gain");
+                            if (action.fame > 0) {
+                                Minecraft.getInstance().player.sendSystemMessage(
+                                    Component.literal("§eYou have gained " + action.fame + " Fame.")
+                                );
+                            }
+                            if (action.karma > 0) {
+                                Minecraft.getInstance().player.sendSystemMessage(
+                                    Component.literal("§eYou have gained " + action.karma + " Karma.")
+                                );
+                            }
+                        }
+
+
+                    }
+                }
+
+                callback.accept(finalResponse);
+            });
             
         } catch (Exception e) {
             LOGGER.error("Error reading Quest API response", e);

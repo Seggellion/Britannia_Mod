@@ -99,6 +99,9 @@ public static final EntitySoundGroup OGRE_ARCTIC = registerEntitySounds("ogre_ar
 public static final EntitySoundGroup GARGOYLE_ENFORCER = registerEntitySounds("gargoyle_enforcer");
 public static final EntitySoundGroup GARGOYLE_DESTROYER = registerEntitySounds("gargoyle_destroyer");
 public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("gargoyle_stone");
+        public static final EntitySoundGroup WRAITH = registerEntitySounds("wraith");
+        public static final EntitySoundGroup GHOUL = registerEntitySounds("ghoul");
+        public static final EntitySoundGroup SHADE = registerEntitySounds("shade");
 
     // =========================================
     // ENVIRONMENT, SPELLS, AND UI SOUNDS

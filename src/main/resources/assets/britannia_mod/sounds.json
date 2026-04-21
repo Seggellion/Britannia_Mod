@@ -368,6 +368,24 @@
     "gargoyle_stone_hurt": { "sounds": [ "britannia_mod:gargoyle_hurt" ] },
     "gargoyle_stone_death": { "sounds": [ "britannia_mod:gargoyle_death" ] },
 
+    "wraith_ambient": { "sounds": [ "britannia_mod:ghost_ambient" ] },
+    "wraith_angry": { "sounds": [ "britannia_mod:ghost_angry" ] },
+    "wraith_attack": { "sounds": [ "britannia_mod:ghost_attack" ] },
+    "wraith_hurt": { "sounds": [ "britannia_mod:ghost_hurt" ] },
+    "wraith_death": { "sounds": [ "britannia_mod:ghost_death" ] },
+
+    "shade_ambient": { "sounds": [ "britannia_mod:ghost_ambient" ] },
+    "shade_angry": { "sounds": [ "britannia_mod:ghost_angry" ] },
+    "shade_attack": { "sounds": [ "britannia_mod:ghost_attack" ] },
+    "shade_hurt": { "sounds": [ "britannia_mod:ghost_hurt" ] },
+    "shade_death": { "sounds": [ "britannia_mod:ghost_death" ] },
+
+    "ghoul_ambient": { "sounds": [ "britannia_mod:ghost_ambient" ] },
+    "ghoul_angry": { "sounds": [ "britannia_mod:ghost_angry" ] },
+    "ghoul_attack": { "sounds": [ "britannia_mod:ghost_attack" ] },
+    "ghoul_hurt": { "sounds": [ "britannia_mod:ghost_hurt" ] },
+    "ghoul_death": { "sounds": [ "britannia_mod:ghost_death" ] },
+
     "daemon_ambient": {
         "sounds": [
             "britannia_mod:daemon_ambient"

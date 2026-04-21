@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 public class SerpentIceEntity extends BaseBritanniaMonster {
 
     public SerpentIceEntity(EntityType<? extends Monster> entityType, Level level) {
-        super(entityType, level, "serpent_ice");
+        super(entityType, level, "serpent_giant_ice");
     }
 
     // Attributes

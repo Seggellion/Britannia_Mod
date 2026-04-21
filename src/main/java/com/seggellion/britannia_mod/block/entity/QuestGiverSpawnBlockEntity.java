@@ -25,14 +25,15 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
     private String cityName = "";
     private String npcName = ""; 
     private String customApiId = "";
-
+    private String gender = "female";
+    public String getGender() { return gender; }
     public String getCustomApiId() { return customApiId; }
     
     // For Escorts
     private String escortDestination = "";
 
-    private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom");
-//    private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom", "Britain", "Minoc", "Moonglow", "Trinsic", "Yew", "Skara Brae", "Magincia", "Serpent's Hold", "Nujel'm");
+    private static final List<String> ESCORT_DESTINATIONS = List.of("Britain");
+  // private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom", "Britain", "Minoc", "Moonglow", "Trinsic", "Yew", "Skara Brae", "Magincia", "Serpent's Hold", "Nujel'm");
     private static final Random RANDOM = new Random();
 
     private UUID spawnedNpcId = null;
@@ -146,6 +147,7 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
                 // which will cause your UI to fetch a female profile image!
                 npc.setPersonalName(npcName);
                 npc.setCityName(cityName);
+                npc.setGender(this.gender != null && !this.gender.isEmpty() ? this.gender : "female");
             }
         }
 
@@ -162,16 +164,17 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
     }
 
     // Updated to accept the mode
-    public void applyConfig(String npcName, String cityName, String customApiId) {
+    public void applyConfig(String npcName, String cityName, String customApiId, String gender) {
         if (!(level instanceof ServerLevel sl)) return;
 
         this.npcName = npcName;
         this.cityName = cityName;
         this.customApiId = customApiId;
-        this.savedNpcData = null; // Clear old save since we are changing identity
+        this.gender = gender; // NEW
+        this.savedNpcData = null; 
 
-        onDestroyed(sl); // Remove old NPC
-        spawnCooldown = 0; // Force immediate spawn next tick
+        onDestroyed(sl); 
+        spawnCooldown = 0; 
         setChanged();
     }
 
@@ -190,6 +193,7 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
         tag.putString("CityName", cityName);
         tag.putString("NpcName", npcName);
         tag.putString("EscortDestination", escortDestination);
+        tag.putString("Gender", gender); // NEW
         if (spawnedNpcId != null) tag.putUUID("SpawnedNpcId", spawnedNpcId);
         if (savedNpcData != null) tag.put("SavedNpcData", savedNpcData);
     }
@@ -201,6 +205,7 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
         cityName = tag.getString("CityName");
         npcName = tag.getString("NpcName");
         escortDestination = tag.getString("EscortDestination");
+        if (tag.contains("Gender")) gender = tag.getString("Gender"); 
         if (tag.hasUUID("SpawnedNpcId")) spawnedNpcId = tag.getUUID("SpawnedNpcId");
         if (tag.contains("SavedNpcData")) savedNpcData = tag.getCompound("SavedNpcData");
     }

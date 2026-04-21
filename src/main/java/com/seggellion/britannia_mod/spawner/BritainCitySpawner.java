@@ -91,6 +91,8 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
                 || entity instanceof SalvageTraderEntity
                   || entity instanceof AlcoholTraderEntity
                  || entity instanceof ArchitectEntity
+                || entity instanceof CitizenEntity
+                || entity instanceof QuestGiverEntity
                 || entity instanceof TownPersonEntity;
     }
 
@@ -116,6 +118,8 @@ public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
     private static boolean isCriticalEntity(Entity entity) {
         return entity instanceof EntityWoodMerchant
                 || entity instanceof FishTraderEntity
+                || entity instanceof QuestGiverEntity
+                || entity instanceof CitizenEntity
                  || entity instanceof EntityMetalMerchant
                   || entity instanceof EntityStoneMerchant
                   || entity instanceof Villager

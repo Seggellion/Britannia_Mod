@@ -13,6 +13,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.goal.PanicGoal;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 
 public class HindEntity extends BaseBritanniaAnimal {
 
@@ -34,11 +36,9 @@ return Mob.createMobAttributes()
         // This pulls in FloatGoal, RandomStrollGoal, and RandomLookAroundGoal
         super.registerGoals(); 
         
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2D, false));
+        this.goalSelector.addGoal(1, new PanicGoal(this, 1.5D));
+ this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Player.class, 10.0F, 1.0D, 1.5D));
 
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, CitizenEntity.class, true));
     }
 
     @Override

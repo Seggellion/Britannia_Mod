@@ -11,7 +11,8 @@ public record QuestGiverSpawnConfigC2SPayload(
         BlockPos pos,
         String npcName,
         String cityName,
-        String customApiId
+        String customApiId,
+        String gender
 ) implements CustomPacketPayload {
 
     public static final ResourceLocation TYPE_ID =
@@ -27,7 +28,8 @@ public record QuestGiverSpawnConfigC2SPayload(
                     String npcName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String cityName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String customApiId = ByteBufCodecs.STRING_UTF8.decode(buf);
-                    return new QuestGiverSpawnConfigC2SPayload(pos, npcName, cityName, customApiId);
+                    String gender = ByteBufCodecs.STRING_UTF8.decode(buf); // NEW: Decode gender
+                    return new QuestGiverSpawnConfigC2SPayload(pos, npcName, cityName, customApiId, gender);
                 }
 
                 @Override
@@ -36,6 +38,7 @@ public record QuestGiverSpawnConfigC2SPayload(
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.npcName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.cityName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.customApiId);
+                    ByteBufCodecs.STRING_UTF8.encode(buf, payload.gender); // NEW: Encode gender
                 }
             };
 

@@ -84,11 +84,9 @@ public abstract class BaseBritanniaAnimal extends PathfinderMob implements IBrit
 
     @Override
     protected void playStepSound(BlockPos pos, BlockState blockIn) {
-        // Based on your earlier code, you used 'angry' for footsteps
-        var group = ModSounds.ENTITY_SOUNDS.get(this.getEntityName());
-        if (group != null) {
-            this.playSound(group.angry().get(), 0.15F, 1.0F);
-        }
+        // Randomly choose between feet13a and feet13b
+        SoundEvent stepSound = this.getRandom().nextBoolean() ? ModSounds.FEET13A.get() : ModSounds.FEET13B.get();
+        this.playSound(stepSound, 0.15F, 1.0F);
     }
 
     // Default peaceful animal goals

@@ -73,7 +73,7 @@ public class QuestGiverSpawnBlock extends Block implements EntityBlock, Invisibl
         if (be instanceof QuestGiverSpawnBlockEntity spawner && player instanceof ServerPlayer sp) {
             // Send payload to open UI (You will need to register this payload!)
             com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload.send(
-                sp, pos, spawner.getNpcName(), spawner.getCityName(), spawner.getCustomApiId()
+                sp, pos, spawner.getNpcName(), spawner.getCityName(), spawner.getCustomApiId(), spawner.getGender()
             );
         }
         return InteractionResult.CONSUME;

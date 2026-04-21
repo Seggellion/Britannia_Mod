@@ -30,10 +30,15 @@ public class QuestModels {
         public String error; 
     }
 
-    public static class ClientAction {
-    public String action;
-    public String entity_type;
-}
+public static class ClientAction {
+        public String type;
+        public String name;
+        public String sound;
+        public String action;
+        public String entity_type;
+        public int karma;
+        public int fame;
+    }
 
 public static class ItemData {
         public String id;

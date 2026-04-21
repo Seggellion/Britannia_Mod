@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 public class WraithEntity extends BaseBritanniaMonster {
 
     public WraithEntity(EntityType<? extends Monster> entityType, Level level) {
-        super(entityType, level, "wrath");
+        super(entityType, level, "wraith");
     }
 
     // Attributes

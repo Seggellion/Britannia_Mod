@@ -15,10 +15,15 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
 
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class QuestDecisionScreen extends Screen {
     private static final ResourceLocation PAPER_BACKGROUND = ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/dialogue_screen.png");
     private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
+        private static final Logger LOGGER = LogManager.getLogger();
 
     private final String npcName;
     private final String npcGender;
@@ -122,9 +127,10 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
 
     private void handleChoice(QuestChoice choice) {
         this.choiceMade = true;
+         LOGGER.info("Handle Choice!: {}", choice);
         QuestClient.sendTransition(questState.quest_id, choice.id, null, newResponse -> {
             if (newResponse != null && newResponse.error == null) {
-                
+                  LOGGER.info("response: {}", newResponse);
                 if (newResponse.granted_items != null && !newResponse.granted_items.isEmpty()) {
                     net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
                     if (connection != null) {
@@ -132,8 +138,11 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
                     }
                 }
 
+                LOGGER.info("connection!");
                 if (newResponse.client_actions != null) {
+                    LOGGER.info("client actions: {}", newResponse.client_actions);
                     for (var action : newResponse.client_actions) {
+                        LOGGER.info("ACTION: {}", action.action);
                         if ("spawn_escort".equals(action.action)) {
                             net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
                             if (connection != null) {

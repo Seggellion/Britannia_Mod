@@ -240,6 +240,7 @@ registrar.playToServer(
 );
 
 // Add this with your other registrar.playToServer blocks
+// Add this with your other registrar.playToServer blocks
 registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload.TYPE,
     com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload.STREAM_CODEC,
@@ -257,7 +258,6 @@ registrar.playToServer(
 
             // 2. Give the item with quantity!
             if (item != net.minecraft.world.item.Items.AIR) {
-                // Loop to handle if count is > 99 (Max stack size)
                 int remaining = itemData.count;
                 int maxStack = new net.minecraft.world.item.ItemStack(item).getMaxStackSize();
                 
@@ -272,6 +272,15 @@ registrar.playToServer(
             } else if (itemData.id.equals("magic_ring")) {
                 net.minecraft.world.item.ItemStack ring = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_NUGGET, itemData.count);
                 ring.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("a magic gold ring").withStyle(net.minecraft.ChatFormatting.GOLD));
+                
+                // ==========================================
+                // THE FIX: Inject the hidden quest_item tag!
+                // ==========================================
+                net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+                tag.putString("quest_item", itemData.id); // This binds "magic_ring" to the item invisibly
+                ring.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
+                // ==========================================
+
                 if (!player.getInventory().add(ring)) player.drop(ring, false);
             }
         }
@@ -313,7 +322,7 @@ registrar.playToServer(
 
         net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(payload.pos());
         if (be instanceof com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity spawner) {
-            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId());
+            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(), payload.gender());
         }
     })
 );

@@ -14,10 +14,10 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.PathfinderMob;
 
-public class BearBrownEntity extends BaseBritanniaAnimal {
+public class BritanniaCatEntity extends BaseBritanniaAnimal {
 
-    public BearBrownEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
-        super(entityType, level, "bear_brown");
+    public BritanniaCatEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
+        super(entityType, level, "britannia_cat");
     }
 
     // Attributes
@@ -37,6 +37,7 @@ return Mob.createMobAttributes()
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2D, false));
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RatEntity.class, true));
 
     }
 

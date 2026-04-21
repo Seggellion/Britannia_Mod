@@ -190,7 +190,7 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
                 }
                 
                 // Open the screen
-                openQuestDecisionScreen(response, "Environment", null);
+                openQuestDecisionScreen(response, "The Guardian", null);
             }
         });
     });
@@ -257,7 +257,8 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
                     payload.pos(),
                     payload.npcName(),
                     payload.cityName(),
-                    payload.customApiId()
+                    payload.customApiId(),
+                    payload.gender()
                 )
             );
         });

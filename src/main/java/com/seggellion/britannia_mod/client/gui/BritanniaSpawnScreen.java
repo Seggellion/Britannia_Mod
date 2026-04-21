@@ -131,10 +131,28 @@ public class BritanniaSpawnScreen extends Screen {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    private void updateSearchSuggestion(String text) {
+private void updateSearchSuggestion(String text) {
         String typed = text.toLowerCase(Locale.ROOT);
+        
         List<ResourceLocation> matches = availableMonsters.stream()
                 .filter(rl -> rl.getPath().contains(typed) || rl.toString().contains(typed))
+                .sorted((a, b) -> {
+                    String pathA = a.getPath();
+                    String pathB = b.getPath();
+                    
+                    // 1. Exact matches get absolute highest priority
+                    if (pathA.equals(typed)) return -1;
+                    if (pathB.equals(typed)) return 1;
+                    
+                    // 2. Prefix matches ("starts with") get second priority
+                    boolean aStarts = pathA.startsWith(typed);
+                    boolean bStarts = pathB.startsWith(typed);
+                    if (aStarts && !bStarts) return -1;
+                    if (!aStarts && bStarts) return 1;
+                    
+                    // 3. If both are equal up to this point, prioritize the shorter string
+                    return Integer.compare(pathA.length(), pathB.length());
+                })
                 .toList();
 
         if (matches.isEmpty() || typed.isEmpty()) {

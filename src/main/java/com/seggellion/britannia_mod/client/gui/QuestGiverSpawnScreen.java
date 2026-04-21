@@ -15,23 +15,25 @@ public class QuestGiverSpawnScreen extends Screen {
     private final BlockPos pos;
     private String npcName;
     private String cityName;
-    private String customApiId; // NEW
+    private String customApiId;
+    private String gender;
 
     private EditBox cityNameBox;
-    private EditBox customApiIdBox; // NEW
+    private EditBox customApiIdBox;
     private Button npcNameButton;
+    private Button genderButton;
 
     // Added "Generic Combat"
     private final List<String> availableNpcs = List.of("Zorathiel", "Lord British", "Iolo", "Dupre", "Shamino", "Generic Escort", "Generic Combat");
     private int npcIdx = 0;
 
-    // Notice the updated constructor
-    public QuestGiverSpawnScreen(BlockPos pos, String npcName, String cityName, String customApiId) {
+    public QuestGiverSpawnScreen(BlockPos pos, String npcName, String cityName, String customApiId, String gender) {
         super(Component.literal("Quest Giver Spawner"));
         this.pos = pos;
         this.npcName = npcName;
         this.cityName = cityName;
         this.customApiId = customApiId == null ? "" : customApiId;
+        this.gender = (gender == null || gender.isEmpty()) ? "female" : gender.toLowerCase();
 
         npcIdx = Math.max(0, availableNpcs.indexOf(npcName));
     }
@@ -48,10 +50,11 @@ public class QuestGiverSpawnScreen extends Screen {
             
             // Toggle visibility dynamically!
             customApiIdBox.visible = "Generic Combat".equals(npcName);
+            genderButton.visible = !("Generic Escort".equals(npcName) || "Generic Combat".equals(npcName));
         }).bounds(cx - 110, cy - 60, 220, 20).build();
         addRenderableWidget(npcNameButton);
 
-        // NEW: Custom API ID box
+        // Custom API ID box
         customApiIdBox = new EditBox(this.font, cx - 110, cy - 30, 220, 20, Component.literal("Internal API ID"));
         customApiIdBox.setValue(customApiId);
         customApiIdBox.visible = "Generic Combat".equals(npcName); // Initial state
@@ -61,19 +64,29 @@ public class QuestGiverSpawnScreen extends Screen {
         cityNameBox.setValue(cityName);
         addRenderableWidget(cityNameBox);
 
+        String initialGenderText = "Gender: " + (this.gender.substring(0, 1).toUpperCase() + this.gender.substring(1));
+        genderButton = Button.builder(Component.literal(initialGenderText), b -> {
+            this.gender = this.gender.equals("female") ? "male" : "female";
+            b.setMessage(Component.literal("Gender: " + (this.gender.substring(0, 1).toUpperCase() + this.gender.substring(1))));
+        }).bounds(cx - 110, cy + 30, 220, 20).build();
+        
+        // Set initial visibility for the gender button
+        genderButton.visible = !("Generic Escort".equals(npcName) || "Generic Combat".equals(npcName));
+        addRenderableWidget(genderButton);
+
+        // Shifted Y from +40 to +60 to fit the gender button
         addRenderableWidget(Button.builder(Component.literal("Save"), b -> saveAndClose())
-                .bounds(cx - 110, cy + 40, 100, 20).build());
+                .bounds(cx - 110, cy + 60, 100, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
-                .bounds(cx + 10, cy + 40, 100, 20).build());
+                .bounds(cx + 10, cy + 60, 100, 20).build());
     }
 
     private void saveAndClose() {
         try {
             String newCity = cityNameBox.getValue().trim();
             String newCustomId = customApiIdBox.getValue().trim();
-            // You will need to add this 4th parameter to your payload class!
-            NetworkHandler.sendToServer(new QuestGiverSpawnConfigC2SPayload(pos, availableNpcs.get(npcIdx), newCity, newCustomId));
+            NetworkHandler.sendToServer(new QuestGiverSpawnConfigC2SPayload(pos, availableNpcs.get(npcIdx), newCity, newCustomId, gender));
         } catch (Exception ignored) {
         } finally {
             onClose();

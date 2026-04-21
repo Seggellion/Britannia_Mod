@@ -15,7 +15,8 @@ public record QuestGiverSpawnScreenS2CPayload(
         BlockPos pos,
         String npcName,
         String cityName,
-        String customApiId
+        String customApiId,
+        String gender
 ) implements CustomPacketPayload {
 
     public static final ResourceLocation TYPE_ID =
@@ -32,7 +33,8 @@ public record QuestGiverSpawnScreenS2CPayload(
                     String npcName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String cityName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String customApiId = ByteBufCodecs.STRING_UTF8.decode(buf);
-                    return new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId);
+                    String gender = ByteBufCodecs.STRING_UTF8.decode(buf); 
+                    return new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId, gender);
                 }
 
                 @Override
@@ -41,14 +43,15 @@ public record QuestGiverSpawnScreenS2CPayload(
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.npcName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.cityName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.customApiId);
+                    ByteBufCodecs.STRING_UTF8.encode(buf, payload.gender); 
                 }
             };
 
-    public static void send(ServerPlayer player, BlockPos pos, String npcName, String cityName, String customApiId) {
+    public static void send(ServerPlayer player, BlockPos pos, String npcName, String cityName, String customApiId, String gender) {
         LOGGER.info("Sent QuestGiverSpawnScreenS2CPayload");
         NetworkHandler.sendToPlayer(
                 player,
-                new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId)
+                new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId, gender)
         );
     }
 
