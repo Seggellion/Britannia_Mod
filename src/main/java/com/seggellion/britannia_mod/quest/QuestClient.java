@@ -74,7 +74,7 @@ public static void sendTrigger(long questId, String triggerKey, Consumer<QuestMo
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
                 }
-
+LOGGER.info("SENDING TRIGGER!");
                 handleResponse(conn, callback);
             } catch (Exception e) {
                 LOGGER.error("Failed to send trigger to Quest API", e);
@@ -108,7 +108,7 @@ public static void sendTrigger(long questId, String triggerKey, Consumer<QuestMo
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
                 }
-
+LOGGER.info("SENDING TRANSITION!");
                 handleResponse(conn, callback);
             } catch (Exception e) {
                 LOGGER.error("Failed to process quest transition", e);
@@ -182,6 +182,7 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
                 LOGGER.warn("Quest API Error (HTTP {}): {}", status, response.error);
             } else if (status >= 200 && status < 300 && response.success) {
                 // Update the state manager centrally
+                LOGGER.info("RESPONSE: {}", response);
                 QuestManager.getInstance().setCurrentQuestState(response);
             }
 

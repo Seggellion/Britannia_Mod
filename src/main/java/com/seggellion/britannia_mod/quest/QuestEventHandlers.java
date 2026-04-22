@@ -87,8 +87,8 @@ public class QuestEventHandlers {
         }
 
         if (!itemEntity.isInLava()) return;
-
         QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
+
         if (state == null || state.currentNode == null || state.currentNode.metadata == null) return;
         if (state.currentNode.metadata.has("destroy_trigger")) {
             JsonObject destroyData = state.currentNode.metadata.getAsJsonObject("destroy_trigger");
@@ -102,7 +102,7 @@ public class QuestEventHandlers {
                     ItemStack stack = itemEntity.getItem();
                     // Use our new smarter matcher!
                     if (isQuestItemMatch(stack, targetTag)) {
-                        
+                                                        LOGGER.info("QUEST ITEM MATCHED");
                         QuestManager.getInstance().clearState();
                         
                         QuestClient.sendTrigger(state.quest_id, triggerKey, response -> {

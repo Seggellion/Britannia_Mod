@@ -12,7 +12,8 @@ public record QuestGiverSpawnConfigC2SPayload(
         String npcName,
         String cityName,
         String customApiId,
-        String gender
+        String gender,
+        int spawnRadius // NEW: Added radius to payload
 ) implements CustomPacketPayload {
 
     public static final ResourceLocation TYPE_ID =
@@ -28,8 +29,9 @@ public record QuestGiverSpawnConfigC2SPayload(
                     String npcName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String cityName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String customApiId = ByteBufCodecs.STRING_UTF8.decode(buf);
-                    String gender = ByteBufCodecs.STRING_UTF8.decode(buf); // NEW: Decode gender
-                    return new QuestGiverSpawnConfigC2SPayload(pos, npcName, cityName, customApiId, gender);
+                    String gender = ByteBufCodecs.STRING_UTF8.decode(buf); 
+                    int spawnRadius = ByteBufCodecs.INT.decode(buf); // NEW: Decode radius
+                    return new QuestGiverSpawnConfigC2SPayload(pos, npcName, cityName, customApiId, gender, spawnRadius);
                 }
 
                 @Override
@@ -38,7 +40,8 @@ public record QuestGiverSpawnConfigC2SPayload(
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.npcName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.cityName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.customApiId);
-                    ByteBufCodecs.STRING_UTF8.encode(buf, payload.gender); // NEW: Encode gender
+                    ByteBufCodecs.STRING_UTF8.encode(buf, payload.gender); 
+                    ByteBufCodecs.INT.encode(buf, payload.spawnRadius); // NEW: Encode radius
                 }
             };
 

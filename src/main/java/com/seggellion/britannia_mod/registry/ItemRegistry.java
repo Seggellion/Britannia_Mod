@@ -162,6 +162,10 @@ public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.registe
     public static final DeferredHolder<Item, Item> GINSENG = ITEMS.register("ginseng",
             () -> new Item(new Item.Properties()));
 
+// quest items
+  public static final DeferredHolder<Item, Item> ONE_RING = ITEMS.register("one_ring",
+            () -> new Item(new Item.Properties()));
+
 /* =========================================================
        MUSICAL INSTRUMENTS
        Trigger "musicianship" skill gain on right-click.

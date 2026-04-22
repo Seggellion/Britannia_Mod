@@ -4,7 +4,7 @@ package com.seggellion.britannia_mod.entity;
 // Minecraft & NeoForge core
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -80,6 +80,8 @@ private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNam
 
     protected CitizenEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
+        this.setPathfindingMalus(PathType.WATER, -1.0F);
+    this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
     }
 
 // Define both sets of animations
@@ -129,7 +131,6 @@ private static final EntityDataAccessor<Integer> DATA_CAPE = SynchedEntityData.d
     // ---------- Goals ----------
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(1, new FloatGoal(this));
         goalSelector.addGoal(2, new RandomStrollGoal(this, 1.0));
         goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6f));
         goalSelector.addGoal(4, new RandomLookAroundGoal(this));
@@ -146,7 +147,7 @@ private static final EntityDataAccessor<Integer> DATA_CAPE = SynchedEntityData.d
              .add(Attributes.ARMOR_TOUGHNESS, 0.0D)
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.5D)
             .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
-            .add(Attributes.JUMP_STRENGTH, 0.1D)
+            .add(Attributes.JUMP_STRENGTH, 0.42D)
             .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
             .add(Attributes.MAX_ABSORPTION, 0.0D)
             .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)

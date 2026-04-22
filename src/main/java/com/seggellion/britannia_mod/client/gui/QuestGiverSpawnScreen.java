@@ -17,23 +17,25 @@ public class QuestGiverSpawnScreen extends Screen {
     private String cityName;
     private String customApiId;
     private String gender;
+    private int spawnRadius;
 
     private EditBox cityNameBox;
     private EditBox customApiIdBox;
+    private EditBox spawnRadiusBox;
     private Button npcNameButton;
     private Button genderButton;
 
-    // Added "Generic Combat"
     private final List<String> availableNpcs = List.of("Zorathiel", "Lord British", "Iolo", "Dupre", "Shamino", "Generic Escort", "Generic Combat");
     private int npcIdx = 0;
 
-    public QuestGiverSpawnScreen(BlockPos pos, String npcName, String cityName, String customApiId, String gender) {
+    public QuestGiverSpawnScreen(BlockPos pos, String npcName, String cityName, String customApiId, String gender, int spawnRadius) {
         super(Component.literal("Quest Giver Spawner"));
         this.pos = pos;
         this.npcName = npcName;
         this.cityName = cityName;
         this.customApiId = customApiId == null ? "" : customApiId;
         this.gender = (gender == null || gender.isEmpty()) ? "female" : gender.toLowerCase();
+        this.spawnRadius = spawnRadius;
 
         npcIdx = Math.max(0, availableNpcs.indexOf(npcName));
     }
@@ -48,16 +50,14 @@ public class QuestGiverSpawnScreen extends Screen {
             npcName = availableNpcs.get(npcIdx);
             b.setMessage(Component.literal(npcName));
             
-            // Toggle visibility dynamically!
             customApiIdBox.visible = "Generic Combat".equals(npcName);
             genderButton.visible = !("Generic Escort".equals(npcName) || "Generic Combat".equals(npcName));
         }).bounds(cx - 110, cy - 60, 220, 20).build();
         addRenderableWidget(npcNameButton);
 
-        // Custom API ID box
         customApiIdBox = new EditBox(this.font, cx - 110, cy - 30, 220, 20, Component.literal("Internal API ID"));
         customApiIdBox.setValue(customApiId);
-        customApiIdBox.visible = "Generic Combat".equals(npcName); // Initial state
+        customApiIdBox.visible = "Generic Combat".equals(npcName);
         addRenderableWidget(customApiIdBox);
 
         cityNameBox = new EditBox(this.font, cx - 110, cy, 220, 20, Component.literal("City Name"));
@@ -70,23 +70,35 @@ public class QuestGiverSpawnScreen extends Screen {
             b.setMessage(Component.literal("Gender: " + (this.gender.substring(0, 1).toUpperCase() + this.gender.substring(1))));
         }).bounds(cx - 110, cy + 30, 220, 20).build();
         
-        // Set initial visibility for the gender button
         genderButton.visible = !("Generic Escort".equals(npcName) || "Generic Combat".equals(npcName));
         addRenderableWidget(genderButton);
 
-        // Shifted Y from +40 to +60 to fit the gender button
+        // New Radius Input Box
+        spawnRadiusBox = new EditBox(this.font, cx - 110, cy + 60, 220, 20, Component.literal("Spawn Radius"));
+        spawnRadiusBox.setValue(String.valueOf(this.spawnRadius));
+        addRenderableWidget(spawnRadiusBox);
+
+        // Shifted down to accommodate the new input box
         addRenderableWidget(Button.builder(Component.literal("Save"), b -> saveAndClose())
-                .bounds(cx - 110, cy + 60, 100, 20).build());
+                .bounds(cx - 110, cy + 90, 100, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
-                .bounds(cx + 10, cy + 60, 100, 20).build());
+                .bounds(cx + 10, cy + 90, 100, 20).build());
     }
 
     private void saveAndClose() {
         try {
             String newCity = cityNameBox.getValue().trim();
             String newCustomId = customApiIdBox.getValue().trim();
-            NetworkHandler.sendToServer(new QuestGiverSpawnConfigC2SPayload(pos, availableNpcs.get(npcIdx), newCity, newCustomId, gender));
+            int newRadius = 5; // Fallback
+            
+            try {
+                newRadius = Integer.parseInt(spawnRadiusBox.getValue().trim());
+            } catch (NumberFormatException e) {
+                // If the user types text instead of a number, we gracefully fallback to 5
+            }
+
+            NetworkHandler.sendToServer(new QuestGiverSpawnConfigC2SPayload(pos, availableNpcs.get(npcIdx), newCity, newCustomId, gender, newRadius));
         } catch (Exception ignored) {
         } finally {
             onClose();
@@ -104,12 +116,12 @@ public class QuestGiverSpawnScreen extends Screen {
         gg.drawCenteredString(this.font, "Configure Story NPC", this.width / 2, cy - 100, 0xFFFFFF);
         gg.drawString(this.font, "NPC Archetype", cx - 110, cy - 72, 0xFFFFFF);
         
-        // Only draw the label if the box is visible
         if (customApiIdBox.visible) {
             gg.drawString(this.font, "Rails API Target (npc_name)", cx - 110, cy - 42, 0xFFFF55);
         }
         
         gg.drawString(this.font, "Assigned City (Economy)", cx - 110, cy - 12, 0xFFFFFF);
+        gg.drawString(this.font, "Wander Radius (Blocks)", cx - 110, cy + 48, 0xFFFFFF);
     }
 
     @Override

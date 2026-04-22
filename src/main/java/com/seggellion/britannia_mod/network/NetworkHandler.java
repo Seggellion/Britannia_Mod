@@ -43,7 +43,7 @@ import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.City;
-
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -270,7 +270,7 @@ registrar.playToServer(
                     remaining -= give;
                 }
             } else if (itemData.id.equals("magic_ring")) {
-                net.minecraft.world.item.ItemStack ring = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLD_NUGGET, itemData.count);
+                net.minecraft.world.item.ItemStack ring = new net.minecraft.world.item.ItemStack(ItemRegistry.ONE_RING, itemData.count);
                 ring.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("a magic gold ring").withStyle(net.minecraft.ChatFormatting.GOLD));
                 
                 // ==========================================
@@ -322,7 +322,7 @@ registrar.playToServer(
 
         net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(payload.pos());
         if (be instanceof com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity spawner) {
-            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(), payload.gender());
+            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(), payload.gender(), payload.spawnRadius());
         }
     })
 );
@@ -627,9 +627,9 @@ private static void removeSoldItems(ServerPlayer player, List<GrantCoinsC2SPaylo
 
 
 private static void giveCoins(ServerPlayer player, int gold, int silver, int copper) {
-    giveCoin(player, com.seggellion.britannia_mod.registry.ItemRegistry.GOLD_COIN.get(), gold);
-    giveCoin(player, com.seggellion.britannia_mod.registry.ItemRegistry.SILVER_COIN.get(), silver);
-    giveCoin(player, com.seggellion.britannia_mod.registry.ItemRegistry.COPPER_COIN.get(), copper);
+    giveCoin(player, ItemRegistry.GOLD_COIN.get(), gold);
+    giveCoin(player, ItemRegistry.SILVER_COIN.get(), silver);
+    giveCoin(player, ItemRegistry.COPPER_COIN.get(), copper);
 }
 
 private static void giveCoin(ServerPlayer player, net.minecraft.world.item.Item coinItem, int amount) {

@@ -54,23 +54,30 @@ public class InstrumentItem extends Item {
             Mob targetedMob = getTargetedMob(serverPlayer);
 
             // --- BRANCH 1: PROVOCATION (Sneak + Right Click Target) ---
-            if (targetedMob != null && serverPlayer.isCrouching()) { // isSneaking() -> isCrouching() in Mojmap
+            if (targetedMob != null && serverPlayer.isCrouching()) { 
                 Mob firstMob = ProvocationSystem.getPending(serverPlayer);
 
                 if (firstMob == null) {
                     ProvocationSystem.setPending(serverPlayer, targetedMob);
                     sendGray(serverPlayer, "Incite whom to fight?");
                     playInstrumentSound(level, serverPlayer, true);
-                    serverPlayer.getCooldowns().addCooldown(this, 20);
+                    
+                    // Setting a target is a "success" state action (2 seconds)
+                    applyGlobalInstrumentCooldown(serverPlayer, true); 
                 } else {
                     if (firstMob == targetedMob || !firstMob.isAlive()) {
                         sendGray(serverPlayer, "You cannot incite a creature against itself.");
                         ProvocationSystem.clearPending(serverPlayer);
+                        // Optional: Treat invalid targets as a failure state, or just a success tick
+                        applyGlobalInstrumentCooldown(serverPlayer, false); 
                     } else {
                         float provSkill = SkillManager.getSkill(serverPlayer, "provocation");
-                        ProvocationSystem.resolveProvocation(serverPlayer, firstMob, targetedMob, musicSkill, provSkill);
-                        playInstrumentSound(level, serverPlayer, true);
-                        serverPlayer.getCooldowns().addCooldown(this, 40);
+                        
+                        // NOTE: Ensure resolveProvocation returns a boolean in your ProvocationSystem!
+                        boolean provSuccess = ProvocationSystem.resolveProvocation(serverPlayer, firstMob, targetedMob, musicSkill, provSkill);
+                        
+                        playInstrumentSound(level, serverPlayer, provSuccess);
+                        applyGlobalInstrumentCooldown(serverPlayer, provSuccess);
                     }
                 }
                 return InteractionResultHolder.success(stack);
@@ -80,18 +87,17 @@ public class InstrumentItem extends Item {
             if (targetedMob != null && !serverPlayer.isCrouching()) {
                 float peaceSkill = SkillManager.getSkill(serverPlayer, "peacemaking");
                 
-                // Capture the boolean result
                 boolean peaceSuccess = PeacemakingSystem.performAreaPeacemaking(serverPlayer, musicSkill, peaceSkill);
                 
                 if (peaceSuccess) {
                     playInstrumentSound(level, serverPlayer, true);
-                    sendGray(serverPlayer, "You play a calming melody."); // Optional success message
+                    sendGray(serverPlayer, "You play a calming melody."); 
                 } else {
                     playInstrumentSound(level, serverPlayer, false);
                     sendGray(serverPlayer, "You attempt to calm everyone, but fail.");
                 }
                 
-                serverPlayer.getCooldowns().addCooldown(this, 40);
+                applyGlobalInstrumentCooldown(serverPlayer, peaceSuccess);
                 return InteractionResultHolder.success(stack);
             }
 
@@ -103,12 +109,41 @@ public class InstrumentItem extends Item {
 
                 sendGray(serverPlayer, success ? "You play a lovely melody." : "You play poorly and disturb the peace.");
                 playInstrumentSound(level, serverPlayer, success);
-                serverPlayer.getCooldowns().addCooldown(this, 40);
+                
+                applyGlobalInstrumentCooldown(serverPlayer, success);
                 return InteractionResultHolder.success(stack);
             }
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+    }
+
+    /**
+     * Applies a cooldown to ALL instruments in the player's inventory 
+     * to prevent bypassing the timer by swapping hotbar items.
+     */
+    private void applyGlobalInstrumentCooldown(ServerPlayer player, boolean success) {
+        // 2 seconds (40 ticks) for success, 6 seconds (120 ticks) for failure
+        int cooldownTicks = success ? 40 : 120;
+
+        // 1. Cool down the specific item in hand
+        player.getCooldowns().addCooldown(this, cooldownTicks);
+
+        // 2. Loop through main inventory and cool down any other InstrumentItems
+        for (ItemStack itemStack : player.getInventory().items) {
+            Item item = itemStack.getItem();
+            if (item instanceof InstrumentItem && item != this) {
+                player.getCooldowns().addCooldown(item, cooldownTicks);
+            }
+        }
+        
+        // 3. Loop through offhand as well
+        for (ItemStack itemStack : player.getInventory().offhand) {
+            Item item = itemStack.getItem();
+            if (item instanceof InstrumentItem && item != this) {
+                player.getCooldowns().addCooldown(item, cooldownTicks);
+            }
+        }
     }
 
     private Mob getTargetedMob(ServerPlayer player) {

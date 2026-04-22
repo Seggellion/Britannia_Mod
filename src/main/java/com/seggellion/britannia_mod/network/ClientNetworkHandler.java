@@ -258,7 +258,8 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
                     payload.npcName(),
                     payload.cityName(),
                     payload.customApiId(),
-                    payload.gender()
+                    payload.gender(),
+                    payload.spawnRadius()
                 )
             );
         });

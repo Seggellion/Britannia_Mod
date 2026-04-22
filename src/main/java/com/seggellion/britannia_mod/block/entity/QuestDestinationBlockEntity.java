@@ -30,13 +30,17 @@ public class QuestDestinationBlockEntity extends BlockEntity {
         setChanged();
     }
 
-public void serverTick() {
+    public void serverTick() {
         if (level == null || level.isClientSide) return;
 
         if (tickCounter++ % 20 != 0) return;
 
         AABB searchBox = new AABB(worldPosition).inflate(7.5D);
         List<ServerPlayer> nearbyPlayers = level.getEntitiesOfClass(ServerPlayer.class, searchBox);
+
+        // Format this block's city name exactly like the tag (e.g., "britain" or "new_magincia")
+        String safeCityName = this.cityName.toLowerCase().replace("'", "").replace(" ", "_");
+        String requiredDestinationTag = "destination_" + safeCityName;
 
         for (ServerPlayer player : nearbyPlayers) {
             String expectedTag = "quest_escort_" + player.getUUID().toString();
@@ -48,6 +52,12 @@ public void serverTick() {
             if (!nearbyEscorts.isEmpty()) {
                 Mob escort = nearbyEscorts.get(0);
                 
+                // NEW: Does this escort actually want to go to THIS city?
+                // If not, ignore them and let them keep following the player!
+                if (!escort.getTags().contains(requiredDestinationTag)) {
+                    continue; 
+                }
+
                 long activeQuestId = 0;
                 for (String tag : escort.getTags()) {
                     if (tag.startsWith("quest_id_")) {
@@ -69,11 +79,11 @@ public void serverTick() {
                         npcGender = qg.getGender();
                     }
 
-                    // 2. Discard the escort
+                    // 2. Discard the escort ONLY because we know they are at the right place
                     escort.discard(); 
 
                     // 3. Fire the Payload to the Client!
-                    String dynamicTriggerKey = "arrived_" + this.cityName.toLowerCase().replace(" ", "_"); 
+                    String dynamicTriggerKey = "arrived_" + safeCityName; 
                     
                     com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload.send(
                         player, activeQuestId, dynamicTriggerKey, npcName, npcGender, npcUuid

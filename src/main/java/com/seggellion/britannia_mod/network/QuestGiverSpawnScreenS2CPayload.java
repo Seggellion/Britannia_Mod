@@ -16,7 +16,8 @@ public record QuestGiverSpawnScreenS2CPayload(
         String npcName,
         String cityName,
         String customApiId,
-        String gender
+        String gender,
+        int spawnRadius // NEW: Added radius to the record
 ) implements CustomPacketPayload {
 
     public static final ResourceLocation TYPE_ID =
@@ -34,7 +35,8 @@ public record QuestGiverSpawnScreenS2CPayload(
                     String cityName = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String customApiId = ByteBufCodecs.STRING_UTF8.decode(buf);
                     String gender = ByteBufCodecs.STRING_UTF8.decode(buf); 
-                    return new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId, gender);
+                    int spawnRadius = ByteBufCodecs.INT.decode(buf); // NEW: Read the int from the buffer
+                    return new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId, gender, spawnRadius);
                 }
 
                 @Override
@@ -44,14 +46,16 @@ public record QuestGiverSpawnScreenS2CPayload(
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.cityName);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.customApiId);
                     ByteBufCodecs.STRING_UTF8.encode(buf, payload.gender); 
+                    ByteBufCodecs.INT.encode(buf, payload.spawnRadius); // NEW: Write the int to the buffer
                 }
             };
 
-    public static void send(ServerPlayer player, BlockPos pos, String npcName, String cityName, String customApiId, String gender) {
+    // NEW: Updated signature to accept spawnRadius
+    public static void send(ServerPlayer player, BlockPos pos, String npcName, String cityName, String customApiId, String gender, int spawnRadius) {
         LOGGER.info("Sent QuestGiverSpawnScreenS2CPayload");
         NetworkHandler.sendToPlayer(
                 player,
-                new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId, gender)
+                new QuestGiverSpawnScreenS2CPayload(pos, npcName, cityName, customApiId, gender, spawnRadius)
         );
     }
 

@@ -10,8 +10,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import java.util.Random;
@@ -26,19 +28,17 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
     private String npcName = ""; 
     private String customApiId = "";
     private String gender = "female";
-    public String getGender() { return gender; }
-    public String getCustomApiId() { return customApiId; }
-    
+    private int spawnRadius = 5; // NEW: Controls strict AI wandering
+
     // For Escorts
     private String escortDestination = "";
-
-    private static final List<String> ESCORT_DESTINATIONS = List.of("Britain");
-  // private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom", "Britain", "Minoc", "Moonglow", "Trinsic", "Yew", "Skara Brae", "Magincia", "Serpent's Hold", "Nujel'm");
+    private static final List<String> ESCORT_DESTINATIONS = List.of("Jhelom", "Vesper", "Ocllo", "Buccaneer's Den", "Cove", "Britain", "Minoc", "Moonglow", "Trinsic", "Yew", "Skara Brae", "New Magincia", "Serpent's Hold", "Nujel'm");
     private static final Random RANDOM = new Random();
 
     private UUID spawnedNpcId = null;
     private CompoundTag savedNpcData = null;
     private int spawnCooldown = 0;
+    private int initTicks = 0; // NEW: Grace period for world loading
 
     public QuestGiverSpawnBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.QUEST_GIVER_SPAWN_BLOCK_ENTITY_TYPE.get(), pos, state);
@@ -46,11 +46,20 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
 
     public String getCityName() { return cityName; }
     public String getNpcName() { return npcName; }
+    public String getGender() { return gender; }
+    public String getCustomApiId() { return customApiId; }
     public SpawnerMode getMode() { return mode; }
+    public int getSpawnRadius() { return spawnRadius; }
 
     public void serverTick() {
         if (level == null || level.isClientSide) return;
         ServerLevel sl = (ServerLevel) level;
+
+        // Give the world 2 seconds (40 ticks) to fully load entities before checking for duplicates
+        if (initTicks < 40) {
+            initTicks++;
+            return;
+        }
 
         if (npcName == null || npcName.isEmpty()) return;
 
@@ -59,22 +68,31 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
 
         Entity currentNpc = spawnedNpcId != null ? sl.getEntity(spawnedNpcId) : null;
 
+        // Fallback: If UUID lookup fails (chunk edge cases), physically check the area for our NPC
+        if (currentNpc == null && spawnedNpcId != null) {
+            AABB searchArea = new AABB(worldPosition).inflate(spawnRadius + 5);
+            List<QuestGiverEntity> nearbyStrays = sl.getEntitiesOfClass(QuestGiverEntity.class, searchArea, 
+                e -> e.getUUID().equals(spawnedNpcId));
+            if (!nearbyStrays.isEmpty()) {
+                currentNpc = nearbyStrays.get(0);
+            }
+        }
+
         if (currentNpc == null || !currentNpc.isAlive()) {
             this.savedNpcData = null;
             spawnOrRestoreNpc(sl);
-            // If the NPC was just killed or taken as an escort, put spawner on a longer cooldown!
-            // E.g., spawnCooldown = 6000; // 5 minutes 
         } else {
             updateSnapshot((QuestGiverEntity) currentNpc);
         }
     }
 
-private void spawnOrRestoreNpc(ServerLevel sl) {
-        BlockPos spawnPos = Util.findGround(sl, worldPosition, 5);
+    private void spawnOrRestoreNpc(ServerLevel sl) {
+        // Use our configurable radius to find ground!
+        BlockPos spawnPos = Util.findGround(sl, worldPosition, this.spawnRadius);
         if (spawnPos == null) return;
 
         QuestGiverEntity npc;
-        boolean isFreshSpawn = false; // Add a flag to track this
+        boolean isFreshSpawn = false; 
         
         if (savedNpcData != null) {
             CompoundTag tag = savedNpcData.copy();
@@ -87,7 +105,6 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
                 isFreshSpawn = true;
             }
         } else {
-            // Fresh spawn
             npc = EntityRegistry.QUEST_GIVER.get().create(sl);
             isFreshSpawn = true;
         }
@@ -96,8 +113,12 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
 
         npc.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, sl.random.nextFloat() * 360F, 0);
         npc.setPersistenceRequired();
+
+        // THIS IS THE MAGIC FOR STRICT RADIUS: Fences in the AI pathfinding
+        if (npc instanceof Mob mob) {
+            mob.restrictTo(this.worldPosition, this.spawnRadius);
+        }
         
-        // ONLY generate a new identity if this is a brand new NPC
         if (isFreshSpawn) {
             if ("Generic Escort".equals(npcName)) {
                 boolean isMale = sl.random.nextBoolean();
@@ -108,7 +129,8 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
                 
                 npc.setGender(assignedGender);
 
-                String safeOrigin = cityName != null ? cityName.toLowerCase().replace(" ", "_") : "unknown";
+                String safeOrigin = cityName != null ? cityName.toLowerCase().replace("'", "").replace(" ", "_") : "unknown";
+
                 java.util.List<String> validDestinations = ESCORT_DESTINATIONS.stream()
                     .filter(d -> !d.equalsIgnoreCase(cityName))
                     .toList();
@@ -117,7 +139,7 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
                 if (!validDestinations.isEmpty()) {
                     randomDest = validDestinations.get(sl.random.nextInt(validDestinations.size()));
                 }
-                String safeDest = randomDest.toLowerCase().replace(" ", "_");
+                String safeDest = randomDest.toLowerCase().replace("'", "").replace(" ", "_");
                 
                 npc.setPersonalName(randomName + ":escort_" + safeOrigin + "_to_" + safeDest);
                 npc.addTag("generic_escort");
@@ -142,9 +164,6 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
                 npc.addTag("generic_combat");
 
             } else {
-                // It's a story NPC. 
-                // Note: You aren't setting a gender here, so they will default to "female"
-                // which will cause your UI to fetch a female profile image!
                 npc.setPersonalName(npcName);
                 npc.setCityName(cityName);
                 npc.setGender(this.gender != null && !this.gender.isEmpty() ? this.gender : "female");
@@ -163,14 +182,15 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
         setChanged();
     }
 
-    // Updated to accept the mode
-    public void applyConfig(String npcName, String cityName, String customApiId, String gender) {
+    // Now accepts spawnRadius
+    public void applyConfig(String npcName, String cityName, String customApiId, String gender, int spawnRadius) {
         if (!(level instanceof ServerLevel sl)) return;
 
         this.npcName = npcName;
         this.cityName = cityName;
         this.customApiId = customApiId;
-        this.gender = gender; // NEW
+        this.gender = gender; 
+        this.spawnRadius = spawnRadius;
         this.savedNpcData = null; 
 
         onDestroyed(sl); 
@@ -193,7 +213,8 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
         tag.putString("CityName", cityName);
         tag.putString("NpcName", npcName);
         tag.putString("EscortDestination", escortDestination);
-        tag.putString("Gender", gender); // NEW
+        tag.putString("Gender", gender);
+        tag.putInt("SpawnRadius", spawnRadius); // Save radius
         if (spawnedNpcId != null) tag.putUUID("SpawnedNpcId", spawnedNpcId);
         if (savedNpcData != null) tag.put("SavedNpcData", savedNpcData);
     }
@@ -206,6 +227,7 @@ private void spawnOrRestoreNpc(ServerLevel sl) {
         npcName = tag.getString("NpcName");
         escortDestination = tag.getString("EscortDestination");
         if (tag.contains("Gender")) gender = tag.getString("Gender"); 
+        if (tag.contains("SpawnRadius")) spawnRadius = tag.getInt("SpawnRadius"); // Load radius
         if (tag.hasUUID("SpawnedNpcId")) spawnedNpcId = tag.getUUID("SpawnedNpcId");
         if (tag.contains("SavedNpcData")) savedNpcData = tag.getCompound("SavedNpcData");
     }
