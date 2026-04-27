@@ -6,8 +6,9 @@ import org.slf4j.Logger;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
+import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
 import com.seggellion.britannia_mod.network.ClientNetworkHandler;
-
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -80,40 +81,30 @@ public class QuestEventHandlers {
         }
     }
 
-    @SubscribeEvent
+   @SubscribeEvent
     public static void onItemEntityTick(net.neoforged.neoforge.event.tick.EntityTickEvent.Post event) {
-        if (!event.getEntity().level().isClientSide() || !(event.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity itemEntity)) {
+        // 1. Run ONLY on the Logical Server
+        if (event.getEntity().level().isClientSide() || !(event.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity itemEntity)) {
             return;
         }
 
+        // 2. Physics check
         if (!itemEntity.isInLava()) return;
-        QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
+        
+        // 3. Identify who threw the item into the lava
+        net.minecraft.world.entity.Entity thrower = itemEntity.getOwner();
 
-        if (state == null || state.currentNode == null || state.currentNode.metadata == null) return;
-        if (state.currentNode.metadata.has("destroy_trigger")) {
-            JsonObject destroyData = state.currentNode.metadata.getAsJsonObject("destroy_trigger");
-            String targetTag = destroyData.has("item_tag") ? destroyData.get("item_tag").getAsString() : "";
-            String triggerKey = destroyData.has("trigger_key") ? destroyData.get("trigger_key").getAsString() : "";
-
-            if (!targetTag.isEmpty() && !triggerKey.isEmpty()) {
-                BlockPos min = new BlockPos(getSafeInt(destroyData, "min_x"), getSafeInt(destroyData, "min_y"), getSafeInt(destroyData, "min_z"));
-                BlockPos max = new BlockPos(getSafeInt(destroyData, "max_x"), getSafeInt(destroyData, "max_y"), getSafeInt(destroyData, "max_z"));
-                if (isInsideZone(itemEntity.blockPosition(), min, max)) {
-                    ItemStack stack = itemEntity.getItem();
-                    // Use our new smarter matcher!
-                    if (isQuestItemMatch(stack, targetTag)) {
-                                                        LOGGER.info("QUEST ITEM MATCHED");
-                        QuestManager.getInstance().clearState();
-                        
-                        QuestClient.sendTrigger(state.quest_id, triggerKey, response -> {
-                            if (response.success && FMLLoader.getDist().isClient()) {
-                                ClientNetworkHandler.openQuestDecisionScreen(response, "The Guardian", null);
-                            }
-                        });
-                    }
-                }
-            }
+        // 4. Ensure they are a ServerPlayer, then blindly send the item data to their Client!
+        if (thrower instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            LOGGER.info("Server detected item in lava. Sending packet to client!");
+            PacketDistributor.sendToPlayer(
+                serverPlayer, 
+                new ItemBurnedS2CPayload(itemEntity.getItem(), itemEntity.blockPosition())
+            );
         }
+        
+        // 5. Discard the item so it doesn't burn forever
+        itemEntity.discard();
     }
 
     // --- Helpers ---
@@ -121,7 +112,7 @@ public class QuestEventHandlers {
     /**
      * Intelligently checks if an ItemStack matches the target tag required by the quest.
      */
-    private static boolean isQuestItemMatch(ItemStack stack, String targetTag) {
+    public static boolean isQuestItemMatch(ItemStack stack, String targetTag) {
         if (stack.isEmpty()) return false;
 
         // 1. Check Custom Data (Robust NBT matching)
@@ -147,7 +138,7 @@ public class QuestEventHandlers {
         return false;
     }
 
-    private static boolean isInsideZone(BlockPos playerPos, BlockPos min, BlockPos max) {
+    public static boolean isInsideZone(BlockPos playerPos, BlockPos min, BlockPos max) {
         if (min.equals(BlockPos.ZERO) && max.equals(BlockPos.ZERO)) return false;
 
         return playerPos.getX() >= min.getX() && playerPos.getX() <= max.getX() &&
@@ -155,7 +146,7 @@ public class QuestEventHandlers {
                playerPos.getZ() >= min.getZ() && playerPos.getZ() <= max.getZ();
     }
 
-    private static int getSafeInt(JsonObject obj, String key) {
+    public static int getSafeInt(JsonObject obj, String key) {
         if (obj.has(key) && !obj.get(key).getAsString().isEmpty()) {
             try {
                 return obj.get(key).getAsInt();

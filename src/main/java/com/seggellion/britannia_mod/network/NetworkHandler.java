@@ -33,6 +33,8 @@ import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPay
 import com.seggellion.britannia_mod.network.payload.QuestDestinationConfigC2SPayload;
 import com.seggellion.britannia_mod.network.payload.CraftBlacksmithItemC2SPayload;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
 import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.skill.BlacksmithCrafting;
@@ -348,6 +350,13 @@ registrar.playToServer(
         SpawnEscortC2SPayload.TYPE,
         SpawnEscortC2SPayload.STREAM_CODEC,
         QuestPayloadHandler::handleSpawnEscort
+    );
+
+
+    registrar.playToClient(
+        ItemBurnedS2CPayload.TYPE,
+        ItemBurnedS2CPayload.CODEC,
+        QuestPayloadHandler::handleItemBurned
     );
 
 registrar.playToServer(

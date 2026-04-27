@@ -138,7 +138,7 @@ private static final EntityDataAccessor<Integer> DATA_CAPE = SynchedEntityData.d
 
     // ---------- Attributes ----------
     public static AttributeSupplier.Builder baseAttributes() {
-        return AttributeSupplier.builder()
+        return PathfinderMob.createMobAttributes()
             .add(Attributes.MAX_HEALTH, 5.0D)
             .add(Attributes.MOVEMENT_SPEED, 0.2D)
             .add(Attributes.FOLLOW_RANGE, 35.0D)

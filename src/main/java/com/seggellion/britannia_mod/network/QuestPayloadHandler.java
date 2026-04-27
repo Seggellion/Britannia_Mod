@@ -1,14 +1,79 @@
 package com.seggellion.britannia_mod.network;
 
 import com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload;
+import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
+import com.seggellion.britannia_mod.quest.QuestManager;
+import com.seggellion.britannia_mod.quest.events.QuestEventHandlers;
+import com.seggellion.britannia_mod.quest.network.QuestModels;
+
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
+
+import com.seggellion.britannia_mod.quest.network.QuestClient;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 public class QuestPayloadHandler {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+public static void handleItemBurned(final ItemBurnedS2CPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.flow().isClientbound()) {
+                ClientProxy.evaluateLavaQuest(payload.item(), payload.pos());
+            }
+        });
+    }
+
+
+public static class ClientProxy {
+        public static void openQuestUI(long questId, String triggerKey) {
+            // Because this is inside a separate class block, the server's
+            // ClassLoader won't crash when it sees these client-side references!
+            QuestClient.sendTrigger(questId, triggerKey, response -> {
+                if (response.success) {
+                    ClientNetworkHandler.openQuestDecisionScreen(response, "The Guardian", null);
+                }
+            });
+        }
+
+
+public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
+      LOGGER.info("EvaluateLavaQuest!");
+            QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
+            if (state == null || state.currentNode == null || state.currentNode.metadata == null) return;
+            LOGGER.info("State Exists!");
+            if (state.currentNode.metadata.has("destroy_trigger")) {
+                com.google.gson.JsonObject destroyData = state.currentNode.metadata.getAsJsonObject("destroy_trigger");
+                String targetTag = destroyData.has("item_tag") ? destroyData.get("item_tag").getAsString() : "";
+                String triggerKey = destroyData.has("trigger_key") ? destroyData.get("trigger_key").getAsString() : "";
+                  LOGGER.info("Lava Quest Trigger!");
+                if (!targetTag.isEmpty() && !triggerKey.isEmpty()) {
+                    BlockPos min = new BlockPos(QuestEventHandlers.getSafeInt(destroyData, "min_x"), QuestEventHandlers.getSafeInt(destroyData, "min_y"), QuestEventHandlers.getSafeInt(destroyData, "min_z"));
+                    BlockPos max = new BlockPos(QuestEventHandlers.getSafeInt(destroyData, "max_x"), QuestEventHandlers.getSafeInt(destroyData, "max_y"), QuestEventHandlers.getSafeInt(destroyData, "max_z"));
+                    
+                    if (QuestEventHandlers.isInsideZone(pos, min, max)) {
+                        if (QuestEventHandlers.isQuestItemMatch(stack, targetTag)) {
+                            QuestManager.getInstance().clearState();
+                            QuestClient.sendTrigger(state.quest_id, triggerKey, response -> {
+                                if (response.success) {
+                                    ClientNetworkHandler.openQuestDecisionScreen(response, "The Guardian", null);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
 
     public static void handleSpawnEscort(final SpawnEscortC2SPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
