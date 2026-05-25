@@ -73,6 +73,7 @@ import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
 import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
+import com.seggellion.britannia_mod.block.ChessBoardBlock;
 import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.TraderSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
@@ -1839,6 +1840,9 @@ public static final DeferredHolder<Block, BlankSignHolder> BLANK_SIGN_HOLDER = B
                     .sound(SoundType.METAL)
                     .noOcclusion())
             );
+
+public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD_BLOCK =
+        BLOCKS.register("chess_board_block", ChessBoardBlock::new);
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestDestinationBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ChessBoardBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.CandelabraBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.ChairBlockEntity;
 import com.seggellion.britannia_mod.block.nudgeable.block_entities.RotatableFurnitureBlockEntity;
@@ -230,6 +231,10 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestDest
                     BlockRegistry.LOCKABLE_METAL_DOOR.get(),
                    BlockRegistry.LOCKABLE_WOOD_DOOR.get()
             ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChessBoardBlockEntity>> CHESS_BOARD =
+        BLOCK_ENTITIES.register("chess_board", () ->
+            BlockEntityType.Builder.of(ChessBoardBlockEntity::new, BlockRegistry.CHESS_BOARD_BLOCK.get()).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

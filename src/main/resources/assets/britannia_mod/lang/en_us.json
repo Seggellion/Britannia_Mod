@@ -395,7 +395,8 @@
 
         "tooltip.britannia_mod.painting.size.small": "Small",
     "tooltip.britannia_mod.painting.size.medium": "Medium",
-    "tooltip.britannia_mod.painting.size.large": "Large"
+    "tooltip.britannia_mod.painting.size.large": "Large",
+    "block.britannia_mod.chess_board_block": "Chess Board"
 
 
 }

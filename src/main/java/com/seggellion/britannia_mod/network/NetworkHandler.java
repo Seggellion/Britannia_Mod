@@ -32,6 +32,8 @@ import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnConfigC2SPayl
 import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.QuestDestinationConfigC2SPayload;
 import com.seggellion.britannia_mod.network.payload.CraftBlacksmithItemC2SPayload;
+import com.seggellion.britannia_mod.network.payload.ChessBoardMoveC2SPayload;
+import com.seggellion.britannia_mod.network.payload.ChessBoardScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
@@ -505,6 +507,24 @@ registrar.playToServer(
     CraftBlacksmithItemC2SPayload.TYPE,
     CraftBlacksmithItemC2SPayload.STREAM_CODEC,
     NetworkHandler::handleCraftBlacksmithItem
+);
+
+registrar.playToServer(
+    ChessBoardMoveC2SPayload.TYPE,
+    ChessBoardMoveC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer player) {
+            ChessBoardMoveC2SPayload.handle(payload, player);
+        }
+    })
+);
+
+registrar.playToClient(
+    ChessBoardScreenS2CPayload.TYPE,
+    ChessBoardScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleChessBoardScreen
+        : (p, c) -> {}
 );
 
 registrar.playToClient(

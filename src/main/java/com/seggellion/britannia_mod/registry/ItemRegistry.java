@@ -1414,6 +1414,9 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
             public static final DeferredHolder<Item, Item> BLANK_SIGN_HOLDER = ITEMS.register(
                 "blank_sign_holder", () -> new BlockItem(BlockRegistry.BLANK_SIGN_HOLDER.get(), new Item.Properties()));
 
+            public static final DeferredHolder<Item, Item> CHESS_BOARD_BLOCK = ITEMS.register(
+                "chess_board_block", () -> new BlockItem(BlockRegistry.CHESS_BOARD_BLOCK.get(), new Item.Properties()));
+
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

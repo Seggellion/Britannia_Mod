@@ -30,6 +30,7 @@ import com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
+import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
 // --- NEW IMPORTS END ---
 
 import net.minecraft.resources.ResourceLocation;
@@ -262,6 +263,17 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
                     payload.spawnRadius()
                 )
             );
+        });
+    }
+
+    public static void handleChessBoardScreen(com.seggellion.britannia_mod.network.payload.ChessBoardScreenS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.screen instanceof ChessBoardScreen chessScreen) {
+                chessScreen.updateState(payload.state());
+            } else {
+                mc.setScreen(new ChessBoardScreen(payload.pos(), payload.state()));
+            }
         });
     }
 

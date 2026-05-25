@@ -25,6 +25,7 @@ public class TurkeyEntity extends BaseBritanniaAnimal {
 return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 10.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 0.1D)
                 .add(Attributes.FOLLOW_RANGE, 16.0D);
     }
 
@@ -37,8 +38,6 @@ return Mob.createMobAttributes()
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2D, false));
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, CitizenEntity.class, true));
     }
 
     @Override

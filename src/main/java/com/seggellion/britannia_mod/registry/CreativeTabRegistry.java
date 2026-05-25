@@ -338,6 +338,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                 safeAccept(output, ItemRegistry.YEW_TABLE_ITEM.get());
                 safeAccept(output, ItemRegistry.SMALL_TABLE_ITEM.get());
+                safeAccept(output, ItemRegistry.CHESS_BOARD_BLOCK.get());
                 safeAccept(output, ItemRegistry.COUNTER_ITEM.get());
                 safeAccept(output, ItemRegistry.GOLD_COIN.get());
 
