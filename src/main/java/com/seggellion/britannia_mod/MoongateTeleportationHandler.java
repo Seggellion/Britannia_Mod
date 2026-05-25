@@ -18,7 +18,7 @@ public class MoongateTeleportationHandler {
         "Britain", "Moonglow", "Yew", "Minoc", "Trinsic", "Skara Brae", "Jhelom", "Magincia"
     );
 
-    public static void teleportPlayer(ServerPlayer player) {
+public static void teleportPlayer(ServerPlayer player) {
         UUID playerUUID = player.getUUID();
 
         // Check if the player has recently teleported
@@ -47,14 +47,34 @@ public class MoongateTeleportationHandler {
                 entity -> entity.getTags().contains(escortTag)
             );
 
-            // Teleport the player to the chosen city
-            player.teleportTo(level, destination.getX() + 0.5, destination.getY(), destination.getZ() + 0.5, player.getYRot(), player.getXRot());
-            player.sendSystemMessage(Component.literal("Teleporting to " + cityName));
-
-            // Move the player 1 block away in the direction they are facing
+            // ==========================================
+            // MATH LOGIC: Calculate the final destination FIRST
+            // ==========================================
             Vec3 direction = player.getLookAngle().normalize();
-            Vec3 moveAwayPos = new Vec3(player.getX() + direction.x, player.getY(), player.getZ() + direction.z);
-            player.teleportTo(level, moveAwayPos.x, moveAwayPos.y, moveAwayPos.z, player.getYRot(), player.getXRot());
+            
+            // Calculate exact target position
+            double finalX = destination.getX() + 0.5 + direction.x;
+            
+            // ADDED: A 0.1 buffer to the Y-axis to prevent the player's bounding box 
+            // from micro-clipping into the floor block.
+            double finalY = destination.getY() + 0.1; 
+            
+            double finalZ = destination.getZ() + 0.5 + direction.z;
+
+            // ==========================================
+            // PHYSICS FIX: Stop momentum to prevent desync
+            // ==========================================
+            // Kill all player momentum before the teleport. 
+            player.setDeltaMovement(Vec3.ZERO);
+            player.resetFallDistance();
+
+            // Teleport the player ONCE to the final calculated position
+            player.teleportTo(level, finalX, finalY, finalZ, player.getYRot(), player.getXRot());
+            
+            // Force the client to instantly sync the velocity/movement update
+            player.hurtMarked = true; 
+
+            player.sendSystemMessage(Component.literal("Teleporting to " + cityName));
 
             // ==========================================
             // ESCORT LOGIC: Pull escorts through the portal
@@ -64,10 +84,10 @@ public class MoongateTeleportationHandler {
                 double offsetX = (random.nextDouble() - 0.5) * 2.0;
                 double offsetZ = (random.nextDouble() - 0.5) * 2.0;
                 
-                // Teleport the escort using the ServerLevel variant to ensure it works even across dimensions
-                escort.teleportTo(level, moveAwayPos.x + offsetX, moveAwayPos.y, moveAwayPos.z + offsetZ, Set.of(), escort.getYRot(), escort.getXRot());
+                // Teleport the escort using the ServerLevel variant
+                escort.teleportTo(level, finalX + offsetX, finalY, finalZ + offsetZ, Set.of(), escort.getYRot(), escort.getXRot());
                 
-                // Reset their navigation so they don't try to walk back to where they came from
+                // Reset their navigation so they don't try to walk back
                 if (escort instanceof Mob mob) {
                     mob.getNavigation().stop();
                     mob.setTarget(null);

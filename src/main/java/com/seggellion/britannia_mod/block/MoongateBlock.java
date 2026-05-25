@@ -57,7 +57,7 @@ public class MoongateBlock extends Block {
         return PushReaction.BLOCK;
     }
 
-    @Override
+@Override
     public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
         if (!worldIn.isClientSide && entityIn instanceof ServerPlayer player) {
             UUID playerUUID = player.getUUID();
@@ -73,28 +73,31 @@ public class MoongateBlock extends Block {
                 return;
             }
 
-            // Teleport the player on server side
-            MoongateTeleportationHandler.teleportPlayer(player);
-
-            // Log the SoundEvent
-            SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
-
-            if (soundEvent == null) {
-                LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
-            }
-
-            // Play teleport sound
-            worldIn.playSound(
-                null, // No specific player; null will send to all players (but we can restrict it)
-                player.getX(), player.getY(), player.getZ(),
-                soundEvent,
-                net.minecraft.sounds.SoundSource.PLAYERS,
-                1.0F,
-                1.0F
-            );
-
-            // Add player to the set to track they are on the moongate
+            // Add player to the set IMMEDIATELY so they don't trigger this multiple times in the same tick
             playersOnMoongate.add(playerUUID);
+
+            // ==========================================
+            // DEFER TELEPORTATION TO AVOID MOVEMENT DESYNC
+            // ==========================================
+            worldIn.getServer().execute(() -> {
+                // Teleport the player safely outside of the collision loop
+                MoongateTeleportationHandler.teleportPlayer(player);
+
+                // Log and play the SoundEvent at the destination
+                SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
+                if (soundEvent == null) {
+                    LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
+                } else {
+                    worldIn.playSound(
+                        null, 
+                        player.getX(), player.getY(), player.getZ(),
+                        soundEvent,
+                        net.minecraft.sounds.SoundSource.PLAYERS,
+                        1.0F,
+                        1.0F
+                    );
+                }
+            });
         }
     }
 
