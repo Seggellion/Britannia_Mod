@@ -34,6 +34,7 @@ import com.seggellion.britannia_mod.block.OakWallBlock;
 import com.seggellion.britannia_mod.block.FloorBlock;
 import com.seggellion.britannia_mod.block.DungeonWallBlock;
 import com.seggellion.britannia_mod.block.CaveBlock;
+import com.seggellion.britannia_mod.block.GhostLightBlock;
 import com.seggellion.britannia_mod.block.LogWallBlock;
 import com.seggellion.britannia_mod.block.BirchWallBlock;
 import com.seggellion.britannia_mod.block.PlasterWoodWallBlock;
@@ -53,6 +54,7 @@ import com.seggellion.britannia_mod.block.MetalSpawnBlock;
 import com.seggellion.britannia_mod.block.StoneSpawnBlock;
 import com.seggellion.britannia_mod.block.HorseSpawnBlock;
 import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
+import com.seggellion.britannia_mod.block.ExtendedLightChandelierBlock;
 import com.seggellion.britannia_mod.block.CandelabraBlock;
 import com.seggellion.britannia_mod.block.HalfBlock;
 import com.seggellion.britannia_mod.block.QuarterBlock;
@@ -113,6 +115,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.ChainBlock;
 import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.material.PushReaction;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -796,6 +799,18 @@ public static final DeferredHolder<Block, Block> CARPET_DUMMY_BLOCK = BLOCKS.reg
 
 // light sources
 
+public static final DeferredHolder<Block, Block> GHOST_LIGHT = BLOCKS.register(
+    "ghost_light",
+    () -> new GhostLightBlock(BlockBehaviour.Properties.of()
+        .replaceable()
+        .noCollission()
+        .noOcclusion()
+        .air() 
+        .lightLevel(state -> 15)
+        .noLootTable()
+        .pushReaction(PushReaction.DESTROY))
+);
+
 public static final DeferredHolder<Block, Block> WALL_SCONCE = BLOCKS.register(
     "wall_sconce",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
@@ -817,50 +832,53 @@ public static final DeferredHolder<Block, Block> CANDLE = BLOCKS.register(
 
 public static final DeferredHolder<Block, Block> WOODEN_CHANDELIER = BLOCKS.register(
     "wooden_chandelier",
-    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
-        .lightLevel(state -> 12))
+        .lightLevel(state -> 15), 
+        3) // Light nodes spawn 2 blocks outward on all faces
 );
 
 public static final DeferredHolder<Block, Block> LARGE_WOODEN_CHANDELIER = BLOCKS.register(
     "large_wooden_chandelier",
-    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
-        .lightLevel(state -> 12))
+        .lightLevel(state -> 15), 
+        4) // Light nodes spawn 4 blocks outward on all faces
 );
 
 public static final DeferredHolder<Block, Block> SMALL_WOODEN_CHANDELIER = BLOCKS.register(
     "small_wooden_chandelier",
-    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
-        .lightLevel(state -> 12))
-);
-
-public static final DeferredHolder<Block, Block> SMALL_IRON_CHANDELIER = BLOCKS.register(
-    "small_iron_chandelier",
-    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
-        .mapColor(MapColor.METAL)
-        .strength(0.3f)
-        .noOcclusion()
-        .lightLevel(state -> 12))
+        .lightLevel(state -> 15), 
+        2) // Light nodes spawn 2 blocks outward on all faces
 );
 
 public static final DeferredHolder<Block, Block> LARGE_IRON_CHANDELIER = BLOCKS.register(
     "large_iron_chandelier",
-    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
-        .lightLevel(state -> 12))
+        .lightLevel(state -> 15), 
+        4) // Light nodes spawn 4 blocks outward on all faces
 );
 
-
+public static final DeferredHolder<Block, Block> SMALL_IRON_CHANDELIER = BLOCKS.register(
+    "small_iron_chandelier",
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15), 
+        2) // Light nodes spawn 2 blocks outward on all faces
+);
 
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
     "candelabra_small",

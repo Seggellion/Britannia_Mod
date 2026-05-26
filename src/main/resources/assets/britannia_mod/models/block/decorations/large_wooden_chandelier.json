@@ -1,6 +1,7 @@
 {
     "format_version": "1.21.6",
     "credit": "Made with Blockbench",
+    "render_type": "minecraft:cutout",
     "textures": {
         "0": "britannia_mod:block/decoration/large_wooden_chandelier",
         "1": "britannia_mod:block/decoration/chandelier_flame",
