@@ -8,6 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.Entity;
 
 import java.util.*;
 
@@ -51,30 +52,36 @@ public static void teleportPlayer(ServerPlayer player) {
             // MATH LOGIC: Calculate the final destination FIRST
             // ==========================================
             Vec3 direction = player.getLookAngle().normalize();
-            
-            // Calculate exact target position
             double finalX = destination.getX() + 0.5 + direction.x;
-            
-            // ADDED: A 0.1 buffer to the Y-axis to prevent the player's bounding box 
-            // from micro-clipping into the floor block.
             double finalY = destination.getY() + 0.1; 
-            
             double finalZ = destination.getZ() + 0.5 + direction.z;
+
+            // ==========================================
+            // MOUNT LOGIC: Detach vehicle before moving
+            // ==========================================
+            Entity mount = player.getVehicle();
+            if (mount != null) {
+                player.stopRiding(); // Dismount the player safely before the teleport
+            }
 
             // ==========================================
             // PHYSICS FIX: Stop momentum to prevent desync
             // ==========================================
-            // Kill all player momentum before the teleport. 
             player.setDeltaMovement(Vec3.ZERO);
             player.resetFallDistance();
 
-            // Teleport the player ONCE to the final calculated position
+            // Teleport the player ONCE
             player.teleportTo(level, finalX, finalY, finalZ, player.getYRot(), player.getXRot());
-            
-            // Force the client to instantly sync the velocity/movement update
             player.hurtMarked = true; 
-
             player.sendSystemMessage(Component.literal("Teleporting to " + cityName));
+
+            // ==========================================
+            // MOUNT LOGIC: Pull the mount through the portal
+            // ==========================================
+            if (mount != null) {
+                // Teleport the mount slightly offset from the player
+                mount.teleportTo(level, finalX - direction.x, finalY, finalZ - direction.z, Set.of(), mount.getYRot(), mount.getXRot());
+            }
 
             // ==========================================
             // ESCORT LOGIC: Pull escorts through the portal
