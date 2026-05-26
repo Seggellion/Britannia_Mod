@@ -114,6 +114,7 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         enforceBoundary(sl);
     }
 
+
 private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin, int radius) {
     RandomSource rand = sl.getRandom();
 
@@ -122,14 +123,27 @@ private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin
         int dx = rand.nextInt(-radius, radius + 1);
         int dz = rand.nextInt(-radius, radius + 1);
 
+        // tryXZ maintains the Y-level of the spawn block
         BlockPos tryXZ = origin.offset(dx, 0, dz);
 
         // Only accept positions within circular radius (not just square)
         if (tryXZ.distSqr(origin) > (radius * radius)) continue;
 
-        // Find ground height at this X/Z
-        BlockPos groundTop = sl.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, tryXZ);
-        BlockPos feet = groundTop.above();
+        // Set the feet exactly to the spawner's Y-level +-2
+        BlockPos feet = null;
+        for (int dy = -2; dy <= 2; dy++) {
+            BlockPos checkPos = tryXZ.above(dy);
+            if (hasThreeAir(sl, checkPos) && sl.getBlockState(checkPos.below()).isSolidRender(sl, checkPos.below())) {
+                feet = checkPos;
+                break; // Found a valid floor near the spawner's Y-level
+            }
+        }
+
+        if (feet == null) continue;
+
+        // Ensure there is a solid block underneath their feet so they don't spawn in mid-air
+        // (Optional: if you want them to be able to spawn mid-air, remove this check)
+        if (!sl.getBlockState(feet.below()).isSolidRender(sl, feet.below())) continue;
 
         // Must have space for mob
         if (!hasThreeAir(sl, feet)) continue;
