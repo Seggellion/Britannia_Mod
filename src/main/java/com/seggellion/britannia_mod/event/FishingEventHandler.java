@@ -15,7 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import net.minecraft.util.RandomSource;
 import net.neoforged.neoforge.registries.DeferredHolder;
-
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import com.seggellion.britannia_mod.util.FishCatalog;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -99,10 +99,7 @@ public class FishingEventHandler {
         }
         return ItemStack.EMPTY; // should never hit
     }
-
-
-
-    @SubscribeEvent
+@SubscribeEvent
     public void onItemFished(ItemFishedEvent event) {
         Player player = event.getEntity();
         Level level   = player.level();
@@ -114,7 +111,8 @@ public class FishingEventHandler {
         float skill  = SkillManager.getSkill(sp, "fishing");
         double chance = SkillManager.catchChance(skill);
 
-        // Kill vanilla drops and mark handled
+        // Kill vanilla drops and mark handled 
+        // (Intentionally canceled to prevent skill-spamming exploits)
         event.getDrops().clear();
         event.setCanceled(true);
 
@@ -145,7 +143,6 @@ public class FishingEventHandler {
             }
         }
 
-
         // Scaled junk chance (80% at 0 skill -> 0% at 100 skill)
         double bootChance = bootChanceFor(skill);
         if (ThreadLocalRandom.current().nextDouble() < bootChance) {
@@ -166,18 +163,19 @@ public class FishingEventHandler {
             return;
         }
 
-        LOGGER.info("RESULT: {}", result); // FIXED: proper slf4j formatting
+        LOGGER.info("RESULT: {}", result); 
         giveAndAnnounce(player, level, pos, result);
     }
 
     private void giveAndAnnounce(Player player, Level level, BlockPos pos, ItemStack stack) {
         announceCatch(player, stack);
-        if (!player.getInventory().add(stack)) {
-            player.drop(stack, false);
-        }
+        
+        // NeoForge Helper: Perfectly handles insertion, dropping at feet if full, and client syncing.
+        ItemHandlerHelper.giveItemToPlayer(player, stack);
+        
         level.playSound(null, pos, ModSounds.CATCH_FISH.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
     }
-
+    
     /** Try to pick a region fish respecting min_skill and overrides. Returns null if none eligible. */
     private ItemStack tryCatchFromRegion(Player player, ServerPlayer sp, BlockPos pos) {
         List<RegionItemData> basePool = RegionCache.itemsFor(pos, "fish");
