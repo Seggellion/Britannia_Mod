@@ -550,7 +550,7 @@
 				}
 			}
 		},
-		"animation.model.swim_combo(use this one)": {
+		"animation.model.swim_combo": {
 			"loop": true,
 			"animation_length": 2.25,
 			"bones": {

@@ -7,30 +7,24 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.core.registries.BuiltInRegistries;
-
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.world.phys.AABB;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BritanniaSpawnBlockEntity extends BlockEntity {
 
@@ -65,7 +59,6 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         outsideTicks.clear();
     }
 
-
     // ===== Spawning & policing =====
     public void serverTick() {
         if (!(level instanceof ServerLevel sl)) return;
@@ -85,26 +78,43 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
 
         Optional<EntityType<?>> maybeType = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getOptional(entityId);
         if (maybeType.isEmpty()) { cooldown = 100; enforceBoundary(sl); return; }
+        
         EntityType<?> type = maybeType.get();
-        if (type.getCategory() != MobCategory.MONSTER && type.getCategory() != MobCategory.CREATURE) { cooldown = 100; enforceBoundary(sl); return; }
-        BlockPos spawnAt = findNearestValidSpawn(sl, worldPosition, spawnRadius);
+        
+        // Create the entity FIRST to check its properties
+        Entity entity = type.create(sl);
+        if (!(entity instanceof Mob mob)) { 
+            if (entity != null) entity.discard();
+            cooldown = 100; 
+            enforceBoundary(sl); 
+            return; 
+        }
+
+        // --- THE FIX: SMART WATER MOB DETECTION ---
+        // Because canBreatheUnderwater() defaults to false for Monsters, we verify aquatic nature by 
+        // checking its navigation AI, NeoForge drowning logic, or vanilla category names.
+        boolean isWaterMob = mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation
+                || mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation
+                || !mob.canDrownInFluidType(net.minecraft.world.level.material.Fluids.WATER.getFluidType())
+                || mob.getType().getCategory().getName().toLowerCase().contains("water");
+
+        BlockPos spawnAt = findNearestValidSpawn(sl, worldPosition, spawnRadius, isWaterMob);
+        
         if (spawnAt != null) {
-            Entity e = type.create(sl);
-            if (e instanceof PathfinderMob pmob) {
-                pmob.moveTo(spawnAt.getX() + 0.5, spawnAt.getY(), spawnAt.getZ() + 0.5,
-                        sl.random.nextFloat() * 360F, 0);
+            // We have a spot, so we place the mob we already created
+            mob.moveTo(spawnAt.getX() + 0.5, spawnAt.getY(), spawnAt.getZ() + 0.5, sl.random.nextFloat() * 360F, 0);
+            
+            if (mob instanceof PathfinderMob pmob) {
                 pmob.restrictTo(this.worldPosition, Math.max(1, this.spawnRadius - BOUNDARY_MARGIN));
                 pmob.goalSelector.addGoal(1, new MoveTowardsRestrictionGoal(pmob, 1.1));
-                sl.addFreshEntity(pmob);
-                spawned.add(pmob.getUUID());
-                this.setChanged(); // <--- ADD THIS
-            } else if (e instanceof Mob mob) {
-                mob.moveTo(spawnAt.getX() + 0.5, spawnAt.getY(), spawnAt.getZ() + 0.5,
-                        sl.random.nextFloat() * 360F, 0);
-                sl.addFreshEntity(mob);
-                spawned.add(mob.getUUID());
-                this.setChanged(); // <--- ADD THIS
             }
+            
+            sl.addFreshEntity(mob);
+            spawned.add(mob.getUUID());
+            this.setChanged();
+        } else {
+            // No valid spot found, discard the unused entity to prevent memory leaks
+            mob.discard();
         }
 
         RandomSource r = sl.getRandom();
@@ -114,79 +124,78 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         enforceBoundary(sl);
     }
 
+    private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin, int radius, boolean isWaterMob) {
+        RandomSource rand = sl.getRandom();
 
-private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin, int radius) {
-    RandomSource rand = sl.getRandom();
+        // Try up to 20 random spots within the radius
+        for (int i = 0; i < 20; i++) {
+            int dx = rand.nextInt(-radius, radius + 1);
+            int dz = rand.nextInt(-radius, radius + 1);
 
-    // Try up to 20 random spots within the radius
-    for (int i = 0; i < 20; i++) {
-        int dx = rand.nextInt(-radius, radius + 1);
-        int dz = rand.nextInt(-radius, radius + 1);
+            // tryXZ maintains the Y-level of the spawn block
+            BlockPos tryXZ = origin.offset(dx, 0, dz);
 
-        // tryXZ maintains the Y-level of the spawn block
-        BlockPos tryXZ = origin.offset(dx, 0, dz);
+            // Only accept positions within circular radius
+            if (tryXZ.distSqr(origin) > (radius * radius)) continue;
 
-        // Only accept positions within circular radius (not just square)
-        if (tryXZ.distSqr(origin) > (radius * radius)) continue;
-
-        // Set the feet exactly to the spawner's Y-level +-2
-        BlockPos feet = null;
-        for (int dy = -2; dy <= 2; dy++) {
-            BlockPos checkPos = tryXZ.above(dy);
-            if (hasThreeAir(sl, checkPos) && sl.getBlockState(checkPos.below()).isSolidRender(sl, checkPos.below())) {
-                feet = checkPos;
-                break; // Found a valid floor near the spawner's Y-level
+            BlockPos validPos = null;
+            for (int dy = -2; dy <= 2; dy++) {
+                BlockPos checkPos = tryXZ.above(dy);
+                
+                if (isWaterMob) {
+                    // WATER SPAWNING LOGIC: Check for two vertical blocks of water
+                    if (sl.getFluidState(checkPos).is(FluidTags.WATER) && 
+                        sl.getFluidState(checkPos.above()).is(FluidTags.WATER)) {
+                        validPos = checkPos;
+                        break;
+                    }
+                } else {
+                    // LAND SPAWNING LOGIC: Check for air and a solid floor
+                    if (hasThreeAir(sl, checkPos) && sl.getBlockState(checkPos.below()).isSolidRender(sl, checkPos.below())) {
+                        validPos = checkPos;
+                        break; 
+                    }
+                }
             }
+
+            if (validPos == null) continue;
+
+            // Check light (if night-only is enforced)
+            int blockLight = sl.getBrightness(LightLayer.BLOCK, validPos);
+            if (blockLight > 7 && nightOnly) continue;
+
+            return validPos;
         }
 
-        if (feet == null) continue;
-
-        // Ensure there is a solid block underneath their feet so they don't spawn in mid-air
-        // (Optional: if you want them to be able to spawn mid-air, remove this check)
-        if (!sl.getBlockState(feet.below()).isSolidRender(sl, feet.below())) continue;
-
-        // Must have space for mob
-        if (!hasThreeAir(sl, feet)) continue;
-
-        // Check light (if night-only is enforced)
-        int blockLight = sl.getBrightness(LightLayer.BLOCK, feet);
-        if (blockLight > 7 && nightOnly) continue;
-
-        return feet;
+        return null;
     }
-
-    // If no valid position found after attempts
-    return null;
-}
-
 
     private boolean hasThreeAir(Level lvl, BlockPos feet) {
         return lvl.isEmptyBlock(feet) && lvl.isEmptyBlock(feet.above()) && lvl.isEmptyBlock(feet.above(2));
     }
 
-private void pruneSpawned(ServerLevel sl) {
-    if (spawned.isEmpty()) return;
-    boolean changed = false; // <--- Track if we modified the list
-    Iterator<UUID> it = spawned.iterator();
-    while (it.hasNext()) {
-        UUID id = it.next();
-        Entity e = sl.getEntity(id);
-        
-        // e is null if the entity is simply unloaded; we ignore nulls to keep them in memory
-        if (e != null) {
-            if (!(e instanceof Mob mob) || !mob.isAlive() || mob.isRemoved()) {
-                it.remove();
-                outsideTicks.remove(id);
-                changed = true; // <--- Mark as changed
+    private void pruneSpawned(ServerLevel sl) {
+        if (spawned.isEmpty()) return;
+        boolean changed = false; 
+        Iterator<UUID> it = spawned.iterator();
+        while (it.hasNext()) {
+            UUID id = it.next();
+            Entity e = sl.getEntity(id);
+            
+            // e is null if the entity is simply unloaded; we ignore nulls to keep them in memory
+            if (e != null) {
+                if (!(e instanceof Mob mob) || !mob.isAlive() || mob.isRemoved()) {
+                    it.remove();
+                    outsideTicks.remove(id);
+                    changed = true; 
+                }
             }
         }
+        
+        if (changed) {
+            this.setChanged(); 
+        }
     }
-    
-    // Save state if entities died/were removed
-    if (changed) {
-        this.setChanged(); // <--- ADD THIS
-    }
-}
 
     private void enforceBoundary(ServerLevel sl) {
         if (spawned.isEmpty()) return;
@@ -206,7 +215,9 @@ private void pruneSpawned(ServerLevel sl) {
                 continue;
             }
 
-            mob.restrictTo(this.worldPosition, Math.max(1, this.spawnRadius - BOUNDARY_MARGIN));
+            if (mob instanceof PathfinderMob pmob) {
+                 pmob.restrictTo(this.worldPosition, Math.max(1, this.spawnRadius - BOUNDARY_MARGIN));
+            }
 
             double dx = mob.getX() - centerX;
             double dz = mob.getZ() - centerZ;
@@ -271,12 +282,11 @@ private void pruneSpawned(ServerLevel sl) {
         for (UUID id : spawned) {
             Entity e = level.getEntity(id);
             if (e != null) {
-                list.add(BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()));
+                list.add(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()));
             }
         }
         return list;
     }
-
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
@@ -300,37 +310,34 @@ private void pruneSpawned(ServerLevel sl) {
         }
     }
 
-
     // ===== Config application =====
-public void applyConfig(ResourceLocation id, int radius, int minTicks, int maxTicks,
-                        boolean nightOnly, int maxEntities) {
-    boolean typeChanged = !id.equals(this.entityId);
+    public void applyConfig(ResourceLocation id, int radius, int minTicks, int maxTicks, boolean nightOnly, int maxEntities) {
+        boolean typeChanged = !id.equals(this.entityId);
 
-    this.entityId = id;
-    this.spawnRadius = Mth.clamp(radius, 1, 128);
-    this.randomMinTicks = Math.max(1, Math.min(minTicks, maxTicks));
-    this.randomMaxTicks = Math.max(this.randomMinTicks, maxTicks);
-    this.nightOnly = nightOnly;
-    this.maxEntities = Math.max(0, maxEntities);
+        this.entityId = id;
+        this.spawnRadius = Mth.clamp(radius, 1, 128);
+        this.randomMinTicks = Math.max(1, Math.min(minTicks, maxTicks));
+        this.randomMaxTicks = Math.max(this.randomMinTicks, maxTicks);
+        this.nightOnly = nightOnly;
+        this.maxEntities = Math.max(0, maxEntities);
 
-    if (typeChanged && level instanceof ServerLevel sl) {
-        // wipe existing mobs
-        for (UUID uuid : new HashSet<>(spawned)) {
-            Entity e = sl.getEntity(uuid);
-            if (e != null) e.discard(); // no drops/XP
+        if (typeChanged && level instanceof ServerLevel sl) {
+            // wipe existing mobs
+            for (UUID uuid : new HashSet<>(spawned)) {
+                Entity e = sl.getEntity(uuid);
+                if (e != null) e.discard(); // no drops/XP
+            }
+            spawned.clear();
+            outsideTicks.clear();
         }
-        spawned.clear();
-        outsideTicks.clear();
+
+        setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
-    setChanged();
-    if (level != null) {
-        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-    }
-}
-
-
-   // Add this helper (server-side cleanup)
+    // Add this helper (server-side cleanup)
     private void cleanupOnRemove(ServerLevel sl) {
         for (UUID id : new HashSet<>(spawned)) {
             var e = sl.getEntity(id);
@@ -340,10 +347,9 @@ public void applyConfig(ResourceLocation id, int radius, int minTicks, int maxTi
         outsideTicks.clear();
     }
 
-    // Run cleanup when the BE is removed (block broken/replaced or otherwise removed)
+    // Run cleanup when the BE is removed
     @Override
     public void setRemoved() {
-        // call super first or last—either is fine here, but be consistent with your codebase
         super.setRemoved();
         if (level instanceof ServerLevel sl) {
             cleanupOnRemove(sl);
