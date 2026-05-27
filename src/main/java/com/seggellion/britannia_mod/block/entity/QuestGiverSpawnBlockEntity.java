@@ -28,7 +28,7 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
     private String npcName = ""; 
     private String customApiId = "";
     private String gender = "female";
-    private int spawnRadius = 5; // NEW: Controls strict AI wandering
+    private int spawnRadius = 5;
 
     // For Escorts
     private String escortDestination = "";
@@ -78,13 +78,14 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
             }
         }
 
-        if (currentNpc == null || !currentNpc.isAlive()) {
-            this.savedNpcData = null;
-            spawnOrRestoreNpc(sl);
-        } else {
-            updateSnapshot((QuestGiverEntity) currentNpc);
-        }
-    }
+if (currentNpc == null || !currentNpc.isAlive()) {
+this.savedNpcData = null;
+spawnOrRestoreNpc(sl);
+} else {
+updateSnapshot((QuestGiverEntity) currentNpc);
+enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
+}
+}
 
     private void spawnOrRestoreNpc(ServerLevel sl) {
         // Use our configurable radius to find ground!
@@ -173,6 +174,40 @@ public class QuestGiverSpawnBlockEntity extends BlockEntity {
         sl.addFreshEntity(npc);
         spawnedNpcId = npc.getUUID();
         updateSnapshot(npc);
+    }
+
+    private void enforceBoundary(ServerLevel sl, QuestGiverEntity npc) {
+        final double centerX = worldPosition.getX() + 0.5;
+        final double centerY = worldPosition.getY(); 
+        final double centerZ = worldPosition.getZ() + 0.5;
+
+        // 1. Continually remind the entity of its restriction (AI goals sometimes wipe this)
+        npc.restrictTo(this.worldPosition, this.spawnRadius);
+
+        double dx = npc.getX() - centerX;
+        double dz = npc.getZ() - centerZ;
+        double distSq = dx * dx + dz * dz;
+
+        double rSq = this.spawnRadius * this.spawnRadius;
+        double hardR = this.spawnRadius + 4; // Add a buffer for the hard teleport limit
+
+        // Check if they stepped out of bounds
+        if (distSq > rSq) {
+            // Stop them from chasing targets out of their zone
+            if (npc.getTarget() != null) npc.setTarget(null);
+
+            if (distSq > hardR * hardR) {
+                // 2. HARD BOUNDARY: If they are way out of bounds (pushed into a hole, fell off a cliff)
+                BlockPos ground = Util.findGround(sl, worldPosition, this.spawnRadius);
+                if (ground == null) ground = worldPosition; // Fallback
+                
+                npc.teleportTo(ground.getX() + 0.5, ground.getY(), ground.getZ() + 0.5);
+                npc.getNavigation().stop();
+            } else {
+                // 3. SOFT BOUNDARY: Override pathfinding and force them back towards the center
+                npc.getNavigation().moveTo(centerX, centerY, centerZ, 1.2);
+            }
+        }
     }
 
     private void updateSnapshot(QuestGiverEntity npc) {
