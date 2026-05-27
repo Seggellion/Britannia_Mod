@@ -41,7 +41,7 @@ import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
 import com.seggellion.britannia_mod.villager.VillagerTradeUpdater;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.features.MobSpawnControl;
-import com.seggellion.britannia_mod.features.DiamondToolControl;
+import com.seggellion.britannia_mod.features.RestrictedEquipmentControl;
 import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
@@ -149,7 +149,7 @@ CraftableRegistry.init();
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
-        NeoForge.EVENT_BUS.register(new DiamondToolControl());
+        NeoForge.EVENT_BUS.register(new RestrictedEquipmentControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new BlockRestoreHandler());
 

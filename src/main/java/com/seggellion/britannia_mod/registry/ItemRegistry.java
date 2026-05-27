@@ -1135,14 +1135,15 @@ public static final DeferredHolder<Item, Item> ORDER_SHIELD = ITEMS.register("or
         )
     );
 
-public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE = ITEMS.register("two_handed_axe", () ->
-    new TwoHandedAxeItem(
-        ModToolTiers.TWO_HANDED_AXE_TIER, // Custom tier
-        new Item.Properties()
-            .stacksTo(1)
-            .attributes(TwoHandedAxeItem.createAttributes()) // Use the attribute supplier
-    )
-);
+public static final DeferredHolder<Item, TwoHandedAxeItem> TWO_HANDED_AXE =
+        ITEMS.register("two_handed_axe", () ->
+                new TwoHandedAxeItem(
+                        ModToolTiers.TWO_HANDED_AXE_TIER,
+                        new Item.Properties()
+                                .stacksTo(1)
+                                .attributes(TwoHandedAxeItem.createAttributes(ModToolTiers.TWO_HANDED_AXE_TIER))
+                )
+        );
 
     // ADD THIS for WeightedWoodItem:
     public static final DeferredHolder<Item, Item> WEIGHTED_WOOD_ITEM = ITEMS.register(
