@@ -180,42 +180,43 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
     public static final DeferredHolder<EntityType<?>, EntityType<MongbatEntity>> MONGBAT_ENTITY = ENTITIES.register(
             "mongbat",
             () -> EntityType.Builder.of(MongbatEntity::new, MobCategory.MONSTER)
-                    .sized(0.5F, 0.9F)
+                    .sized(0.5F, 1.3F)
                     .build("britannia_mod:mongbat")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<AlligatorEntity>> ALLIGATOR_ENTITY = ENTITIES.register(
             "alligator",
             () -> EntityType.Builder.of(AlligatorEntity::new, MobCategory.MONSTER)
-                    .sized(1.4F, 0.6F)
+                    .sized(1.6F, 1.0F)
                     .build("britannia_mod:alligator")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<GiantRatEntity>> GIANT_RAT_ENTITY = ENTITIES.register(
             "giant_rat",
             () -> EntityType.Builder.of(GiantRatEntity::new, MobCategory.MONSTER)
-                    .sized(0.6F, 0.4F)
+                    .sized(0.6F, 0.6F)
                     .build("britannia_mod:giant_rat")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<EttinEntity>> ETTIN_ENTITY = ENTITIES.register(
             "ettin",
             () -> EntityType.Builder.of(EttinEntity::new, MobCategory.MONSTER)
-                    .sized(1.4F, 3.0F) // Big boy
+                    .sized(1.8F, 5.3F) // Big boy
                     .build("britannia_mod:ettin")
     );
 
-        public static final DeferredHolder<EntityType<?>, EntityType<SerpentSeaEntity>> SERPENT_SEA_ENTITY = ENTITIES.register(
-            "serpent_sea",
-            () -> EntityType.Builder.of(SerpentSeaEntity::new, MobCategory.MONSTER)
-                    .sized(0.6F, 0.3F)
-                    .build("britannia_mod:serpent_sea")
-    );
+public static final DeferredHolder<EntityType<?>, EntityType<SerpentSeaEntity>> SERPENT_SEA_ENTITY = ENTITIES.register(
+    "serpent_sea",
+    () -> EntityType.Builder.of(SerpentSeaEntity::new, MobCategory.MONSTER)
+            // Shrink the base hitbox. The multipart code will handle the length!
+            .sized(0.8F, 0.6F) 
+            .build("britannia_mod:serpent_sea")
+);
 
     public static final DeferredHolder<EntityType<?>, EntityType<SerpentDeepSeaEntity>> SERPENT_DEEP_SEA_ENTITY = ENTITIES.register(
             "serpent_deep_sea",
             () -> EntityType.Builder.of(SerpentDeepSeaEntity::new, MobCategory.MONSTER)
-                    .sized(0.6F, 0.3F)
+               .sized(0.8F, 0.6F) 
                     .build("britannia_mod:serpent_deep_sea")
     );
 
@@ -229,7 +230,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
         public static final DeferredHolder<EntityType<?>, EntityType<SerpentCrystalEntity>> SERPENT_CRYSTAL_SEA_ENTITY = ENTITIES.register(
             "serpent_crystal_sea",
             () -> EntityType.Builder.of(SerpentCrystalEntity::new, MobCategory.MONSTER)
-                    .sized(0.6F, 0.3F)
+                .sized(0.8F, 0.6F) 
                     .build("britannia_mod:serpent_crystal_sea")
     );
 
@@ -244,7 +245,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
         public static final DeferredHolder<EntityType<?>, EntityType<SerpentGiantEntity>> SERPENT_GIANT_ENTITY = ENTITIES.register(
             "serpent_giant",
             () -> EntityType.Builder.of(SerpentGiantEntity::new, MobCategory.MONSTER)
-                    .sized(0.6F, 0.3F)
+                      .sized(0.8F, 0.6F) 
                     .build("britannia_mod:serpent_giant")
     );
 
@@ -266,28 +267,28 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
     public static final DeferredHolder<EntityType<?>, EntityType<LizardmanEntity>> LIZARDMAN_ENTITY = ENTITIES.register(
             "lizardman",
             () -> EntityType.Builder.of(LizardmanEntity::new, MobCategory.MONSTER)
-                    .sized(0.8F, 1.9F)
+                    .sized(0.8F, 2.2F)
                     .build("britannia_mod:lizardman")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<RatmanEntity>> RATMAN_ENTITY = ENTITIES.register(
             "ratman",
             () -> EntityType.Builder.of(RatmanEntity::new, MobCategory.MONSTER)
-                    .sized(0.7F, 1.7F)
+                    .sized(0.7F, 1.8F)
                     .build("britannia_mod:ratman")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<RatmanArcherEntity>> RATMAN_ARCHER_ENTITY = ENTITIES.register(
             "ratman_archer",
             () -> EntityType.Builder.of(RatmanArcherEntity::new, MobCategory.MONSTER)
-                    .sized(0.7F, 1.7F)
+                    .sized(0.7F, 1.8F)
                     .build("britannia_mod:ratman_archer")
     );
     
         public static final DeferredHolder<EntityType<?>, EntityType<RatmanAssassinEntity>> RATMAN_ASSASSIN_ENTITY = ENTITIES.register(
             "ratman_assassin",
             () -> EntityType.Builder.of(RatmanAssassinEntity::new, MobCategory.MONSTER)
-                    .sized(0.7F, 1.7F)
+                    .sized(0.7F, 1.8F)
                     .build("britannia_mod:ratman_assassin")
     );
     
@@ -295,7 +296,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
     public static final DeferredHolder<EntityType<?>, EntityType<HarpyEntity>> HARPY_ENTITY = ENTITIES.register(
             "harpy",
             () -> EntityType.Builder.of(HarpyEntity::new, MobCategory.MONSTER)
-                    .sized(0.8F, 1.8F)
+                    .sized(1.0F, 2.5F)
                     .build("britannia_mod:harpy")
     );
 
@@ -310,70 +311,70 @@ public static final DeferredHolder<EntityType<?>, EntityType<TownPersonEntity>> 
     public static final DeferredHolder<EntityType<?>, EntityType<OrcEntity>> ORC_ENTITY = ENTITIES.register(
             "orc",
             () -> EntityType.Builder.of(OrcEntity::new, MobCategory.MONSTER)
-                    .sized(0.7F, 1.5F)
+                    .sized(0.6F, 1.6F)
                     .build("britannia_mod:orc")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<OrcClubEntity>> ORC_CLUB_ENTITY = ENTITIES.register(
             "orc_club",
             () -> EntityType.Builder.of(OrcClubEntity::new, MobCategory.MONSTER)
-                    .sized(0.7F, 1.5F)
+                    .sized(0.6F, 1.6F)
                     .build("britannia_mod:orc_club")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<OgreEntity>> OGRE_ENTITY = ENTITIES.register(
             "ogre",
             () -> EntityType.Builder.of(OgreEntity::new, MobCategory.MONSTER)
-                    .sized(1.4F, 2.8F)
+                    .sized(1.8F, 4.3F)
                     .build("britannia_mod:ogre")
     );
 
 public static final DeferredHolder<EntityType<?>, EntityType<OgreArcticEntity>> OGRE_ARCTIC_ENTITY = ENTITIES.register(
             "ogre_arctic",
             () -> EntityType.Builder.of(OgreArcticEntity::new, MobCategory.MONSTER)
-                    .sized(1.4F, 2.8F)
+                .sized(1.7F, 4.1F)
                     .build("britannia_mod:ogre_arctic")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<OgreLordEntity>> OGRE_LORD_ENTITY = ENTITIES.register(
             "ogre_lord",
             () -> EntityType.Builder.of(OgreLordEntity::new, MobCategory.MONSTER)
-                    .sized(1.4F, 2.8F)
+                      .sized(1.9F, 4.9F)
                     .build("britannia_mod:ogre_lord")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<OgreLordArcticEntity>> OGRE_LORD_ARCTIC_ENTITY = ENTITIES.register(
             "ogre_lord_arctic",
             () -> EntityType.Builder.of(OgreLordArcticEntity::new, MobCategory.MONSTER)
-                    .sized(1.4F, 2.8F)
+                      .sized(1.8F, 4.7F)
                     .build("britannia_mod:ogre_lord_arctic")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<TrollEntity>> TROLL_ENTITY = ENTITIES.register(
             "troll",
             () -> EntityType.Builder.of(TrollEntity::new, MobCategory.MONSTER)
-                    .sized(1.2F, 2.6F)
+                    .sized(1.4F, 3.9F)
                     .build("britannia_mod:troll")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<GargoyleEntity>> GARGOYLE_ENTITY = ENTITIES.register(
             "gargoyle",
             () -> EntityType.Builder.of(GargoyleEntity::new, MobCategory.MONSTER)
-                    .sized(0.8F, 2.0F)
+                    .sized(0.8F, 2.2F)
                     .build("britannia_mod:gargoyle")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<GargoyleDestroyerEntity>> GARGOYLE_DESTROYER_ENTITY = ENTITIES.register(
             "gargoyle_destroyer",
             () -> EntityType.Builder.of(GargoyleDestroyerEntity::new, MobCategory.MONSTER)
-                    .sized(0.8F, 2.0F)
+                    .sized(0.9F, 2.6F)
                     .build("britannia_mod:gargoyle_destroyer")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<GargoyleEnforcerEntity>> GARGOYLE_ENFORCER_ENTITY = ENTITIES.register(
             "gargoyle_enforcer",
             () -> EntityType.Builder.of(GargoyleEnforcerEntity::new, MobCategory.MONSTER)
-                    .sized(0.8F, 2.0F)
+                    .sized(0.9F, 2.6F)
                     .build("britannia_mod:gargoyle_enforcer")
     );
 
@@ -394,14 +395,14 @@ public static final DeferredHolder<EntityType<?>, EntityType<OgreArcticEntity>> 
         public static final DeferredHolder<EntityType<?>, EntityType<LichEntity>> LICH_ENTITY = ENTITIES.register(
             "lich",
             () -> EntityType.Builder.of(LichEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 2.5F)
+                    .sized(1F, 2.0F)
                     .build("britannia_mod:lich")
     );
 
             public static final DeferredHolder<EntityType<?>, EntityType<RatEntity>> RAT_ENTITY = ENTITIES.register(
             "rat",
             () -> EntityType.Builder.of(RatEntity::new, MobCategory.CREATURE)
-                    .sized(0.3F, 0.3F)
+                    .sized(0.4F, 0.4F)
                     .build("britannia_mod:rat")
     );
     
@@ -424,49 +425,49 @@ public static final DeferredHolder<EntityType<?>, EntityType<OgreArcticEntity>> 
 public static final DeferredHolder<EntityType<?>, EntityType<TurkeyEntity>> TURKEY_ENTITY = ENTITIES.register(
             "turkey",
             () -> EntityType.Builder.of(TurkeyEntity::new, MobCategory.CREATURE)
-                    .sized(0.6F, 0.6F)
+                    .sized(1.1F, 1.2F)
                     .build("britannia_mod:turkey")
     );
 
 public static final DeferredHolder<EntityType<?>, EntityType<HindEntity>> HIND_ENTITY = ENTITIES.register(
             "hind",
             () -> EntityType.Builder.of(HindEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 1.0F)
+                    .sized(1.2F, 1.7F)
                     .build("britannia_mod:hind")
     );
 
     public static final DeferredHolder<EntityType<?>, EntityType<GreatHartEntity>> GREAT_HART_ENTITY = ENTITIES.register(
             "great_hart",
             () -> EntityType.Builder.of(GreatHartEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 1.0F)
+                .sized(1.2F, 1.7F)
                     .build("britannia_mod:great_hart")
     );
 
   public static final DeferredHolder<EntityType<?>, EntityType<GorillaEntity>> GORILLA_ENTITY = ENTITIES.register(
             "gorilla",
             () -> EntityType.Builder.of(GorillaEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 1.0F)
+                    .sized(1.3F, 1.2F)
                     .build("britannia_mod:gorilla")
     );
 
       public static final DeferredHolder<EntityType<?>, EntityType<BearBrownEntity>> BEAR_BROWN_ENTITY = ENTITIES.register(
             "bear_brown",
             () -> EntityType.Builder.of(BearBrownEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 1.0F)
+                    .sized(1.6F, 1.3F)
                     .build("britannia_mod:bear_brown")
     );
 
       public static final DeferredHolder<EntityType<?>, EntityType<BearBlackEntity>> BEAR_BLACK_ENTITY = ENTITIES.register(
             "bear_black",
             () -> EntityType.Builder.of(BearBlackEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 1.0F)
+                    .sized(1.5F, 1.2F)
                     .build("britannia_mod:bear_black")
     );
 
       public static final DeferredHolder<EntityType<?>, EntityType<BearGrizzlyEntity>> BEAR_GRIZZLY_ENTITY = ENTITIES.register(
             "bear_grizzly",
             () -> EntityType.Builder.of(BearGrizzlyEntity::new, MobCategory.CREATURE)
-                    .sized(1.5F, 1.0F)
+                    .sized(1.7F, 1.4F)
                     .build("britannia_mod:bear_grizzly")
     );
 
@@ -509,21 +510,21 @@ public static final DeferredHolder<EntityType<?>, EntityType<HindEntity>> HIND_E
     public static final DeferredHolder<EntityType<?>, EntityType<AirElementalEntity>> AIR_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_air",
             () -> EntityType.Builder.of(AirElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                    .sized(1.0F, 2.4F)
                     .build("britannia_mod:elemental_air")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<FireElementalEntity>> FIRE_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_fire",
             () -> EntityType.Builder.of(FireElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                    .sized(1.0F, 2.4F)
                     .build("britannia_mod:elemental_fire")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<PoisonElementalEntity>> POISON_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_poison",
             () -> EntityType.Builder.of(PoisonElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                     .sized(1.0F, 2.4F)
                     .build("britannia_mod:elemental_poison")
     );
 
@@ -531,35 +532,35 @@ public static final DeferredHolder<EntityType<?>, EntityType<HindEntity>> HIND_E
         public static final DeferredHolder<EntityType<?>, EntityType<AcidElementalEntity>> ACID_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_acid",
             () -> EntityType.Builder.of(AcidElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                    .sized(1.0F, 2.4F)
                     .build("britannia_mod:elemental_acid")
     );
 
             public static final DeferredHolder<EntityType<?>, EntityType<WaterElementalEntity>> WATER_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_water",
             () -> EntityType.Builder.of(WaterElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                    .sized(1.0F, 2.4F)
                     .build("britannia_mod:elemental_water")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<BloodElementalEntity>> BLOOD_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_blood",
             () -> EntityType.Builder.of(BloodElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                    .sized(1.0F, 2.4F)
                     .build("britannia_mod:elemental_blood")
     );
 
             public static final DeferredHolder<EntityType<?>, EntityType<DullCopperElementalEntity>> DULL_COPPER_ELEMENTAL_ENTITY = ENTITIES.register(
             "elemental_dull_copper",
             () -> EntityType.Builder.of(DullCopperElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1.0F, 2.2F)
+                    .sized(2.2F, 3.8F)
                     .build("britannia_mod:elemental_dull_copper")
     );
 
         public static final DeferredHolder<EntityType<?>, EntityType<EarthElementalEntity>> EARTH_ELEMENTAL_ENTITY = ENTITIES.register(
             "earth_elemental",
             () -> EntityType.Builder.of(EarthElementalEntity::new, MobCategory.MONSTER)
-                    .sized(2F, 3.5F)
+                    .sized(2.2F, 3.8F)
                     .build("britannia_mod:earth_elemental")
     );
 
@@ -567,14 +568,14 @@ public static final DeferredHolder<EntityType<?>, EntityType<HindEntity>> HIND_E
         public static final DeferredHolder<EntityType<?>, EntityType<ShadowOreElementalEntity>> SHADOW_ORE_ELEMENTAL_ENTITY = ENTITIES.register(
             "shadow_ore_elemental",
             () -> EntityType.Builder.of(ShadowOreElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 3.5F)
+                     .sized(2.2F, 3.8F)
                     .build("britannia_mod:shadow_ore_elemental")
     );
 
             public static final DeferredHolder<EntityType<?>, EntityType<GoldOreElementalEntity>> GOLD_ORE_ELEMENTAL_ENTITY = ENTITIES.register(
             "gold_ore_elemental",
             () -> EntityType.Builder.of(GoldOreElementalEntity::new, MobCategory.MONSTER)
-                    .sized(1F, 3.5F)
+                     .sized(2.2F, 3.8F)
                     .build("britannia_mod:gold_ore_elemental")
     );
 

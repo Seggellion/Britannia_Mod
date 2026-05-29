@@ -21,11 +21,11 @@ public class LizardmanEntity extends BaseBritanniaMonster {
     // Attributes
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 8.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
+                .add(Attributes.MAX_HEALTH, 54.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.45D)
                 .add(Attributes.ATTACK_DAMAGE, 1.0D)
                 .add(Attributes.FOLLOW_RANGE, 16.0D)
-                .add(Attributes.ATTACK_SPEED, -2.0D);
+                .add(Attributes.ATTACK_SPEED, 1.0D);
     }
 
     // Goals and behaviors

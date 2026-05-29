@@ -14,16 +14,72 @@ import org.jetbrains.annotations.Nullable;
 
 public class SerpentSilverEntity extends BaseBritanniaMonster {
 
+    // 1. Declare the segments
+    public final SerpentPartEntity head;
+    public final SerpentPartEntity body1;
+    public final SerpentPartEntity body2;
+    public final SerpentPartEntity body3;
+    public final SerpentPartEntity body4;
+    public final SerpentPartEntity tail;
+    public final SerpentPartEntity[] subEntities;
+
     public SerpentSilverEntity(EntityType<? extends Monster> entityType, Level level) {
         super(entityType, level, "serpent_silver");
+
+        // 2. Initialize the parts keeping the exact sizes from the Giant Serpent
+        this.head = new SerpentPartEntity(this, "head", 0.8F, 0.6F);
+        this.body1 = new SerpentPartEntity(this, "body1", 0.6F, 0.6F);
+        this.body2 = new SerpentPartEntity(this, "body2", 0.6F, 0.6F);
+        this.body3 = new SerpentPartEntity(this, "body3", 0.6F, 0.6F);
+        this.body4 = new SerpentPartEntity(this, "body4", 0.6F, 0.6F);
+        this.tail = new SerpentPartEntity(this, "tail", 0.6F, 0.6F);
+        
+        this.subEntities = new SerpentPartEntity[]{this.head, this.body1, this.body2, this.body3, this.body4, this.tail};
     }
 
-    // Attributes
+    // --- MULTIPART LOGIC START ---
+
+    @Override
+    public boolean isMultipartEntity() {
+        return true;
+    }
+
+    @Override
+    public net.neoforged.neoforge.entity.PartEntity<?>[] getParts() {
+        return this.subEntities;
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        
+        // Using negative numbers flips the direction 180 degrees!
+        this.positionMultipart(this.head, 1.0F, 0.0F);   
+        this.positionMultipart(this.body1, -0.2F, 0.0F); 
+        this.positionMultipart(this.body2, -1.4F, 0.0F);   
+        this.positionMultipart(this.body3, -2.6F, 0.0F);   
+        this.positionMultipart(this.body4, -3.8F, 0.0F);
+        this.positionMultipart(this.tail, -5.0F, 0.0F);
+    }
+
+    @Override
+    public void setId(int id) {
+        super.setId(id);
+        if (this.subEntities != null) {
+            for (int i = 0; i < this.subEntities.length; i++) {
+                this.subEntities[i].setId(id + i + 1);
+            }
+        }
+    }
+
+    // --- MULTIPART LOGIC END ---
+
+    // Attributes (Preserved original Silver Serpent stats)
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 8.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.ATTACK_DAMAGE, 1.0D)
+                .add(Attributes.MAX_HEALTH, 54.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 4.0D)
                 .add(Attributes.FOLLOW_RANGE, 16.0D)
                 .add(Attributes.ATTACK_SPEED, -2.0D);
     }

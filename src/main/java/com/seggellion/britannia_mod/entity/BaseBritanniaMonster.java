@@ -131,6 +131,19 @@ private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNam
         return cache;
     }
 
+    // We use PartEntity<?> so it accepts SerpentPartEntity or any future part classes you make.
+    protected void positionMultipart(net.neoforged.neoforge.entity.PartEntity<?> part, float distanceBehind, float yOffset) {
+        // CRITICAL FIX: Use yBodyRot instead of getYRot(). 
+        // This physically locks the hitboxes to the orientation of the rendered model.
+        float yRot = this.yBodyRot * ((float)Math.PI / 180F);
+        
+        double x = this.getX() - (distanceBehind * Math.sin(yRot));
+        double y = this.getY() + yOffset;
+        double z = this.getZ() + (distanceBehind * Math.cos(yRot));
+        
+        part.setPos(x, y, z);
+    }
+
     public String getEntityName() {
         return this.entityName;
     }

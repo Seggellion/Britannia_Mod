@@ -394,12 +394,11 @@ public class ClientModSetup {
 
         // Monsters
         event.registerEntityRenderer(EntityRegistry.ALLIGATOR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.ETTIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.5F, 0.8F)); // Upscaled
         event.registerEntityRenderer(EntityRegistry.SERPENT_GIANT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F)); // Downscaled
         event.registerEntityRenderer(EntityRegistry.SERPENT_LAVA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
-        event.registerEntityRenderer(EntityRegistry.SERPENT_ICE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_ICE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.6F, 0.25F));
         event.registerEntityRenderer(EntityRegistry.SERPENT_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
-        event.registerEntityRenderer(EntityRegistry.SERPENT_DEEP_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_DEEP_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.25F));
         event.registerEntityRenderer(EntityRegistry.SERPENT_CRYSTAL_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
 
         event.registerEntityRenderer(EntityRegistry.FIRE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
@@ -409,53 +408,55 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.BLOOD_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.AIR_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
 
+        event.registerEntityRenderer(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 2.0F));
+        event.registerEntityRenderer(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+
         event.registerEntityRenderer(EntityRegistry.DULL_COPPER_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 2.2F));
+
         event.registerEntityRenderer(EntityRegistry.BRITANNIA_CAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 2.2F));
 
-        event.registerEntityRenderer(EntityRegistry.SERPENT_SILVER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
-        event.registerEntityRenderer(EntityRegistry.SCORPION_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_SILVER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.SCORPION_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.5F));
         event.registerEntityRenderer(EntityRegistry.LIZARDMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
-        event.registerEntityRenderer(EntityRegistry.RATMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.4F));
-        event.registerEntityRenderer(EntityRegistry.RATMAN_ARCHER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.4F));
-        event.registerEntityRenderer(EntityRegistry.RATMAN_ASSASSIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.4F));
+        event.registerEntityRenderer(EntityRegistry.RATMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.7F, 0.4F));
+        event.registerEntityRenderer(EntityRegistry.RATMAN_ARCHER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.7F, 0.4F));
+        event.registerEntityRenderer(EntityRegistry.RATMAN_ASSASSIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.7F, 0.4F));
 
-        event.registerEntityRenderer(EntityRegistry.HARPY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.4F));
-        event.registerEntityRenderer(EntityRegistry.HEADLESS_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.HARPY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.HEADLESS_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.6F, 0.5F));
         event.registerEntityRenderer(EntityRegistry.ORC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F)); 
         event.registerEntityRenderer(EntityRegistry.ORC_CLUB_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
 
-        event.registerEntityRenderer(EntityRegistry.OGRE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
-        event.registerEntityRenderer(EntityRegistry.OGRE_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
-        event.registerEntityRenderer(EntityRegistry.OGRE_LORD_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
-        event.registerEntityRenderer(EntityRegistry.OGRE_LORD_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); // Upscaled
+        event.registerEntityRenderer(EntityRegistry.ETTIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.OGRE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.OGRE_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 0.8F)); // Upscaled
+        event.registerEntityRenderer(EntityRegistry.OGRE_LORD_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.6F, 1.0F)); // Upscaled
+        event.registerEntityRenderer(EntityRegistry.OGRE_LORD_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.5F, 1.0F)); // Upscaled
 
         event.registerEntityRenderer(EntityRegistry.TROLL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 0.7F)); // Upscaled
-        event.registerEntityRenderer(EntityRegistry.GARGOYLE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.GARGOYLE_DESTROYER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.GARGOYLE_ENFORCER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.GARGOYLE_STONE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_DESTROYER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.85F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_ENFORCER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.82F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_STONE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.75F, 0.6F));
 
         //needs resizing
-        event.registerEntityRenderer(EntityRegistry.HIND_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.GREAT_HART_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.BEAR_BROWN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.BEAR_BLACK_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.BEAR_POLAR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.BEAR_GRIZZLY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.TURKEY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.GORILLA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.HIND_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
+        event.registerEntityRenderer(EntityRegistry.GREAT_HART_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.9F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_BROWN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 1.2F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_BLACK_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 1.1F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_POLAR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 1.4F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_GRIZZLY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 1.3F));
+        event.registerEntityRenderer(EntityRegistry.TURKEY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GORILLA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.5F, 0.6F));
 
         event.registerEntityRenderer(EntityRegistry.DAEMON_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.LICH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.LICH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.RAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.WRAITH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.GHOUL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.SHADE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.WISP_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-        event.registerEntityRenderer(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
-
 
 
         event.registerEntityRenderer(EntityRegistry.HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchantRenderer::new);

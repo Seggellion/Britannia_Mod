@@ -1,7 +1,7 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
-		"animation.model.pose": {
+		"animation.model.idle": {
 			"loop": "hold_on_last_frame",
 			"bones": {
 				"legLeft": {
@@ -71,7 +71,7 @@
 				}
 			}
 		},
-		"Walk": {
+		"animation.model.walk": {
 			"loop": true,
 			"animation_length": 1.7544,
 			"bones": {
@@ -647,7 +647,7 @@
 				}
 			}
 		},
-		"Attack": {
+		"animation.model.attack": {
 			"animation_length": 1,
 			"bones": {
 				"legLeft": {
@@ -1182,7 +1182,7 @@
 				}
 			}
 		},
-		"Death": {
+		"animation.model.death": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 1,
 			"bones": {

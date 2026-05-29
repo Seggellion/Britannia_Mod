@@ -22,6 +22,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.pathfinder.PathType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -90,15 +91,19 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
             return; 
         }
 
-        // --- THE FIX: SMART WATER MOB DETECTION ---
-        // Because canBreatheUnderwater() defaults to false for Monsters, we verify aquatic nature by 
-        // checking its navigation AI, NeoForge drowning logic, or vanilla category names.
-        boolean isWaterMob = mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation
+        // --- THE FIX: SMART HABITAT DETECTION ---
+        
+        // Check for lava entities first! Mobs that thrive in lava have a malus >= 0.0F.
+        // Default vanilla mobs have a negative malus to make them avoid lava.
+        boolean isLavaMob = mob.fireImmune() && mob.getPathfindingMalus(PathType.LAVA) >= 0.0F;
+
+        // If it's a lava mob, we explicitly skip the water check so our Amphibious Lava Serpent doesn't get confused.
+        boolean isWaterMob = !isLavaMob && (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation
                 || mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation
                 || !mob.canDrownInFluidType(net.minecraft.world.level.material.Fluids.WATER.getFluidType())
-                || mob.getType().getCategory().getName().toLowerCase().contains("water");
+                || mob.getType().getCategory().getName().toLowerCase().contains("water"));
 
-        BlockPos spawnAt = findNearestValidSpawn(sl, worldPosition, spawnRadius, isWaterMob);
+        BlockPos spawnAt = findNearestValidSpawn(sl, worldPosition, spawnRadius, isWaterMob, isLavaMob);
         
         if (spawnAt != null) {
             // We have a spot, so we place the mob we already created
@@ -124,7 +129,7 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         enforceBoundary(sl);
     }
 
-    private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin, int radius, boolean isWaterMob) {
+    private @Nullable BlockPos findNearestValidSpawn(ServerLevel sl, BlockPos origin, int radius, boolean isWaterMob, boolean isLavaMob) {
         RandomSource rand = sl.getRandom();
 
         // Try up to 20 random spots within the radius
@@ -142,7 +147,17 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
             for (int dy = -2; dy <= 2; dy++) {
                 BlockPos checkPos = tryXZ.above(dy);
                 
-                if (isWaterMob) {
+                if (isLavaMob) {
+                    // LAVA SPAWNING LOGIC: Allow spawning fully submerged or directly on the surface
+                    boolean isInsideLava = sl.getFluidState(checkPos).is(FluidTags.LAVA);
+                    boolean isAboveLava = sl.getFluidState(checkPos.below()).is(FluidTags.LAVA) && sl.isEmptyBlock(checkPos);
+
+                    // Ensure there's open space above to prevent suffocating in a ceiling
+                    if ((isInsideLava || isAboveLava) && !sl.getBlockState(checkPos.above()).isSolidRender(sl, checkPos.above())) {
+                        validPos = checkPos;
+                        break;
+                    }
+                } else if (isWaterMob) {
                     // WATER SPAWNING LOGIC: Check for two vertical blocks of water
                     if (sl.getFluidState(checkPos).is(FluidTags.WATER) && 
                         sl.getFluidState(checkPos.above()).is(FluidTags.WATER)) {
