@@ -118,8 +118,6 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                             BlockRegistry.COUNTER.get()
                     ).build(null));
 
-
-
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChairBlockEntity>> CHAIR =
             BLOCK_ENTITIES.register("chair", () ->
                     BlockEntityType.Builder.of(ChairBlockEntity::new,

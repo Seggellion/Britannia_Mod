@@ -60,6 +60,7 @@ public static final EnumProperty<LabelColor> LABEL = EnumProperty.create("label"
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, LABEL);
     }
+    
 
     @Nullable
     @Override
