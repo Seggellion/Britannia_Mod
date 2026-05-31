@@ -65,6 +65,7 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         if (!(level instanceof ServerLevel sl)) return;
 
         pruneSpawned(sl);
+        enforceMaxEntities(sl);
 
         if (sl.getDifficulty().getId() == 0) { cooldown = 200; return; } // Peaceful
         if (nightOnly && sl.isDay()) { cooldown = 20; enforceBoundary(sl); return; }
@@ -271,6 +272,55 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         }
     }
 
+    private void enforceMaxEntities(ServerLevel sl) {
+        int allowed = Math.max(0, maxEntities);
+        if (spawned.size() <= allowed) return;
+
+        List<Mob> loadedMobs = new ArrayList<>();
+        boolean changed = false;
+
+        for (UUID id : new ArrayList<>(spawned)) {
+            Entity e = sl.getEntity(id);
+            if (e == null) continue;
+
+            if (!(e instanceof Mob mob) || !mob.isAlive() || mob.isRemoved()) {
+                spawned.remove(id);
+                outsideTicks.remove(id);
+                changed = true;
+                continue;
+            }
+
+            loadedMobs.add(mob);
+        }
+
+        int excess = spawned.size() - allowed;
+        if (excess > 0) {
+            final double centerX = worldPosition.getX() + 0.5;
+            final double centerY = worldPosition.getY() + 1;
+            final double centerZ = worldPosition.getZ() + 0.5;
+
+            loadedMobs.sort(Comparator
+                    .comparingDouble((Mob mob) -> mob.distanceToSqr(centerX, centerY, centerZ))
+                    .reversed());
+
+            for (Mob mob : loadedMobs) {
+                if (excess <= 0) break;
+
+                mob.discard();
+                UUID id = mob.getUUID();
+                if (spawned.remove(id)) {
+                    outsideTicks.remove(id);
+                    excess--;
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed) {
+            this.setChanged();
+        }
+    }
+
     // ===== Persistence =====
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
@@ -344,6 +394,9 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
             }
             spawned.clear();
             outsideTicks.clear();
+        } else if (level instanceof ServerLevel sl) {
+            pruneSpawned(sl);
+            enforceMaxEntities(sl);
         }
 
         setChanged();

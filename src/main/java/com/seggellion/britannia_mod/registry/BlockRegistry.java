@@ -1243,7 +1243,6 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR =
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
                 .strength(2.0f)
                 .sound(SoundType.WOOD)
-                .noOcclusion()
         ));
 
 public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
@@ -1252,7 +1251,6 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
                 .strength(2.0f)
                 .sound(SoundType.WOOD)
-                .noOcclusion()
         ));
 
   public static final DeferredHolder<Block, DungeonWallBlock> DUNGEON_WALL =
