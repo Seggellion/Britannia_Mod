@@ -1857,8 +1857,8 @@ public static final DeferredHolder<Block, BlankSignHolder> BLANK_SIGN_HOLDER = B
                     .noOcclusion())
             );
 
-public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD_BLOCK =
-        BLOCKS.register("chess_board_block", ChessBoardBlock::new);
+public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
+        BLOCKS.register("chess_board", ChessBoardBlock::new);
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

@@ -9,7 +9,9 @@ import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
+import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
 import com.seggellion.britannia_mod.item.PurityOreItem;
+import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.network.CityDataSync;
@@ -18,6 +20,7 @@ import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.trader.ITrader;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -86,6 +89,14 @@ public final class ServerEconomyService {
         }
 
         String cityName = payload.city();
+        String role = payload.role();
+        if (trader instanceof ITrader traderEntity) {
+            if (traderEntity.getTraderCityName() != null && !traderEntity.getTraderCityName().isBlank()) {
+                cityName = traderEntity.getTraderCityName();
+            }
+            role = traderEntity.getEconomyRole();
+        }
+
         if (cityName == null || cityName.isBlank()) {
             fail(player, "This trader is not associated with a city.");
             return;
@@ -97,7 +108,7 @@ public final class ServerEconomyService {
             return;
         }
 
-        submitReservedSale(player, level, cityName, payload.role(), trader, selected);
+        submitReservedSale(player, level, cityName, role, trader, selected);
     }
 
     private static void submitReservedSale(ServerPlayer player, ServerLevel level, String cityName, String role,
@@ -368,6 +379,30 @@ public final class ServerEconomyService {
             item.addProperty("subcategory", "wine");
         }
 
+        if (itemObj instanceof MaterialQualityJewelryItem) {
+            MaterialQualityJewelryItem.UOMaterial material = MaterialQualityJewelryItem.getMaterial(stack);
+            MaterialQualityJewelryItem.JewelryType jewelryType = MaterialQualityJewelryItem.getJewelryType(stack);
+            if (material != null) item.addProperty("material", material.id());
+            if (jewelryType != null) item.addProperty("jewelry_type", jewelryType.name().toLowerCase(Locale.ROOT));
+            item.addProperty("quality", MaterialQualityJewelryItem.getQuality(stack));
+            item.addProperty("category", "metal");
+            item.addProperty("subcategory", "salvage");
+        } else if (itemObj instanceof QualitySwordItem) {
+            item.addProperty("material", QualitySwordItem.getMaterial(stack));
+            item.addProperty("quality", QualitySwordItem.getQuality(stack));
+            item.addProperty("category", "metal");
+            item.addProperty("subcategory", "salvage");
+        } else {
+            String path = pathOnly(itemId);
+            String ingotMaterial = materialFromIngotPath(path);
+            if (ingotMaterial != null) {
+                item.addProperty("material", ingotMaterial);
+                item.addProperty("quality", 0);
+                item.addProperty("category", "metal");
+                item.addProperty("subcategory", "ingot");
+            }
+        }
+
         return item;
     }
 
@@ -533,6 +568,8 @@ public final class ServerEconomyService {
             ItemStack stack = saleStack.stack();
             if (stack.getItem() instanceof WeightedWoodItem woodItem) {
                 inv.addCommodityWeight("wood", "logs", woodItem.getWoodType(stack), woodItem.getWeight(stack) * saleStack.quantity());
+            } else if (stack.getItem() instanceof WeightedFishItem fishItem) {
+                inv.addCommodityWeight("food", "fish", fishItem.getFishType(stack), fishItem.getWeight(stack) * saleStack.quantity());
             }
         }
         manager.setDirty();
@@ -599,6 +636,16 @@ public final class ServerEconomyService {
         if (id == null) return "";
         int idx = id.indexOf(':');
         return idx >= 0 ? id.substring(idx + 1) : id;
+    }
+
+    private static String materialFromIngotPath(String path) {
+        if (path == null) return null;
+        return switch (path) {
+            case "copper_ingot", "copper_ingots" -> "copper";
+            case "silver_ingot", "silver_ingots" -> "silver";
+            case "gold_ingot", "gold_ingots" -> "gold";
+            default -> null;
+        };
     }
 
     private record SaleStack(int slot, ItemStack stack, int quantity) {}

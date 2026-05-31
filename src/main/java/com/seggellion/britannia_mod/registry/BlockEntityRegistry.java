@@ -232,7 +232,7 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestDest
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ChessBoardBlockEntity>> CHESS_BOARD =
         BLOCK_ENTITIES.register("chess_board", () ->
-            BlockEntityType.Builder.of(ChessBoardBlockEntity::new, BlockRegistry.CHESS_BOARD_BLOCK.get()).build(null));
+            BlockEntityType.Builder.of(ChessBoardBlockEntity::new, BlockRegistry.CHESS_BOARD.get()).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

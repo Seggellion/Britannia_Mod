@@ -2,58 +2,27 @@ package com.seggellion.britannia_mod.npc;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.seggellion.britannia_mod.api.RailsApi;
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.component.WineData;
 import com.seggellion.britannia_mod.item.WineBottleBlockItem;
-import com.seggellion.britannia_mod.network.NetworkHandler;
-import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
-import com.seggellion.britannia_mod.shop.Product;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
-public class AlcoholTraderRoleHandler implements NpcRoleHandler {
-    private final String role;
-    private final String city;
+public class AlcoholTraderRoleHandler extends AbstractSellTraderRoleHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public AlcoholTraderRoleHandler(String role, String city) {
-        this.role = role;
-        this.city = city;
+        super(role, city);
     }
 
     @Override
-    public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
+    protected JsonArray collectSellableInventory(Player player) {
         JsonArray inventoryData = collectAlcoholItems(player);
         LOGGER.info("Inventory Items: {}", inventoryData);
-        RailsApi.fetchTraderCatalog(city, role, inventoryData, callback);
-    }
-
-    @Override
-    public void performTransaction(Player player, int entityId, Map<Product, Integer> cart,
-                                   int totalPrice, Runnable onSuccess) {
-        NetworkHandler.sendToServer(new SellItemsC2SPayload(city, role, entityId, toRequests(player, cart)));
-        onSuccess.run();
-    }
-
-    @Override
-    public String getActionLabel() {
-        return "Sell";
-    }
-
-    @Override
-    public ResourceLocation getBackground() {
-        return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/sell_screen.png");
+        return inventoryData;
     }
 
     private JsonArray collectAlcoholItems(Player player) {
@@ -90,19 +59,5 @@ public class AlcoholTraderRoleHandler implements NpcRoleHandler {
         j.addProperty("label_color", data.labelColor());
 
         arr.add(j);
-    }
-
-    private List<SellItemsC2SPayload.ItemRequest> toRequests(Player player, Map<Product, Integer> cart) {
-        List<SellItemsC2SPayload.ItemRequest> requests = new ArrayList<>();
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
-            Product product = entry.getKey();
-            CompoundTag tag = null;
-            try {
-                tag = (CompoundTag) product.stack().save(player.registryAccess());
-            } catch (Exception ignored) {
-            }
-            requests.add(new SellItemsC2SPayload.ItemRequest(product.itemId(), product.name(), entry.getValue(), tag));
-        }
-        return requests;
     }
 }

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.seggellion.britannia_mod.client.model.FishMerchantGeoModel;
+import com.seggellion.britannia_mod.client.renderer.layer.CitizenClothingLayer;
 import com.seggellion.britannia_mod.entity.FishTraderEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -20,6 +21,7 @@ public class FishTraderEntityRenderer extends GeoEntityRenderer<FishTraderEntity
 
     public FishTraderEntityRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new FishMerchantGeoModel());
+        this.addRenderLayer(new CitizenClothingLayer<>(this));
         this.shadowRadius = 0.5f;
     }
 
@@ -52,10 +54,23 @@ for (String name : EYELID_BONES) {
 }
 
 
-    float s = physicsScale * MODEL_BASE_SCALE;
-    poseStack.scale(s, s, s);
+    if (!isReRender) {
+        float s = physicsScale * MODEL_BASE_SCALE;
+        poseStack.scale(s, s, s);
+    }
 
         super.preRender(poseStack, entity, bakedModel, bufferSource, buffer, isReRender,
                         partialTick, packedLight, packedOverlay, color);
+    }
+
+    @Override
+    public void renderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer,
+                                  int packedLight, int packedOverlay, int color) {
+        if (CitizenClothingLayer.CURRENT_TARGET_BONES != null &&
+                !CitizenClothingLayer.CURRENT_TARGET_BONES.contains(bone.getName())) {
+            return;
+        }
+
+        super.renderCubesOfBone(poseStack, bone, buffer, packedLight, packedOverlay, color);
     }
 }

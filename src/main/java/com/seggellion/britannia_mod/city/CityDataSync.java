@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataManager;
+import com.seggellion.britannia_mod.entity.CitizenEntity;
+import com.seggellion.britannia_mod.trader.ITrader;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.config.ModConfig;
 
@@ -360,6 +362,17 @@ private static JsonObject buildLiveNpcPayload(ServerLevel serverLevel, Entity np
     payload.addProperty("source_id", sourceId);
     payload.addProperty("spawn_block_id", sourceId);
     payload.addProperty("gender", getStringByReflection(npc, "getGender", "unknown"));
+    if (npc instanceof ITrader trader) {
+        payload.addProperty("role", trader.getTraderRoleTitle());
+        payload.addProperty("trader_type", trader.getTraderTypeId());
+        payload.addProperty("profession", trader.getTraderTypeId());
+    }
+    if (npc instanceof CitizenEntity citizen) {
+        String modelKey = modelKeyFor(citizen);
+        payload.addProperty("model_key", modelKey);
+        payload.addProperty("texture_key", citizen.getOutfitKey());
+        payload.add("stats", appearanceStats(citizen, modelKey));
+    }
     payload.addProperty("shard", ModConfig.SHARD_NAME);
     payload.addProperty("dimension", serverLevel.dimension().location().toString());
     payload.addProperty("x", npc.getX());
@@ -369,6 +382,28 @@ private static JsonObject buildLiveNpcPayload(ServerLevel serverLevel, Entity np
     payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
     payload.addProperty("sync_action", "upsert");
     return payload;
+}
+
+private static JsonObject appearanceStats(CitizenEntity citizen, String modelKey) {
+    JsonObject stats = new JsonObject();
+    stats.addProperty("model_key", modelKey);
+    stats.addProperty("outfit_key", citizen.getOutfitKey());
+
+    JsonObject clothing = new JsonObject();
+    clothing.addProperty("hair", citizen.getClothingIndex("hair"));
+    clothing.addProperty("facial_hair", citizen.getClothingIndex("facial_hair"));
+    clothing.addProperty("shirt", citizen.getClothingIndex("shirt"));
+    clothing.addProperty("chest", citizen.getClothingIndex("chest"));
+    clothing.addProperty("pants", citizen.getClothingIndex("pants"));
+    clothing.addProperty("shoes", citizen.getClothingIndex("shoes"));
+    clothing.addProperty("cape", citizen.getClothingIndex("cape"));
+    stats.add("clothing", clothing);
+
+    return stats;
+}
+
+private static String modelKeyFor(CitizenEntity citizen) {
+    return "male".equalsIgnoreCase(citizen.getGender()) ? "human_male" : "human_female";
 }
 
 private static String getStringByReflection(Entity npc, String method, String fallback) {

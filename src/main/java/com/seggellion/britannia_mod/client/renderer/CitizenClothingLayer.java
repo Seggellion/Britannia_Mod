@@ -12,7 +12,9 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import software.bernie.geckolib.util.Color;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLayer<T> {
 
@@ -20,7 +22,7 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
     public static List<String> CURRENT_TARGET_BONES = null;
 
     private static final String[] SLOTS = {
-        "shoes", "pants", "shirt", "chest", "cape", "facial_hair", "hair"
+        "shoes", "pants", "skirt", "shirt", "apron", "chest", "cape", "facial_hair", "hair"
     };
 
     private static final Map<String, List<String>> SLOT_BONES = Map.of(
@@ -30,7 +32,34 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
         "hair", List.of("hair"),
         "facial_hair", List.of("facial_hair"),
         "cape", List.of("capeChest", "cape", "cape2", "shirtNeck"),
-        "chest", List.of("chest_main", "capeChest", "shirtTop")
+        "chest", List.of("chest_main", "capeChest", "shirtTop"),
+        "apron", List.of("shirtBottom", "shirtSides", "apron_knot_back"),
+        "skirt", List.of("skirt", "skirt_front", "skirt_back")
+    );
+
+    private static final Set<String> DEFAULT_SLOTS = Set.of(
+        "shoes", "pants", "shirt", "chest", "cape", "facial_hair", "hair"
+    );
+
+    private static final Map<String, Map<String, String>> OUTFIT_TEXTURES = Map.of(
+        "wood_trader", Map.of(
+            "shoes", "boots",
+            "apron", "half_apron",
+            "chest", "",
+            "cape", ""
+        ),
+        "fish_trader", Map.of(
+            "shoes", "sandals",
+            "pants", "kilt_socks",
+            "skirt", "kilt",
+            "chest", "",
+            "cape", ""
+        ),
+        "salvage_trader", Map.of(
+            "shoes", "boots",
+            "chest", "chest",
+            "cape", "cape"
+        )
     );
 
     public CitizenClothingLayer(GeoRenderer<T> entityRendererIn) {
@@ -44,12 +73,18 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
                        int packedLight, int packedOverlay) {
         
         String gender = animatable.getGender();
+        gender = gender == null ? "female" : gender.toLowerCase(Locale.ROOT);
+        if (!"male".equals(gender) && !"female".equals(gender)) gender = "female";
+        String outfitKey = animatable.getOutfitKey();
 
         for (String slot : SLOTS) {
             if (gender.equals("female") && slot.equals("facial_hair")) continue;
 
             int index = animatable.getClothingIndex(slot);
-            String textureName = gender + "_" + slot + "_" + index + ".png";
+            String textureSlot = textureSlotFor(outfitKey, slot);
+            if (textureSlot.isBlank()) continue;
+
+            String textureName = gender + "_" + textureSlot + "_" + index + ".png";
             
             String folderPath = gender.equals("male") ? "textures/entity/human/male/" : "textures/entity/human/female/";
             ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("britannia_mod", folderPath + textureName);
@@ -60,7 +95,7 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
             List<String> targetBones = SLOT_BONES.get(slot);
             
             if (targetBones != null) {
-                // 1. Set the flag for the QuestGiverEntityRenderer
+                // 1. Set the flag for the citizen-style entity renderer.
                 CURRENT_TARGET_BONES = targetBones;
                 
                 // 2. Use Geckolib's native renderer (which perfectly handles live animations)
@@ -73,5 +108,14 @@ public class CitizenClothingLayer<T extends CitizenEntity> extends GeoRenderLaye
                 CURRENT_TARGET_BONES = null;
             }
         }
+    }
+
+    private static String textureSlotFor(String outfitKey, String slot) {
+        String safeOutfitKey = outfitKey == null ? "" : outfitKey;
+        Map<String, String> outfit = OUTFIT_TEXTURES.get(safeOutfitKey);
+        if (outfit != null && outfit.containsKey(slot)) {
+            return outfit.get(slot);
+        }
+        return DEFAULT_SLOTS.contains(slot) ? slot : "";
     }
 }

@@ -2,12 +2,15 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.entity.AbstractTraderEntity;
 import com.seggellion.britannia_mod.entity.CitizenEntity;
-import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.trader.TraderAppearance;
+import com.seggellion.britannia_mod.trader.TraderDefinition;
+import com.seggellion.britannia_mod.trader.TraderTypes;
 import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.util.Util;
 import net.minecraft.core.BlockPos;
@@ -29,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 public class TraderSpawnBlockEntity extends BlockEntity {
@@ -186,16 +188,17 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         if (entity instanceof CitizenEntity citizen) {
             if (citizen.getCityName() == null || citizen.getCityName().isBlank()) citizen.setCityName(cityName);
             if (citizen.getPersonalName() == null || citizen.getPersonalName().equals("Unnamed")) {
-                boolean male = sl.random.nextBoolean();
-                citizen.setGender(male ? "male" : "female");
-                citizen.setPersonalName(male ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName());
+                String gender = selectTraderGender(definition);
+                citizen.setGender(gender);
+                citizen.setPersonalName("male".equals(gender) ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName());
             }
+            applyTraderAppearance(citizen, definition);
         } else {
             callStringSetter(entity, "setCityName", cityName);
         }
 
-        if (entity instanceof EntityWoodMerchant woodMerchant) {
-            woodMerchant.setSpawnBlockPos(worldPosition);
+        if (entity instanceof AbstractTraderEntity trader) {
+            trader.setSpawnBlockPos(worldPosition);
         }
 
         if (entity instanceof Mob mob) {
@@ -203,6 +206,29 @@ public class TraderSpawnBlockEntity extends BlockEntity {
             mob.restrictTo(worldPosition, spawnRadius);
         }
         addSourceTags(entity, definition);
+    }
+
+    private String selectTraderGender(TraderDefinition definition) {
+        TraderAppearance appearance = definition.appearance();
+        List<String> genders = appearance == null
+                ? List.of("male", "female")
+                : appearance.safeAllowedGenders();
+        int index = Math.floorMod((sourceId.toString() + ":" + definition.configKey()).hashCode(), genders.size());
+        return genders.get(index);
+    }
+
+    private void applyTraderAppearance(CitizenEntity citizen, TraderDefinition definition) {
+        TraderAppearance appearance = definition.appearance();
+        if (appearance == null) return;
+
+        citizen.setOutfitKey(appearance.safeOutfitKey());
+        citizen.setClothingIndex("hair", appearance.hairIndex());
+        citizen.setClothingIndex("facial_hair", appearance.facialHairIndex());
+        citizen.setClothingIndex("shirt", appearance.shirtIndex());
+        citizen.setClothingIndex("chest", appearance.chestIndex());
+        citizen.setClothingIndex("pants", appearance.pantsIndex());
+        citizen.setClothingIndex("shoes", appearance.shoesIndex());
+        citizen.setClothingIndex("cape", appearance.capeIndex());
     }
 
     private void addSourceTags(Entity entity, TraderDefinition definition) {
@@ -402,30 +428,11 @@ public class TraderSpawnBlockEntity extends BlockEntity {
     }
 
     private static String normalizeTraderType(String type) {
-        if (type == null || type.isBlank()) return "wood_trader";
-        return type.trim().toLowerCase(Locale.ROOT);
+        return TraderTypes.normalize(type);
     }
 
     private TraderDefinition definitionFor(String configuredType) {
-        String normalized = normalizeTraderType(configuredType);
-        return switch (normalized) {
-            case "wood_trader", "wood_merchant" -> new TraderDefinition(
-                    "wood_trader", "wood_trader", "Wood Trader", EntityRegistry.WOOD_MERCHANT_ENTITY.get());
-            case "fish_trader" -> new TraderDefinition(
-                    "fish_trader", "fish_trader", "Fish Trader", EntityRegistry.FISH_TRADER.get());
-            case "salvage_trader" -> new TraderDefinition(
-                    "salvage_trader", "salvage_trader", "Salvage Trader", EntityRegistry.SALVAGE_TRADER.get());
-            case "alcohol_trader" -> new TraderDefinition(
-                    "alcohol_trader", "alcohol_trader", "Alcohol Trader", EntityRegistry.ALCOHOL_TRADER.get());
-            case "meat_trader" -> new TraderDefinition(
-                    "meat_trader", "meat_trader", "Meat Trader", EntityRegistry.MEAT_TRADER.get());
-            case "metal_trader", "metal_merchant" -> new TraderDefinition(
-                    "metal_trader", "metal_trader", "Metal Trader", EntityRegistry.METAL_MERCHANT_ENTITY.get());
-            case "stone_trader", "stone_merchant" -> new TraderDefinition(
-                    "stone_trader", "stone_trader", "Stone Trader", EntityRegistry.STONE_MERCHANT_ENTITY.get());
-            default -> new TraderDefinition(
-                    "wood_trader", "wood_trader", "Wood Trader", EntityRegistry.WOOD_MERCHANT_ENTITY.get());
-        };
+        return TraderTypes.byId(configuredType);
     }
 
     @Override
@@ -484,7 +491,4 @@ public class TraderSpawnBlockEntity extends BlockEntity {
             }
         }
     }
-
-    private record TraderDefinition(String configKey, String npcType, String roleTitle,
-                                    EntityType<? extends Mob> entityType) {}
 }

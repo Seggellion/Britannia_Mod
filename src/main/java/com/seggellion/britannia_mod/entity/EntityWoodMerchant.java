@@ -1,38 +1,14 @@
 package com.seggellion.britannia_mod.entity;
 
-import com.seggellion.britannia_mod.economy.ServerEconomyService;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import com.seggellion.britannia_mod.trader.TraderDefinition;
+import com.seggellion.britannia_mod.trader.TraderTypes;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
-
-public class EntityWoodMerchant extends CitizenEntity {
-    private static final Logger LOGGER = LogManager.getLogger();
-    private BlockPos spawnBlockPos;
-
+public class EntityWoodMerchant extends AbstractTraderEntity {
     public EntityWoodMerchant(EntityType<? extends EntityWoodMerchant> entityType, Level level) {
         super(entityType, level);
-        this.setPersistenceRequired();
     }
 
     public static EntityWoodMerchant create(EntityType<EntityWoodMerchant> type, Level level) {
@@ -40,97 +16,11 @@ public class EntityWoodMerchant extends CitizenEntity {
     }
 
     @Override
-    protected String getRoleTitle() {
-        return "Wood Trader";
-    }
-
-    @Override
-    protected void registerGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new MoveTowardsRestrictionGoal(this, 1.0D));
-        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-    }
-
-    @Override
-    @Nullable
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
-                                        MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
-        this.restrictTo(this.blockPosition(), 2);
-        return super.finalizeSpawn(level, difficulty, reason, spawnData);
-    }
-
-    @Override
-    public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND) {
-            return super.interactAt(player, hit, hand);
-        }
-
-        if (player.level().isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-
-        if (!(player instanceof ServerPlayer serverPlayer)) {
-            return InteractionResult.CONSUME;
-        }
-
-        String city = getCityName();
-        if (city == null || city.isBlank()) {
-            player.displayClientMessage(Component.literal("This wood trader is not associated with any city."), true);
-            return InteractionResult.CONSUME;
-        }
-
-        LOGGER.info("Wood sale start player={} trader={} city={}",
-                serverPlayer.getStringUUID(), getUUID(), city);
-        ServerEconomyService.sellAllWood(serverPlayer, this, city, getRoleTitle());
-        return InteractionResult.CONSUME;
-    }
-
-    public void setSpawnBlockPos(BlockPos pos) {
-        this.spawnBlockPos = pos;
-    }
-
-    public BlockPos getSpawnBlockPos() {
-        if (this.spawnBlockPos != null && this.level().isInWorldBounds(this.spawnBlockPos)) {
-            return this.spawnBlockPos;
-        }
-        return null;
-    }
-
-    @Override
-    public boolean shouldBeSaved() {
-        return false;
-    }
-
-    @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
-        super.addAdditionalSaveData(tag);
-        if (spawnBlockPos != null) tag.putLong("SpawnBlockPos", spawnBlockPos.asLong());
-    }
-
-    @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
-        super.readAdditionalSaveData(tag);
-        if (tag.contains("SpawnBlockPos")) {
-            spawnBlockPos = BlockPos.of(tag.getLong("SpawnBlockPos"));
-        }
-    }
-
-    @Override
-    protected void updateDisplayName() {
-        this.setCustomName(Component.literal(this.getPersonalName() + " the " + this.getRoleTitle()));
-        this.setCustomNameVisible(true);
+    public TraderDefinition getTraderDefinition() {
+        return TraderTypes.byId(TraderTypes.WOOD);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
         return CitizenEntity.baseAttributes();
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        if (!level().isClientSide && spawnBlockPos != null) {
-            this.restrictTo(spawnBlockPos, 2);
-        }
     }
 }

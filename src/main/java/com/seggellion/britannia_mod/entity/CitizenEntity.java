@@ -50,6 +50,7 @@ import com.seggellion.britannia_mod.ModAttributes;
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.RailsCatalog;
+import com.seggellion.britannia_mod.trader.ITrader;
 
 // Geckolib
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -117,11 +118,13 @@ private static final EntityDataAccessor<Integer> DATA_CHEST = SynchedEntityData.
 private static final EntityDataAccessor<Integer> DATA_PANTS = SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.INT);
 private static final EntityDataAccessor<Integer> DATA_SHOES = SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.INT);
 private static final EntityDataAccessor<Integer> DATA_CAPE = SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.INT);
+private static final EntityDataAccessor<String> DATA_OUTFIT_KEY = SynchedEntityData.defineId(CitizenEntity.class, EntityDataSerializers.STRING);
 
     @Override
     public boolean shouldBeSaved() {
         // Prevent traders or temporary NPCs from being saved between sessions
-        return !(this instanceof FishTraderEntity
+        return !(this instanceof ITrader
+            || this instanceof FishTraderEntity
             || this instanceof SalvageTraderEntity
             || this instanceof MeatTraderEntity
             || this instanceof AlcoholTraderEntity);
@@ -184,6 +187,7 @@ private static final EntityDataAccessor<Integer> DATA_CAPE = SynchedEntityData.d
     builder.define(DATA_PANTS, 1);
     builder.define(DATA_SHOES, 1);
     builder.define(DATA_CAPE, 1);
+    builder.define(DATA_OUTFIT_KEY, "");
 
     }
 
@@ -198,6 +202,29 @@ public int getClothingIndex(String slot) {
         case "cape" -> this.entityData.get(DATA_CAPE);
         default -> 1;
     };
+}
+
+public void setClothingIndex(String slot, int index) {
+    int safeIndex = Math.max(1, index);
+    switch (slot) {
+        case "hair" -> this.entityData.set(DATA_HAIR, safeIndex);
+        case "facial_hair" -> this.entityData.set(DATA_FACIAL_HAIR, safeIndex);
+        case "shirt" -> this.entityData.set(DATA_SHIRT, safeIndex);
+        case "chest" -> this.entityData.set(DATA_CHEST, safeIndex);
+        case "pants" -> this.entityData.set(DATA_PANTS, safeIndex);
+        case "shoes" -> this.entityData.set(DATA_SHOES, safeIndex);
+        case "cape" -> this.entityData.set(DATA_CAPE, safeIndex);
+        default -> {
+        }
+    }
+}
+
+public void setOutfitKey(String outfitKey) {
+    this.entityData.set(DATA_OUTFIT_KEY, outfitKey == null ? "" : outfitKey);
+}
+
+public String getOutfitKey() {
+    return this.entityData.get(DATA_OUTFIT_KEY);
 }
 
 // ---------- Randomize on Spawn ----------
@@ -323,6 +350,7 @@ protected void updateDisplayName() {
     tag.putInt("pantsIndex", this.entityData.get(DATA_PANTS));
     tag.putInt("shoesIndex", this.entityData.get(DATA_SHOES));
     tag.putInt("capeIndex", this.entityData.get(DATA_CAPE));
+    tag.putString("outfitKey", this.getOutfitKey());
     }
 
     @Override
@@ -345,6 +373,9 @@ protected void updateDisplayName() {
         this.entityData.set(DATA_SHOES, tag.getInt("shoesIndex"));
         this.entityData.set(DATA_CAPE, tag.getInt("capeIndex"));
     }
+        if (tag.contains("outfitKey")) {
+            this.setOutfitKey(tag.getString("outfitKey"));
+        }
     }
     
     @Override

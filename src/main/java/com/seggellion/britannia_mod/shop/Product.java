@@ -6,6 +6,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Objects;
+
 /**
  * Immutable value-object representing a single item the Architect/Trader
  * can sell. Now supports specific currencies (gold/silver/copper).
@@ -64,12 +66,16 @@ public final class Product {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        return o instanceof Product p && itemId.equals(p.itemId);
+        return o instanceof Product p
+                && itemId.equals(p.itemId)
+                && name.equals(p.name)
+                && price == p.price
+                && currency.equals(p.currency);
     }
 
     @Override
     public int hashCode() {
-        return itemId.hashCode();
+        return Objects.hash(itemId, name, price, currency);
     }
 
     private static ItemStack makeStackFromId(String id) {
