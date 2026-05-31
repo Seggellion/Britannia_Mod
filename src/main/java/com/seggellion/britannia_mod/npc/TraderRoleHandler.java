@@ -3,14 +3,18 @@ package com.seggellion.britannia_mod.npc;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.seggellion.britannia_mod.api.RailsApi;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -42,9 +46,8 @@ public class TraderRoleHandler implements NpcRoleHandler {
                                    Map<Product, Integer> cart,
                                    int totalPrice,
                                    Runnable onSuccess) {
-        RailsApi.sellItems(player, city, role, entityId, cart, totalPrice, success -> {
-            if (success) onSuccess.run();
-        });
+        NetworkHandler.sendToServer(new SellItemsC2SPayload(city, role, entityId, toRequests(player, cart)));
+        onSuccess.run();
     }
 
     @Override
@@ -126,5 +129,24 @@ public class TraderRoleHandler implements NpcRoleHandler {
             arr.add(j);
         }
         return arr;
+    }
+
+    private List<SellItemsC2SPayload.ItemRequest> toRequests(Player player, Map<Product, Integer> cart) {
+        List<SellItemsC2SPayload.ItemRequest> requests = new ArrayList<>();
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            Product product = entry.getKey();
+            CompoundTag tag = null;
+            try {
+                tag = (CompoundTag) product.stack().save(player.registryAccess());
+            } catch (Exception ignored) {
+            }
+            requests.add(new SellItemsC2SPayload.ItemRequest(
+                    product.itemId(),
+                    product.name(),
+                    entry.getValue(),
+                    tag
+            ));
+        }
+        return requests;
     }
 }

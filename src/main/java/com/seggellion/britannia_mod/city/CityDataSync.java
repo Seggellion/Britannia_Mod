@@ -16,20 +16,25 @@ import com.seggellion.britannia_mod.config.ModConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.List;
 import java.util.UUID;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Locale;
 
 
 public class CityDataSync {
@@ -251,6 +256,189 @@ public static JsonObject fetchCityDataWithMarketPrices(ServerLevel serverLevel, 
     }
 
     return new JsonObject(); // Return empty JSON if an error occurs
+}
+
+public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
+                                    String sourceId, String spawnLocation, String status) {
+    JsonObject payload = buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, status);
+    String npcId = npc.getUUID().toString();
+
+    ApiResult upsert = sendJson(serverLevel, "POST", "npcs/upsert", payload);
+    if (upsert.isSuccess()) {
+        LOGGER.info("NPC upsert success npc={} type={} city={} source={}", npcId, npcType, cityName, sourceId);
+        return true;
+    }
+
+    if (upsert.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+        ApiResult legacy = sendJson(serverLevel, "POST", "npcs/sync", payload);
+        if (legacy.isSuccess()) {
+            LOGGER.info("NPC upsert success via legacy sync npc={} type={} city={} source={}",
+                    npcId, npcType, cityName, sourceId);
+            return true;
+        }
+        LOGGER.warn("NPC upsert failure npc={} status={} body={}", npcId, legacy.statusCode(), legacy.body());
+        return false;
+    }
+
+    LOGGER.warn("NPC upsert failure npc={} status={} body={}", npcId, upsert.statusCode(), upsert.body());
+    return false;
+}
+
+public static boolean heartbeatLiveNpc(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
+                                       String sourceId, String spawnLocation) {
+    JsonObject payload = buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, "active");
+    payload.addProperty("sync_action", "heartbeat");
+    payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
+
+    ApiResult result = sendJson(serverLevel, "POST", "npcs/" + npc.getUUID() + "/heartbeat", payload);
+    if (result.isSuccess()) {
+        LOGGER.debug("NPC heartbeat success npc={} city={} source={}", npc.getUUID(), cityName, sourceId);
+        return true;
+    }
+
+    LOGGER.warn("NPC heartbeat failure npc={} status={} body={}", npc.getUUID(), result.statusCode(), result.body());
+    return false;
+}
+
+public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, String npcType, String cityName,
+                                          String sourceId, String spawnLocation, String status, String reason) {
+    JsonObject payload = new JsonObject();
+    payload.addProperty("npc_id", npcId.toString());
+    payload.addProperty("minecraft_uuid", npcId.toString());
+    payload.addProperty("npc_type", npcType);
+    payload.addProperty("city_name", cityName);
+    payload.addProperty("source_id", sourceId);
+    payload.addProperty("spawn_location", spawnLocation);
+    payload.addProperty("status", status);
+    payload.addProperty("is_active", false);
+    payload.addProperty("sync_action", status);
+    payload.addProperty("despawn_reason", reason);
+    payload.addProperty("shard", ModConfig.SHARD_NAME);
+    payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
+
+    ApiResult statusSync = sendJson(serverLevel, "POST", "npcs/" + npcId + "/" + statusEndpoint(status), payload);
+    if (statusSync.isSuccess()) {
+        LOGGER.info("NPC inactive sync success npc={} status={} reason={}", npcId, status, reason);
+        return true;
+    }
+
+    ApiResult legacyStatus = sendJson(serverLevel, "POST", "npcs/" + npcId + "/status", payload);
+    if (legacyStatus.isSuccess()) {
+        LOGGER.info("NPC inactive sync success via status endpoint npc={} status={} reason={}", npcId, status, reason);
+        return true;
+    }
+
+    LOGGER.warn("NPC inactive sync failure npc={} statusCode={} fallbackStatus={} body={}",
+            npcId, statusSync.statusCode(), legacyStatus.statusCode(), statusSync.body());
+    return false;
+}
+
+private static String statusEndpoint(String status) {
+    String normalized = status == null ? "" : status.trim().toLowerCase(Locale.ROOT);
+    return switch (normalized) {
+        case "dead", "death" -> "death";
+        case "despawned", "despawn" -> "despawn";
+        default -> "inactive";
+    };
+}
+
+private static JsonObject buildLiveNpcPayload(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
+                                              String sourceId, String spawnLocation, String status) {
+    JsonObject payload = new JsonObject();
+    payload.addProperty("npc_id", npc.getUUID().toString());
+    payload.addProperty("minecraft_uuid", npc.getUUID().toString());
+    payload.addProperty("npc_type", npcType);
+    payload.addProperty("city_name", cityName);
+    payload.addProperty("name", getStringByReflection(npc, "getPersonalName", npc.getName().getString()));
+    payload.addProperty("description", npcType + " live in " + cityName);
+    payload.addProperty("level", 1);
+    payload.addProperty("health", npc instanceof LivingEntity living ? (int) living.getHealth() : 0);
+    payload.addProperty("mana", 0);
+    payload.addProperty("is_active", true);
+    payload.addProperty("status", status);
+    payload.addProperty("spawn_location", spawnLocation);
+    payload.addProperty("source_id", sourceId);
+    payload.addProperty("spawn_block_id", sourceId);
+    payload.addProperty("gender", getStringByReflection(npc, "getGender", "unknown"));
+    payload.addProperty("shard", ModConfig.SHARD_NAME);
+    payload.addProperty("dimension", serverLevel.dimension().location().toString());
+    payload.addProperty("x", npc.getX());
+    payload.addProperty("y", npc.getY());
+    payload.addProperty("z", npc.getZ());
+    payload.addProperty("yaw", npc.getYRot());
+    payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
+    payload.addProperty("sync_action", "upsert");
+    return payload;
+}
+
+private static String getStringByReflection(Entity npc, String method, String fallback) {
+    try {
+        Object value = npc.getClass().getMethod(method).invoke(npc);
+        if (value instanceof String s && !s.isBlank()) return s;
+    } catch (Exception ignored) {
+    }
+    return fallback;
+}
+
+private static ApiResult sendJson(ServerLevel serverLevel, String method, String endpoint, JsonObject payload) {
+    HttpURLConnection connection = null;
+    try {
+        String normalized = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
+        URL url = new URL(ModConfig.API_BASE_URL + normalized);
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod(method);
+        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        connection.setRequestProperty("Accept", "application/json");
+        attachAuth(serverLevel, connection);
+
+        if (payload != null && !"GET".equals(method) && !"DELETE".equals(method)) {
+            connection.setDoOutput(true);
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+            }
+        }
+
+        int responseCode = connection.getResponseCode();
+        String body = readResponseBody(responseCode >= 200 && responseCode < 300
+                ? connection.getInputStream()
+                : connection.getErrorStream());
+        return new ApiResult(responseCode, body);
+    } catch (Exception e) {
+        LOGGER.warn("Rails NPC sync request failed method={} endpoint={} error={}", method, endpoint, e.toString());
+        return new ApiResult(0, e.toString());
+    } finally {
+        if (connection != null) connection.disconnect();
+    }
+}
+
+private static void attachAuth(ServerLevel serverLevel, HttpURLConnection connection) {
+    CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
+    String apiToken = data.getApiToken();
+    if (apiToken != null && !apiToken.isBlank()) {
+        connection.setRequestProperty("Authorization", "Bearer " + apiToken);
+    }
+    String secret = data.getShardSecret();
+    if (secret != null && !secret.isBlank()) {
+        connection.setRequestProperty("Shard-Secret", secret);
+    }
+}
+
+private static String readResponseBody(InputStream inputStream) throws Exception {
+    if (inputStream == null) return "";
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+        StringBuilder body = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            body.append(line);
+        }
+        return body.toString();
+    }
+}
+
+private record ApiResult(int statusCode, String body) {
+    boolean isSuccess() {
+        return statusCode >= 200 && statusCode < 300;
+    }
 }
 
 }

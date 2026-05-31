@@ -1,50 +1,57 @@
 package com.seggellion.britannia_mod.block.entity;
 
+import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.entity.CitizenEntity;
+import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
+import com.seggellion.britannia_mod.entity.TownPersonEntity;
+import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.util.Util;
-import com.seggellion.britannia_mod.network.CityDataSync;
-import com.seggellion.britannia_mod.city.CityManager;
-import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.city.City;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.entity.EntityType;
-
+import net.minecraft.world.phys.AABB;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.levelgen.Heightmap;
-import java.util.HashMap;
-import java.util.Map;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public class TraderSpawnBlockEntity extends BlockEntity {
     private static final Logger LOGGER = LogManager.getLogger();
+    private static final int CHECK_INTERVAL_TICKS = 200;
+    private static final int HEARTBEAT_INTERVAL_TICKS = 600;
+    private static final int LOAD_GRACE_TICKS = 40;
+    private static final String TAG_TOWN_NPCS = "TownNPCs";
 
-    private static final int TRADER_RADIUS = 1; // adjust as needed
-    private static final int BOUNDARY_MARGIN = 1;
-    private final Map<UUID, Integer> outsideTicks = new HashMap<>();
-    private static final int OUTSIDE_DESPAWN_TICKS = 20 * 60; // 1 minute safety
- 
-    private int treasuryCopper = 0;
+    private UUID sourceId = UUID.randomUUID();
+    private UUID traderNpcId;
+    private CompoundTag savedTraderData;
+    private final List<UUID> townNpcIds = new ArrayList<>();
+
     private String cityName = "";
-    private String traderType = "fish_trader"; // default
-    private int townPersonAmount = 0;           // configurable
-    private int spawnCooldown = 0;
+    private String traderType = "wood_trader";
+    private int townPersonAmount = 0;
+    private int spawnRadius = 5;
+    private int initTicks = 0;
+    private int checkCooldown = 0;
+    private long lastHeartbeatTick = 0;
+
     private double foodSupply;
     private double woodSupply;
     private double metalSupply;
@@ -52,601 +59,338 @@ public class TraderSpawnBlockEntity extends BlockEntity {
     private double textileSupply;
     private double alcoholSupply;
     private double technologySupply;
-    private int coldStartTicks = 40; // ~2 seconds
-    private final List<UUID> associatedNpcs = new ArrayList<>();
-    private final Map<UUID, SavedNpc> saved = new HashMap<>();
-
-    private static final int MAX_COOLDOWN = 1200;
-    private static final int MAX_TRADERS = 1;
-    private static final String TAG_SAVED_NPCS = "SavedNPCs";
-
-private static final class SavedNpc {
-    final UUID uuid;
-    final net.minecraft.resources.ResourceLocation typeId;
-    final CompoundTag nbt;
-
-    SavedNpc(UUID uuid, net.minecraft.resources.ResourceLocation typeId, CompoundTag nbt) {
-        this.uuid = uuid;
-        this.typeId = typeId;
-        this.nbt = nbt;
-    }
-}
-
-private int getRequiredCopper() {
-     LOGGER.info("traderType Copper! {}",traderType);
-    return switch (traderType) {
-        case "fish_trader" -> 200;
-        case "meat_trader" -> 500;
-        case "alcohol_trader" -> 500;
-        case "salvage_trader" -> 0;
-        default -> 100;
-    };
-}
-
-
 
     public TraderSpawnBlockEntity(BlockPos pos, BlockState state) {
         super(BlockEntityRegistry.TRADER_SPAWN_BLOCK_ENTITY_TYPE.get(), pos, state);
     }
 
-    // === Getters / Setters ===
     public String getCityName() { return cityName; }
-    public void setCityName(String name) { this.cityName = name; setChanged(); }
-
+    public void setCityName(String name) { this.cityName = name == null ? "" : name; setChanged(); }
     public String getTraderType() { return traderType; }
-    public void setTraderType(String type) { this.traderType = type; setChanged(); }
-
+    public void setTraderType(String type) { this.traderType = normalizeTraderType(type); setChanged(); }
     public int getTownPersonAmount() { return townPersonAmount; }
-    public void setTownPersonAmount(int amount) { this.townPersonAmount = amount; setChanged(); }
+    public void setTownPersonAmount(int amount) { this.townPersonAmount = Math.max(0, amount); setChanged(); }
+    public UUID getSourceId() { return sourceId; }
 
-    // === Tick ===
-public void serverTick() {
-    if (level == null || level.isClientSide) return;
-    ServerLevel sl = (ServerLevel) level;
+    public void serverTick() {
+        if (!(level instanceof ServerLevel sl)) return;
 
-    // Give restore a small head start on cold load
-    if (coldStartTicks > 0) {
-        // Try a restore once during the delay, then pause the rest of the tick work
-        if (--coldStartTicks == 20) {
-            restoreSavedNpcs(sl);
-        }
-        return;
-    }
-
-
-    // Always restore/reassociate first, every tick
-    maintainNpcs(sl);
-
-    if (cityName == null || cityName.isEmpty()) return;
-
-    if (spawnCooldown-- > 0) return;
-    spawnCooldown = MAX_COOLDOWN;
-
-    long traderCount = associatedNpcs.stream()
-        .map(sl::getEntity)
-        .filter(e -> e != null && (
-            e.getType() == EntityRegistry.FISH_TRADER.get() ||
-            e.getType() == EntityRegistry.SALVAGE_TRADER.get() ||
-            e.getType() == EntityRegistry.ALCOHOL_TRADER.get() ||
-            e.getType() == EntityRegistry.MEAT_TRADER.get()))
-        .count();
-
-    // If we already have a saved trader snapshot, don’t spawn a new one
-    boolean hasSavedTrader = !saved.isEmpty();
-    if (traderCount < MAX_TRADERS && !hasSavedTrader) {
-        spawnTrader(sl);
-    }
-
-    long currentTownspeople = associatedNpcs.stream()
-        .map(sl::getEntity)
-        .filter(e -> e != null && e.getType() == EntityRegistry.TOWNSPERSON.get())
-        .count();
-
-    if (currentTownspeople < townPersonAmount) {
-        int toSpawn = townPersonAmount - (int) currentTownspeople;
-        for (int i = 0; i < toSpawn; i++) spawnTownsperson(sl);
-    }
-
-    if (level.getGameTime() % (20 * 300) == 0) resyncAllNpcs(sl);
-}
-
-private boolean isTraderType(net.minecraft.resources.ResourceLocation typeId) {
-    return typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.FISH_TRADER.get())) ||
-        typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.ALCOHOL_TRADER.get())) ||
-           typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.SALVAGE_TRADER.get())) ||
-           typeId.equals(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityRegistry.MEAT_TRADER.get()));
-}
-
-private void snapshotAndTrack(ServerLevel sl, Mob mob) {
-    mob.setPersistenceRequired();
-
-    CompoundTag t = new CompoundTag();
-    mob.saveWithoutId(t);
-    t.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-            .getKey(mob.getType()).toString());
-    t.putUUID("UUID", mob.getUUID());
-
-    SavedNpc sn = new SavedNpc(mob.getUUID(),
-            net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()),
-            t);
-
-    saved.put(mob.getUUID(), sn);
-    if (!associatedNpcs.contains(mob.getUUID())) {
-        associatedNpcs.add(mob.getUUID());
-    }
-
-    // 🔥 ensure the BE is marked dirty so saveAdditional() runs on unload
-    setChanged();
-}
-
-
-private void maintainNpcs(ServerLevel sl) {
-    boolean touched = false;
-
-    // 1) Refresh snapshots for any live NPCs we already know
-    for (UUID id : new ArrayList<>(associatedNpcs)) {
-        Entity e = sl.getEntity(id);
-        if (e instanceof Mob mob && mob.isAlive()) {
-            CompoundTag t = new CompoundTag();
-            mob.saveWithoutId(t);
-            t.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString());
-            t.putUUID("UUID", mob.getUUID());
-            saved.put(id, new SavedNpc(id,
-                    net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()), t));
-            touched = true; // we modified the snapshot set
-        }
-    }
-
-    // 2) Resurrect missing NPCs from their saved NBT
-    for (SavedNpc sn : new ArrayList<>(saved.values())) {
-        Entity live = sl.getEntity(sn.uuid);
-        if (live == null) {
-
-CompoundTag tag = sn.nbt.copy();
-if (tag.hasUUID("UUID")) tag.remove("UUID"); // ✅ Force new UUID generation
-
-Entity recreated = net.minecraft.world.entity.EntityType.loadEntityRecursive(tag, sl, e -> e);
-
-if (recreated != null) {
-    sl.addFreshEntity(recreated);
-
-    // Update saved maps with the new UUID to prevent repeated restores
-    UUID newId = recreated.getUUID();
-    saved.remove(sn.uuid);
-    associatedNpcs.remove(sn.uuid);
-
-    CompoundTag newTag = new CompoundTag();
-    recreated.saveWithoutId(newTag);
-    newTag.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(recreated.getType()).toString());
-    newTag.putUUID("UUID", newId);
-
-    saved.put(newId, new SavedNpc(newId,
-            net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(recreated.getType()),
-            newTag));
-    associatedNpcs.add(newId);
-
-    if (recreated instanceof Mob m) m.setPersistenceRequired();
-    touched = true;
-} else {
-    saved.remove(sn.uuid);
-    associatedNpcs.remove(sn.uuid);
-    touched = true;
-}
-        }
-    }
-
-    if (touched) setChanged(); // 🔥 ensure changes persist
-}
-
-
-
-private void spawnTrader(ServerLevel sl) {
-    BlockPos spawnPos = Util.findGround(sl, worldPosition, 10);
-    if (spawnPos == null) return;
-
-    boolean alreadyExists = !sl.getEntities(EntityRegistry.SALVAGE_TRADER.get(),
-        e -> e.blockPosition().closerThan(worldPosition, 10)).isEmpty();
-    if (alreadyExists) {
-        return;
-    }
-
-    // === NEW: Sync treasuryCopper from the live CityInventory ===
-    CityManager manager = CityManager.get(sl);
-    City city = manager.getCity(cityName);
-    if (city != null) {
-        CityInventory inv = city.getInventory();
-        int gold = inv.getCurrencyAmount("gold");
-        int silver = inv.getCurrencyAmount("silver");
-        int copper = inv.getCurrencyAmount("copper");
-              LOGGER.warn("CityInventory! {}",inv);
-               LOGGER.warn("city! {}",city);
-        this.treasuryCopper = copper;
-    } else {
-        this.treasuryCopper = 0;
-        LOGGER.warn("City {} not found for trader spawn sync; assuming 0 treasury.", cityName);
-    }
-
-    // === Threshold check using latest synced treasury ===
-    int requiredCopper = getRequiredCopper();
-         LOGGER.warn("COPPER CHECK! {}",treasuryCopper);
-          LOGGER.warn("COPPER CHECK! Required: {}",requiredCopper);
-    if (treasuryCopper < requiredCopper) {
-        return;
-    }
-
-    // === Spawn logic ===
-    Mob trader = switch (traderType) {
-        case "fish_trader" -> EntityRegistry.FISH_TRADER.get().create(sl);
-        case "salvage_trader" -> EntityRegistry.SALVAGE_TRADER.get().create(sl);
-        case "alcohol_trader" -> EntityRegistry.ALCOHOL_TRADER.get().create(sl);
-        case "meat_trader" -> EntityRegistry.MEAT_TRADER.get().create(sl);
-        default -> null;
-    };
-
-    if (trader == null) {
-        LOGGER.warn("Unknown trader type: {}", traderType);
-        return;
-    }
-
-    trader.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
-                  sl.random.nextFloat() * 360F, 0);
-    trader.setPersistenceRequired();
-
-    try {
-        var gender = sl.random.nextBoolean() ? "male" : "female";
-        trader.getClass().getMethod("setGender", String.class).invoke(trader, gender);
-        String name = gender.equals("male") ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName();
-        trader.getClass().getMethod("setPersonalName", String.class).invoke(trader, name);
-        trader.getClass().getMethod("setCityName", String.class).invoke(trader, cityName);
-    } catch (Exception ex) {
-        LOGGER.warn("Trader entity does not support gender/name assignment: {}", traderType);
-    }
-
-    sl.addFreshEntity(trader);
-    if (!associatedNpcs.contains(trader.getUUID())) associatedNpcs.add(trader.getUUID());
-    snapshotAndTrack(sl, trader);
-    // === Register NPC to Rails API ===
-    String gender = "unknown";
-    try {
-        Object genderObj = trader.getClass().getMethod("getGender").invoke(trader);
-        if (genderObj instanceof String g) gender = g;
-    } catch (Exception ignored) {}
-
-    String personalName;
-    try {
-        Object personalNameObj = trader.getClass().getMethod("getPersonalName").invoke(trader);
-        personalName = (personalNameObj instanceof String) ? (String) personalNameObj : trader.getName().getString();
-    } catch (Exception ex) {
-        personalName = trader.getName().getString();
-    }
-
-    CityDataSync.registerNpc(
-        sl,
-        trader.getUUID(),
-        traderType,
-        cityName,
-        personalName,
-        "Trader NPC active in " + cityName,
-        1,
-        (int) trader.getHealth(),
-        0,
-        true,
-        worldPosition.toShortString(),
-        gender
-    );
-
-
-}
-
-
-    private void spawnTownsperson(ServerLevel sl) {
-        BlockPos spawnPos = Util.findGround(sl, worldPosition, 10);
-        if (spawnPos == null) return;
-
-        Mob citizen = EntityRegistry.TOWNSPERSON.get().create(sl);
-        if (citizen == null) {
-            LOGGER.warn("Failed to create Townsperson entity");
+        if (initTicks < LOAD_GRACE_TICKS) {
+            initTicks++;
             return;
         }
 
-        citizen.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5,
-                    sl.random.nextFloat() * 360F, 0);
-        citizen.setPersistenceRequired();
+        if (cityName == null || cityName.isBlank()) return;
 
-        try {
-            var gender = sl.random.nextBoolean() ? "male" : "female";
-            citizen.getClass().getMethod("setGender", String.class).invoke(citizen, gender);
-            String name = gender.equals("male") ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName();
-            citizen.getClass().getMethod("setPersonalName", String.class).invoke(citizen, name);
-            citizen.getClass().getMethod("setCityName", String.class).invoke(citizen, cityName);
-        } catch (Exception ex) {
-            LOGGER.warn("Townsperson entity does not support gender/name assignment");
+        if (checkCooldown-- > 0) {
+            heartbeatIfDue(sl);
+            return;
         }
+        checkCooldown = CHECK_INTERVAL_TICKS;
 
-        sl.addFreshEntity(citizen);
-        associatedNpcs.add(citizen.getUUID());
-         snapshotAndTrack(sl, citizen);
-        CityDataSync.registerNpc(
-            sl,
-            citizen.getUUID(),
-            "townsperson",
-            cityName,
-            citizen.getName().getString(),
-            "Resident of " + cityName,
-            1,
-            (int) citizen.getHealth(),
-            0,
-            true,
-            worldPosition.toShortString(),
-            "unknown"
-        );
+        maintainTrader(sl);
+        maintainTownspeople(sl);
+        heartbeatIfDue(sl);
     }
 
-    // === NEW: Centralized NPC Resync Helper ===
-    private void resyncAllNpcs(ServerLevel sl) {
-        for (UUID id : associatedNpcs) {
-            Entity e = sl.getEntity(id);
-            if (e == null || !e.isAlive()) continue;
+    private void maintainTrader(ServerLevel sl) {
+        TraderDefinition definition = definitionFor(traderType);
+        Entity live = findTrackedTrader(sl, definition);
 
-            String npcType = "unknown";
-            if (e.getType() == EntityRegistry.TOWNSPERSON.get()) npcType = "townsperson";
-            else if (e.getType() == EntityRegistry.FISH_TRADER.get()) npcType = "fish_trader";
-            else if (e.getType() == EntityRegistry.SALVAGE_TRADER.get()) npcType = "salvage_trader";
-            else if (e.getType() == EntityRegistry.ALCOHOL_TRADER.get()) npcType = "alcohol_trader";
-            else if (e.getType() == EntityRegistry.MEAT_TRADER.get()) npcType = "meat_trader";
+        if (live != null && live.isAlive()) {
+            configureEntity(sl, live, definition);
+            updateSnapshot(live);
+            enforceBoundary(sl, live);
+            return;
+        }
 
-            String gender = "unknown";
-            try {
-                Object genderObj = e.getClass().getMethod("getGender").invoke(e);
-                if (genderObj instanceof String g) gender = g;
-            } catch (Exception ignored) {}
+        if (traderNpcId != null) {
+            CityDataSync.markLiveNpcInactive(
+                    sl, traderNpcId, definition.npcType(), cityName, sourceId.toString(),
+                    worldPosition.toShortString(), "dead", "missing_or_dead"
+            );
+        }
 
-            String personalName;
-            try {
-                Object personalNameObj = e.getClass().getMethod("getPersonalName").invoke(e);
-                personalName = (personalNameObj instanceof String) ? (String) personalNameObj : e.getName().getString();
-            } catch (Exception ex) {
-                personalName = e.getName().getString();
+        spawnTrader(sl, definition);
+    }
+
+    private void spawnTrader(ServerLevel sl, TraderDefinition definition) {
+        BlockPos spawnPos = Util.findGround(sl, worldPosition, spawnRadius);
+        if (spawnPos == null) {
+            LOGGER.warn("Trader spawn skipped: no safe ground near {} for city={} type={}",
+                    worldPosition, cityName, definition.configKey());
+            return;
+        }
+
+        if (traderNpcId == null) traderNpcId = UUID.randomUUID();
+        Entity trader = createOrRestoreTrader(sl, definition);
+        if (!(trader instanceof Mob mob)) {
+            LOGGER.warn("Trader spawn failed: could not create entity for type={}", definition.configKey());
+            return;
+        }
+
+        trader.setUUID(traderNpcId);
+        trader.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+                sl.random.nextFloat() * 360.0F, 0.0F);
+        mob.setPersistenceRequired();
+        mob.restrictTo(worldPosition, spawnRadius);
+        configureEntity(sl, trader, definition);
+        addSourceTags(trader, definition);
+
+        if (sl.addFreshEntity(trader)) {
+            traderNpcId = trader.getUUID();
+            updateSnapshot(trader);
+            associateWithCity(sl, trader);
+            CityDataSync.upsertLiveNpc(
+                    sl, trader, definition.npcType(), cityName, sourceId.toString(),
+                    worldPosition.toShortString(), "active"
+            );
+            LOGGER.info("Trader spawn success source={} npc={} type={} city={} pos={}",
+                    sourceId, trader.getUUID(), definition.npcType(), cityName, trader.blockPosition());
+            setChanged();
+        } else {
+            LOGGER.warn("Trader spawn failed: addFreshEntity rejected npc={} source={}", trader.getUUID(), sourceId);
+        }
+    }
+
+    private Entity createOrRestoreTrader(ServerLevel sl, TraderDefinition definition) {
+        if (savedTraderData != null) {
+            CompoundTag tag = savedTraderData.copy();
+            tag.putUUID("UUID", traderNpcId);
+            Entity restored = EntityType.loadEntityRecursive(tag, sl, e -> e);
+            if (restored != null && restored.getType() == definition.entityType()) {
+                return restored;
             }
+        }
+        return definition.entityType().create(sl);
+    }
 
-            CityDataSync.registerNpc(
-                sl,
-                e.getUUID(),
-                npcType,
-                cityName,
-                personalName,
-                "Periodic resync for " + cityName,
-                1,
-                (int) ((Mob)e).getHealth(),
-                0,
-                true,
-                worldPosition.toShortString(),
-                gender
+    private Entity findTrackedTrader(ServerLevel sl, TraderDefinition definition) {
+        if (traderNpcId != null) {
+            Entity byUuid = sl.getEntity(traderNpcId);
+            if (byUuid != null && byUuid.getType() == definition.entityType()) return byUuid;
+        }
+
+        AABB area = new AABB(worldPosition).inflate(spawnRadius + 8);
+        List<? extends Mob> nearby = sl.getEntitiesOfClass(Mob.class, area,
+                e -> e.getType() == definition.entityType() && e.getTags().contains(sourceTag()));
+        if (!nearby.isEmpty()) {
+            Entity found = nearby.get(0);
+            traderNpcId = found.getUUID();
+            return found;
+        }
+        return null;
+    }
+
+    private void configureEntity(ServerLevel sl, Entity entity, TraderDefinition definition) {
+        if (entity instanceof CitizenEntity citizen) {
+            if (citizen.getCityName() == null || citizen.getCityName().isBlank()) citizen.setCityName(cityName);
+            if (citizen.getPersonalName() == null || citizen.getPersonalName().equals("Unnamed")) {
+                boolean male = sl.random.nextBoolean();
+                citizen.setGender(male ? "male" : "female");
+                citizen.setPersonalName(male ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName());
+            }
+        } else {
+            callStringSetter(entity, "setCityName", cityName);
+        }
+
+        if (entity instanceof EntityWoodMerchant woodMerchant) {
+            woodMerchant.setSpawnBlockPos(worldPosition);
+        }
+
+        if (entity instanceof Mob mob) {
+            mob.setPersistenceRequired();
+            mob.restrictTo(worldPosition, spawnRadius);
+        }
+        addSourceTags(entity, definition);
+    }
+
+    private void addSourceTags(Entity entity, TraderDefinition definition) {
+        entity.addTag("britannia_trader_spawn");
+        entity.addTag(sourceTag());
+        entity.addTag("trader_type_" + definition.configKey());
+    }
+
+    private String sourceTag() {
+        return "trader_source_" + sourceId.toString().replace("-", "");
+    }
+
+    private void callStringSetter(Entity entity, String methodName, String value) {
+        try {
+            entity.getClass().getMethod(methodName, String.class).invoke(entity, value);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void updateSnapshot(Entity entity) {
+        savedTraderData = new CompoundTag();
+        entity.saveWithoutId(savedTraderData);
+        savedTraderData.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString());
+        savedTraderData.putUUID("UUID", entity.getUUID());
+        setChanged();
+    }
+
+    private void enforceBoundary(ServerLevel sl, Entity entity) {
+        if (!(entity instanceof Mob mob)) return;
+
+        double centerX = worldPosition.getX() + 0.5D;
+        double centerY = worldPosition.getY();
+        double centerZ = worldPosition.getZ() + 0.5D;
+        double dx = entity.getX() - centerX;
+        double dz = entity.getZ() - centerZ;
+        double distSq = dx * dx + dz * dz;
+        double softSq = spawnRadius * spawnRadius;
+        double hard = spawnRadius + 4.0D;
+
+        if (distSq <= softSq) return;
+        if (mob.getTarget() != null) mob.setTarget(null);
+
+        if (distSq > hard * hard) {
+            BlockPos ground = Util.findGround(sl, worldPosition, spawnRadius);
+            if (ground == null) ground = worldPosition;
+            mob.teleportTo(ground.getX() + 0.5D, ground.getY(), ground.getZ() + 0.5D);
+            mob.getNavigation().stop();
+        } else {
+            mob.getNavigation().moveTo(centerX, centerY, centerZ, 1.2D);
+        }
+    }
+
+    private void maintainTownspeople(ServerLevel sl) {
+        townNpcIds.removeIf(id -> {
+            Entity e = sl.getEntity(id);
+            return e == null || !e.isAlive();
+        });
+
+        while (townNpcIds.size() < townPersonAmount) {
+            spawnTownsperson(sl);
+        }
+        setChanged();
+    }
+
+    private void spawnTownsperson(ServerLevel sl) {
+        BlockPos spawnPos = Util.findGround(sl, worldPosition, spawnRadius);
+        if (spawnPos == null) return;
+
+        TownPersonEntity townPerson = EntityRegistry.TOWNSPERSON.get().create(sl);
+        if (townPerson == null) return;
+
+        boolean male = sl.random.nextBoolean();
+        townPerson.setGender(male ? "male" : "female");
+        townPerson.setPersonalName(male ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName());
+        townPerson.setCityName(cityName);
+        townPerson.setSpawnPosition(worldPosition);
+        townPerson.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+                sl.random.nextFloat() * 360.0F, 0.0F);
+        townPerson.setPersistenceRequired();
+        townPerson.restrictTo(worldPosition, spawnRadius);
+        townPerson.addTag("britannia_townsperson_spawn");
+        townPerson.addTag(sourceTag());
+
+        if (sl.addFreshEntity(townPerson)) {
+            townNpcIds.add(townPerson.getUUID());
+            associateWithCity(sl, townPerson);
+            CityDataSync.upsertLiveNpc(
+                    sl, townPerson, "townsperson", cityName, sourceId.toString(),
+                    worldPosition.toShortString(), "active"
+            );
+            LOGGER.info("Townsperson spawn success source={} npc={} city={}",
+                    sourceId, townPerson.getUUID(), cityName);
+        }
+    }
+
+    private void heartbeatIfDue(ServerLevel sl) {
+        if (sl.getGameTime() - lastHeartbeatTick < HEARTBEAT_INTERVAL_TICKS) return;
+        lastHeartbeatTick = sl.getGameTime();
+
+        TraderDefinition definition = definitionFor(traderType);
+        Entity live = traderNpcId == null ? null : sl.getEntity(traderNpcId);
+        if (live != null && live.isAlive()) {
+            CityDataSync.heartbeatLiveNpc(
+                    sl, live, definition.npcType(), cityName, sourceId.toString(), worldPosition.toShortString()
             );
         }
     }
 
-    private void despawnAssociatedNpcs(ServerLevel sl) {
-        for (UUID id : associatedNpcs) {
+    private void associateWithCity(ServerLevel sl, Entity entity) {
+        CityManager manager = CityManager.get(sl);
+        City city = manager.getCity(cityName);
+        if (city == null) {
+            manager.addCity(cityName);
+            city = manager.getCity(cityName);
+        }
+        if (city != null) {
+            city.associateNpcWithBlock(worldPosition, entity);
+            manager.setDirty();
+        }
+    }
+
+    private void despawnTrackedNpcs(ServerLevel sl, String status, String reason) {
+        TraderDefinition definition = definitionFor(traderType);
+        if (traderNpcId != null) {
+            Entity e = sl.getEntity(traderNpcId);
+            if (e != null) {
+                e.remove(RemovalReason.DISCARDED);
+            }
+            CityDataSync.markLiveNpcInactive(
+                    sl, traderNpcId, definition.npcType(), cityName, sourceId.toString(),
+                    worldPosition.toShortString(), status, reason
+            );
+            LOGGER.info("Trader despawn source={} npc={} status={} reason={}",
+                    sourceId, traderNpcId, status, reason);
+        }
+
+        for (UUID id : new ArrayList<>(townNpcIds)) {
             Entity e = sl.getEntity(id);
             if (e != null) e.remove(RemovalReason.DISCARDED);
-            CityDataSync.removeNpc(sl, id);
+            CityDataSync.markLiveNpcInactive(
+                    sl, id, "townsperson", cityName, sourceId.toString(),
+                    worldPosition.toShortString(), status, reason
+            );
         }
-        associatedNpcs.clear();
-    }
 
-    public void forceResync() {
-        if (level instanceof ServerLevel sl) {
-            despawnAssociatedNpcs(sl);
-            spawnTrader(sl);
-        }
-    }
-
-    public void applyAndResync(
-        String traderType,
-        String cityName,
-        int townPersonAmount
-    ) {
-        if (!(level instanceof ServerLevel sl)) return;
-
-        // 1. Apply config
-        this.traderType = traderType;
-        this.cityName = cityName;
-        this.townPersonAmount = townPersonAmount;
-
-        // 2. Clear ALL transient state
-        spawnCooldown = 0;
-        coldStartTicks = 0;
-        treasuryCopper = 0;
-
-        saved.clear();
-        despawnAssociatedNpcs(sl);
-
-        // 3. Force a fresh evaluation
-        spawnTrader(sl);
-
+        townNpcIds.clear();
+        traderNpcId = null;
+        savedTraderData = null;
         setChanged();
     }
 
-
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-       // if (level instanceof ServerLevel sl) despawnAssociatedNpcs(sl);
+    public void forceResync() {
+        if (!(level instanceof ServerLevel sl)) return;
+        despawnTrackedNpcs(sl, "replaced", "manual_resync");
+        checkCooldown = 0;
+        maintainTrader(sl);
     }
 
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level instanceof ServerLevel sl) {
-            // Restore NPCs immediately when the chunk loads
-        restoreSavedNpcs(sl); // try an immediate restore when the chunk loads
+    public void applyAndResync(String traderType, String cityName, int townPersonAmount) {
+        if (!(level instanceof ServerLevel sl)) return;
+        despawnTrackedNpcs(sl, "replaced", "config_changed");
 
-        }
+        this.traderType = normalizeTraderType(traderType);
+        this.cityName = cityName == null ? "" : cityName.trim();
+        this.townPersonAmount = Math.max(0, townPersonAmount);
+        this.checkCooldown = 0;
+        this.initTicks = LOAD_GRACE_TICKS;
+
+        LOGGER.info("Trader spawner config applied source={} type={} city={} townspeople={}",
+                sourceId, this.traderType, this.cityName, this.townPersonAmount);
+        setChanged();
+        maintainTrader(sl);
+        maintainTownspeople(sl);
     }
 
     public void onDestroyed(ServerLevel sl) {
-        despawnAssociatedNpcs(sl); // intentional, permanent
+        despawnTrackedNpcs(sl, "despawned", "spawn_block_removed");
     }
 
-private void restoreSavedNpcs(ServerLevel sl) {
-    if (saved.isEmpty()) return;
-
-    boolean anyExists = saved.keySet().stream().anyMatch(id -> sl.getEntity(id) != null);
-    if (anyExists) return; // skip restore — they're already live
-
-    for (SavedNpc sn : new ArrayList<>(saved.values())) {
-        if (sl.getEntity(sn.uuid) != null) continue;
-
-        CompoundTag tag = sn.nbt.copy();
-        if (tag.hasUUID("UUID")) tag.remove("UUID"); // regenerate UUID
-
-        Entity recreated = EntityType.loadEntityRecursive(tag, sl, e -> e);
-        if (recreated != null) {
-            sl.addFreshEntity(recreated);
-
-            UUID newId = recreated.getUUID();
-            if (recreated instanceof Mob mob) mob.setPersistenceRequired();
-
-            // Remove the old saved record and replace it with the new UUID snapshot
-            saved.remove(sn.uuid);
-            associatedNpcs.remove(sn.uuid);
-
-            CompoundTag newTag = new CompoundTag();
-            recreated.saveWithoutId(newTag);
-            newTag.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(recreated.getType()).toString());
-            newTag.putUUID("UUID", newId);
-
-            saved.put(newId, new SavedNpc(newId,
-                net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(recreated.getType()),
-                newTag));
-            associatedNpcs.add(newId);
-
-            setChanged();
-        } else {
-            LOGGER.info("Failed to restore NPC {} ({})", sn.uuid, sn.typeId);
-        }
-
-    }
-}
-
-
-
-    private void enforceBoundary(ServerLevel sl) {
-        if (associatedNpcs.isEmpty()) return;
-
-        final double centerX = worldPosition.getX() + 0.5;
-        final double centerY = worldPosition.getY() + 1;
-        final double centerZ = worldPosition.getZ() + 0.5;
-        final double radius = TRADER_RADIUS;
-        final double hardR = radius + 1.5; // teleport trigger
-        final double softR = Math.max(1, radius - BOUNDARY_MARGIN);
-
-        for (UUID id : new ArrayList<>(associatedNpcs)) {
-            Entity e = sl.getEntity(id);
-            if (!(e instanceof Mob mob) || !mob.isAlive()) {
-                associatedNpcs.remove(id);
-                outsideTicks.remove(id);
-                continue;
-            }
-
-            double dx = mob.getX() - centerX;
-            double dz = mob.getZ() - centerZ;
-            double distSq = dx * dx + dz * dz;
-            double dist = Math.sqrt(distSq);
-
-            if (dist > softR && dist <= radius) {
-                if (mob.getTarget() != null) mob.setTarget(null);
-                mob.getNavigation().moveTo(centerX, centerY, centerZ, 1.2);
-                mob.setYRot((float)(Math.atan2(-dz, -dx) * (180F / Math.PI)));
-                continue;
-            }
-
-            if (dist > radius) {
-                outsideTicks.put(id, outsideTicks.getOrDefault(id, 0) + 1);
-
-                if (mob.getTarget() != null) mob.setTarget(null);
-                mob.getNavigation().stop();
-
-                if (dist > hardR) {
-                    BlockPos safeGround = sl.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, worldPosition);
-                    mob.teleportTo(safeGround.getX() + 0.5, safeGround.getY() + 1, safeGround.getZ() + 0.5);
-                    mob.getNavigation().stop();
-                } else {
-                    mob.teleportTo(centerX, centerY, centerZ);
-                    mob.getNavigation().stop();
-                }
-
-                mob.setDeltaMovement(0, 0, 0);
-                outsideTicks.remove(id);
-            }
-        }
+    public void applyCityUpdate(int food, int treasury) {
+        if (!(level instanceof ServerLevel sl)) return;
+        LOGGER.info("Trader spawner city update source={} city={} food={} treasuryCopper={}",
+                sourceId, cityName, food, treasury);
+        maintainTrader(sl);
     }
 
-public void applyCityUpdate(int food, int treasury) {
-    if (!(level instanceof ServerLevel sl)) return;
-
-    // Store latest treasury so spawn logic can use it in future ticks
-    this.treasuryCopper = treasury;
-    setChanged();
-
-int requiredCopper = getRequiredCopper();
-
-    boolean traderShouldExist = treasuryCopper >= requiredCopper;
-    boolean townspeopleShouldExist = food >= 50;
-
-    long traderCount = associatedNpcs.stream()
-            .map(sl::getEntity)
-            .filter(e -> e != null && (
-                    e.getType() == EntityRegistry.FISH_TRADER.get() ||
-                    e.getType() == EntityRegistry.SALVAGE_TRADER.get() ||
-                    e.getType() == EntityRegistry.ALCOHOL_TRADER.get() ||
-                    e.getType() == EntityRegistry.MEAT_TRADER.get()))
-            .count();
-
-    long townCount = associatedNpcs.stream()
-            .map(sl::getEntity)
-            .filter(e -> e != null && e.getType() == EntityRegistry.TOWNSPERSON.get())
-            .count();
-
-    // Trader logic
-    if (!traderShouldExist && traderCount > 0) {
-        despawnAssociatedNpcs(sl);
-        LOGGER.info("Despawning trader in {} — treasury dropped below 200 copper (now at {})", cityName, treasuryCopper);
-        return;
-    }
-
-    // Townspeople logic (optional threshold on food)
-    if (!townspeopleShouldExist && townCount > 0) {
-        despawnAssociatedNpcs(sl);
-        LOGGER.info("Despawning townspeople in {} — insufficient food (now at {})", cityName, food);
-        return;
-    }
-
-    // Spawn logic
-    if (traderShouldExist && traderCount == 0) {
-        LOGGER.info("Spawning trader in {} — treasury sufficient ({} copper)", cityName, treasuryCopper);
-        spawnTrader(sl);
-    }
-
-    if (townspeopleShouldExist && townCount < townPersonAmount) {
-        LOGGER.info("Spawning townspeople in {} — food sufficient ({})", cityName, food);
-        for (int i = 0; i < townPersonAmount - townCount; i++) {
-            spawnTownsperson(sl);
-        }
-    }
-}
-
-
-    public void setSupplyLevels(
-            double food,
-            double wood,
-            double metal,
-            double stone,
-            double textile,
-            double alcohol,
-            double technology
-    ) {
+    public void setSupplyLevels(double food, double wood, double metal, double stone,
+                                double textile, double alcohol, double technology) {
         this.foodSupply = food;
         this.woodSupply = wood;
         this.metalSupply = metal;
@@ -654,77 +398,93 @@ int requiredCopper = getRequiredCopper();
         this.textileSupply = textile;
         this.alcoholSupply = alcohol;
         this.technologySupply = technology;
-
-        // Optional: persist or trigger recalculation logic
-        setChanged(); // marks block entity dirty for saving
+        setChanged();
     }
 
-
-    // === NBT ===
-
-@Override
-protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-    super.saveAdditional(tag, provider);
-
-    // === City & Trader Meta ===
-    tag.putString("CityName", cityName);
-    tag.putString("TraderType", traderType);
-    tag.putInt("TownPersonAmount", townPersonAmount);
-    tag.putInt("TreasuryCopper", treasuryCopper);
-
-    // === Resource Levels ===
-    tag.putDouble("FoodSupply", foodSupply);
-    tag.putDouble("WoodSupply", woodSupply);
-    tag.putDouble("MetalSupply", metalSupply);
-    tag.putDouble("StoneSupply", stoneSupply);
-    tag.putDouble("TextileSupply", textileSupply);
-    tag.putDouble("AlcoholSupply", alcoholSupply);
-    tag.putDouble("TechnologySupply", technologySupply);
-
-    // === Save all NPC snapshots ===
-    ListTag savedList = new ListTag();
-    for (SavedNpc sn : saved.values()) {
-        savedList.add(sn.nbt.copy()); // includes id + UUID + all custom data
+    private static String normalizeTraderType(String type) {
+        if (type == null || type.isBlank()) return "wood_trader";
+        return type.trim().toLowerCase(Locale.ROOT);
     }
-    tag.put(TAG_SAVED_NPCS, savedList);
 
-}
+    private TraderDefinition definitionFor(String configuredType) {
+        String normalized = normalizeTraderType(configuredType);
+        return switch (normalized) {
+            case "wood_trader", "wood_merchant" -> new TraderDefinition(
+                    "wood_trader", "wood_trader", "Wood Trader", EntityRegistry.WOOD_MERCHANT_ENTITY.get());
+            case "fish_trader" -> new TraderDefinition(
+                    "fish_trader", "fish_trader", "Fish Trader", EntityRegistry.FISH_TRADER.get());
+            case "salvage_trader" -> new TraderDefinition(
+                    "salvage_trader", "salvage_trader", "Salvage Trader", EntityRegistry.SALVAGE_TRADER.get());
+            case "alcohol_trader" -> new TraderDefinition(
+                    "alcohol_trader", "alcohol_trader", "Alcohol Trader", EntityRegistry.ALCOHOL_TRADER.get());
+            case "meat_trader" -> new TraderDefinition(
+                    "meat_trader", "meat_trader", "Meat Trader", EntityRegistry.MEAT_TRADER.get());
+            case "metal_trader", "metal_merchant" -> new TraderDefinition(
+                    "metal_trader", "metal_trader", "Metal Trader", EntityRegistry.METAL_MERCHANT_ENTITY.get());
+            case "stone_trader", "stone_merchant" -> new TraderDefinition(
+                    "stone_trader", "stone_trader", "Stone Trader", EntityRegistry.STONE_MERCHANT_ENTITY.get());
+            default -> new TraderDefinition(
+                    "wood_trader", "wood_trader", "Wood Trader", EntityRegistry.WOOD_MERCHANT_ENTITY.get());
+        };
+    }
 
-@Override
-protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-    super.loadAdditional(tag, provider);
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        tag.putUUID("SourceId", sourceId);
+        tag.putString("CityName", cityName);
+        tag.putString("TraderType", traderType);
+        tag.putInt("TownPersonAmount", townPersonAmount);
+        tag.putInt("SpawnRadius", spawnRadius);
+        if (traderNpcId != null) tag.putUUID("TraderNpcId", traderNpcId);
+        if (savedTraderData != null) tag.put("SavedTraderData", savedTraderData);
 
-    // === City & Trader Meta ===
-    cityName = tag.getString("CityName");
-    traderType = tag.getString("TraderType");
-    townPersonAmount = tag.getInt("TownPersonAmount");
-    if (tag.contains("TreasuryCopper")) treasuryCopper = tag.getInt("TreasuryCopper");
+        tag.putDouble("FoodSupply", foodSupply);
+        tag.putDouble("WoodSupply", woodSupply);
+        tag.putDouble("MetalSupply", metalSupply);
+        tag.putDouble("StoneSupply", stoneSupply);
+        tag.putDouble("TextileSupply", textileSupply);
+        tag.putDouble("AlcoholSupply", alcoholSupply);
+        tag.putDouble("TechnologySupply", technologySupply);
 
-    // === Resource Levels ===
-    if (tag.contains("FoodSupply")) foodSupply = tag.getDouble("FoodSupply");
-    if (tag.contains("WoodSupply")) woodSupply = tag.getDouble("WoodSupply");
-    if (tag.contains("MetalSupply")) metalSupply = tag.getDouble("MetalSupply");
-    if (tag.contains("StoneSupply")) stoneSupply = tag.getDouble("StoneSupply");
-    if (tag.contains("TextileSupply")) textileSupply = tag.getDouble("TextileSupply");
-    if (tag.contains("AlcoholSupply")) alcoholSupply = tag.getDouble("AlcoholSupply");
-    if (tag.contains("TechnologySupply")) technologySupply = tag.getDouble("TechnologySupply");
+        ListTag towns = new ListTag();
+        for (UUID id : townNpcIds) {
+            CompoundTag town = new CompoundTag();
+            town.putUUID("NPC", id);
+            towns.add(town);
+        }
+        tag.put(TAG_TOWN_NPCS, towns);
+    }
 
-    // === Restore saved NPC data ===
-    saved.clear();
-    associatedNpcs.clear();
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        if (tag.hasUUID("SourceId")) sourceId = tag.getUUID("SourceId");
+        cityName = tag.getString("CityName");
+        traderType = normalizeTraderType(tag.getString("TraderType"));
+        townPersonAmount = tag.getInt("TownPersonAmount");
+        if (tag.contains("SpawnRadius")) spawnRadius = Math.max(1, tag.getInt("SpawnRadius"));
+        if (tag.hasUUID("TraderNpcId")) traderNpcId = tag.getUUID("TraderNpcId");
+        if (tag.contains("SavedTraderData")) savedTraderData = tag.getCompound("SavedTraderData");
 
-    if (tag.contains(TAG_SAVED_NPCS)) {
-        ListTag savedList = tag.getList(TAG_SAVED_NPCS, CompoundTag.TAG_COMPOUND);
-        for (int i = 0; i < savedList.size(); i++) {
-            CompoundTag e = savedList.getCompound(i);
-            if (!e.contains("id") || !e.hasUUID("UUID")) continue;
-            UUID uuid = e.getUUID("UUID");
-            var typeId = net.minecraft.resources.ResourceLocation.parse(e.getString("id"));
-            saved.put(uuid, new SavedNpc(uuid, typeId, e.copy()));
-            associatedNpcs.add(uuid);
+        if (tag.contains("FoodSupply")) foodSupply = tag.getDouble("FoodSupply");
+        if (tag.contains("WoodSupply")) woodSupply = tag.getDouble("WoodSupply");
+        if (tag.contains("MetalSupply")) metalSupply = tag.getDouble("MetalSupply");
+        if (tag.contains("StoneSupply")) stoneSupply = tag.getDouble("StoneSupply");
+        if (tag.contains("TextileSupply")) textileSupply = tag.getDouble("TextileSupply");
+        if (tag.contains("AlcoholSupply")) alcoholSupply = tag.getDouble("AlcoholSupply");
+        if (tag.contains("TechnologySupply")) technologySupply = tag.getDouble("TechnologySupply");
+
+        townNpcIds.clear();
+        if (tag.contains(TAG_TOWN_NPCS)) {
+            ListTag towns = tag.getList(TAG_TOWN_NPCS, Tag.TAG_COMPOUND);
+            for (int i = 0; i < towns.size(); i++) {
+                CompoundTag town = towns.getCompound(i);
+                if (town.hasUUID("NPC")) townNpcIds.add(town.getUUID("NPC"));
+            }
         }
     }
-}
 
-
+    private record TraderDefinition(String configKey, String npcType, String roleTitle,
+                                    EntityType<? extends Mob> entityType) {}
 }

@@ -1,18 +1,21 @@
 package com.seggellion.britannia_mod.npc;
 
-import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
-import com.seggellion.britannia_mod.item.QualitySwordItem; // ✅ Import this
-import com.seggellion.britannia_mod.api.RailsApi;
-import com.seggellion.britannia_mod.shop.Product;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.core.registries.BuiltInRegistries; // ✅ Import this
+import com.seggellion.britannia_mod.api.RailsApi;
+import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
+import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
+import com.seggellion.britannia_mod.shop.Product;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -27,19 +30,14 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
 
     @Override
     public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
-        // ✅ Updated method name
-        JsonArray inventoryData = collectSalvageItems(player);
-        RailsApi.fetchTraderCatalog(city, role, inventoryData, callback);
+        RailsApi.fetchTraderCatalog(city, role, collectSalvageItems(player), callback);
     }
 
     @Override
-    public void performTransaction(Player player, int entityId,
-                                   Map<Product, Integer> cart,
-                                   int totalPrice,
-                                   Runnable onSuccess) {
-        RailsApi.sellItems(player, city, role, entityId, cart, totalPrice, success -> {
-            if (success) onSuccess.run();
-        });
+    public void performTransaction(Player player, int entityId, Map<Product, Integer> cart,
+                                   int totalPrice, Runnable onSuccess) {
+        NetworkHandler.sendToServer(new SellItemsC2SPayload(city, role, entityId, toRequests(player, cart)));
+        onSuccess.run();
     }
 
     @Override
@@ -52,9 +50,6 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
         return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/sell_screen.png");
     }
 
-    // ==========================================================
-    // Collect Jewelry, Swords, and Ingots for Salvage
-    // ==========================================================
     private JsonArray collectSalvageItems(Player player) {
         JsonArray arr = new JsonArray();
 
@@ -64,26 +59,18 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
             String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
             String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
 
-            // 1. Handle Jewelry
             if (stack.getItem() instanceof MaterialQualityJewelryItem) {
                 MaterialQualityJewelryItem.UOMaterial mat = MaterialQualityJewelryItem.getMaterial(stack);
                 if (isValidMaterial(mat)) {
                     addSalvageEntry(arr, itemId, mat.id(), MaterialQualityJewelryItem.getQuality(stack), stack.getCount());
                 }
-            }
-            // 2. Handle Quality Swords
-            else if (stack.getItem() instanceof QualitySwordItem) {
-                // Reuse MaterialQualityJewelryItem helpers (assuming shared NBT structure)
+            } else if (stack.getItem() instanceof QualitySwordItem) {
                 MaterialQualityJewelryItem.UOMaterial mat = MaterialQualityJewelryItem.getMaterial(stack);
                 if (isValidMaterial(mat)) {
                     addSalvageEntry(arr, itemId, mat.id(), MaterialQualityJewelryItem.getQuality(stack), stack.getCount());
                 }
-            }
-            // 3. Handle Ingots (Copper, Silver, Gold)
-            else if (path.contains("ingot")) {
+            } else if (path.contains("ingot")) {
                 MaterialQualityJewelryItem.UOMaterial mat = null;
-
-                // Check for singular "ingot" (vanilla) or plural "ingots" (custom)
                 if (path.equals("copper_ingot") || path.equals("copper_ingots")) {
                     mat = MaterialQualityJewelryItem.UOMaterial.COPPER;
                 } else if (path.equals("silver_ingot") || path.equals("silver_ingots")) {
@@ -93,7 +80,6 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
                 }
 
                 if (mat != null) {
-                    // Ingots treated as Quality 0 (Base/Normal)
                     addSalvageEntry(arr, itemId, mat.id(), 0, stack.getCount());
                 }
             }
@@ -105,8 +91,8 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
     private boolean isValidMaterial(MaterialQualityJewelryItem.UOMaterial mat) {
         if (mat == null) return false;
         return mat == MaterialQualityJewelryItem.UOMaterial.COPPER ||
-               mat == MaterialQualityJewelryItem.UOMaterial.SILVER ||
-               mat == MaterialQualityJewelryItem.UOMaterial.GOLD;
+                mat == MaterialQualityJewelryItem.UOMaterial.SILVER ||
+                mat == MaterialQualityJewelryItem.UOMaterial.GOLD;
     }
 
     private void addSalvageEntry(JsonArray arr, String itemId, String materialId, int quality, int quantity) {
@@ -116,5 +102,19 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
         j.addProperty("quality", quality);
         j.addProperty("quantity", quantity);
         arr.add(j);
+    }
+
+    private List<SellItemsC2SPayload.ItemRequest> toRequests(Player player, Map<Product, Integer> cart) {
+        List<SellItemsC2SPayload.ItemRequest> requests = new ArrayList<>();
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            Product product = entry.getKey();
+            CompoundTag tag = null;
+            try {
+                tag = (CompoundTag) product.stack().save(player.registryAccess());
+            } catch (Exception ignored) {
+            }
+            requests.add(new SellItemsC2SPayload.ItemRequest(product.itemId(), product.name(), entry.getValue(), tag));
+        }
+        return requests;
     }
 }

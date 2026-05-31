@@ -41,6 +41,7 @@ import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.skill.BlacksmithCrafting;
 import com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload;
+import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
 import com.seggellion.britannia_mod.network.HousePlacementHandler;
 import com.seggellion.britannia_mod.structure.HousePrivacyHandler;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
@@ -48,6 +49,7 @@ import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.economy.ServerEconomyService;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -101,6 +103,14 @@ public static void register(final RegisterPayloadHandlersEvent event) {
         }));
 
     registrar.playToServer(
+        SellItemsC2SPayload.TYPE, SellItemsC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                ServerEconomyService.sellRequestedItems(p, payload);
+            }
+        }));
+
+    registrar.playToServer(
         HousePlacementPayload.TYPE, HousePlacementPayload.STREAM_CODEC,
         (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer p) {
@@ -150,6 +160,10 @@ registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload.STREAM_CODEC,
     (payload, ctx) -> ctx.enqueueWork(() -> {
         if (!(ctx.player() instanceof ServerPlayer player)) return;
+        LOGGER.warn("Rejected client-authoritative GrantCoinsC2SPayload from {} receipt={}. Trader sales must use SellItemsC2SPayload.",
+            player.getStringUUID(), payload.receipt());
+        TransactionFailedS2CPayload.send(player, "Sale rejected: server must validate economy transactions.");
+        if (!PROCESSED_RECEIPTS.remove("server-authorized:" + payload.receipt())) return;
         if (!payload.receipt().isEmpty() && !PROCESSED_RECEIPTS.add(payload.receipt())) {
             return; // prevent duplicate transaction
         }

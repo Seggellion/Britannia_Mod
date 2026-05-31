@@ -27,7 +27,15 @@ public class TraderSpawnScreen extends Screen {
     private Button traderButton;
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final List<String> traderTypes = List.of("fish_trader", "salvage_trader", "alcohol_trader", "meat_trader");
+    private final List<String> traderTypes = List.of(
+        "wood_trader",
+        "fish_trader",
+        "salvage_trader",
+        "alcohol_trader",
+        "meat_trader",
+        "metal_trader",
+        "stone_trader"
+    );
     private int idx = 0;
 
     public TraderSpawnScreen(BlockPos pos, String traderType, String cityName, int townPersonAmount) {

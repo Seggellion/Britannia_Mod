@@ -1,305 +1,136 @@
 package com.seggellion.britannia_mod.entity;
 
-import com.seggellion.britannia_mod.city.City;
-import com.seggellion.britannia_mod.city.CityManager;
-import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.network.CityDataSync;
-import com.seggellion.britannia_mod.market.MarketManager;
-import com.seggellion.britannia_mod.player.PlayerDataManager;
-import com.seggellion.britannia_mod.item.WeightedWoodItem;
-import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
-import com.seggellion.britannia_mod.util.SendTransactionToAPI;
-import com.seggellion.britannia_mod.ModAttributes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import com.seggellion.britannia_mod.economy.ServerEconomyService;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.core.Holder;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import  net.neoforged.neoforge.common.NeoForgeMod;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.UUID;
-import java.util.ArrayList;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
 
-public class EntityWoodMerchant extends AbstractVillager  implements ICityEntity {
+import javax.annotation.Nullable;
+
+public class EntityWoodMerchant extends CitizenEntity {
     private static final Logger LOGGER = LogManager.getLogger();
+    private BlockPos spawnBlockPos;
 
-    private String cityName;
-
-    public EntityWoodMerchant(EntityType<? extends AbstractVillager> entityType, Level level) {
+    public EntityWoodMerchant(EntityType<? extends EntityWoodMerchant> entityType, Level level) {
         super(entityType, level);
         this.setPersistenceRequired();
-        this.cityName = "";
     }
 
-    /**
-     * AbstractVillager requires these abstract methods:
-     *  - updateTrades()
-     *  - rewardTradeXp(MerchantOffer) [already inherited but can be overridden if needed]
-     */
-    @Override
-    protected void updateTrades() {
-        // WoodMerchant does not use typical trades. All logic is in mobInteract.
+    public static EntityWoodMerchant create(EntityType<EntityWoodMerchant> type, Level level) {
+        return new EntityWoodMerchant(type, level);
     }
 
     @Override
-    protected void rewardTradeXp(net.minecraft.world.item.trading.MerchantOffer offer) {
-        // No XP to reward
+    protected String getRoleTitle() {
+        return "Wood Trader";
     }
 
-    private BlockPos spawnBlockPos; // Store the spawn block position when the NPC is spawned
+    @Override
+    protected void registerGoals() {
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new MoveTowardsRestrictionGoal(this, 1.0D));
+        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
+    }
+
+    @Override
+    @Nullable
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
+                                        MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
+        this.restrictTo(this.blockPosition(), 2);
+        return super.finalizeSpawn(level, difficulty, reason, spawnData);
+    }
+
+    @Override
+    public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
+        if (hand != InteractionHand.MAIN_HAND) {
+            return super.interactAt(player, hit, hand);
+        }
+
+        if (player.level().isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.CONSUME;
+        }
+
+        String city = getCityName();
+        if (city == null || city.isBlank()) {
+            player.displayClientMessage(Component.literal("This wood trader is not associated with any city."), true);
+            return InteractionResult.CONSUME;
+        }
+
+        LOGGER.info("Wood sale start player={} trader={} city={}",
+                serverPlayer.getStringUUID(), getUUID(), city);
+        ServerEconomyService.sellAllWood(serverPlayer, this, city, getRoleTitle());
+        return InteractionResult.CONSUME;
+    }
 
     public void setSpawnBlockPos(BlockPos pos) {
         this.spawnBlockPos = pos;
     }
 
-public BlockPos getSpawnBlockPos() {
-    // Example implementation to ensure the spawn position is valid
-    if (this.spawnBlockPos != null && this.level().isInWorldBounds(this.spawnBlockPos)) {
-        return this.spawnBlockPos;
-    }
-    LOGGER.warn("Spawn block position is invalid for NPC {}", this.getUUID());
-    return null;
-}
-
-
-    /**
-     * The mobInteract method handles the logic of exchanging WeightedWoodItem for gold coins.
-     */
- @Override
-public InteractionResult mobInteract(Player player, InteractionHand hand) {
-    // If this is the client side, short-circuit immediately so we don't spam the action bar.
-    if (this.level().isClientSide) {
-        // This tells the client the interaction was “successful” so it stops further checks,
-        // but it won't run the wood-check logic or display "You don't have any wood."
-        return InteractionResult.sidedSuccess(true);
+    public BlockPos getSpawnBlockPos() {
+        if (this.spawnBlockPos != null && this.level().isInWorldBounds(this.spawnBlockPos)) {
+            return this.spawnBlockPos;
+        }
+        return null;
     }
 
-    // Now we’re on the server side. Run the real logic only once.
-    if (cityName == null || cityName.isEmpty()) {
-        player.displayClientMessage(Component.literal("This merchant is not associated with any city."), true);
-        return InteractionResult.CONSUME; 
+    @Override
+    public boolean shouldBeSaved() {
+        return false;
     }
 
-    Map<ItemStack, Double> woodStacks = new HashMap<>();
-    for (ItemStack stack : player.getInventory().items) {
-        if (stack.getItem() instanceof WeightedWoodItem wwi) {
-            double weight = wwi.getWeight(stack);
-            if (weight > 0.0) {
-                woodStacks.put(stack, weight);
-            }
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (spawnBlockPos != null) tag.putLong("SpawnBlockPos", spawnBlockPos.asLong());
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains("SpawnBlockPos")) {
+            spawnBlockPos = BlockPos.of(tag.getLong("SpawnBlockPos"));
         }
     }
 
-    // If we do have wood, build transaction data. If not, show “You don’t have any wood.”
-    if (!woodStacks.isEmpty()) {
-        String playerUuid = player.getUUID().toString();
-        List<JsonObject> transactionItems = new ArrayList<>();
-
-        for (Map.Entry<ItemStack, Double> entry : woodStacks.entrySet()) {
-            ItemStack woodStack = entry.getKey();
-            double weight = entry.getValue();
-            WeightedWoodItem wwi = (WeightedWoodItem) woodStack.getItem();
-            String woodType = wwi.getWoodType(woodStack);
-
-            JsonObject itemJson = new JsonObject();
-            itemJson.addProperty("item_id", "britannia_mod:weighted_wood_item");
-            itemJson.addProperty("item_name", woodType);
-
-            if (useWeight(woodStack.getItem())) {
-                itemJson.addProperty("weight", weight);
-            } else {
-                itemJson.addProperty("quantity", (int) weight);
-            }
-            transactionItems.add(itemJson);
-        }
-
-        if (!transactionItems.isEmpty()) {
-            if (this.level() instanceof ServerLevel serverLevel) {
-                SendTransactionToAPI.send(
-                    serverLevel,
-                    playerUuid,
-                    cityName,
-                    transactionItems,
-                    "sell",
-                    "WoodMerchant",
-                    this.getUUID().toString(),
-                    this.getName().getString(),
-                    player
-                );
-            }
-        } else {
-            player.displayClientMessage(Component.literal("No valid items to sell."), true);
-        }
-    } else {
-        player.displayClientMessage(Component.literal("You don't have any wood to sell."), true);
+    @Override
+    protected void updateDisplayName() {
+        this.setCustomName(Component.literal(this.getPersonalName() + " the " + this.getRoleTitle()));
+        this.setCustomNameVisible(true);
     }
 
-    // Returning CONSUME means the server handled the interaction fully and
-    // we’re not passing it on for another round of logic.
-    return InteractionResult.CONSUME; 
-}
-
-
-public static boolean useWeight(Item item) {
-    // Check if the item is an instance of a class that uses weight
-    if (item instanceof WeightedWoodItem) {
-        return true;
-    }
-    // Add more conditions for other item types that use weight if needed
-    // For example: if (item instanceof AnotherWeightedItemType) { return true; }
-
-    // Default to using quantity for all other items
-    return false;
-}
-
-    private void giveGoldCoins(Player player, int amount) {
-        // Basic logic to spawn gold coin stacks
-        ItemStack sampleStack = new ItemStack(ItemRegistry.GOLD_COIN.get());
-        int stackSize = sampleStack.getMaxStackSize();
-
-        while (amount > 0) {
-            int giveAmount = Math.min(amount, stackSize);
-            ItemStack coinStack = new ItemStack(ItemRegistry.GOLD_COIN.get(), giveAmount);
-            if (!player.getInventory().add(coinStack)) {
-                this.spawnAtLocation(coinStack, 0.0F);
-            }
-            amount -= giveAmount;
-        }
-    }
-
-@Override
-public void addAdditionalSaveData(CompoundTag tag) {
-    super.addAdditionalSaveData(tag);
-    tag.putString("CityName", this.cityName != null ? this.cityName : "");
-}
-
-@Override
-public void readAdditionalSaveData(CompoundTag tag) {
-    super.readAdditionalSaveData(tag);
-    this.cityName = tag.getString("CityName");
-}
-
-    public String getCityName() {
-        return this.cityName;
-    }
-
-
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
-
-    /**
-     * If you want to set custom attributes (like health, speed, etc.),
-     * define a static createAttributes() method just like your fish merchant.
-     */
     public static AttributeSupplier.Builder createAttributes() {
-        return AttributeSupplier.builder()
-                .add(Attributes.MAX_HEALTH, 2.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.3D)
-                .add(Attributes.FOLLOW_RANGE, 35.0D)
-                .add(Attributes.ATTACK_DAMAGE, 2.0D)
-                .add(Attributes.ARMOR, 50.0D)
-                .add(Attributes.ARMOR_TOUGHNESS, 0.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
-                .add(Attributes.MAX_ABSORPTION, 0.0D)
-                .add(Attributes.MOVEMENT_EFFICIENCY, 1.0D)
-                .add(Attributes.BURNING_TIME, 5.0D)
-                .add(Attributes.JUMP_STRENGTH, 1.0D)
-                .add(Attributes.SAFE_FALL_DISTANCE, 2.0D)
-                .add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.0D)
-                .add(Attributes.WATER_MOVEMENT_EFFICIENCY, 1.0D)
-                .add(getAttributeHolder(ModAttributes.SCALE.get()), 1.0D)
-                .add(getAttributeHolder(ModAttributes.GRAVITY.get()), 0.08D)
-                .add(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()), 0.6D)
-.add(Attributes.WATER_MOVEMENT_EFFICIENCY, 1.0D)
-                           .add(NeoForgeMod.SWIM_SPEED, 1.0D); 
-    }
-
-    private static Holder<Attribute> getAttributeHolder(Attribute attribute) {
-        return BuiltInRegistries.ATTRIBUTE.getResourceKey(attribute)
-            .flatMap(BuiltInRegistries.ATTRIBUTE::getHolder)
-            .orElseThrow(() -> new IllegalArgumentException("Attribute not registered: " + attribute));
-    }
-
-    /**
-     * Required by AbstractVillager. If not trading, just leave empty or return null as needed.
-     */
-    @Override
-    public AgeableMob getBreedOffspring(ServerLevel serverLevel, AgeableMob ageableMob) {
-        return null; 
-    }
-
-    private void removeNpcFromCity() {
-        // Example: calling an API or manager method to remove from city data
-        // The cityName or cityId must be stored on this entity, e.g., getCityName()
-            if (!(this.level() instanceof ServerLevel serverLevel)) {
-        return;
-    }
-        CityDataSync.removeNpc(serverLevel, this.getUUID());
-    }
-
-private void removeNpcFromSpawnBlock() {
-    if (!(this.level() instanceof ServerLevel serverLevel)) {
-        return;
-    }
-
-    BlockPos spawnPos = this.getSpawnBlockPos();
-
-    // Ensure spawnPos is not null and within valid world height
-    if (spawnPos == null || !serverLevel.isInWorldBounds(spawnPos)) {
-        LOGGER.warn("Invalid spawn position for NPC {}. Cannot remove NPC from spawn block.", this.getUUID());
-        return;
-    }
-
-    BlockEntity blockEntity = serverLevel.getBlockEntity(spawnPos);
-    if (blockEntity instanceof WoodSpawnBlockEntity woodSpawnBE) {
-        woodSpawnBE.removeAssociatedNpc(this.getUUID());
-        LOGGER.info("Removed NPC {} from spawn block at {}", this.getUUID(), spawnPos);
-    } else {
-        LOGGER.warn("No valid WoodSpawnBlockEntity found at {}", spawnPos);
-    }
-}
-
-
-    @Override
-    public float getScale() {
-        AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.SCALE.get()));
-        return instance != null ? (float) instance.getValue() : 1.0F;
+        return CitizenEntity.baseAttributes();
     }
 
     @Override
-    public double getDefaultGravity() {
-        AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.GRAVITY.get()));
-        return instance != null ? instance.getValue() : 0.08D;
+    public void tick() {
+        super.tick();
+        if (!level().isClientSide && spawnBlockPos != null) {
+            this.restrictTo(spawnBlockPos, 2);
+        }
     }
-
-    @Override
-    public float maxUpStep() {
-        AttributeInstance instance = this.getAttribute(getAttributeHolder(ModAttributes.STEP_HEIGHT.get()));
-        return instance != null ? (float) instance.getValue() : super.maxUpStep();
-    }
-
 }

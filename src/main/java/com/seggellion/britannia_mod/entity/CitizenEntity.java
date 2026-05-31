@@ -65,7 +65,7 @@ import software.bernie.geckolib.animation.AnimationController;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatable  {
+public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatable, ICityEntity  {
     private String gender = "unknown";
     private boolean stepToggle = false;
 

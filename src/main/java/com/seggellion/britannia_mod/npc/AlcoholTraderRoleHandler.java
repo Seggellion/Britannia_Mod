@@ -5,20 +5,22 @@ import com.google.gson.JsonObject;
 import com.seggellion.britannia_mod.api.RailsApi;
 import com.seggellion.britannia_mod.component.WineData;
 import com.seggellion.britannia_mod.item.WineBottleBlockItem;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.shop.Product;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
-
-import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 public class AlcoholTraderRoleHandler implements NpcRoleHandler {
     private final String role;
@@ -38,14 +40,10 @@ public class AlcoholTraderRoleHandler implements NpcRoleHandler {
     }
 
     @Override
-    public void performTransaction(Player player, int entityId,
-                                   Map<Product, Integer> cart,
-                                   int totalPrice,
-                                   Runnable onSuccess) {
-        // Re-use the standard transaction logic
-        RailsApi.sellItems(player, city, role, entityId, cart, totalPrice, success -> {
-            if (success) onSuccess.run();
-        });
+    public void performTransaction(Player player, int entityId, Map<Product, Integer> cart,
+                                   int totalPrice, Runnable onSuccess) {
+        NetworkHandler.sendToServer(new SellItemsC2SPayload(city, role, entityId, toRequests(player, cart)));
+        onSuccess.run();
     }
 
     @Override
@@ -55,47 +53,35 @@ public class AlcoholTraderRoleHandler implements NpcRoleHandler {
 
     @Override
     public ResourceLocation getBackground() {
-        // Re-use the standard sell screen background
         return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/sell_screen.png");
     }
 
-    // ==========================================================
-    // Collect Alcohol (Wines) for Valuation
-    // ==========================================================
     private JsonArray collectAlcoholItems(Player player) {
-    JsonArray arr = new JsonArray();
+        JsonArray arr = new JsonArray();
 
-    for (ItemStack stack : player.getInventory().items) {
-        if (stack.isEmpty()) continue;
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.isEmpty()) continue;
 
-        // RELAXED CHECK: We only care if it HAS wine data, not strictly the class type.
-        if (stack.has(DataComponentRegistry.WINE_DATA)) {
-            WineData data = WineBottleBlockItem.getWineData(stack);
-            String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-            addWineEntry(arr, itemId, data, stack.getCount());
+            if (stack.has(DataComponentRegistry.WINE_DATA)) {
+                WineData data = WineBottleBlockItem.getWineData(stack);
+                String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                addWineEntry(arr, itemId, data, stack.getCount());
+            }
         }
+        return arr;
     }
-    return arr;
-}
 
     private void addWineEntry(JsonArray arr, String itemId, WineData data, int quantity) {
         JsonObject j = new JsonObject();
-        
         j.addProperty("item_id", itemId);
         j.addProperty("quantity", quantity);
 
-        // 1. Extract Bottle Color from ID (britannia_mod:wine_bottle_green -> "green")
-        String bottleColor = "green"; // default safety
+        String bottleColor = "green";
         if (itemId.contains("wine_bottle_")) {
-            // fast parsing: get the part after "wine_bottle_"
             String[] parts = itemId.split("wine_bottle_");
-            if (parts.length > 1) {
-                bottleColor = parts[1]; // "green", "brown", etc.
-            }
+            if (parts.length > 1) bottleColor = parts[1];
         }
         j.addProperty("bottle_color", bottleColor);
-        
-        // Pass the specific wine details to Rails so it can calculate price based on rarity/quality
         j.addProperty("winery_name", data.wineryName());
         j.addProperty("grape_type", data.grapeType());
         j.addProperty("year", data.year());
@@ -104,5 +90,19 @@ public class AlcoholTraderRoleHandler implements NpcRoleHandler {
         j.addProperty("label_color", data.labelColor());
 
         arr.add(j);
+    }
+
+    private List<SellItemsC2SPayload.ItemRequest> toRequests(Player player, Map<Product, Integer> cart) {
+        List<SellItemsC2SPayload.ItemRequest> requests = new ArrayList<>();
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            Product product = entry.getKey();
+            CompoundTag tag = null;
+            try {
+                tag = (CompoundTag) product.stack().save(player.registryAccess());
+            } catch (Exception ignored) {
+            }
+            requests.add(new SellItemsC2SPayload.ItemRequest(product.itemId(), product.name(), entry.getValue(), tag));
+        }
+        return requests;
     }
 }
