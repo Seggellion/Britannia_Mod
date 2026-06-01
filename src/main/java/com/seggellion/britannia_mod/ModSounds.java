@@ -89,6 +89,7 @@ public static final EntitySoundGroup ELEMENTAL_BLOOD = registerEntitySounds("ele
     public static final EntitySoundGroup HARPY = registerEntitySounds("harpy");
     public static final EntitySoundGroup HEADLESS = registerEntitySounds("headless");
     public static final EntitySoundGroup ORC = registerEntitySounds("orc");
+        public static final EntitySoundGroup ORC_LORD = registerEntitySounds("orc_lord");
         public static final EntitySoundGroup ORC_CLUB = registerEntitySounds("orc_club");
         public static final EntitySoundGroup OGRE = registerEntitySounds("ogre");
 public static final EntitySoundGroup OGRE_ARCTIC = registerEntitySounds("ogre_arctic");

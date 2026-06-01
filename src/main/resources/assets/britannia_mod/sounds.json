@@ -326,6 +326,12 @@
     "ogre_lord_arctic_hurt": { "sounds": [ "britannia_mod:ogre_hurt" ] },
     "ogre_lord_arctic_death": { "sounds": [ "britannia_mod:ogre_death" ] },
 
+   "orc_lord_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
+    "orc_lord_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
+    "orc_lord_attack": { "sounds": [ "britannia_mod:orc_attack" ] },
+    "orc_lord_hurt": { "sounds": [ "britannia_mod:orc_hurt" ] },
+    "orc_lord_death": { "sounds": [ "britannia_mod:orc_death" ] },
+
    "orc_club_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
     "orc_club_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
     "orc_club_attack": { "sounds": [ "britannia_mod:orc_attack" ] },

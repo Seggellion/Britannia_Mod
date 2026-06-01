@@ -427,6 +427,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.HARPY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.HEADLESS_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.6F, 0.5F));
         event.registerEntityRenderer(EntityRegistry.ORC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.ORC_LORD_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F)); 
         event.registerEntityRenderer(EntityRegistry.ORC_CLUB_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
 
         event.registerEntityRenderer(EntityRegistry.ETTIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.8F)); 
