@@ -11,10 +11,14 @@ import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
 public class CitySpawner {
+    private static final Logger LOGGER = LogManager.getLogger();
+
     @SubscribeEvent
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         Level level = event.getLevel();
@@ -82,7 +86,12 @@ public class CitySpawner {
         if (excess > 0 && !nonCriticalEntities.isEmpty()) {
             nonCriticalEntities.stream()
                 .limit(excess)
-                .forEach(Entity::discard);
+                .forEach(entity -> {
+                    LOGGER.info("City entity limit removing non-critical entity type={} uuid={} pos={} reason=excess_population total={} max={} excess={}",
+                            entity.getType(), entity.getUUID(), entity.blockPosition(),
+                            entities.size(), CitySpawnRules.MAX_ENTITIES_PER_AREA, excess);
+                    entity.discard();
+                });
         }
     }
 

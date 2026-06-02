@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.entity.*;
+import com.seggellion.britannia_mod.trader.ITrader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,6 +44,7 @@ public class CitySpawnRules {
         EntityRegistry.METAL_MERCHANT_ENTITY.get(),
         EntityRegistry.HORSE_MERCHANT_ENTITY.get(),
         EntityRegistry.FISH_TRADER.get(),
+        EntityRegistry.SALVAGE_TRADER.get(),
         EntityRegistry.QUEST_GIVER.get(),
         EntityRegistry.TOWNSPERSON.get()
     );
@@ -53,11 +55,11 @@ public class CitySpawnRules {
     );
 
     public static boolean isAllowed(Entity entity) {
-        return ALLOWED_TYPES.contains(entity.getType());
+        return entity instanceof ITrader || ALLOWED_TYPES.contains(entity.getType());
     }
 
     public static boolean isCritical(Entity entity) {
-        return CRITICAL_TYPES.contains(entity.getType());
+        return entity instanceof ITrader || CRITICAL_TYPES.contains(entity.getType());
     }
 
     public static boolean isDisallowed(Entity entity) {

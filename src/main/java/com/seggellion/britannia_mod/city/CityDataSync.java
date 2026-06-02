@@ -265,6 +265,8 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
     JsonObject payload = buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, status);
     String npcId = npc.getUUID().toString();
 
+    LOGGER.info("NPC upsert request sent npc={} type={} city={} source={} status={} endpoint=npcs/upsert",
+            npcId, npcType, cityName, sourceId, status);
     ApiResult upsert = sendJson(serverLevel, "POST", "npcs/upsert", payload);
     if (upsert.isSuccess()) {
         LOGGER.info("NPC upsert success npc={} type={} city={} source={}", npcId, npcType, cityName, sourceId);
@@ -272,6 +274,8 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
     }
 
     if (upsert.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+        LOGGER.info("NPC upsert fallback request sent npc={} type={} city={} source={} status={} endpoint=npcs/sync",
+                npcId, npcType, cityName, sourceId, status);
         ApiResult legacy = sendJson(serverLevel, "POST", "npcs/sync", payload);
         if (legacy.isSuccess()) {
             LOGGER.info("NPC upsert success via legacy sync npc={} type={} city={} source={}",
@@ -304,6 +308,7 @@ public static boolean heartbeatLiveNpc(ServerLevel serverLevel, Entity npc, Stri
 
 public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, String npcType, String cityName,
                                           String sourceId, String spawnLocation, String status, String reason) {
+    String apiStatus = inactiveStatusForApi(status);
     JsonObject payload = new JsonObject();
     payload.addProperty("npc_id", npcId.toString());
     payload.addProperty("minecraft_uuid", npcId.toString());
@@ -311,23 +316,40 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
     payload.addProperty("city_name", cityName);
     payload.addProperty("source_id", sourceId);
     payload.addProperty("spawn_location", spawnLocation);
-    payload.addProperty("status", status);
+    payload.addProperty("status", apiStatus);
     payload.addProperty("is_active", false);
-    payload.addProperty("sync_action", status);
+    payload.addProperty("sync_action", apiStatus);
     payload.addProperty("despawn_reason", reason);
     payload.addProperty("shard", ModConfig.SHARD_NAME);
     payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
 
-    ApiResult statusSync = sendJson(serverLevel, "POST", "npcs/" + npcId + "/" + statusEndpoint(status), payload);
+    String endpoint = "npcs/" + npcId + "/" + statusEndpoint(apiStatus);
+    LOGGER.info("NPC inactive sync request sent npc={} type={} city={} source={} requestedStatus={} apiStatus={} reason={} endpoint={}",
+            npcId, npcType, cityName, sourceId, status, apiStatus, reason, endpoint);
+    ApiResult statusSync = sendJson(serverLevel, "POST", endpoint, payload);
     if (statusSync.isSuccess()) {
-        LOGGER.info("NPC inactive sync success npc={} status={} reason={}", npcId, status, reason);
+        LOGGER.info("NPC inactive sync success npc={} status={} reason={}", npcId, apiStatus, reason);
         return true;
     }
 
+    LOGGER.info("NPC inactive fallback request sent npc={} type={} city={} source={} requestedStatus={} apiStatus={} reason={} endpoint=npcs/{}/status",
+            npcId, npcType, cityName, sourceId, status, apiStatus, reason, npcId);
     ApiResult legacyStatus = sendJson(serverLevel, "POST", "npcs/" + npcId + "/status", payload);
     if (legacyStatus.isSuccess()) {
-        LOGGER.info("NPC inactive sync success via status endpoint npc={} status={} reason={}", npcId, status, reason);
+        LOGGER.info("NPC inactive sync success via status endpoint npc={} status={} reason={}", npcId, apiStatus, reason);
         return true;
+    }
+
+    if ("despawned".equals(apiStatus)) {
+        LOGGER.info("NPC delete fallback request sent npc={} type={} city={} source={} reason={} endpoint=npcs/{}",
+                npcId, npcType, cityName, sourceId, reason, npcId);
+        ApiResult delete = sendJson(serverLevel, "DELETE", "npcs/" + npcId, null);
+        if (delete.isSuccess()) {
+            LOGGER.info("NPC delete fallback success npc={} reason={}", npcId, reason);
+            return true;
+        }
+        LOGGER.warn("NPC delete fallback failure npc={} statusCode={} body={}",
+                npcId, delete.statusCode(), delete.body());
     }
 
     LOGGER.warn("NPC inactive sync failure npc={} statusCode={} fallbackStatus={} body={}",
@@ -335,11 +357,20 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
     return false;
 }
 
+private static String inactiveStatusForApi(String status) {
+    String normalized = status == null ? "" : status.trim().toLowerCase(Locale.ROOT);
+    return switch (normalized) {
+        case "dead", "death" -> "dead";
+        case "despawned", "despawn", "replaced", "replacement" -> "despawned";
+        default -> "inactive";
+    };
+}
+
 private static String statusEndpoint(String status) {
     String normalized = status == null ? "" : status.trim().toLowerCase(Locale.ROOT);
     return switch (normalized) {
         case "dead", "death" -> "death";
-        case "despawned", "despawn" -> "despawn";
+        case "despawned", "despawn", "replaced", "replacement" -> "despawn";
         default -> "inactive";
     };
 }

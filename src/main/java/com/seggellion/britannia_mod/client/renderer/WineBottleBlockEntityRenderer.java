@@ -15,6 +15,8 @@ import org.joml.Matrix4f;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.client.renderer.LightTexture;
+
 
 public class WineBottleBlockEntityRenderer implements BlockEntityRenderer<WineBottleBlockEntity> {
     
@@ -70,28 +72,26 @@ public class WineBottleBlockEntityRenderer implements BlockEntityRenderer<WineBo
 
         // --- THE MAGIC FIX ---
         // Grab the client's global rendering buffer instead of the block's buffer
-        MultiBufferSource.BufferSource immediateBuffer = mc.renderBuffers().bufferSource();
 
         for (int i = 0; i < textLines.length; i++) {
             Component line = textLines[i];
             float textWidth = -this.font.width(line) / 2.0F;
 
-            this.font.drawInBatch(
-                    line,
-                    textWidth,
-                    startY + (i * LINE_HEIGHT),
-                    -1,
-                    false,
-                    matrix4f,
-                    immediateBuffer, // <-- Pass the global buffer here
-                    Font.DisplayMode.NORMAL,
-                    0x40000000,
-                    15728880
-            );
+this.font.drawInBatch(
+    line,
+    textWidth,
+    startY + (i * LINE_HEIGHT),
+    -1,
+    false,
+    matrix4f,
+    bufferSource,
+    Font.DisplayMode.SEE_THROUGH,
+    0x40000000,
+    LightTexture.FULL_BRIGHT
+);
         }
 
         // Force flush the global buffer immediately so it actually draws!
-        immediateBuffer.endBatch();
 
         poseStack.popPose();
     }

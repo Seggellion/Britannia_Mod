@@ -12,8 +12,8 @@ import com.seggellion.britannia_mod.trader.TraderAppearance;
 import com.seggellion.britannia_mod.trader.TraderDefinition;
 import com.seggellion.britannia_mod.trader.TraderTypes;
 import com.seggellion.britannia_mod.util.NameLoader;
-import com.seggellion.britannia_mod.util.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -39,6 +39,7 @@ public class TraderSpawnBlockEntity extends BlockEntity {
     private static final int CHECK_INTERVAL_TICKS = 200;
     private static final int HEARTBEAT_INTERVAL_TICKS = 600;
     private static final int LOAD_GRACE_TICKS = 40;
+    private static final int SPAWN_SEARCH_ATTEMPTS = 50;
     private static final String TAG_TOWN_NPCS = "TownNPCs";
 
     private UUID sourceId = UUID.randomUUID();
@@ -107,22 +108,30 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         }
 
         if (traderNpcId != null) {
-            CityDataSync.markLiveNpcInactive(
+            boolean syncOk = CityDataSync.markLiveNpcInactive(
                     sl, traderNpcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "dead", "missing_or_dead"
             );
+            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type={} city={} status=dead reason=missing_or_dead success={}",
+                    sourceId, traderNpcId, definition.npcType(), cityName, syncOk);
         }
 
         spawnTrader(sl, definition);
     }
 
     private void spawnTrader(ServerLevel sl, TraderDefinition definition) {
-        BlockPos spawnPos = Util.findGround(sl, worldPosition, spawnRadius);
+        LOGGER.info("Trader spawn attempt source={} type={} city={} spawner={} radius={} yRange={}..{}",
+                sourceId, definition.configKey(), cityName, worldPosition, spawnRadius,
+                worldPosition.getY() - 1, worldPosition.getY() + 1);
+        BlockPos spawnPos = findAnchoredSpawnPos(sl, "trader " + definition.configKey());
         if (spawnPos == null) {
-            LOGGER.warn("Trader spawn skipped: no safe ground near {} for city={} type={}",
-                    worldPosition, cityName, definition.configKey());
+            LOGGER.warn("Trader spawn skipped source={} city={} type={} spawner={} reason=no_valid_position",
+                    sourceId, cityName, definition.configKey(), worldPosition);
             return;
         }
+        LOGGER.info("Trader spawn position selected source={} type={} city={} spawner={} selected={} spawnerY={} selectedY={}",
+                sourceId, definition.configKey(), cityName, worldPosition, spawnPos,
+                worldPosition.getY(), spawnPos.getY());
 
         if (traderNpcId == null) traderNpcId = UUID.randomUUID();
         Entity trader = createOrRestoreTrader(sl, definition);
@@ -170,7 +179,11 @@ public class TraderSpawnBlockEntity extends BlockEntity {
     private Entity findTrackedTrader(ServerLevel sl, TraderDefinition definition) {
         if (traderNpcId != null) {
             Entity byUuid = sl.getEntity(traderNpcId);
-            if (byUuid != null && byUuid.getType() == definition.entityType()) return byUuid;
+            if (byUuid != null && byUuid.getType() == definition.entityType()) {
+                LOGGER.debug("Trader existing reused by UUID source={} npc={} type={} city={}",
+                        sourceId, traderNpcId, definition.configKey(), cityName);
+                return byUuid;
+            }
         }
 
         AABB area = new AABB(worldPosition).inflate(spawnRadius + 8);
@@ -179,6 +192,8 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         if (!nearby.isEmpty()) {
             Entity found = nearby.get(0);
             traderNpcId = found.getUUID();
+            LOGGER.info("Trader existing reused by source tag source={} npc={} type={} city={} pos={}",
+                    sourceId, traderNpcId, definition.configKey(), cityName, found.blockPosition());
             return found;
         }
         return null;
@@ -272,8 +287,15 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         if (mob.getTarget() != null) mob.setTarget(null);
 
         if (distSq > hard * hard) {
-            BlockPos ground = Util.findGround(sl, worldPosition, spawnRadius);
-            if (ground == null) ground = worldPosition;
+            BlockPos ground = findAnchoredSpawnPos(sl, "boundary reset " + entity.getType());
+            if (ground == null) {
+                LOGGER.warn("Trader boundary reset skipped source={} npc={} type={} spawner={} reason=no_valid_position",
+                        sourceId, entity.getUUID(), entity.getType(), worldPosition);
+                mob.getNavigation().stop();
+                return;
+            }
+            LOGGER.info("Trader boundary reset teleport source={} npc={} type={} from={} to={} spawner={} reason=outside_hard_radius",
+                    sourceId, entity.getUUID(), entity.getType(), entity.blockPosition(), ground, worldPosition);
             mob.teleportTo(ground.getX() + 0.5D, ground.getY(), ground.getZ() + 0.5D);
             mob.getNavigation().stop();
         } else {
@@ -294,8 +316,14 @@ public class TraderSpawnBlockEntity extends BlockEntity {
     }
 
     private void spawnTownsperson(ServerLevel sl) {
-        BlockPos spawnPos = Util.findGround(sl, worldPosition, spawnRadius);
-        if (spawnPos == null) return;
+        BlockPos spawnPos = findAnchoredSpawnPos(sl, "townsperson");
+        if (spawnPos == null) {
+            LOGGER.warn("Townsperson spawn skipped source={} city={} spawner={} reason=no_valid_position",
+                    sourceId, cityName, worldPosition);
+            return;
+        }
+        LOGGER.info("Townsperson spawn position selected source={} city={} spawner={} selected={} spawnerY={} selectedY={}",
+                sourceId, cityName, worldPosition, spawnPos, worldPosition.getY(), spawnPos.getY());
 
         TownPersonEntity townPerson = EntityRegistry.TOWNSPERSON.get().create(sl);
         if (townPerson == null) return;
@@ -324,6 +352,88 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         }
     }
 
+    private BlockPos findAnchoredSpawnPos(ServerLevel sl, String purpose) {
+        SpawnSearchStats stats = new SpawnSearchStats();
+        int radius = Math.max(0, spawnRadius);
+        int[] yOffsets = {0, -1, 1};
+
+        for (int attempt = 0; attempt < SPAWN_SEARCH_ATTEMPTS; attempt++) {
+            int offX = radius == 0 ? 0 : sl.random.nextInt(radius * 2 + 1) - radius;
+            int offZ = radius == 0 ? 0 : sl.random.nextInt(radius * 2 + 1) - radius;
+
+            for (int dy : yOffsets) {
+                BlockPos pos = new BlockPos(
+                        worldPosition.getX() + offX,
+                        worldPosition.getY() + dy,
+                        worldPosition.getZ() + offZ
+                );
+                String rejection = spawnRejectionReason(sl, pos);
+                if (rejection == null) {
+                    return pos;
+                }
+                stats.record(rejection, pos);
+            }
+        }
+
+        for (int offX = -radius; offX <= radius; offX++) {
+            for (int offZ = -radius; offZ <= radius; offZ++) {
+                for (int dy : yOffsets) {
+                    BlockPos pos = new BlockPos(
+                            worldPosition.getX() + offX,
+                            worldPosition.getY() + dy,
+                            worldPosition.getZ() + offZ
+                    );
+                    String rejection = spawnRejectionReason(sl, pos);
+                    if (rejection == null) {
+                        return pos;
+                    }
+                    stats.record(rejection, pos);
+                }
+            }
+        }
+
+        LOGGER.warn("Trader spawn position search failed source={} purpose={} city={} type={} spawner={} radius={} yRange={}..{} randomAttempts={} exhaustivePositions={} {}",
+                sourceId, purpose, cityName, traderType, worldPosition, radius,
+                worldPosition.getY() - 1, worldPosition.getY() + 1,
+                SPAWN_SEARCH_ATTEMPTS, (radius * 2 + 1) * (radius * 2 + 1), stats.summary());
+        return null;
+    }
+
+    private String spawnRejectionReason(ServerLevel sl, BlockPos pos) {
+        if (!sl.hasChunkAt(pos)) {
+            return "chunk_not_loaded";
+        }
+
+        BlockPos groundPos = pos.below();
+        BlockState groundState = sl.getBlockState(groundPos);
+        if (!groundState.isFaceSturdy(sl, groundPos, Direction.UP)) {
+            return "no_solid_ground";
+        }
+
+        if (!isSpawnSpacePassable(sl, pos)) {
+            return "feet_blocked";
+        }
+
+        if (!isSpawnSpacePassable(sl, pos.above())) {
+            return "head_blocked";
+        }
+
+        AABB occupiedSpace = new AABB(
+                pos.getX(), pos.getY(), pos.getZ(),
+                pos.getX() + 1.0D, pos.getY() + 2.0D, pos.getZ() + 1.0D
+        ).inflate(0.2D);
+        if (!sl.getEntitiesOfClass(Entity.class, occupiedSpace, Entity::isAlive).isEmpty()) {
+            return "occupied";
+        }
+
+        return null;
+    }
+
+    private boolean isSpawnSpacePassable(ServerLevel sl, BlockPos pos) {
+        BlockState state = sl.getBlockState(pos);
+        return state.getCollisionShape(sl, pos).isEmpty() && state.getFluidState().isEmpty();
+    }
+
     private void heartbeatIfDue(ServerLevel sl) {
         if (sl.getGameTime() - lastHeartbeatTick < HEARTBEAT_INTERVAL_TICKS) return;
         lastHeartbeatTick = sl.getGameTime();
@@ -350,28 +460,67 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         }
     }
 
+    private Entity findOwnedTraderAnyType(ServerLevel sl) {
+        if (traderNpcId != null) {
+            Entity byUuid = sl.getEntity(traderNpcId);
+            if (byUuid != null) {
+                return byUuid;
+            }
+        }
+
+        AABB area = new AABB(worldPosition).inflate(Math.max(spawnRadius + 16, 32));
+        List<? extends Mob> nearby = sl.getEntitiesOfClass(Mob.class, area,
+                e -> e.getTags().contains("britannia_trader_spawn") && e.getTags().contains(sourceTag()));
+        if (!nearby.isEmpty()) {
+            Entity found = nearby.get(0);
+            traderNpcId = found.getUUID();
+            LOGGER.info("Trader existing adopted for removal by source tag source={} npc={} type={} pos={}",
+                    sourceId, traderNpcId, found.getType(), found.blockPosition());
+            return found;
+        }
+        return null;
+    }
+
     private void despawnTrackedNpcs(ServerLevel sl, String status, String reason) {
         TraderDefinition definition = definitionFor(traderType);
-        if (traderNpcId != null) {
-            Entity e = sl.getEntity(traderNpcId);
-            if (e != null) {
-                e.remove(RemovalReason.DISCARDED);
-            }
-            CityDataSync.markLiveNpcInactive(
-                    sl, traderNpcId, definition.npcType(), cityName, sourceId.toString(),
+        Entity traderEntity = findOwnedTraderAnyType(sl);
+        UUID npcId = traderEntity != null ? traderEntity.getUUID() : traderNpcId;
+
+        if (npcId != null) {
+            LOGGER.info("Trader removal requested source={} npc={} type={} city={} status={} reason={} liveEntityFound={}",
+                    sourceId, npcId, definition.npcType(), cityName, status, reason, traderEntity != null);
+            boolean syncOk = CityDataSync.markLiveNpcInactive(
+                    sl, npcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), status, reason
             );
-            LOGGER.info("Trader despawn source={} npc={} status={} reason={}",
-                    sourceId, traderNpcId, status, reason);
+            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type={} city={} status={} reason={} success={}",
+                    sourceId, npcId, definition.npcType(), cityName, status, reason, syncOk);
+
+            if (traderEntity != null) {
+                traderEntity.remove(RemovalReason.DISCARDED);
+                LOGGER.info("Trader entity removed source={} npc={} entityType={} pos={} reason={}",
+                        sourceId, npcId, traderEntity.getType(), traderEntity.blockPosition(), reason);
+            }
+        } else {
+            LOGGER.info("Trader removal skipped source={} type={} city={} status={} reason={} because no tracked trader was found",
+                    sourceId, definition.npcType(), cityName, status, reason);
         }
 
         for (UUID id : new ArrayList<>(townNpcIds)) {
             Entity e = sl.getEntity(id);
-            if (e != null) e.remove(RemovalReason.DISCARDED);
-            CityDataSync.markLiveNpcInactive(
+            LOGGER.info("Townsperson removal requested source={} npc={} city={} status={} reason={} liveEntityFound={}",
+                    sourceId, id, cityName, status, reason, e != null);
+            boolean syncOk = CityDataSync.markLiveNpcInactive(
                     sl, id, "townsperson", cityName, sourceId.toString(),
                     worldPosition.toShortString(), status, reason
             );
+            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type=townsperson city={} status={} reason={} success={}",
+                    sourceId, id, cityName, status, reason, syncOk);
+            if (e != null) {
+                e.remove(RemovalReason.DISCARDED);
+                LOGGER.info("Townsperson entity removed source={} npc={} pos={} reason={}",
+                        sourceId, id, e.blockPosition(), reason);
+            }
         }
 
         townNpcIds.clear();
@@ -382,23 +531,50 @@ public class TraderSpawnBlockEntity extends BlockEntity {
 
     public void forceResync() {
         if (!(level instanceof ServerLevel sl)) return;
-        despawnTrackedNpcs(sl, "replaced", "manual_resync");
+        despawnTrackedNpcs(sl, "despawned", "manual_resync");
         checkCooldown = 0;
         maintainTrader(sl);
     }
 
     public void applyAndResync(String traderType, String cityName, int townPersonAmount) {
         if (!(level instanceof ServerLevel sl)) return;
-        despawnTrackedNpcs(sl, "replaced", "config_changed");
+        String oldType = this.traderType;
+        String newType = normalizeTraderType(traderType);
+        String oldCity = this.cityName;
+        int oldTownPersonAmount = this.townPersonAmount;
+        String newCity = cityName == null ? "" : cityName.trim();
 
-        this.traderType = normalizeTraderType(traderType);
-        this.cityName = cityName == null ? "" : cityName.trim();
-        this.townPersonAmount = Math.max(0, townPersonAmount);
+        LOGGER.info("Trader spawner config change requested source={} oldType={} newType={} oldCity={} newCity={} oldTownspeople={} newTownspeople={}",
+                sourceId, oldType, newType, oldCity, newCity, oldTownPersonAmount, Math.max(0, townPersonAmount));
+        int newTownPersonAmount = Math.max(0, townPersonAmount);
+        boolean unchanged = oldType.equals(newType)
+                && (oldCity == null ? "" : oldCity.trim()).equals(newCity)
+                && oldTownPersonAmount == newTownPersonAmount;
+
+        if (unchanged) {
+            LOGGER.info("Trader spawner config unchanged source={} type={} city={} townspeople={} action=keep_existing_npc",
+                    sourceId, oldType, oldCity, oldTownPersonAmount);
+            this.traderType = newType;
+            this.cityName = newCity;
+            this.townPersonAmount = newTownPersonAmount;
+            this.checkCooldown = 0;
+            this.initTicks = LOAD_GRACE_TICKS;
+            setChanged();
+            maintainTrader(sl);
+            maintainTownspeople(sl);
+            return;
+        }
+
+        despawnTrackedNpcs(sl, "despawned", "config_changed");
+
+        this.traderType = newType;
+        this.cityName = newCity;
+        this.townPersonAmount = newTownPersonAmount;
         this.checkCooldown = 0;
         this.initTicks = LOAD_GRACE_TICKS;
 
-        LOGGER.info("Trader spawner config applied source={} type={} city={} townspeople={}",
-                sourceId, this.traderType, this.cityName, this.townPersonAmount);
+        LOGGER.info("Trader spawner config applied source={} oldType={} newType={} city={} townspeople={}",
+                sourceId, oldType, this.traderType, this.cityName, this.townPersonAmount);
         setChanged();
         maintainTrader(sl);
         maintainTownspeople(sl);
@@ -433,6 +609,42 @@ public class TraderSpawnBlockEntity extends BlockEntity {
 
     private TraderDefinition definitionFor(String configuredType) {
         return TraderTypes.byId(configuredType);
+    }
+
+    private static final class SpawnSearchStats {
+        private int chunkNotLoaded;
+        private int noSolidGround;
+        private int feetBlocked;
+        private int headBlocked;
+        private int occupied;
+        private int other;
+        private String firstRejection = "";
+
+        private void record(String reason, BlockPos pos) {
+            if (firstRejection.isBlank()) {
+                firstRejection = reason + " at " + pos.toShortString();
+            }
+
+            switch (reason) {
+                case "chunk_not_loaded" -> chunkNotLoaded++;
+                case "no_solid_ground" -> noSolidGround++;
+                case "feet_blocked" -> feetBlocked++;
+                case "head_blocked" -> headBlocked++;
+                case "occupied" -> occupied++;
+                default -> other++;
+            }
+        }
+
+        private String summary() {
+            return "rejections{chunk_not_loaded=" + chunkNotLoaded
+                    + ", no_solid_ground=" + noSolidGround
+                    + ", feet_blocked=" + feetBlocked
+                    + ", head_blocked=" + headBlocked
+                    + ", occupied=" + occupied
+                    + ", other=" + other
+                    + ", first=" + firstRejection
+                    + "}";
+        }
     }
 
     @Override
