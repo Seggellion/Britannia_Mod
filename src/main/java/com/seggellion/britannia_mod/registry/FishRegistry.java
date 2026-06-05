@@ -129,6 +129,10 @@ public final class FishRegistry {
         }
     }
 
+    public static List<String> fishIds() {
+        return List.copyOf(FISH_IDS);
+    }
+
     private static void registerFish(String id) {
         DeferredHolder<Block, Block> blockHolder =
             BLOCKS.register(id, () -> new com.seggellion.britannia_mod.block.WeightedFishBlock(FISH_BLOCK_PROPS));

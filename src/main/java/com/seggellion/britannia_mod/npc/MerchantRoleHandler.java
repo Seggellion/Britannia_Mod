@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.npc;
 
 import com.seggellion.britannia_mod.api.RailsApi;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.payload.BuyMerchantItemsC2SPayload;
 import com.seggellion.britannia_mod.shop.Product;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -25,9 +27,8 @@ public class MerchantRoleHandler implements NpcRoleHandler {
 
     @Override
     public void performTransaction(Player player, int entityId, Map<Product, Integer> cart, int totalPrice, Runnable onSuccess) {
-        RailsApi.buyItems(city, role, entityId, cart, totalPrice, success -> {
-            if (success) onSuccess.run();
-        });
+        NetworkHandler.sendToServer(new BuyMerchantItemsC2SPayload(city, role, entityId, toRequests(cart)));
+        onSuccess.run();
     }
 
     @Override
@@ -38,5 +39,17 @@ public class MerchantRoleHandler implements NpcRoleHandler {
     @Override
     public ResourceLocation getBackground() {
         return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/buy_screen.png");
+    }
+
+    private java.util.List<BuyMerchantItemsC2SPayload.ItemRequest> toRequests(Map<Product, Integer> cart) {
+        java.util.List<BuyMerchantItemsC2SPayload.ItemRequest> requests = new java.util.ArrayList<>();
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            requests.add(new BuyMerchantItemsC2SPayload.ItemRequest(
+                    entry.getKey().itemId(),
+                    entry.getKey().name(),
+                    entry.getValue()
+            ));
+        }
+        return requests;
     }
 }

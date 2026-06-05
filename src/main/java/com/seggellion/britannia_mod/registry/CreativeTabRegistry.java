@@ -377,6 +377,7 @@ public class CreativeTabRegistry {
                 // NPC spawn blocks
                 safeAccept(output, ItemRegistry.BRITANNIA_SPAWN_BLOCK_ITEM.get());   
                 safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());   
+                safeAccept(output, ItemRegistry.MERCHANT_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.QUEST_GIVER_SPAWN_BLOCK_ITEM.get());     
                 safeAccept(output, ItemRegistry.QUEST_DESTINATION_BLOCK_ITEM.get());                                                                         
                 safeAccept(output, ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());

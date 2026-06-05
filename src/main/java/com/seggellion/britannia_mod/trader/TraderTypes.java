@@ -19,6 +19,12 @@ public final class TraderTypes {
     public static final String WOOD = "wood_trader";
     public static final String FISH = "fish_trader";
     public static final String SALVAGE = "salvage_trader";
+    public static final String ORE = "ore_trader";
+    public static final String STONE = "stone_trader";
+    public static final String MEAT = "meat_trader";
+    public static final String GRAINS = "grain_trader";
+    public static final String PRODUCE = "produce_trader";
+    public static final String FUR_LEATHER = "fur_leather_trader";
 
     private static final Map<String, TraderDefinition> DEFINITIONS = new LinkedHashMap<>();
 
@@ -39,17 +45,35 @@ public final class TraderTypes {
         register("alcohol_trader", "alcohol_trader", "Alcohol Trader",
                 () -> EntityRegistry.ALCOHOL_TRADER.get(), TraderSpawnSettings.stationary(),
                 TraderAppearance.outfit("alcohol_trader"));
-        register("meat_trader", "meat_trader", "Meat Trader",
+        register(ORE, "ore_trader", "Ore Trader",
+                () -> EntityRegistry.ORE_TRADER.get(), TraderSpawnSettings.standard(),
+                TraderAppearance.outfit("ore_trader"));
+        alias("metal_trader", ORE);
+        alias("metal_merchant", ORE);
+
+        register(STONE, "stone_trader", "Stone Trader",
+                () -> EntityRegistry.STONE_TRADER.get(), TraderSpawnSettings.standard(),
+                TraderAppearance.outfit("stone_trader"));
+        alias("stone_merchant", STONE);
+
+        register(MEAT, "meat_trader", "Meat Trader",
                 () -> EntityRegistry.MEAT_TRADER.get(), TraderSpawnSettings.standard(),
                 TraderAppearance.outfit("meat_trader"));
-        register("metal_trader", "metal_trader", "Metal Trader",
-                () -> EntityRegistry.METAL_MERCHANT_ENTITY.get(), TraderSpawnSettings.standard(),
-                TraderAppearance.outfit("salvage_trader"));
-        alias("metal_merchant", "metal_trader");
-        register("stone_trader", "stone_trader", "Stone Trader",
-                () -> EntityRegistry.STONE_MERCHANT_ENTITY.get(), TraderSpawnSettings.standard(),
-                TraderAppearance.outfit("stone_trader"));
-        alias("stone_merchant", "stone_trader");
+
+        register(GRAINS, "grain_trader", "Grain Trader",
+                () -> EntityRegistry.GRAIN_TRADER.get(), TraderSpawnSettings.standard(),
+                TraderAppearance.outfit("grain_trader"));
+        alias("grains_trader", GRAINS);
+
+        register(PRODUCE, "produce_trader", "Produce Trader",
+                () -> EntityRegistry.PRODUCE_TRADER.get(), TraderSpawnSettings.standard(),
+                TraderAppearance.outfit("produce_trader"));
+
+        register(FUR_LEATHER, "fur_leather_trader", "Fur/Leather Trader",
+                () -> EntityRegistry.FUR_LEATHER_TRADER.get(), TraderSpawnSettings.standard(),
+                TraderAppearance.outfit("fur_leather_trader"));
+        alias("fur_trader", FUR_LEATHER);
+        alias("leather_trader", FUR_LEATHER);
     }
 
     private TraderTypes() {

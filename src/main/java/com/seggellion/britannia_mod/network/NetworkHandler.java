@@ -10,11 +10,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MerchantSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.network.payload.TogglePrivacyPayload;
 import com.seggellion.britannia_mod.network.payload.BuyItemsC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BuyMerchantItemsC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.CloseScreenS2CPayload;
@@ -27,6 +29,9 @@ import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPaylo
 import com.seggellion.britannia_mod.network.payload.TraderSpawnConfigC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnResyncC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnConfigC2SPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnResyncC2SPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnConfigC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
@@ -50,6 +55,7 @@ import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.economy.ServerEconomyService;
+import com.seggellion.britannia_mod.economy.MerchantEconomyService;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -110,6 +116,14 @@ public static void register(final RegisterPayloadHandlersEvent event) {
         (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer p) {
                 ServerEconomyService.sellRequestedItems(p, payload);
+            }
+        }));
+
+    registrar.playToServer(
+        BuyMerchantItemsC2SPayload.TYPE, BuyMerchantItemsC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                MerchantEconomyService.buyRequestedItems(p, payload);
             }
         }));
 
@@ -334,6 +348,28 @@ registrar.playToServer(
 );
 
 registrar.playToServer(
+    MerchantSpawnConfigC2SPayload.TYPE,
+    MerchantSpawnConfigC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+
+        LOGGER.info("Network MerchantSpawnConfig received");
+
+        ServerLevel level = player.serverLevel();
+        if (level == null) return;
+
+        var be = level.getBlockEntity(payload.pos());
+        if (be instanceof MerchantSpawnBlockEntity spawner) {
+            spawner.applyAndResync(
+                payload.merchantType(),
+                payload.cityName(),
+                payload.townPersonAmount()
+            );
+        }
+    })
+);
+
+registrar.playToServer(
     QuestGiverSpawnConfigC2SPayload.TYPE,
     QuestGiverSpawnConfigC2SPayload.STREAM_CODEC,
     (payload, ctx) -> ctx.enqueueWork(() -> {
@@ -388,6 +424,21 @@ registrar.playToServer(
 
         var be = level.getBlockEntity(payload.pos());
         if (be instanceof com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity spawner) {
+            spawner.forceResync();
+        }
+    })
+);
+
+registrar.playToServer(
+    MerchantSpawnResyncC2SPayload.TYPE,
+    MerchantSpawnResyncC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerLevel level = player.serverLevel();
+        if (level == null) return;
+
+        var be = level.getBlockEntity(payload.pos());
+        if (be instanceof MerchantSpawnBlockEntity spawner) {
             spawner.forceResync();
         }
     })
@@ -553,6 +604,14 @@ registrar.playToClient(
 );
 
 // ✅ Safe Registration
+registrar.playToClient(
+    MerchantSpawnScreenS2CPayload.TYPE,
+    MerchantSpawnScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleMerchantSpawnScreen
+        : (p, c) -> {}
+);
+
 registrar.playToClient(
     QuestDestinationScreenS2CPayload.TYPE,
     QuestDestinationScreenS2CPayload.STREAM_CODEC,

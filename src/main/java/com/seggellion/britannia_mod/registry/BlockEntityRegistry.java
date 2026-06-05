@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.block.entity.StoreSignBlockEntity;
 import com.seggellion.britannia_mod.registry.FishRegistry;
 import com.seggellion.britannia_mod.block.entity.FishBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MerchantSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestDestinationBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
@@ -191,6 +192,15 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WineBottl
                 () -> BlockEntityType.Builder.of(
                         TraderSpawnBlockEntity::new,
                         BlockRegistry.TRADER_SPAWN_BLOCK.get()
+                ).build(null)
+            );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MerchantSpawnBlockEntity>>
+            MERCHANT_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
+                "merchant_spawn_block_entity",
+                () -> BlockEntityType.Builder.of(
+                        MerchantSpawnBlockEntity::new,
+                        BlockRegistry.MERCHANT_SPAWN_BLOCK.get()
                 ).build(null)
             );
 

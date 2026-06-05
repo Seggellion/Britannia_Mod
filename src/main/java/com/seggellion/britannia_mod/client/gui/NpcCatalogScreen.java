@@ -116,6 +116,10 @@ public class NpcCatalogScreen extends Screen {
     }
 
     private List<Product> aggregateCatalog(List<Product> fetched) {
+        if (type == NpcType.MERCHANT) {
+            return aggregateMerchantCatalog(fetched);
+        }
+
         Map<String, Product> byId = new HashMap<>();
 
         for (Product p : fetched) {
@@ -171,6 +175,15 @@ public class NpcCatalogScreen extends Screen {
             }
         }
         return unique;
+    }
+
+    private List<Product> aggregateMerchantCatalog(List<Product> fetched) {
+        Map<String, Product> byId = new HashMap<>();
+        for (Product p : fetched) {
+            String compositeKey = p.itemId() + "::" + p.name();
+            byId.putIfAbsent(compositeKey, p);
+        }
+        return new ArrayList<>(byId.values());
     }
 
     private boolean matchesProduct(ItemStack invStack, ItemStack templateStack, Product product, boolean isWineProduct) {

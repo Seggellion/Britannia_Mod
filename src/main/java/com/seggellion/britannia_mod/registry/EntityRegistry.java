@@ -68,9 +68,18 @@ import com.seggellion.britannia_mod.entity.GoldOreElementalEntity;
 import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
+import com.seggellion.britannia_mod.entity.BakerEntity;
+import com.seggellion.britannia_mod.entity.CostermongerEntity;
 import com.seggellion.britannia_mod.entity.FishTraderEntity;
+import com.seggellion.britannia_mod.entity.FurLeatherTraderEntity;
+import com.seggellion.britannia_mod.entity.GrainTraderEntity;
+import com.seggellion.britannia_mod.entity.MeatTraderEntity;
+import com.seggellion.britannia_mod.entity.OreTraderEntity;
+import com.seggellion.britannia_mod.entity.ProduceTraderEntity;
 import com.seggellion.britannia_mod.entity.SalvageTraderEntity;
 import com.seggellion.britannia_mod.entity.AlcoholTraderEntity;
+import com.seggellion.britannia_mod.entity.StoneTraderEntity;
+import com.seggellion.britannia_mod.entity.TavernkeeperEntity;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.EntityStoneMerchant;
 import com.seggellion.britannia_mod.entity.EntityMetalMerchant;
@@ -118,11 +127,59 @@ public static final DeferredHolder<EntityType<?>, EntityType<AlcoholTraderEntity
                     .sized(0.6F, 1.95F)
                     .build("britannia_mod:alcohol_trader"));
 
-public static final DeferredHolder<EntityType<?>, EntityType<EntityMetalMerchant>> MEAT_TRADER =
+public static final DeferredHolder<EntityType<?>, EntityType<MeatTraderEntity>> MEAT_TRADER =
         ENTITIES.register("meat_trader",
-            () -> EntityType.Builder.of(EntityMetalMerchant::new, MobCategory.MISC)
+            () -> EntityType.Builder.of(MeatTraderEntity::new, MobCategory.MISC)
                     .sized(0.6F, 1.95F)
                     .build("britannia_mod:meat_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<OreTraderEntity>> ORE_TRADER =
+        ENTITIES.register("ore_trader",
+            () -> EntityType.Builder.of(OreTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:ore_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<StoneTraderEntity>> STONE_TRADER =
+        ENTITIES.register("stone_trader",
+            () -> EntityType.Builder.of(StoneTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:stone_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<GrainTraderEntity>> GRAIN_TRADER =
+        ENTITIES.register("grain_trader",
+            () -> EntityType.Builder.of(GrainTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:grain_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<ProduceTraderEntity>> PRODUCE_TRADER =
+        ENTITIES.register("produce_trader",
+            () -> EntityType.Builder.of(ProduceTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:produce_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<FurLeatherTraderEntity>> FUR_LEATHER_TRADER =
+        ENTITIES.register("fur_leather_trader",
+            () -> EntityType.Builder.of(FurLeatherTraderEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:fur_leather_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<BakerEntity>> BAKER =
+        ENTITIES.register("baker",
+            () -> EntityType.Builder.of(BakerEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:baker"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<TavernkeeperEntity>> TAVERNKEEPER =
+        ENTITIES.register("tavernkeeper",
+            () -> EntityType.Builder.of(TavernkeeperEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:tavernkeeper"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<CostermongerEntity>> COSTERMONGER =
+        ENTITIES.register("costermonger",
+            () -> EntityType.Builder.of(CostermongerEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:costermonger"));
 
 
     public static final DeferredHolder<EntityType<?>, EntityType<EntityWoodMerchant>> WOOD_MERCHANT_ENTITY = ENTITIES.register(
@@ -632,7 +689,15 @@ event.put(BEAR_BROWN_ENTITY.get(), BearBrownEntity.createAttributes().build());
 
         event.put(QUEST_GIVER.get(), QuestGiverEntity.createAttributes().build());
         event.put(SALVAGE_TRADER.get(), SalvageTraderEntity.createAttributes().build());
-        event.put(MEAT_TRADER.get(), EntityMetalMerchant.createAttributes().build());
+        event.put(MEAT_TRADER.get(), MeatTraderEntity.createAttributes().build());
+        event.put(ORE_TRADER.get(), OreTraderEntity.createAttributes().build());
+        event.put(STONE_TRADER.get(), StoneTraderEntity.createAttributes().build());
+        event.put(GRAIN_TRADER.get(), GrainTraderEntity.createAttributes().build());
+        event.put(PRODUCE_TRADER.get(), ProduceTraderEntity.createAttributes().build());
+        event.put(FUR_LEATHER_TRADER.get(), FurLeatherTraderEntity.createAttributes().build());
+        event.put(BAKER.get(), BakerEntity.createAttributes().build());
+        event.put(TAVERNKEEPER.get(), TavernkeeperEntity.createAttributes().build());
+        event.put(COSTERMONGER.get(), CostermongerEntity.createAttributes().build());
         event.put(ALCOHOL_TRADER.get(), AlcoholTraderEntity.createAttributes().build());
 
 

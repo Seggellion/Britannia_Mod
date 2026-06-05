@@ -74,7 +74,7 @@ public class CitySpawner {
         List<Entity> entities = level.getEntitiesOfClass(
             Entity.class,
             area,
-            CitySpawnRules::isAllowed
+            CitySpawnRules::isManagedByCityLimit
         );
 
         List<Entity> nonCriticalEntities = entities.stream()

@@ -10,16 +10,23 @@ public class BaseBritanniaModel<T extends LivingEntity & IBritanniaEntity> exten
 
     @Override
     public ResourceLocation getModelResource(T object) {
-        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "geo/" + object.getEntityName() + ".geo.json");
+        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "geo/" + getAssetName(object) + ".geo.json");
     }
 
     @Override
     public ResourceLocation getTextureResource(T object) {
-        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "textures/entity/" + object.getEntityName() + ".png");
+        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "textures/entity/" + getAssetName(object) + ".png");
     }
 
     @Override
     public ResourceLocation getAnimationResource(T object) {
-        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "animations/" + object.getEntityName() + ".animation.json");
+        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "animations/" + getAssetName(object) + ".animation.json");
+    }
+
+    private String getAssetName(T object) {
+        return switch (object.getEntityName()) {
+            case "elemental_gold_ore", "gold_ore_elemental", "shadow_ore_elemental" -> "earth_elemental";
+            default -> object.getEntityName();
+        };
     }
 }

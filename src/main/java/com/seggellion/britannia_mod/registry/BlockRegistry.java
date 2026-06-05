@@ -78,6 +78,7 @@ import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
 import com.seggellion.britannia_mod.block.ChessBoardBlock;
 import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.TraderSpawnBlock;
+import com.seggellion.britannia_mod.block.MerchantSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.QuestGiverSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
@@ -222,6 +223,9 @@ public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.r
 
     public static final DeferredHolder<Block, TraderSpawnBlock> TRADER_SPAWN_BLOCK =
             BLOCKS.register("trader_spawn_block", TraderSpawnBlock::new);
+
+    public static final DeferredHolder<Block, MerchantSpawnBlock> MERCHANT_SPAWN_BLOCK =
+            BLOCKS.register("merchant_spawn_block", MerchantSpawnBlock::new);
 
     public static final DeferredHolder<Block, QuestGiverSpawnBlock> QUEST_GIVER_SPAWN_BLOCK =
             BLOCKS.register("quest_giver_spawn_block", QuestGiverSpawnBlock::new);

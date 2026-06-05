@@ -357,14 +357,18 @@ public final class ServerEconomyService {
             item.addProperty("weight", weight);
         } else if (itemObj instanceof PurityOreItem oreItem) {
             item.addProperty("item_name", oreItem.getOreType(stack));
+            item.addProperty("commodity_key", oreItem.getOreType(stack));
             item.addProperty("purity", oreItem.getPurity(stack));
-            item.addProperty("category", "metal");
-            item.addProperty("subcategory", "ore");
+            item.addProperty("category", "ore");
+            item.addProperty("subcategory", "raw");
         } else if (itemObj instanceof GradeStoneItem stoneItem) {
             item.addProperty("item_name", stoneItem.getStoneType(stack));
+            item.addProperty("commodity_key", stoneItem.getStoneType(stack));
             item.addProperty("grade", stoneItem.getGradeValue(stack));
             item.addProperty("category", "stone");
             item.addProperty("subcategory", "raw_stone");
+        } else {
+            classifySimpleCommodity(item, pathOnly(itemId));
         }
 
         if (stack.has(DataComponentRegistry.WINE_DATA)) {
@@ -646,6 +650,39 @@ public final class ServerEconomyService {
             case "gold_ingot", "gold_ingots" -> "gold";
             default -> null;
         };
+    }
+
+    private static void classifySimpleCommodity(JsonObject item, String path) {
+        if (isAny(path, "wheat", "rice", "oats", "oat", "barley", "rye", "sorghum", "quinoa")) {
+            commodity(item, "grains", "raw", path);
+        } else if (isAny(path, "apple", "banana", "concord_grapes", "grapes", "peaches", "peach", "pears", "pear",
+                "squash", "carrot", "carrots", "corn", "cabbage", "lettuce", "onion", "pumpkin", "sweet_pepper")) {
+            commodity(item, "produce", "raw", path);
+        } else if (path.contains("meat") || path.contains("beef") || path.contains("pork") || path.contains("mutton")
+                || path.contains("chicken") || path.contains("rabbit") || path.contains("ham")
+                || path.contains("bacon") || path.contains("sausage") || path.contains("ribs")) {
+            commodity(item, "meat", "raw", path);
+        } else if (path.contains("leather") || path.contains("hide") || path.contains("pelt") || path.contains("fur")) {
+            commodity(item, "fur", "leather", path);
+        } else if (path.contains("stone") || path.contains("granite") || path.contains("diorite") || path.contains("andesite")
+                || path.contains("quartz") || path.contains("basalt") || path.contains("marble")
+                || path.contains("cobble") || path.contains("deepslate")) {
+            commodity(item, "stone", "blocks", path);
+        }
+    }
+
+    private static void commodity(JsonObject item, String category, String subcategory, String key) {
+        item.addProperty("item_name", key);
+        item.addProperty("commodity_key", key);
+        item.addProperty("category", category);
+        item.addProperty("subcategory", subcategory);
+    }
+
+    private static boolean isAny(String path, String... keys) {
+        for (String key : keys) {
+            if (path.equals(key)) return true;
+        }
+        return false;
     }
 
     private record SaleStack(int slot, ItemStack stack, int quantity) {}

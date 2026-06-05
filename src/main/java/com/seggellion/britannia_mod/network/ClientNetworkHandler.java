@@ -16,8 +16,10 @@ import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPaylo
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.BlacksmithyScreen;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.network.ClientboundOpenNpcScreenPayload;
 import com.seggellion.britannia_mod.client.screen.TraderSpawnScreen;
+import com.seggellion.britannia_mod.client.screen.MerchantSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.StoreSignScreen;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
@@ -113,7 +115,9 @@ public class ClientNetworkHandler {
             // Fetch catalog before opening the screen
             roleHandler.fetchCatalog(player, pkt.city(), products -> {
               if (products == null || products.isEmpty()) {
-                    String msg = pkt.role() + " says: 'I am not interested in anything you have.'";
+                    String msg = pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT
+                            ? pkt.role() + " says: 'I have nothing the city can produce right now.'"
+                            : pkt.role() + " says: 'I am not interested in anything you have.'";
                     Style style = Style.EMPTY
                             .withFont(FONT_UO_CLASSIC)
                             .withColor(GRAY_848484);
@@ -189,6 +193,18 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
                 payload.traderType(),
                 payload.cityName(),
                 payload.townPersonAmount()
+            ));
+        });
+    }
+
+    public static void handleMerchantSpawnScreen(MerchantSpawnScreenS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            mc.setScreen(new MerchantSpawnScreen(
+                    payload.pos(),
+                    payload.merchantType(),
+                    payload.cityName(),
+                    payload.townPersonAmount()
             ));
         });
     }

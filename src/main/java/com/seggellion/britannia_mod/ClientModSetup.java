@@ -12,6 +12,12 @@ import com.seggellion.britannia_mod.client.renderer.entity.AlcoholTraderEntityRe
 import com.seggellion.britannia_mod.client.renderer.entity.CitizenEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
+import com.seggellion.britannia_mod.client.BritainMusicHandler;
+import com.seggellion.britannia_mod.client.ModModelLayers;
+import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
+import com.seggellion.britannia_mod.client.ThinWallClient;
+import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
+import com.seggellion.britannia_mod.client.model.ThinWallModels;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
@@ -20,6 +26,7 @@ import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
+import com.seggellion.britannia_mod.event.ClientEventHandler;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.entity.EntityType;
@@ -55,8 +62,12 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.component.DataComponents;
@@ -69,11 +80,14 @@ import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
 
 
+@EventBusSubscriber(modid = BritanniaMod.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static boolean clientGameHandlersRegistered = false;
 
     @SubscribeEvent
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+        new ClientOnlyItemRegistry().registerSpawnEggColors(event);
 
         // -- Weapon Tints --
         event.register((stack, tintIndex) -> {
@@ -195,6 +209,27 @@ public class ClientModSetup {
         event.register(ModelResourceLocation.standalone(
             ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
         ));
+    }
+
+    @SubscribeEvent
+    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
+        ThinWallModels.onModifyBakingResults(event);
+        new ThinWallClient().onModifyBaking(event);
+    }
+
+    @SubscribeEvent
+    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        ModModelLayers.onRegisterLayerDefinitions(event);
+    }
+
+    @SubscribeEvent
+    public static void registerKeys(RegisterKeyMappingsEvent event) {
+        Keybinds.registerKeys(event);
+    }
+
+    @SubscribeEvent
+    public static void registerClientPackets(RegisterPayloadHandlersEvent event) {
+        ClientEventHandler.registerClientPackets(event);
     }
 
 
@@ -475,15 +510,32 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.QUEST_GIVER.get(), QuestGiverEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ALCOHOL_TRADER.get(), AlcoholTraderEntityRenderer::new);
-        
-        // TODO: Ensure you use a Meat Merchant Renderer instead of Metal Merchant Renderer here if you have one!
-        event.registerEntityRenderer(EntityRegistry.MEAT_TRADER.get(), EntityMetalMerchantRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.MEAT_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.ORE_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.STONE_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.GRAIN_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.PRODUCE_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.FUR_LEATHER_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.BAKER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.TAVERNKEEPER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.COSTERMONGER.get(), CitizenEntityRenderer::new);
     }
 
 
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {
-        Keybinds.registerInputHandler();
+        ClientEventHandler.onClientSetup(event);
+
+        if (!clientGameHandlersRegistered) {
+            Keybinds.registerInputHandler();
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onBlockRightClick);
+            NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
+            NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
+            NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
+            clientGameHandlersRegistered = true;
+        }
 
         // Initialize the ClientOnlyItemRegistry
         ClientOnlyItemRegistry registry = new ClientOnlyItemRegistry();

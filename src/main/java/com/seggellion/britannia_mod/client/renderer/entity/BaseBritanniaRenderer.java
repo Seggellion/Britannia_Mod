@@ -33,8 +33,11 @@ public class BaseBritanniaRenderer<T extends LivingEntity & IBritanniaEntity> ex
 @Override
 public Color getRenderColor(T animatable, float partialTick, int packedLight) {
     float alpha = animatable.getTargetAlpha();
-    // Return the Color object directly, don't call .getColor()
-    return Color.ofRGBA(1.0F, 1.0F, 1.0F, alpha);
+    return switch (animatable.getEntityName()) {
+        case "elemental_gold_ore", "gold_ore_elemental" -> Color.ofRGBA(0.921F, 0.831F, 0.0F, alpha);
+        case "shadow_ore_elemental" -> Color.ofRGBA(0.169F, 0.169F, 0.169F, alpha);
+        default -> Color.ofRGBA(1.0F, 1.0F, 1.0F, alpha);
+    };
 }
 
     @Override

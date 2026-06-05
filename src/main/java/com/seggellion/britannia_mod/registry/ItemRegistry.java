@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.InstrumentItem;
 import com.seggellion.britannia_mod.item.GrapesItem;
+import com.seggellion.britannia_mod.item.CookedFishSteakItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
@@ -98,6 +99,16 @@ public class ItemRegistry {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(
             net.minecraft.core.registries.Registries.ITEM, "britannia_mod");
   private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static Item.Properties food(int nutrition, float saturation) {
+        return new Item.Properties().food(
+                new net.minecraft.world.food.FoodProperties.Builder()
+                        .nutrition(nutrition)
+                        .saturationModifier(saturation)
+                        .build()
+        );
+    }
+
     // General Items
     public static final DeferredHolder<Item, Item> GOLD_COIN = ITEMS.register("gold_coin",
             () -> new Item(new Item.Properties().stacksTo(99)));
@@ -222,6 +233,65 @@ public static final DeferredHolder<Item, Item> GRAPES = ITEMS.register("grapes",
     () -> new GrapesItem(new Item.Properties().food( // <--- FIX: Uses your custom class
             new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.3f).build()
     )));
+
+public static final DeferredHolder<Item, Item> RICE_BREAD = ITEMS.register("rice_bread",
+        () -> new Item(food(5, 0.6f)));
+public static final DeferredHolder<Item, Item> OAT_BREAD = ITEMS.register("oat_bread",
+        () -> new Item(food(5, 0.6f)));
+public static final DeferredHolder<Item, Item> BARLEY_BREAD = ITEMS.register("barley_bread",
+        () -> new Item(food(5, 0.6f)));
+public static final DeferredHolder<Item, Item> RYE_BREAD = ITEMS.register("rye_bread",
+        () -> new Item(food(5, 0.6f)));
+public static final DeferredHolder<Item, Item> SORGHUM_BREAD = ITEMS.register("sorghum_bread",
+        () -> new Item(food(5, 0.6f)));
+public static final DeferredHolder<Item, Item> QUINOA_BREAD = ITEMS.register("quinoa_bread",
+        () -> new Item(food(5, 0.6f)));
+
+public static final DeferredHolder<Item, Item> CHICKEN_LEG = ITEMS.register("chicken_leg",
+        () -> new Item(food(4, 0.5f)));
+public static final DeferredHolder<Item, Item> COOKED_BIRD = ITEMS.register("cooked_bird",
+        () -> new Item(food(6, 0.7f)));
+public static final DeferredHolder<Item, Item> CUT_OF_RIBS = ITEMS.register("cut_of_ribs",
+        () -> new Item(food(7, 0.8f)));
+public static final DeferredHolder<Item, Item> HAM = ITEMS.register("ham",
+        () -> new Item(food(7, 0.8f)));
+public static final DeferredHolder<Item, Item> LEG_OF_LAMB = ITEMS.register("leg_of_lamb",
+        () -> new Item(food(7, 0.8f)));
+public static final DeferredHolder<Item, Item> ROAST_PIG = ITEMS.register("roast_pig",
+        () -> new Item(food(8, 0.9f)));
+public static final DeferredHolder<Item, Item> SLICE_OF_BACON = ITEMS.register("slice_of_bacon",
+        () -> new Item(food(4, 0.5f)));
+public static final DeferredHolder<Item, Item> SAUSAGE = ITEMS.register("sausage",
+        () -> new Item(food(6, 0.7f)));
+public static final DeferredHolder<Item, CookedFishSteakItem> COOKED_FISH_STEAK = ITEMS.register("cooked_fish_steak",
+        () -> new CookedFishSteakItem(food(6, 0.8f)));
+
+public static final DeferredHolder<Item, Item> APPLE = ITEMS.register("apple",
+        () -> new Item(food(4, 0.3f)));
+public static final DeferredHolder<Item, Item> BANANA = ITEMS.register("banana",
+        () -> new Item(food(4, 0.4f)));
+public static final DeferredHolder<Item, Item> CONCORD_GRAPES = ITEMS.register("concord_grapes",
+        () -> new Item(food(3, 0.3f)));
+public static final DeferredHolder<Item, Item> PEACHES = ITEMS.register("peaches",
+        () -> new Item(food(4, 0.4f)));
+public static final DeferredHolder<Item, Item> PEARS = ITEMS.register("pears",
+        () -> new Item(food(4, 0.4f)));
+public static final DeferredHolder<Item, Item> SQUASH = ITEMS.register("squash",
+        () -> new Item(food(3, 0.3f)));
+public static final DeferredHolder<Item, Item> CARROTS = ITEMS.register("carrots",
+        () -> new Item(food(3, 0.4f)));
+public static final DeferredHolder<Item, Item> CORN = ITEMS.register("corn",
+        () -> new Item(food(3, 0.4f)));
+public static final DeferredHolder<Item, Item> CABBAGE = ITEMS.register("cabbage",
+        () -> new Item(food(3, 0.3f)));
+public static final DeferredHolder<Item, Item> LETTUCE = ITEMS.register("lettuce",
+        () -> new Item(food(2, 0.2f)));
+public static final DeferredHolder<Item, Item> ONION = ITEMS.register("onion",
+        () -> new Item(food(2, 0.2f)));
+public static final DeferredHolder<Item, Item> PUMPKIN = ITEMS.register("pumpkin",
+        () -> new Item(food(3, 0.3f)));
+public static final DeferredHolder<Item, Item> SWEET_PEPPER = ITEMS.register("sweet_pepper",
+        () -> new Item(food(3, 0.3f)));
     
 public static final DeferredHolder<Item, Item> FARMING_BLOCK_ITEM = ITEMS.register("farming_block",
             () -> new net.minecraft.world.item.BlockItem(BlockRegistry.FARMING_BLOCK.get(), new Item.Properties()));
@@ -1165,6 +1235,10 @@ public static final DeferredHolder<Item, BlockItem> QUEST_DESTINATION_BLOCK_ITEM
     public static final DeferredHolder<Item, BlockItem> TRADER_SPAWN_BLOCK_ITEM =
             ITEMS.register("trader_spawn_block", () ->
                     new BlockItem(BlockRegistry.TRADER_SPAWN_BLOCK.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, BlockItem> MERCHANT_SPAWN_BLOCK_ITEM =
+            ITEMS.register("merchant_spawn_block", () ->
+                    new BlockItem(BlockRegistry.MERCHANT_SPAWN_BLOCK.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, BlockItem> QUEST_GIVER_SPAWN_BLOCK_ITEM =
             ITEMS.register("quest_giver_spawn_block", () ->
