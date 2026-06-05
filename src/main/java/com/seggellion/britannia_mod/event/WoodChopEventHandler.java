@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -49,6 +50,21 @@ public class WoodChopEventHandler {
         // Everything else can default to "oak" if unknown
     }
 
+    private static final Map<Block, ItemStack> LEAF_SAPLING_DROPS = new HashMap<>();
+
+    static {
+        LEAF_SAPLING_DROPS.put(Blocks.OAK_LEAVES, new ItemStack(Items.OAK_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.SPRUCE_LEAVES, new ItemStack(Items.SPRUCE_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.BIRCH_LEAVES, new ItemStack(Items.BIRCH_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.JUNGLE_LEAVES, new ItemStack(Items.JUNGLE_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.ACACIA_LEAVES, new ItemStack(Items.ACACIA_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.DARK_OAK_LEAVES, new ItemStack(Items.DARK_OAK_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.MANGROVE_LEAVES, new ItemStack(Items.MANGROVE_PROPAGULE));
+        LEAF_SAPLING_DROPS.put(Blocks.CHERRY_LEAVES, new ItemStack(Items.CHERRY_SAPLING));
+        LEAF_SAPLING_DROPS.put(Blocks.AZALEA_LEAVES, new ItemStack(Items.AZALEA));
+        LEAF_SAPLING_DROPS.put(Blocks.FLOWERING_AZALEA_LEAVES, new ItemStack(Items.FLOWERING_AZALEA));
+    }
+
     @SubscribeEvent
     public static void onBlockBreak(BreakEvent event) {
         Player player = event.getPlayer();
@@ -66,7 +82,36 @@ public class WoodChopEventHandler {
              LOGGER.info("Wood block is about to break");
 
         // Only proceed if it's a log block, and the player is using your custom axe
-        if (usingTwoHandedAxe && state.is(BlockTags.LOGS)) {
+            if (usingTwoHandedAxe && state.is(BlockTags.LEAVES)) {
+                event.setCanceled(true);
+
+                serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
+
+                if (serverLevel.random.nextInt(4) == 0) {
+                    ItemStack saplingStack = LEAF_SAPLING_DROPS
+                        .getOrDefault(state.getBlock(), new ItemStack(Items.OAK_SAPLING))
+                        .copy();
+
+                    ItemEntity drop = new ItemEntity(
+                        serverLevel,
+                        pos.getX() + 0.5,
+                        pos.getY() + 0.5,
+                        pos.getZ() + 0.5,
+                        saplingStack
+                    );
+
+                    serverLevel.addFreshEntity(drop);
+
+                    player.displayClientMessage(
+                        Component.literal("You recover a sapling from the leaves."),
+                        true
+                    );
+                }
+
+                return;
+            }
+
+            if (usingTwoHandedAxe && state.is(BlockTags.LOGS)) {
             // 1) Play your chop-tree sound
             player.level().playSound(null, pos, ModSounds.CHOP_TREE.get(), SoundSource.PLAYERS, 2.0F, 2.0F);
 

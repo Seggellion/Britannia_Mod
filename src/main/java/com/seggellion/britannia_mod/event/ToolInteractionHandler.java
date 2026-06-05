@@ -62,9 +62,13 @@ public class ToolInteractionHandler {
 
             // TwoHandedAxe → logs only
             if (item instanceof TwoHandedAxeItem) {
-                if (!state.is(BlockTags.LOGS)) {
-                    LOGGER.info("Preventing block breaking for non-log block: {}", state.getBlock());
+                boolean isLog = state.is(BlockTags.LOGS);
+                boolean isLeaves = state.is(BlockTags.LEAVES);
+
+                if (!isLog && !isLeaves) {
                     event.setCanceled(true);
+                } else {
+                    event.setNewSpeed(isLeaves ? 4.0F : 2.0F);
                 }
             }
             // IronPickaxe → stone/ore only
