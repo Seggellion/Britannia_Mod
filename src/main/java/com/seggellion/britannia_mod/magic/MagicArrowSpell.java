@@ -125,7 +125,7 @@ public class MagicArrowSpell extends Spell {
     private Arrow createMagicArrow(LivingEntity caster, Level world) {
         Arrow arrow = new Arrow(EntityType.ARROW, world);
         arrow.setOwner(caster);
-        arrow.setBaseDamage(5.0D);
+        arrow.setBaseDamage(2.0D);
         arrow.setCritArrow(true);
         arrow.setRemainingFireTicks(100);
         arrow.pickup = Pickup.DISALLOWED;

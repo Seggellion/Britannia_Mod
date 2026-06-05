@@ -60,6 +60,7 @@ import com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload;
 import com.seggellion.britannia_mod.network.QuestPayloadHandler;
 
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
@@ -90,6 +91,8 @@ private static final java.util.Set<String> PROCESSED_RECEIPTS = java.util.Collec
 
  @SubscribeEvent
 public static void register(final RegisterPayloadHandlersEvent event) {
+    ClientModWhitelist.registerPayloads(event);
+
     final PayloadRegistrar registrar = event.registrar("1");
 
     /* ---------- packets that exist on BOTH sides or are SERVER-bound ---------- */
@@ -576,6 +579,11 @@ registrar.playToClient(
 
 
     
+}
+
+@SubscribeEvent
+public static void registerConfigurationTasks(final RegisterConfigurationTasksEvent event) {
+    ClientModWhitelist.registerConfigurationTasks(event);
 }
 
 
