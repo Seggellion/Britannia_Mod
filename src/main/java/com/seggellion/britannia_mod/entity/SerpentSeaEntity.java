@@ -78,12 +78,6 @@ public class SerpentSeaEntity extends BaseBritanniaMonster {
         this.positionMultipart(this.body4, 2.4F, 0.0F);
         this.positionMultipart(this.tail, 3.6F, 0.0F);
 
-        // Temporary Debugging: Spawn particles so you can SEE the invisible hitboxes
-        if (this.level().isClientSide) {
-            for (SerpentPartEntity part : this.subEntities) {
-                this.level().addParticle(net.minecraft.core.particles.ParticleTypes.FLAME, part.getX(), part.getY() + 0.5, part.getZ(), 0, 0, 0);
-            }
-        }
     }
 
     @Override
