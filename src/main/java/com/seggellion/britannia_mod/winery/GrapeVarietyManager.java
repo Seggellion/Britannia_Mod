@@ -36,6 +36,10 @@ public class GrapeVarietyManager {
         return VARIETIES.getOrDefault(id, VARIETIES.get("wild_grape"));
     }
 
+    public static GrapeVariety getVarietyOrNull(String id) {
+        return VARIETIES.get(id);
+    }
+
     public static Collection<GrapeVariety> getAllVarieties() {
         return VARIETIES.values();
     }

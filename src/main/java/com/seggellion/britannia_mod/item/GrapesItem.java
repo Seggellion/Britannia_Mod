@@ -13,6 +13,8 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.sounds.SoundSource;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.winery.GrapeVariety;
+import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 
 import net.minecraft.sounds.SoundEvents;
 
@@ -20,14 +22,22 @@ import net.minecraft.ChatFormatting;
 import java.util.List;
 
 public class GrapesItem extends Item {
+    public static final String GRAPE_VARIETY_KEY = "GrapeVariety";
+    public static final String DEFAULT_VARIETY_ID = "wild_grape";
+
     public GrapesItem(Properties properties) {
         super(properties);
     }
 
     public static void setVariety(ItemStack stack, String varietyId) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-        tag.putString("GrapeVariety", varietyId);
+        tag.putString(GRAPE_VARIETY_KEY, varietyId);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        return Component.literal(getGrapeItemName(stack));
     }
 
 // --- Interaction Logic: Extract Seeds ---
@@ -73,7 +83,54 @@ public class GrapesItem extends Item {
 
     public static String getVariety(ItemStack stack) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-        return tag.contains("GrapeVariety") ? tag.getString("GrapeVariety") : "Wild";
+        String varietyId = tag.contains(GRAPE_VARIETY_KEY) ? tag.getString(GRAPE_VARIETY_KEY) : DEFAULT_VARIETY_ID;
+        return varietyId == null || varietyId.isBlank() ? DEFAULT_VARIETY_ID : varietyId;
+    }
+
+    public static String getFormattedVarietyName(ItemStack stack) {
+        return getDisplayNameForVariety(getVariety(stack));
+    }
+
+    public static String getDisplayNameForVariety(String varietyId) {
+        String safeVarietyId = varietyId == null || varietyId.isBlank() ? DEFAULT_VARIETY_ID : varietyId;
+        GrapeVariety variety = GrapeVarietyManager.getVarietyOrNull(safeVarietyId);
+
+        if (variety != null && variety.getFormattedName() != null && !variety.getFormattedName().isBlank()) {
+            return variety.getFormattedName();
+        }
+
+        String humanized = humanizeVarietyId(safeVarietyId);
+        return humanized.isBlank() ? "Unknown" : humanized;
+    }
+
+    public static String getGrapeItemName(ItemStack stack) {
+        String varietyId = getVariety(stack);
+        String displayName = DEFAULT_VARIETY_ID.equals(varietyId) ? "Wild" : getDisplayNameForVariety(varietyId);
+        return displayName + " grapes";
+    }
+
+    public static String getGrapeSeedItemName(ItemStack stack) {
+        String varietyId = getVariety(stack);
+        String displayName = DEFAULT_VARIETY_ID.equals(varietyId) ? "Wild" : getDisplayNameForVariety(varietyId);
+        return displayName + " grape seeds";
+    }
+
+    private static String humanizeVarietyId(String varietyId) {
+        String[] words = varietyId.replace('-', '_').split("_");
+        StringBuilder name = new StringBuilder();
+        for (String word : words) {
+            if (word.isBlank()) {
+                continue;
+            }
+            if (!name.isEmpty()) {
+                name.append(' ');
+            }
+            name.append(Character.toUpperCase(word.charAt(0)));
+            if (word.length() > 1) {
+                name.append(word.substring(1).toLowerCase());
+            }
+        }
+        return name.toString();
     }
 
 // --- NEW: REGION HANDLING ---
@@ -91,6 +148,6 @@ public class GrapesItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Variety: " + getVariety(stack)).withStyle(ChatFormatting.DARK_PURPLE));
+        tooltip.add(Component.literal("Variety: " + getFormattedVarietyName(stack)).withStyle(ChatFormatting.DARK_PURPLE));
     }
 }

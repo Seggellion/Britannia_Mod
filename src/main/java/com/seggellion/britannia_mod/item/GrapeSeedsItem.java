@@ -33,13 +33,19 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
     // --- Data Handlers ---
     public static void setVariety(ItemStack stack, String varietyId) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-        tag.putString("GrapeVariety", varietyId);
+        tag.putString(GrapesItem.GRAPE_VARIETY_KEY, varietyId);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     public static String getVariety(ItemStack stack) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-        return tag.contains("GrapeVariety") ? tag.getString("GrapeVariety") : "cabernet_sauvignon";
+        String varietyId = tag.contains(GrapesItem.GRAPE_VARIETY_KEY) ? tag.getString(GrapesItem.GRAPE_VARIETY_KEY) : GrapesItem.DEFAULT_VARIETY_ID;
+        return varietyId == null || varietyId.isBlank() ? GrapesItem.DEFAULT_VARIETY_ID : varietyId;
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        return Component.literal(GrapesItem.getGrapeSeedItemName(stack));
     }
 
     // --- Placement Logic ---
@@ -89,6 +95,6 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Variety: " + getVariety(stack)).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("Variety: " + GrapesItem.getDisplayNameForVariety(getVariety(stack))).withStyle(ChatFormatting.GRAY));
     }
 }
