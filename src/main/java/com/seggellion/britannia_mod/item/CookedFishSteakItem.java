@@ -10,10 +10,30 @@ import net.minecraft.world.item.component.CustomData;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
-public class CookedFishSteakItem extends Item {
+public class CookedFishSteakItem extends WeightedCookedFoodItem {
+    private static final Set<String> MYTHIC_FISH_TYPES = Set.of(
+            "highly_peculiar_fish",
+            "prized_fish",
+            "truly_rare_fish",
+            "wondrous_fish",
+            "infernal_tuna",
+            "lurker_fish",
+            "reaper_fish",
+            "zombie_fish",
+            "abyssal_dragonfish",
+            "spring_dragonfish",
+            "summer_dragonfish",
+            "autumn_dragonfish",
+            "winter_dragonfish",
+            "crystal_fish",
+            "unicorn_fish",
+            "golden_tuna"
+    );
+
     public CookedFishSteakItem(Properties properties) {
-        super(properties);
+        super(properties, "fish", FISH_MULTIPLIER);
     }
 
     public static void setFishType(ItemStack stack, String fishType) {
@@ -27,6 +47,14 @@ public class CookedFishSteakItem extends Item {
         CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag()));
         CompoundTag tag = data.copyTag();
         return tag.contains("FishType") ? tag.getString("FishType") : "unknown";
+    }
+
+    @Override
+    public int restoreAmount(ItemStack stack) {
+        String fishType = getFishType(stack);
+        double multiplier = MYTHIC_FISH_TYPES.contains(fishType) ? MYTHIC_FISH_MULTIPLIER : FISH_MULTIPLIER;
+        int calculated = (int) Math.round(getWeight(stack) * multiplier);
+        return Math.max(MIN_RESTORE, Math.min(MAX_RESTORE, calculated));
     }
 
     @Override

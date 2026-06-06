@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.client.screen;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BritanniaSpawnConfigC2SPayload;
+import com.seggellion.britannia_mod.spawner.BritanniaSpawnableEntities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -10,11 +11,8 @@ import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -36,8 +34,7 @@ public class BritanniaSpawnScreen extends Screen {
     private Checkbox nightOnlyBox;
     private final List<ResourceLocation> activeEntities;
     private String currentSuggestion = "";
-    // list of ALL available monster IDs
-    private final List<ResourceLocation> availableMonsters = new ArrayList<>();
+    private final List<ResourceLocation> availableEntities = new ArrayList<>();
     // The closest match based on what the user is typing
     private ResourceLocation currentBestMatch;
 
@@ -58,31 +55,17 @@ public class BritanniaSpawnScreen extends Screen {
 
     @Override
     protected void init() {
-        // gather monsters (filter: only britannia_mod namespace + MONSTER category)
-        for (EntityType<?> t : BuiltInRegistries.ENTITY_TYPE) {
-            if (t.getCategory() == MobCategory.MONSTER || t.getCategory() == MobCategory.CREATURE) {
-                ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(t);
-                
-                // Only add entities from our specific mod
-                if ("britannia_mod".equals(key.getNamespace())) {
-                    availableMonsters.add(key); // Make sure you rename 'availableMonsters' to 'availableEntities' if you want to be thorough!
-                }
-            }
-        }
-        if (availableMonsters.isEmpty()) {
-            availableMonsters.add(BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ZOMBIE));
-        }
+        availableEntities.clear();
+        availableEntities.addAll(BritanniaSpawnableEntities.allowedIds());
 
         currentBestMatch = currentId;
 
         int cx = this.width / 2;
         int cy = this.height / 2;
 
-        // Search Box for Monster ID
-        monsterSearchBox = new EditBox(this.font, cx - 110, cy - 50, 220, 20, Component.literal("Monster Search"));
+        monsterSearchBox = new EditBox(this.font, cx - 110, cy - 50, 220, 20, Component.literal("Entity Search"));
         monsterSearchBox.setMaxLength(100);
-        // Start with just the path (e.g., "mongbat" instead of "britannia_mod:mongbat")
-        monsterSearchBox.setValue(currentId.getPath()); 
+        monsterSearchBox.setValue(initialSearchValue(currentId));
         
         monsterSearchBox.setResponder(this::updateSearchSuggestion);
         // Trigger the initial suggestion text
@@ -134,19 +117,24 @@ public class BritanniaSpawnScreen extends Screen {
 private void updateSearchSuggestion(String text) {
         String typed = text.toLowerCase(Locale.ROOT);
         
-        List<ResourceLocation> matches = availableMonsters.stream()
-                .filter(rl -> rl.getPath().contains(typed) || rl.toString().contains(typed))
+        List<ResourceLocation> matches = availableEntities.stream()
+                .filter(rl -> {
+                    String label = BritanniaSpawnableEntities.displayName(rl).toLowerCase(Locale.ROOT);
+                    return rl.getPath().contains(typed) || rl.toString().contains(typed) || label.contains(typed);
+                })
                 .sorted((a, b) -> {
                     String pathA = a.getPath();
                     String pathB = b.getPath();
+                    String labelA = BritanniaSpawnableEntities.displayName(a).toLowerCase(Locale.ROOT);
+                    String labelB = BritanniaSpawnableEntities.displayName(b).toLowerCase(Locale.ROOT);
                     
                     // 1. Exact matches get absolute highest priority
-                    if (pathA.equals(typed)) return -1;
-                    if (pathB.equals(typed)) return 1;
+                    if (pathA.equals(typed) || labelA.equals(typed)) return -1;
+                    if (pathB.equals(typed) || labelB.equals(typed)) return 1;
                     
                     // 2. Prefix matches ("starts with") get second priority
-                    boolean aStarts = pathA.startsWith(typed);
-                    boolean bStarts = pathB.startsWith(typed);
+                    boolean aStarts = pathA.startsWith(typed) || labelA.startsWith(typed);
+                    boolean bStarts = pathB.startsWith(typed) || labelB.startsWith(typed);
                     if (aStarts && !bStarts) return -1;
                     if (!aStarts && bStarts) return 1;
                     
@@ -195,6 +183,10 @@ private void updateSearchSuggestion(String text) {
         }
     }
 
+    private String initialSearchValue(ResourceLocation id) {
+        return "minecraft".equals(id.getNamespace()) ? BritanniaSpawnableEntities.displayName(id) : id.getPath();
+    }
+
     @Override
     public void render(GuiGraphics gg, int mouseX, int mouseY, float pt) {
         this.renderBackground(gg, mouseX, mouseY, pt);
@@ -209,7 +201,7 @@ private void updateSearchSuggestion(String text) {
         gg.drawCenteredString(this.font, this.title, this.width / 2, cy - 100, 0xFFFFFF);
 
         // labels
-        gg.drawString(this.font, "Monster ID (Press TAB to auto-complete)", cx - 110, cy - 62, 0xA0A0A0);
+        gg.drawString(this.font, "Entity", cx - 110, cy - 62, 0xA0A0A0);
         gg.drawString(this.font, "Radius", cx - 110, cy - 32, 0xFFFFFF);
         gg.drawString(this.font, "Min Ticks", cx - 40, cy - 32, 0xFFFFFF);
         gg.drawString(this.font, "Max Ticks", cx + 30, cy - 32, 0xFFFFFF);
@@ -225,7 +217,7 @@ private void updateSearchSuggestion(String text) {
 
         int y = cy + 85;
         for (int i = 0; i < activeEntities.size(); i++) {
-            String name = activeEntities.get(i).toString();
+            String name = BritanniaSpawnableEntities.displayName(activeEntities.get(i));
             gg.drawString(this.font, "- " + name, cx - 110, y + i * 10, 0xA0A0A0);
         }
     }

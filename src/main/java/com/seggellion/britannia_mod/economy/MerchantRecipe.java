@@ -26,9 +26,13 @@ public record MerchantRecipe(
         return stack;
     }
 
-    public record Ingredient(String category, double amount, List<String> aliases) {
+    public record Ingredient(String category, String subcategory, double amount, List<String> aliases) {
         public static Ingredient of(String category, double amount, String... aliases) {
-            return new Ingredient(category, amount, List.of(aliases));
+            return new Ingredient(category, "", amount, List.of(aliases));
+        }
+
+        public static Ingredient of(String category, String subcategory, double amount, String... aliases) {
+            return new Ingredient(category, subcategory, amount, List.of(aliases));
         }
     }
 }

@@ -34,7 +34,9 @@ public final class ClientModWhitelist {
         "distanthorizons",
         "iris",
         "sodium",
-        "worldedit"
+        "worldedit",
+        "freecam",
+        "cloth_config"
     );
 
     private static final Set<String> ALLOWED_SYSTEM_MODS = Set.of(
@@ -93,6 +95,7 @@ public final class ClientModWhitelist {
         List<String> blockedMods = reportedMods.stream()
             .map(ReportedMod::id)
             .filter(id -> !ALLOWED_MODS.contains(id))
+            .filter(id -> !id.startsWith("fabric_")) // Ignores all Fabric API sub-modules
             .distinct()
             .sorted()
             .toList();

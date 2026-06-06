@@ -8,6 +8,8 @@ import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.InstrumentItem;
 import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.item.CookedFishSteakItem;
+import com.seggellion.britannia_mod.item.WeightedCommodityItem;
+import com.seggellion.britannia_mod.item.WeightedCookedFoodItem;
 import com.seggellion.britannia_mod.item.BlueTentDeedItem;
 import com.seggellion.britannia_mod.item.PurpleTentDeedItem;
 import com.seggellion.britannia_mod.item.DeedItem;
@@ -109,6 +111,21 @@ public class ItemRegistry {
         );
     }
 
+    private static DeferredHolder<Item, WeightedCommodityItem> weightedCommodity(String id) {
+        return ITEMS.register(id, () -> new WeightedCommodityItem(new Item.Properties()));
+    }
+
+    private static DeferredHolder<Item, WeightedCookedFoodItem> cookedFood(
+            String id,
+            int nutrition,
+            float saturation,
+            String foodType,
+            double restoreMultiplier
+    ) {
+        return ITEMS.register(id, () ->
+                new WeightedCookedFoodItem(food(1, saturation), foodType, restoreMultiplier));
+    }
+
     // General Items
     public static final DeferredHolder<Item, Item> GOLD_COIN = ITEMS.register("gold_coin",
             () -> new Item(new Item.Properties().stacksTo(99)));
@@ -176,6 +193,8 @@ public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.registe
 // quest items
   public static final DeferredHolder<Item, Item> ONE_RING = ITEMS.register("one_ring",
             () -> new Item(new Item.Properties()));
+  public static final DeferredHolder<Item, Item> BRITANNIA_RACE_MAP = ITEMS.register("britannia_race_map",
+            () -> new Item(new Item.Properties()));
 
 /* =========================================================
        MUSICAL INSTRUMENTS
@@ -234,64 +253,135 @@ public static final DeferredHolder<Item, Item> GRAPES = ITEMS.register("grapes",
             new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.3f).build()
     )));
 
-public static final DeferredHolder<Item, Item> RICE_BREAD = ITEMS.register("rice_bread",
-        () -> new Item(food(5, 0.6f)));
-public static final DeferredHolder<Item, Item> OAT_BREAD = ITEMS.register("oat_bread",
-        () -> new Item(food(5, 0.6f)));
-public static final DeferredHolder<Item, Item> BARLEY_BREAD = ITEMS.register("barley_bread",
-        () -> new Item(food(5, 0.6f)));
-public static final DeferredHolder<Item, Item> RYE_BREAD = ITEMS.register("rye_bread",
-        () -> new Item(food(5, 0.6f)));
-public static final DeferredHolder<Item, Item> SORGHUM_BREAD = ITEMS.register("sorghum_bread",
-        () -> new Item(food(5, 0.6f)));
-public static final DeferredHolder<Item, Item> QUINOA_BREAD = ITEMS.register("quinoa_bread",
-        () -> new Item(food(5, 0.6f)));
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BREAD = cookedFood(
+        "bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> RICE_BREAD = cookedFood(
+        "rice_bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> OAT_BREAD = cookedFood(
+        "oat_bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BARLEY_BREAD = cookedFood(
+        "barley_bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> RYE_BREAD = cookedFood(
+        "rye_bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> SORGHUM_BREAD = cookedFood(
+        "sorghum_bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> QUINOA_BREAD = cookedFood(
+        "quinoa_bread", 5, 0.6f, "grain", WeightedCookedFoodItem.GRAIN_MULTIPLIER);
 
-public static final DeferredHolder<Item, Item> CHICKEN_LEG = ITEMS.register("chicken_leg",
-        () -> new Item(food(4, 0.5f)));
-public static final DeferredHolder<Item, Item> COOKED_BIRD = ITEMS.register("cooked_bird",
-        () -> new Item(food(6, 0.7f)));
-public static final DeferredHolder<Item, Item> CUT_OF_RIBS = ITEMS.register("cut_of_ribs",
-        () -> new Item(food(7, 0.8f)));
-public static final DeferredHolder<Item, Item> HAM = ITEMS.register("ham",
-        () -> new Item(food(7, 0.8f)));
-public static final DeferredHolder<Item, Item> LEG_OF_LAMB = ITEMS.register("leg_of_lamb",
-        () -> new Item(food(7, 0.8f)));
-public static final DeferredHolder<Item, Item> ROAST_PIG = ITEMS.register("roast_pig",
-        () -> new Item(food(8, 0.9f)));
-public static final DeferredHolder<Item, Item> SLICE_OF_BACON = ITEMS.register("slice_of_bacon",
-        () -> new Item(food(4, 0.5f)));
-public static final DeferredHolder<Item, Item> SAUSAGE = ITEMS.register("sausage",
-        () -> new Item(food(6, 0.7f)));
+public static final DeferredHolder<Item, WeightedCookedFoodItem> COOKED_CHICKEN = cookedFood(
+        "cooked_chicken", 5, 0.6f, "chicken", WeightedCookedFoodItem.CHICKEN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CHICKEN_LEG = cookedFood(
+        "chicken_leg", 4, 0.5f, "chicken", WeightedCookedFoodItem.CHICKEN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> COOKED_CHICKEN_BREAST = cookedFood(
+        "cooked_chicken_breast", 5, 0.6f, "chicken", WeightedCookedFoodItem.CHICKEN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> COOKED_CHICKEN_WING = cookedFood(
+        "cooked_chicken_wing", 3, 0.4f, "chicken", WeightedCookedFoodItem.CHICKEN_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> COOKED_BIRD = cookedFood(
+        "cooked_bird", 6, 0.7f, "bird", WeightedCookedFoodItem.BIRD_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CUT_OF_RIBS = cookedFood(
+        "cut_of_ribs", 7, 0.8f, "pork", WeightedCookedFoodItem.PORK_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BEEF_RIBS = cookedFood(
+        "beef_ribs", 7, 0.8f, "beef", WeightedCookedFoodItem.BEEF_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BEEF_BRISKET = cookedFood(
+        "beef_brisket", 8, 0.9f, "beef", WeightedCookedFoodItem.BEEF_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> HAM = cookedFood(
+        "ham", 7, 0.8f, "pork", WeightedCookedFoodItem.PORK_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> LEG_OF_LAMB = cookedFood(
+        "leg_of_lamb", 7, 0.8f, "lamb", WeightedCookedFoodItem.LAMB_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> ROAST_PIG = cookedFood(
+        "roast_pig", 8, 0.9f, "pork", WeightedCookedFoodItem.PORK_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> SLICE_OF_BACON = cookedFood(
+        "slice_of_bacon", 4, 0.5f, "pork", WeightedCookedFoodItem.PORK_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> SAUSAGE = cookedFood(
+        "sausage", 6, 0.7f, "pork", WeightedCookedFoodItem.PORK_MULTIPLIER);
 public static final DeferredHolder<Item, CookedFishSteakItem> COOKED_FISH_STEAK = ITEMS.register("cooked_fish_steak",
-        () -> new CookedFishSteakItem(food(6, 0.8f)));
+        () -> new CookedFishSteakItem(food(1, 0.8f)));
 
-public static final DeferredHolder<Item, Item> APPLE = ITEMS.register("apple",
-        () -> new Item(food(4, 0.3f)));
-public static final DeferredHolder<Item, Item> BANANA = ITEMS.register("banana",
+public static final DeferredHolder<Item, WeightedCookedFoodItem> APPLE = cookedFood(
+        "apple", 4, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BANANA = cookedFood(
+        "banana", 4, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CONCORD_GRAPES = cookedFood(
+        "concord_grapes", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PEACHES = cookedFood(
+        "peaches", 4, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PEARS = cookedFood(
+        "pears", 4, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> SQUASH = cookedFood(
+        "squash", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CARROTS = cookedFood(
+        "carrots", 3, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CORN = cookedFood(
+        "corn", 3, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CABBAGE = cookedFood(
+        "cabbage", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> LETTUCE = cookedFood(
+        "lettuce", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> ONION = cookedFood(
+        "onion", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PUMPKIN = cookedFood(
+        "pumpkin", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> SWEET_PEPPER = cookedFood(
+        "sweet_pepper", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BERRIES = cookedFood(
+        "berries", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> POTATO = cookedFood(
+        "potato", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> TOMATO = cookedFood(
+        "tomato", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+
+public static final DeferredHolder<Item, Item> BARLEY = ITEMS.register("barley",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> OATS = ITEMS.register("oats",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> RYE = ITEMS.register("rye",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> FLOUR = ITEMS.register("flour",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> OAT_FLOUR = ITEMS.register("oat_flour",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> RYE_FLOUR = ITEMS.register("rye_flour",
+        () -> new Item(new Item.Properties()));
+
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_PORK = weightedCommodity("raw_pork");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_PORK_RIBS = weightedCommodity("raw_pork_ribs");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_PORK_BELLY = weightedCommodity("raw_pork_belly");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_PORK_SHOULDER = weightedCommodity("raw_pork_shoulder");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_BEEF = weightedCommodity("raw_beef");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_BEEF_RIBS = weightedCommodity("raw_beef_ribs");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_BEEF_STEAK = weightedCommodity("raw_beef_steak");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_BRISKET = weightedCommodity("raw_brisket");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_CHICKEN = weightedCommodity("raw_chicken");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_CHICKEN_LEG = weightedCommodity("raw_chicken_leg");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_CHICKEN_BREAST = weightedCommodity("raw_chicken_breast");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_CHICKEN_WING = weightedCommodity("raw_chicken_wing");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_LAMB = weightedCommodity("raw_lamb");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_LAMB_CHOP = weightedCommodity("raw_lamb_chop");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_LEG_OF_LAMB = weightedCommodity("raw_leg_of_lamb");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_TURKEY = weightedCommodity("raw_turkey");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_TURKEY_LEG = weightedCommodity("raw_turkey_leg");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_TURKEY_BREAST = weightedCommodity("raw_turkey_breast");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_VENISON = weightedCommodity("raw_venison");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_VENISON_HAUNCH = weightedCommodity("raw_venison_haunch");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_VENISON_STEAK = weightedCommodity("raw_venison_steak");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_RABBIT = weightedCommodity("raw_rabbit");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_RABBIT_LEG = weightedCommodity("raw_rabbit_leg");
+public static final DeferredHolder<Item, WeightedCommodityItem> ANIMAL_FAT = weightedCommodity("animal_fat");
+public static final DeferredHolder<Item, Item> CHICKEN_EGG = ITEMS.register("chicken_egg",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> MILK = ITEMS.register("milk",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> CHEESE = ITEMS.register("cheese",
         () -> new Item(food(4, 0.4f)));
-public static final DeferredHolder<Item, Item> CONCORD_GRAPES = ITEMS.register("concord_grapes",
-        () -> new Item(food(3, 0.3f)));
-public static final DeferredHolder<Item, Item> PEACHES = ITEMS.register("peaches",
-        () -> new Item(food(4, 0.4f)));
-public static final DeferredHolder<Item, Item> PEARS = ITEMS.register("pears",
-        () -> new Item(food(4, 0.4f)));
-public static final DeferredHolder<Item, Item> SQUASH = ITEMS.register("squash",
-        () -> new Item(food(3, 0.3f)));
-public static final DeferredHolder<Item, Item> CARROTS = ITEMS.register("carrots",
-        () -> new Item(food(3, 0.4f)));
-public static final DeferredHolder<Item, Item> CORN = ITEMS.register("corn",
-        () -> new Item(food(3, 0.4f)));
-public static final DeferredHolder<Item, Item> CABBAGE = ITEMS.register("cabbage",
-        () -> new Item(food(3, 0.3f)));
-public static final DeferredHolder<Item, Item> LETTUCE = ITEMS.register("lettuce",
+public static final DeferredHolder<Item, Item> BUTTER = ITEMS.register("butter",
         () -> new Item(food(2, 0.2f)));
-public static final DeferredHolder<Item, Item> ONION = ITEMS.register("onion",
-        () -> new Item(food(2, 0.2f)));
-public static final DeferredHolder<Item, Item> PUMPKIN = ITEMS.register("pumpkin",
-        () -> new Item(food(3, 0.3f)));
-public static final DeferredHolder<Item, Item> SWEET_PEPPER = ITEMS.register("sweet_pepper",
-        () -> new Item(food(3, 0.3f)));
+public static final DeferredHolder<Item, WeightedCommodityItem> RABBIT_PELT = weightedCommodity("rabbit_pelt");
+public static final DeferredHolder<Item, WeightedCommodityItem> WOLF_PELT = weightedCommodity("wolf_pelt");
+public static final DeferredHolder<Item, WeightedCommodityItem> BEAR_PELT = weightedCommodity("bear_pelt");
+public static final DeferredHolder<Item, WeightedCommodityItem> DEER_HIDE = weightedCommodity("deer_hide");
+public static final DeferredHolder<Item, WeightedCommodityItem> RAW_HIDE = weightedCommodity("raw_hide");
+public static final DeferredHolder<Item, Item> TANNED_LEATHER = ITEMS.register("tanned_leather",
+        () -> new Item(new Item.Properties()));
     
 public static final DeferredHolder<Item, Item> FARMING_BLOCK_ITEM = ITEMS.register("farming_block",
             () -> new net.minecraft.world.item.BlockItem(BlockRegistry.FARMING_BLOCK.get(), new Item.Properties()));

@@ -56,6 +56,7 @@ import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.economy.ServerEconomyService;
 import com.seggellion.britannia_mod.economy.MerchantEconomyService;
+import com.seggellion.britannia_mod.spawner.BritanniaSpawnableEntities;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -262,6 +263,11 @@ registrar.playToServer(
 
         var be = level.getBlockEntity(payload.pos());
         if (be instanceof com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity spawner) {
+            if (!(player.isCreative() || player.hasPermissions(2))) return;
+            if (!BritanniaSpawnableEntities.isAllowed(payload.entityId())) {
+                player.sendSystemMessage(Component.literal("That entity is not allowed in a Britannia spawn block."));
+                return;
+            }
             spawner.applyConfig(
                 payload.entityId(),
                 payload.radius(),

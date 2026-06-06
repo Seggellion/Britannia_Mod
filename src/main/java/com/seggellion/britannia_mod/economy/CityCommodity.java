@@ -23,7 +23,7 @@ public record CityCommodity(
                 normalize(stringValue(obj, "subcategory", "")),
                 itemName,
                 commodityKey,
-                doubleValue(obj, "inventory", doubleValue(obj, "quantity", doubleValue(obj, "weight", 0.0D))),
+                doubleValue(obj, "inventory", doubleValue(obj, "weight", doubleValue(obj, "quantity", 0.0D))),
                 nullableDouble(obj, "current_price"),
                 nullableDouble(obj, "buy_price"),
                 nullableDouble(obj, "sell_price")
@@ -31,10 +31,14 @@ public record CityCommodity(
     }
 
     public double price() {
-        if (sellPrice != null && sellPrice > 0.0D) return sellPrice;
         if (currentPrice != null && currentPrice > 0.0D) return currentPrice;
+        if (sellPrice != null && sellPrice > 0.0D) return sellPrice;
         if (buyPrice != null && buyPrice > 0.0D) return buyPrice;
         return 0.0D;
+    }
+
+    public String identityKey() {
+        return category + "|" + subcategory + "|" + normalizedKey();
     }
 
     public String normalizedKey() {

@@ -1,7 +1,9 @@
 package com.seggellion.britannia_mod.economy;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.entity.AbstractEconomyMerchantEntity;
@@ -9,9 +11,12 @@ import com.seggellion.britannia_mod.network.payload.BuyMerchantItemsC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.item.WeightedCommodityItem;
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -20,6 +25,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
 
 import java.io.InputStream;
@@ -177,26 +183,40 @@ public final class MerchantEconomyService {
             JsonArray inputs = new JsonArray();
             for (PurchasedEntry purchase : prepared.entries()) {
                 Product product = purchase.entry().product();
+                LOGGER.info("Merchant purchase requested output={} quantity={} city={} role={} price={}",
+                        product.itemId(), purchase.quantity(), city, role, product.price());
                 JsonObject item = new JsonObject();
                 item.addProperty("item_id", product.itemId());
                 item.addProperty("item_name", product.name());
                 item.addProperty("quantity", purchase.quantity());
                 item.addProperty("unit_price", product.price());
                 item.addProperty("currency", "copper");
+                if (WeightedCommodityItem.hasWeight(product.stack())) {
+                    item.addProperty("weight", WeightedCommodityItem.getWeight(product.stack()));
+                }
                 items.add(item);
 
                 for (MerchantCatalogEntry.ConsumedCommodity input : purchase.entry().inputs()) {
+                    double amount = input.amountPerUnit() * purchase.quantity();
                     JsonObject inputObj = new JsonObject();
                     inputObj.addProperty("category", input.category());
+                    inputObj.addProperty("subcategory", input.subcategory());
+                    inputObj.addProperty("item_name", input.itemName());
                     inputObj.addProperty("commodity_key", input.commodityKey());
-                    inputObj.addProperty("amount", input.amountPerUnit() * purchase.quantity());
+                    inputObj.addProperty("amount", amount);
+                    inputObj.addProperty("weight", amount);
+                    inputObj.addProperty("quantity", 1);
                     inputObj.addProperty("unit_price", input.unitPrice());
                     inputs.add(inputObj);
+                    LOGGER.info("Merchant purchase input output={} input={}|{}|{} requiredWeight={} city={}",
+                            product.itemId(), input.category(), input.subcategory(), input.itemName(), amount, city);
                 }
             }
             payload.add("items", items);
             payload.add("transaction_items", items.deepCopy());
             payload.add("input_commodities", inputs);
+            payload.add("consumed_commodities", inputs.deepCopy());
+            payload.add("commodity_inputs", inputs.deepCopy());
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
@@ -207,9 +227,48 @@ public final class MerchantEconomyService {
             if (status < 200 || status >= 300) {
                 return PurchasePostResult.failure(status, body, "Purchase rejected by economy server.");
             }
+            PurchasePostResult parsed = parsePurchaseResponse(status, body, prepared);
+            if (!parsed.success()) {
+                return parsed;
+            }
+            LOGGER.info("Merchant purchase accepted key={} city={} role={} body={}", idempotencyKey, city, role, body);
             return PurchasePostResult.success(status, body);
         } catch (Exception e) {
             return PurchasePostResult.failure(0, e.toString(), "Purchase failed: economy server unavailable.");
+        }
+    }
+
+    private static PurchasePostResult parsePurchaseResponse(int status, String body, PreparedPurchase prepared) {
+        if (body == null || body.isBlank()) {
+            return PurchasePostResult.success(status, body);
+        }
+
+        try {
+            JsonObject response = JsonParser.parseString(body).getAsJsonObject();
+            if (response.has("success") && !response.get("success").getAsBoolean()) {
+                return PurchasePostResult.failure(status, body, "Purchase rejected by economy server.");
+            }
+
+            int expectedItems = prepared.entries().stream().mapToInt(PurchasedEntry::quantity).sum();
+            int processed = intFrom(response, "items_processed", expectedItems);
+            if (processed <= 0 && expectedItems > 0) {
+                LOGGER.warn("Merchant purchase processed no Rails items body={}", body);
+                return PurchasePostResult.failure(status, body, "Purchase rejected: economy server did not process the merchant item.");
+            }
+        } catch (RuntimeException e) {
+            LOGGER.warn("Merchant purchase response parse failed status={} body={} error={}", status, body, e.toString());
+        }
+
+        return PurchasePostResult.success(status, body);
+    }
+
+    private static int intFrom(JsonObject object, String key, int fallback) {
+        JsonElement value = object.get(key);
+        if (value == null || value.isJsonNull()) return fallback;
+        try {
+            return value.getAsInt();
+        } catch (RuntimeException e) {
+            return fallback;
         }
     }
 
@@ -223,19 +282,72 @@ public final class MerchantEconomyService {
             if (item == net.minecraft.world.item.Items.AIR) continue;
 
             int remaining = entry.quantity();
-            int maxStack = template.isEmpty() ? new ItemStack(item).getMaxStackSize() : template.getMaxStackSize();
             while (remaining > 0) {
-                int give = Math.min(remaining, maxStack);
-                ItemStack stack = template.isEmpty() ? new ItemStack(item, give) : template.copy();
-                stack.setCount(give);
+                ItemStack stack = template.isEmpty() ? new ItemStack(item, 1) : template.copy();
+                stack.setCount(1);
+                if (!WeightedCommodityItem.hasWeight(stack)) {
+                    WeightedCommodityItem.setWeight(stack, generatedOutputWeight(player, entry.entry()));
+                }
                 if (!player.getInventory().add(stack)) {
                     player.drop(stack, false);
                 }
-                remaining -= give;
+                remaining--;
             }
         }
         player.inventoryMenu.broadcastChanges();
         player.inventoryMenu.broadcastFullState();
+    }
+
+    private static double generatedOutputWeight(ServerPlayer player, MerchantCatalogEntry entry) {
+        String recipeId = merchantRecipeId(entry.product().stack());
+        double[] range = outputWeightRange(recipeId);
+        if (range != null) {
+            if (range[0] == range[1]) return range[0];
+            return randomInRange(player, range[0], range[1]);
+        }
+
+        double baseWeight = entry.inputs().stream()
+                .mapToDouble(MerchantCatalogEntry.ConsumedCommodity::amountPerUnit)
+                .sum();
+        if (baseWeight <= 0.0D) baseWeight = 0.25D;
+        double variance = 0.85D + player.getRandom().nextDouble() * 0.30D;
+        return Math.max(0.05D, baseWeight * variance);
+    }
+
+    private static String merchantRecipeId(ItemStack stack) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
+        return tag.contains("merchant_recipe") ? tag.getString("merchant_recipe") : "";
+    }
+
+    private static double[] outputWeightRange(String recipeId) {
+        if (recipeId == null || recipeId.isBlank()) return null;
+        if (recipeId.startsWith("fish_steak_")) {
+            return new double[]{MerchantRecipes.STANDARD_FISH_STEAK_WEIGHT, MerchantRecipes.STANDARD_FISH_STEAK_WEIGHT};
+        }
+
+        return switch (recipeId) {
+            case "bread", "oat_bread", "barley_bread", "rye_bread", "rice_bread", "sorghum_bread", "quinoa_bread" ->
+                    new double[]{0.30D, 0.70D};
+            case "chicken_wing" -> new double[]{0.08D, 0.18D};
+            case "chicken_leg" -> new double[]{0.20D, 0.45D};
+            case "chicken_breast" -> new double[]{0.25D, 0.55D};
+            case "cooked_chicken" -> new double[]{0.40D, 1.20D};
+            case "slice_of_bacon" -> new double[]{0.05D, 0.15D};
+            case "ham" -> new double[]{0.50D, 1.50D};
+            case "cut_of_ribs", "beef_ribs" -> new double[]{0.30D, 0.90D};
+            case "leg_of_lamb" -> new double[]{0.60D, 1.80D};
+            case "roast_pig" -> new double[]{1.00D, 3.00D};
+            case "sausage" -> new double[]{0.15D, 0.35D};
+            case "beef_brisket" -> new double[]{0.60D, 1.80D};
+            case "apple", "banana", "concord_grapes", "peaches", "pears", "berries" -> new double[]{0.15D, 0.50D};
+            case "squash", "carrots", "corn", "cabbage", "lettuce", "onion", "pumpkin", "potato", "tomato" ->
+                    new double[]{0.10D, 0.60D};
+            default -> null;
+        };
+    }
+
+    private static double randomInRange(ServerPlayer player, double min, double max) {
+        return min + player.getRandom().nextDouble() * Math.max(0.0D, max - min);
     }
 
     private static CoinReservation reserveCoins(ServerPlayer player, int totalCopper) {

@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
+import com.seggellion.britannia_mod.item.WeightedCommodityItem;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.network.CityDataSync;
@@ -155,11 +156,9 @@ public final class ServerEconomyService {
                         return;
                     }
 
-                    String applicationKey = result.receiptId().isBlank() ? idempotencyKey : result.receiptId();
-                    EconomySyncData syncData = EconomySyncData.get(level);
-                    if (!syncData.markApplied(applicationKey)) {
-                        LOGGER.warn("Duplicate/idempotent transaction detection key={} receipt={}",
-                                idempotencyKey, applicationKey);
+                    if (result.idempotentReplay()) {
+                        LOGGER.warn("Rails idempotent replay detected key={} receipt={}",
+                                idempotencyKey, result.receiptId());
                         reservation.refund(player);
                         fail(player, "That sale was already processed.");
                         return;
@@ -168,8 +167,13 @@ public final class ServerEconomyService {
                     applyRailsCommodityResponse(level, cityName, result.responseJson(), reservation);
                     grantCurrency(player, result.gold(), result.silver(), result.copper());
 
+                    EconomySyncData.get(level).markApplied(idempotencyKey);
+                    if (!result.receiptId().isBlank()) {
+                        EconomySyncData.get(level).markApplied("rails_receipt:" + result.receiptId());
+                    }
+
                     LOGGER.info("Wood sale success key={} receipt={} payout={}g {}s {}c",
-                            idempotencyKey, applicationKey, result.gold(), result.silver(), result.copper());
+                            idempotencyKey, result.receiptId(), result.gold(), result.silver(), result.copper());
                     player.sendSystemMessage(Component.literal("Sale complete: " +
                             formatPayout(result.gold(), result.silver(), result.copper()) + "."));
                     TransactionSuccessS2CPayload.send(player);
@@ -271,7 +275,10 @@ public final class ServerEconomyService {
         }
         if (stack.getItem() instanceof WeightedFishItem fishItem && !requestedName.isBlank()) {
             String fishType = fishItem.getFishType(stack);
-            if (!requestedName.equalsIgnoreCase(fishType) && !requestedName.equalsIgnoreCase(pathOnly(stackId))) {
+            String fishKey = CommodityMappings.fishCommodityKey(fishType);
+            if (!requestedName.equalsIgnoreCase(fishType)
+                    && !requestedName.equalsIgnoreCase(fishKey)
+                    && !requestedName.equalsIgnoreCase(pathOnly(stackId))) {
                 return false;
             }
         }
@@ -348,12 +355,12 @@ public final class ServerEconomyService {
             item.addProperty("subcategory", "logs");
             item.addProperty("weight", weight);
         } else if (itemObj instanceof WeightedFishItem fishItem) {
-            String fishType = fishItem.getFishType(stack);
+            String fishType = CommodityMappings.fishCommodityKey(fishItem.getFishType(stack));
             double weight = fishItem.getWeight(stack) * stack.getCount();
             item.addProperty("item_name", fishType);
             item.addProperty("commodity_key", fishType);
-            item.addProperty("category", "food");
-            item.addProperty("subcategory", "fish");
+            item.addProperty("category", "fish");
+            item.addProperty("subcategory", "raw");
             item.addProperty("weight", weight);
         } else if (itemObj instanceof PurityOreItem oreItem) {
             item.addProperty("item_name", oreItem.getOreType(stack));
@@ -364,11 +371,10 @@ public final class ServerEconomyService {
         } else if (itemObj instanceof GradeStoneItem stoneItem) {
             item.addProperty("item_name", stoneItem.getStoneType(stack));
             item.addProperty("commodity_key", stoneItem.getStoneType(stack));
-            item.addProperty("grade", stoneItem.getGradeValue(stack));
             item.addProperty("category", "stone");
-            item.addProperty("subcategory", "raw_stone");
+            item.addProperty("subcategory", "blocks");
         } else {
-            classifySimpleCommodity(item, pathOnly(itemId));
+            classifyMappedCommodity(item, stack);
         }
 
         if (stack.has(DataComponentRegistry.WINE_DATA)) {
@@ -447,9 +453,11 @@ public final class ServerEconomyService {
             String receipt = response.has("receipt_id") ? response.get("receipt_id").getAsString()
                     : response.has("transaction_id") ? response.get("transaction_id").getAsString()
                     : "";
+            boolean idempotentReplay = booleanFrom(response, "idempotent_replay");
 
             LOGGER.info("Rails commodity response key={} endpoint={} body={}", idempotencyKey, endpoint, body);
-            return SaleResult.success(status, body, response, receipt, payout.gold(), payout.silver(), payout.copper());
+            return SaleResult.success(status, body, response, receipt, idempotentReplay,
+                    payout.gold(), payout.silver(), payout.copper());
         } catch (Exception e) {
             LOGGER.warn("Rails sale request failed key={} error={}", idempotencyKey, e.toString());
             return SaleResult.failure(0, e.toString(), "Sale failed: economy server unavailable.");
@@ -538,6 +546,18 @@ public final class ServerEconomyService {
         }
     }
 
+    private static boolean booleanFrom(JsonObject object, String key) {
+        if (object == null || !object.has(key) || object.get(key).isJsonNull()) return false;
+
+        JsonElement value = object.get(key);
+        try {
+            return value.getAsBoolean();
+        } catch (ClassCastException | IllegalStateException e) {
+            LOGGER.warn("Invalid boolean response value key={} value={}", key, value);
+            return false;
+        }
+    }
+
     private static void applyRailsCommodityResponse(ServerLevel level, String cityName, JsonObject response, Reservation reservation) {
         CityManager manager = CityManager.get(level);
         City city = manager.getCity(cityName);
@@ -573,7 +593,16 @@ public final class ServerEconomyService {
             if (stack.getItem() instanceof WeightedWoodItem woodItem) {
                 inv.addCommodityWeight("wood", "logs", woodItem.getWoodType(stack), woodItem.getWeight(stack) * saleStack.quantity());
             } else if (stack.getItem() instanceof WeightedFishItem fishItem) {
-                inv.addCommodityWeight("food", "fish", fishItem.getFishType(stack), fishItem.getWeight(stack) * saleStack.quantity());
+                inv.addCommodityWeight("fish", "raw", CommodityMappings.fishCommodityKey(fishItem.getFishType(stack)), fishItem.getWeight(stack) * saleStack.quantity());
+            } else {
+                CommodityMappings.forStack(stack).ifPresent(mapping -> {
+                    if (mapping.unit() == CommodityUnit.WEIGHT) {
+                        double weight = stack.getItem() instanceof WeightedCommodityItem
+                                ? WeightedCommodityItem.getWeight(stack) * saleStack.quantity()
+                                : saleStack.quantity();
+                        inv.addCommodityWeight(mapping.category(), mapping.subcategory(), mapping.itemName(), weight);
+                    }
+                });
             }
         }
         manager.setDirty();
@@ -652,23 +681,16 @@ public final class ServerEconomyService {
         };
     }
 
-    private static void classifySimpleCommodity(JsonObject item, String path) {
-        if (isAny(path, "wheat", "rice", "oats", "oat", "barley", "rye", "sorghum", "quinoa")) {
-            commodity(item, "grains", "raw", path);
-        } else if (isAny(path, "apple", "banana", "concord_grapes", "grapes", "peaches", "peach", "pears", "pear",
-                "squash", "carrot", "carrots", "corn", "cabbage", "lettuce", "onion", "pumpkin", "sweet_pepper")) {
-            commodity(item, "produce", "raw", path);
-        } else if (path.contains("meat") || path.contains("beef") || path.contains("pork") || path.contains("mutton")
-                || path.contains("chicken") || path.contains("rabbit") || path.contains("ham")
-                || path.contains("bacon") || path.contains("sausage") || path.contains("ribs")) {
-            commodity(item, "meat", "raw", path);
-        } else if (path.contains("leather") || path.contains("hide") || path.contains("pelt") || path.contains("fur")) {
-            commodity(item, "fur", "leather", path);
-        } else if (path.contains("stone") || path.contains("granite") || path.contains("diorite") || path.contains("andesite")
-                || path.contains("quartz") || path.contains("basalt") || path.contains("marble")
-                || path.contains("cobble") || path.contains("deepslate")) {
-            commodity(item, "stone", "blocks", path);
-        }
+    private static void classifyMappedCommodity(JsonObject item, ItemStack stack) {
+        CommodityMappings.forStack(stack).ifPresent(mapping -> {
+            commodity(item, mapping.category(), mapping.subcategory(), mapping.itemName());
+            if (mapping.unit() == CommodityUnit.WEIGHT) {
+                double weight = stack.getItem() instanceof WeightedCommodityItem
+                        ? WeightedCommodityItem.getWeight(stack) * stack.getCount()
+                        : stack.getCount();
+                item.addProperty("weight", weight);
+            }
+        });
     }
 
     private static void commodity(JsonObject item, String category, String subcategory, String key) {
@@ -676,13 +698,6 @@ public final class ServerEconomyService {
         item.addProperty("commodity_key", key);
         item.addProperty("category", category);
         item.addProperty("subcategory", subcategory);
-    }
-
-    private static boolean isAny(String path, String... keys) {
-        for (String key : keys) {
-            if (path.equals(key)) return true;
-        }
-        return false;
     }
 
     private record SaleStack(int slot, ItemStack stack, int quantity) {}
@@ -718,14 +733,16 @@ public final class ServerEconomyService {
     private record Payout(int gold, int silver, int copper) {}
 
     private record SaleResult(boolean success, int statusCode, String body, JsonObject responseJson,
-                              String receiptId, int gold, int silver, int copper, String message) {
+                              String receiptId, boolean idempotentReplay, int gold, int silver, int copper,
+                              String message) {
         static SaleResult success(int statusCode, String body, JsonObject responseJson, String receiptId,
-                                  int gold, int silver, int copper) {
-            return new SaleResult(true, statusCode, body, responseJson, receiptId, gold, silver, copper, "");
+                                  boolean idempotentReplay, int gold, int silver, int copper) {
+            return new SaleResult(true, statusCode, body, responseJson, receiptId, idempotentReplay,
+                    gold, silver, copper, "");
         }
 
         static SaleResult failure(int statusCode, String body, String message) {
-            return new SaleResult(false, statusCode, body, new JsonObject(), "", 0, 0, 0, message);
+            return new SaleResult(false, statusCode, body, new JsonObject(), "", false, 0, 0, 0, message);
         }
     }
 }

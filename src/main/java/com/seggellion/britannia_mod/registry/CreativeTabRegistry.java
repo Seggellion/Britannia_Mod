@@ -341,6 +341,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CHESS_BOARD.get());
                 safeAccept(output, ItemRegistry.COUNTER_ITEM.get());
                 safeAccept(output, ItemRegistry.GOLD_COIN.get());
+                safeAccept(output, ItemRegistry.BRITANNIA_RACE_MAP.get());
 
                 // Tools & weapons
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
