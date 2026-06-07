@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.*;
 import com.seggellion.britannia_mod.client.model.CitizenGeoModel;
+import com.seggellion.britannia_mod.client.renderer.layer.CitizenClothingLayer;
 import com.seggellion.britannia_mod.entity.CitizenEntity;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -15,6 +16,7 @@ public class CitizenEntityRenderer extends GeoEntityRenderer<CitizenEntity> {
 
     public CitizenEntityRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, new CitizenGeoModel());
+        this.addRenderLayer(new CitizenClothingLayer<>(this));
         this.shadowRadius = 0.5f;
     }
 
@@ -28,10 +30,12 @@ public class CitizenEntityRenderer extends GeoEntityRenderer<CitizenEntity> {
     public void preRender(PoseStack poseStack, CitizenEntity entity, BakedGeoModel bakedModel,
                           MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
                           float partialTick, int packedLight, int packedOverlay, int color) {
-        float physicsScale = entity.getScale();
-        float MODEL_BASE_SCALE = 0.6f;
-        float s = physicsScale * MODEL_BASE_SCALE;
-        poseStack.scale(s, s, s);
+        if (!isReRender) {
+            float physicsScale = entity.getScale();
+            float modelBaseScale = 0.6f;
+            float s = physicsScale * modelBaseScale;
+            poseStack.scale(s, s, s);
+        }
 
         boolean blinking = entity.isBlinking();
         for (String name : EYELID_BONES) {
@@ -40,5 +44,16 @@ public class CitizenEntityRenderer extends GeoEntityRenderer<CitizenEntity> {
 
         super.preRender(poseStack, entity, bakedModel, bufferSource, buffer,
                         isReRender, partialTick, packedLight, packedOverlay, color);
+    }
+
+    @Override
+    public void renderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer,
+                                  int packedLight, int packedOverlay, int color) {
+        if (CitizenClothingLayer.CURRENT_TARGET_BONES != null
+                && !CitizenClothingLayer.CURRENT_TARGET_BONES.contains(bone.getName())) {
+            return;
+        }
+
+        super.renderCubesOfBone(poseStack, bone, buffer, packedLight, packedOverlay, color);
     }
 }
