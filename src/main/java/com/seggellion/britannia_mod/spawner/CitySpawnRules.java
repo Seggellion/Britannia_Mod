@@ -35,6 +35,9 @@ public class CitySpawnRules {
         EntityRegistry.FISH_TRADER.get(),
         EntityRegistry.SALVAGE_TRADER.get(),
         EntityRegistry.ALCOHOL_TRADER.get(),
+        EntityRegistry.BAKER.get(),
+        EntityRegistry.TAVERNKEEPER.get(),
+        EntityRegistry.COSTERMONGER.get(),
         EntityRegistry.ARCHITECT_ENTITY.get(),
         EntityRegistry.QUEST_GIVER.get(),
         EntityRegistry.TOWNSPERSON.get()
@@ -49,6 +52,9 @@ public class CitySpawnRules {
         EntityRegistry.HORSE_MERCHANT_ENTITY.get(),
         EntityRegistry.FISH_TRADER.get(),
         EntityRegistry.SALVAGE_TRADER.get(),
+        EntityRegistry.BAKER.get(),
+        EntityRegistry.TAVERNKEEPER.get(),
+        EntityRegistry.COSTERMONGER.get(),
         EntityRegistry.QUEST_GIVER.get(),
         EntityRegistry.TOWNSPERSON.get()
     );
@@ -63,7 +69,9 @@ public class CitySpawnRules {
     }
 
     public static boolean isCritical(Entity entity) {
-        return entity instanceof ITrader || CRITICAL_TYPES.contains(entity.getType());
+        return entity instanceof ITrader
+            || entity instanceof AbstractEconomyMerchantEntity
+            || CRITICAL_TYPES.contains(entity.getType());
     }
 
     // The city cap manages only intentional city entities, not every allowed vanilla creature.
@@ -103,6 +111,8 @@ public class CitySpawnRules {
     }
 
     private static boolean isExplicitlyAllowed(Entity entity) {
-        return entity instanceof ITrader || ALLOWED_TYPES.contains(entity.getType());
+        return entity instanceof ITrader
+            || entity instanceof AbstractEconomyMerchantEntity
+            || ALLOWED_TYPES.contains(entity.getType());
     }
 }

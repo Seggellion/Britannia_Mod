@@ -14,6 +14,7 @@ public class CityRegistry {
     static {
         registerCity("Britain",
             box(4962, 61, 4015, 5521, 96, 4385), // Main area
+             box(5112, 61, 4015, 5409, 96, 3763), // blackthorns
             box(4874, 61, 4386, 5173, 96, 4495)  // Secondary area
         );
         registerCity("Jhelom",

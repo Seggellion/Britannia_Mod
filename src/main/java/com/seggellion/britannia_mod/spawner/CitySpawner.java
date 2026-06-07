@@ -3,6 +3,8 @@ package com.seggellion.britannia_mod.spawner;
 import com.seggellion.britannia_mod.registry.CityRegistry;
 import com.seggellion.britannia_mod.registry.CitySpawnRules;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -35,6 +37,11 @@ public class CitySpawner {
 
         for (AABB area : CityRegistry.getAllCityAreas()) {
             if (area.contains(entity.position())) {
+                LOGGER.info("City spawn rules rejecting entity type={} uuid={} pos={} allowed={} critical={} managed={} reason=disallowed_city_entity",
+                        entityTypeId(entity), entity.getUUID(), entity.blockPosition(),
+                        CitySpawnRules.isAllowed(entity),
+                        CitySpawnRules.isCritical(entity),
+                        CitySpawnRules.isManagedByCityLimit(entity));
                 event.setCanceled(true);
                 return;
             }
@@ -87,8 +94,11 @@ public class CitySpawner {
             nonCriticalEntities.stream()
                 .limit(excess)
                 .forEach(entity -> {
-                    LOGGER.info("City entity limit removing non-critical entity type={} uuid={} pos={} reason=excess_population total={} max={} excess={}",
-                            entity.getType(), entity.getUUID(), entity.blockPosition(),
+                    LOGGER.info("City entity limit removing entity type={} uuid={} pos={} allowed={} critical={} managed={} reason=excess_population total={} max={} excess={}",
+                            entityTypeId(entity), entity.getUUID(), entity.blockPosition(),
+                            CitySpawnRules.isAllowed(entity),
+                            CitySpawnRules.isCritical(entity),
+                            CitySpawnRules.isManagedByCityLimit(entity),
                             entities.size(), CitySpawnRules.MAX_ENTITIES_PER_AREA, excess);
                     entity.discard();
                 });
@@ -123,5 +133,10 @@ public class CitySpawner {
             level.addFreshEntity(entity);
             return;
         }
+    }
+
+    private static String entityTypeId(Entity entity) {
+        ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        return id == null ? String.valueOf(entity.getType()) : id.toString();
     }
 }
