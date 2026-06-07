@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
+import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.item.GrapeSeedsItem;
 import com.seggellion.britannia_mod.winery.GrapeColor;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
@@ -226,6 +227,9 @@ public class FarmingBlock extends Block implements EntityBlock {
 
                         // 1. Retrieve the stored seed ID
                         String varietyId = farmBe.getStoredSeed();
+                        if (varietyId == null || varietyId.isBlank()) {
+                            varietyId = GrapesItem.DEFAULT_VARIETY_ID;
+                        }
                         
                         // 2. Look up the color
                         GrapeColor color = GrapeVarietyManager.getVariety(varietyId).colorType();

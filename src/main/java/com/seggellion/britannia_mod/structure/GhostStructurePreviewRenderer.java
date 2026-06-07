@@ -5,16 +5,20 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.item.AbstractHouseDeedItem;
 import com.seggellion.britannia_mod.client.house.HouseRotationData;
-import com.seggellion.britannia_mod.client.house.GhostPreviewState;
 import com.seggellion.britannia_mod.util.StructureUtils;
 import com.seggellion.britannia_mod.structure.HouseStyle;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -32,48 +36,79 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.core.Direction;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.ArrayList;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class GhostStructurePreviewRenderer {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final boolean DEBUG = Boolean.getBoolean("britannia.ghostPreviewDebug");
+    private static final Map<StructureTemplate, List<StructureBlockInfo>> BLOCK_INFO_CACHE = new IdentityHashMap<>();
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
+            return;
+        }
 
         Minecraft mc = Minecraft.getInstance();
         Level level = mc.level;
         Player player = mc.player;
-        if (level == null || player == null) return;
-
-        ItemStack held = player.getMainHandItem();
-
-        StructureTemplate template = null;
-
-        if (held.getItem() instanceof AbstractHouseDeedItem deed) {
-            HouseStyle style = deed.getHouseStyle();
-            String nbt = style.getStructureFile().replace(".nbt", "");
-            template = StructureCache.get(nbt);
+        int renderTick = event.getRenderTick();
+        if (level == null || player == null) {
+            debug(renderTick, "missing level/player level={} player={}", level != null, player != null);
+            return;
         }
 
-        if (template == null || template.getSize().equals(Vec3i.ZERO)) return;
+        ItemStack held = player.getMainHandItem();
+        ResourceLocation heldItemId = BuiltInRegistries.ITEM.getKey(held.getItem());
+        debug(renderTick, "heldItem={}", heldItemId);
 
+        if (!(held.getItem() instanceof AbstractHouseDeedItem deed)) {
+            debug(renderTick, "deedDetected=false");
+            return;
+        }
 
-HitResult hitResult = mc.hitResult;
-if (!(hitResult instanceof BlockHitResult blockHit)) return;
+        HouseStyle style = deed.getHouseStyle();
+        String structureFile = style.getStructureFile();
+        String cacheKey = StructureCache.normalizeKey(structureFile);
+        StructureTemplate template = StructureCache.get(cacheKey);
 
-BlockPos targetedBlock = blockHit.getBlockPos();
-BlockState targetedState = mc.level.getBlockState(targetedBlock);
-Block targeted = targetedState.getBlock();
+        debug(renderTick, "deedDetected=true structureFile={} cacheKey={} templateFound={}",
+                structureFile, cacheKey, template != null);
 
-if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
+        if (template == null) {
+            return;
+        }
 
+        Vec3i size = template.getSize();
+        debug(renderTick, "templateSize={}", size);
+
+        if (size.equals(Vec3i.ZERO)) {
+            debug(renderTick, "return=zeroTemplateSize cacheKey={}", cacheKey);
+            return;
+        }
+
+        HitResult hitResult = mc.hitResult;
+        debug(renderTick, "hitResult={}", hitResult != null ? hitResult.getType() : null);
+        if (!(hitResult instanceof BlockHitResult blockHit)) {
+            return;
+        }
+
+        BlockPos targetedBlock = blockHit.getBlockPos();
+        BlockState targetedState = level.getBlockState(targetedBlock);
+        Block targeted = targetedState.getBlock();
+        boolean allowedSurface = isAllowedPlacementSurface(targeted);
+
+        debug(renderTick, "targetedBlock={} targetedState={} allowedSurface={}",
+                targetedBlock, BuiltInRegistries.BLOCK.getKey(targeted), allowedSurface);
+
+        if (!allowedSurface) {
+            return;
+        }
 
 
         PoseStack poseStack = event.getPoseStack();
@@ -87,7 +122,6 @@ if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
             .setRotation(baseRotation)
             .setIgnoreEntities(true);
 
-        Vec3i size = template.getSize();
         BlockPos doorOffset = StructureUtils.getDoorOffset(size); // e.g., (4, 0, 0)
 
         // Rotate the door offset
@@ -102,8 +136,14 @@ if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
        BlockPos structureStart = doorTarget.above().subtract(rotatedDoorOffset); 
 
         // Get block data from template
-        List<StructureBlockInfo> blockInfos = getBlocksViaReflection(template);
-        if (blockInfos.isEmpty()) return;
+        List<StructureBlockInfo> blockInfos = getBlockInfos(template, level, renderTick);
+        debug(renderTick, "blockInfoCount={}", blockInfos.size());
+        if (blockInfos.isEmpty()) {
+            return;
+        }
+
+        debug(renderTick, "rendering at structureStart={} rotation={}", structureStart, deg);
+        RandomSource random = RandomSource.create(42L);
 
         for (StructureBlockInfo info : blockInfos) {
             BlockState state = info.state();
@@ -131,9 +171,11 @@ if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
                     poseStack,
                     buffer.getBuffer(RenderType.translucent()),
                     false,
-                    RandomSource.create()
+                    random
                 );
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                debug(renderTick, "renderException worldPos={} state={} error={}", worldPos, state, e.toString());
+            }
 
             poseStack.popPose();
         }
@@ -141,20 +183,81 @@ if (targeted != Blocks.GRASS_BLOCK && targeted != Blocks.SAND) return;
         buffer.endBatch(RenderType.translucent());
     }
 
-    private static List<StructureBlockInfo> getBlocksViaReflection(StructureTemplate template) {
-        try {
-            Field paletteField = StructureTemplate.class.getDeclaredField("palettes");
-            paletteField.setAccessible(true);
-            List<?> palettes = (List<?>) paletteField.get(template);
+    private static boolean isAllowedPlacementSurface(Block block) {
+        return block == Blocks.GRASS_BLOCK || block == Blocks.SAND;
+    }
 
-            if (!palettes.isEmpty()) {
-                Object palette = palettes.get(0);
-                Method blocksMethod = palette.getClass().getMethod("blocks");
-                return (List<StructureBlockInfo>) blocksMethod.invoke(palette);
-            }
-        } catch (Exception e) {
-            LOGGER.error("❌ Reflection error on structure palettes", e);
+    private static List<StructureBlockInfo> getBlockInfos(StructureTemplate template, Level level, int renderTick) {
+        List<StructureBlockInfo> cached = BLOCK_INFO_CACHE.get(template);
+        if (cached != null) {
+            return cached;
         }
+
+        List<StructureBlockInfo> blockInfos = readBlockInfosFromSavedNbt(template, level, renderTick);
+        BLOCK_INFO_CACHE.put(template, blockInfos);
+        return blockInfos;
+    }
+
+    private static List<StructureBlockInfo> readBlockInfosFromSavedNbt(StructureTemplate template, Level level, int renderTick) {
+        try {
+            CompoundTag saved = template.save(new CompoundTag());
+            ListTag paletteTag = getFirstPaletteTag(saved);
+            ListTag blocksTag = saved.getList("blocks", CompoundTag.TAG_COMPOUND);
+
+            if (paletteTag.isEmpty() || blocksTag.isEmpty()) {
+                debug(renderTick, "emptySavedTemplate paletteCount={} blockCount={}", paletteTag.size(), blocksTag.size());
+                return List.of();
+            }
+
+            HolderGetter<Block> blockRegistry = level.registryAccess().lookupOrThrow(Registries.BLOCK);
+            List<BlockState> palette = new ArrayList<>(paletteTag.size());
+            for (int i = 0; i < paletteTag.size(); i++) {
+                palette.add(NbtUtils.readBlockState(blockRegistry, paletteTag.getCompound(i)));
+            }
+
+            List<StructureBlockInfo> blockInfos = new ArrayList<>(blocksTag.size());
+            for (int i = 0; i < blocksTag.size(); i++) {
+                CompoundTag blockTag = blocksTag.getCompound(i);
+                ListTag posTag = blockTag.getList("pos", CompoundTag.TAG_INT);
+                int stateIndex = blockTag.getInt("state");
+
+                if (stateIndex < 0 || stateIndex >= palette.size() || posTag.size() < 3) {
+                    debug(renderTick, "invalidSavedBlock index={} stateIndex={} paletteSize={} posSize={}",
+                            i, stateIndex, palette.size(), posTag.size());
+                    continue;
+                }
+
+                BlockPos pos = new BlockPos(posTag.getInt(0), posTag.getInt(1), posTag.getInt(2));
+                CompoundTag nbt = blockTag.contains("nbt") ? blockTag.getCompound("nbt").copy() : null;
+                blockInfos.add(new StructureBlockInfo(pos, palette.get(stateIndex), nbt));
+            }
+
+            return blockInfos;
+        } catch (Exception e) {
+            LOGGER.error("[GHOST_PREVIEW] Failed to read structure blocks from saved template NBT", e);
+        }
+
         return List.of();
+    }
+
+    private static ListTag getFirstPaletteTag(CompoundTag saved) {
+        if (saved.contains("palette", CompoundTag.TAG_LIST)) {
+            return saved.getList("palette", CompoundTag.TAG_COMPOUND);
+        }
+
+        if (saved.contains("palettes", CompoundTag.TAG_LIST)) {
+            ListTag palettes = saved.getList("palettes", CompoundTag.TAG_LIST);
+            if (!palettes.isEmpty()) {
+                return palettes.getList(0);
+            }
+        }
+
+        return new ListTag();
+    }
+
+    private static void debug(int renderTick, String message, Object... args) {
+        if (DEBUG && renderTick % 40 == 0) {
+            LOGGER.info("[GHOST_PREVIEW] " + message, args);
+        }
     }
 }

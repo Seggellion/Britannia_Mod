@@ -1,5 +1,6 @@
 {
   "texture_size": [128, 128],
+  "render_type": "minecraft:cutout",
   "textures": {
     "2": "britannia_mod:block/structure/window_2x3",
     "particle": "britannia_mod:block/structure/window_2x3"

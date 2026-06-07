@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 
 public final class ClientModWhitelist {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int MAX_REPORTED_MODS = 512;
+    private static final int MAX_REPORTED_ITEMS = 512;
 
     private static final Set<String> ALLOWED_USER_MODS = Set.of(
         "distanthorizons",
@@ -51,6 +51,13 @@ public final class ClientModWhitelist {
     private static final Set<String> ALLOWED_MODS = java.util.stream.Stream
         .concat(ALLOWED_USER_MODS.stream(), ALLOWED_SYSTEM_MODS.stream())
         .collect(Collectors.toUnmodifiableSet());
+
+    // Expand this list to include any external resource packs you want to explicitly allow
+    private static final Set<String> ALLOWED_RESOURCE_PACKS = Set.of(
+        "vanilla",
+        "mod_resources",
+        "server" // Standard ID for your enforced server resource packs
+    );
 
     private static final ResourceLocation TASK_ID = ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "client_mod_audit");
     private static final ConfigurationTask.Type TASK_TYPE = new ConfigurationTask.Type(TASK_ID);
@@ -79,10 +86,11 @@ public final class ClientModWhitelist {
     }
 
     private static void handleAuditRequestOnClient(ClientModAuditRequestPayload payload, IPayloadContext context) {
-        context.reply(new ClientModAuditResponsePayload(collectClientMods()));
+        context.reply(new ClientModAuditResponsePayload(collectClientMods(), collectClientPacks()));
     }
 
     private static void handleAuditResponseOnServer(ClientModAuditResponsePayload payload, IPayloadContext context) {
+        // --- Process Mods ---
         List<ReportedMod> reportedMods = payload.mods().stream()
             .map(ReportedMod::normalized)
             .filter(mod -> !mod.id().isBlank())
@@ -90,20 +98,41 @@ public final class ClientModWhitelist {
             .sorted(Comparator.comparing(ReportedMod::id))
             .toList();
 
-        LOGGER.info("Client reported {} mods during connection audit: {}", reportedMods.size(), formatReportedMods(reportedMods));
-
         List<String> blockedMods = reportedMods.stream()
             .map(ReportedMod::id)
             .filter(id -> !ALLOWED_MODS.contains(id))
-            .filter(id -> !id.startsWith("fabric_")) // Ignores all Fabric API sub-modules
+            .filter(id -> !id.startsWith("fabric_")) 
             .distinct()
             .sorted()
             .toList();
 
-        if (!blockedMods.isEmpty()) {
-            String blocked = String.join(", ", blockedMods);
-            LOGGER.warn("Connection blocked for unsupported client mods: {}", blocked);
-            context.disconnect(Component.literal("Connection blocked. Remove unsupported mods: " + blocked));
+        // --- Process Resource Packs ---
+        List<String> reportedPacks = payload.resourcePacks().stream()
+            .filter(id -> !id.isBlank())
+            .distinct()
+            .sorted()
+            .toList();
+
+        List<String> blockedPacks = reportedPacks.stream()
+            .filter(id -> !ALLOWED_RESOURCE_PACKS.contains(id))
+            .filter(id -> !id.startsWith("file/Ultimacraft")) // Example of permitting a specific prefix
+            .toList();
+
+        LOGGER.info("Client reported {} mods and {} resource packs during connection audit.", reportedMods.size(), reportedPacks.size());
+
+        // --- Evaluate and Disconnect ---
+        if (!blockedMods.isEmpty() || !blockedPacks.isEmpty()) {
+            List<String> reasons = new ArrayList<>();
+            if (!blockedMods.isEmpty()) {
+                reasons.add("Mods: " + String.join(", ", blockedMods));
+            }
+            if (!blockedPacks.isEmpty()) {
+                reasons.add("Packs: " + String.join(", ", blockedPacks));
+            }
+
+            String blockReason = String.join(" | ", reasons);
+            LOGGER.warn("Connection blocked for unsupported client features: {}", blockReason);
+            context.disconnect(Component.literal("Connection blocked. Remove unsupported items. " + blockReason));
             return;
         }
 
@@ -126,14 +155,24 @@ public final class ClientModWhitelist {
             .toList();
     }
 
+    private static List<String> collectClientPacks() {
+        // Prevent NoClassDefFoundError if the dedicated server accidentally checks this flow
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            return ClientAccess.getResourcePacks();
+        }
+        return List.of();
+    }
+
     private static String normalizeModId(String modId) {
         return modId == null ? "" : modId.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static String formatReportedMods(List<ReportedMod> mods) {
-        return mods.stream()
-            .map(mod -> mod.version().isBlank() ? mod.id() : mod.id() + "@" + mod.version())
-            .collect(Collectors.joining(", "));
+    // Isolate client-only code completely from the server classpath execution
+    private static class ClientAccess {
+        @net.neoforged.api.distmarker.OnlyIn(net.neoforged.api.distmarker.Dist.CLIENT)
+        static List<String> getResourcePacks() {
+            return new ArrayList<>(net.minecraft.client.Minecraft.getInstance().getResourcePackRepository().getSelectedIds());
+        }
     }
 
     public record ClientModAuditTask() implements ICustomConfigurationTask {
@@ -160,19 +199,27 @@ public final class ClientModWhitelist {
         }
     }
 
-    public record ClientModAuditResponsePayload(List<ReportedMod> mods) implements CustomPacketPayload {
+    public record ClientModAuditResponsePayload(List<ReportedMod> mods, List<String> resourcePacks) implements CustomPacketPayload {
         private static final StreamCodec<FriendlyByteBuf, List<ReportedMod>> MODS_STREAM_CODEC =
-            ByteBufCodecs.collection(ArrayList::new, ReportedMod.STREAM_CODEC, MAX_REPORTED_MODS);
+            ByteBufCodecs.collection(ArrayList::new, ReportedMod.STREAM_CODEC, MAX_REPORTED_ITEMS);
+        private static final StreamCodec<FriendlyByteBuf, List<String>> PACKS_STREAM_CODEC =
+            ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.STRING_UTF8, MAX_REPORTED_ITEMS);
+
         public static final CustomPacketPayload.Type<ClientModAuditResponsePayload> TYPE =
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "client_mod_audit_response"));
+        
+        // Combine both collections into a single composite codec
         public static final StreamCodec<FriendlyByteBuf, ClientModAuditResponsePayload> STREAM_CODEC = StreamCodec.composite(
             MODS_STREAM_CODEC,
             ClientModAuditResponsePayload::mods,
+            PACKS_STREAM_CODEC,
+            ClientModAuditResponsePayload::resourcePacks,
             ClientModAuditResponsePayload::new
         );
 
         public ClientModAuditResponsePayload {
             mods = List.copyOf(mods);
+            resourcePacks = List.copyOf(resourcePacks);
         }
 
         @Override

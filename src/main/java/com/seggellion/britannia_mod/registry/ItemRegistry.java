@@ -248,8 +248,8 @@ public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.registe
                     ModSounds.VIOLIN_FAIL
             ));
 
-public static final DeferredHolder<Item, Item> GRAPES = ITEMS.register("grapes",
-    () -> new GrapesItem(new Item.Properties().food( // <--- FIX: Uses your custom class
+public static final DeferredHolder<Item, GrapesItem> GRAPES = ITEMS.register("grapes",
+    () -> new GrapesItem(new Item.Properties().food( 
             new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.3f).build()
     )));
 

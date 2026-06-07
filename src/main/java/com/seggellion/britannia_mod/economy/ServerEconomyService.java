@@ -282,6 +282,16 @@ public final class ServerEconomyService {
                 return false;
             }
         }
+        if (stack.getItem() instanceof GradeStoneItem stoneItem) {
+            String stoneKey = CommodityMappings.stoneCommodityKey(stoneItem.getStoneType(stack)).orElse("");
+            if (stoneKey.isBlank()) return false;
+            if (requestedName.isBlank()) return true;
+
+            String requestedKey = CommodityMappings.stoneCommodityKey(requestedName).orElse(CityCommodity.normalize(requestedName));
+            if (!stoneKey.equals(requestedKey)) {
+                return false;
+            }
+        }
 
         if (request.matchNbt() != null && stack.has(DataComponentRegistry.WINE_DATA)) {
             CompoundTag saved = (CompoundTag) stack.save(player.registryAccess());
@@ -369,10 +379,16 @@ public final class ServerEconomyService {
             item.addProperty("category", "ore");
             item.addProperty("subcategory", "raw");
         } else if (itemObj instanceof GradeStoneItem stoneItem) {
-            item.addProperty("item_name", stoneItem.getStoneType(stack));
-            item.addProperty("commodity_key", stoneItem.getStoneType(stack));
+            String rawStoneType = stoneItem.getStoneType(stack);
+            String stoneType = CommodityMappings.stoneCommodityKey(rawStoneType).orElse(CityCommodity.normalize(rawStoneType));
+            double weight = stack.getCount();
+            item.addProperty("item_name", stoneType);
+            item.addProperty("commodity_key", CommodityMappings.stoneCommodityIdentityKey(stoneType));
             item.addProperty("category", "stone");
             item.addProperty("subcategory", "blocks");
+            item.addProperty("weight", weight);
+            LOGGER.info("StoneTrader sale GradeStoneItem item_id={} rawStoneType={} commodity_key={} weight={}",
+                    itemId, rawStoneType, CommodityMappings.stoneCommodityIdentityKey(stoneType), weight);
         } else {
             classifyMappedCommodity(item, stack);
         }

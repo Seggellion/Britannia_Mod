@@ -7,10 +7,23 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class CommodityMappings {
     private static final Map<String, CommodityMapping> BY_ITEM_ID = new LinkedHashMap<>();
     private static final Map<String, CommodityMapping> BY_PATH = new LinkedHashMap<>();
+    private static final Set<String> SUPPORTED_STONE_COMMODITIES = Set.of(
+            "cobblestone",
+            "stone",
+            "andesite",
+            "diorite",
+            "granite",
+            "tuff",
+            "basalt",
+            "blackstone",
+            "limestone",
+            "quartz"
+    );
 
     static {
         map("minecraft:wheat", "grain", "whole", "wheat", "Wheat", CommodityUnit.QUANTITY);
@@ -114,6 +127,34 @@ public final class CommodityMappings {
             case "king_fish" -> "kingfish";
             default -> normalized;
         };
+    }
+
+    public static Optional<String> stoneCommodityKey(String stoneType) {
+        String normalized = CityCommodity.normalize(stoneType);
+        if (normalized.isBlank()) return Optional.empty();
+
+        String canonical = switch (normalized) {
+            case "black_stone" -> "blackstone";
+            case "smooth_stone", "regular_stone" -> "stone";
+            case "nether_quartz", "quartz_block" -> "quartz";
+            default -> normalized;
+        };
+        if (SUPPORTED_STONE_COMMODITIES.contains(canonical)) return Optional.of(canonical);
+
+        if (canonical.endsWith("_stone")) {
+            String stripped = canonical.substring(0, canonical.length() - "_stone".length());
+            if (SUPPORTED_STONE_COMMODITIES.contains(stripped)) return Optional.of(stripped);
+        }
+        if (canonical.endsWith("_block")) {
+            String stripped = canonical.substring(0, canonical.length() - "_block".length());
+            if (SUPPORTED_STONE_COMMODITIES.contains(stripped)) return Optional.of(stripped);
+        }
+
+        return Optional.empty();
+    }
+
+    public static String stoneCommodityIdentityKey(String stoneType) {
+        return "stone|blocks|" + stoneType;
     }
 
     private static void mapProduce(String itemName, String subcategory, String displayName) {

@@ -522,6 +522,7 @@ public class ClientModSetup {
     }
 
 
+    @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {
         ClientEventHandler.onClientSetup(event);

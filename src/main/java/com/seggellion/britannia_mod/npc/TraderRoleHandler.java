@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.npc;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.WeightedCommodityItem;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
@@ -106,6 +107,7 @@ public class TraderRoleHandler extends AbstractSellTraderRoleHandler {
         JsonArray arr = new JsonArray();
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
+            if (category.equals("stone") && addGradeStoneCommodity(arr, stack)) continue;
 
             String id = itemId(stack);
             CommodityMapping commodity = CommodityMappings.forStack(stack).orElse(null);
@@ -127,6 +129,28 @@ public class TraderRoleHandler extends AbstractSellTraderRoleHandler {
             arr.add(j);
         }
         return arr;
+    }
+
+    private boolean addGradeStoneCommodity(JsonArray arr, ItemStack stack) {
+        if (!(stack.getItem() instanceof GradeStoneItem stoneItem)) return false;
+
+        String rawStoneType = stoneItem.getStoneType(stack);
+        String stoneType = CommodityMappings.stoneCommodityKey(rawStoneType).orElse(null);
+        if (stoneType == null) {
+            LOGGER.warn("Stone trader ignored unsupported GradeStoneItem StoneType={}", rawStoneType);
+            return true;
+        }
+
+        JsonObject j = new JsonObject();
+        j.addProperty("item_id", itemId(stack));
+        j.addProperty("item_name", stoneType);
+        j.addProperty("commodity_key", CommodityMappings.stoneCommodityIdentityKey(stoneType));
+        j.addProperty("category", "stone");
+        j.addProperty("subcategory", "blocks");
+        j.addProperty("quantity", stack.getCount());
+        j.addProperty("weight", stack.getCount());
+        arr.add(j);
+        return true;
     }
 
     private JsonArray collectFurLeatherFromInventory(Player player) {
