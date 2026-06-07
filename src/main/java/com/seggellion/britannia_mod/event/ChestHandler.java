@@ -12,6 +12,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -30,6 +31,7 @@ public class ChestHandler {
 
 private static final Map<BlockPos, ChestConfig> CHEST_CONFIGURATIONS = new HashMap<>();
 
+private static final BlockPos FISHING_BARREL_POS = new BlockPos(5213, 66, 8912);
 
     private static class ChestConfig {
         ItemStack itemStack;
@@ -58,6 +60,7 @@ public void onServerTickPre(ServerTickEvent.Pre event) {
     ServerLevel serverLevel = event.getServer().getLevel(ServerLevel.OVERWORLD);
     if (serverLevel != null) {
         CHEST_CONFIGURATIONS.forEach((pos, chestConfig) -> ensureChestContainsItem(serverLevel, pos, chestConfig.itemStack));
+    ensureBarrelContainsItem(serverLevel, FISHING_BARREL_POS, createFishingRod());
     }
 }
 
@@ -81,7 +84,24 @@ public void onServerTickPre(ServerTickEvent.Pre event) {
             LOGGER.warn("Failed to initialize chest at {}: BlockEntity is not a chest", chestPos);
         }
     }
+    private static void ensureBarrelContainsItem(ServerLevel serverLevel, BlockPos barrelPos, ItemStack itemStack) {
+    BlockEntity blockEntity = serverLevel.getBlockEntity(barrelPos);
 
+    if (blockEntity instanceof BarrelBlockEntity barrelEntity) {
+        ItemStack barrelItem = barrelEntity.getItem(0);
+
+        if (barrelItem.isEmpty() || !isMatchingItem(barrelItem, itemStack)) {
+            ItemStack validatedItem = validateItemStack(itemStack);
+
+            barrelEntity.setItem(0, validatedItem);
+            barrelEntity.setChanged();
+
+            LOGGER.info("Repopulated barrel at {} with {}", barrelPos, validatedItem.getHoverName().getString());
+        }
+    } else {
+        LOGGER.warn("No barrel found at {}. Found block entity: {}", barrelPos, blockEntity);
+    }
+}
 
 private static void ensureChestContainsItem(ServerLevel serverLevel, BlockPos chestPos, ItemStack itemStack) {
     BlockEntity blockEntity = serverLevel.getBlockEntity(chestPos);
