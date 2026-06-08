@@ -5,6 +5,9 @@ import com.seggellion.britannia_mod.magic.Spell;
 import com.seggellion.britannia_mod.magic.SpellRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
+import com.seggellion.britannia_mod.teleport.TeleportDestination;
+import com.seggellion.britannia_mod.teleport.TeleportResult;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,14 +73,20 @@ private void handlePlayerPosition(Player player) {
         if (z <= MIN_Z)       newZ = MAX_Z - 1;
         else if (z >= MAX_Z)  newZ = MIN_Z + 1;
 
-        if (newX != x || newZ != z) teleportPlayer(sp, newX, y, newZ);
+        if (newX != x || newZ != z) {
+            LOGGER.debug("World wrap detected for {} from ({}, {}, {}) to ({}, {}, {})",
+                    sp.getName().getString(), x, y, z, newX, y, newZ);
+            // Shared server-side teleport path keeps world wrapping aligned with carpet and dungeon teleporters.
+            TeleportResult result = BritanniaTeleportService.teleport(
+                    sp,
+                    TeleportDestination.inCurrentLevel(sp, newX, y, newZ, "world_wrap"),
+                    20
+            );
+            if (!result.success()) {
+                LOGGER.warn("World wrap teleport failed: {}", result.failureReason());
+            }
+        }
     }
-}
-
-private void teleportPlayer(ServerPlayer player, double x, double y, double z) {
-    LOGGER.info("Teleporting player {} to coordinates: {}, {}, {}",
-            player.getName().getString(), x, y, z);
-    player.teleportTo(x, y, z);
 }
 
 

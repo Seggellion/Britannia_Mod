@@ -1,18 +1,19 @@
 // CarpetTeleporterBlockEntity.java
 package com.seggellion.britannia_mod.block.entity;
 
+import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
+import com.seggellion.britannia_mod.teleport.TeleportDestination;
+import com.seggellion.britannia_mod.teleport.TeleportResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-import com.seggellion.britannia_mod.ModSounds;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
 
 public class CarpetTeleporterBlockEntity extends BlockEntity {
 
@@ -47,29 +48,39 @@ public BlockPos getTarget() {
 public void teleport(ServerPlayer player) {
     BlockPos dest = getTarget();
     if (dest == null || level == null) {
+        sendUnlinkedMessage(player);
         return;
     }
 
-    CompoundTag data = player.getPersistentData();
-    long now = level.getGameTime();
-    long lastTeleport = data.getLong("britannia_mod:last_carpet_teleport");
+    // Use the shared server-side teleport path; destination NBT stays destX/destY/destZ for compatibility.
+    TeleportResult result = BritanniaTeleportService.teleport(
+            player,
+            TeleportDestination.inCurrentLevel(
+                    player,
+                    dest.getX() + 0.5,
+                    dest.getY() + 1,
+                    dest.getZ() + 0.5,
+                    "carpet_teleporter"
+            ),
+            40
+    );
 
-    // Cooldown: 40 ticks
-    if (now - lastTeleport < 40) return;
-    data.putLong("britannia_mod:last_carpet_teleport", now);
-
-    // Ensure chunk is fully generated before teleporting
-    if (level instanceof ServerLevel serverLevel) {
-        serverLevel.getChunk(dest); // Guarantees generation/loading
+    if (result.success()) {
+        SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
+        level.playSound(null, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 1.0f, 1.0f);
     }
-
-    // Play teleport sound at origin
-    SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
-    level.playSound(null, player.blockPosition(), soundEvent, SoundSource.BLOCKS, 1.0f, 1.0f);
-
-    // Final teleport
-    player.teleportTo(dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5);
 }
 
+private void sendUnlinkedMessage(ServerPlayer player) {
+    if (level == null) return;
+
+    CompoundTag data = player.getPersistentData();
+    long now = level.getGameTime();
+    long lastMessage = data.getLong("britannia_mod:last_unlinked_carpet_message");
+    if (now - lastMessage >= 40) {
+        data.putLong("britannia_mod:last_unlinked_carpet_message", now);
+     //   player.sendSystemMessage(Component.literal("This carpet teleporter is not linked."));
+    }
+}
 
 }

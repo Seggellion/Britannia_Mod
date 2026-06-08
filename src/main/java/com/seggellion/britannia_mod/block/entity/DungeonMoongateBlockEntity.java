@@ -1,6 +1,9 @@
 package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
+import com.seggellion.britannia_mod.teleport.TeleportDestination;
+import com.seggellion.britannia_mod.teleport.TeleportResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -39,16 +42,25 @@ public class DungeonMoongateBlockEntity extends BlockEntity {
         return null;
     }
 
-    public void teleportPlayer(ServerPlayer player) {
+    public TeleportResult teleportPlayer(ServerPlayer player) {
         BlockPos pairedPos = getPairedMoongatePos();
         if (pairedPos != null && level != null) {
-            // Ensure the chunk at the destination is loaded
-            level.getChunk(pairedPos);
-            // Teleport the player slightly above the destination moongate
-            player.teleportTo(pairedPos.getX() + 0.5, pairedPos.getY() + 1, pairedPos.getZ() + 0.5);
-        } else {
-            player.sendSystemMessage(Component.literal("This moongate is not linked to another moongate."));
+            // Shared server-side teleport path; paired NBT keys stay PairedX/PairedY/PairedZ for compatibility.
+            return BritanniaTeleportService.teleport(
+                    player,
+                    TeleportDestination.inCurrentLevel(
+                            player,
+                            pairedPos.getX() + 0.5,
+                            pairedPos.getY() + 1,
+                            pairedPos.getZ() + 0.5,
+                            "dungeon_moongate"
+                    ),
+                    100
+            );
         }
+
+        player.sendSystemMessage(Component.literal("This moongate is not linked to another moongate."));
+        return TeleportResult.failure("unlinked", "dungeon moongate has no paired position");
     }
 
     public void unlinkPairedMoongate() {
