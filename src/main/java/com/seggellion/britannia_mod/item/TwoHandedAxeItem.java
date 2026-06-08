@@ -1,15 +1,14 @@
 package com.seggellion.britannia_mod.item;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.player.Player;
+import com.seggellion.britannia_mod.util.AxeHarvestRules;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class TwoHandedAxeItem extends AxeItem {
@@ -31,20 +30,19 @@ public class TwoHandedAxeItem extends AxeItem {
 
     @Override
     public boolean isCorrectToolForDrops(ItemStack stack, BlockState state) {
-        return state.is(BlockTags.LOGS) || super.isCorrectToolForDrops(stack, state);
-    }
-
-    @Override
-    public boolean canAttackBlock(BlockState state, Level level, BlockPos pos, Player player) {
-        return super.canAttackBlock(state, level, pos, player);
+        return AxeHarvestRules.isAllowedAxeHarvestBlock(state);
     }
 
     @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
-        if (state.is(BlockTags.LOGS)) {
-            return 2.0F;
-        }
+        if (AxeHarvestRules.isAllowedLeafBlock(state)) return 4.0F;
+        if (AxeHarvestRules.isAllowedLogBlock(state)) return 2.0F;
 
-        return super.getDestroySpeed(stack, state);
+        return 0.0F;
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        return InteractionResult.PASS;
     }
 }

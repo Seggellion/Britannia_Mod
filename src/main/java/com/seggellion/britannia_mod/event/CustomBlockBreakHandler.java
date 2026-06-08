@@ -7,28 +7,21 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.bus.api.SubscribeEvent;
-import org.slf4j.Logger;
-import java.util.UUID;
-import com.mojang.logging.LogUtils;
 
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.tags.BlockTags;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 
-import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
+import com.seggellion.britannia_mod.item.QualityToolItem;
 import com.seggellion.britannia_mod.util.BlockBreakUtils;
+import com.seggellion.britannia_mod.util.PickaxeMiningRules;
 
 public class CustomBlockBreakHandler {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
     @SubscribeEvent
     public void onBlockBreak(BreakEvent event) {
         Player player = event.getPlayer();
@@ -41,40 +34,28 @@ public class CustomBlockBreakHandler {
         BlockState state = event.getState();
         ItemStack heldItem = player.getMainHandItem();
 
-        boolean isStone = state.is(BlockTags.BASE_STONE_OVERWORLD);
-        boolean isOre   = state.is(Blocks.IRON_ORE) ||
-                        state.is(Blocks.DEEPSLATE_IRON_ORE) ||
-                        state.is(Blocks.GOLD_ORE) ||
-                        state.is(BlockRegistry.COPPER_ORE.get()) ||
-                        state.is(BlockRegistry.TIN_ORE.get()) ||
-                        state.is(BlockRegistry.SILVER_ORE.get()) ||
-                        state.is(BlockRegistry.GOLD_ORE.get()) ||
-                        state.is(BlockRegistry.SHADOW_IRON_ORE.get()) ||
-                        state.is(BlockRegistry.AGAPITE_ORE.get()) ||
-                        state.is(BlockRegistry.VERITE_ORE.get()) ||
-                        state.is(BlockRegistry.VALORITE_ORE.get()) ||
-                        state.is(BlockRegistry.HIGH_PURITY_SILVER_ORE.get());
-        boolean isLog   = state.is(BlockTags.LOGS);
+        boolean isStone = PickaxeMiningRules.isAllowedStoneBlock(state);
+        boolean isOre = PickaxeMiningRules.isAllowedOreBlock(state);
 
-        // Using IronPickaxe
-        if (heldItem.getItem() == ToolRegistry.PICKAXE.get()) {
+        if (isBritanniaPickaxe(heldItem)) {
+            event.setCanceled(true);
+
             if (isStone) {
                 handleStoneBreaking(serverLevel, pos, state, player);
             } else if (isOre) {
                 handleOreBreaking(serverLevel, pos, state, player);
+            } else {
+                return;
             }
-            // else: already blocked in onBreakSpeed
 
-            // Example: if you want to record the break:
          BrokenBlockTracker.recordBrokenBlock(serverLevel, pos, state, player.getUUID());
         }
-        // Using TwoHandedAxe
-        else if (heldItem.getItem() instanceof TwoHandedAxeItem) {
-            if (isLog) {
-                handleLogBreaking(serverLevel, pos, state, player);
-            }
-            // else: already blocked in onBreakSpeed
-        }
+    }
+
+    private boolean isBritanniaPickaxe(ItemStack stack) {
+        return stack.getItem() == ToolRegistry.PICKAXE.get()
+                || stack.getItem() instanceof QualityToolItem
+                || stack.getItem() instanceof BritanniaPickaxeItem;
     }
 
     private void handleStoneBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {
@@ -130,16 +111,4 @@ public class CustomBlockBreakHandler {
         );
     }
 
-    private void handleLogBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {
-        // Example: do vanilla-like behavior
-        UUID playerId = player.getUUID();
-        long currentTime = System.currentTimeMillis();
-        TreeKarmaHandler.treeCutTimestamps.put(playerId, currentTime);
-        player.sendSystemMessage(Component.literal("You cut down a tree. Replant a sapling to avoid karma loss!"));
-        level.destroyBlock(pos, true, player);
-        player.displayClientMessage(
-            Component.literal("You chopped some logs with your Two-Handed Axe!"),
-            true
-        );
-    }
 }

@@ -8,8 +8,10 @@ import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
 import com.seggellion.britannia_mod.teleport.TeleportDestination;
 import com.seggellion.britannia_mod.teleport.TeleportResult;
+import com.seggellion.britannia_mod.util.AxeHarvestRules;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -17,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -161,10 +162,11 @@ public void onItemPickup(ItemEntityPickupEvent.Pre event) { // Changed to Pre
             if (serverPlayer.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
                 ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-                // Check if holding the two-handed axe and the block is a log
-                if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get() && state.is(BlockTags.LOGS)) {
-                    // Break the block manually
-                    level.destroyBlock(pos, true, player);
+                if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get()) {
+                    if (level instanceof ServerLevel serverLevel && AxeHarvestRules.isAllowedAxeHarvestBlock(state)) {
+                        WoodChopEventHandler.handleAxeHarvest(serverLevel, pos, state, player);
+                    }
+
                     event.setCanceled(true);
                 }
             }

@@ -1,15 +1,14 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.util.PickaxeMiningRules;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
-import net.minecraft.tags.BlockTags;
 
 import java.util.List;
 
@@ -71,14 +70,11 @@ public class QualityToolItem extends PickaxeItem implements IItemExtension {
 
     @Override
     public boolean isCorrectToolForDrops(ItemStack stack, BlockState state) {
-        return state.is(Blocks.STONE) || state.is(BlockTags.STONE_ORE_REPLACEABLES) || super.isCorrectToolForDrops(stack, state);
+        return PickaxeMiningRules.isAllowedMineableBlock(state);
     }
 
     @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
-        if (state.is(Blocks.STONE) || state.is(BlockTags.STONE_ORE_REPLACEABLES)) {
-            return 2.0F + (getQuality(stack) * 0.5F); // Slight bonus per quality
-        }
-        return super.getDestroySpeed(stack, state);
+        return PickaxeMiningRules.isAllowedMineableBlock(state) ? 2.0F + (getQuality(stack) * 0.5F) : 0.0F;
     }
 }
