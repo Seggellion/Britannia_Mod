@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.network;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.client.gui.NpcCatalogScreen;
@@ -29,10 +31,13 @@ import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPay
 import com.seggellion.britannia_mod.client.screen.QuestDestinationScreen;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload;
+import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
+import com.seggellion.britannia_mod.quest.QuestManager;
+import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
 
 import net.minecraft.resources.ResourceLocation;
@@ -42,9 +47,12 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.sounds.SoundEvents;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
@@ -54,10 +62,12 @@ import org.slf4j.Logger;
 @OnlyIn(Dist.CLIENT)
 public class ClientNetworkHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Gson GSON = new Gson();
 
     private static final TextColor GRAY_848484 = TextColor.fromRgb(0x848484);
     private static final ResourceLocation FONT_UO_CLASSIC =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+    private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 // 1. Your existing 4-argument method for NPCs
     public static void openQuestDecisionScreen(
         com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse response, 
@@ -175,7 +185,7 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
             if (response != null && response.success) {
                 // Claim items if the API granted any
                 if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                    sendToServer(new ClaimQuestRewardC2SPayload(response.granted_items));
+                    sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
                 }
                 
                 // Open the screen
@@ -183,6 +193,97 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
             }
         });
     });
+}
+
+public static void handleQuestTriggerResult(QuestTriggerResultS2CPayload payload, IPayloadContext ctx) {
+    ctx.enqueueWork(() -> {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            LOGGER.warn("Quest trigger result ignored because client player is null quest_id={} trigger_key={}",
+                    payload.questId(), payload.triggerKey());
+            return;
+        }
+
+        QuestModels.QuestResponse response;
+        try {
+            response = GSON.fromJson(payload.responseJson(), QuestModels.QuestResponse.class);
+        } catch (JsonSyntaxException e) {
+            LOGGER.error("Quest trigger result JSON parse failed quest_id={} trigger_key={} body={}",
+                    payload.questId(), payload.triggerKey(), payload.responseJson(), e);
+            return;
+        }
+
+        if (response == null) {
+            LOGGER.warn("Quest trigger result was empty quest_id={} trigger_key={}", payload.questId(), payload.triggerKey());
+            return;
+        }
+
+        if (!response.success) {
+            LOGGER.warn("Quest trigger result failure quest_id={} trigger_key={} error={}",
+                    payload.questId(), payload.triggerKey(), response.error);
+            if (response.error != null && !response.error.isBlank()) {
+                mc.player.sendSystemMessage(uoMessage(response.error));
+            }
+            return;
+        }
+
+        QuestManager.getInstance().setCurrentQuestState(response);
+
+        if (response.granted_items != null && !response.granted_items.isEmpty()) {
+            sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
+        }
+
+        handleQuestClientActions(response, payload.questId(), payload.triggerKey());
+
+        if (response.currentNode != null) {
+            openQuestDecisionScreen(response, "The Guardian", null);
+        } else {
+            LOGGER.warn("Quest trigger response missing node quest_id={} trigger_key={}", payload.questId(), payload.triggerKey());
+        }
+    });
+}
+
+private static void handleQuestClientActions(QuestModels.QuestResponse response, long questId, String triggerKey) {
+    Minecraft mc = Minecraft.getInstance();
+    if (response.client_actions == null || response.client_actions.isEmpty()) {
+        return;
+    }
+
+    for (QuestModels.ClientAction action : response.client_actions) {
+        String actionType = action.type != null && !action.type.isBlank() ? action.type : action.action;
+        if ("achievement".equals(actionType)) {
+            mc.getToasts().addToast(
+                    SystemToast.multiline(
+                            mc,
+                            SystemToast.SystemToastId.PERIODIC_NOTIFICATION,
+                            uoMessage("Achievement Unlocked!").withStyle(UO_STYLE.withColor(TextColor.fromRgb(0xFFAA00))),
+                            uoMessage(action.name != null ? action.name : "Quest Completed")
+                    )
+            );
+            if (mc.player != null) {
+                mc.player.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
+            }
+        } else if ("stat_gain".equals(actionType)) {
+            if (mc.player != null) {
+                if (action.karma > 0 && action.fame > 0) {
+                    mc.player.sendSystemMessage(uoMessage("+" + action.karma + " Karma, +" + action.fame + " Fame"));
+                } else if (action.karma > 0) {
+                    mc.player.sendSystemMessage(uoMessage("+" + action.karma + " Karma"));
+                } else if (action.fame > 0) {
+                    mc.player.sendSystemMessage(uoMessage("+" + action.fame + " Fame"));
+                }
+            }
+        } else if ("spawn_escort".equals(actionType)) {
+            // Server-triggered environmental results do not spawn client-side escorts.
+        } else {
+            LOGGER.warn("Quest client action unknown quest_id={} trigger_key={} type={} action={} name={}",
+                    questId, triggerKey, action.type, action.action, action.name);
+        }
+    }
+}
+
+private static MutableComponent uoMessage(String text) {
+    return Component.literal(text).withStyle(UO_STYLE);
 }
 
     public static void handleTraderSpawnScreen(TraderSpawnScreenS2CPayload payload, IPayloadContext ctx) {
@@ -236,7 +337,7 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
             com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
                 if (response != null && response.success) {
                     if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                        sendToServer(new ClaimQuestRewardC2SPayload(response.granted_items));
+                        sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
                     }
                     Minecraft.getInstance().setScreen(
                         new QuestDecisionScreen(

@@ -19,6 +19,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 
 import java.util.UUID;
@@ -27,6 +31,9 @@ public class QuestClient {
     private static final String BASE_URL = ModConfig.API_BASE_URL;
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new Gson();
+    private static final ResourceLocation FONT_UO_CLASSIC =
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+    private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 
     /**
      * Starts a new quest via POST /api/quests/:id/start
@@ -74,7 +81,6 @@ public static void sendTrigger(long questId, String triggerKey, Consumer<QuestMo
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
                 }
-LOGGER.info("SENDING TRIGGER!");
                 handleResponse(conn, callback);
             } catch (Exception e) {
                 LOGGER.error("Failed to send trigger to Quest API", e);
@@ -108,7 +114,6 @@ LOGGER.info("SENDING TRIGGER!");
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
                 }
-LOGGER.info("SENDING TRANSITION!");
                 handleResponse(conn, callback);
             } catch (Exception e) {
                 LOGGER.error("Failed to process quest transition", e);
@@ -155,7 +160,6 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
                 status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream(), 
                 StandardCharsets.UTF_8
             );
-            LOGGER.info("RESPONSE RECEIVED!");
             StringBuilder sb = new StringBuilder();
             int cp;
             while ((cp = reader.read()) != -1) {
@@ -182,7 +186,6 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
                 LOGGER.warn("Quest API Error (HTTP {}): {}", status, response.error);
             } else if (status >= 200 && status < 300 && response.success) {
                 // Update the state manager centrally
-                LOGGER.info("RESPONSE: {}", response);
                 QuestManager.getInstance().setCurrentQuestState(response);
             }
 
@@ -198,8 +201,8 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
                                     SystemToast.multiline(
                                         Minecraft.getInstance(),
                                         SystemToast.SystemToastId.PERIODIC_NOTIFICATION, 
-                                        Component.literal("§6Achievement Unlocked!"), // Gold text
-                                        Component.literal(action.name != null ? action.name : "Quest Completed")
+                                        uoMessage("Achievement Unlocked!").withStyle(UO_STYLE.withColor(TextColor.fromRgb(0xFFAA00))),
+                                        uoMessage(action.name != null ? action.name : "Quest Completed")
                                     )
                                 );
                             // 2. Play the satisfying Level Up / Challenge Complete sound
@@ -210,16 +213,17 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
 
                         // 2. Check for Stat Gains (Un-nested!)
                         else if ("stat_gain".equals(action.type)) {
-                            LOGGER.info("attempting stat gain");
-                            if (action.fame > 0) {
-                                Minecraft.getInstance().player.sendSystemMessage(
-                                    Component.literal("§eYou have gained " + action.fame + " Fame.")
-                                );
-                            }
-                            if (action.karma > 0) {
-                                Minecraft.getInstance().player.sendSystemMessage(
-                                    Component.literal("§eYou have gained " + action.karma + " Karma.")
-                                );
+                            if (Minecraft.getInstance().player != null) {
+                                if (action.fame > 0) {
+                                    Minecraft.getInstance().player.sendSystemMessage(
+                                        uoMessage("You have gained " + action.fame + " Fame.")
+                                    );
+                                }
+                                if (action.karma > 0) {
+                                    Minecraft.getInstance().player.sendSystemMessage(
+                                        uoMessage("You have gained " + action.karma + " Karma.")
+                                    );
+                                }
                             }
                         }
 
@@ -275,5 +279,9 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
     private static String getLocalPlayerUUID() {
         if (Minecraft.getInstance().player != null) return Minecraft.getInstance().player.getUUID().toString();
         return "unknown";
+    }
+
+    private static MutableComponent uoMessage(String text) {
+        return Component.literal(text).withStyle(UO_STYLE);
     }
 }

@@ -1,0 +1,18 @@
+{
+  "display": {
+    "icon": {
+      "id": "britannia_mod:one_ring"
+    },
+    "title": "Ring Destroyed",
+    "description": "Cast the magic ring into the fire.",
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "completed": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

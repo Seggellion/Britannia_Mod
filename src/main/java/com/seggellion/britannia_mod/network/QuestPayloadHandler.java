@@ -12,16 +12,18 @@ import net.minecraft.core.BlockPos;
 
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import com.mojang.logging.LogUtils;
-import org.slf4j.Logger;
 
 public class QuestPayloadHandler {
-    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final ResourceLocation FONT_UO_CLASSIC =
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+    private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 
 public static void handleItemBurned(final ItemBurnedS2CPayload payload, final IPayloadContext context) {
         context.enqueueWork(() -> {
@@ -45,15 +47,12 @@ public static class ClientProxy {
 
 
 public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
-      LOGGER.info("EvaluateLavaQuest!");
             QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
             if (state == null || state.currentNode == null || state.currentNode.metadata == null) return;
-            LOGGER.info("State Exists!");
             if (state.currentNode.metadata.has("destroy_trigger")) {
                 com.google.gson.JsonObject destroyData = state.currentNode.metadata.getAsJsonObject("destroy_trigger");
                 String targetTag = destroyData.has("item_tag") ? destroyData.get("item_tag").getAsString() : "";
                 String triggerKey = destroyData.has("trigger_key") ? destroyData.get("trigger_key").getAsString() : "";
-                  LOGGER.info("Lava Quest Trigger!");
                 if (!targetTag.isEmpty() && !triggerKey.isEmpty()) {
                     BlockPos min = new BlockPos(QuestEventHandlers.getSafeInt(destroyData, "min_x"), QuestEventHandlers.getSafeInt(destroyData, "min_y"), QuestEventHandlers.getSafeInt(destroyData, "min_z"));
                     BlockPos max = new BlockPos(QuestEventHandlers.getSafeInt(destroyData, "max_x"), QuestEventHandlers.getSafeInt(destroyData, "max_y"), QuestEventHandlers.getSafeInt(destroyData, "max_z"));
@@ -127,9 +126,13 @@ public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
 
                 // Format the chat message so it doesn't print raw database IDs
                 String displayString = finalName != null && finalName.contains(":") ? finalName.split(":", 2)[0] : finalName;
-                player.sendSystemMessage(Component.literal("§e" + displayString + " joins your side. Lead the way."));
+                player.sendSystemMessage(uoMessage(displayString + " joins your side. Lead the way."));
             }
         });
+    }
+
+    private static Component uoMessage(String text) {
+        return Component.literal(text).withStyle(UO_STYLE);
     }
 
     // --- CUSTOM AI: Makes the NPC follow the player ---

@@ -305,24 +305,21 @@ registrar.playToServer(
                 while (remaining > 0) {
                     int give = Math.min(remaining, maxStack);
                     net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item, give);
+                    stampQuestReward(stack, itemData, payload, player);
                     if (!player.getInventory().add(stack)) {
                         player.drop(stack, false);
                     }
                     remaining -= give;
                 }
             } else if (itemData.id.equals("magic_ring")) {
-                net.minecraft.world.item.ItemStack ring = new net.minecraft.world.item.ItemStack(ItemRegistry.ONE_RING, itemData.count);
+                net.minecraft.world.item.ItemStack ring = new net.minecraft.world.item.ItemStack(ItemRegistry.ONE_RING.get(), itemData.count);
                 ring.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("a magic gold ring").withStyle(net.minecraft.ChatFormatting.GOLD));
-                
-                // ==========================================
-                // THE FIX: Inject the hidden quest_item tag!
-                // ==========================================
-                net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
-                tag.putString("quest_item", itemData.id); // This binds "magic_ring" to the item invisibly
-                ring.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
-                // ==========================================
+                stampQuestReward(ring, itemData, payload, player);
 
                 if (!player.getInventory().add(ring)) player.drop(ring, false);
+            } else {
+                LOGGER.warn("Quest reward item could not be resolved player={} item_id={} count={} quest_id={}",
+                    player.getStringUUID(), itemData.id, itemData.count, payload.questId());
             }
         }
         
@@ -473,6 +470,14 @@ registrar.playToClient(
     com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload.STREAM_CODEC,
     net.neoforged.fml.loading.FMLLoader.getDist().isClient()
         ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleTriggerQuest
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleQuestTriggerResult
         : (p, c) -> {}
 );
 
@@ -649,6 +654,49 @@ registrar.playToClient(
 @SubscribeEvent
 public static void registerConfigurationTasks(final RegisterConfigurationTasksEvent event) {
     ClientModWhitelist.registerConfigurationTasks(event);
+}
+
+private static void stampQuestReward(
+        ItemStack stack,
+        com.seggellion.britannia_mod.quest.network.QuestModels.ItemData itemData,
+        com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload payload,
+        ServerPlayer player
+) {
+    if (stack == null || stack.isEmpty() || itemData == null) return;
+
+    net.minecraft.world.item.component.CustomData existingData =
+            stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                    net.minecraft.world.item.component.CustomData.EMPTY);
+    CompoundTag tag = existingData.copyTag();
+
+    String rewardItemId = itemData.id == null ? "" : itemData.id;
+    if (!rewardItemId.isBlank()) {
+        tag.putString("quest_item", rewardItemId);
+    }
+
+    tag.putString("quest_owner_uuid", player.getStringUUID());
+    tag.putString("quest_owner_name", player.getGameProfile().getName());
+
+    if (payload.hasDestroyTriggerContext() && questRewardMatchesDestroyTarget(rewardItemId, payload.destroyItemTag())) {
+        tag.putLong("quest_id", payload.questId());
+        tag.putString("quest_trigger_key", payload.destroyTriggerKey());
+        tag.putString("quest_item", payload.destroyItemTag());
+        tag.putInt("quest_min_x", payload.minX());
+        tag.putInt("quest_min_y", payload.minY());
+        tag.putInt("quest_min_z", payload.minZ());
+        tag.putInt("quest_max_x", payload.maxX());
+        tag.putInt("quest_max_y", payload.maxY());
+        tag.putInt("quest_max_z", payload.maxZ());
+    }
+
+    stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+            net.minecraft.world.item.component.CustomData.of(tag));
+}
+
+private static boolean questRewardMatchesDestroyTarget(String rewardItemId, String destroyItemTag) {
+    if (rewardItemId == null || destroyItemTag == null) return false;
+    if (rewardItemId.equalsIgnoreCase(destroyItemTag)) return true;
+    return rewardItemId.replace("britannia_mod:", "").equalsIgnoreCase(destroyItemTag.replace("britannia_mod:", ""));
 }
 
 
