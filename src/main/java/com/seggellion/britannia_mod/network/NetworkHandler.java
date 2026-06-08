@@ -42,6 +42,9 @@ import com.seggellion.britannia_mod.network.payload.ChessBoardScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
+import com.seggellion.britannia_mod.network.payload.ServerboundQuestAcceptedPayload;
+import com.seggellion.britannia_mod.network.payload.ServerboundQuitQuestPayload;
 import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.skill.BlacksmithCrafting;
@@ -57,6 +60,8 @@ import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.economy.ServerEconomyService;
 import com.seggellion.britannia_mod.economy.MerchantEconomyService;
 import com.seggellion.britannia_mod.spawner.BritanniaSpawnableEntities;
+import com.seggellion.britannia_mod.quest.ServerQuestService;
+import com.seggellion.britannia_mod.quest.ServerQuestTable;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -410,6 +415,25 @@ registrar.playToServer(
         QuestPayloadHandler::handleSpawnEscort
     );
 
+registrar.playToServer(
+    ServerboundQuestAcceptedPayload.TYPE,
+    ServerboundQuestAcceptedPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerQuestTable.addFromRailsAcceptSuccess(player, payload.quest());
+        ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
+    })
+);
+
+registrar.playToServer(
+    ServerboundQuitQuestPayload.TYPE,
+    ServerboundQuitQuestPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerQuestService.quitQuest(player, payload.questStateId());
+    })
+);
+
 
     registrar.playToClient(
         ItemBurnedS2CPayload.TYPE,
@@ -574,6 +598,13 @@ registrar.playToClient(
             ? (payload, ctx) -> ctx.enqueueWork(() -> SkillSyncPayload.handle(payload))
             : (p, c) -> {});
 
+    registrar.playToClient(
+        ClientboundSyncQuestsPayload.TYPE,
+        ClientboundSyncQuestsPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? (payload, ctx) -> ctx.enqueueWork(() -> ClientboundSyncQuestsPayload.handle(payload))
+            : (p, c) -> {});
+
 registrar.playToClient(
     BritanniaSpawnScreenS2CPayload.TYPE,
     BritanniaSpawnScreenS2CPayload.STREAM_CODEC,
@@ -676,9 +707,14 @@ private static void stampQuestReward(
 
     tag.putString("quest_owner_uuid", player.getStringUUID());
     tag.putString("quest_owner_name", player.getGameProfile().getName());
+    if (payload.questId() > 0) {
+        tag.putLong("quest_id", payload.questId());
+    }
+    if (payload.questStateId() != null && !payload.questStateId().isBlank()) {
+        tag.putString("quest_state_id", payload.questStateId().trim());
+    }
 
     if (payload.hasDestroyTriggerContext() && questRewardMatchesDestroyTarget(rewardItemId, payload.destroyItemTag())) {
-        tag.putLong("quest_id", payload.questId());
         tag.putString("quest_trigger_key", payload.destroyTriggerKey());
         tag.putString("quest_item", payload.destroyItemTag());
         tag.putInt("quest_min_x", payload.minX());

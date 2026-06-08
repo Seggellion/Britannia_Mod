@@ -2,7 +2,12 @@ package com.seggellion.britannia_mod.quest.network;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.network.payload.ServerboundQuestAcceptedPayload;
+import com.seggellion.britannia_mod.quest.ClientQuestEntry;
+import com.seggellion.britannia_mod.quest.ClientQuestTable;
+import com.seggellion.britannia_mod.quest.QuestEntryParser;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import net.minecraft.client.Minecraft;
@@ -15,6 +20,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -114,7 +120,7 @@ public static void sendTrigger(long questId, String triggerKey, Consumer<QuestMo
                 try (OutputStream os = conn.getOutputStream()) {
                     os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
                 }
-                handleResponse(conn, callback);
+                handleResponse(conn, callback, questGiverNameFromContext(context));
             } catch (Exception e) {
                 LOGGER.error("Failed to process quest transition", e);
             }
@@ -152,6 +158,19 @@ public static void sendTrigger(long questId, String triggerKey, Consumer<QuestMo
     }
 
 private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.QuestResponse> callback) {
+        handleResponse(conn, callback, "", false);
+    }
+
+private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.QuestResponse> callback, String fallbackQuestGiverName) {
+        handleResponse(conn, callback, fallbackQuestGiverName, true);
+    }
+
+private static void handleResponse(
+        HttpURLConnection conn,
+        Consumer<QuestModels.QuestResponse> callback,
+        String fallbackQuestGiverName,
+        boolean allowAcceptedQuestSync
+) {
         try {
             int status = conn.getResponseCode();
             
@@ -166,6 +185,14 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
                 sb.append((char) cp);
             }
             String rawResponse = sb.toString();
+            JsonObject rawJson = null;
+            try {
+                if (!rawResponse.isBlank()) {
+                    rawJson = JsonParser.parseString(rawResponse).getAsJsonObject();
+                }
+            } catch (Exception ignored) {
+                rawJson = null;
+            }
 
             QuestModels.QuestResponse response;
             
@@ -191,7 +218,23 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
 
             // Always execute the callback on the main Minecraft thread to safely update UI
             final QuestModels.QuestResponse finalResponse = response;
+            final List<ClientQuestEntry> acceptedQuests =
+                    allowAcceptedQuestSync && rawJson != null
+                            ? QuestEntryParser.parseRailsAcceptSuccess(rawJson, fallbackQuestGiverName)
+                            : List.of();
+            if (finalResponse != null
+                    && (finalResponse.questStateId == null || finalResponse.questStateId.isBlank())
+                    && !acceptedQuests.isEmpty()) {
+                finalResponse.questStateId = acceptedQuests.get(0).questStateId();
+            }
+            if (finalResponse != null
+                    && (finalResponse.questGiverName == null || finalResponse.questGiverName.isBlank())
+                    && !acceptedQuests.isEmpty()) {
+                finalResponse.questGiverName = acceptedQuests.get(0).questGiverName();
+            }
             Minecraft.getInstance().execute(() -> {
+                syncQuestJournalFromResponse(finalResponse, acceptedQuests);
+
                 // --- NEW: Process Client Actions (like Achievements) ---
                 if (finalResponse != null && finalResponse.success && finalResponse.client_actions != null) {
                     for (QuestModels.ClientAction action : finalResponse.client_actions) {
@@ -239,6 +282,28 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
         }
     }
 
+    private static void syncQuestJournalFromResponse(QuestModels.QuestResponse response, List<ClientQuestEntry> acceptedQuests) {
+        if (response == null || !response.success) return;
+
+        if (response.completed) {
+            if (response.quest_id > 0) {
+                ClientQuestTable.removeAfterRailsCompletionSuccessByQuestId(Long.toString(response.quest_id));
+            }
+            return;
+        }
+
+        if (acceptedQuests == null || acceptedQuests.isEmpty()) return;
+
+        for (ClientQuestEntry entry : acceptedQuests) {
+            if (!entry.hasKey()) continue;
+
+            ClientQuestTable.addFromRailsAcceptSuccess(entry);
+            if (Minecraft.getInstance().getConnection() != null) {
+                Minecraft.getInstance().getConnection().send(new ServerboundQuestAcceptedPayload(entry));
+            }
+        }
+    }
+
     /**
      * Interacts with an NPC to get their current quest node via POST /api/quests/interact
      */
@@ -283,5 +348,14 @@ private static void handleResponse(HttpURLConnection conn, Consumer<QuestModels.
 
     private static MutableComponent uoMessage(String text) {
         return Component.literal(text).withStyle(UO_STYLE);
+    }
+
+    private static String questGiverNameFromContext(JsonObject context) {
+        if (context == null || !context.has("quest_giver_name")) return "";
+        try {
+            return context.get("quest_giver_name").getAsString();
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 }

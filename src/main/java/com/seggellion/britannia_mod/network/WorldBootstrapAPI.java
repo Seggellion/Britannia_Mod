@@ -11,6 +11,8 @@ import com.seggellion.britannia_mod.util.RegionItemData;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.network.ClientboundSyncCityTokenPayload;
+import com.seggellion.britannia_mod.quest.ClientQuestEntry;
+import com.seggellion.britannia_mod.quest.QuestEntryParser;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.resources.ResourceLocation;
@@ -243,8 +245,11 @@ public final class WorldBootstrapAPI {
                     GrapeVarietyManager.loadFromBootstrap(grapesList);
                 }
 
+                // 6) Accepted/current quests. Rails may provide either accepted_quests or quests.
+                List<ClientQuestEntry> acceptedQuests = QuestEntryParser.parseAcceptedQuests(root);
+
                 // Return
-                return new WorldBootstrapData(fishMap, regions, shardUser, citiesData);
+                return new WorldBootstrapData(fishMap, regions, shardUser, citiesData, acceptedQuests);
             }
         } catch (Exception e) {
             LOGGER.error("Failed world bootstrap", e);
@@ -258,10 +263,11 @@ public final class WorldBootstrapAPI {
             Map<ResourceLocation, FishCatalog.FishMeta> fish,
             List<RegionData> regions, 
             ShardUserData shardUser,
-            List<CityBootstrapData> cities
+            List<CityBootstrapData> cities,
+            List<ClientQuestEntry> acceptedQuests
     ) {
         public static WorldBootstrapData empty() {
-            return new WorldBootstrapData(Map.of(), List.of(), null, List.of());
+            return new WorldBootstrapData(Map.of(), List.of(), null, List.of(), List.of());
         }
     }
 

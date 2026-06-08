@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -45,7 +46,9 @@ public static void teleportPlayer(ServerPlayer player) {
             AABB searchBox = player.getBoundingBox().inflate(10.0D); // 10-block radius
             
             List<LivingEntity> escorts = level.getEntitiesOfClass(LivingEntity.class, searchBox, 
-                entity -> entity.getTags().contains(escortTag)
+                entity -> entity.getTags().contains("escort_active")
+                    && entity.getTags().contains(escortTag)
+                    && ServerQuestTable.hasActiveQuestState(playerUUID, tagValue(entity, "quest_state_id_"))
             );
 
             // ==========================================
@@ -117,5 +120,14 @@ public static void teleportPlayer(ServerPlayer player) {
     // Optional: Public method to check if a player is in the recently teleported set
     public static boolean hasRecentlyTeleported(UUID playerUUID) {
         return recentlyTeleportedPlayers.contains(playerUUID);
+    }
+
+    private static String tagValue(Entity entity, String prefix) {
+        for (String tag : entity.getTags()) {
+            if (tag.startsWith(prefix)) {
+                return tag.substring(prefix.length());
+            }
+        }
+        return "";
     }
 }

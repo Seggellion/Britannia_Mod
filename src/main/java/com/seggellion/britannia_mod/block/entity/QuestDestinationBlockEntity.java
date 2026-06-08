@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -46,7 +47,9 @@ public class QuestDestinationBlockEntity extends BlockEntity {
             String expectedTag = "quest_escort_" + player.getUUID().toString();
 
             List<Mob> nearbyEscorts = level.getEntitiesOfClass(
-                Mob.class, searchBox, entity -> entity.getTags().contains(expectedTag)
+                Mob.class, searchBox, entity -> entity.getTags().contains("escort_active")
+                        && entity.getTags().contains(expectedTag)
+                        && ServerQuestTable.hasActiveQuestState(player.getUUID(), tagValue(entity, "quest_state_id_"))
             );
 
             if (!nearbyEscorts.isEmpty()) {
@@ -91,6 +94,15 @@ public class QuestDestinationBlockEntity extends BlockEntity {
                 }
             }
         }
+    }
+
+    private static String tagValue(Mob entity, String prefix) {
+        for (String tag : entity.getTags()) {
+            if (tag.startsWith(prefix)) {
+                return tag.substring(prefix.length());
+            }
+        }
+        return "";
     }
 
     @Override

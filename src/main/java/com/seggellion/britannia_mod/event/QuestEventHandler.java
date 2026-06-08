@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.event;
 
 // Notice: We ONLY import QuestServerAPI. QuestClient is completely removed.
+import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 
 import net.minecraft.network.chat.Component;
@@ -30,12 +31,15 @@ public class QuestEventHandler {
         // 1. ESCORT QUEST LOGIC (Did an escort die?)
         // ==========================================
         String playerUuidStr = null;
+        String questStateId = "";
         long questId = -1;
 
         // Scan the dead entity's tags for our quest markers
         for (String tag : deceased.getTags()) {
             if (tag.startsWith("quest_escort_")) {
                 playerUuidStr = tag.substring("quest_escort_".length());
+            } else if (tag.startsWith("quest_state_id_")) {
+                questStateId = tag.substring("quest_state_id_".length());
             } else if (tag.startsWith("quest_id_")) {
                 try {
                     questId = Long.parseLong(tag.substring("quest_id_".length()));
@@ -44,12 +48,12 @@ public class QuestEventHandler {
         }
 
         // If it has BOTH tags, this was an active escort!
-        if (playerUuidStr != null && questId != -1) {
+        if (playerUuidStr != null && questId != -1 && !questStateId.isBlank()) {
             try {
                 UUID playerUuid = UUID.fromString(playerUuidStr);
                 ServerPlayer player = deceased.level().getServer().getPlayerList().getPlayer(playerUuid);
 
-                if (player != null) {
+                if (player != null && ServerQuestTable.hasActiveQuestState(player, questStateId)) {
                     player.sendSystemMessage(Component.literal("§cYour ward has fallen in battle! You have failed to protect them."));
                     player.connection.send(new ClientboundCustomPayloadPacket(new CloseScreenS2CPayload()));
                     

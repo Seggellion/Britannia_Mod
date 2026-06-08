@@ -13,6 +13,7 @@ import java.util.List;
 public record ClaimQuestRewardC2SPayload(
         List<ItemData> items,
         long questId,
+        String questStateId,
         String destroyTriggerKey,
         String destroyItemTag,
         int minX,
@@ -27,7 +28,7 @@ public record ClaimQuestRewardC2SPayload(
     public static final Type<ClaimQuestRewardC2SPayload> TYPE = new Type<>(TYPE_ID);
 
     public ClaimQuestRewardC2SPayload(List<ItemData> items) {
-        this(items, 0L, "", "", 0, 0, 0, 0, 0, 0);
+        this(items, 0L, "", "", "", 0, 0, 0, 0, 0, 0);
     }
 
     public static ClaimQuestRewardC2SPayload fromResponse(QuestModels.QuestResponse response) {
@@ -61,6 +62,7 @@ public record ClaimQuestRewardC2SPayload(
         return new ClaimQuestRewardC2SPayload(
                 response.granted_items,
                 response.quest_id,
+                response.questStateId,
                 triggerKey,
                 itemTag,
                 minX,
@@ -84,6 +86,7 @@ public record ClaimQuestRewardC2SPayload(
                 list.add(data);
             }
             long questId = buf.readLong();
+            String questStateId = ByteBufCodecs.STRING_UTF8.decode(buf);
             String destroyTriggerKey = ByteBufCodecs.STRING_UTF8.decode(buf);
             String destroyItemTag = ByteBufCodecs.STRING_UTF8.decode(buf);
             int minX = buf.readInt();
@@ -95,6 +98,7 @@ public record ClaimQuestRewardC2SPayload(
             return new ClaimQuestRewardC2SPayload(
                     list,
                     questId,
+                    questStateId,
                     destroyTriggerKey,
                     destroyItemTag,
                     minX,
@@ -114,6 +118,7 @@ public record ClaimQuestRewardC2SPayload(
                 buf.writeVarInt(data.count);
             }
             buf.writeLong(payload.questId);
+            ByteBufCodecs.STRING_UTF8.encode(buf, safeString(payload.questStateId));
             ByteBufCodecs.STRING_UTF8.encode(buf, safeString(payload.destroyTriggerKey));
             ByteBufCodecs.STRING_UTF8.encode(buf, safeString(payload.destroyItemTag));
             buf.writeInt(payload.minX);

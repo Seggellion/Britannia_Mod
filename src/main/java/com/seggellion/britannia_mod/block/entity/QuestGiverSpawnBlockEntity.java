@@ -7,6 +7,8 @@ import com.seggellion.britannia_mod.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
@@ -213,6 +215,7 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
     private void updateSnapshot(QuestGiverEntity npc) {
         savedNpcData = new CompoundTag();
         npc.saveWithoutId(savedNpcData);
+        stripEscortAssignment(savedNpcData);
         savedNpcData.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(npc.getType()).toString());
         setChanged();
     }
@@ -239,6 +242,78 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
             if (e != null) e.remove(RemovalReason.DISCARDED);
             spawnedNpcId = null;
         }
+    }
+
+    public boolean clearTrackedNpc(UUID npcId, boolean resetSnapshot, int cooldownTicks) {
+        if (npcId == null || spawnedNpcId == null || !spawnedNpcId.equals(npcId)) {
+            return false;
+        }
+
+        spawnedNpcId = null;
+        if (resetSnapshot) {
+            savedNpcData = null;
+        }
+        spawnCooldown = Math.max(spawnCooldown, Math.max(0, cooldownTicks));
+        setChanged();
+        return true;
+    }
+
+    public boolean clearTrackedEscort(String npcApiId, int cooldownTicks) {
+        String normalizedApiId = clean(npcApiId);
+        if (normalizedApiId.isBlank()) return false;
+
+        boolean matched = false;
+        if (savedNpcData != null) {
+            matched = normalizedApiId.equals(internalApiId(savedNpcData.getString("personalName")));
+        }
+
+        if (!matched && level instanceof ServerLevel sl && spawnedNpcId != null) {
+            Entity current = sl.getEntity(spawnedNpcId);
+            if (current instanceof QuestGiverEntity questGiver) {
+                matched = normalizedApiId.equals(internalApiId(questGiver.getPersonalName()));
+            }
+        }
+
+        if (!matched) return false;
+
+        spawnedNpcId = null;
+        savedNpcData = null;
+        spawnCooldown = Math.max(spawnCooldown, Math.max(0, cooldownTicks));
+        setChanged();
+        return true;
+    }
+
+    private static String internalApiId(String rawName) {
+        String cleaned = clean(rawName);
+        if (cleaned.isBlank()) return "";
+        if (!cleaned.contains(":")) return cleaned;
+        return cleaned.split(":", 2)[1].trim();
+    }
+
+    private static String clean(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private static void stripEscortAssignment(CompoundTag tag) {
+        if (tag == null || !tag.contains("Tags")) return;
+
+        ListTag tags = tag.getList("Tags", 8);
+        ListTag keptTags = new ListTag();
+        for (int i = 0; i < tags.size(); i++) {
+            String value = tags.getString(i);
+            if (isEscortAssignmentTag(value)) continue;
+            keptTags.add(StringTag.valueOf(value));
+        }
+        tag.put("Tags", keptTags);
+    }
+
+    private static boolean isEscortAssignmentTag(String tag) {
+        return tag != null
+                && (tag.startsWith("quest_escort_")
+                || tag.startsWith("quest_state_id_")
+                || tag.startsWith("quest_id_")
+                || tag.startsWith("quest_key_")
+                || tag.equals("escort_active"));
     }
 
     @Override

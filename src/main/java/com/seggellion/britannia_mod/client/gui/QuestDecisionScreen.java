@@ -1,9 +1,14 @@
 package com.seggellion.britannia_mod.client.screen;
 
 import com.seggellion.britannia_mod.quest.network.QuestClient;
+import com.seggellion.britannia_mod.quest.ClientQuestEntry;
+import com.seggellion.britannia_mod.quest.ClientQuestTable;
+import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse;
 import com.seggellion.britannia_mod.quest.network.QuestModels.QuestChoice;
 import com.seggellion.britannia_mod.client.render.PortraitDownloader;
+import com.mojang.logging.LogUtils;
+import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -12,10 +17,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
+import org.slf4j.Logger;
 
 import java.util.UUID;
 
 public class QuestDecisionScreen extends Screen {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final ResourceLocation PAPER_BACKGROUND = ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/dialogue_screen.png");
     private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
@@ -100,6 +107,12 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
                     Button choiceBtn = Button.builder(btnText, btn -> {
                         // NEW: Intercept choices with no destination and just close the UI!
                         if (choice.id == null || choice.id.trim().isEmpty() || "close".equalsIgnoreCase(choice.id)) {
+                            this.choiceMade = true;
+                            clearPendingOfferStateIfUnaccepted();
+                            this.onClose();
+                        } else if (isRejectChoice(choice) && !hasAcceptedQuestState(questState)) {
+                            this.choiceMade = true;
+                            clearPendingOfferStateIfUnaccepted();
                             this.onClose();
                         } else {
                             handleChoice(choice);
@@ -122,12 +135,16 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
 
     private void handleChoice(QuestChoice choice) {
         this.choiceMade = true;
-        QuestClient.sendTransition(questState.quest_id, choice.id, null, newResponse -> {
+        QuestClient.sendTransition(questState.quest_id, choice.id, questGiverContext(), newResponse -> {
             if (newResponse != null && newResponse.error == null) {
+                String questStateId = resolveQuestStateId(newResponse);
                 if (newResponse.granted_items != null && !newResponse.granted_items.isEmpty()) {
                     net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
-                    if (connection != null) {
+                    if (connection != null && !questStateId.isBlank()) {
                         connection.send(com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload.fromResponse(newResponse));
+                    } else if (questStateId.isBlank()) {
+                        LOGGER.warn("Ignoring quest reward claim before Rails accepted quest_state_id quest_id={} choice_id={}",
+                                newResponse.quest_id, choice.id);
                     }
                 }
 
@@ -140,10 +157,16 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
 
                                 String safeName = this.npcName != null ? this.npcName : "Unknown";
                                 String safeGender = this.npcGender != null ? this.npcGender : "unknown";
+                                if (questStateId.isBlank()) {
+                                    LOGGER.warn("Ignoring escort spawn before Rails accepted quest_state_id quest_id={} npc_uuid={} choice_id={}",
+                                            newResponse.quest_id, safeUuid, choice.id);
+                                    continue;
+                                }
 
                                 connection.send(new com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload(
                                     action.entity_type, 
                                     newResponse.quest_id, 
+                                    questStateId,
                                     safeUuid, 
                                     safeName, 
                                     safeGender
@@ -160,6 +183,60 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
                 this.onClose();
             }
         });
+    }
+
+    private JsonObject questGiverContext() {
+        JsonObject context = new JsonObject();
+        String displayName = displayQuestGiverName(this.npcName);
+        if (!displayName.isBlank()) {
+            context.addProperty("quest_giver_name", displayName);
+        }
+        if (this.npcUuid != null) {
+            context.addProperty("quest_giver_uuid", this.npcUuid.toString());
+        }
+        return context;
+    }
+
+    private static String displayQuestGiverName(String rawName) {
+        if (rawName == null) return "";
+        String cleaned = rawName.trim();
+        if (cleaned.isBlank()) return "";
+        if (!cleaned.contains(":")) return cleaned;
+        return cleaned.split(":", 2)[0].trim();
+    }
+
+    private static String resolveQuestStateId(QuestResponse response) {
+        if (response == null) return "";
+        if (response.questStateId != null && !response.questStateId.isBlank()) {
+            return response.questStateId.trim();
+        }
+        if (response.quest_id <= 0) return "";
+
+        ClientQuestEntry entry = ClientQuestTable.findByQuestId(Long.toString(response.quest_id));
+        return entry != null ? entry.questStateId() : "";
+    }
+
+    private static boolean hasAcceptedQuestState(QuestResponse response) {
+        return response != null && response.questStateId != null && !response.questStateId.isBlank();
+    }
+
+    private static boolean isRejectChoice(QuestChoice choice) {
+        if (choice == null) return false;
+        String id = choice.id == null ? "" : choice.id.trim().toLowerCase(java.util.Locale.ROOT);
+        String text = choice.text == null ? "" : choice.text.trim().toLowerCase(java.util.Locale.ROOT);
+        return id.equals("reject")
+                || id.equals("decline")
+                || id.equals("refuse")
+                || id.equals("no")
+                || text.contains("reject")
+                || text.contains("decline")
+                || text.contains("refuse");
+    }
+
+    private void clearPendingOfferStateIfUnaccepted() {
+        if (!hasAcceptedQuestState(this.questState)) {
+            QuestManager.getInstance().clearState();
+        }
     }
 
 @Override
@@ -228,9 +305,10 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
 
 @Override
     public void onClose() {
-        if (!this.choiceMade && questState != null && !questState.completed) {
+        if (!this.choiceMade && questState != null && !questState.completed && hasAcceptedQuestState(questState)) {
             QuestClient.abandonQuest(questState.quest_id);
         }
+        clearPendingOfferStateIfUnaccepted();
         
         Minecraft.getInstance().setScreen(null);
     }

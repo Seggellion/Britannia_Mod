@@ -10,6 +10,12 @@ public class QuestModels {
         public boolean success; // Added to check for successful HTTP responses
         
         public long quest_id; // Added for trigger payload
+
+        @SerializedName("quest_state_id")
+        public String questStateId;
+
+        @SerializedName("quest_giver_name")
+        public String questGiverName;
         
         @SerializedName("player_uuid")
         public String playerUuid;

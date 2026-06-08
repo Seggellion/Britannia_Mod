@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.client;
 
-import com.seggellion.britannia_mod.client.gui.SkillTableScreen;
+import com.seggellion.britannia_mod.client.gui.MenuScreen;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -38,7 +38,7 @@ public class Keybinds {
     private static void onKeyPress(InputEvent.Key event) {
         if (OPEN_SKILL_SCREEN.consumeClick()) {
             LOGGER.info("buttonpress occurred");
-            Minecraft.getInstance().setScreen(new SkillTableScreen());
+            Minecraft.getInstance().setScreen(new MenuScreen());
         }
     }
 }
