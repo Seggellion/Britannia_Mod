@@ -325,6 +325,11 @@ public static final DeferredHolder<SoundEvent, SoundEvent> MINING2 = SOUND_EVENT
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_lock"))
     );
 
+        public static final DeferredHolder<SoundEvent, SoundEvent> LOCKPICK_ATTEMPT = SOUND_EVENTS.register(
+            "lockpick_attempt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lockpick_attempt"))
+    );
+
     // 1. Lap Harp
     public static final DeferredHolder<SoundEvent, SoundEvent> LAP_HARP_PLAY = SOUND_EVENTS.register(
             "lap_harp_play",

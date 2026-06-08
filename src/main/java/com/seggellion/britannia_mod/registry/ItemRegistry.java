@@ -27,6 +27,7 @@ import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.structure.HouseStyle;
 import com.seggellion.britannia_mod.item.DeedItemFactory;
 import com.seggellion.britannia_mod.item.HouseKeyItem;
+import com.seggellion.britannia_mod.item.ChestKeyItem;
 import com.seggellion.britannia_mod.item.PitcherJuiceItem;
 import com.seggellion.britannia_mod.item.WineBottleItem;
 import net.minecraft.world.item.ItemNameBlockItem;
@@ -105,6 +106,8 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties().stacksTo(99)));
         public static final DeferredHolder<Item, Item> SILVER_COIN = ITEMS.register("silver_coin",
             () -> new Item(new Item.Properties().stacksTo(99)));
+    public static final DeferredHolder<Item, Item> LOCKPICK_TOOLS = ITEMS.register("lockpick_tools",
+            () -> new Item(new Item.Properties().stacksTo(64)));
     
     // Quality Jewlery
 
@@ -864,6 +867,10 @@ public static final DeferredHolder<Item, Item> LOCKABLE_WOOD_DOOR_ITEM = ITEMS.r
             ITEMS.register("chest_metal_bronze", () -> new BlockItem(BlockRegistry.CHEST_METAL_BRONZE.get(),
                     new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> BRITANNIA_LOCKABLE_CHEST_ITEM =
+            ITEMS.register("britannia_lockable_chest", () -> new BlockItem(BlockRegistry.BRITANNIA_LOCKABLE_CHEST.get(),
+                    new Item.Properties()));
+
 // containers
 
     public static final DeferredHolder<Item, Item> ARMOIRE_BROWN_ITEM =
@@ -1203,6 +1210,10 @@ public static final DeferredHolder<Item, Item> MOONGATE_LINKING_WAND = ITEMS.reg
 public static final DeferredHolder<Item, Item> HOUSE_KEY = ITEMS.register(
         "house_key",
         () -> new HouseKeyItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> CHEST_KEY = ITEMS.register(
+        "chest_key",
+        () -> new ChestKeyItem(new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> MOONGATE_BLOCK_ITEM = ITEMS.register(
             "moongate_block", () -> new BlockItem(BlockRegistry.MOONGATE_BLOCK.get(), new Item.Properties()));

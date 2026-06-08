@@ -2,6 +2,9 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.block.BritanniaLockableChestBlock;
+import com.seggellion.britannia_mod.item.ChestKeyItem;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -22,11 +25,21 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.UUID;
+
 public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvider, Container {
+    private static final String TAG_LOCK_ID = "LockId";
+    private static final String TAG_CHEST_KEY_SEEDED = "ChestKeySeeded";
+    private static final String TAG_LOCKED = "Locked";
+    private static final String TAG_LOCK_DIFFICULTY = "LockDifficulty";
     
     // 1. We replace SimpleContainer with a direct List of ItemStacks (Vanilla Style)
     // 27 slots, initialized with empty air.
     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
+    private UUID lockId;
+    private boolean chestKeySeeded;
+    private boolean locked;
+    private int lockDifficulty = 1;
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         @Override
@@ -54,6 +67,12 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
 
     public BritanniaChestBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        if (state.getBlock() instanceof BritanniaLockableChestBlock) {
+            this.lockId = UUID.randomUUID();
+            this.locked = false;
+            this.lockDifficulty = getDefaultDifficulty(state);
+            this.seedChestKeyIfNeeded();
+        }
     }
 
     // =============================================================
@@ -65,6 +84,12 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
         super.saveAdditional(tag, registries);
         // ContainerHelper handles the heavy lifting of saving the list to NBT automatically
         ContainerHelper.saveAllItems(tag, this.items, registries);
+        if (this.lockId != null) {
+            tag.putUUID(TAG_LOCK_ID, this.lockId);
+        }
+        tag.putBoolean(TAG_CHEST_KEY_SEEDED, this.chestKeySeeded);
+        tag.putBoolean(TAG_LOCKED, this.locked);
+        tag.putInt(TAG_LOCK_DIFFICULTY, this.lockDifficulty);
     }
 
     @Override
@@ -74,6 +99,61 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         // Load the items from NBT
         ContainerHelper.loadAllItems(tag, this.items, registries);
+        if (tag.hasUUID(TAG_LOCK_ID)) {
+            this.lockId = tag.getUUID(TAG_LOCK_ID);
+        }
+        this.chestKeySeeded = tag.getBoolean(TAG_CHEST_KEY_SEEDED);
+        this.locked = tag.getBoolean(TAG_LOCKED);
+        this.lockDifficulty = tag.contains(TAG_LOCK_DIFFICULTY) ? Math.clamp(tag.getInt(TAG_LOCK_DIFFICULTY), 1, 9) : getDefaultDifficulty(this.getBlockState());
+    }
+
+    public UUID getOrCreateLockId() {
+        if (this.lockId == null) {
+            this.lockId = UUID.randomUUID();
+            this.setChanged();
+        }
+        return this.lockId;
+    }
+
+    public void seedChestKeyIfNeeded() {
+        if (this.chestKeySeeded || !(this.getBlockState().getBlock() instanceof BritanniaLockableChestBlock)) return;
+
+        UUID id = this.getOrCreateLockId();
+        ItemStack key = ((ChestKeyItem) ItemRegistry.CHEST_KEY.get()).createKey(id);
+        for (int i = 0; i < this.items.size(); i++) {
+            if (this.items.get(i).isEmpty()) {
+                this.items.set(i, key);
+                this.chestKeySeeded = true;
+                this.setChanged();
+                return;
+            }
+        }
+    }
+
+    public boolean isLocked() {
+        return this.locked;
+    }
+
+    public void setLocked(boolean locked) {
+        if (!(this.getBlockState().getBlock() instanceof BritanniaLockableChestBlock)) return;
+        this.locked = locked;
+        this.setChanged();
+    }
+
+    public int getLockDifficulty() {
+        return Math.clamp(this.lockDifficulty, 1, 9);
+    }
+
+    public void setLockDifficulty(int lockDifficulty) {
+        this.lockDifficulty = Math.clamp(lockDifficulty, 1, 9);
+        this.setChanged();
+    }
+
+    private static int getDefaultDifficulty(BlockState state) {
+        if (state.getBlock() instanceof BritanniaLockableChestBlock lockableChest) {
+            return lockableChest.getDefaultDifficulty();
+        }
+        return 1;
     }
 
     // =============================================================

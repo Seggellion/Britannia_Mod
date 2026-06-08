@@ -127,6 +127,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.CHEST_OF_DRAWERS_RED_ITEM.get());
                 safeAccept(output, ItemRegistry.CHEST_METAL_ITEM.get());
                 safeAccept(output, ItemRegistry.CHEST_METAL_BRONZE_ITEM.get());
+                safeAccept(output, ItemRegistry.BRITANNIA_LOCKABLE_CHEST_ITEM.get());
 
                 // Walls
                 safeAccept(output, ItemRegistry.CAVE_ITEM.get());
@@ -335,6 +336,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SMALL_TABLE_ITEM.get());
                 safeAccept(output, ItemRegistry.COUNTER_ITEM.get());
                 safeAccept(output, ItemRegistry.GOLD_COIN.get());
+                safeAccept(output, ItemRegistry.LOCKPICK_TOOLS.get());
+                safeAccept(output, ItemRegistry.CHEST_KEY.get());
 
                 // Tools & weapons
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
