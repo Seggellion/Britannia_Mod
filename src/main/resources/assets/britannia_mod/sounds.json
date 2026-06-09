@@ -582,6 +582,11 @@
       "britannia_mod:door_lock"
   ]
 },
+"lockpick_attempt": {
+  "sounds": [
+      "britannia_mod:lockpick_attempt"
+  ]
+},
 "chest_open": {
   "sounds": [
       "britannia_mod:chest_open"

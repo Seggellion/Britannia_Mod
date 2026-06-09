@@ -16,6 +16,7 @@ import com.seggellion.britannia_mod.structure.StoreSignBlock;
 import com.seggellion.britannia_mod.block.BlankSignHolder;
 import com.seggellion.britannia_mod.block.BaseOreBlock;
 import com.seggellion.britannia_mod.block.BritanniaChestBlock;
+import com.seggellion.britannia_mod.block.BritanniaLockableChestBlock;
 import com.seggellion.britannia_mod.block.MoongateTopBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
@@ -494,11 +495,20 @@ public static final DeferredHolder<Block, Block> ARMOIRE_BROWN = BLOCKS.register
             )
     );
 
+    public static final DeferredHolder<Block, Block> BRITANNIA_LOCKABLE_CHEST = BLOCKS.register("britannia_lockable_chest", () ->
+            new BritanniaLockableChestBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(2.5f)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()
+            )
+    );
+
   // One block entity type shared by all three
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BritanniaChestBlockEntity>> BRITANNIA_CHEST_BLOCK_ENTITY_TYPE =
             BLOCK_ENTITY_TYPES.register("britannia_chest", () ->
                     BlockEntityType.Builder.of(BritanniaChestBlockEntity::new,
-                            CHEST_WOODEN.get(), CHEST_METAL.get(), CHEST_METAL_BRONZE.get()
+                            CHEST_WOODEN.get(), CHEST_METAL.get(), CHEST_METAL_BRONZE.get(), BRITANNIA_LOCKABLE_CHEST.get()
                     ).build(null)
             );
 

@@ -222,9 +222,11 @@ public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("garg
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_lock"))
     );
 
-    // =========================================
-    // INSTRUMENTS
-    // =========================================
+        public static final DeferredHolder<SoundEvent, SoundEvent> LOCKPICK_ATTEMPT = SOUND_EVENTS.register(
+            "lockpick_attempt",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":lockpick_attempt"))
+    );
+
     // 1. Lap Harp
     public static final DeferredHolder<SoundEvent, SoundEvent> LAP_HARP_PLAY = SOUND_EVENTS.register(
             "lap_harp_play",

@@ -161,7 +161,10 @@
     "block.britannia_mod.fish_spawn_block": "Fish Spawn Block",
     "block.britannia_mod.horse_spawn_block": "Horse Spawn Block",
     "block.britannia_mod.blacksmith_spawn_block": "Blacksmith Spawn Block",
+    "block.britannia_mod.britannia_lockable_chest": "Britannia Lockable Chest",
     "item.britannia_mod.interior_decorator_tool": "Interior Decorator Tool",
+    "item.britannia_mod.lockpick_tools": "Lockpick Tools",
+    "item.britannia_mod.chest_key": "Chest Key",
     "item.britannia_mod.small_deed": "Small Deed",
     "item.britannia_mod.blue_tent_deed": "Blue Tent Deed",
     "item.britannia_mod.mongbat_spawn_egg": "Mongbat Spawn Egg",
@@ -305,6 +308,9 @@
     "block.britannia_mod.architect_spawn_block": "Architect Spawn Block",
 
 
+        "tooltip.britannia_mod.painting.size.small": "Small",
+    "tooltip.britannia_mod.painting.size.medium": "Medium",
+    "tooltip.britannia_mod.painting.size.large": "Large",
     "itemGroup.graveyard": "Graveyard Block",
 
   "itemGroup.britannia_magic_tab": "Britannia Magic Tab",
@@ -447,7 +453,6 @@
     "block.britannia_mod.wooden_lamp_post": "Wooden Lamp Post",
     "block.britannia_mod.lamp_post_fancy": "Fancy Lamp Post",
     "block.britannia_mod.lamp_post_regular": "Regular Lamp Post",
-
 
   "entity.britannia_mod.mongbat": "a mongbat",
   "entity.britannia_mod.alligator": "an alligator",

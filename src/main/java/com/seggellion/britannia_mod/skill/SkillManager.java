@@ -98,6 +98,36 @@ private static final Map<UUID, PlayerSkills> PLAYER_SKILLS = new java.util.concu
     postGain(player, key, newValue);
 }
 
+public static float awardSkillGain(ServerPlayer player, String skillName, float amount) {
+    if (player == null || amount <= 0.0f) return 0.0f;
+
+    final String key = skillName.toLowerCase(Locale.ROOT);
+    PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
+    SkillDef def = SKILL_DEFS.getOrDefault(
+        key,
+        new SkillDef(key, capitalize(key), 100f, 1.0f, true, true)
+    );
+
+    float current = p.get(key);
+    if (current >= def.max) return 0.0f;
+
+    float newValue = Math.min(current + amount, def.max);
+    p.set(key, newValue);
+
+    String message = String.format(
+        "Your skill in %s has increased by %.1f%%. It is now %.1f%%.",
+        capitalize(key), newValue - current, newValue
+    );
+    Style style = Style.EMPTY.withFont(FONT_UO_CLASSIC).withColor(TEAL_0093A4);
+    player.sendSystemMessage(Component.literal(""));
+    player.sendSystemMessage(Component.literal(message).withStyle(style));
+
+    player.server.execute(() -> NetworkHandler.sendToPlayer(player, new SkillSyncPayload(p.map)));
+    postGain(player, key, newValue);
+
+    return newValue - current;
+}
+
 private static String capitalize(String s) {
     if (s.isEmpty()) return s;
     return s.substring(0, 1).toUpperCase(Locale.ROOT) + s.substring(1);
