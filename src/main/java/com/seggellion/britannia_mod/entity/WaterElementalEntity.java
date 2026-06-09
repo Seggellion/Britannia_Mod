@@ -55,6 +55,40 @@ public class WaterElementalEntity extends BaseBritanniaMonster {
                 .add(Attributes.ATTACK_SPEED, -1.0D);
     }
 
+    // Shatter boats on collision if a player is riding them
+    @Override
+    protected void doPush(Entity entity) {
+        super.doPush(entity);
+        
+        // Only run on the server side and check if we bumped into a boat
+        if (!this.level().isClientSide && entity instanceof net.minecraft.world.entity.vehicle.Boat boat) {
+            
+            // Check if any passenger is a player
+            boolean hasPlayer = false;
+            for (Entity passenger : boat.getPassengers()) {
+                if (passenger instanceof Player) {
+                    hasPlayer = true;
+                    break;
+                }
+            }
+            
+            // If a player is in the boat, smash it!
+            if (hasPlayer) {
+                // 100.0F damage ensures it instantly breaks and drops its item/planks
+                boat.hurt(this.damageSources().mobAttack(this), 100.0F);
+            }
+        }
+    }
+
+    // Prevent the monster from being scooped up by boats
+    @Override
+    public boolean startRiding(Entity vehicle, boolean force) {
+        if (vehicle instanceof net.minecraft.world.entity.vehicle.Boat) {
+            return false;
+        }
+        return super.startRiding(vehicle, force);
+    }
+
     // Goals and behaviors
     @Override
     protected void registerGoals() {
