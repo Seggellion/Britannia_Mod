@@ -2,22 +2,15 @@
 package com.seggellion.britannia_mod;
 
 import com.seggellion.britannia_mod.registry.*;
-import com.seggellion.britannia_mod.event.ClientEventHandler;
-import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
-import com.seggellion.britannia_mod.ClientModSetup;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.magic.ManaHandler;
 import com.seggellion.britannia_mod.event.ForgeEventHandler;
+import com.seggellion.britannia_mod.event.BlacksmithInteractionEvent;
 import com.seggellion.britannia_mod.spawner.DaemonSpawner;
-import com.seggellion.britannia_mod.client.model.ThinWallModels;
-import com.seggellion.britannia_mod.client.Keybinds;
 import com.seggellion.britannia_mod.skill.SkillManager;
 import com.seggellion.britannia_mod.spawner.BritainCemetarySpawner;
 import com.seggellion.britannia_mod.spawner.ShameDungeonSpawner;
-import com.seggellion.britannia_mod.spawner.BritainCitySpawner;
-import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
-import com.seggellion.britannia_mod.client.BritainMusicHandler;
-import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
+import com.seggellion.britannia_mod.spawner.CitySpawner;
 import com.seggellion.britannia_mod.event.ShadeEntitySizeHandler;
 import com.seggellion.britannia_mod.event.BreakSpeedHandler;
 import com.seggellion.britannia_mod.event.InventoryHandler;
@@ -28,8 +21,8 @@ import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
+import com.seggellion.britannia_mod.quest.events.QuestEventHandlers;
 import com.seggellion.britannia_mod.villager.BlacksmithPOIHandler;
-import com.seggellion.britannia_mod.client.ModModelLayers;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 import com.seggellion.britannia_mod.event.CustomBlockBreakHandler;
 import com.seggellion.britannia_mod.event.ToolInteractionHandler;
@@ -40,7 +33,7 @@ import com.seggellion.britannia_mod.villager.BlacksmithProfessions;
 import com.seggellion.britannia_mod.villager.VillagerTradeUpdater;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.features.MobSpawnControl;
-import com.seggellion.britannia_mod.features.DiamondToolControl;
+import com.seggellion.britannia_mod.features.RestrictedEquipmentControl;
 import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
@@ -51,13 +44,12 @@ import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.network.DeedHttpServer;
 import com.seggellion.britannia_mod.network.RailsUpdateServer;
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.util.OreVeinLoader;
-import com.seggellion.britannia_mod.client.ThinWallClient;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
-
+import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -82,7 +74,6 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -114,12 +105,14 @@ public class BritanniaMod {
           BlessedItemSyncHandler.init(); 
         WorldBootstrapHandler.init(); 
         GrapeVarietyManager.init();
+CraftableRegistry.init();
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
-        SwordRegistry.register(modEventBus);
+
+        WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
         PaintingRegistry.register(modEventBus);
       //  MenuRegistry.register(modEventBus);
@@ -146,7 +139,7 @@ public class BritanniaMod {
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
-        NeoForge.EVENT_BUS.register(new DiamondToolControl());
+        NeoForge.EVENT_BUS.register(new RestrictedEquipmentControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new BlockRestoreHandler());
 
@@ -159,9 +152,10 @@ public class BritanniaMod {
         NeoForge.EVENT_BUS.register(VillagerTradeUpdater.class);
         NeoForge.EVENT_BUS.register(BritainCemetarySpawner.class);
         NeoForge.EVENT_BUS.register(ShameDungeonSpawner.class);
-        NeoForge.EVENT_BUS.register(BritainCitySpawner.class);
+        NeoForge.EVENT_BUS.register(CitySpawner.class);
         NeoForge.EVENT_BUS.register(ShadeEntitySizeHandler.class);
         NeoForge.EVENT_BUS.register(GlobalEventHandler.class);
+        NeoForge.EVENT_BUS.register(QuestEventHandlers.class);
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
         NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
         NeoForge.EVENT_BUS.register(new CityGameModeHandler());
@@ -180,24 +174,6 @@ public class BritanniaMod {
 
         ManaHandler.register();
           SkillManager.init(); 
-        if (FMLLoader.getDist().isClient()) {
-            modEventBus.addListener(Keybinds::registerKeys);
-            modEventBus.addListener(ClientModSetup::onClientSetup);
-            modEventBus.addListener(ClientModSetup::onRegisterItemColors);
-            modEventBus.addListener(ClientModSetup::registerRenderers);
-            modEventBus.addListener(ClientModSetup::registerGeometryLoaders);
-            modEventBus.addListener(ClientModSetup::registerAdditionalModels);
-        modEventBus.register(ThinWallModels.class);
-  
-            ClientEventHandler.register(modEventBus);
-            modEventBus.register(new ClientOnlyItemRegistry());
-            modEventBus.register(ModModelLayers.class);
-            modEventBus.register(new ThinWallClient()); 
-            NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
-            NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
-            NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
-            modEventBus.addListener(ClientEventHandler::registerClientPackets);
-        }
 
        
     }
@@ -263,7 +239,7 @@ public void onServerStopping(ServerStoppingEvent event) {
                     LevelChunk chunk = level.getChunk(cx, cz);
 
                     chunk.getBlockEntities().values().forEach(be -> {
-                        if (be instanceof MonsterSpawnBlockEntity spawner) {
+                        if (be instanceof BritanniaSpawnBlockEntity spawner) {
                             spawner.forceCleanup(level);
                         }
                     });

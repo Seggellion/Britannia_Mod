@@ -1,21 +1,59 @@
 package com.seggellion.britannia_mod.client.renderer.entity;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.seggellion.britannia_mod.client.model.WoodMerchantGeoModel;
+import com.seggellion.britannia_mod.client.renderer.layer.CitizenClothingLayer;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
-import net.minecraft.client.model.VillagerModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-public class EntityWoodMerchantRenderer extends MobRenderer<EntityWoodMerchant, VillagerModel<EntityWoodMerchant>> {
-
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/entity/wood_merchant.png");
+public class EntityWoodMerchantRenderer extends GeoEntityRenderer<EntityWoodMerchant> {
+    private static final String[] EYELID_BONES = { "eyeLidLeft", "eyeLidRight" };
 
     public EntityWoodMerchantRenderer(EntityRendererProvider.Context context) {
-        super(context, new VillagerModel<>(context.bakeLayer(net.minecraft.client.model.geom.ModelLayers.VILLAGER)), 0.5F);
+        super(context, new WoodMerchantGeoModel());
+        this.addRenderLayer(new CitizenClothingLayer<>(this));
+        this.shadowRadius = 0.5F;
+    }
+
+    public RenderType getRenderType(EntityWoodMerchant entity, float partialTick, PoseStack poseStack,
+                                    MultiBufferSource bufferSource, int packedLight) {
+        ResourceLocation texture = this.model.getTextureResource(entity);
+        return RenderType.entityTranslucent(texture);
     }
 
     @Override
-    public ResourceLocation getTextureLocation(EntityWoodMerchant entity) {
-        return TEXTURE;
+    public void preRender(PoseStack poseStack, EntityWoodMerchant entity, BakedGeoModel bakedModel,
+                          MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender,
+                          float partialTick, int packedLight, int packedOverlay, int color) {
+        if (!isReRender) {
+            float scale = entity.getScale() * 0.6F;
+            poseStack.scale(scale, scale, scale);
+        }
+
+        boolean blinking = entity.isBlinking();
+        for (String boneName : EYELID_BONES) {
+            bakedModel.getBone(boneName).ifPresent(bone -> bone.setHidden(!blinking));
+        }
+
+        super.preRender(poseStack, entity, bakedModel, bufferSource, buffer, isReRender,
+                partialTick, packedLight, packedOverlay, color);
+    }
+
+    @Override
+    public void renderCubesOfBone(PoseStack poseStack, GeoBone bone, VertexConsumer buffer,
+                                  int packedLight, int packedOverlay, int color) {
+        if (CitizenClothingLayer.CURRENT_TARGET_BONES != null &&
+                !CitizenClothingLayer.CURRENT_TARGET_BONES.contains(bone.getName())) {
+            return;
+        }
+
+        super.renderCubesOfBone(poseStack, bone, buffer, packedLight, packedOverlay, color);
     }
 }

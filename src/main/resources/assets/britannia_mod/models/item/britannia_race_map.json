@@ -1,0 +1,54 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "britannia_mod:item/britannia_race_map",
+		"particle": "britannia_mod:item/britannia_race_map"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 0.25, 10.45],
+			"faces": {
+				"north": {"uv": [0, 1.75, 16, 2], "texture": "#0"},
+				"east": {"uv": [5.55, 1.75, 16, 2], "texture": "#0"},
+				"south": {"uv": [0, 1.75, 16, 2], "texture": "#0"},
+				"west": {"uv": [0, 1.75, 10.45, 2], "texture": "#0"},
+				"up": {"uv": [0, 0, 16, 10.45], "texture": "#0"},
+				"down": {"uv": [0, 0, 16, 10.45], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [52, 0, 0],
+			"translation": [-6.25, 6.5, 6.5]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [52, 0, 0],
+			"translation": [-6.25, 6.5, 6.5]
+		},
+		"firstperson_righthand": {
+			"rotation": [85, 1, 0],
+			"translation": [-8, -1.5, 10],
+			"scale": [3.45, 3.45, 3.45]
+		},
+		"firstperson_lefthand": {
+			"rotation": [85, 1, 0],
+			"translation": [-8, -1.5, 10],
+			"scale": [3.45, 3.45, 3.45]
+		},
+		"ground": {
+			"rotation": [-50, -30, 0],
+			"translation": [0, 6, 0]
+		},
+		"gui": {
+			"rotation": [-88, 0, 0],
+			"translation": [0, 3, 0]
+		},
+		"fixed": {
+			"rotation": [-90, -180, 0],
+			"translation": [0, -1.75, -7.5]
+		}
+	}
+}

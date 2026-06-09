@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.component.CustomData;
@@ -22,6 +23,8 @@ import java.util.Map;
 
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.item.WeightedFishItem;
+import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.npc.NpcRoleHandler;
 import com.seggellion.britannia_mod.npc.NpcType;
 
@@ -47,6 +50,7 @@ public class NpcCatalogScreen extends Screen {
     private final String role;
     private final String city;
     private final int entityId;
+    private final boolean hasPreFetchedCatalog;
 
     private List<Product> catalog = new ArrayList<>();
     private final Map<Product, Integer> cart = new HashMap<>();
@@ -75,6 +79,10 @@ public class NpcCatalogScreen extends Screen {
         this.player = player;
         this.type = type;
         this.roleHandler = roleHandler;
+        this.hasPreFetchedCatalog = preFetchedCatalog != null;
+        if (preFetchedCatalog != null) {
+            this.catalog = aggregateCatalog(preFetchedCatalog);
+        }
     }
 
     @Override
@@ -93,7 +101,9 @@ public class NpcCatalogScreen extends Screen {
                 .build()
         );
         LOGGER.info("Catalog Loaded!");
-        fetchCatalogFromRails();
+        if (!hasPreFetchedCatalog) {
+            fetchCatalogFromRails();
+        }
     }
 
     private void fetchCatalogFromRails() {
@@ -106,6 +116,10 @@ public class NpcCatalogScreen extends Screen {
     }
 
     private List<Product> aggregateCatalog(List<Product> fetched) {
+        if (type == NpcType.MERCHANT) {
+            return aggregateMerchantCatalog(fetched);
+        }
+
         Map<String, Product> byId = new HashMap<>();
 
         for (Product p : fetched) {
@@ -149,21 +163,7 @@ public class NpcCatalogScreen extends Screen {
 
             for (ItemStack invStack : player.getInventory().items) {
                 if (invStack.isEmpty()) continue;
-                if (invStack.getItem() != templateStack.getItem()) continue;
-
-                if (isWineProduct) {
-                    if (!invStack.has(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA)) continue;
-                    var templateData = templateStack.get(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
-                    var invData = invStack.get(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
-
-                    if (!invData.wineryName().equals(templateData.wineryName()) ||
-                        !invData.grapeType().equals(templateData.grapeType()) ||
-                        invData.year() != templateData.year() ||
-                        invData.quality() != templateData.quality() ||
-                        !invData.labelColor().equalsIgnoreCase(templateData.labelColor())) { 
-                        continue;
-                    }
-                }
+                if (!matchesProduct(invStack, templateStack, p, isWineProduct)) continue;
                 totalCount += invStack.getCount();
             }
 
@@ -175,6 +175,49 @@ public class NpcCatalogScreen extends Screen {
             }
         }
         return unique;
+    }
+
+    private List<Product> aggregateMerchantCatalog(List<Product> fetched) {
+        Map<String, Product> byId = new HashMap<>();
+        for (Product p : fetched) {
+            String compositeKey = p.itemId() + "::" + p.name();
+            byId.putIfAbsent(compositeKey, p);
+        }
+        return new ArrayList<>(byId.values());
+    }
+
+    private boolean matchesProduct(ItemStack invStack, ItemStack templateStack, Product product, boolean isWineProduct) {
+        if (invStack.getItem() != templateStack.getItem()) return false;
+
+        if (isWineProduct) {
+            if (!invStack.has(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA)) return false;
+            var templateData = templateStack.get(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
+            var invData = invStack.get(com.seggellion.britannia_mod.registry.DataComponentRegistry.WINE_DATA);
+
+            return invData.wineryName().equals(templateData.wineryName()) &&
+                    invData.grapeType().equals(templateData.grapeType()) &&
+                    invData.year() == templateData.year() &&
+                    invData.quality() == templateData.quality() &&
+                    invData.labelColor().equalsIgnoreCase(templateData.labelColor());
+        }
+
+        if (invStack.getItem() instanceof WeightedWoodItem woodItem) {
+            return productNameMatches(product.name(), woodItem.getWoodType(invStack), invStack);
+        }
+
+        if (invStack.getItem() instanceof WeightedFishItem fishItem) {
+            return productNameMatches(product.name(), fishItem.getFishType(invStack), invStack);
+        }
+
+        return true;
+    }
+
+    private boolean productNameMatches(String requestedName, String stackName, ItemStack stack) {
+        if (requestedName == null || requestedName.isBlank()) return true;
+        if (requestedName.equalsIgnoreCase(stackName)) return true;
+
+        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        return requestedName.equalsIgnoreCase(path);
     }
 
     private String getCurrencySuffix(String currency) {

@@ -223,6 +223,10 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.WALL_SCONCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDLE_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.LARGE_WOODEN_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.SMALL_WOODEN_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.LARGE_IRON_CHANDELIER.get());
+                safeAccept(output, ItemRegistry.SMALL_IRON_CHANDELIER.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.CANDELABRA_TALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TORCH_WALL_ITEM.get());
@@ -237,6 +241,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_2BW_ITEM.get());
                 safeAccept(output, ItemRegistry.WATER_TROUGH_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.WATER_BARREL_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.TRASH_BARREL_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MAGINCIA_STYLE_THRONE_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_CHAIR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_THRONE_ITEM.get());
@@ -334,13 +339,16 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.LARGE_FORGE_BLOCK_ENTITY.get());
                 safeAccept(output, ItemRegistry.YEW_TABLE_ITEM.get());
                 safeAccept(output, ItemRegistry.SMALL_TABLE_ITEM.get());
+                safeAccept(output, ItemRegistry.CHESS_BOARD.get());
                 safeAccept(output, ItemRegistry.COUNTER_ITEM.get());
                 safeAccept(output, ItemRegistry.GOLD_COIN.get());
                 safeAccept(output, ItemRegistry.LOCKPICK_TOOLS.get());
                 safeAccept(output, ItemRegistry.CHEST_KEY.get());
+                safeAccept(output, ItemRegistry.BRITANNIA_RACE_MAP.get());
 
                 // Tools & weapons
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
+                safeAccept(output, ItemRegistry.BLACKSMITH_HAMMER.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
                 // Musical Instruments
@@ -371,10 +379,11 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
 
                 // NPC spawn blocks
-                safeAccept(output, ItemRegistry.MONSTER_SPAWN_BLOCK_ITEM.get());   
-                safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());                     
-                safeAccept(output, ItemRegistry.SHADE_SPAWN_BLOCK_ITEM.get());
-                safeAccept(output, ItemRegistry.LICH_SPAWN_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.BRITANNIA_SPAWN_BLOCK_ITEM.get());   
+                safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());   
+                safeAccept(output, ItemRegistry.MERCHANT_SPAWN_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.QUEST_GIVER_SPAWN_BLOCK_ITEM.get());     
+                safeAccept(output, ItemRegistry.QUEST_DESTINATION_BLOCK_ITEM.get());                                                                         
                 safeAccept(output, ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_SPAWN_BLOCK_ITEM.get());

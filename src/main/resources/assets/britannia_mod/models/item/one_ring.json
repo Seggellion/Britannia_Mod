@@ -1,0 +1,18 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "item/generated",
+	"textures": {
+		"layer0": "britannia_mod:item/jewelry/one_ring"
+	},
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [53, 0, 90],
+			"scale": [0.17, 0.17, 0.17]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [55, 0, 100],
+			"scale": [0.17, 0.17, 0.17]
+		}
+	}
+}

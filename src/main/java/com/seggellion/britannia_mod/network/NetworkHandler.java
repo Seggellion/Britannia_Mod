@@ -10,38 +10,76 @@ import net.neoforged.bus.api.SubscribeEvent;
 import com.seggellion.britannia_mod.client.gui.HouseManagementScreen;
 import com.seggellion.britannia_mod.network.ManaSyncPayload;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
-
+import com.seggellion.britannia_mod.block.entity.MerchantSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.network.payload.TogglePrivacyPayload;
 import com.seggellion.britannia_mod.network.payload.BuyItemsC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BuyMerchantItemsC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
 import com.seggellion.britannia_mod.network.payload.TransactionFailedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.CloseScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
 import com.seggellion.britannia_mod.network.HousePlacementPayload;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
 import com.seggellion.britannia_mod.network.SkillSyncPayload;
-import com.seggellion.britannia_mod.network.payload.MonsterSpawnConfigC2SPayload;
-import com.seggellion.britannia_mod.network.payload.MonsterSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.BritanniaSpawnConfigC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnConfigC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnResyncC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnConfigC2SPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnResyncC2SPayload;
+import com.seggellion.britannia_mod.network.payload.MerchantSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnConfigC2SPayload;
+import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.QuestDestinationConfigC2SPayload;
+import com.seggellion.britannia_mod.network.payload.CraftBlacksmithItemC2SPayload;
+import com.seggellion.britannia_mod.network.payload.ChessBoardMoveC2SPayload;
+import com.seggellion.britannia_mod.network.payload.ChessBoardScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
+import com.seggellion.britannia_mod.network.payload.ServerboundQuestAcceptedPayload;
+import com.seggellion.britannia_mod.network.payload.ServerboundQuitQuestPayload;
+import com.seggellion.britannia_mod.skill.crafting.CraftableDef;
+import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
+import com.seggellion.britannia_mod.skill.BlacksmithCrafting;
+import com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload;
+import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
 import com.seggellion.britannia_mod.network.HousePlacementHandler;
 import com.seggellion.britannia_mod.structure.HousePrivacyHandler;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.City;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.economy.ServerEconomyService;
+import com.seggellion.britannia_mod.economy.MerchantEconomyService;
+import com.seggellion.britannia_mod.spawner.BritanniaSpawnableEntities;
+import com.seggellion.britannia_mod.quest.ServerQuestService;
+import com.seggellion.britannia_mod.quest.ServerQuestTable;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import com.seggellion.britannia_mod.structure.HouseActionHandler;
 import com.seggellion.britannia_mod.network.ClientboundOpenNpcScreenPayload;
 import com.seggellion.britannia_mod.network.ClientboundSyncCityTokenPayload;
+import com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload;
+import com.seggellion.britannia_mod.network.QuestPayloadHandler;
+
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.handling.IPayloadHandler;
+import net.minecraft.nbt.CompoundTag;
+import com.seggellion.britannia_mod.registry.DataComponentRegistry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import com.seggellion.britannia_mod.item.WeightedFishItem;
 import net.neoforged.fml.loading.FMLLoader;
 
 import net.minecraft.world.item.ItemStack;
@@ -53,7 +91,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.ChunkPos;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -65,6 +103,8 @@ private static final java.util.Set<String> PROCESSED_RECEIPTS = java.util.Collec
 
  @SubscribeEvent
 public static void register(final RegisterPayloadHandlersEvent event) {
+    ClientModWhitelist.registerPayloads(event);
+
     final PayloadRegistrar registrar = event.registrar("1");
 
     /* ---------- packets that exist on BOTH sides or are SERVER-bound ---------- */
@@ -74,6 +114,22 @@ public static void register(final RegisterPayloadHandlersEvent event) {
         (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer p) {
                 BuyItemsC2SPayload.handle(payload, p);
+            }
+        }));
+
+    registrar.playToServer(
+        SellItemsC2SPayload.TYPE, SellItemsC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                ServerEconomyService.sellRequestedItems(p, payload);
+            }
+        }));
+
+    registrar.playToServer(
+        BuyMerchantItemsC2SPayload.TYPE, BuyMerchantItemsC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) {
+                MerchantEconomyService.buyRequestedItems(p, payload);
             }
         }));
 
@@ -127,6 +183,10 @@ registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload.STREAM_CODEC,
     (payload, ctx) -> ctx.enqueueWork(() -> {
         if (!(ctx.player() instanceof ServerPlayer player)) return;
+        LOGGER.warn("Rejected client-authoritative GrantCoinsC2SPayload from {} receipt={}. Trader sales must use SellItemsC2SPayload.",
+            player.getStringUUID(), payload.receipt());
+        TransactionFailedS2CPayload.send(player, "Sale rejected: server must validate economy transactions.");
+        if (!PROCESSED_RECEIPTS.remove("server-authorized:" + payload.receipt())) return;
         if (!payload.receipt().isEmpty() && !PROCESSED_RECEIPTS.add(payload.receipt())) {
             return; // prevent duplicate transaction
         }
@@ -199,15 +259,20 @@ registrar.playToServer(
 );
 
 registrar.playToServer(
-    MonsterSpawnConfigC2SPayload.TYPE,
-    MonsterSpawnConfigC2SPayload.STREAM_CODEC,
+    BritanniaSpawnConfigC2SPayload.TYPE,
+    BritanniaSpawnConfigC2SPayload.STREAM_CODEC,
     (payload, ctx) -> ctx.enqueueWork(() -> {
         if (!(ctx.player() instanceof ServerPlayer player)) return;
         ServerLevel level = player.serverLevel();
         if (level == null) return;
 
         var be = level.getBlockEntity(payload.pos());
-        if (be instanceof com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity spawner) {
+        if (be instanceof com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity spawner) {
+            if (!(player.isCreative() || player.hasPermissions(2))) return;
+            if (!BritanniaSpawnableEntities.isAllowed(payload.entityId())) {
+                player.sendSystemMessage(Component.literal("That entity is not allowed in a Britannia spawn block."));
+                return;
+            }
             spawner.applyConfig(
                 payload.entityId(),
                 payload.radius(),
@@ -217,6 +282,53 @@ registrar.playToServer(
                 payload.maxEntities()
             );
         }
+    })
+);
+
+// Add this with your other registrar.playToServer blocks
+// Add this with your other registrar.playToServer blocks
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof net.minecraft.server.level.ServerPlayer player)) return;
+
+        for (com.seggellion.britannia_mod.quest.network.QuestModels.ItemData itemData : payload.items()) {
+            
+            // 1. Resolve the namespace
+            ResourceLocation itemId = itemData.id.contains(":") ? 
+                ResourceLocation.parse(itemData.id) : 
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", itemData.id);
+                
+            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(itemId);
+
+            // 2. Give the item with quantity!
+            if (item != net.minecraft.world.item.Items.AIR) {
+                int remaining = itemData.count;
+                int maxStack = new net.minecraft.world.item.ItemStack(item).getMaxStackSize();
+                
+                while (remaining > 0) {
+                    int give = Math.min(remaining, maxStack);
+                    net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item, give);
+                    stampQuestReward(stack, itemData, payload, player);
+                    if (!player.getInventory().add(stack)) {
+                        player.drop(stack, false);
+                    }
+                    remaining -= give;
+                }
+            } else if (itemData.id.equals("magic_ring")) {
+                net.minecraft.world.item.ItemStack ring = new net.minecraft.world.item.ItemStack(ItemRegistry.ONE_RING.get(), itemData.count);
+                ring.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("a magic gold ring").withStyle(net.minecraft.ChatFormatting.GOLD));
+                stampQuestReward(ring, itemData, payload, player);
+
+                if (!player.getInventory().add(ring)) player.drop(ring, false);
+            } else {
+                LOGGER.warn("Quest reward item could not be resolved player={} item_id={} count={} quest_id={}",
+                    player.getStringUUID(), itemData.id, itemData.count, payload.questId());
+            }
+        }
+        
+        player.inventoryMenu.broadcastChanges();
     })
 );
 
@@ -243,7 +355,91 @@ registrar.playToServer(
     })
 );
 
+registrar.playToServer(
+    MerchantSpawnConfigC2SPayload.TYPE,
+    MerchantSpawnConfigC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
 
+        LOGGER.info("Network MerchantSpawnConfig received");
+
+        ServerLevel level = player.serverLevel();
+        if (level == null) return;
+
+        var be = level.getBlockEntity(payload.pos());
+        if (be instanceof MerchantSpawnBlockEntity spawner) {
+            spawner.applyAndResync(
+                payload.merchantType(),
+                payload.cityName(),
+                payload.townPersonAmount()
+            );
+        }
+    })
+);
+
+registrar.playToServer(
+    QuestGiverSpawnConfigC2SPayload.TYPE,
+    QuestGiverSpawnConfigC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof net.minecraft.server.level.ServerPlayer player)) return;
+        net.minecraft.server.level.ServerLevel level = player.serverLevel();
+        if (level == null) return;
+
+        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(payload.pos());
+        if (be instanceof com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity spawner) {
+            spawner.applyConfig(payload.npcName(), payload.cityName(), payload.customApiId(), payload.gender(), payload.spawnRadius());
+        }
+    })
+);
+
+// Server bound (C2S) - When admin clicks Save
+registrar.playToServer(
+    QuestDestinationConfigC2SPayload.TYPE,
+    QuestDestinationConfigC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof net.minecraft.server.level.ServerPlayer player)) return;
+        net.minecraft.server.level.ServerLevel level = player.serverLevel();
+        if (level == null) return;
+
+        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(payload.pos());
+        if (be instanceof com.seggellion.britannia_mod.block.entity.QuestDestinationBlockEntity dest) {
+            dest.applyConfig(payload.cityName());
+        }
+    })
+);
+
+
+registrar.playToServer(
+        SpawnEscortC2SPayload.TYPE,
+        SpawnEscortC2SPayload.STREAM_CODEC,
+        QuestPayloadHandler::handleSpawnEscort
+    );
+
+registrar.playToServer(
+    ServerboundQuestAcceptedPayload.TYPE,
+    ServerboundQuestAcceptedPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerQuestTable.addFromRailsAcceptSuccess(player, payload.quest());
+        ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
+    })
+);
+
+registrar.playToServer(
+    ServerboundQuitQuestPayload.TYPE,
+    ServerboundQuitQuestPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerQuestService.quitQuest(player, payload.questStateId());
+    })
+);
+
+
+    registrar.playToClient(
+        ItemBurnedS2CPayload.TYPE,
+        ItemBurnedS2CPayload.CODEC,
+        QuestPayloadHandler::handleItemBurned
+    );
 
 registrar.playToServer(
     TraderSpawnResyncC2SPayload.TYPE,
@@ -255,6 +451,21 @@ registrar.playToServer(
 
         var be = level.getBlockEntity(payload.pos());
         if (be instanceof com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity spawner) {
+            spawner.forceResync();
+        }
+    })
+);
+
+registrar.playToServer(
+    MerchantSpawnResyncC2SPayload.TYPE,
+    MerchantSpawnResyncC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (!(ctx.player() instanceof ServerPlayer player)) return;
+        ServerLevel level = player.serverLevel();
+        if (level == null) return;
+
+        var be = level.getBlockEntity(payload.pos());
+        if (be instanceof MerchantSpawnBlockEntity spawner) {
             spawner.forceResync();
         }
     })
@@ -276,6 +487,31 @@ registrar.playToServer(
     }));
 
 
+// blacksmithing window
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleTriggerQuest
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleQuestTriggerResult
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    OpenBlacksmithGuiS2CPayload.TYPE,
+    OpenBlacksmithGuiS2CPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient() 
+        ? ClientNetworkHandler::handleOpenBlacksmithGui 
+        : (payload, context) -> {} // Do nothing on a dedicated server
+);
 
 
         // Mana sync
@@ -306,6 +542,7 @@ registrar.playToClient(
         com.seggellion.britannia_mod.util.CityAPITokenData.setClientShardSecret(payload.shardSecret());
     }
 );
+
 
 // Close current screen
 registrar.playToClient(
@@ -361,11 +598,42 @@ registrar.playToClient(
             ? (payload, ctx) -> ctx.enqueueWork(() -> SkillSyncPayload.handle(payload))
             : (p, c) -> {});
 
+    registrar.playToClient(
+        ClientboundSyncQuestsPayload.TYPE,
+        ClientboundSyncQuestsPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? (payload, ctx) -> ctx.enqueueWork(() -> ClientboundSyncQuestsPayload.handle(payload))
+            : (p, c) -> {});
+
 registrar.playToClient(
-    MonsterSpawnScreenS2CPayload.TYPE,
-    MonsterSpawnScreenS2CPayload.STREAM_CODEC,
+    BritanniaSpawnScreenS2CPayload.TYPE,
+    BritanniaSpawnScreenS2CPayload.STREAM_CODEC,
     net.neoforged.fml.loading.FMLLoader.getDist().isClient()
-        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleMonsterSpawnScreen
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleBritanniaSpawnScreen
+        : (p, c) -> {}
+);
+
+registrar.playToServer(
+    CraftBlacksmithItemC2SPayload.TYPE,
+    CraftBlacksmithItemC2SPayload.STREAM_CODEC,
+    NetworkHandler::handleCraftBlacksmithItem
+);
+
+registrar.playToServer(
+    ChessBoardMoveC2SPayload.TYPE,
+    ChessBoardMoveC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer player) {
+            ChessBoardMoveC2SPayload.handle(payload, player);
+        }
+    })
+);
+
+registrar.playToClient(
+    ChessBoardScreenS2CPayload.TYPE,
+    ChessBoardScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleChessBoardScreen
         : (p, c) -> {}
 );
 
@@ -377,8 +645,94 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
+// ✅ Safe Registration
+registrar.playToClient(
+    MerchantSpawnScreenS2CPayload.TYPE,
+    MerchantSpawnScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleMerchantSpawnScreen
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    QuestDestinationScreenS2CPayload.TYPE,
+    QuestDestinationScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleQuestDestinationScreen
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    EscortArrivedS2CPayload.TYPE,
+    EscortArrivedS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleEscortArrived
+        : (p, c) -> {}
+);
+
+registrar.playToClient(
+    QuestGiverSpawnScreenS2CPayload.TYPE,
+    QuestGiverSpawnScreenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleQuestGiverSpawnScreen
+        : (p, c) -> {}
+);
+
 
     
+}
+
+@SubscribeEvent
+public static void registerConfigurationTasks(final RegisterConfigurationTasksEvent event) {
+    ClientModWhitelist.registerConfigurationTasks(event);
+}
+
+private static void stampQuestReward(
+        ItemStack stack,
+        com.seggellion.britannia_mod.quest.network.QuestModels.ItemData itemData,
+        com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload payload,
+        ServerPlayer player
+) {
+    if (stack == null || stack.isEmpty() || itemData == null) return;
+
+    net.minecraft.world.item.component.CustomData existingData =
+            stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                    net.minecraft.world.item.component.CustomData.EMPTY);
+    CompoundTag tag = existingData.copyTag();
+
+    String rewardItemId = itemData.id == null ? "" : itemData.id;
+    if (!rewardItemId.isBlank()) {
+        tag.putString("quest_item", rewardItemId);
+    }
+
+    tag.putString("quest_owner_uuid", player.getStringUUID());
+    tag.putString("quest_owner_name", player.getGameProfile().getName());
+    if (payload.questId() > 0) {
+        tag.putLong("quest_id", payload.questId());
+    }
+    if (payload.questStateId() != null && !payload.questStateId().isBlank()) {
+        tag.putString("quest_state_id", payload.questStateId().trim());
+    }
+
+    if (payload.hasDestroyTriggerContext() && questRewardMatchesDestroyTarget(rewardItemId, payload.destroyItemTag())) {
+        tag.putString("quest_trigger_key", payload.destroyTriggerKey());
+        tag.putString("quest_item", payload.destroyItemTag());
+        tag.putInt("quest_min_x", payload.minX());
+        tag.putInt("quest_min_y", payload.minY());
+        tag.putInt("quest_min_z", payload.minZ());
+        tag.putInt("quest_max_x", payload.maxX());
+        tag.putInt("quest_max_y", payload.maxY());
+        tag.putInt("quest_max_z", payload.maxZ());
+    }
+
+    stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+            net.minecraft.world.item.component.CustomData.of(tag));
+}
+
+private static boolean questRewardMatchesDestroyTarget(String rewardItemId, String destroyItemTag) {
+    if (rewardItemId == null || destroyItemTag == null) return false;
+    if (rewardItemId.equalsIgnoreCase(destroyItemTag)) return true;
+    return rewardItemId.replace("britannia_mod:", "").equalsIgnoreCase(destroyItemTag.replace("britannia_mod:", ""));
 }
 
 
@@ -407,81 +761,75 @@ private static boolean idMatches(ItemStack stack, String soldIdNormalized) {
 }
 
 // --- main removal ---------------------------------------------------
-private static void removeSoldItems(
-        net.minecraft.server.level.ServerPlayer player,
-        java.util.List<com.seggellion.britannia_mod.network.payload.GrantCoinsC2SPayload.SoldItem> soldItems
-) {
-    for (var sold : soldItems) {
-        int remaining = sold.quantity();
-        
-        // 1. Prepare Target: Try to reconstruct the EXACT item from NBT
-        net.minecraft.world.item.ItemStack specificTarget = net.minecraft.world.item.ItemStack.EMPTY;
-        
-        // Note: Using parseOptional is safer for 1.20.6/1.21+ NeoForge
-        if (sold.nbt() != null) {
-            specificTarget = net.minecraft.world.item.ItemStack.parseOptional(player.registryAccess(), sold.nbt());
-        }
+private static void removeSoldItems(ServerPlayer player, List<GrantCoinsC2SPayload.SoldItem> soldItems) {
+    var inventory = player.getInventory();
 
-        String targetId = normalizeId(sold.itemId()); 
-        double targetWeight = sold.weight();
+    for (var soldItem : soldItems) {
+        int remainingToRemove = soldItem.quantity();
+        List<Integer> matchingSlots = new ArrayList<>();
 
-        // 2. Scan Inventory
-        for (int i = 0; i < player.getInventory().items.size() && remaining > 0; i++) {
-            net.minecraft.world.item.ItemStack stack = player.getInventory().items.get(i);
+        // 1. Gather all candidate slots containing the sold item type
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
             if (stack.isEmpty()) continue;
 
-            boolean match = false;
+            String invId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
 
-            // --- STRATEGY A: Strict NBT Match (Best for Wine/Special Items) ---
-            if (!specificTarget.isEmpty()) {
-                // Checks if ID and ALL Components (Wine Data, etc) match exactly
-                if (net.minecraft.world.item.ItemStack.isSameItemSameComponents(stack, specificTarget)) {
-                    match = true;
-                }
-            } 
-            
-            // --- STRATEGY B: Fallback (Your original logic) ---
-            // used if NBT is missing or for simple items
-            else if (idMatches(stack, targetId)) {
-                if (stack.getItem() instanceof com.seggellion.britannia_mod.item.WeightedFishItem fishItem) {
-                    // Check weight tolerance for fish
-                    if (Math.abs(fishItem.getWeight(stack) - targetWeight) <= 0.01) {
-                        match = true;
+            // Match by ID (or name fallback based on your client logic)
+            if (invId.equals(soldItem.itemId()) || invId.endsWith(":" + soldItem.itemName())) {
+                
+                // --- Strict Matching for Wine / Unique Data ---
+                // If it's a wine item, we ONLY want to gather it if the NBT/Data exactly matches.
+                // (You may need to adapt this block depending on how you compare WineData on the server)
+                if (stack.has(DataComponentRegistry.WINE_DATA) && soldItem.nbt() != null) {
+                    // Quick way to check if the tag matches the soldItem's tag
+                    CompoundTag invTag = (CompoundTag) stack.save(player.registryAccess());
+                    if (!invTag.equals(soldItem.nbt())) {
+                        continue; // Skip this wine, it's a different year/winery
                     }
-                } else {
-                    // Standard item match
-                    match = true;
                 }
-            }
 
-            // 3. Execute Removal
-            if (match) {
-                int toRemove = Math.min(stack.getCount(), remaining);
-                stack.shrink(toRemove);
-                remaining -= toRemove;
-
-                // Immediately clear the slot if empty to prevent ghost items
-                if (stack.isEmpty()) {
-                    player.getInventory().items.set(i, net.minecraft.world.item.ItemStack.EMPTY);
-                }
+                matchingSlots.add(i);
             }
         }
-        
-        if (remaining > 0) {
-            // Optional: Log that we couldn't find enough items to remove
-            // LOGGER.warn("Failed to remove full quantity for: {}", sold.itemId());
+
+        // 2. Sort the matched slots by weight (Ascending: smallest first)
+        // Items without a weight component will default to 0.0
+        matchingSlots.sort((slot1, slot2) -> {
+            ItemStack stack1 = inventory.getItem(slot1);
+            ItemStack stack2 = inventory.getItem(slot2);
+
+            double weight1 = stack1.getItem() instanceof WeightedFishItem fish1 ? fish1.getWeight(stack1) : 0.0;
+            double weight2 = stack2.getItem() instanceof WeightedFishItem fish2 ? fish2.getWeight(stack2) : 0.0;
+
+            return Double.compare(weight1, weight2);
+        });
+
+        // 3. Shrink the stacks until the required quantity is removed
+        for (int slot : matchingSlots) {
+            if (remainingToRemove <= 0) break;
+
+            ItemStack stack = inventory.getItem(slot);
+            int amountToTake = Math.min(stack.getCount(), remainingToRemove);
+            
+            stack.shrink(amountToTake);
+            remainingToRemove -= amountToTake;
+        }
+
+        // Safety check just in case the inventory changed between client calculation and server execution
+        if (remainingToRemove > 0) {
+            LOGGER.warn("Could not find enough {} to remove from {}. Missing: {}", 
+                soldItem.itemName(), player.getName().getString(), remainingToRemove);
         }
     }
-
-    player.inventoryMenu.broadcastChanges();
 }
 
 
 
 private static void giveCoins(ServerPlayer player, int gold, int silver, int copper) {
-    giveCoin(player, com.seggellion.britannia_mod.registry.ItemRegistry.GOLD_COIN.get(), gold);
-    giveCoin(player, com.seggellion.britannia_mod.registry.ItemRegistry.SILVER_COIN.get(), silver);
-    giveCoin(player, com.seggellion.britannia_mod.registry.ItemRegistry.COPPER_COIN.get(), copper);
+    giveCoin(player, ItemRegistry.GOLD_COIN.get(), gold);
+    giveCoin(player, ItemRegistry.SILVER_COIN.get(), silver);
+    giveCoin(player, ItemRegistry.COPPER_COIN.get(), copper);
 }
 
 private static void giveCoin(ServerPlayer player, net.minecraft.world.item.Item coinItem, int amount) {
@@ -505,6 +853,23 @@ private static void giveCoin(ServerPlayer player, net.minecraft.world.item.Item 
 
     player.inventoryMenu.broadcastChanges();
 }
+
+public static void handleCraftBlacksmithItem(CraftBlacksmithItemC2SPayload payload, IPayloadContext context) {
+    // ALWAYS enqueue work to the main thread when modifying game state/inventory
+    context.enqueueWork(() -> {
+        ServerPlayer player = (ServerPlayer) context.player();
+        
+        // Look up the definition using the ID sent by the client
+        CraftableDef def = CraftableRegistry.get(payload.craftableId());
+        
+        if (def != null) {
+            // Hand it off to the crafting logic
+            BlacksmithCrafting.processCraftRequest(player, def);
+        }
+    });
+}
+
+
 
 
 

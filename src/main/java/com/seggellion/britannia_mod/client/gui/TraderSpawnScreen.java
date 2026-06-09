@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.client.screen;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnConfigC2SPayload;
 import com.seggellion.britannia_mod.network.payload.TraderSpawnResyncC2SPayload;
+import com.seggellion.britannia_mod.trader.TraderTypes;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -27,7 +28,7 @@ public class TraderSpawnScreen extends Screen {
     private Button traderButton;
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final List<String> traderTypes = List.of("fish_trader", "salvage_trader", "alcohol_trader", "meat_trader");
+    private final List<String> traderTypes = TraderTypes.configKeys();
     private int idx = 0;
 
     public TraderSpawnScreen(BlockPos pos, String traderType, String cityName, int townPersonAmount) {

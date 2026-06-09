@@ -108,6 +108,290 @@
               "britannia_mod:mongbat_death"
           ]
       },
+
+      "hind_ambient": { "sounds": [ "" ] },
+    "hind_angry": { "sounds": [ "" ] },
+    "hind_attack": { "sounds": [ "britannia_mod:hind_attack" ] },
+    "hind_hurt": { "sounds": [ "britannia_mod:hind_hurt" ] },
+    "hind_death": { "sounds": [ "britannia_mod:hind_death" ] },
+
+    "great_hart_ambient": { "sounds": [ "" ] },
+    "great_hart_angry": { "sounds": [ "" ] },
+    "great_hart_attack": { "sounds": [ "britannia_mod:great_hart_attack" ] },
+    "great_hart_hurt": { "sounds": [ "britannia_mod:great_hart_hurt" ] },
+    "great_hart_death": { "sounds": [ "britannia_mod:great_hart_death" ] },
+
+    "bear_black_ambient": { "sounds": [ "britannia_mod:bear_ambient" ] },
+    "bear_black_angry": { "sounds": [ "britannia_mod:bear_angry" ] },
+    "bear_black_attack": { "sounds": [ "britannia_mod:bear_attack" ] },
+    "bear_black_hurt": { "sounds": [ "britannia_mod:bear_hurt" ] },
+    "bear_black_death": { "sounds": [ "britannia_mod:bear_death" ] },
+
+    "bear_brown_ambient": { "sounds": [ "britannia_mod:bear_ambient" ] },
+    "bear_brown_angry": { "sounds": [ "britannia_mod:bear_angry" ] },
+    "bear_brown_attack": { "sounds": [ "britannia_mod:bear_attack" ] },
+    "bear_brown_hurt": { "sounds": [ "britannia_mod:bear_hurt" ] },
+    "bear_brown_death": { "sounds": [ "britannia_mod:bear_death" ] },
+
+    "bear_polar_ambient": { "sounds": [ "britannia_mod:bear_ambient" ] },
+    "bear_polar_angry": { "sounds": [ "britannia_mod:bear_angry" ] },
+    "bear_polar_attack": { "sounds": [ "britannia_mod:bear_attack" ] },
+    "bear_polar_hurt": { "sounds": [ "britannia_mod:bear_hurt" ] },
+    "bear_polar_death": { "sounds": [ "britannia_mod:bear_death" ] },
+
+
+    "bear_grizzly_ambient": { "sounds": [ "britannia_mod:bear_grizzly_ambient" ] },
+    "bear_grizzly_angry": { "sounds": [ "britannia_mod:bear_grizzly_angry" ] },
+    "bear_grizzly_attack": { "sounds": [ "britannia_mod:bear_grizzly_attack" ] },
+    "bear_grizzly_hurt": { "sounds": [ "britannia_mod:bear_grizzly_hurt" ] },
+    "bear_grizzly_death": { "sounds": [ "britannia_mod:bear_grizzly_death" ] },
+
+    "gorilla_ambient": { "sounds": [ "britannia_mod:gorilla_ambient" ] },
+    "gorilla_angry": { "sounds": [ "britannia_mod:gorilla_angry" ] },
+    "gorilla_attack": { "sounds": [ "britannia_mod:gorilla_attack" ] },
+    "gorilla_hurt": { "sounds": [ "britannia_mod:gorilla_hurt" ] },
+    "gorilla_death": { "sounds": [ "britannia_mod:gorilla_death" ] },
+
+    "turkey_ambient": { "sounds": [ "britannia_mod:turkey_ambient" ] },
+    "turkey_angry": { "sounds": [ "britannia_mod:turkey_angry" ] },
+    "turkey_attack": { "sounds": [ "britannia_mod:turkey_attack" ] },
+    "turkey_hurt": { "sounds": [ "britannia_mod:turkey_hurt" ] },
+    "turkey_death": { "sounds": [ "britannia_mod:turkey_death" ] },
+
+    "giant_rat_ambient": { "sounds": [ "britannia_mod:giant_rat_ambient" ] },
+    "giant_rat_angry": { "sounds": [ "britannia_mod:giant_rat_angry" ] },
+    "giant_rat_attack": { "sounds": [ "britannia_mod:giant_rat_attack" ] },
+    "giant_rat_hurt": { "sounds": [ "britannia_mod:giant_rat_hurt" ] },
+    "giant_rat_death": { "sounds": [ "britannia_mod:giant_rat_death" ] },
+
+    "alligator_ambient": { "sounds": [ "britannia_mod:alligator_ambient" ] },
+    "alligator_angry": { "sounds": [ "britannia_mod:alligator_angry" ] },
+    "alligator_attack": { "sounds": [ "britannia_mod:alligator_attack" ] },
+    "alligator_hurt": { "sounds": [ "britannia_mod:alligator_hurt" ] },
+    "alligator_death": { "sounds": [ "britannia_mod:alligator_death" ] },
+
+    "ettin_ambient": { "sounds": [ "britannia_mod:ettin_ambient" ] },
+    "ettin_angry": { "sounds": [ "britannia_mod:ettin_angry" ] },
+    "ettin_attack": { "sounds": [ "britannia_mod:ettin_attack" ] },
+    "ettin_hurt": { "sounds": [ "britannia_mod:ettin_hurt" ] },
+    "ettin_death": { "sounds": [ "britannia_mod:ettin_death" ] },
+
+    "serpent_giant_ice_ambient": { "sounds": [ "britannia_mod:snake_ambient" ] },
+    "serpent_giant_ice_angry": { "sounds": [ "britannia_mod:snake_angry" ] },
+    "serpent_giant_ice_attack": { "sounds": [ "britannia_mod:snake_attack" ] },
+    "serpent_giant_ice_hurt": { "sounds": [ "britannia_mod:snake_hurt" ] },
+    "serpent_giant_ice_death": { "sounds": [ "britannia_mod:snake_death" ] },
+
+    "serpent_giant_ambient": { "sounds": [ "britannia_mod:snake_ambient" ] },
+    "serpent_giant_angry": { "sounds": [ "britannia_mod:snake_angry" ] },
+    "serpent_giant_attack": { "sounds": [ "britannia_mod:snake_attack" ] },
+    "serpent_giant_hurt": { "sounds": [ "britannia_mod:snake_hurt" ] },
+    "serpent_giant_death": { "sounds": [ "britannia_mod:snake_death" ] },
+
+    "serpent_silver_ambient": { "sounds": [ "britannia_mod:snake_ambient" ] },
+    "serpent_silver_angry": { "sounds": [ "britannia_mod:snake_angry" ] },
+    "serpent_silver_attack": { "sounds": [ "britannia_mod:snake_attack" ] },
+    "serpent_silver_hurt": { "sounds": [ "britannia_mod:snake_hurt" ] },
+    "serpent_silver_death": { "sounds": [ "britannia_mod:snake_death" ] },
+
+    "serpent_lava_ambient": { "sounds": [ "britannia_mod:snake_ambient" ] },
+    "serpent_lava_angry": { "sounds": [ "britannia_mod:snake_angry" ] },
+    "serpent_lava_attack": { "sounds": [ "britannia_mod:snake_attack" ] },
+    "serpent_lava_hurt": { "sounds": [ "britannia_mod:snake_hurt" ] },
+    "serpent_lava_death": { "sounds": [ "britannia_mod:snake_death" ] },
+
+    "serpent_sea_ambient": { "sounds": [ "britannia_mod:sea_serpent_ambient" ] },
+    "serpent_sea_angry": { "sounds": [ "britannia_mod:sea_serpent_angry" ] },
+    "serpent_sea_attack": { "sounds": [ "britannia_mod:sea_serpent_attack" ] },
+    "serpent_sea_hurt": { "sounds": [ "britannia_mod:sea_serpent_hurt" ] },
+    "serpent_sea_death": { "sounds": [ "britannia_mod:sea_serpent_death" ] },
+
+    "serpent_deep_sea_ambient": { "sounds": [ "britannia_mod:sea_serpent_ambient" ] },
+    "serpent_deep_sea_angry": { "sounds": [ "britannia_mod:sea_serpent_angry" ] },
+    "serpent_deep_sea_attack": { "sounds": [ "britannia_mod:sea_serpent_attack" ] },
+    "serpent_deep_sea_hurt": { "sounds": [ "britannia_mod:sea_serpent_hurt" ] },
+    "serpent_deep_sea_death": { "sounds": [ "britannia_mod:sea_serpent_death" ] },
+
+    "serpent_crystal_sea_ambient": { "sounds": [ "britannia_mod:sea_serpent_ambient" ] },
+    "serpent_crystal_sea_angry": { "sounds": [ "britannia_mod:sea_serpent_angry" ] },
+    "serpent_crystal_sea_attack": { "sounds": [ "britannia_mod:sea_serpent_attack" ] },
+    "serpent_crystal_sea_hurt": { "sounds": [ "britannia_mod:sea_serpent_hurt" ] },
+    "serpent_crystal_sea_death": { "sounds": [ "britannia_mod:sea_serpent_death" ] },
+
+    "scorpion_ambient": { "sounds": [ "britannia_mod:scorpion_ambient" ] },
+    "scorpion_angry": { "sounds": [ "britannia_mod:scorpion_angry" ] },
+    "scorpion_attack": { "sounds": [ "britannia_mod:scorpion_attack" ] },
+    "scorpion_hurt": { "sounds": [ "britannia_mod:scorpion_hurt" ] },
+    "scorpion_death": { "sounds": [ "britannia_mod:scorpion_death" ] },
+
+    "lizardman_ambient": { "sounds": [ "britannia_mod:lizardman_ambient" ] },
+    "lizardman_angry": { "sounds": [ "britannia_mod:lizardman_angry" ] },
+    "lizardman_attack": { "sounds": [ "britannia_mod:lizardman_attack" ] },
+    "lizardman_hurt": { "sounds": [ "britannia_mod:lizardman_hurt" ] },
+    "lizardman_death": { "sounds": [ "britannia_mod:lizardman_death" ] },
+
+    "ratman_ambient": { "sounds": [ "britannia_mod:ratman_ambient" ] },
+    "ratman_angry": { "sounds": [ "britannia_mod:ratman_angry" ] },
+    "ratman_attack": { "sounds": [ "britannia_mod:ratman_attack" ] },
+    "ratman_hurt": { "sounds": [ "britannia_mod:ratman_hurt" ] },
+    "ratman_death": { "sounds": [ "britannia_mod:ratman_death" ] },
+
+    "ratman_archer_ambient": { "sounds": [ "britannia_mod:ratman_ambient" ] },
+    "ratman_archer_angry": { "sounds": [ "britannia_mod:ratman_angry" ] },
+    "ratman_archer_attack": { "sounds": [ "britannia_mod:ratman_attack" ] },
+    "ratman_archer_hurt": { "sounds": [ "britannia_mod:ratman_hurt" ] },
+    "ratman_archer_death": { "sounds": [ "britannia_mod:ratman_death" ] },
+
+    "ratman_assassin_ambient": { "sounds": [ "britannia_mod:ratman_ambient" ] },
+    "ratman_assassin_angry": { "sounds": [ "britannia_mod:ratman_angry" ] },
+    "ratman_assassin_attack": { "sounds": [ "britannia_mod:ratman_attack" ] },
+    "ratman_assassin_hurt": { "sounds": [ "britannia_mod:ratman_hurt" ] },
+    "ratman_assassin_death": { "sounds": [ "britannia_mod:ratman_death" ] },
+
+    "elemental_air_ambient": { "sounds": [ "britannia_mod:elemental_air_ambient" ] },
+    "elemental_air_angry": { "sounds": [ "britannia_mod:elemental_air_angry" ] },
+    "elemental_air_attack": { "sounds": [ "britannia_mod:elemental_air_attack" ] },
+    "elemental_air_hurt": { "sounds": [ "britannia_mod:elemental_air_hurt" ] },
+    "elemental_air_death": { "sounds": [ "britannia_mod:elemental_air_death" ] },
+
+    "elemental_fire_ambient": { "sounds": [ "britannia_mod:elemental_fire_ambient" ] },
+    "elemental_fire_angry": { "sounds": [ "britannia_mod:elemental_fire_angry" ] },
+    "elemental_fire_attack": { "sounds": [ "britannia_mod:elemental_fire_attack" ] },
+    "elemental_fire_hurt": { "sounds": [ "britannia_mod:elemental_fire_hurt" ] },
+    "elemental_fire_death": { "sounds": [ "britannia_mod:elemental_fire_death" ] },
+
+    "elemental_water_ambient": { "sounds": [ "britannia_mod:elemental_water_ambient" ] },
+    "elemental_water_angry": { "sounds": [ "britannia_mod:elemental_water_angry" ] },
+    "elemental_water_attack": { "sounds": [ "britannia_mod:elemental_water_attack" ] },
+    "elemental_water_hurt": { "sounds": [ "britannia_mod:elemental_water_hurt" ] },
+    "elemental_water_death": { "sounds": [ "britannia_mod:elemental_water_death" ] },
+
+    "elemental_acid_ambient": { "sounds": [ "britannia_mod:elemental_water_ambient" ] },
+    "elemental_acid_angry": { "sounds": [ "britannia_mod:elemental_water_angry" ] },
+    "elemental_acid_attack": { "sounds": [ "britannia_mod:elemental_water_attack" ] },
+    "elemental_acid_hurt": { "sounds": [ "britannia_mod:elemental_water_hurt" ] },
+    "elemental_acid_death": { "sounds": [ "britannia_mod:elemental_water_death" ] },
+
+    "elemental_poison_ambient": { "sounds": [ "britannia_mod:elemental_water_ambient" ] },
+    "elemental_poison_angry": { "sounds": [ "britannia_mod:elemental_water_angry" ] },
+    "elemental_poison_attack": { "sounds": [ "britannia_mod:elemental_water_attack" ] },
+    "elemental_poison_hurt": { "sounds": [ "britannia_mod:elemental_water_hurt" ] },
+    "elemental_poison_death": { "sounds": [ "britannia_mod:elemental_water_death" ] },
+
+    "elemental_blood_ambient": { "sounds": [ "britannia_mod:elemental_water_ambient" ] },
+    "elemental_blood_angry": { "sounds": [ "britannia_mod:elemental_water_angry" ] },
+    "elemental_blood_attack": { "sounds": [ "britannia_mod:elemental_water_attack" ] },
+    "elemental_blood_hurt": { "sounds": [ "britannia_mod:elemental_water_hurt" ] },
+    "elemental_blood_death": { "sounds": [ "britannia_mod:elemental_water_death" ] },
+
+    "earth_elemental_ambient": {"sounds": ["britannia_mod:earth_elemental_ambient"]},
+    "earth_elemental_angry": {"sounds": ["britannia_mod:earth_elemental_angry"]},
+    "earth_elemental_attack": {"sounds": ["britannia_mod:earth_elemental_attack"]},
+    "earth_elemental_hurt": {"sounds": ["britannia_mod:earth_elemental_hurt"]},
+    "earth_elemental_death": {"sounds": ["britannia_mod:earth_elemental_death"]},
+
+    "harpy_ambient": { "sounds": [ "britannia_mod:harpy_ambient" ] },
+    "harpy_angry": { "sounds": [ "britannia_mod:harpy_angry" ] },
+    "harpy_attack": { "sounds": [ "britannia_mod:harpy_attack" ] },
+    "harpy_hurt": { "sounds": [ "britannia_mod:harpy_hurt" ] },
+    "harpy_death": { "sounds": [ "britannia_mod:harpy_death" ] },
+
+    "headless_ambient": { "sounds": [ "britannia_mod:headless_ambient" ] },
+    "headless_angry": { "sounds": [ "britannia_mod:headless_angry" ] },
+    "headless_attack": { "sounds": [ "britannia_mod:headless_attack" ] },
+    "headless_hurt": { "sounds": [ "britannia_mod:headless_hurt" ] },
+    "headless_death": { "sounds": [ "britannia_mod:headless_death" ] },
+
+    "ogre_ambient": { "sounds": [ "britannia_mod:ogre_ambient" ] },
+    "ogre_angry": { "sounds": [ "britannia_mod:ogre_angry" ] },
+    "ogre_attack": { "sounds": [ "britannia_mod:ogre_attack" ] },
+    "ogre_hurt": { "sounds": [ "britannia_mod:ogre_hurt" ] },
+    "ogre_death": { "sounds": [ "britannia_mod:ogre_death" ] },
+
+    "ogre_arctic_ambient": { "sounds": [ "britannia_mod:ogre_ambient" ] },
+    "ogre_arctic_angry": { "sounds": [ "britannia_mod:ogre_angry" ] },
+    "ogre_arctic_attack": { "sounds": [ "britannia_mod:ogre_attack" ] },
+    "ogre_arctic_hurt": { "sounds": [ "britannia_mod:ogre_hurt" ] },
+    "ogre_arctic_death": { "sounds": [ "britannia_mod:ogre_death" ] },
+
+    "ogre_lord_ambient": { "sounds": [ "britannia_mod:ogre_ambient" ] },
+    "ogre_lord_angry": { "sounds": [ "britannia_mod:ogre_angry" ] },
+    "ogre_lord_attack": { "sounds": [ "britannia_mod:ogre_attack" ] },
+    "ogre_lord_hurt": { "sounds": [ "britannia_mod:ogre_hurt" ] },
+    "ogre_lord_death": { "sounds": [ "britannia_mod:ogre_death" ] },
+
+    "ogre_lord_arctic_ambient": { "sounds": [ "britannia_mod:ogre_ambient" ] },
+    "ogre_lord_arctic_angry": { "sounds": [ "britannia_mod:ogre_angry" ] },
+    "ogre_lord_arctic_attack": { "sounds": [ "britannia_mod:ogre_attack" ] },
+    "ogre_lord_arctic_hurt": { "sounds": [ "britannia_mod:ogre_hurt" ] },
+    "ogre_lord_arctic_death": { "sounds": [ "britannia_mod:ogre_death" ] },
+
+   "orc_lord_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
+    "orc_lord_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
+    "orc_lord_attack": { "sounds": [ "britannia_mod:orc_attack" ] },
+    "orc_lord_hurt": { "sounds": [ "britannia_mod:orc_hurt" ] },
+    "orc_lord_death": { "sounds": [ "britannia_mod:orc_death" ] },
+
+   "orc_club_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
+    "orc_club_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
+    "orc_club_attack": { "sounds": [ "britannia_mod:orc_attack" ] },
+    "orc_club_hurt": { "sounds": [ "britannia_mod:orc_hurt" ] },
+    "orc_club_death": { "sounds": [ "britannia_mod:orc_death" ] },
+
+       "orc_ambient": { "sounds": [ "britannia_mod:orc_ambient" ] },
+    "orc_angry": { "sounds": [ "britannia_mod:orc_angry" ] },
+    "orc_attack": { "sounds": [ "britannia_mod:orc_attack" ] },
+    "orc_hurt": { "sounds": [ "britannia_mod:orc_hurt" ] },
+    "orc_death": { "sounds": [ "britannia_mod:orc_death" ] },
+
+    "troll_ambient": { "sounds": [ "britannia_mod:troll_ambient" ] },
+    "troll_angry": { "sounds": [ "britannia_mod:troll_angry" ] },
+    "troll_attack": { "sounds": [ "britannia_mod:troll_attack" ] },
+    "troll_hurt": { "sounds": [ "britannia_mod:troll_hurt" ] },
+    "troll_death": { "sounds": [ "britannia_mod:troll_death" ] },
+
+    "gargoyle_ambient": { "sounds": [ "britannia_mod:gargoyle_ambient" ] },
+    "gargoyle_angry": { "sounds": [ "britannia_mod:gargoyle_angry" ] },
+    "gargoyle_attack": { "sounds": [ "britannia_mod:gargoyle_attack" ] },
+    "gargoyle_hurt": { "sounds": [ "britannia_mod:gargoyle_hurt" ] },
+    "gargoyle_death": { "sounds": [ "britannia_mod:gargoyle_death" ] },
+
+    "gargoyle_destroyer_ambient": { "sounds": [ "britannia_mod:gargoyle_ambient" ] },
+    "gargoyle_destroyer_angry": { "sounds": [ "britannia_mod:gargoyle_angry" ] },
+    "gargoyle_destroyer_attack": { "sounds": [ "britannia_mod:gargoyle_attack" ] },
+    "gargoyle_destroyer_hurt": { "sounds": [ "britannia_mod:gargoyle_hurt" ] },
+    "gargoyle_destroyer_death": { "sounds": [ "britannia_mod:gargoyle_death" ] },
+
+    "gargoyle_enforcer_ambient": { "sounds": [ "britannia_mod:gargoyle_ambient" ] },
+    "gargoyle_enforcer_angry": { "sounds": [ "britannia_mod:gargoyle_angry" ] },
+    "gargoyle_enforcer_attack": { "sounds": [ "britannia_mod:gargoyle_attack" ] },
+    "gargoyle_enforcer_hurt": { "sounds": [ "britannia_mod:gargoyle_hurt" ] },
+    "gargoyle_enforcer_death": { "sounds": [ "britannia_mod:gargoyle_death" ] },
+
+    "gargoyle_stone_ambient": { "sounds": [ "britannia_mod:gargoyle_ambient" ] },
+    "gargoyle_stone_angry": { "sounds": [ "britannia_mod:gargoyle_angry" ] },
+    "gargoyle_stone_attack": { "sounds": [ "britannia_mod:gargoyle_attack" ] },
+    "gargoyle_stone_hurt": { "sounds": [ "britannia_mod:gargoyle_hurt" ] },
+    "gargoyle_stone_death": { "sounds": [ "britannia_mod:gargoyle_death" ] },
+
+    "wraith_ambient": { "sounds": [ "britannia_mod:ghost_ambient" ] },
+    "wraith_angry": { "sounds": [ "britannia_mod:ghost_angry" ] },
+    "wraith_attack": { "sounds": [ "britannia_mod:ghost_attack" ] },
+    "wraith_hurt": { "sounds": [ "britannia_mod:ghost_hurt" ] },
+    "wraith_death": { "sounds": [ "britannia_mod:ghost_death" ] },
+
+    "shade_ambient": { "sounds": [ "britannia_mod:ghost_ambient" ] },
+    "shade_angry": { "sounds": [ "britannia_mod:ghost_angry" ] },
+    "shade_attack": { "sounds": [ "britannia_mod:ghost_attack" ] },
+    "shade_hurt": { "sounds": [ "britannia_mod:ghost_hurt" ] },
+    "shade_death": { "sounds": [ "britannia_mod:ghost_death" ] },
+
+    "ghoul_ambient": { "sounds": [ "britannia_mod:ghost_ambient" ] },
+    "ghoul_angry": { "sounds": [ "britannia_mod:ghost_angry" ] },
+    "ghoul_attack": { "sounds": [ "britannia_mod:ghost_attack" ] },
+    "ghoul_hurt": { "sounds": [ "britannia_mod:ghost_hurt" ] },
+    "ghoul_death": { "sounds": [ "britannia_mod:ghost_death" ] },
+
     "daemon_ambient": {
         "sounds": [
             "britannia_mod:daemon_ambient"
@@ -207,31 +491,6 @@
     "sounds": [
         "britannia_mod:ghost_death"
     ]
-},
-"earth_elemental_ambient": {
-  "sounds": [
-      "britannia_mod:earth_elemental_ambient"
-  ]
-},
-"earth_elemental_angry": {
-  "sounds": [
-      "britannia_mod:earth_elemental_angry"
-  ]
-},
-"earth_elemental_attack": {
-  "sounds": [
-      "britannia_mod:earth_elemental_attack"
-  ]
-},
-"earth_elemental_hurt": {
-  "sounds": [
-      "britannia_mod:earth_elemental_hurt"
-  ]
-},
-"earth_elemental_death": {
-  "sounds": [
-      "britannia_mod:earth_elemental_death"
-  ]
 },
 "rat_ambient": {
   "sounds": [
@@ -388,15 +647,49 @@
       "britannia_mod:violin_fail"
     ]
   },
-  "tambourine_play": {
+  "tamborine_play": {
     "sounds": [
-      "britannia_mod:tambourine_play"
+      "britannia_mod:tamborine_play"
     ]
   },
-  "tambourine_fail": {
+  "tamborine_fail": {
     "sounds": [
-      "britannia_mod:tambourine_fail"
+      "britannia_mod:tamborine_fail"
+    ]
+  },
+  "feet12a": {
+    "sounds": [
+      { "name" :"britannia_mod:feet12a"}
+    ]
+  },
+  "feet12b": {
+    "sounds": [
+      { "name" :"britannia_mod:feet12b"}
+    ]
+  },
+    "feet13a": {
+    "sounds": [
+      { "name" :"britannia_mod:feet13a"}
+    ]
+  },
+  "feet13b": {
+    "sounds": [
+      { "name" :"britannia_mod:feet13b"}
+    ]
+  },
+    "feet15c": {
+    "sounds": [
+      { "name" :"britannia_mod:feet15c"}
+    ]
+  },
+  "feet15d": {
+    "sounds": [
+      { "name" :"britannia_mod:feet15d"}
+    ]
+  },
+   "anvil": {
+    "sounds": [
+      { "name" :"britannia_mod:anvil"}
     ]
   }
-
 }

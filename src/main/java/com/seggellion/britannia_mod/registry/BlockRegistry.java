@@ -35,6 +35,7 @@ import com.seggellion.britannia_mod.block.OakWallBlock;
 import com.seggellion.britannia_mod.block.FloorBlock;
 import com.seggellion.britannia_mod.block.DungeonWallBlock;
 import com.seggellion.britannia_mod.block.CaveBlock;
+import com.seggellion.britannia_mod.block.GhostLightBlock;
 import com.seggellion.britannia_mod.block.LogWallBlock;
 import com.seggellion.britannia_mod.block.BirchWallBlock;
 import com.seggellion.britannia_mod.block.PlasterWoodWallBlock;
@@ -49,12 +50,12 @@ import com.seggellion.britannia_mod.block.BlueTentBlockEntity;
 import com.seggellion.britannia_mod.block.PurpleTentBlockEntity;
 import com.seggellion.britannia_mod.block.ChairBlock;
 import com.seggellion.britannia_mod.block.RotatableFurnitureBlock;
-import com.seggellion.britannia_mod.block.LichSpawnBlock;
 import com.seggellion.britannia_mod.block.WoodSpawnBlock;
 import com.seggellion.britannia_mod.block.MetalSpawnBlock;
 import com.seggellion.britannia_mod.block.StoneSpawnBlock;
 import com.seggellion.britannia_mod.block.HorseSpawnBlock;
 import com.seggellion.britannia_mod.block.BlacksmithSpawnBlock;
+import com.seggellion.britannia_mod.block.ExtendedLightChandelierBlock;
 import com.seggellion.britannia_mod.block.CandelabraBlock;
 import com.seggellion.britannia_mod.block.HalfBlock;
 import com.seggellion.britannia_mod.block.QuarterBlock;
@@ -66,7 +67,6 @@ import com.seggellion.britannia_mod.block.Window2x3Block;
 import com.seggellion.britannia_mod.block.StoneFloorBlock;
 import com.seggellion.britannia_mod.block.CustomStoneStairsBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.block.entity.LichSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.StoneSpawnBlockEntity;
@@ -75,15 +75,18 @@ import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
-import com.seggellion.britannia_mod.block.MonsterSpawnBlock;
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
+import com.seggellion.britannia_mod.block.ChessBoardBlock;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.TraderSpawnBlock;
+import com.seggellion.britannia_mod.block.MerchantSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.QuestGiverSpawnBlock;
+import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.QuestDestinationBlock;
 import com.seggellion.britannia_mod.block.DecorativeItems3x3Block;
 
-import com.seggellion.britannia_mod.block.ShadeSpawnBlock;
 import com.seggellion.britannia_mod.block.HangingItemBlock;
-import com.seggellion.britannia_mod.block.entity.ShadeSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.DungeonMoongateBlock;
 import com.seggellion.britannia_mod.block.DungeonMoongateTopBlock;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
@@ -99,6 +102,7 @@ import com.seggellion.britannia_mod.block.GrapeVineBlock;
 import com.seggellion.britannia_mod.block.JuicePressBlock;
 import com.seggellion.britannia_mod.block.WineBarrelBlock;
 import com.seggellion.britannia_mod.block.WineBottleBlock;
+import com.seggellion.britannia_mod.block.TrashBarrelBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 
@@ -113,6 +117,7 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.ChainBlock;
 import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.material.PushReaction;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -220,17 +225,24 @@ public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.r
     public static final DeferredHolder<Block, TraderSpawnBlock> TRADER_SPAWN_BLOCK =
             BLOCKS.register("trader_spawn_block", TraderSpawnBlock::new);
 
+    public static final DeferredHolder<Block, MerchantSpawnBlock> MERCHANT_SPAWN_BLOCK =
+            BLOCKS.register("merchant_spawn_block", MerchantSpawnBlock::new);
 
-    public static final DeferredHolder<Block, MonsterSpawnBlock> MONSTER_SPAWN_BLOCK =
-            BLOCKS.register("monster_spawn_block", MonsterSpawnBlock::new);
+    public static final DeferredHolder<Block, QuestGiverSpawnBlock> QUEST_GIVER_SPAWN_BLOCK =
+            BLOCKS.register("quest_giver_spawn_block", QuestGiverSpawnBlock::new);
 
-    public static final DeferredHolder<Block, Block> SHADE_SPAWN_BLOCK = BLOCKS.register(
-            "shade_spawn_block", ShadeSpawnBlock::new);
+public static final DeferredHolder<Block, QuestDestinationBlock> QUEST_DESTINATION_BLOCK =
+            BLOCKS.register("quest_destination_block", QuestDestinationBlock::new);
 
+    public static final DeferredHolder<Block, BritanniaSpawnBlock> BRITANNIA_SPAWN_BLOCK =
+            BLOCKS.register("britannia_spawn_block", BritanniaSpawnBlock::new);
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShadeSpawnBlockEntity>> SHADE_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
-            "shade_spawn_block_entity",
-            () -> BlockEntityType.Builder.of(ShadeSpawnBlockEntity::new, SHADE_SPAWN_BLOCK.get()).build(null));
+public static final DeferredHolder<Block, TrashBarrelBlock> TRASH_BARREL_BLOCK =
+        BLOCKS.register("trash_barrel", () -> new TrashBarrelBlock(
+                BlockBehaviour.Properties.of()
+                        .strength(2.5f)
+                        .noOcclusion()
+        ));
 
 // Custom fraction blocks
     public static final DeferredHolder<Block, Block> CAVE_FLOOR_BLOCK = BLOCKS.register(
@@ -304,12 +316,6 @@ public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.r
 
 
 // spawn blocks
-   public static final DeferredHolder<Block, Block> LICH_SPAWN_BLOCK = BLOCKS.register(
-            "lich_spawn_block", LichSpawnBlock::new);
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LichSpawnBlockEntity>> LICH_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
-            "lich_spawn_block_entity",
-            () -> BlockEntityType.Builder.of(LichSpawnBlockEntity::new, LICH_SPAWN_BLOCK.get()).build(null));
 
 
     public static final DeferredHolder<Block, Block> WOOD_SPAWN_BLOCK = BLOCKS.register(
@@ -807,6 +813,18 @@ public static final DeferredHolder<Block, Block> CARPET_DUMMY_BLOCK = BLOCKS.reg
 
 // light sources
 
+public static final DeferredHolder<Block, Block> GHOST_LIGHT = BLOCKS.register(
+    "ghost_light",
+    () -> new GhostLightBlock(BlockBehaviour.Properties.of()
+        .replaceable()
+        .noCollission()
+        .noOcclusion()
+        .air() 
+        .lightLevel(state -> 15)
+        .noLootTable()
+        .pushReaction(PushReaction.DESTROY))
+);
+
 public static final DeferredHolder<Block, Block> WALL_SCONCE = BLOCKS.register(
     "wall_sconce",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
@@ -828,11 +846,52 @@ public static final DeferredHolder<Block, Block> CANDLE = BLOCKS.register(
 
 public static final DeferredHolder<Block, Block> WOODEN_CHANDELIER = BLOCKS.register(
     "wooden_chandelier",
-    () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
-        .lightLevel(state -> 12))
+        .lightLevel(state -> 15), 
+        3) // Light nodes spawn 2 blocks outward on all faces
+);
+
+public static final DeferredHolder<Block, Block> LARGE_WOODEN_CHANDELIER = BLOCKS.register(
+    "large_wooden_chandelier",
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15), 
+        4) // Light nodes spawn 4 blocks outward on all faces
+);
+
+public static final DeferredHolder<Block, Block> SMALL_WOODEN_CHANDELIER = BLOCKS.register(
+    "small_wooden_chandelier",
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15), 
+        2) // Light nodes spawn 2 blocks outward on all faces
+);
+
+public static final DeferredHolder<Block, Block> LARGE_IRON_CHANDELIER = BLOCKS.register(
+    "large_iron_chandelier",
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15), 
+        4) // Light nodes spawn 4 blocks outward on all faces
+);
+
+public static final DeferredHolder<Block, Block> SMALL_IRON_CHANDELIER = BLOCKS.register(
+    "small_iron_chandelier",
+    () -> new ExtendedLightChandelierBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.METAL)
+        .strength(0.3f)
+        .noOcclusion()
+        .lightLevel(state -> 15), 
+        2) // Light nodes spawn 2 blocks outward on all faces
 );
 
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
@@ -1198,7 +1257,6 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR =
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
                 .strength(2.0f)
                 .sound(SoundType.WOOD)
-                .noOcclusion()
         ));
 
 public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
@@ -1207,7 +1265,6 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
                 .strength(2.0f)
                 .sound(SoundType.WOOD)
-                .noOcclusion()
         ));
 
   public static final DeferredHolder<Block, DungeonWallBlock> DUNGEON_WALL =
@@ -1813,6 +1870,9 @@ public static final DeferredHolder<Block, BlankSignHolder> BLANK_SIGN_HOLDER = B
                     .sound(SoundType.METAL)
                     .noOcclusion())
             );
+
+public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
+        BLOCKS.register("chess_board", ChessBoardBlock::new);
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

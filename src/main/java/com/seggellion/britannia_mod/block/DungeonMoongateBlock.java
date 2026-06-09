@@ -4,10 +4,9 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.block.entity.DungeonMoongateBlockEntity;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.teleport.TeleportResult;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
@@ -72,17 +71,11 @@ public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldS
     @Override
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide && entity instanceof ServerPlayer player) {
-            long currentTime = level.getGameTime();
-            CompoundTag playerData = player.getPersistentData();
-            long cooldownEnd = playerData.getLong("DungeonMoongateCooldown");
-            if (currentTime >= cooldownEnd) {
-                // Apply cooldown (5 seconds = 100 ticks)
-                playerData.putLong("DungeonMoongateCooldown", currentTime + 100);
-                BlockEntity blockEntity = level.getBlockEntity(pos);
-                if (blockEntity instanceof DungeonMoongateBlockEntity moongateEntity) {
-                    moongateEntity.teleportPlayer(player);
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof DungeonMoongateBlockEntity moongateEntity) {
+                TeleportResult result = moongateEntity.teleportPlayer(player);
+                if (result.success()) {
 
-                    // Play teleport sound
                     SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
                     if (soundEvent == null) {
                         LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
@@ -97,9 +90,6 @@ public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldS
                         );
                     }
                 }
-            } else {
-                // Optional: Inform the player they are on cooldown
-                player.sendSystemMessage(Component.literal("You must wait before using the moongate again."));
             }
         }
     }

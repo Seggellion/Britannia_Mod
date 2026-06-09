@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.network;
 
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +28,7 @@ public record UpdateSpawnerConfigC2S(BlockPos pos, ResourceLocation entityId, in
         boolean isAdmin = player.isCreative() || player.hasPermissions(2);
         if (!isAdmin) return;
 
-        if (player.level().getBlockEntity(pos) instanceof MonsterSpawnBlockEntity be) {
+        if (player.level().getBlockEntity(pos) instanceof BritanniaSpawnBlockEntity be) {
             be.applyConfig(entityId, radius, minTicks, maxTicks, nightOnly);
         }
     }

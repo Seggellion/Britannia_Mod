@@ -1,7 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
-import com.seggellion.britannia_mod.block.entity.MonsterSpawnBlockEntity;
-import com.seggellion.britannia_mod.menu.MonsterSpawnMenu;
+import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
+import com.seggellion.britannia_mod.menu.BritanniaSpawnMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -16,13 +16,13 @@ public class MenuRegistry {
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, "britannia_mod");
 
-    public static final DeferredHolder<MenuType<?>, MenuType<MonsterSpawnMenu>> MONSTER_SPAWN_MENU =
-            MENUS.register("monster_spawn_menu", () ->
+    public static final DeferredHolder<MenuType<?>, MenuType<BritanniaSpawnMenu>> MONSTER_SPAWN_MENU =
+            MENUS.register("britannia_spawn_menu", () ->
                     IMenuTypeExtension.create((id, inv, buf) -> {
                         BlockPos pos = buf.readBlockPos();
                         var level = inv.player.level();
-                        MonsterSpawnBlockEntity be = level.getBlockEntity(pos) instanceof MonsterSpawnBlockEntity m ? m : null;
-                        return new MonsterSpawnMenu(id, inv, ContainerLevelAccess.create(level, pos), pos, be);
+                        BritanniaSpawnBlockEntity be = level.getBlockEntity(pos) instanceof BritanniaSpawnBlockEntity m ? m : null;
+                        return new BritanniaSpawnMenu(id, inv, ContainerLevelAccess.create(level, pos), pos, be);
                     })
             );
 

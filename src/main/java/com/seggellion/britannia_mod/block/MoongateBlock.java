@@ -57,13 +57,23 @@ public class MoongateBlock extends Block {
         return PushReaction.BLOCK;
     }
 
-    @Override
+@Override
     public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn) {
-        if (!worldIn.isClientSide && entityIn instanceof ServerPlayer player) {
+        if (worldIn.isClientSide) return;
+
+        // Determine if the entity is a player, OR if the entity is a mount being ridden by a player
+        ServerPlayer player = null;
+        if (entityIn instanceof ServerPlayer sp) {
+            player = sp;
+        } else if (entityIn.getFirstPassenger() instanceof ServerPlayer sp) {
+            player = sp;
+        }
+
+        if (player != null) {
             UUID playerUUID = player.getUUID();
 
-            // If the player is not directly on the moongate block, remove them from the tracking set
-            if (!player.blockPosition().equals(pos)) {
+            // Check position against the ROOT entity (the player or the horse) touching the portal
+            if (!entityIn.blockPosition().equals(pos)) {
                 playersOnMoongate.remove(playerUUID);
                 return;
             }
@@ -73,28 +83,33 @@ public class MoongateBlock extends Block {
                 return;
             }
 
-            // Teleport the player on server side
-            MoongateTeleportationHandler.teleportPlayer(player);
-
-            // Log the SoundEvent
-            SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
-
-            if (soundEvent == null) {
-                LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
-            }
-
-            // Play teleport sound
-            worldIn.playSound(
-                null, // No specific player; null will send to all players (but we can restrict it)
-                player.getX(), player.getY(), player.getZ(),
-                soundEvent,
-                net.minecraft.sounds.SoundSource.PLAYERS,
-                1.0F,
-                1.0F
-            );
-
-            // Add player to the set to track they are on the moongate
+            // Add player to the set IMMEDIATELY
             playersOnMoongate.add(playerUUID);
+
+            // ==========================================
+            // DEFER TELEPORTATION TO AVOID MOVEMENT DESYNC
+            // ==========================================
+            // FIX: Create a guaranteed final reference for the lambda to use
+            final ServerPlayer finalPlayer = player; 
+
+            worldIn.getServer().execute(() -> {
+                // Use finalPlayer inside this block instead of player
+                MoongateTeleportationHandler.teleportPlayer(finalPlayer);
+
+                SoundEvent soundEvent = ModSounds.MOONGATE_TELEPORT.get();
+                if (soundEvent == null) {
+                    LOGGER.error("SoundEvent MOONGATE_TELEPORT is null!");
+                } else {
+                    worldIn.playSound(
+                        null, 
+                        finalPlayer.getX(), finalPlayer.getY(), finalPlayer.getZ(),
+                        soundEvent,
+                        net.minecraft.sounds.SoundSource.PLAYERS,
+                        1.0F,
+                        1.0F
+                    );
+                }
+            });
         }
     }
 

@@ -24,10 +24,9 @@ public class FishMerchantGeoModel extends GeoModel<FishTraderEntity> {
 
     @Override
     public ResourceLocation getTextureResource(FishTraderEntity e) {
-        String base = baseName(e);
-        // You can branch further here (e.g., city, profession, clothing variants)
+        String folder = "male".equalsIgnoreCase(e.getGender()) ? "male" : "female";
         return ResourceLocation.fromNamespaceAndPath(
-            BritanniaMod.MODID, "textures/entity/" + base + ".png");
+            BritanniaMod.MODID, "textures/entity/human/" + folder + "/base.png");
     }
 
     @Override

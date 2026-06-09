@@ -2,10 +2,12 @@ package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
 import com.seggellion.britannia_mod.winery.GrapeColor;
+import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -38,8 +40,6 @@ import net.minecraft.world.ItemInteractionResult;
 
 
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -50,6 +50,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
     // NOTE: We do not need to define VINE_AGE. 
     // CropBlock already provides 'AGE' (0-7), which we access via getAgeProperty().
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final boolean DEBUG_GRAPE_PLACEMENT = false;
 
     public GrapeVineBlock(Properties properties) {
         super(properties);
@@ -89,20 +90,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
 
             // 2. If at Max Age (7), drop the Grapes with NBT data
             if (state.getValue(this.getAgeProperty()) == this.getMaxAge()) {
-                String variety = "Unknown";
-                BlockEntity be = level.getBlockEntity(pos);
-                if (be instanceof GrapeVineBlockEntity vineBE) {
-                    variety = vineBE.getVariety();
-                }
-
-                String region = RegionCache.findRegion(pos) 
-                    .map(r -> r.name)
-                    .orElse("Britannia");
-
-                ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get(), 10);
-                GrapesItem.setVariety(grapes, variety);
-                GrapesItem.setRegion(grapes, region);
-                popResource(level, pos, grapes);
+                popResource(level, pos, createGrapeStack(level, pos, state, 10));
             }
         }
         return super.playerWillDestroy(level, pos, state, player);
@@ -145,17 +133,9 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable net.minecraft.world.entity.LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
 
-        String varietyId = "cabernet_sauvignon"; // Default fallback
- LOGGER.info("setPlacedBy detected");
-        // --- NEW 1.21+ DATA COMPONENT LOGIC ---
-        // Check if the stack has custom data (where NBT now lives)
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-
-        if (customData != null && customData.contains("Variety")) {
-            // We must parse the compound tag safely
-            varietyId = customData.copyTag().getString("Variety");
-        }
-        // --------------------------------------
+        // Keep the block entity data as a raw stable id; display names are item UI only.
+        String varietyId = GrapesItem.getVariety(stack);
+        debugGrapeFlow("place", level, pos, state, varietyId);
 
         // 2. Sync Data to BlockEntity
         BlockEntity be = level.getBlockEntity(pos);
@@ -191,7 +171,6 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
             BlockState aboveState = level.getBlockState(abovePos);
 
             if (aboveState.getBlock() instanceof TrellisBlock) {
-                          LOGGER.info("TrellisBlock detected");
                  if (random.nextInt(5) == 0) { 
            
                      propagateUpwards(level, pos, abovePos, height);
@@ -201,15 +180,13 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
     }
 
     private void propagateUpwards(ServerLevel level, BlockPos currentPos, BlockPos abovePos, int currentHeight) {
-            String varietyId = "cabernet_sauvignon"; // Default
+            String varietyId = GrapesItem.DEFAULT_VARIETY_ID;
             GrapeColor color = GrapeColor.PURPLE;    // Default
- LOGGER.info("Propogating upwards");
             // 1. Get data from current block
             BlockEntity be = level.getBlockEntity(currentPos);
             if (be instanceof GrapeVineBlockEntity vineBE) {
-                varietyId = vineBE.getVariety();
+                varietyId = resolveRawVarietyId(vineBE.getVariety(), level.getBlockState(currentPos).getValue(COLOR));
                 // Look up the color for this variety
-                LOGGER.info("Color: {}", varietyId);
                 color = GrapeVarietyManager.getVariety(varietyId).colorType();
             }
 
@@ -241,20 +218,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
 
                 // B. If at Max Age (7), drop the Grapes too so they aren't lost
                 if (state.getValue(this.getAgeProperty()) == this.getMaxAge()) {
-                    String variety = "Unknown";
-                    BlockEntity be = level.getBlockEntity(pos);
-                    if (be instanceof GrapeVineBlockEntity vineBE) {
-                        variety = vineBE.getVariety();
-                    }
-
-                    String region = RegionCache.findRegion(pos)
-                        .map(r -> r.name)
-                        .orElse("Britannia");
-
-                    ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get(), 10);
-                    GrapesItem.setVariety(grapes, variety);
-                    GrapesItem.setRegion(grapes, region);
-                    popResource(level, pos, grapes);
+                    popResource(level, pos, createGrapeStack(level, pos, state, 10));
                 }
                 // --- DROP LOGIC END ---
 
@@ -282,20 +246,8 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
             // Check for Scissors
             if (heldItem.is(ItemRegistry.SCISSORS.get())) { 
                 if (!level.isClientSide) {
-                    String variety = "Unknown";
-                    BlockEntity be = level.getBlockEntity(pos);
-                    if (be instanceof GrapeVineBlockEntity vineBE) variety = vineBE.getVariety();
-
-                    // Get Region
-                    String region = RegionCache.findRegion(pos)
-                        .map(r -> r.name)
-                        .orElse("Britannia");
-
                     // Drop 10 Grapes
-                    ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get(), 24);
-                    GrapesItem.setVariety(grapes, variety);
-                    GrapesItem.setRegion(grapes, region);
-                    popResource(level, pos, grapes);
+                    popResource(level, pos, createGrapeStack(level, pos, state, 24));
 
                     // Damage Scissors
                     heldItem.hurtAndBreak(1, player, Player.getSlotForHand(player.getUsedItemHand()));
@@ -314,6 +266,86 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
         return state.is(net.minecraft.world.level.block.Blocks.FARMLAND) || 
                state.getBlock() instanceof FarmingBlock;
+    }
+
+    private ItemStack createGrapeStack(Level level, BlockPos pos, BlockState state, int count) {
+        String varietyId = resolveVineVarietyId(level, pos, state);
+        String region = RegionCache.findRegion(pos)
+            .map(r -> r.name)
+            .orElse("Britannia");
+
+        ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get(), count);
+        GrapesItem.setVariety(grapes, varietyId);
+        GrapesItem.setRegion(grapes, region);
+        logHarvestGrapeFlow(level, pos, state, grapes, varietyId);
+        return grapes;
+    }
+
+    private String resolveVineVarietyId(Level level, BlockPos pos, BlockState state) {
+        BlockEntity be = level.getBlockEntity(pos);
+        GrapeColor stateColor = state.getValue(COLOR);
+        if (be instanceof GrapeVineBlockEntity vineBE) {
+            return resolveRawVarietyId(vineBE.getVariety(), stateColor);
+        }
+        return GrapeVarietyManager.getDefaultVarietyIdForColor(stateColor);
+    }
+
+    private String resolveRawVarietyId(String rawVarietyId, GrapeColor stateColor) {
+        if (rawVarietyId != null && !rawVarietyId.isBlank()) {
+            GrapeVariety variety = GrapeVarietyManager.getVarietyOrNull(rawVarietyId);
+            if (variety != null && variety.colorType() == stateColor) {
+                return rawVarietyId;
+            }
+            if (variety != null && !GrapesItem.DEFAULT_VARIETY_ID.equals(rawVarietyId)) {
+                return rawVarietyId;
+            }
+        }
+        return GrapeVarietyManager.getDefaultVarietyIdForColor(stateColor);
+    }
+
+    private void debugGrapeFlow(String action, Level level, BlockPos pos, BlockState state, String varietyId) {
+        if (!DEBUG_GRAPE_PLACEMENT || level.isClientSide) {
+            return;
+        }
+        GrapeVariety variety = GrapeVarietyManager.getVariety(varietyId);
+        LOGGER.info(
+            "Grape {} at {}: vineStateColor={}, rawVarietyId={}, displayName={}, colorType={}, baseColor=0x{}",
+            action,
+            pos,
+            state.getValue(COLOR).getSerializedName(),
+            varietyId,
+            variety.getFormattedName(),
+            variety.colorType(),
+            Integer.toHexString(variety.baseColor())
+        );
+    }
+
+    private void logHarvestGrapeFlow(Level level, BlockPos pos, BlockState state, ItemStack grapes, String resolvedVarietyId) {
+        if (level.isClientSide) {
+            return;
+        }
+
+        BlockEntity be = level.getBlockEntity(pos);
+        String blockEntityClass = be == null ? "none" : be.getClass().getName();
+        String blockEntityVarietyId = be instanceof GrapeVineBlockEntity vineBE ? vineBE.getVariety() : "none";
+        String stackVarietyId = GrapesItem.getVariety(grapes);
+        GrapeVariety resolvedVariety = GrapeVarietyManager.getVariety(resolvedVarietyId);
+
+        LOGGER.info(
+            "[grape harvest] pos={} blockstate={} blockstate_color={} blockstate_age={} block_entity_class={} block_entity_variety_id={} resolved_variety_id={} resolved_display_name={} resolved_color_type={} resolved_base_color=0x{} stack_variety_id={} stack_custom_data={}",
+            pos,
+            state,
+            state.getValue(COLOR).getSerializedName(),
+            state.getValue(this.getAgeProperty()),
+            blockEntityClass,
+            blockEntityVarietyId,
+            resolvedVarietyId,
+            resolvedVariety.getFormattedName(),
+            resolvedVariety.colorType(),
+            Integer.toHexString(resolvedVariety.baseColor()),
+            stackVarietyId,
+            grapes.get(DataComponents.CUSTOM_DATA)
+        );
     }
 
 }

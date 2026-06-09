@@ -28,14 +28,23 @@ public class NameLoader {
             document.getDocumentElement().normalize();
 
             NodeList nameNodes = document.getElementsByTagName("namelist");
-            for (int i = 0; i < nameNodes.getLength(); i++) {
+for (int i = 0; i < nameNodes.getLength(); i++) {
                 String type = nameNodes.item(i).getAttributes().getNamedItem("type").getNodeValue();
-                String[] names = nameNodes.item(i).getTextContent().split(",\\s*");
+                
+                // Split purely by comma first
+                String[] names = nameNodes.item(i).getTextContent().split(",");
 
-                if ("male".equalsIgnoreCase(type)) {
-                    maleNames.addAll(Arrays.asList(names));
-                } else if ("female".equalsIgnoreCase(type)) {
-                    femaleNames.addAll(Arrays.asList(names));
+                for (String rawName : names) {
+                    // .trim() strips all leading/trailing newlines, tabs, and spaces!
+                    String cleanName = rawName.trim(); 
+                    
+                    if (!cleanName.isEmpty()) {
+                        if ("male".equalsIgnoreCase(type)) {
+                            maleNames.add(cleanName);
+                        } else if ("female".equalsIgnoreCase(type)) {
+                            femaleNames.add(cleanName);
+                        }
+                    }
                 }
             }
 

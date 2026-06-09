@@ -33,6 +33,9 @@ import com.mojang.logging.LogUtils;
 // Your mod class
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.economy.CityCommodityApi;
+import com.seggellion.britannia_mod.economy.MerchantCatalogBuilder;
+import com.seggellion.britannia_mod.economy.MerchantRecipes;
 import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -50,6 +53,11 @@ public class RailsApi {
     // 1. BUYING CATALOG (Merchant)
     // ========================================================================
     public static void fetchCatalog(String city, String role, Consumer<List<Product>> callback) {
+        if (isEconomyMerchant(role)) {
+            fetchEconomyMerchantCatalog(city, role, callback);
+            return;
+        }
+
         CompletableFuture.runAsync(() -> {
             try {
                 URL url = new URL(BASE_URL + "catalog?city=" + city + "&role=" + role);
@@ -83,6 +91,25 @@ public class RailsApi {
                 e.printStackTrace();
             }
         });
+    }
+
+    private static void fetchEconomyMerchantCatalog(String city, String role, Consumer<List<Product>> callback) {
+        CompletableFuture.runAsync(() -> {
+            List<Product> products = MerchantCatalogBuilder.build(
+                            CityCommodityApi.fetchClient(city),
+                            MerchantRecipes.forRole(role)
+                    ).stream()
+                    .map(com.seggellion.britannia_mod.economy.MerchantCatalogEntry::product)
+                    .toList();
+
+            Minecraft.getInstance().execute(() -> callback.accept(products));
+        });
+    }
+
+    private static boolean isEconomyMerchant(String role) {
+        if (role == null) return false;
+        String lower = role.toLowerCase(java.util.Locale.ROOT);
+        return lower.contains("baker") || lower.contains("tavernkeeper") || lower.contains("costermonger");
     }
 
     // ========================================================================

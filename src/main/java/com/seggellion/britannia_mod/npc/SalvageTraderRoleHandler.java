@@ -1,61 +1,20 @@
 package com.seggellion.britannia_mod.npc;
 
-import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
-import com.seggellion.britannia_mod.item.QualitySwordItem; // ✅ Import this
-import com.seggellion.britannia_mod.api.RailsApi;
-import com.seggellion.britannia_mod.shop.Product;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.minecraft.core.registries.BuiltInRegistries; // ✅ Import this
-import net.minecraft.resources.ResourceLocation;
+import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
+import com.seggellion.britannia_mod.item.QualitySwordItem;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.function.Consumer;
-
-public class SalvageTraderRoleHandler implements NpcRoleHandler {
-    private final String role;
-    private final String city;
-
+public class SalvageTraderRoleHandler extends AbstractSellTraderRoleHandler {
     public SalvageTraderRoleHandler(String role, String city) {
-        this.role = role;
-        this.city = city;
+        super(role, city);
     }
 
     @Override
-    public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
-        // ✅ Updated method name
-        JsonArray inventoryData = collectSalvageItems(player);
-        RailsApi.fetchTraderCatalog(city, role, inventoryData, callback);
-    }
-
-    @Override
-    public void performTransaction(Player player, int entityId,
-                                   Map<Product, Integer> cart,
-                                   int totalPrice,
-                                   Runnable onSuccess) {
-        RailsApi.sellItems(player, city, role, entityId, cart, totalPrice, success -> {
-            if (success) onSuccess.run();
-        });
-    }
-
-    @Override
-    public String getActionLabel() {
-        return "Sell";
-    }
-
-    @Override
-    public ResourceLocation getBackground() {
-        return ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/sell_screen.png");
-    }
-
-    // ==========================================================
-    // Collect Jewelry, Swords, and Ingots for Salvage
-    // ==========================================================
-    private JsonArray collectSalvageItems(Player player) {
+    protected JsonArray collectSellableInventory(Player player) {
         JsonArray arr = new JsonArray();
 
         for (ItemStack stack : player.getInventory().items) {
@@ -64,37 +23,20 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
             String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
             String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
 
-            // 1. Handle Jewelry
             if (stack.getItem() instanceof MaterialQualityJewelryItem) {
                 MaterialQualityJewelryItem.UOMaterial mat = MaterialQualityJewelryItem.getMaterial(stack);
-                if (isValidMaterial(mat)) {
+                if (mat != null && isValidMaterial(mat.id())) {
                     addSalvageEntry(arr, itemId, mat.id(), MaterialQualityJewelryItem.getQuality(stack), stack.getCount());
                 }
-            }
-            // 2. Handle Quality Swords
-            else if (stack.getItem() instanceof QualitySwordItem) {
-                // Reuse MaterialQualityJewelryItem helpers (assuming shared NBT structure)
-                MaterialQualityJewelryItem.UOMaterial mat = MaterialQualityJewelryItem.getMaterial(stack);
-                if (isValidMaterial(mat)) {
-                    addSalvageEntry(arr, itemId, mat.id(), MaterialQualityJewelryItem.getQuality(stack), stack.getCount());
+            } else if (stack.getItem() instanceof QualitySwordItem) {
+                String material = QualitySwordItem.getMaterial(stack);
+                if (isValidMaterial(material)) {
+                    addSalvageEntry(arr, itemId, material, QualitySwordItem.getQuality(stack), stack.getCount());
                 }
-            }
-            // 3. Handle Ingots (Copper, Silver, Gold)
-            else if (path.contains("ingot")) {
-                MaterialQualityJewelryItem.UOMaterial mat = null;
-
-                // Check for singular "ingot" (vanilla) or plural "ingots" (custom)
-                if (path.equals("copper_ingot") || path.equals("copper_ingots")) {
-                    mat = MaterialQualityJewelryItem.UOMaterial.COPPER;
-                } else if (path.equals("silver_ingot") || path.equals("silver_ingots")) {
-                    mat = MaterialQualityJewelryItem.UOMaterial.SILVER;
-                } else if (path.equals("gold_ingot") || path.equals("gold_ingots")) {
-                    mat = MaterialQualityJewelryItem.UOMaterial.GOLD;
-                }
-
-                if (mat != null) {
-                    // Ingots treated as Quality 0 (Base/Normal)
-                    addSalvageEntry(arr, itemId, mat.id(), 0, stack.getCount());
+            } else if (path.contains("ingot")) {
+                String material = materialFromIngotPath(path);
+                if (material != null) {
+                    addSalvageEntry(arr, itemId, material, 0, stack.getCount());
                 }
             }
         }
@@ -102,11 +44,16 @@ public class SalvageTraderRoleHandler implements NpcRoleHandler {
         return arr;
     }
 
-    private boolean isValidMaterial(MaterialQualityJewelryItem.UOMaterial mat) {
-        if (mat == null) return false;
-        return mat == MaterialQualityJewelryItem.UOMaterial.COPPER ||
-               mat == MaterialQualityJewelryItem.UOMaterial.SILVER ||
-               mat == MaterialQualityJewelryItem.UOMaterial.GOLD;
+    private boolean isValidMaterial(String material) {
+        if (material == null) return false;
+        return material.equals("copper") || material.equals("silver") || material.equals("gold");
+    }
+
+    private String materialFromIngotPath(String path) {
+        if (path.equals("copper_ingot") || path.equals("copper_ingots")) return "copper";
+        if (path.equals("silver_ingot") || path.equals("silver_ingots")) return "silver";
+        if (path.equals("gold_ingot") || path.equals("gold_ingots")) return "gold";
+        return null;
     }
 
     private void addSalvageEntry(JsonArray arr, String itemId, String materialId, int quality, int quantity) {

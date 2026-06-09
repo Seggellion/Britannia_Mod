@@ -103,9 +103,10 @@ public class ClientEventHandler {
                     com.seggellion.britannia_mod.winery.GrapeVariety variety = 
                         com.seggellion.britannia_mod.winery.GrapeVarietyManager.getVariety(varietyId);
                     
-                    // 3. Determine if it should be Red (1.0) or Green (0.0)
-                    return isRedGrape(variety.colorType()) ? 1.0f : 0.0f;
+                    // 3. Determine if it should use the dark grape item texture or the green item texture.
+                    return isDarkGrape(variety.colorType()) ? 1.0f : 0.0f;
                 });
+            LOGGER.info("Registered grape item property britannia_mod:grape_type");
 
 // --- 2. NEW: Wine Bottle Label Logic ---
             // Define the property getter once to reuse for all 3 bottles
@@ -175,10 +176,10 @@ public static void onClientTick(ClientTickEvent.Post event) {
 
    ItemStack held = mc.player.getMainHandItem();
 if (held.getItem() instanceof AbstractHouseDeedItem deed) {
-    String structureName = deed.getHouseStyle().getStructureFile().replace(".nbt", ""); // ✅ uses HouseStyle
+    String structureName = StructureCache.normalizeKey(deed.getHouseStyle().getStructureFile()); // uses HouseStyle
 
     if (StructureCache.get(structureName) == null) {
-        LOGGER.info("🔍 Ghost structure '{}' not yet cached, loading...", structureName);
+        LOGGER.info("[GHOST_PREVIEW] Ghost structure '{}' not yet cached, loading...", structureName);
         loadGhostStructure(mc, structureName);  // dynamically load the correct structure
     }
 }
@@ -193,13 +194,8 @@ if (held.getItem() instanceof AbstractHouseDeedItem deed) {
 }
 
 
-    private static boolean isRedGrape(com.seggellion.britannia_mod.winery.GrapeColor color) {
-        if (color == null) return false; // Safety check
-        
-        return switch (color) {
-            case PURPLE, DARK_PURPLE, BLUE -> true;  // Maps to Red Texture
-            default -> false; 
-        };
+    private static boolean isDarkGrape(com.seggellion.britannia_mod.winery.GrapeColor color) {
+        return com.seggellion.britannia_mod.winery.GrapeVarietyManager.isDarkGrapeColor(color);
     }
 
 public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
@@ -324,9 +320,10 @@ private static void handleLeftClick(Minecraft mc) {
     }
 
 private static void loadGhostStructure(Minecraft mc, String structureName) {
-    LOGGER.info("🔍 Attempting to manually load ghost structure '{}' from resource stream...", structureName);
+    String cacheKey = StructureCache.normalizeKey(structureName);
+    LOGGER.info("[GHOST_PREVIEW] Attempting to load ghost structure '{}' from resource stream...", cacheKey);
 
-    ResourceLocation resource = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/" + structureName + ".nbt");
+    ResourceLocation resource = ResourceLocation.fromNamespaceAndPath("britannia_mod", "structures/" + cacheKey + ".nbt");
 
     try (InputStream stream = mc.getResourceManager().getResourceOrThrow(resource).open()) {
         CompoundTag tag = NbtIo.readCompressed(stream, NbtAccounter.unlimitedHeap());
@@ -336,16 +333,16 @@ private static void loadGhostStructure(Minecraft mc, String structureName) {
         template.load(registryAccess.lookupOrThrow(Registries.BLOCK), tag); // ✅ Load the structure
 
         // Save it to cache with the *right* structure name
-        StructureCache.put(structureName, template);
+        StructureCache.put(cacheKey, template);
 
         if (template.getSize().equals(Vec3i.ZERO)) {
-            LOGGER.warn("⚠️ Loaded structure '{}' has size Vec3i.ZERO (likely empty)", structureName);
+            LOGGER.warn("[GHOST_PREVIEW] Loaded structure '{}' has size Vec3i.ZERO (likely empty)", cacheKey);
         } else {
-            LOGGER.info("✅ Structure '{}' loaded with size: {}", structureName, template.getSize());
+            LOGGER.info("[GHOST_PREVIEW] Structure '{}' loaded with size: {}", cacheKey, template.getSize());
         }
 
-    } catch (IOException e) {
-        LOGGER.error("❌ Failed to load structure '{}'", structureName, e);
+    } catch (Exception e) {
+        LOGGER.error("[GHOST_PREVIEW] Failed to load structure '{}' from {}", cacheKey, resource, e);
     }
 }
 

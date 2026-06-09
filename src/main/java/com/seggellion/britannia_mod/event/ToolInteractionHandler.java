@@ -1,28 +1,23 @@
 package com.seggellion.britannia_mod.event;
 
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.sounds.SoundSource;
-import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.item.TwoHandedAxeItem;
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
+import com.seggellion.britannia_mod.item.QualityToolItem;
+import com.seggellion.britannia_mod.util.AxeHarvestRules;
+import com.seggellion.britannia_mod.util.PickaxeMiningRules;
 
 public class ToolInteractionHandler {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
     /**
      * Plays a chopping sound when left-clicking logs with a TwoHandedAxe.
      */
@@ -35,8 +30,7 @@ public class ToolInteractionHandler {
                 Level level = player.getCommandSenderWorld();
                 BlockState state = level.getBlockState(pos);
 
-                // Check if the block is a log
-                if (state.is(BlockTags.LOGS)) {
+                if (AxeHarvestRules.isAllowedLogBlock(state)) {
                     level.playSound(
                         null,
                         pos,
@@ -62,33 +56,19 @@ public class ToolInteractionHandler {
 
             // TwoHandedAxe → logs only
             if (item instanceof TwoHandedAxeItem) {
-                if (!state.is(BlockTags.LOGS)) {
-                    LOGGER.info("Preventing block breaking for non-log block: {}", state.getBlock());
+                if (!AxeHarvestRules.isAllowedAxeHarvestBlock(state)) {
                     event.setCanceled(true);
+                } else {
+                    event.setNewSpeed(AxeHarvestRules.isAllowedLeafBlock(state) ? 4.0F : 2.0F);
                 }
             }
             // IronPickaxe → stone/ore only
-            else if (item instanceof BritanniaPickaxeItem) {
-                boolean isStone = state.is(BlockTags.BASE_STONE_OVERWORLD);
-                boolean isOre = state.is(Blocks.IRON_ORE) ||
-                        state.is(Blocks.DEEPSLATE_IRON_ORE) ||
-                        state.is(Blocks.GOLD_ORE) ||
-                        state.is(BlockRegistry.COPPER_ORE.get()) ||
-                        state.is(BlockRegistry.TIN_ORE.get()) ||
-                        state.is(BlockRegistry.SILVER_ORE.get()) ||
-                        state.is(BlockRegistry.GOLD_ORE.get()) ||
-                        state.is(BlockRegistry.SHADOW_IRON_ORE.get()) ||
-                        state.is(BlockRegistry.AGAPITE_ORE.get()) ||
-                        state.is(BlockRegistry.VERITE_ORE.get()) ||
-                        state.is(BlockRegistry.VALORITE_ORE.get()) ||
-                        state.is(BlockRegistry.HIGH_PURITY_SILVER_ORE.get());
-                if (!isStone && !isOre) {
-                    LOGGER.info("Preventing block breaking for non-stone/ore block with IronPickaxe: {}",
-                                state.getBlock());
+            else if (item instanceof BritanniaPickaxeItem || item instanceof QualityToolItem) {
+                if (!PickaxeMiningRules.isAllowedMineableBlock(state)) {
                     event.setCanceled(true);
                 } else {
-                    // Optionally set a custom break speed for stone/ore
-                    event.setNewSpeed(2.0F);
+                    float speed = item instanceof QualityToolItem ? 2.0F + (QualityToolItem.getQuality(heldItem) * 0.5F) : 2.0F;
+                    event.setNewSpeed(speed);
                 }
             }
         }

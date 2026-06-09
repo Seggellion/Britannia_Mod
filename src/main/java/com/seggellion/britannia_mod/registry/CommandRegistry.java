@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.commands.CityCommand;
+import com.seggellion.britannia_mod.commands.QuestCommand;
+import com.seggellion.britannia_mod.commands.SetSkillCommand;
 import com.seggellion.britannia_mod.commands.BlockCommands;
 import com.seggellion.britannia_mod.commands.BootstrapCommands;
 import com.seggellion.britannia_mod.commands.APITokenCommands;
@@ -8,26 +10,30 @@ import com.seggellion.britannia_mod.commands.StructureCommands;
 import com.seggellion.britannia_mod.commands.LeaderboardCommands;
 import com.seggellion.britannia_mod.commands.PopulateOresCommand;
 import com.seggellion.britannia_mod.commands.RandomizeWallsCommand;
+import com.seggellion.britannia_mod.commands.VerifyCommand;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 public class CommandRegistry {
 
     public static void register() {
-        NeoForge.EVENT_BUS.addListener(CommandRegistry::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(CommandRegistry::onRegisterCommands);
     }
 
-    private static void onServerStarting(ServerStartingEvent event) {
+    private static void onRegisterCommands(RegisterCommandsEvent event) {
        // CityCommands.register(event.getServer().getCommands().getDispatcher());
-        CityCommand.register(event.getServer().getCommands().getDispatcher());
-        APITokenCommands.register(event.getServer().getCommands().getDispatcher());
-        StructureCommands.register(event.getServer().getCommands().getDispatcher());
+        CityCommand.register(event.getDispatcher());
+        QuestCommand.register(event.getDispatcher());
+        SetSkillCommand.register(event.getDispatcher());
+        APITokenCommands.register(event.getDispatcher());
+        StructureCommands.register(event.getDispatcher());
 
-        LeaderboardCommands.register(event.getServer().getCommands().getDispatcher());
-        BlockCommands.register(event.getServer().getCommands().getDispatcher());
-        BootstrapCommands.register(event.getServer().getCommands().getDispatcher());
-        PopulateOresCommand.register(event.getServer().getCommands().getDispatcher());
-        RandomizeWallsCommand.register(event.getServer().getCommands().getDispatcher());
+        LeaderboardCommands.register(event.getDispatcher());
+        BlockCommands.register(event.getDispatcher());
+        BootstrapCommands.register(event.getDispatcher());
+        PopulateOresCommand.register(event.getDispatcher());
+        RandomizeWallsCommand.register(event.getDispatcher());
+        VerifyCommand.register(event.getDispatcher());
 
         // Register additional command classes here
     }

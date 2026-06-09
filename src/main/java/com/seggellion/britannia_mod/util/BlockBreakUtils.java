@@ -28,7 +28,9 @@ public final class BlockBreakUtils {
      */
     public static String deduceOreType(BlockState state) {
         if (state.is(Blocks.IRON_ORE)) return "Iron ore";
+        if (state.is(Blocks.DEEPSLATE_IRON_ORE)) return "Iron ore";
         if (state.is(Blocks.GOLD_ORE)) return "Gold ore";
+        if (state.is(Blocks.DEEPSLATE_GOLD_ORE)) return "Gold ore";
         if (state.is(BlockRegistry.COPPER_ORE.get())) return "Copper ore";
         if (state.is(BlockRegistry.TIN_ORE.get())) return "Tin ore";
         if (state.is(BlockRegistry.SILVER_ORE.get())) return "Silver ore";
@@ -48,13 +50,17 @@ public final class BlockBreakUtils {
      */
     public static String deduceStoneType(BlockState state) {
         if (state.is(Blocks.STONE))       return "Cobblestone";
-        if (state.is(Blocks.GRAVEL))      return "Gravel";
-        if (state.is(Blocks.SANDSTONE))   return "Sandstone";
+        if (state.is(Blocks.COBBLESTONE)) return "Cobblestone";
         if (state.is(Blocks.DIORITE))     return "Diorite";
         if (state.is(Blocks.ANDESITE))    return "Andesite";
         if (state.is(Blocks.CALCITE))     return "Limestone";
         if (state.is(Blocks.GRANITE))     return "Granite";
+        if (state.is(Blocks.TUFF))        return "Tuff";
+        if (state.is(Blocks.BASALT))      return "Basalt";
+        if (state.is(Blocks.SMOOTH_BASALT)) return "Basalt";
         if (state.is(Blocks.BLACKSTONE))  return "Blackrock";
+        if (state.is(Blocks.DEEPSLATE))   return "Deepslate";
+        if (state.is(Blocks.COBBLED_DEEPSLATE)) return "Cobbled Deepslate";
         if (state.is(BlockRegistry.IGNEOUS_ROCK.get())) return "Igneous Rock";
         if (state.is(BlockRegistry.METAMORPHIC_ROCK.get())) return "Metamorphic Rock";
         if (state.is(BlockRegistry.VOLCANIC_ROCK.get())) return "Volcanic Rock";

@@ -1,0 +1,21 @@
+    {
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/decorations/small_wooden_chandelier",
+        "y": 180
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/decorations/small_wooden_chandelier",
+        "y": 0
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/decorations/small_wooden_chandelier",
+        "y": 90
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/decorations/small_wooden_chandelier",
+        "y": 270
+      }
+    }
+  }
+  

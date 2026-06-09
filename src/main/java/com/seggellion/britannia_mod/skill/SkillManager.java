@@ -201,6 +201,69 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
     }
 
 
+public static void setSkillAdmin(ServerPlayer player, String skillName, float value) {
+        if (player == null) return;
+        String key = skillName.toLowerCase(Locale.ROOT);
+
+        // FIX 1: getUuid() -> getUUID()
+        PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
+        p.set(key, value);
+
+        LOGGER.info("🛠️ ADMIN: Set {}'s {} skill to {}", player.getGameProfile().getName(), key, value);
+
+        // Sync to client (using the public 'server' field, matching NeoForge standard)
+        player.server.execute(() -> NetworkHandler.sendToPlayer(player, new SkillSyncPayload(p.map)));
+
+        // Async persist to the new Rails endpoint
+        postSetSkill(player, key, value);
+    }
+
+    private static void postSetSkill(ServerPlayer sp, String skillName, float newVal) {
+        EXECUTOR.submit(() -> {
+            try {
+                // Notice this targets a new "skills/set" endpoint, not "skills/gain"
+                URL url = new URL(ModConfig.API_BASE_URL + "skills/set");
+                HttpURLConnection c = (HttpURLConnection) url.openConnection();
+                c.setRequestMethod("POST");
+                c.setRequestProperty("Content-Type", "application/json");
+                c.setConnectTimeout(5000);
+                c.setReadTimeout(5000);
+
+                // FIX 2: ServerWorld / getServerWorld() -> ServerLevel / serverLevel()
+                ServerLevel world = sp.serverLevel();
+                
+                // FIX 3: ApiTokenData -> CityAPITokenData
+                CityAPITokenData data = CityAPITokenData.getOrCreate(world);
+
+                String token = data.getApiToken();
+                String shardSecret = data.getShardSecret();
+
+                if (token != null && !token.isEmpty()) c.setRequestProperty("Authorization", "Bearer " + token);
+                if (shardSecret != null && !shardSecret.isEmpty()) c.setRequestProperty("Shard-Secret", shardSecret);
+
+                c.setDoOutput(true);
+
+                JsonObject body = new JsonObject();
+                // FIX 4: getUuid() -> getUUID()
+                body.addProperty("uuid", sp.getUUID().toString());
+                body.addProperty("shard", ModConfig.SHARD_NAME);
+                body.addProperty("skill_name", skillName);
+                body.addProperty("username", sp.getGameProfile().getName());
+                body.addProperty("value", newVal);
+
+                try (OutputStream os = c.getOutputStream()) {
+                    os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                try (InputStream is = c.getInputStream()) {
+                    while (is.read() != -1) { /* drain */ }
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Failed to POST admin skill set to Rails", e);
+            }
+        });
+    }
+
+
 private static void fetchPlayerSkills(ServerPlayer sp) {
     try {
         String url = ModConfig.API_BASE_URL +
@@ -345,9 +408,18 @@ private static JsonElement doGetJson(String spec, ServerPlayer sp) throws IOExce
         }
     }
 
-    public static float getSkill(ServerPlayer player, String skillName) {
-        PlayerSkills ps = PLAYER_SKILLS.get(player.getUUID());
+// 1. The base method that accepts a UUID (Used by the Client Screen)
+    public static float getSkill(java.util.UUID playerUUID, String skillName) {
+        PlayerSkills ps = PLAYER_SKILLS.get(playerUUID);
         return (ps == null) ? 0f : ps.get(skillName);
+    }
+
+    // 2. The helper method that accepts a Player (Fixes all your Server errors!)
+    public static float getSkill(net.minecraft.world.entity.player.Player player, String skillName) {
+        if (player == null) return 0f;
+        
+        // This just grabs the UUID from the player and passes it to the method above
+        return getSkill(player.getUUID(), skillName);
     }
 
     /**

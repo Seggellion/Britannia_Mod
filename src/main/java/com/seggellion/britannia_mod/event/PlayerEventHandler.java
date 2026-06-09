@@ -5,8 +5,13 @@ import com.seggellion.britannia_mod.magic.Spell;
 import com.seggellion.britannia_mod.magic.SpellRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
+import com.seggellion.britannia_mod.teleport.TeleportDestination;
+import com.seggellion.britannia_mod.teleport.TeleportResult;
+import com.seggellion.britannia_mod.util.AxeHarvestRules;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -70,14 +74,20 @@ private void handlePlayerPosition(Player player) {
         if (z <= MIN_Z)       newZ = MAX_Z - 1;
         else if (z >= MAX_Z)  newZ = MIN_Z + 1;
 
-        if (newX != x || newZ != z) teleportPlayer(sp, newX, y, newZ);
+        if (newX != x || newZ != z) {
+            LOGGER.debug("World wrap detected for {} from ({}, {}, {}) to ({}, {}, {})",
+                    sp.getName().getString(), x, y, z, newX, y, newZ);
+            // Shared server-side teleport path keeps world wrapping aligned with carpet and dungeon teleporters.
+            TeleportResult result = BritanniaTeleportService.teleport(
+                    sp,
+                    TeleportDestination.inCurrentLevel(sp, newX, y, newZ, "world_wrap"),
+                    20
+            );
+            if (!result.success()) {
+                LOGGER.warn("World wrap teleport failed: {}", result.failureReason());
+            }
+        }
     }
-}
-
-private void teleportPlayer(ServerPlayer player, double x, double y, double z) {
-    LOGGER.info("Teleporting player {} to coordinates: {}, {}, {}",
-            player.getName().getString(), x, y, z);
-    player.teleportTo(x, y, z);
 }
 
 
@@ -152,10 +162,11 @@ public void onItemPickup(ItemEntityPickupEvent.Pre event) { // Changed to Pre
             if (serverPlayer.gameMode.getGameModeForPlayer() == GameType.ADVENTURE) {
                 ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
-                // Check if holding the two-handed axe and the block is a log
-                if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get() && state.is(BlockTags.LOGS)) {
-                    // Break the block manually
-                    level.destroyBlock(pos, true, player);
+                if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get()) {
+                    if (level instanceof ServerLevel serverLevel && AxeHarvestRules.isAllowedAxeHarvestBlock(state)) {
+                        WoodChopEventHandler.handleAxeHarvest(serverLevel, pos, state, player);
+                    }
+
                     event.setCanceled(true);
                 }
             }

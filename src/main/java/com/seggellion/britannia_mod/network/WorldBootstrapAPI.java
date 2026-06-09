@@ -11,7 +11,10 @@ import com.seggellion.britannia_mod.util.RegionItemData;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.network.ClientboundSyncCityTokenPayload;
+import com.seggellion.britannia_mod.quest.ClientQuestEntry;
+import com.seggellion.britannia_mod.quest.QuestEntryParser;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -34,17 +37,29 @@ public final class WorldBootstrapAPI {
                     ? ModConfig.SHARD_NAME
                     : "Britannia"; 
             
-            // 2. Resolve Player UUID
-            String playerUuid = player.getUUID().toString();
+            // 2. Resolve the authenticated Minecraft profile. Rails owns all identity linking.
+            GameProfile profile = player.getGameProfile();
+            UUID minecraftUuid = profile.getId();
+            String playerName = profile.getName();
+            if (minecraftUuid == null || playerName == null || playerName.isBlank()) {
+                LOGGER.warn("Skipping world bootstrap for player with missing Minecraft profile data.");
+                return WorldBootstrapData.empty();
+            }
+
+            String playerUuid = minecraftUuid.toString();
 
             // 3. Encode values
             String encodedShard = URLEncoder.encode(shard, StandardCharsets.UTF_8);
             String encodedUuid  = URLEncoder.encode(playerUuid, StandardCharsets.UTF_8);
+            String encodedName  = URLEncoder.encode(playerName, StandardCharsets.UTF_8);
 
             // 4. Construct URL
             String base = ModConfig.API_BASE_URL;
             if (!base.endsWith("/")) base += "/";
-            final String urlString = base + "world_bootstrap/" + encodedShard + "?player_uuid=" + encodedUuid;
+            final String urlString = base + "world_bootstrap/" + encodedShard
+                    + "?player_uuid=" + encodedUuid
+                    + "&minecraft_uuid=" + encodedUuid
+                    + "&minecraft_username=" + encodedName;
 
             // 5. Open Connection
             HttpURLConnection conn = (HttpURLConnection) new URL(urlString).openConnection();
@@ -230,8 +245,11 @@ public final class WorldBootstrapAPI {
                     GrapeVarietyManager.loadFromBootstrap(grapesList);
                 }
 
+                // 6) Accepted/current quests. Rails may provide either accepted_quests or quests.
+                List<ClientQuestEntry> acceptedQuests = QuestEntryParser.parseAcceptedQuests(root);
+
                 // Return
-                return new WorldBootstrapData(fishMap, regions, shardUser, citiesData);
+                return new WorldBootstrapData(fishMap, regions, shardUser, citiesData, acceptedQuests);
             }
         } catch (Exception e) {
             LOGGER.error("Failed world bootstrap", e);
@@ -245,10 +263,11 @@ public final class WorldBootstrapAPI {
             Map<ResourceLocation, FishCatalog.FishMeta> fish,
             List<RegionData> regions, 
             ShardUserData shardUser,
-            List<CityBootstrapData> cities
+            List<CityBootstrapData> cities,
+            List<ClientQuestEntry> acceptedQuests
     ) {
         public static WorldBootstrapData empty() {
-            return new WorldBootstrapData(Map.of(), List.of(), null, List.of());
+            return new WorldBootstrapData(Map.of(), List.of(), null, List.of(), List.of());
         }
     }
 

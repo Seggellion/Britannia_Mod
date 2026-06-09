@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+
 public class WineBottleBlockEntity extends BlockEntity {
     private WineData wineData = WineData.EMPTY;
 
@@ -52,6 +53,7 @@ public class WineBottleBlockEntity extends BlockEntity {
             tag.contains("LabelColor") ? tag.getString("LabelColor") : "red"
         );
     }
+
 
     // Sync for client-side rendering (if you want custom labels later)
     @Override

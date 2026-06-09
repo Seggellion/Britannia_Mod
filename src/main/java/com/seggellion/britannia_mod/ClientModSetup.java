@@ -5,18 +5,28 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityHorseMerchantRe
 import com.seggellion.britannia_mod.client.renderer.LivingSeatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EmptyRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.FishTraderEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.QuestGiverEntityRenderer;
+
 import com.seggellion.britannia_mod.client.renderer.entity.SalvageTraderEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.AlcoholTraderEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CitizenEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
+import com.seggellion.britannia_mod.client.BritainMusicHandler;
+import com.seggellion.britannia_mod.client.ModModelLayers;
+import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
+import com.seggellion.britannia_mod.client.ThinWallClient;
+import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
+import com.seggellion.britannia_mod.client.model.ThinWallModels;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
-import com.seggellion.britannia_mod.client.screen.MonsterSpawnScreen;
+import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
+import com.seggellion.britannia_mod.event.ClientEventHandler;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import com.seggellion.britannia_mod.client.model.StoneFloorGeometryLoader;
 import net.minecraft.world.entity.EntityType;
@@ -35,19 +45,9 @@ import com.seggellion.britannia_mod.block.ChairRenderer;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
-import com.seggellion.britannia_mod.client.renderer.entity.MongbatRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.DaemonRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.LichRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.RatRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.BaseBritanniaRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.WraithRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.GhoulRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.ShadeRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.ShadowOreElementalRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.GoldOreElementalRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.EarthElementalRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
-import com.seggellion.britannia_mod.client.renderer.entity.WispRenderer;
 import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -62,248 +62,262 @@ import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.component.DataComponents;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.minecraft.world.item.Item;
 import com.seggellion.britannia_mod.item.PurityOreItem;
-import com.seggellion.britannia_mod.registry.SwordRegistry;
+import com.seggellion.britannia_mod.registry.WeaponRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
 
 
+@EventBusSubscriber(modid = BritanniaMod.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static boolean clientGameHandlersRegistered = false;
 
-@SubscribeEvent
-public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+    @SubscribeEvent
+    public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
+        new ClientOnlyItemRegistry().registerSpawnEggColors(event);
+
+        // -- Weapon Tints --
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) return -1;
+
+            String materialName = "iron"; // fallback
+            if (stack.getItem() instanceof QualitySwordItem) {
+                materialName = QualitySwordItem.getMaterial(stack);
+            } else if (stack.getItem() instanceof QualityToolItem) {
+                materialName = QualityToolItem.getMaterial(stack);
+            }
+
+            // Get the base tint
+            int tint = getTintForOreType(materialName);
+            // Force Alpha to 100% and strip any existing alpha data
+            return 0xFF000000 | (tint & 0xFFFFFF);
+            
+        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get());
 
 
-    event.register((stack, tintIndex) -> {
-        if (!(stack.getItem() instanceof GradeStoneItem gradeStoneItem)) {
+        event.register((stack, tintIndex) -> {
+            if (!(stack.getItem() instanceof GradeStoneItem gradeStoneItem)) {
+                return -1; // Default (no tint applied)
+            }
+
+            String stoneType = gradeStoneItem.getStoneType(stack);
+            if (tintIndex == 0) {
+                int tint = getTintForStoneType(stoneType);
+                return tint | 0xFF000000; 
+            } else if (tintIndex == 1) {
+                int tint = getTintForStoneType(stoneType);
+                return tint | 0xFF000000; 
+            }
+
             return -1; // Default (no tint applied)
-        }
-
-        String stoneType = gradeStoneItem.getStoneType(stack);
-        if (tintIndex == 0) {
-            int tint = getTintForStoneType(stoneType);
-            return tint | 0xFF000000; 
-        } else if (tintIndex == 1) {
-            int tint = getTintForStoneType(stoneType);
-            return tint | 0xFF000000; 
-        }
-
-        return -1; // Default (no tint applied)
-    }, ItemRegistry.GRADE_STONE_ITEM.get());
+        }, ItemRegistry.GRADE_STONE_ITEM.get());
 
 
-    // -- PurityOreItem Tints (NEW) --
-    event.register((stack, tintIndex) -> {
-        if (!(stack.getItem() instanceof PurityOreItem purityOreItem)) {
-            return -1; // Default (no tint)
-        }
-        String oreType = purityOreItem.getOreType(stack);
+        // -- PurityOreItem Tints (NEW) --
+        event.register((stack, tintIndex) -> {
+            if (!(stack.getItem() instanceof PurityOreItem purityOreItem)) {
+                return -1; // Default (no tint)
+            }
+            String oreType = purityOreItem.getOreType(stack);
 
-        // Typically, we only color layer0 or layer1. 
-        // If your .json has 2 layers, you can handle them differently if you wish.
-        if (tintIndex == 0) {
-           int tint = getTintForOreType(oreType);
-       //      int tint = applyBrightnessTint(getTintForOreType(oreType), 2.0F); 
-            return tint | 0xFF000000;
-        } else if (tintIndex == 1) {
-            // same or different
-            int tint = getTintForOreType(oreType);
-            return tint | 0xFF000000;
-        }
-        return -1;
-    }, ItemRegistry.PURITY_ORE_ITEM.get());
+            // Typically, we only color layer0 or layer1. 
+            // If your .json has 2 layers, you can handle them differently if you wish.
+            if (tintIndex == 0) {
+               int tint = getTintForOreType(oreType);
+           //      int tint = applyBrightnessTint(getTintForOreType(oreType), 2.0F); 
+                return tint | 0xFF000000;
+            } else if (tintIndex == 1) {
+                // same or different
+                int tint = getTintForOreType(oreType);
+                return tint | 0xFF000000;
+            }
+            return -1;
+        }, ItemRegistry.PURITY_ORE_ITEM.get());
 
-//ingots
-event.register((stack, tintIndex) -> {
-    if (tintIndex != 0) return -1; // Only tint the base layer
+        //ingots
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0) return -1; // Only tint the base layer
 
-    Item item = stack.getItem();
-    int tint = getTintForIngotItem(item);
+            Item item = stack.getItem();
+            int tint = getTintForIngotItem(item);
 
-    return tint | 0xFF000000; // Ensure full opacity
-},
-    ItemRegistry.SHADOW_IRON_INGOT.get(),
-    ItemRegistry.VALORITE_INGOT.get(),
-    ItemRegistry.VERITE_INGOT.get(),
-    ItemRegistry.AGAPITE_INGOT.get(),
-    ItemRegistry.COPPER_INGOT.get(),
-    ItemRegistry.TIN_INGOT.get()
-);
-
-// Pickaxe tinting
-event.register((stack, tintIndex) -> {
-    if (!(stack.getItem() instanceof QualityToolItem tool)) return -1;
-    
-    if (tintIndex == 0) {
-        int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
-        String material = QualityToolItem.getMaterialFromModelData(modelData);
-
-        if (material == null) return -1; // ✅ prevent crash
-
-        int tint = switch (material.toLowerCase()) {
-            case "gold"     -> 0xFFD700;
-            case "iron"     -> 0xC6C6C6;
-            case "valorite" -> 0x3BA4B9;
-            case "agapite"  -> 0xE07EA3;
-            case "verite"   -> 0x40A050;
-            case "copper"   -> 0xB87333;
-            case "tin"      -> 0xC0C0C0;
-            case "silver"   -> 0xE0E0E0;
-            default         -> 0xFFFFFF;
-        };
-
-        return tint | 0xFF000000;
-    }
-
-    return -1;
-}, ToolRegistry.PICKAXE.get());
-
-
-// Sword tinting
-    event.register((stack, tintIndex) -> {
-        
-        if (!(stack.getItem() instanceof QualitySwordItem swordItem)) {
-            return -1; // Default (no tint)
-        }
-
-        if (tintIndex == 0) { // Blade tinting
- 
-        int modelData = stack.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.DEFAULT).value();
-        String metalType = QualitySwordItem.getMaterialFromModelData(modelData);
-
-        int tint = switch (metalType) {
-                case "tin"        -> adjustBrightness(desaturateColor(0xC0C0C0, 0.6), 0.95); // Desaturated gray
-                case "silver"     -> adjustBrightness(desaturateColor(0xC0C0C0, 0.5), 3.0); // Brightened silver
-                case "gold" -> 0xCEAD39;       // Gold tint
-                case "iron" -> 0xC6C6C6;       // Iron tint
-                case "valorite" -> 0x3BA4B9;   // Valorite tint
-                case "agapite"    -> 0xE07EA3;  // Pink/magenta hue
-                case "verite"     -> 0x40A050;  // Green hue
-                case "copper"     -> 0xB87333;  // Brownish copper color
-                default -> 0xFFFFFF;           // Default tint (white)
-            };
             return tint | 0xFF000000; // Ensure full opacity
-        }
+        },
+            ItemRegistry.SHADOW_IRON_INGOT.get(),
+            ItemRegistry.VALORITE_INGOT.get(),
+            ItemRegistry.VERITE_INGOT.get(),
+            ItemRegistry.AGAPITE_INGOT.get(),
+            ItemRegistry.COPPER_INGOT.get(),
+            ItemRegistry.TIN_INGOT.get()
+        );
 
-        return -1; // No tint for other layers
-    }, 
-    SwordRegistry.VIKING_SWORD.get());
+        // Pickaxe tinting
+        event.register((stack, tintIndex) -> {
+            if (!(stack.getItem() instanceof QualityToolItem tool)) return -1;
+            
+            if (tintIndex == 0) {
+                String metalType = QualityToolItem.getMaterial(stack);
 
-}
+                if (metalType == null) return -1; // ✅ prevent crash
 
-@SubscribeEvent
-public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
-    event.register(
-        ResourceLocation.fromNamespaceAndPath("britannia_mod", "stone_floor_loader"),
-        StoneFloorGeometryLoader.INSTANCE
-    );
-}
+                int tint = switch (metalType.toLowerCase()) {
+                    case "gold"     -> 0xFFD700;
+                    case "iron"     -> 0xC6C6C6;
+                    case "valorite" -> 0x3BA4B9;
+                    case "agapite"  -> 0xE07EA3;
+                    case "verite"   -> 0x40A050;
+                    case "copper"   -> 0xB87333;
+                    case "tin"      -> 0xC0C0C0;
+                    case "silver"   -> 0xE0E0E0;
+                    default         -> 0xFFFFFF;
+                };
 
-@SubscribeEvent
-public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
-    event.register(ModelResourceLocation.standalone(
-        ResourceLocation.parse("britannia_mod:block/structure/thin_wall_stair_fill")
-    ));
+                return tint | 0xFF000000;
+            }
+
+            return -1;
+        }, ToolRegistry.PICKAXE.get());
+
+    }
+
+    @SubscribeEvent
+    public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+        event.register(
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "stone_floor_loader"),
+            StoneFloorGeometryLoader.INSTANCE
+        );
+    }
+
+    @SubscribeEvent
+    public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(
-        ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
-    ));
-}
+            ResourceLocation.parse("britannia_mod:block/structure/thin_wall_stair_fill")
+        ));
+        event.register(ModelResourceLocation.standalone(
+            ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
+        ));
+    }
+
+    @SubscribeEvent
+    public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
+        ThinWallModels.onModifyBakingResults(event);
+        new ThinWallClient().onModifyBaking(event);
+    }
+
+    @SubscribeEvent
+    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        ModModelLayers.onRegisterLayerDefinitions(event);
+    }
+
+    @SubscribeEvent
+    public static void registerKeys(RegisterKeyMappingsEvent event) {
+        Keybinds.registerKeys(event);
+    }
+
+    @SubscribeEvent
+    public static void registerClientPackets(RegisterPayloadHandlersEvent event) {
+        ClientEventHandler.registerClientPackets(event);
+    }
 
 
 
-private static int applyBrightnessTint(int baseColor, float factor) {
-    int r = (baseColor >> 16) & 0xFF;
-    int g = (baseColor >> 8) & 0xFF;
-    int b = baseColor & 0xFF;
+    private static int applyBrightnessTint(int baseColor, float factor) {
+        int r = (baseColor >> 16) & 0xFF;
+        int g = (baseColor >> 8) & 0xFF;
+        int b = baseColor & 0xFF;
 
-    r = Math.min(255, (int) (r * factor));
-    g = Math.min(255, (int) (g * factor));
-    b = Math.min(255, (int) (b * factor));
+        r = Math.min(255, (int) (r * factor));
+        g = Math.min(255, (int) (g * factor));
+        b = Math.min(255, (int) (b * factor));
 
-    return (r << 16) | (g << 8) | b;
-}
+        return (r << 16) | (g << 8) | b;
+    }
 
 
-private static int desaturateColor(int rgb, double saturationFactor) {
-    // Extract RGB components
-    int r = (rgb >> 16) & 0xFF;
-    int g = (rgb >> 8) & 0xFF;
-    int b = rgb & 0xFF;
+    private static int desaturateColor(int rgb, double saturationFactor) {
+        // Extract RGB components
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
 
-    // Convert RGB to HSB
-    float[] hsb = rgbToHsb(r, g, b);
-    
-    // Apply desaturation
-    hsb[1] = (float) Math.max(0, Math.min(1, hsb[1] * saturationFactor));
-    
-    // Convert back to RGB
-    return hsbToRgb(hsb[0], hsb[1], hsb[2]);
-}
+        // Convert RGB to HSB
+        float[] hsb = rgbToHsb(r, g, b);
+        
+        // Apply desaturation
+        hsb[1] = (float) Math.max(0, Math.min(1, hsb[1] * saturationFactor));
+        
+        // Convert back to RGB
+        return hsbToRgb(hsb[0], hsb[1], hsb[2]);
+    }
 
-// Manual RGB to HSB conversion
-private static float[] rgbToHsb(int r, int g, int b) {
-    float[] hsb = new float[3];
-    int max = Math.max(r, Math.max(g, b));
-    int min = Math.min(r, Math.min(g, b));
-    float delta = max - min;
+    // Manual RGB to HSB conversion
+    private static float[] rgbToHsb(int r, int g, int b) {
+        float[] hsb = new float[3];
+        int max = Math.max(r, Math.max(g, b));
+        int min = Math.min(r, Math.min(g, b));
+        float delta = max - min;
 
-    // Brightness
-    hsb[2] = max / 255f;
+        // Brightness
+        hsb[2] = max / 255f;
 
-    // Saturation
-    hsb[1] = (max != 0) ? delta / max : 0;
+        // Saturation
+        hsb[1] = (max != 0) ? delta / max : 0;
 
-    // Hue
-    if (delta == 0) {
-        hsb[0] = 0;
-    } else {
-        float hue;
-        if (max == r) {
-            hue = ((g - b) / delta) * 60f;
-        } else if (max == g) {
-            hue = ((b - r) / delta + 2) * 60f;
+        // Hue
+        if (delta == 0) {
+            hsb[0] = 0;
         } else {
-            hue = ((r - g) / delta + 4) * 60f;
+            float hue;
+            if (max == r) {
+                hue = ((g - b) / delta) * 60f;
+            } else if (max == g) {
+                hue = ((b - r) / delta + 2) * 60f;
+            } else {
+                hue = ((r - g) / delta + 4) * 60f;
+            }
+            hsb[0] = (hue < 0) ? hue + 360 : hue;
         }
-        hsb[0] = (hue < 0) ? hue + 360 : hue;
+        
+        return hsb;
     }
-    
-    return hsb;
-}
 
-// Manual HSB to RGB conversion
-private static int hsbToRgb(float hue, float saturation, float brightness) {
-    int r = 0, g = 0, b = 0;
-    if (saturation == 0) {
-        r = g = b = (int) (brightness * 255);
-    } else {
-        float h = (hue % 360) / 60f;
-        int i = (int) h;
-        float f = h - i;
-        float p = brightness * (1 - saturation);
-        float q = brightness * (1 - saturation * f);
-        float t = brightness * (1 - saturation * (1 - f));
+    // Manual HSB to RGB conversion
+    private static int hsbToRgb(float hue, float saturation, float brightness) {
+        int r = 0, g = 0, b = 0;
+        if (saturation == 0) {
+            r = g = b = (int) (brightness * 255);
+        } else {
+            float h = (hue % 360) / 60f;
+            int i = (int) h;
+            float f = h - i;
+            float p = brightness * (1 - saturation);
+            float q = brightness * (1 - saturation * f);
+            float t = brightness * (1 - saturation * (1 - f));
 
-        switch (i) {
-            case 0 -> { r = (int) (brightness * 255); g = (int) (t * 255); b = (int) (p * 255); }
-            case 1 -> { r = (int) (q * 255); g = (int) (brightness * 255); b = (int) (p * 255); }
-            case 2 -> { r = (int) (p * 255); g = (int) (brightness * 255); b = (int) (t * 255); }
-            case 3 -> { r = (int) (p * 255); g = (int) (q * 255); b = (int) (brightness * 255); }
-            case 4 -> { r = (int) (t * 255); g = (int) (p * 255); b = (int) (brightness * 255); }
-            case 5 -> { r = (int) (brightness * 255); g = (int) (p * 255); b = (int) (q * 255); }
+            switch (i) {
+                case 0 -> { r = (int) (brightness * 255); g = (int) (t * 255); b = (int) (p * 255); }
+                case 1 -> { r = (int) (q * 255); g = (int) (brightness * 255); b = (int) (p * 255); }
+                case 2 -> { r = (int) (p * 255); g = (int) (brightness * 255); b = (int) (t * 255); }
+                case 3 -> { r = (int) (p * 255); g = (int) (q * 255); b = (int) (brightness * 255); }
+                case 4 -> { r = (int) (t * 255); g = (int) (p * 255); b = (int) (brightness * 255); }
+                case 5 -> { r = (int) (brightness * 255); g = (int) (p * 255); b = (int) (q * 255); }
+            }
         }
+        return (r << 16) | (g << 8) | b;
     }
-    return (r << 16) | (g << 8) | b;
-}
 
     private static int adjustBrightness(int color, double factor) {
         int r = (color >> 16) & 0xFF;
@@ -317,61 +331,63 @@ private static int hsbToRgb(float hue, float saturation, float brightness) {
         return (r << 16) | (g << 8) | b;
     }
 
-private static int applyGreyscaleTint(int color) {
-    int r = (color >> 16) & 0xFF;
-    int g = (color >> 8) & 0xFF;
-    int b = color & 0xFF;
+    private static int applyGreyscaleTint(int color) {
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
 
-    // Convert to grayscale by adjusting RGB based on weight
-    int grey = (int) ((r * 0.3) + (g * 0.59) + (b * 0.11)); // Weighted for human perception
+        // Convert to grayscale by adjusting RGB based on weight
+        int grey = (int) ((r * 0.3) + (g * 0.59) + (b * 0.11)); // Weighted for human perception
 
-    return (grey << 16) | (grey << 8) | grey; // Return as grayscale
-}
+        return (grey << 16) | (grey << 8) | grey; // Return as grayscale
+    }
 
 
-private static int applyHueShift(int color, float hueShift, float brightnessFactor) {
-    int r = (color >> 16) & 0xFF;
-    int g = (color >> 8) & 0xFF;
-    int b = color & 0xFF;
+    private static int applyHueShift(int color, float hueShift, float brightnessFactor) {
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = color & 0xFF;
 
-    // Convert RGB to HSB (Hue, Saturation, Brightness)
-    float[] hsb = java.awt.Color.RGBtoHSB(r, g, b, null);
-    
-    // Apply the hue shift and adjust brightness
-    float newHue = (hsb[0] + hueShift) % 1.0f;
-    float newBrightness = Math.min(1.0f, hsb[2] * brightnessFactor);
+        // Convert RGB to HSB (Hue, Saturation, Brightness)
+        float[] hsb = java.awt.Color.RGBtoHSB(r, g, b, null);
+        
+        // Apply the hue shift and adjust brightness
+        float newHue = (hsb[0] + hueShift) % 1.0f;
+        float newBrightness = Math.min(1.0f, hsb[2] * brightnessFactor);
 
-    // Convert back to RGB
-    int newColor = java.awt.Color.HSBtoRGB(newHue, hsb[1], newBrightness);
-    
-    return newColor;
-}
+        // Convert back to RGB
+        int newColor = java.awt.Color.HSBtoRGB(newHue, hsb[1], newBrightness);
+        
+        return newColor;
+    }
 
-private static int getTintForIngotItem(Item item) {
-    if (item == ItemRegistry.SHADOW_IRON_INGOT.get()) return 0x3A3A3A;
-    if (item == ItemRegistry.VALORITE_INGOT.get())    return 0x00CCFF;
-    if (item == ItemRegistry.VERITE_INGOT.get())      return 0x66FF66;
-    if (item == ItemRegistry.AGAPITE_INGOT.get())     return 0xFF9999;
-    if (item == ItemRegistry.COPPER_INGOT.get())      return 0xB87333;
-    if (item == ItemRegistry.TIN_INGOT.get())         return 0xCCCCCC;
-    return 0xFFFFFF; // fallback white if somehow not matched
-};
-
-private static int getTintForOreType(String oreType) {
-    return switch (oreType.toLowerCase()) {
-        case "tin ore"        -> applyHueShift(applyGreyscaleTint(0xC0C0C0), 0.1f, 0.8f); // Light grey, slightly desaturated
-        case "silver ore"     -> applyHueShift(applyGreyscaleTint(0xC0C0C0), 0.1f, 3.0f); // Bright silver
-        case "gold ore"       -> 0xDBD748; // Example: golden
-        case "shadow iron ore"-> 0x5C5C5C; // Darker gray
-        case "valorite ore"   -> 0x3E92E3; 
-        case "iron ore"   -> 0xFFFFFF; 
-        case "agapite ore"    -> 0xF4A6C0;  // Pink/magenta hue
-        case "verite ore"     -> 0x40A050;  // Green hue
-        case "copper ore"     -> 0x8F4A14;  // Brownish copper color
-        default -> 0xFFFFFF;              // fallback
+    private static int getTintForIngotItem(Item item) {
+        if (item == ItemRegistry.SHADOW_IRON_INGOT.get()) return 0x3A3A3A;
+        if (item == ItemRegistry.VALORITE_INGOT.get())    return 0x00CCFF;
+        if (item == ItemRegistry.VERITE_INGOT.get())      return 0x66FF66;
+        if (item == ItemRegistry.AGAPITE_INGOT.get())     return 0xFF9999;
+        if (item == ItemRegistry.COPPER_INGOT.get())      return 0xB87333;
+        if (item == ItemRegistry.TIN_INGOT.get())         return 0xCCCCCC;
+        return 0xFFFFFF; // fallback white if somehow not matched
     };
-}
 
+    private static int getTintForOreType(String oreType) {
+        // Remove " ore" if it exists so "Valorite Ore" and "valorite" both become "valorite"
+        String type = oreType.toLowerCase().replace(" ore", "").trim();
+        
+        return switch (type) {
+            case "tin"        -> adjustBrightness(desaturateColor(0xC0C0C0, 0.6), 0.95);
+            case "silver"     -> adjustBrightness(desaturateColor(0xC0C0C0, 0.5), 3.0);
+            case "gold"       -> 0xCEAD39;
+            case "iron"       -> 0xC6C6C6;
+            case "shadow iron"-> 0x303030; 
+            case "valorite"   -> 0x3BA4B9;
+            case "agapite"    -> 0xE07EA3;
+            case "verite"     -> 0x40A050;
+            case "copper"     -> 0xB87333;
+            default           -> 0xFFFFFF; // Pure white
+        };
+    };
 
     private static int getTintForStoneType(String stoneType) {
         return switch (stoneType.toLowerCase()) {
@@ -384,91 +400,151 @@ private static int getTintForOreType(String oreType) {
     };
 
 
-
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
 
-        event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
+        // Block Entity Renderers
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
-            event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE.get(), ThreeHeightLightRenderer::new);
-
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.WINE_BOTTLE_BE.get(), WineBottleBlockEntityRenderer::new);
+        // Entity Renderers
+      //  event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.LAY_ENTITY.get(), EmptyRenderer::new);
+
+        event.registerEntityRenderer(EntityRegistry.CUSTOM_CAT_ENTITY.get(), CatRenderer::new);
 
 
+        event.registerEntityRenderer(EntityRegistry.MONGBAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.5F, 0.25F)); 
+        
+        // Animal
+        event.registerEntityRenderer(EntityRegistry.HIND_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.3F));
+        event.registerEntityRenderer(EntityRegistry.GIANT_RAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.3F));
+
+        // Monsters
+        event.registerEntityRenderer(EntityRegistry.ALLIGATOR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_GIANT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F)); // Downscaled
+        event.registerEntityRenderer(EntityRegistry.SERPENT_LAVA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_ICE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.6F, 0.25F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_DEEP_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.25F));
+        event.registerEntityRenderer(EntityRegistry.SERPENT_CRYSTAL_SEA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.25F));
+
+        event.registerEntityRenderer(EntityRegistry.FIRE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.WATER_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.POISON_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.ACID_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.BLOOD_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.AIR_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 0.6F));
+
+        event.registerEntityRenderer(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 2.0F));
+        event.registerEntityRenderer(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+
+        event.registerEntityRenderer(EntityRegistry.DULL_COPPER_ELEMENTAL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 2.2F));
+
+        event.registerEntityRenderer(EntityRegistry.BRITANNIA_CAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 2.2F));
+
+        event.registerEntityRenderer(EntityRegistry.SERPENT_SILVER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.SCORPION_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.LIZARDMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.0F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.RATMAN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.7F, 0.4F));
+        event.registerEntityRenderer(EntityRegistry.RATMAN_ARCHER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.7F, 0.4F));
+        event.registerEntityRenderer(EntityRegistry.RATMAN_ASSASSIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.7F, 0.4F));
+
+        event.registerEntityRenderer(EntityRegistry.HARPY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.HEADLESS_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.6F, 0.5F));
+        event.registerEntityRenderer(EntityRegistry.ORC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.ORC_LORD_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.ORC_CLUB_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
+
+        event.registerEntityRenderer(EntityRegistry.ETTIN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.OGRE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 0.8F)); 
+        event.registerEntityRenderer(EntityRegistry.OGRE_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 0.8F)); // Upscaled
+        event.registerEntityRenderer(EntityRegistry.OGRE_LORD_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.6F, 1.0F)); // Upscaled
+        event.registerEntityRenderer(EntityRegistry.OGRE_LORD_ARCTIC_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.5F, 1.0F)); // Upscaled
+
+        event.registerEntityRenderer(EntityRegistry.TROLL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 0.7F)); // Upscaled
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_DESTROYER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.85F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_ENFORCER_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.82F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GARGOYLE_STONE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.75F, 0.6F));
+
+        //needs resizing
+        event.registerEntityRenderer(EntityRegistry.HIND_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.8F));
+        event.registerEntityRenderer(EntityRegistry.GREAT_HART_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.9F, 0.9F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_BROWN_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.2F, 1.2F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_BLACK_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 1.1F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_POLAR_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.4F, 1.4F));
+        event.registerEntityRenderer(EntityRegistry.BEAR_GRIZZLY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 1.3F));
+        event.registerEntityRenderer(EntityRegistry.TURKEY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GORILLA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.5F, 0.6F));
+
+        event.registerEntityRenderer(EntityRegistry.DAEMON_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.LICH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.RAT_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.WRAITH_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.GHOUL_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.SHADE_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
+        event.registerEntityRenderer(EntityRegistry.WISP_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
 
 
-        event.registerBlockEntityRenderer(
-    BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(),
-    CityNameBlockRenderer::new
-);
-
-event.registerBlockEntityRenderer(
-    BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(),
-    CityNameBlockRenderer::new
-);
-
-
-
+        event.registerEntityRenderer(EntityRegistry.HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchantRenderer::new);
+        // event.registerEntityRenderer(EntityRegistry.FISH_MERCHANT_ENTITY.get(), FishTraderEntityRenderer::new);
+       
+       
+        event.registerEntityRenderer(EntityRegistry.WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchantRenderer::new);
+        // event.registerEntityRenderer(EntityRegistry.JOURNEYMAN_BLACKSMITH_ENTITY.get(), EntityJourneymanBlacksmithRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.STONE_MERCHANT_ENTITY.get(), EntityStoneMerchantRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.METAL_MERCHANT_ENTITY.get(), EntityMetalMerchantRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.TOWNSPERSON.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.FISH_TRADER.get(), FishTraderEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.QUEST_GIVER.get(), QuestGiverEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.ALCOHOL_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.MEAT_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.ORE_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.STONE_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.GRAIN_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.PRODUCE_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.FUR_LEATHER_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.BAKER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.TAVERNKEEPER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.COSTERMONGER.get(), CitizenEntityRenderer::new);
     }
 
 
+    @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void onClientSetup(FMLClientSetupEvent event) {
-        Keybinds.registerInputHandler();
-    Minecraft.getInstance().execute(() -> {
-        try {
-            LOGGER.info("✅ Loading shader: brightness_shader.json");
-            Minecraft.getInstance().gameRenderer.loadEffect(
-                ResourceLocation.fromNamespaceAndPath("britannia_mod", "shaders/core/brightness_shader.json")
-            );
-            LOGGER.info("✅ Shader loaded successfully.");
-        } catch (Exception e) {
-            LOGGER.error("❌ Error loading shader: {}", e.getMessage());
+        ClientEventHandler.onClientSetup(event);
+
+        if (!clientGameHandlersRegistered) {
+            Keybinds.registerInputHandler();
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onBlockRightClick);
+            NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
+            NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
+            NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
+            clientGameHandlersRegistered = true;
         }
-    });
 
-
-// Initialize the ClientOnlyItemRegistry
+        // Initialize the ClientOnlyItemRegistry
         ClientOnlyItemRegistry registry = new ClientOnlyItemRegistry();
-
 
         // Register the mana overlay (render it during the HUD)
         ManaOverlayScreen.register();
 
         event.enqueueWork(() -> {
-
-            // Register the entity renderers
-            EntityRenderers.register(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
-            EntityRenderers.register(EntityRegistry.LAY_ENTITY.get(), EmptyRenderer::new);
-            EntityRenderers.register(EntityRegistry.MONGBAT_ENTITY.get(), MongbatRenderer::new);
-            EntityRenderers.register(EntityRegistry.DAEMON_ENTITY.get(), DaemonRenderer::new);
-            EntityRenderers.register(EntityRegistry.LICH_ENTITY.get(), LichRenderer::new);
-            EntityRenderers.register(EntityRegistry.RAT_ENTITY.get(), RatRenderer::new);
-            EntityRenderers.register(EntityRegistry.WRAITH_ENTITY.get(), WraithRenderer::new);
-            EntityRenderers.register(EntityRegistry.GHOUL_ENTITY.get(), GhoulRenderer::new);
-            EntityRenderers.register(EntityRegistry.SHADE_ENTITY.get(), ShadeRenderer::new);
-            EntityRenderers.register(EntityRegistry.WISP_ENTITY.get(), WispRenderer::new);
-            EntityRenderers.register(EntityRegistry.CUSTOM_CAT_ENTITY.get(), CatRenderer::new);
-            EntityRenderers.register(EntityRegistry.EARTH_ELEMENTAL_ENTITY.get(), EarthElementalRenderer::new);
-            EntityRenderers.register(EntityRegistry.GOLD_ORE_ELEMENTAL_ENTITY.get(), GoldOreElementalRenderer::new);
-            EntityRenderers.register(EntityRegistry.SHADOW_ORE_ELEMENTAL_ENTITY.get(), ShadowOreElementalRenderer::new);
-            EntityRenderers.register(EntityRegistry.HORSE_MERCHANT_ENTITY.get(), EntityHorseMerchantRenderer::new);
-           // EntityRenderers.register(EntityRegistry.FISH_MERCHANT_ENTITY.get(), FishTraderEntityRenderer::new);
-            EntityRenderers.register(EntityRegistry.WOOD_MERCHANT_ENTITY.get(), EntityWoodMerchantRenderer::new);
-            //EntityRenderers.register(EntityRegistry.JOURNEYMAN_BLACKSMITH_ENTITY.get(), EntityJourneymanBlacksmithRenderer::new);
-            EntityRenderers.register(EntityRegistry.STONE_MERCHANT_ENTITY.get(), EntityStoneMerchantRenderer::new);
-            EntityRenderers.register(EntityRegistry.METAL_MERCHANT_ENTITY.get(), EntityMetalMerchantRenderer::new);
-            EntityRenderers.register(EntityRegistry.TOWNSPERSON.get(), CitizenEntityRenderer::new);
-            EntityRenderers.register(EntityRegistry.ARCHITECT_ENTITY.get(), ArchitectRenderer::new);
-            EntityRenderers.register(EntityRegistry.FISH_TRADER.get(), FishTraderEntityRenderer::new);
-            EntityRenderers.register(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
-            EntityRenderers.register(EntityRegistry.ALCOHOL_TRADER.get(), AlcoholTraderEntityRenderer::new);
-            EntityRenderers.register(EntityRegistry.MEAT_TRADER.get(), EntityMetalMerchantRenderer::new);
-
 
             // Register the blocking property for the Order Shield
             ItemProperties.register(
@@ -479,49 +555,45 @@ event.registerBlockEntityRenderer(
                 }
             );
 
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X1.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X2.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X3.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X2.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X3.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_COBBLESTONE_1X2.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X1.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X2.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X3.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X2.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X3.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_COBBLESTONE_1X2.get(), RenderType.cutout());
 
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X1.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X2.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X3.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X2.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X3.get(), RenderType.cutout());
 
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X1.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X2.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X3.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X2.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_2X3.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_BIRCH_1X1.get(), RenderType.cutout());
 
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_BIRCH_1X1.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), RenderType.cutout());
+       
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LYING_SKELETON.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SITTING_SKELETON.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SKELETON_TORSO.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
 
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.IRON_CEMETERY_GATE_ARCH.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.CAVE_FLOOR_BLOCK.get(), RenderType.solid());
 
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LYING_SKELETON.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SITTING_SKELETON.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SKELETON_TORSO.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
-
-                ItemBlockRenderTypes.setRenderLayer(BlockRegistry.CAVE_FLOOR_BLOCK.get(), RenderType.solid());
-
-
-               ItemBlockRenderTypes.setRenderLayer(
-                    BlockRegistry.STATUE_MAN.get(),
-                    RenderType.translucent()
-                );
+            ItemBlockRenderTypes.setRenderLayer(
+                BlockRegistry.STATUE_MAN.get(),
+                RenderType.translucent()
+            );
 
             // Register custom model data for GradeStoneItem
             registry.registerModelData(
                 ItemRegistry.GRADE_STONE_ITEM.get(),
                 stack -> {
-
                     if (stack.getItem() instanceof GradeStoneItem gradeStoneItem) {
                         int customModelData = gradeStoneItem.getCustomModelData(stack);
                         return customModelData;
                     }
-
                     return 0;
                 });
 

@@ -10,6 +10,9 @@ import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.client.RegionCache;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
+import com.seggellion.britannia_mod.quest.QuestCleanupService;
+import com.seggellion.britannia_mod.quest.ServerQuestTable;
 
 import org.slf4j.Logger;
 
@@ -75,6 +78,10 @@ public final class WorldBootstrapHandler {
 
                 LOGGER.info("🌐 World bootstrap loaded: {} fish, {} regions, {} cities", 
                     data.fish().size(), data.regions().size(), data.cities().size());
+
+                ServerQuestTable.replaceFromBootstrap(player, data.acceptedQuests());
+                QuestCleanupService.cleanupStaleLocalQuestState(player, data.acceptedQuests());
+                ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
 
             }, player.server);
     }
