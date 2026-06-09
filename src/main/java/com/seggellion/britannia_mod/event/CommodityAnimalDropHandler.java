@@ -3,11 +3,11 @@ package com.seggellion.britannia_mod.event;
 import com.seggellion.britannia_mod.item.WeightedCommodityItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
@@ -22,6 +22,21 @@ public final class CommodityAnimalDropHandler {
         public static void onLivingDrops(LivingDropsEvent event) {
             Entity entity = event.getEntity();
             if (entity.level().isClientSide) return;
+
+            // Remove vanilla meats (and cooked variants) from the drop list.
+            // Items like Wool or Feathers are ignored and will still drop.
+            event.getDrops().removeIf(itemEntity -> {
+                Item item = itemEntity.getItem().getItem();
+                return item == Items.PORKCHOP || item == Items.COOKED_PORKCHOP ||
+                       item == Items.BEEF || item == Items.COOKED_BEEF ||
+                       item == Items.CHICKEN || item == Items.COOKED_CHICKEN ||
+                       item == Items.MUTTON || item == Items.COOKED_MUTTON ||
+                       item == Items.RABBIT || item == Items.COOKED_RABBIT;
+                       
+                       // Note: If you also want to stop vanilla leather/hides to prioritize 
+                       // your RAW_HIDE and RABBIT_PELT, add them to this condition:
+                       // || item == Items.LEATHER || item == Items.RABBIT_HIDE
+            });
 
             String type = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath();
             switch (type) {
