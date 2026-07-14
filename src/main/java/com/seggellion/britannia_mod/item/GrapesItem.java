@@ -11,12 +11,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.sounds.SoundSource;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
 import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
-
-import net.minecraft.sounds.SoundEvents;
 
 import net.minecraft.ChatFormatting;
 import java.util.List;
@@ -44,40 +42,21 @@ public class GrapesItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
-
-        // Check if player is holding Shift (Sneaking)
-        if (player.isShiftKeyDown()) {
-            if (!level.isClientSide) {
-                // 1. Get the variety from the current Grape item
-                String variety = getVariety(heldStack);
-
-                // 2. Create the Seed ItemStack
-                // REPLACE 'ItemRegistry.GRAPE_SEEDS.get()' with your actual Registry object for the seeds!
+        if (CropSeedExtractor.shouldExtract(player, hand)) {
+            return CropSeedExtractor.tryExtractSeed(level, player, hand, stack -> {
                 ItemStack seedStack = new ItemStack(ItemRegistry.GRAPE_SEEDS.get());
-
-                // 3. Transfer the variety data to the new seed
-                GrapeSeedsItem.setVariety(seedStack, variety);
-
-                // 4. Give the seed to the player (handle full inventory by dropping)
-                if (!player.getInventory().add(seedStack)) {
-                    player.drop(seedStack, false);
-                }
-
-                // 5. Play a sound effect (Pumpkin Carve or Crop Break sounds fit best)
-                level.playSound(null, player.getX(), player.getY(), player.getZ(), 
-                        SoundEvents.PUMPKIN_CARVE, SoundSource.PLAYERS, 1.0F, 1.0F);
-
-                // 6. Consume the grape (unless in Creative mode)
-                if (!player.getAbilities().instabuild) {
-                    heldStack.shrink(1);
-                }
-            }
-
-            // Return success to prevent default behavior (like eating) while shifting
-            return InteractionResultHolder.sidedSuccess(heldStack, level.isClientSide());
+                GrapeSeedsItem.setVariety(seedStack, getVariety(stack));
+                return seedStack;
+            });
         }
 
-        // If NOT shifting, allow default behavior (e.g., eating the grape)
+        if (!isConcordVariety(getVariety(heldStack))) {
+            if (!level.isClientSide) {
+                player.displayClientMessage(Component.literal("Only Concord grapes are suitable for eating fresh.").withStyle(ChatFormatting.YELLOW), true);
+            }
+            return InteractionResultHolder.fail(heldStack);
+        }
+
         return super.use(level, player, hand);
     }
 
@@ -149,5 +128,13 @@ public class GrapesItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("Variety: " + getFormattedVarietyName(stack)).withStyle(ChatFormatting.DARK_PURPLE));
+        if (CropQualityCalculator.hasQuality(stack)) {
+            tooltip.add(CropQualityCalculator.qualityTooltip(stack));
+        }
+    }
+
+    public static boolean isConcordVariety(String varietyId) {
+        String safeVarietyId = varietyId == null ? "" : varietyId.trim().toLowerCase(java.util.Locale.ROOT);
+        return "concord".equals(safeVarietyId) || "concord_grape".equals(safeVarietyId) || "concord_grapes".equals(safeVarietyId);
     }
 }

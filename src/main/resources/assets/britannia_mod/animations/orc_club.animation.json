@@ -1,7 +1,7 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
-		"Idle": {
+		"animation.model.idle": {
 			"loop": true,
 			"animation_length": 4,
 			"bones": {
@@ -455,7 +455,7 @@
 				}
 			}
 		},
-		"Walk": {
+		"animation.model.walk": {
 			"loop": true,
 			"animation_length": 1.5038,
 			"bones": {
@@ -1093,7 +1093,7 @@
 				}
 			}
 		},
-		"Running": {
+		"animation.model.run": {
 			"loop": true,
 			"animation_length": 1,
 			"bones": {
@@ -1731,7 +1731,7 @@
 				}
 			}
 		},
-		"Attack": {
+		"animation.model.attack": {
 			"animation_length": 0.75,
 			"bones": {
 				"Right_Arm": {
@@ -2376,7 +2376,7 @@
 				}
 			}
 		},
-		"Death": {
+		"animation.model.death": {
 			"loop": "hold_on_last_frame",
 			"animation_length": 1,
 			"bones": {

@@ -41,7 +41,7 @@ public class CreateFoodSpell extends Spell {
         return new ItemStack[]{
             new ItemStack(ItemRegistry.GARLIC.get()),
             new ItemStack(ItemRegistry.GINSENG.get()),
-            new ItemStack(ItemRegistry.MANDRAKE_ROOT.get())
+            new ItemStack(ItemRegistry.MANDRAKE.get())
         };
     }
 

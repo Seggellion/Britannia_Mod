@@ -1,0 +1,7 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "britannia_mod:block/crops/corn/corn_age_4_bottom"
+  },
+  "elements": []
+}

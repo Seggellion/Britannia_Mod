@@ -1,0 +1,16 @@
+﻿{
+  "variants": {
+    "axis=x": {
+      "model": "britannia_mod:block/crops/cherries/branch",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "britannia_mod:block/crops/cherries/branch"
+    },
+    "axis=z": {
+      "model": "britannia_mod:block/crops/cherries/branch",
+      "x": 90
+    }
+  }
+}

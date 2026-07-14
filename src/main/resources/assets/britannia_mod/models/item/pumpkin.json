@@ -1,1 +1,6 @@
-{"parent":"minecraft:item/generated","textures":{"layer0":"britannia_mod:item/pumpkin"}}
+{
+    "textures":  {
+                     "layer0":  "britannia_mod:item/pumpkin"
+                 },
+    "parent":  "minecraft:item/generated"
+}

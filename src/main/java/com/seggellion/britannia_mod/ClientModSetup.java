@@ -22,8 +22,13 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRen
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
+import com.seggellion.britannia_mod.farming.CropDefinition;
+import com.seggellion.britannia_mod.farming.CropRegistry;
+import com.seggellion.britannia_mod.farming.CropVisualRotation;
+import com.seggellion.britannia_mod.farming.GrapeVisualResolver;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
+import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
@@ -53,6 +58,7 @@ import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
+import com.seggellion.britannia_mod.item.QualityShovelItem;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
 import net.minecraft.world.item.component.CustomModelData;
@@ -98,6 +104,8 @@ public class ClientModSetup {
                 materialName = QualitySwordItem.getMaterial(stack);
             } else if (stack.getItem() instanceof QualityToolItem) {
                 materialName = QualityToolItem.getMaterial(stack);
+            } else if (stack.getItem() instanceof QualityShovelItem) {
+                materialName = QualityShovelItem.getMaterial(stack);
             }
 
             // Get the base tint
@@ -105,7 +113,7 @@ public class ClientModSetup {
             // Force Alpha to 100% and strip any existing alpha data
             return 0xFF000000 | (tint & 0xFFFFFF);
             
-        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get());
+        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get(), ToolRegistry.SHOVEL.get());
 
 
         event.register((stack, tintIndex) -> {
@@ -166,10 +174,13 @@ public class ClientModSetup {
 
         // Pickaxe tinting
         event.register((stack, tintIndex) -> {
-            if (!(stack.getItem() instanceof QualityToolItem tool)) return -1;
+            boolean customMetalTool = stack.getItem() instanceof QualityToolItem || stack.getItem() instanceof QualityShovelItem;
+            if (!customMetalTool) return -1;
             
             if (tintIndex == 0) {
-                String metalType = QualityToolItem.getMaterial(stack);
+                String metalType = stack.getItem() instanceof QualityShovelItem
+                        ? QualityShovelItem.getMaterial(stack)
+                        : QualityToolItem.getMaterial(stack);
 
                 if (metalType == null) return -1; // ✅ prevent crash
 
@@ -189,7 +200,7 @@ public class ClientModSetup {
             }
 
             return -1;
-        }, ToolRegistry.PICKAXE.get());
+        }, ToolRegistry.PICKAXE.get(), ToolRegistry.SHOVEL.get());
 
     }
 
@@ -209,6 +220,26 @@ public class ClientModSetup {
         event.register(ModelResourceLocation.standalone(
             ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
         ));
+        registerFarmingCropModels(event);
+    }
+
+    private static void registerFarmingCropModels(ModelEvent.RegisterAdditional event) {
+        for (ResourceLocation grapeModel : GrapeVisualResolver.allModelLocations()) {
+            event.register(ModelResourceLocation.standalone(grapeModel));
+        }
+        for (CropDefinition crop : CropRegistry.all()) {
+            if (!CropVisualRotation.isEnabledFor(crop)) {
+                continue;
+            }
+            if ("grapes".equals(crop.id())) {
+                continue;
+            }
+            for (int growthStage = 0; growthStage < crop.growthStages(); growthStage++) {
+                if (FarmingBlockEntityRenderer.hasRenderableCropModel(crop, growthStage)) {
+                    event.register(ModelResourceLocation.standalone(FarmingBlockEntityRenderer.cropModelLocation(crop, growthStage)));
+                }
+            }
+        }
     }
 
     @SubscribeEvent
@@ -414,6 +445,7 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.WINE_BOTTLE_BE.get(), WineBottleBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.FARMING_BLOCK_BE.get(), FarmingBlockEntityRenderer::new);
         // Entity Renderers
       //  event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);

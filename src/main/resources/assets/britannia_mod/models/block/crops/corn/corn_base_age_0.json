@@ -1,0 +1,27 @@
+{
+  "parent": "block/block",
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "crop": "britannia_mod:block/crops/corn/corn_seeds",
+    "particle": "britannia_mod:block/crops/corn/corn_seeds"
+  },
+  "elements": [
+    {
+      "from": [5, 0, 8],
+      "to": [11, 4, 8],
+      "faces": {
+        "north": { "texture": "#crop", "uv": [5, 12, 11, 16] },
+        "south": { "texture": "#crop", "uv": [5, 12, 11, 16] }
+      }
+    },
+    {
+      "from": [8, 0, 5],
+      "to": [8, 4, 11],
+      "faces": {
+        "east": { "texture": "#crop", "uv": [5, 12, 11, 16] },
+        "west": { "texture": "#crop", "uv": [5, 12, 11, 16] }
+      }
+    }
+  ]
+}

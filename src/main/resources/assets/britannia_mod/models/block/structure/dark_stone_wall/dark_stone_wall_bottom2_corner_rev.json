@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.6",
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft.com",
 	"parent": "block/block",
 	"textures": {
 		"side": "britannia_mod:block/structure/dark_stone_wall_bottom2"

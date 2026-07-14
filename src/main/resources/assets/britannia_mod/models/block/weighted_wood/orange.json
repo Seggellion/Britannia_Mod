@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/cube_column", "textures": { "end": "britannia_mod:block/crops/orange/wood", "side": "britannia_mod:block/crops/orange/wood" } }

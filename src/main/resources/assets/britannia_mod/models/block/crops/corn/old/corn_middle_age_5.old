@@ -1,0 +1,25 @@
+﻿{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "0": "britannia_mod:block/crops/corn/corn_age_7",
+    "particle": "britannia_mod:block/crops/corn/corn_age_7"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 8],
+      "to": [16, 16, 8],
+      "faces": {
+        "north": { "uv": [0, 0, 16, 16], "texture": "#0" },
+        "south": { "uv": [16, 0, 0, 16], "texture": "#0" }
+      }
+    },
+    {
+      "from": [8, 0, 0],
+      "to": [8, 16, 16],
+      "faces": {
+        "east": { "uv": [0, 0, 16, 16], "texture": "#0" },
+        "west": { "uv": [16, 0, 0, 16], "texture": "#0" }
+      }
+    }
+  ]
+}

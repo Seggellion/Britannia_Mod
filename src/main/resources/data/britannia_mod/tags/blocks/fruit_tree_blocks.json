@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#britannia_mod:fruit_tree_logs",
+    "#britannia_mod:fruit_tree_trunks",
+    "#britannia_mod:fruit_tree_branches",
+    "#britannia_mod:fruit_tree_leaves",
+    "#britannia_mod:fruit_tree_fruits"
+  ]
+}

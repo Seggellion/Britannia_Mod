@@ -32,10 +32,18 @@ public final class WorldBootstrapHandler {
         CompletableFuture
             .supplyAsync(() -> WorldBootstrapAPI.fetch(player))
             .thenAcceptAsync(data -> {
+                if (data.cacheFallback()) {
+                    RegionCache.retainExisting(data.shard(), data.httpStatus(), data.status());
+                    LOGGER.warn("World bootstrap cache fallback for shard {}: {} Stored regions remain {}.",
+                            data.shard(), data.status(), RegionCache.count());
+                    return;
+                }
+
                 // 1. Existing Logic
                 FishCatalog.clear();
                 data.fish().forEach(FishCatalog::put);
-                RegionCache.update(data.regions());
+                RegionCache.update(data.regions(), data.shard(), data.httpStatus(), data.status());
+                LOGGER.info("Stored {} bootstrap regions for shard {}", data.regions().size(), data.shard());
 
                 // 2. NEW: City Synchronization
                 if (!data.cities().isEmpty()) {

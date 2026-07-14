@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "crop":  "britannia_mod:block/crops/watermelon/watermelon_age_6"
+                 },
+    "parent":  "minecraft:block/crop"
+}

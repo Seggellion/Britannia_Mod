@@ -1,5 +1,5 @@
 {
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft.com",
 	"render_type": "minecraft:cutout",
 	"texture_size": [64, 64],
 	"textures": {
@@ -267,6 +267,5 @@
 			"color": 0,
 			"children": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 		}
-	],
-	"mcmodels": "e909526298272376593c42e63fedd077"
+	]
 }

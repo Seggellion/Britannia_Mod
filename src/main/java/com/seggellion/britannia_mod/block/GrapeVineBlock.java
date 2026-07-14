@@ -1,11 +1,20 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
+import com.seggellion.britannia_mod.farming.CropDefinition;
+import com.seggellion.britannia_mod.farming.CropGrowthContext;
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
+import com.seggellion.britannia_mod.farming.CropRegistry;
+import com.seggellion.britannia_mod.farming.FarmingClimate;
+import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
+import com.seggellion.britannia_mod.farming.FarmingSkill;
 import com.seggellion.britannia_mod.winery.GrapeColor;
 import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.skill.SkillManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -90,7 +99,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
 
             // 2. If at Max Age (7), drop the Grapes with NBT data
             if (state.getValue(this.getAgeProperty()) == this.getMaxAge()) {
-                popResource(level, pos, createGrapeStack(level, pos, state, 10));
+                popResource(level, pos, createGrapeStack(level, pos, state, 10, player));
             }
         }
         return super.playerWillDestroy(level, pos, state, player);
@@ -154,6 +163,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!level.isAreaLoaded(pos, 1)) return;
+        if (!canGrapeGrow(level, pos, state)) return;
 
         int age = state.getValue(this.getAgeProperty());
         int height = state.getValue(HEIGHT_STAGE);
@@ -218,7 +228,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
 
                 // B. If at Max Age (7), drop the Grapes too so they aren't lost
                 if (state.getValue(this.getAgeProperty()) == this.getMaxAge()) {
-                    popResource(level, pos, createGrapeStack(level, pos, state, 10));
+                    popResource(level, pos, createGrapeStack(level, pos, state, 10, player));
                 }
                 // --- DROP LOGIC END ---
 
@@ -247,7 +257,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
             if (heldItem.is(ItemRegistry.SCISSORS.get())) { 
                 if (!level.isClientSide) {
                     // Drop 10 Grapes
-                    popResource(level, pos, createGrapeStack(level, pos, state, 24));
+                    popResource(level, pos, createGrapeStack(level, pos, state, 24, player));
 
                     // Damage Scissors
                     heldItem.hurtAndBreak(1, player, Player.getSlotForHand(player.getUsedItemHand()));
@@ -268,7 +278,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
                state.getBlock() instanceof FarmingBlock;
     }
 
-    private ItemStack createGrapeStack(Level level, BlockPos pos, BlockState state, int count) {
+    private ItemStack createGrapeStack(Level level, BlockPos pos, BlockState state, int count, Player player) {
         String varietyId = resolveVineVarietyId(level, pos, state);
         String region = RegionCache.findRegion(pos)
             .map(r -> r.name)
@@ -277,8 +287,60 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
         ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get(), count);
         GrapesItem.setVariety(grapes, varietyId);
         GrapesItem.setRegion(grapes, region);
+        CropRegistry.byId("grapes").ifPresent(crop -> {
+            CropGrowthContext context = createGrapeGrowthContext(level, pos, state, crop, player);
+            int quality = CropQualityCalculator.calculateQuality(crop, context, player);
+            CropQualityCalculator.applyQuality(grapes, crop, quality);
+        });
         logHarvestGrapeFlow(level, pos, state, grapes, varietyId);
         return grapes;
+    }
+
+    private CropGrowthContext createGrapeGrowthContext(Level level, BlockPos pos, BlockState state, CropDefinition crop, Player player) {
+        int height = state.getValue(HEIGHT_STAGE);
+        BlockPos soilPos = pos.below(height + 1);
+        BlockEntity soilBe = level.getBlockEntity(soilPos);
+        boolean varietyAltitudeAllowed = grapeVarietyAllowsAltitude(level, pos, state);
+        if (soilBe instanceof FarmingBlockEntity farmBe) {
+            CropGrowthContext context = farmBe.createGrowthContext(level, soilPos, crop, player, true);
+            boolean altitudeAllowed = context.altitudeAllowed() && varietyAltitudeAllowed;
+            return new CropGrowthContext(
+                    context.nutrientFit(),
+                    context.hydrationFit(),
+                    context.climateFit(),
+                    context.climate(),
+                    context.climateAllowed(),
+                    altitudeAllowed,
+                    context.latticeSatisfied(),
+                    context.idealGrowth() && altitudeAllowed,
+                    context.farmingSkill()
+            );
+        }
+
+        FarmingClimate climate = FarmingClimateResolver.resolve(level, pos);
+        boolean climateAllowed = crop.canGrowInClimate(climate);
+        boolean altitudeAllowed = crop.canGrowAtAltitude(pos) && varietyAltitudeAllowed;
+        float climateFit = crop.climateFit(climate);
+        float skill = player == null ? 0.0f : SkillManager.getSkill(player, FarmingSkill.SKILL_ID);
+        boolean idealGrowth = climateFit >= 0.95f && climateAllowed && altitudeAllowed;
+        return new CropGrowthContext(0.50f, 0.50f, climateFit, climate, climateAllowed, altitudeAllowed, true, idealGrowth, skill);
+    }
+
+    private boolean canGrapeGrow(Level level, BlockPos pos, BlockState state) {
+        CropDefinition crop = CropRegistry.byId("grapes").orElse(null);
+        if (crop == null) {
+            return true;
+        }
+        FarmingClimate climate = FarmingClimateResolver.resolve(level, pos);
+        return crop.canGrowInClimate(climate)
+                && crop.canGrowAtAltitude(pos)
+                && grapeVarietyAllowsAltitude(level, pos, state);
+    }
+
+    private boolean grapeVarietyAllowsAltitude(Level level, BlockPos pos, BlockState state) {
+        GrapeVariety variety = GrapeVarietyManager.getVariety(resolveVineVarietyId(level, pos, state));
+        int y = pos.getY();
+        return y >= variety.minAltitude() && y <= variety.maxAltitude();
     }
 
     private String resolveVineVarietyId(Level level, BlockPos pos, BlockState state) {
@@ -321,7 +383,7 @@ public class GrapeVineBlock extends CropBlock implements EntityBlock {
     }
 
     private void logHarvestGrapeFlow(Level level, BlockPos pos, BlockState state, ItemStack grapes, String resolvedVarietyId) {
-        if (level.isClientSide) {
+        if (!DEBUG_GRAPE_PLACEMENT || level.isClientSide) {
             return;
         }
 

@@ -1,0 +1,8 @@
+﻿{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "britannia_mod:block/crops/lemon/root",
+    "side": "britannia_mod:block/crops/lemon/trunk",
+    "particle": "britannia_mod:block/crops/lemon/wood"
+  }
+}
