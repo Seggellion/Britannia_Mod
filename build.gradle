@@ -34,9 +34,16 @@ dependencies {
     implementation "software.bernie.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}"
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
     implementation 'org.nanohttpd:nanohttpd:2.2.0'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     implementation "io.github.llamalad7:mixinextras-common:0.3.5"
     annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 runs {
