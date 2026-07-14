@@ -76,6 +76,11 @@ import net.minecraft.world.item.Item;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.registry.WeaponRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
+import com.seggellion.britannia_mod.registry.BlacksmithItemRegistry;
+import com.seggellion.britannia_mod.item.BlacksmithEquipmentItem;
+import com.seggellion.britannia_mod.item.BlacksmithItemData;
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.skill.crafting.MaterialProfileRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
 
@@ -106,6 +111,16 @@ public class ClientModSetup {
             return 0xFF000000 | (tint & 0xFFFFFF);
             
         }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get());
+
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0 || !(stack.getItem() instanceof BlacksmithEquipmentItem equipment)
+                    || !equipment.definition().retainsMaterialColor()) return -1;
+            String stored = BlacksmithItemData.materialId(stack);
+            UOMetalToolMaterial material = stored == null ? UOMetalToolMaterial.IRON
+                    : UOMetalToolMaterial.getMaterialByName(stored.replace('_', ' '));
+            var profile = material == null ? null : MaterialProfileRegistry.get(material);
+            return profile == null ? -1 : 0xFF000000 | profile.tint();
+        }, BlacksmithItemRegistry.catalogueItems());
 
 
         event.register((stack, tintIndex) -> {

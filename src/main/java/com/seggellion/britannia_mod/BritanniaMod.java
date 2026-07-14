@@ -112,6 +112,8 @@ CraftableRegistry.init();
         BlockEntityRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
 
+        BlacksmithItemRegistry.register(modEventBus);
+
         WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
         PaintingRegistry.register(modEventBus);

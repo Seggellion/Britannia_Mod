@@ -109,7 +109,8 @@ public class ClientNetworkHandler {
         // enqueueWork ensures this runs on the main client rendering thread
         context.enqueueWork(() -> {
             // Open the screen and pass it the ingotId we sent from the server
-            Minecraft.getInstance().setScreen(new BlacksmithyScreen(payload.ingotId()));
+            Minecraft.getInstance().setScreen(new BlacksmithyScreen(payload.ingotId(), payload.learnedRecipes(),
+                    payload.race(), payload.gender(), payload.sessionToken()));
         });
     }
 

@@ -5,6 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.server.level.ServerPlayer;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +27,7 @@ import org.apache.logging.log4j.Logger;
  *   }
  */
 public final class LocalRecipes {
+    private static final String LEARNED_BLACKSMITHING = "BritanniaLearnedBlacksmithingRecipes";
     
 private static final Logger LOGGER = LogManager.getLogger();
     /**
@@ -63,6 +69,27 @@ private static final Logger LOGGER = LogManager.getLogger();
 
     private LocalRecipes() {
         // Prevent instantiation
+    }
+
+    /** Extends the existing local-recipe service with persisted per-player unlock keys. */
+    public static boolean hasLearned(ServerPlayer player, String recipeKey) {
+        if (recipeKey == null || recipeKey.isBlank()) return true;
+        return learnedBlacksmithing(player).contains(recipeKey);
+    }
+
+    public static boolean learnBlacksmithing(ServerPlayer player, String recipeKey) {
+        if (recipeKey == null || recipeKey.isBlank() || hasLearned(player, recipeKey)) return false;
+        ListTag list = player.getPersistentData().getList(LEARNED_BLACKSMITHING, 8);
+        list.add(StringTag.valueOf(recipeKey));
+        player.getPersistentData().put(LEARNED_BLACKSMITHING, list);
+        return true;
+    }
+
+    public static Set<String> learnedBlacksmithing(ServerPlayer player) {
+        ListTag list = player.getPersistentData().getList(LEARNED_BLACKSMITHING, 8);
+        Set<String> result = new HashSet<>();
+        for (int i = 0; i < list.size(); i++) result.add(list.getString(i));
+        return Collections.unmodifiableSet(result);
     }
 
     /**
