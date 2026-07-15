@@ -1341,6 +1341,10 @@ public static final DeferredHolder<Item, BlockItem> QUEST_DESTINATION_BLOCK_ITEM
             ITEMS.register("quest_giver_spawn_block", () ->
                     new BlockItem(BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, BlockItem> SERVICE_NPC_SPAWN_BLOCK_ITEM =
+            ITEMS.register("service_npc_spawn_block", () ->
+                    new BlockItem(BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get(), new Item.Properties()));
+
     public static final DeferredHolder<Item, BlockItem> BRITANNIA_SPAWN_BLOCK_ITEM =
             ITEMS.register("britannia_spawn_block", () ->
                     new BlockItem(BlockRegistry.BRITANNIA_SPAWN_BLOCK.get(), new Item.Properties()));

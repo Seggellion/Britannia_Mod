@@ -614,7 +614,9 @@
     "item.britannia_mod.cooked_chicken_breast": "Cooked Chicken Breast",
     "item.britannia_mod.cooked_chicken_wing": "Cooked Chicken Wing",
     "item.britannia_mod.beef_ribs": "Beef Ribs",
-    "item.britannia_mod.beef_brisket": "Beef Brisket"
+    "item.britannia_mod.beef_brisket": "Beef Brisket",
+    "block.britannia_mod.service_npc_spawn_block": "Service NPC Spawn Block",
+    "screen.britannia_mod.service_npc_spawn.title": "Service NPC Spawn Block"
 
 
 }

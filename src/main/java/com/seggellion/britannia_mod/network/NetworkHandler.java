@@ -110,6 +110,24 @@ public static void register(final RegisterPayloadHandlersEvent event) {
     /* ---------- packets that exist on BOTH sides or are SERVER-bound ---------- */
 
     registrar.playToServer(
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnConfigureC2SPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnConfigureC2SPayload.STREAM_CODEC,
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnPayloadHandler::handleConfigure
+    );
+    registrar.playToServer(
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnResyncC2SPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnResyncC2SPayload.STREAM_CODEC,
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnPayloadHandler::handleResync
+    );
+    registrar.playToClient(
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? ClientNetworkHandler::handleServiceNpcSpawnState
+            : (payload, context) -> {}
+    );
+
+    registrar.playToServer(
         BuyItemsC2SPayload.TYPE, BuyItemsC2SPayload.STREAM_CODEC,
         (payload, ctx) -> ctx.enqueueWork(() -> {
             if (ctx.player() instanceof ServerPlayer p) {

@@ -115,7 +115,7 @@ CraftableRegistry.init();
         WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
         PaintingRegistry.register(modEventBus);
-      //  MenuRegistry.register(modEventBus);
+        MenuRegistry.register(modEventBus);
 
         ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);

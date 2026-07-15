@@ -383,6 +383,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());   
                 safeAccept(output, ItemRegistry.MERCHANT_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.QUEST_GIVER_SPAWN_BLOCK_ITEM.get());     
+                safeAccept(output, ItemRegistry.SERVICE_NPC_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.QUEST_DESTINATION_BLOCK_ITEM.get());                                                                         
                 safeAccept(output, ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_SPAWN_BLOCK_ITEM.get());

@@ -10,6 +10,9 @@ import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.client.RegionCache;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
 import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
 import com.seggellion.britannia_mod.quest.QuestCleanupService;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
@@ -18,6 +21,7 @@ import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import org.slf4j.Logger;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 
 public final class WorldBootstrapHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -34,6 +38,19 @@ public final class WorldBootstrapHandler {
             .supplyAsync(() -> WorldBootstrapAPI.fetch(player))
             .thenAcceptAsync(data -> {
                 ServiceNpcRegistryCache.replace(data.serviceNpcRegistry());
+                try {
+                    BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(
+                            data.cities().stream()
+                                    .map(city -> new BootstrapCityDefinition(
+                                            UUID.fromString(city.publicId()),
+                                            city.name()
+                                    ))
+                                    .toList()
+                    ));
+                } catch (RuntimeException exception) {
+                    BootstrapCityRegistryCache.clear();
+                    LOGGER.error("Rejected invalid bootstrap city registry; Service NPC spawn configuration is unavailable", exception);
+                }
 
                 // 1. Existing Logic
                 FishCatalog.clear();

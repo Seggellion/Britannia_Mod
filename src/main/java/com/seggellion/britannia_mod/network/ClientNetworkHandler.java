@@ -36,6 +36,8 @@ import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
+import com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen;
+import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
@@ -68,6 +70,18 @@ public class ClientNetworkHandler {
     private static final ResourceLocation FONT_UO_CLASSIC =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
+
+    public static void handleServiceNpcSpawnState(
+            ServiceNpcSpawnStateS2CPayload payload,
+            IPayloadContext context
+    ) {
+        context.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen instanceof ServiceNpcSpawnScreen screen) {
+                screen.acceptState(payload);
+            }
+        });
+    }
 // 1. Your existing 4-argument method for NPCs
     public static void openQuestDecisionScreen(
         com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse response, 

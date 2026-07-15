@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.block.entity.FishBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MerchantSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestDestinationBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
@@ -204,12 +205,21 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WineBottl
                 ).build(null)
             );
 
-        public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestGiverSpawnBlockEntity>>
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestGiverSpawnBlockEntity>>
             QUEST_GIVER_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
                 "quest_giver_spawn_block_entity",
                 () -> BlockEntityType.Builder.of(
                         QuestGiverSpawnBlockEntity::new,
                         BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get()
+                ).build(null)
+            );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ServiceNpcSpawnBlockEntity>>
+            SERVICE_NPC_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
+                "service_npc_spawn_block_entity",
+                () -> BlockEntityType.Builder.of(
+                        ServiceNpcSpawnBlockEntity::new,
+                        BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get()
                 ).build(null)
             );
 
