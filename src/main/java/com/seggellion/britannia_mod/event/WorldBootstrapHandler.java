@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload;
 import com.seggellion.britannia_mod.quest.QuestCleanupService;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 
 import org.slf4j.Logger;
 
@@ -32,6 +33,8 @@ public final class WorldBootstrapHandler {
         CompletableFuture
             .supplyAsync(() -> WorldBootstrapAPI.fetch(player))
             .thenAcceptAsync(data -> {
+                ServiceNpcRegistryCache.replace(data.serviceNpcRegistry());
+
                 // 1. Existing Logic
                 FishCatalog.clear();
                 data.fish().forEach(FishCatalog::put);

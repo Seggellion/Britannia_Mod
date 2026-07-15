@@ -13,6 +13,8 @@ import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.network.ClientboundSyncCityTokenPayload;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.QuestEntryParser;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistryParser;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.resources.ResourceLocation;
@@ -139,6 +141,9 @@ public final class WorldBootstrapAPI {
                 if (root.has("cities") && root.get("cities").isJsonArray()) {
                     for (JsonElement el : root.getAsJsonArray("cities")) {
                         JsonObject c = el.getAsJsonObject();
+                        String publicId = c.has("public_id") && !c.get("public_id").isJsonNull()
+                                ? c.get("public_id").getAsString()
+                                : null;
                         String name = c.get("name").getAsString();
 
                         JsonObject s = c.getAsJsonObject("supplies");
@@ -158,7 +163,7 @@ public final class WorldBootstrapAPI {
                         Map<String, Map<String, Map<String, Double>>> weights = parseWeights(c.getAsJsonObject("market_weights"));
                         Map<String, Map<String, Map<String, Integer>>> quantities = parseQuantities(c.getAsJsonObject("market_quantities"));
 
-                        citiesData.add(new CityBootstrapData(name, food, wood, metal, stone, textile, alcohol, tech, gold, silver, copper, weights, quantities));
+                        citiesData.add(new CityBootstrapData(publicId, name, food, wood, metal, stone, textile, alcohol, tech, gold, silver, copper, weights, quantities));
                     }
                 }
 
@@ -248,8 +253,23 @@ public final class WorldBootstrapAPI {
                 // 6) Accepted/current quests. Rails may provide either accepted_quests or quests.
                 List<ClientQuestEntry> acceptedQuests = QuestEntryParser.parseAcceptedQuests(root);
 
+                // 7) Service NPC definitions are isolated from the rest of bootstrap parsing.
+                ServiceNpcRegistryParser.ParseResult serviceNpcRegistry =
+                        ServiceNpcRegistryParser.parseBootstrapRoot(root);
+                if (serviceNpcRegistry.status() == ServiceNpcRegistryParser.ParseStatus.REJECTED) {
+                    LOGGER.warn("Rejected Service NPC registry without rejecting unrelated bootstrap data: {}",
+                            serviceNpcRegistry.error());
+                }
+
                 // Return
-                return new WorldBootstrapData(fishMap, regions, shardUser, citiesData, acceptedQuests);
+                return new WorldBootstrapData(
+                        fishMap,
+                        regions,
+                        shardUser,
+                        citiesData,
+                        acceptedQuests,
+                        serviceNpcRegistry.snapshot()
+                );
             }
         } catch (Exception e) {
             LOGGER.error("Failed world bootstrap", e);
@@ -264,14 +284,23 @@ public final class WorldBootstrapAPI {
             List<RegionData> regions, 
             ShardUserData shardUser,
             List<CityBootstrapData> cities,
-            List<ClientQuestEntry> acceptedQuests
+            List<ClientQuestEntry> acceptedQuests,
+            ServiceNpcRegistrySnapshot serviceNpcRegistry
     ) {
         public static WorldBootstrapData empty() {
-            return new WorldBootstrapData(Map.of(), List.of(), null, List.of(), List.of());
+            return new WorldBootstrapData(
+                    Map.of(),
+                    List.of(),
+                    null,
+                    List.of(),
+                    List.of(),
+                    ServiceNpcRegistrySnapshot.empty()
+            );
         }
     }
 
     public record CityBootstrapData(
+            String publicId,
             String name,
             double food, double wood, double metal, double stone, double textile, double alcohol, double tech,
             int gold, int silver, int copper,

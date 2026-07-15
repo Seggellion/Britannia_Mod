@@ -4,9 +4,12 @@ import com.seggellion.britannia_mod.quest.network.QuestClient;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.ClientQuestTable;
 import com.seggellion.britannia_mod.quest.QuestManager;
+import com.seggellion.britannia_mod.dialogue.DialogueLayout;
+import com.seggellion.britannia_mod.dialogue.DialogueOptionViewModel;
+import com.seggellion.britannia_mod.dialogue.DialogueViewModel;
+import com.seggellion.britannia_mod.dialogue.QuestDialogueAdapter;
 import com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse;
 import com.seggellion.britannia_mod.quest.network.QuestModels.QuestChoice;
-import com.seggellion.britannia_mod.client.render.PortraitDownloader;
 import com.mojang.logging.LogUtils;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
@@ -14,8 +17,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 
@@ -23,24 +24,16 @@ import java.util.UUID;
 
 public class QuestDecisionScreen extends Screen {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final ResourceLocation PAPER_BACKGROUND = ResourceLocation.fromNamespaceAndPath("britannia_mod", "textures/screens/dialogue_screen.png");
-    private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
-    private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 
     private final String npcName;
     private final String npcGender;
     private final QuestResponse questState;
+    private final DialogueViewModel dialogueView;
 
     private boolean choiceMade = false;
 
-    // Layout variables calculated dynamically in init()
-    private final int topSectionHeight = 134; 
-    private int maxTextWidth;
     private Component bodyComponent;
-    
-    // Independent Y anchors for each column
-    private int portraitY;
-    private int textY;
+    private DialogueLayout dialogueLayout;
     private final UUID npcUuid;
 
     // 1. OLD Constructor (Used by QuestEventHandlers for Environmental Popups)
@@ -55,6 +48,7 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         this.npcName = npcName;
         this.npcGender = npcGender; // Store it
         this.npcUuid = npcUuid;
+        this.dialogueView = QuestDialogueAdapter.from(questState, npcName, npcGender);
     }
 
     @Override
@@ -62,49 +56,44 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         super.init();
         this.clearWidgets();
 
-        String bodyText = questState.currentNode != null ? questState.currentNode.body : "No dialogue.";
-        this.bodyComponent = Component.literal(bodyText).withStyle(UO_STYLE);
-
-        int portraitX = 30;
-        int visibleSize = 108;
-        //int visibleSize = 108;
-        int textX = portraitX + visibleSize + 25;
-        int buttonWidth = 140;
-        int buttonStartX = this.width - buttonWidth - 20;
-        
-        this.maxTextWidth = buttonStartX - textX - 20; 
-        
-        int col1Height = visibleSize + 5 + this.font.lineHeight;
-        int textLineCount = this.font.split(this.bodyComponent, this.maxTextWidth).size();
-        int col2Height = textLineCount * this.font.lineHeight; 
-        
-        boolean hasChoices = !questState.completed && questState.choices != null && !questState.choices.isEmpty();
-        int col3Height = hasChoices ? (questState.choices.size() * 24) - 4 : 20;
-
-        this.portraitY = Math.max(5, (this.topSectionHeight - col1Height) / 2) + 15;
-        this.textY = Math.max(5, (this.topSectionHeight - col2Height) / 2);
-        int buttonStartY = Math.max(5, (this.topSectionHeight - col3Height) / 2);
+        this.bodyComponent = DialoguePresentation.text(dialogueView.body());
+        boolean hasChoices = !dialogueView.completed() && !dialogueView.options().isEmpty();
+        DialogueLayout initialLayout = DialogueLayout.calculate(
+                this.width,
+                1,
+                hasChoices ? dialogueView.options().size() : 0,
+                this.font.lineHeight,
+                false
+        );
+        int textLineCount = this.font.split(this.bodyComponent, initialLayout.maxTextWidth()).size();
+        this.dialogueLayout = DialogueLayout.calculate(
+                this.width,
+                textLineCount,
+                hasChoices ? dialogueView.options().size() : 0,
+                this.font.lineHeight,
+                false
+        );
 
         if (hasChoices) {
-            boolean isInfoNode = questState.currentNode != null && "info".equals(questState.currentNode.nodeType);
+            boolean isInfoNode = "info".equals(dialogueView.nodeType());
 
             if (isInfoNode && questState.choices.size() == 1) {
                 QuestChoice choice = questState.choices.get(0);
-                Component btnText = Component.literal("Next ->").withStyle(UO_STYLE); 
+                DialogueOptionViewModel optionView = dialogueView.options().get(0);
+                Component btnText = DialoguePresentation.text("Next ->");
                 
                 Button nextBtn = Button.builder(btnText, btn -> handleChoice(choice))
-                    .bounds(buttonStartX, buttonStartY, buttonWidth, 20)
+                    .bounds(dialogueLayout.buttonStartX(), dialogueLayout.buttonStartY(), dialogueLayout.buttonWidth(), 20)
                     .build();
                 
-                nextBtn.active = !choice.isLocked;
+                nextBtn.active = !optionView.locked();
                 this.addRenderableWidget(nextBtn);
                 
             } else {
                 for (int i = 0; i < questState.choices.size(); i++) {
                     QuestChoice choice = questState.choices.get(i);
-                    Component btnText = Component.literal(choice.text).withStyle(UO_STYLE);
-                    
-                    Button choiceBtn = Button.builder(btnText, btn -> {
+                    DialogueOptionViewModel optionView = dialogueView.options().get(i);
+                    Button choiceBtn = DialoguePresentation.optionButton(optionView, i, dialogueLayout, ignored -> {
                         // NEW: Intercept choices with no destination and just close the UI!
                         if (choice.id == null || choice.id.trim().isEmpty() || "close".equalsIgnoreCase(choice.id)) {
                             this.choiceMade = true;
@@ -117,18 +106,14 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
                         } else {
                             handleChoice(choice);
                         }
-                    })
-                        .bounds(buttonStartX, buttonStartY + (i * 24), buttonWidth, 20)
-                        .build();
-                    
-                    choiceBtn.active = !choice.isLocked;
+                    });
                     this.addRenderableWidget(choiceBtn);
                 }
             }
         } else {
-            Component farewellText = Component.literal("Farewell.").withStyle(UO_STYLE);
+            Component farewellText = DialoguePresentation.text("Farewell.");
             this.addRenderableWidget(Button.builder(farewellText, btn -> this.onClose())
-                .bounds(buttonStartX, buttonStartY, buttonWidth, 20)
+                .bounds(dialogueLayout.buttonStartX(), dialogueLayout.buttonStartY(), dialogueLayout.buttonWidth(), 20)
                 .build());
         }
     }
@@ -243,43 +228,14 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // 1. This automatically calls your custom renderBackground() below, THEN draws the buttons
         super.render(graphics, mouseX, mouseY, partialTick);
-
-        // 2. Now render your text and portraits so they are crystal clear on top
-        int portraitX = 30; 
-        int textOpaqueColor = 0xFF111111;
-        int textureSize = 108; 
-       // int textureSize = 128; 
-        int cropMargin = 10;
-        int visibleSize = textureSize - (cropMargin * 2);
-
-        if (npcName != null && !npcName.isEmpty()) {
-            // dynamically fetch the portrait        
-            ResourceLocation currentPortrait = PortraitDownloader.getPortrait(npcName, this.npcGender);
-            
-            graphics.blit(currentPortrait, portraitX, this.portraitY, cropMargin, cropMargin, visibleSize, visibleSize, textureSize, textureSize);
-
-            Component nameComponent = Component.literal(npcName).withStyle(UO_STYLE);
-            int nameWidth = this.font.width(nameComponent);
-            
-            // FIX: Replaced portraitSize with visibleSize
-            int nameX = portraitX + (visibleSize / 2) - (nameWidth / 2);
-            int nameY = this.portraitY + visibleSize + 3;
-            graphics.drawString(this.font, nameComponent, nameX, nameY, textOpaqueColor, false);
-            
-            // FIX: Replaced portraitSize with visibleSize
-            int textX = portraitX + visibleSize + 25;
-            graphics.drawWordWrap(this.font, this.bodyComponent, textX, this.textY, this.maxTextWidth, textOpaqueColor);
-        } else {
-            String titleText = (questState.currentNode != null && questState.currentNode.title != null) 
-                               ? questState.currentNode.title 
-                               : "Quest Update";
-                               
-            Component nameComponent = Component.literal(titleText).withStyle(UO_STYLE);
-            graphics.drawString(this.font, nameComponent, portraitX, this.portraitY, textOpaqueColor, false);
-            
-            // FIX: Replaced portraitSize with visibleSize
-            graphics.drawWordWrap(this.font, this.bodyComponent, portraitX, this.textY + 15, this.maxTextWidth + visibleSize, textOpaqueColor);
-        }
+        DialoguePresentation.renderDialogue(
+                graphics,
+                this.font,
+                dialogueView,
+                dialogueLayout,
+                bodyComponent,
+                "Quest Update"
+        );
     }
 
     @Override
@@ -298,9 +254,7 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         // 1. Renders the default Minecraft dark/blurred background first
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.fill(0, 0, this.width, this.height, 0xCC000000);
-        // 2. Renders your paper texture ON TOP of the blur, but BEHIND the buttons
-        graphics.blit(PAPER_BACKGROUND, 0, 0, 0, 0, this.width, this.topSectionHeight, this.width, this.topSectionHeight);
+        DialoguePresentation.renderPaperBackground(graphics, this.width, this.height);
     }
 
 @Override
