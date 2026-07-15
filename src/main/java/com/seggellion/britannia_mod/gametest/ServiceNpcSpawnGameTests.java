@@ -3,14 +3,24 @@ package com.seggellion.britannia_mod.gametest;
 import com.mojang.authlib.GameProfile;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
+import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
+import com.seggellion.britannia_mod.menu.ServiceNpcSpawnMenu;
+import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
+import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnConfigurationValidator;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingData;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingOperation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingRecord;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnRegistrationState;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnValidationError;
 import com.seggellion.britannia_mod.structure.StructureRecord;
 import com.seggellion.britannia_mod.structure.StructureRegionManager;
 import net.minecraft.core.BlockPos;
@@ -36,6 +46,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @GameTestHolder(BritanniaMod.MODID)
@@ -68,6 +79,140 @@ public final class ServiceNpcSpawnGameTests {
         UUID first = requireId(placePost(helper, new BlockPos(1, 1, 1)));
         UUID second = requireId(placePost(helper, new BlockPos(3, 1, 1)));
         check(!first.equals(second), "separate placements shared a spawn-point UUID");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void normalPlacementRejectsPreloadedIdentityAndConfiguration(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        helper.setBlock(relative, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get());
+        ServiceNpcSpawnBlockEntity post = requirePost(level, absolute);
+        UUID suppliedId = UUID.randomUUID();
+        CompoundTag suppliedData = new CompoundTag();
+        suppliedData.putUUID("SpawnPointId", suppliedId);
+        suppliedData.putUUID("CityPublicId", UUID.randomUUID());
+        suppliedData.putString("ServiceNpcTypeKey", "bank_teller");
+        suppliedData.putBoolean("Enabled", false);
+        suppliedData.putLong("ConfigurationRevision", 9L);
+        suppliedData.putString("RegistrationState", ServiceNpcSpawnRegistrationState.REGISTERED.name());
+        post.loadCustomOnly(suppliedData, level.registryAccess());
+
+        BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get().setPlacedBy(
+                level,
+                absolute,
+                level.getBlockState(absolute),
+                null,
+                ItemStack.EMPTY
+        );
+
+        UUID authoritativeId = requireId(post);
+        check(!suppliedId.equals(authoritativeId), "normal placement trusted a preloaded UUID");
+        check(post.getCityPublicId() == null && post.getServiceNpcTypeKey() == null,
+                "normal placement trusted preloaded configuration");
+        check(post.isEnabled() && post.getConfigurationRevision() == 0L,
+                "normal placement did not restore new-post defaults");
+        check(post.getRegistrationState() == ServiceNpcSpawnRegistrationState.UNCONFIGURED,
+                "normal placement retained a preloaded registration state");
+        ServiceNpcSpawnClaim claim = ServiceNpcSpawnClaimData.get(level).find(authoritativeId);
+        check(claim != null && claim.location().pos().equals(absolute),
+                "normal placement did not claim its server-generated UUID");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void cachedConfigurationCreatesReloadablePendingUpsertAndSyncedState(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        ServiceNpcSpawnBlockEntity post = placePost(helper, relative);
+        UUID id = requireId(post);
+        UUID cityId = UUID.randomUUID();
+        BootstrapCityRegistrySnapshot cities = BootstrapCityRegistrySnapshot.available(List.of(
+                new BootstrapCityDefinition(cityId, "Britain")
+        ));
+        ServiceNpcTypeDefinition type = new ServiceNpcTypeDefinition(
+                "bank_teller",
+                "Bank Teller",
+                "banker",
+                "minecraft:villager",
+                "bank_default",
+                List.of("open_bank"),
+                true,
+                true,
+                1L
+        );
+        ServiceNpcRegistrySnapshot serviceTypes = new ServiceNpcRegistrySnapshot(
+                1,
+                1L,
+                Map.of(),
+                Map.of(type.key(), type),
+                Map.of()
+        );
+
+        BootstrapCityRegistryCache.replace(cities);
+        ServiceNpcRegistryCache.replace(serviceTypes);
+        try {
+            check(ServiceNpcSpawnConfigurationValidator.validate(
+                            BootstrapCityRegistryCache.snapshot(),
+                            ServiceNpcRegistryCache.snapshot(),
+                            cityId,
+                            type.key()
+                    ) == ServiceNpcSpawnValidationError.NONE,
+                    "valid cached registry selection was rejected");
+            check(post.applyConfiguration(level, cityId, type.key(), false, 0L)
+                            == ServiceNpcSpawnValidationError.NONE,
+                    "valid cached configuration was not applied");
+            check(cityId.equals(post.getCityPublicId()) && type.key().equals(post.getServiceNpcTypeKey()),
+                    "accepted configuration did not update the post");
+            check(!post.isEnabled() && post.getConfigurationRevision() == 1L,
+                    "enabled state or configuration revision did not synchronize");
+            check(post.getRegistrationState() == ServiceNpcSpawnRegistrationState.PENDING_REGISTRATION,
+                    "first configuration did not enter pending registration");
+
+            ServiceNpcSpawnPendingData pendingData = ServiceNpcSpawnPendingData.get(level);
+            ServiceNpcSpawnPendingRecord pending = pendingData.snapshot().get(id);
+            check(pending != null && pending.operation() == ServiceNpcSpawnPendingOperation.UPSERT,
+                    "accepted configuration did not create pending UPSERT work");
+            check(cityId.equals(pending.cityPublicId()) && type.key().equals(pending.serviceNpcTypeKey())
+                            && !pending.enabled() && pending.configurationRevision() == 1L,
+                    "pending UPSERT did not preserve the accepted snapshot");
+
+            CompoundTag savedPending = pendingData.save(new CompoundTag(), level.registryAccess());
+            ServiceNpcSpawnPendingRecord reloaded = ServiceNpcSpawnPendingData
+                    .load(savedPending, level.registryAccess())
+                    .snapshot()
+                    .get(id);
+            check(pending.equals(reloaded), "pending UPSERT did not survive a save/load boundary");
+
+            ServerPlayer player = FakePlayerFactory.get(
+                    level,
+                    new GameProfile(UUID.randomUUID(), "service-npc-spawn-state-gametest")
+            );
+            ServiceNpcSpawnMenu menu = new ServiceNpcSpawnMenu(
+                    7,
+                    player.getInventory(),
+                    level.dimension(),
+                    absolute,
+                    id
+            );
+            ServiceNpcSpawnStateS2CPayload state = ServiceNpcSpawnStateS2CPayload.create(
+                    player,
+                    menu,
+                    ServiceNpcSpawnValidationError.NONE
+            );
+            check(state.blockPresent() && state.cityRegistryAvailable() && state.serviceTypeRegistryAvailable(),
+                    "authoritative state did not expose the cached registries");
+            check(cityId.equals(state.cityPublicId()) && type.key().equals(state.serviceNpcTypeKey()),
+                    "authoritative state did not expose the accepted configuration");
+            check(!state.enabled() && state.configurationRevision() == 1L
+                            && state.registrationState() == ServiceNpcSpawnRegistrationState.PENDING_REGISTRATION,
+                    "authoritative state did not expose enabled/revision/pending status");
+        } finally {
+            BootstrapCityRegistryCache.clear();
+            ServiceNpcRegistryCache.clear();
+        }
         helper.succeed();
     }
 

@@ -85,6 +85,23 @@ class ServiceNpcSpawnPendingDataTest {
         assertEquals("retain-me", loaded.save(new CompoundTag(), null).getString("FutureField"));
     }
 
+    @Test
+    void registrationAndRemovalWorkSurviveStoreSaveAndReload() {
+        UUID registrationId = UUID.randomUUID();
+        UUID removalId = UUID.randomUUID();
+        ServiceNpcSpawnPendingRecord registration = upsert(registrationId, 3L, "bank_teller", 100L);
+        ServiceNpcSpawnPendingRecord removal = remove(removalId, 7L, 200L);
+        ServiceNpcSpawnPendingData original = new ServiceNpcSpawnPendingData();
+        assertEquals(ServiceNpcSpawnPendingData.MutationResult.ACCEPTED, original.put(registration));
+        assertEquals(ServiceNpcSpawnPendingData.MutationResult.ACCEPTED, original.put(removal));
+
+        CompoundTag saved = original.save(new CompoundTag(), null);
+        ServiceNpcSpawnPendingData reloaded = ServiceNpcSpawnPendingData.load(saved, null);
+
+        assertEquals(registration, reloaded.snapshot().get(registrationId));
+        assertEquals(removal, reloaded.snapshot().get(removalId));
+    }
+
     private static ServiceNpcSpawnPendingRecord upsert(UUID id, long revision, String type, long timestamp) {
         return new ServiceNpcSpawnPendingRecord(
                 ServiceNpcSpawnPendingOperation.UPSERT,

@@ -79,6 +79,7 @@ public record ServiceNpcSpawnStateS2CPayload(
 
         var citySnapshot = BootstrapCityRegistryCache.snapshot();
         boolean cityAvailable = citySnapshot.available()
+                && !citySnapshot.cities().isEmpty()
                 && citySnapshot.cities().size() <= ServiceNpcSpawnPayloadCodec.MAX_CITY_OPTIONS;
         List<CityOption> cities = new ArrayList<>();
         if (cityAvailable) {
@@ -93,7 +94,6 @@ public record ServiceNpcSpawnStateS2CPayload(
         }
 
         var typeSnapshot = ServiceNpcRegistryCache.snapshot();
-        boolean typeAvailable = !typeSnapshot.isEmpty();
         List<ServiceTypeOption> types = typeSnapshot.serviceNpcTypes().values().stream()
                 .filter(ServiceNpcTypeDefinition::active)
                 .filter(ServiceNpcTypeDefinition::spawnable)
@@ -101,6 +101,7 @@ public record ServiceNpcSpawnStateS2CPayload(
                         .thenComparing(ServiceNpcTypeDefinition::key))
                 .map(type -> new ServiceTypeOption(type.key(), type.displayName()))
                 .toList();
+        boolean typeAvailable = !types.isEmpty();
         if (types.size() > ServiceNpcSpawnPayloadCodec.MAX_TYPE_OPTIONS
                 || types.stream().anyMatch(type -> !isBounded(type.key(), ServiceNpcSpawnPayloadCodec.MAX_TYPE_KEY_BYTES)
                 || !isBounded(type.displayName(), ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES))) {

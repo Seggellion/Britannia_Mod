@@ -54,7 +54,7 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     }
 
     public void initializeNewPlacement(ServerLevel level) {
-        if (spawnPointId != null || identityReconciled) return;
+        if (identityReconciled) return;
         resetAsNewPost(UUID.randomUUID(), currentLocation(level));
         ServiceNpcSpawnClaimData.ClaimResult result = ServiceNpcSpawnClaimData.get(level)
                 .claim(spawnPointId, identityOrigin);

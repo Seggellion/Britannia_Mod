@@ -31,6 +31,7 @@ public final class ServiceNpcSpawnConfigurationValidator {
             return ServiceNpcSpawnValidationError.OVERSIZED_FIELD;
         }
         if (!cities.available()
+                || cities.cities().isEmpty()
                 || cities.cities().size() > MAX_CITY_OPTIONS
                 || cities.cities().values().stream().map(BootstrapCityDefinition::displayName)
                 .anyMatch(label -> !bounded(label, MAX_LABEL_BYTES))) {
@@ -42,7 +43,7 @@ public final class ServiceNpcSpawnConfigurationValidator {
                 .filter(ServiceNpcTypeDefinition::active)
                 .filter(ServiceNpcTypeDefinition::spawnable)
                 .count();
-        if (serviceTypes.isEmpty()
+        if (spawnableCount == 0L
                 || spawnableCount > MAX_TYPE_OPTIONS
                 || serviceTypes.serviceNpcTypes().values().stream()
                 .filter(ServiceNpcTypeDefinition::active)
