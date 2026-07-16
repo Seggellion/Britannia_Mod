@@ -123,45 +123,6 @@ public QuestDecisionScreen(QuestResponse questState, String npcName, String npcG
         QuestClient.sendTransition(questState.quest_id, choice.id, questGiverContext(), newResponse -> {
             if (newResponse != null && newResponse.error == null) {
                 String questStateId = resolveQuestStateId(newResponse);
-                if (newResponse.granted_items != null && !newResponse.granted_items.isEmpty()) {
-                    net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
-                    if (connection != null && !questStateId.isBlank()) {
-                        connection.send(com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload.fromResponse(newResponse));
-                    } else if (questStateId.isBlank()) {
-                        LOGGER.warn("Ignoring quest reward claim before Rails accepted quest_state_id quest_id={} choice_id={}",
-                                newResponse.quest_id, choice.id);
-                    }
-                }
-
-                if (newResponse.client_actions != null) {
-                    for (var action : newResponse.client_actions) {
-                        if ("spawn_escort".equals(action.action)) {
-                            net.minecraft.client.multiplayer.ClientPacketListener connection = Minecraft.getInstance().getConnection();
-                            if (connection != null) {
-                                java.util.UUID safeUuid = (this.npcUuid != null) ? this.npcUuid : new java.util.UUID(0, 0);
-
-                                String safeName = this.npcName != null ? this.npcName : "Unknown";
-                                String safeGender = this.npcGender != null ? this.npcGender : "unknown";
-                                if (questStateId.isBlank()) {
-                                    LOGGER.warn("Ignoring escort spawn before Rails accepted quest_state_id quest_id={} npc_uuid={} choice_id={}",
-                                            newResponse.quest_id, safeUuid, choice.id);
-                                    continue;
-                                }
-
-                                connection.send(new com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload(
-                                    action.entity_type, 
-                                    newResponse.quest_id, 
-                                    questStateId,
-                                    safeUuid, 
-                                    safeName, 
-                                    safeGender
-                                ));
-
-                            }
-                        }
-                    }
-                }
-
                 // Refresh the screen with 3 arguments
                 Minecraft.getInstance().setScreen(new QuestDecisionScreen(newResponse, this.npcName,this.npcGender, this.npcUuid));
             } else {

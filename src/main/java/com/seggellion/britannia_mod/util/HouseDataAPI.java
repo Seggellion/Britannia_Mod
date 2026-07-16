@@ -14,15 +14,16 @@ import net.minecraft.world.entity.player.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.seggellion.britannia_mod.config.ModConfig;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import com.seggellion.britannia_mod.structure.HouseStyle;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
@@ -47,20 +48,14 @@ public class HouseDataAPI {
             String houseType = lot.getHouseType();
 
             // The Rails endpoint
-            String urlString = ModConfig.API_BASE_URL + "houses";  // e.g. .../api/houses
-
-            // Prepare connection
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(level.getServer()).orElseThrow().apiUrls()
+                    .resolve(Endpoint.HOUSE_CREATE);
+            HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
+            BoundedHttp.configure(conn);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             
-            // Set authorization if needed
-            CityAPITokenData data = CityAPITokenData.getOrCreate(level);
-            String apiToken = data.getApiToken();
-            if (!apiToken.isEmpty()) {
-                conn.setRequestProperty("Authorization", "Bearer " + apiToken);
-            }
+            if (!RailsRequestAuthenticator.apply(conn, level.getServer())) throw new IllegalStateException("Server authentication unavailable");
             conn.setDoOutput(true);
 
             // Build JSON
@@ -91,7 +86,7 @@ public class HouseDataAPI {
             // Additional fields (per your migration):
             payload.addProperty("owner_username", owner.getName().getString());
             payload.addProperty("region_name", "Trinsic");
-            payload.addProperty("shard", "Britannia");
+            payload.addProperty("shard", ServerAuthRegistry.credentials(level.getServer()).orElseThrow().shardName());
             payload.addProperty("for_sale", false);
             payload.addProperty("price", 0);
 
@@ -110,11 +105,9 @@ public class HouseDataAPI {
             // Handle response
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                    JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();
-                    LOGGER.info("House created successfully: {}", response);
-                }
+                JsonObject response = JsonParser.parseString(
+                        BoundedHttp.readUtf8(conn.getInputStream(), 256 * 1024)).getAsJsonObject();
+                LOGGER.info("House created successfully: {}", response);
             } else {
                 LOGGER.warn("Failed to create house. Response code: {}", responseCode);
             }
@@ -126,16 +119,14 @@ public class HouseDataAPI {
 
 public static void deleteHouseRecord(ServerPlayer player, StructureRecord record) {
     try {
-        URL url = new URL(ModConfig.API_BASE_URL + "houses/delete");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        var requestUri = ServerAuthRegistry.credentials(player.server).orElseThrow().apiUrls()
+                .resolve(Endpoint.HOUSE_DELETE);
+        HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
+        BoundedHttp.configure(conn);
         conn.setRequestMethod("DELETE");
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
-        CityAPITokenData data = CityAPITokenData.getOrCreate(player.serverLevel());
-        String apiToken = data.getApiToken();
-        if (!apiToken.isEmpty()) {
-            conn.setRequestProperty("Authorization", "Bearer " + apiToken);
-        }
+        if (!RailsRequestAuthenticator.apply(conn, player.server)) throw new IllegalStateException("Server authentication unavailable");
 
         conn.setDoOutput(true);
         JsonObject payload = new JsonObject();

@@ -20,7 +20,11 @@ import com.seggellion.britannia_mod.item.WeightedWoodItem;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
-import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
 import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload;
@@ -34,58 +38,50 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 public class SendTransactionToAPI {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public static void send(ServerLevel serverLevel, String playerUuid, String cityName, List<JsonObject> items, String transactionType, String npcType, String npcId, String npcName, Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer) || items == null || items.isEmpty() || items.size() > 64) {
+            if (player instanceof ServerPlayer invalidPlayer) {
+                TransactionFailedS2CPayload.send(invalidPlayer, "Transaction rejected: invalid item request.");
+            }
+            return;
+        }
+        List<JsonObject> boundedItems = items.stream().map(JsonObject::deepCopy).toList();
+        var credentials = ServerAuthRegistry.credentials(serverLevel.getServer());
+        if (credentials.isEmpty()) {
+            TransactionFailedS2CPayload.send(serverPlayer, "Transaction failed: server authentication unavailable.");
+            return;
+        }
+        JsonObject payload = createPayload(playerUuid, cityName, npcId, npcName, transactionType,
+            boundedItems, credentials.get().shardName());
+
         try {
-            JsonObject payload = createPayload(playerUuid, cityName, npcId, npcName, transactionType, items);
-            double totalPrice = payload.has("total_price") ? payload.get("total_price").getAsDouble() : 0.0;
-
-            if ("purchase".equalsIgnoreCase(transactionType) && player instanceof ServerPlayer serverPlayer) {
-                if (!hasEnoughGold(serverPlayer, (int) totalPrice)) {
-                    player.sendSystemMessage(Component.literal("You do not have enough gold for this purchase."));
-                    return; // 🚫 Block before API request
-                }
-            }
-
-            HttpURLConnection conn = initializeConnection(ModConfig.API_BASE_URL + "transactions", serverLevel);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
-            }
-
-            handleResponse(conn, player, items);
-        } catch (Exception e) {
-            LOGGER.error("Error sending transaction to API: ", e);
+            ServerHttpExecutor.submit(serverLevel.getServer(), () -> post(serverLevel, payload))
+                .whenComplete((result, failure) -> serverLevel.getServer().execute(() -> {
+                    if (serverLevel.getServer().getPlayerList().getPlayer(serverPlayer.getUUID()) != serverPlayer) return;
+                    if (failure != null || result == null || result.statusCode() < 200 || result.statusCode() >= 300) {
+                        TransactionFailedS2CPayload.send(serverPlayer, "Transaction failed: economy server unavailable.");
+                        return;
+                    }
+                    applyAuthoritativeResponse(serverPlayer, result.response(), boundedItems);
+                }));
+        } catch (java.util.concurrent.RejectedExecutionException rejected) {
+            TransactionFailedS2CPayload.send(serverPlayer, "Transaction failed: economy queue is full.");
         }
     }
 
-    private static boolean hasEnoughGold(ServerPlayer player, int amount) {
-        int available = 0;
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
-                available += stack.getCount();
-            }
-        }
-        if (player.containerMenu instanceof MerchantMenu merchantMenu) {
-            ItemStack inputSlot = merchantMenu.getSlot(0).getItem();
-            if (inputSlot.getItem().equals(ItemRegistry.GOLD_COIN.get())) {
-                available += inputSlot.getCount();
-            }
-        }
-        return available >= amount;
-    }
-
-    private static JsonObject createPayload(String playerUuid, String cityName, String npcId, String npcName, String transactionType, List<JsonObject> items) {
+    private static JsonObject createPayload(String playerUuid, String cityName, String npcId, String npcName,
+                                            String transactionType, List<JsonObject> items, String shardName) {
         JsonObject payload = new JsonObject();
         payload.addProperty("player_uuid", playerUuid);
         payload.addProperty("city_name", cityName);
         payload.addProperty("npc_id", npcId);
         payload.addProperty("npc_name", npcName);
-        payload.addProperty("shard", "Britannia");
+        payload.addProperty("shard", shardName);
         payload.addProperty("transaction_type", transactionType);
 
         JsonArray itemsArray = new JsonArray();
@@ -126,58 +122,82 @@ public class SendTransactionToAPI {
         return payload;
     }
 
-    private static HttpURLConnection initializeConnection(String urlString, ServerLevel serverLevel) throws IOException {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    private static TransactionResult post(ServerLevel serverLevel, JsonObject payload) {
+        try {
+        var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                .resolve(Endpoint.TRANSACTION);
+        HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
+        BoundedHttp.configure(conn);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-        String apiToken = data.getApiToken();
-        if (!apiToken.isEmpty()) {
-            conn.setRequestProperty("Authorization", "Bearer " + apiToken);
+        if (!RailsRequestAuthenticator.apply(conn, serverLevel.getServer())) {
+            throw new IOException("Server authentication unavailable");
         }
         conn.setDoOutput(true);
-        return conn;
-    }
-
-    private static void handleResponse(HttpURLConnection conn, Player player, List<JsonObject> items) throws IOException {
-        int responseCode = conn.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();
-                double totalGold = response.get("total_gold").getAsDouble();
-                String transactionType = response.has("transaction_type") ?
-                        response.get("transaction_type").getAsString().toLowerCase() : "unknown";
-
-                if (player instanceof ServerPlayer serverPlayer) {
-                    if ("purchase".equals(transactionType)) {
-                        boolean success = removeGoldCoins(serverPlayer, (int) totalGold);
-                        if (success) {
-                            givePurchasedItems(serverPlayer, items);
-
-                            // ✅ Send success payload (closes screen, plays sound, shows message)
-                            TransactionSuccessS2CPayload.send(serverPlayer);
-                          //  serverPlayer.sendSystemMessage(Component.literal("Fare thee well, adventurer!"));
-
-
-                        } else {
-                            TransactionFailedS2CPayload.send(serverPlayer, "Insufficient gold for this purchase.");
-                        }
-                    } else if ("sell".equals(transactionType)) {
-                        removeSoldItems(serverPlayer, items);
-                        giveGoldCoins(serverPlayer, (int) totalGold);
-                    } else {
-                        LOGGER.info("Unknown transaction type: {}", transactionType);
-                    }
-                }
-            }
-        } else {
-        LOGGER.warn("Failed to process transaction. Response Code: {}", responseCode);
-    if (player instanceof ServerPlayer serverPlayer) {
-        TransactionFailedS2CPayload.send(serverPlayer, "Transaction failed: Server error.");
-    }
+        try (OutputStream output = conn.getOutputStream()) {
+            output.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        int status = conn.getResponseCode();
+        String body = BoundedHttp.readUtf8(
+            status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream(), 1_048_576);
+        JsonObject response = body.isBlank() ? new JsonObject() : JsonParser.parseString(body).getAsJsonObject();
+        return new TransactionResult(status, response);
+        } catch (Exception error) {
+            LOGGER.warn("Authoritative transaction request failed: {}", error.toString());
+            return new TransactionResult(0, new JsonObject());
         }
     }
+
+    private static void applyAuthoritativeResponse(ServerPlayer player, JsonObject response,
+                                                   List<JsonObject> submittedItems) {
+        double totalGold = response.has("total_gold") ? response.get("total_gold").getAsDouble() : -1.0D;
+        String transactionType = response.has("transaction_type")
+            ? response.get("transaction_type").getAsString().toLowerCase() : "unknown";
+        if (!Double.isFinite(totalGold) || totalGold < 0.0D) {
+            TransactionFailedS2CPayload.send(player, "Transaction failed: invalid economy response.");
+            return;
+        }
+
+        if ("purchase".equals(transactionType)) {
+            List<JsonObject> purchased = authoritativePurchasedItems(response);
+            if (purchased.isEmpty()) {
+                TransactionFailedS2CPayload.send(player, "Transaction failed: no authoritative purchased items.");
+                return;
+            }
+            if (removeGoldCoins(player, (int) Math.round(totalGold))) {
+                givePurchasedItems(player, purchased);
+                TransactionSuccessS2CPayload.send(player);
+            } else {
+                TransactionFailedS2CPayload.send(player, "Insufficient gold for this purchase.");
+            }
+        } else if ("sell".equals(transactionType)) {
+            removeSoldItems(player, submittedItems);
+            giveGoldCoins(player, (int) Math.round(totalGold));
+            TransactionSuccessS2CPayload.send(player);
+        } else {
+            TransactionFailedS2CPayload.send(player, "Transaction failed: invalid economy response.");
+        }
+    }
+
+    private static List<JsonObject> authoritativePurchasedItems(JsonObject response) {
+        if (!response.has("purchased_items") || !response.get("purchased_items").isJsonArray()) return List.of();
+        JsonArray items = response.getAsJsonArray("purchased_items");
+        if (items.isEmpty() || items.size() > 64) return List.of();
+        java.util.ArrayList<JsonObject> result = new java.util.ArrayList<>();
+        for (var element : items) {
+            if (!element.isJsonObject()) return List.of();
+            JsonObject item = element.getAsJsonObject();
+            String itemId = item.has("item_id") ? item.get("item_id").getAsString() : "";
+            int quantity = item.has("quantity") ? item.get("quantity").getAsInt() : 0;
+            if (ResourceLocation.tryParse(itemId) == null || itemId.length() > 128 || quantity <= 0 || quantity > 1_024) {
+                return List.of();
+            }
+            result.add(item.deepCopy());
+        }
+        return List.copyOf(result);
+    }
+
+    private record TransactionResult(int statusCode, JsonObject response) {}
 
     private static boolean removeGoldCoins(ServerPlayer player, int amount) {
         if (amount <= 0) return true;

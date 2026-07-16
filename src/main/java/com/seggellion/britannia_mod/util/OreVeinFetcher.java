@@ -7,14 +7,14 @@ import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class OreVeinFetcher {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -41,17 +41,16 @@ public class OreVeinFetcher {
 
     public static List<OreVein> fetchOreVeins(MinecraftServer server, String shardName) {
         List<OreVein> veins = new ArrayList<>();
+        HttpURLConnection conn = null;
         try {
-            ServerLevel serverLevel = server.overworld();
-            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-            String apiToken = data.getApiToken();
-
-            String endpoint = ModConfig.API_BASE_URL + "ore_veins?shard=" + shardName;
-            URL url = new URL(endpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            var credentials = ServerAuthRegistry.credentials(server).orElseThrow();
+            var requestUri = credentials.apiUrls().resolveQuery(
+                    Endpoint.ORE_VEINS, Map.of("shard", credentials.shardName()));
+            conn = (HttpURLConnection) requestUri.toURL().openConnection();
+            BoundedHttp.configure(conn);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + apiToken);
+            if (!RailsRequestAuthenticator.apply(conn, server)) throw new IllegalStateException("Server authentication unavailable");
 
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -59,23 +58,24 @@ public class OreVeinFetcher {
                 return veins;
             }
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                JsonArray jsonArray = JsonParser.parseReader(reader).getAsJsonArray();
-                for (JsonElement element : jsonArray) {
-                    JsonObject obj = element.getAsJsonObject();
-                    String oreType = obj.get("ore_type").getAsString();
-                    int x = obj.get("x").getAsInt();
-                    int y = obj.get("y").getAsInt();
-                    int z = obj.get("z").getAsInt();
-                    int radius = obj.get("radius").getAsInt();                  
-                    String rotation = obj.get("rotation").getAsString();
-                    String region = obj.get("region").getAsString();
+            JsonArray jsonArray = JsonParser.parseString(
+                    BoundedHttp.readUtf8(conn.getInputStream(), 1_048_576)).getAsJsonArray();
+            for (JsonElement element : jsonArray) {
+                JsonObject obj = element.getAsJsonObject();
+                String oreType = obj.get("ore_type").getAsString();
+                int x = obj.get("x").getAsInt();
+                int y = obj.get("y").getAsInt();
+                int z = obj.get("z").getAsInt();
+                int radius = obj.get("radius").getAsInt();
+                String rotation = obj.get("rotation").getAsString();
+                String region = obj.get("region").getAsString();
 
-                    veins.add(new OreVein(oreType, new BlockPos(x, y, z), radius, rotation, region));
-                }
+                veins.add(new OreVein(oreType, new BlockPos(x, y, z), radius, rotation, region));
             }
         } catch (Exception e) {
             LOGGER.error("Exception while fetching ore veins: ", e);
+        } finally {
+            if (conn != null) conn.disconnect();
         }
 
         return veins;

@@ -49,7 +49,6 @@ import net.neoforged.neoforge.common.NeoForgeMod;
 import com.seggellion.britannia_mod.ModAttributes;
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.network.NetworkHandler;
-import com.seggellion.britannia_mod.network.RailsCatalog;
 import com.seggellion.britannia_mod.trader.ITrader;
 
 // Geckolib
@@ -317,18 +316,6 @@ protected void updateDisplayName() {
 
     // ---------- Catalog ----------
     public List<Product> getCatalog() { return catalog; }
-
-    public void loadCatalogFromRails(Runnable onComplete) {
-        if (!level().isClientSide && !city().isBlank()) {
-            RailsCatalog.fetch(city()).thenAcceptAsync(fetched -> {
-                catalog.clear();
-                catalog.addAll(fetched);
-                if (onComplete != null) onComplete.run();
-            }, ((ServerLevel) level()).getServer());
-        } else {
-            if (onComplete != null) onComplete.run();
-        }
-    }
 
     // ---------- Attribute overrides ----------
     @Override

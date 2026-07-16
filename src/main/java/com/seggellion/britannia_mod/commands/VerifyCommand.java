@@ -7,8 +7,11 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.seggellion.britannia_mod.config.ModConfig;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -18,24 +21,17 @@ import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 
 public class VerifyCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(VerifyCommand.class);
-    private static final String VERIFY_ENDPOINT = "minecraft_verifications/verify";
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(REQUEST_TIMEOUT)
-            .version(HttpClient.Version.HTTP_1_1)
-            .build();
+    private static final int MAX_RESPONSE_BYTES = 64 * 1024;
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
@@ -53,7 +49,7 @@ public class VerifyCommand {
         }
 
         String code = StringArgumentType.getString(context, "code").trim();
-        if (code.isEmpty()) {
+        if (!code.matches("[A-Za-z0-9]{8}")) {
             player.sendSystemMessage(Component.literal("Enter the verification code from the website.").withStyle(ChatFormatting.RED));
             return 0;
         }
@@ -69,23 +65,15 @@ public class VerifyCommand {
 
         MinecraftServer server = player.server;
         UUID playerUuid = player.getUUID();
-        CityAPITokenData tokenData = CityAPITokenData.getOrCreate(server.overworld());
-        String token = tokenData.getApiToken();
-        String shardSecret = tokenData.getShardSecret();
-
         player.sendSystemMessage(Component.literal("Checking your verification code...").withStyle(ChatFormatting.YELLOW));
 
         try {
-            HttpRequest request = buildRequest(code, minecraftUuid, minecraftUsername, token, shardSecret);
-            HTTP_CLIENT.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
-                    .handle((response, throwable) -> {
-                        VerificationResult result = throwable != null
-                                ? VerificationResult.apiFailure(unwrap(throwable))
-                                : VerificationResult.fromResponse(response.statusCode(), response.body());
-
-                        server.execute(() -> sendResult(server, playerUuid, result));
-                        return null;
-                    });
+            ServerHttpExecutor.submit(server, () -> requestVerification(server, code, minecraftUuid, minecraftUsername))
+                .whenComplete((result, throwable) -> server.execute(() -> sendResult(
+                    server,
+                    playerUuid,
+                    throwable == null ? result : VerificationResult.apiFailure(unwrap(throwable))
+                )));
         } catch (RuntimeException e) {
             LOGGER.warn("Could not start Minecraft account verification request", e);
             player.sendSystemMessage(Component.literal("The account verification service could not be reached. Please try again later.")
@@ -96,35 +84,44 @@ public class VerifyCommand {
         return 1;
     }
 
-    private static HttpRequest buildRequest(String code, UUID minecraftUuid, String minecraftUsername, String token, String shardSecret) {
-        JsonObject payload = new JsonObject();
-        payload.addProperty("code", code);
-        payload.addProperty("minecraft_uuid", minecraftUuid.toString());
-        payload.addProperty("minecraft_username", minecraftUsername);
+    private static VerificationResult requestVerification(
+        MinecraftServer server, String code, UUID minecraftUuid, String minecraftUsername
+    ) {
+        HttpURLConnection connection = null;
+        try {
+            JsonObject payload = new JsonObject();
+            payload.addProperty("code", code);
+            payload.addProperty("minecraft_uuid", minecraftUuid.toString());
+            payload.addProperty("minecraft_username", minecraftUsername);
 
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl(VERIFY_ENDPOINT)))
-                .timeout(REQUEST_TIMEOUT)
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8));
+            connection = (HttpURLConnection) ServerAuthRegistry.credentials(server).orElseThrow()
+                .apiUrls().resolve(Endpoint.MINECRAFT_VERIFY).toURL().openConnection();
+            BoundedHttp.configure(connection);
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            if (!RailsRequestAuthenticator.apply(connection, server)) {
+                throw new IllegalStateException("Server authentication unavailable");
+            }
 
-        if (token != null && !token.isBlank()) {
-            builder.header("Authorization", "Bearer " + token);
+            try (OutputStream output = connection.getOutputStream()) {
+                output.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+            }
+
+            int status = connection.getResponseCode();
+            InputStream responseStream = status >= 200 && status < 400
+                ? connection.getInputStream()
+                : connection.getErrorStream();
+            String responseBody = responseStream == null
+                ? ""
+                : BoundedHttp.readUtf8(responseStream, MAX_RESPONSE_BYTES);
+            return VerificationResult.fromResponse(status, responseBody);
+        } catch (Exception error) {
+            throw new IllegalStateException("Minecraft account verification request failed", error);
+        } finally {
+            if (connection != null) connection.disconnect();
         }
-        if (shardSecret != null && !shardSecret.isBlank()) {
-            builder.header("Shard-Secret", shardSecret);
-        }
-
-        return builder.build();
-    }
-
-    private static String apiUrl(String endpoint) {
-        String base = ModConfig.API_BASE_URL;
-        if (!base.endsWith("/")) {
-            base += "/";
-        }
-        return base + endpoint;
     }
 
     private static void sendResult(MinecraftServer server, UUID playerUuid, VerificationResult result) {
@@ -151,7 +148,7 @@ public class VerifyCommand {
         if (result.cause() != null) {
             LOGGER.warn("Minecraft account verification failed", result.cause());
         } else if (result.status() == VerificationStatus.API_FAILURE) {
-            LOGGER.warn("Minecraft account verification API returned an unexpected response: HTTP {} {}", result.httpStatus(), result.responseBody());
+            LOGGER.warn("Minecraft account verification API returned an unexpected response: HTTP {}", result.httpStatus());
         }
     }
 
@@ -162,16 +159,16 @@ public class VerifyCommand {
         return throwable;
     }
 
-    private record VerificationResult(VerificationStatus status, int httpStatus, String responseBody, String playerMessage, Throwable cause) {
+    private record VerificationResult(VerificationStatus status, int httpStatus, String playerMessage, Throwable cause) {
         static VerificationResult apiFailure(Throwable cause) {
-            return new VerificationResult(VerificationStatus.API_FAILURE, 0, "", "", cause);
+            return new VerificationResult(VerificationStatus.API_FAILURE, 0, "", cause);
         }
 
         static VerificationResult fromResponse(int httpStatus, String responseBody) {
             String safeBody = responseBody == null ? "" : responseBody;
             JsonObject json = parseJsonObject(safeBody);
             VerificationStatus parsedStatus = parseStatus(httpStatus, json);
-            return new VerificationResult(parsedStatus, httpStatus, safeBody, extractMessage(json), null);
+            return new VerificationResult(parsedStatus, httpStatus, extractMessage(json), null);
         }
 
         String messageOr(String fallback) {

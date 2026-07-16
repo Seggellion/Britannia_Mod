@@ -2,6 +2,8 @@
 
 Milestone 3 adds a single optional `service_npc_registry` member to the authenticated world bootstrap response. It is additive: existing root members and name-based city handling remain unchanged. Each city may also contain its durable `public_id`; existing consumers may continue using `name`.
 
+The logical server owns authentication. It loads `ULTIMACRAFT_SHARD_NAME` plus `ULTIMACRAFT_SHARD_SECRET`, or the complete ignored server-only properties fallback, and sends `Shard-Name` and `Shard-Secret` directly to Rails. The requested shard is resolved before its secret is compared. No credential is placed in the bootstrap body, client packet, client state, or world SavedData. See `docs/server_authentication.md`.
+
 ## Schema 1
 
 ```json
@@ -76,10 +78,22 @@ Milestone 3 adds a single optional `service_npc_registry` member to the authenti
 
 ## Consumer behavior
 
-A missing member becomes the immutable empty snapshot. A malformed member or unsupported future schema fails closed to that same empty snapshot without rejecting fish, regions, cities, grapes, shard-user data, or accepted quests. A complete snapshot is parsed and cross-validated before the cache is replaced. Replacement occurs in `WorldBootstrapHandler` inside its existing `thenAcceptAsync(..., player.server)` server-thread continuation.
+A missing member becomes the immutable empty snapshot. A malformed member or unsupported future schema fails closed to that same empty snapshot without rejecting fish, regions, cities, grapes, shard-user data, or accepted quests. A complete snapshot is parsed and cross-validated on a bounded worker before the cache is replaced. `WorldBootstrapHandler` applies the complete result through `MinecraftServer.execute`; generation guards discard a completion after disconnect, a newer login, or server stop. Only sanitized city UUID/name and active, spawnable type key/name choices are sent to the client.
 
 Older clients ignore the new root member and city `public_id`. Current city synchronization continues to look up cities by `name`.
 
+
+## Dedicated-server compact profile and transport
+
+`api_base_url` is the Rails service origin, not an endpoint prefix. The centralized resolver accepts origins ending with no slash, `/`, `/api`, or `/api/`, normalizes them to the origin, and constructs the bootstrap endpoint exactly once as `/api/world_bootstrap/:shard`. Plain HTTP is accepted only for explicit loopback hosts; non-loopback origins require HTTPS.
+
+The dedicated server requests `profile=minecraft_server`. Rails retains cities, UUIDs, supplies, treasury, market weights/quantities, NPCs, accepted quests, Service NPC registry, fish, regions, grapes, and shard-user data while omitting only each city's redundant `commodities` array. The default profile remains the full backward-compatible document.
+
+Profile values are single, bounded, and closed. Unknown, blank, repeated, array-shaped, malformed, or oversized profiles return `invalid_bootstrap_profile` before player mutation. Full and compact responses use profile-isolated ETags. Rails preloads city associations so compact query growth remains bounded, and the representative 23-city compact contract remains below 2.5 MiB with headroom under the 4 MiB client limit.
+
+The server limits bootstrap bodies to 4 MiB, uses 5-second connect, 10-second read, and 15-second overall timeouts, and cancels in-flight requests on disconnect, a newer login, or server stop. Completions are generation-checked before applying on the logical server thread.
+
+`shard_user.inventory` and `shard_user.stats` accept an object, JSON `null`, or absence; null/absence becomes an empty object. Wrong non-null shapes fail the core bootstrap atomically rather than publishing partial player/city/quest/registry state.
 ## Dialogue and dispatch boundary
 
 `QuestDialogueAdapter` converts quest responses into the shared presentation model without moving quest transitions or state. `ServiceDialogueController` resolves an option identifier against the immutable current node; callers do not provide an action type or service key. The fixed dispatcher recognizes only `bank.open` and `bank.create_check`. Both return `service_not_available` and `Banking services are not available yet.` No handler receives inventory, currency, quest, world, Rails, or networking mutation objects.

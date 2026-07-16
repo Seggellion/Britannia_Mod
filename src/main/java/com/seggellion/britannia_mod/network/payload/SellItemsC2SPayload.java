@@ -17,6 +17,8 @@ public record SellItemsC2SPayload(
         int entityId,
         List<ItemRequest> items
 ) implements CustomPacketPayload {
+    public static final int MAX_ITEMS = 64;
+    public static final int MAX_QUANTITY = 1_024;
 
     public static record ItemRequest(
             String itemId,
@@ -32,16 +34,18 @@ public record SellItemsC2SPayload(
     public static final StreamCodec<FriendlyByteBuf, SellItemsC2SPayload> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public SellItemsC2SPayload decode(FriendlyByteBuf buf) {
-            String city = ByteBufCodecs.STRING_UTF8.decode(buf);
-            String role = ByteBufCodecs.STRING_UTF8.decode(buf);
+            String city = buf.readUtf(100);
+            String role = buf.readUtf(100);
             int entityId = ByteBufCodecs.VAR_INT.decode(buf);
 
             int size = buf.readVarInt();
+            if (size < 0 || size > MAX_ITEMS) throw new IllegalArgumentException("Invalid sell item count");
             List<ItemRequest> items = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
-                String itemId = buf.readUtf();
-                String itemName = buf.readUtf();
+                String itemId = buf.readUtf(128);
+                String itemName = buf.readUtf(256);
                 int quantity = buf.readVarInt();
+                if (quantity <= 0 || quantity > MAX_QUANTITY) throw new IllegalArgumentException("Invalid sell quantity");
                 CompoundTag matchNbt = buf.readNbt();
                 items.add(new ItemRequest(itemId, itemName, quantity, matchNbt));
             }
@@ -51,14 +55,18 @@ public record SellItemsC2SPayload(
 
         @Override
         public void encode(FriendlyByteBuf buf, SellItemsC2SPayload payload) {
-            ByteBufCodecs.STRING_UTF8.encode(buf, payload.city);
-            ByteBufCodecs.STRING_UTF8.encode(buf, payload.role);
+            buf.writeUtf(payload.city, 100);
+            buf.writeUtf(payload.role, 100);
             ByteBufCodecs.VAR_INT.encode(buf, payload.entityId);
 
+            if (payload.items.size() > MAX_ITEMS) throw new IllegalArgumentException("Too many sell items");
             buf.writeVarInt(payload.items.size());
             for (ItemRequest item : payload.items) {
-                buf.writeUtf(item.itemId());
-                buf.writeUtf(item.itemName());
+                if (item.quantity() <= 0 || item.quantity() > MAX_QUANTITY) {
+                    throw new IllegalArgumentException("Invalid sell quantity");
+                }
+                buf.writeUtf(item.itemId(), 128);
+                buf.writeUtf(item.itemName(), 256);
                 buf.writeVarInt(item.quantity());
                 buf.writeNbt(item.matchNbt());
             }

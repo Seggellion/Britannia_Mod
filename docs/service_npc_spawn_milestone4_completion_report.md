@@ -224,52 +224,65 @@ The 12 GameTests are:
 
 ## 29. JUnit tests
 
-The current forced run executed 42 tests across 13 suites: 1 city-cache test, 3 payload-codec tests, 4 claim/resolver tests, 5 configuration-validator tests, 1 item-data test, 2 menu-validation tests, 6 pending-data tests, 2 state-machine tests, and 18 existing compatibility/dialogue/service tests. Result: 42 passed, 0 failed, 0 errors, 0 skipped. The supplied recovery audit reported 41 passing tests before the additional no-configurable-type regression case was added.
+The final forced run executed 107 tests across 23 suites with 0 failures, 0 errors, and 0 skipped. This includes the original 42-test Milestone 4 core set plus authentication, URL-resolution, bounded/cancellable HTTP, null-bootstrap, quest/economy proxy, registry, codec, and generation-tracker coverage.
 
 ## 30. Commands run
 
-- `.\gradlew.bat compileJava --console=plain`
+- Rails focused, seed, authentication, compact-bootstrap, registry, verification, transaction/economy, linker, autoload, migration, syntax, and whitespace gates.
 - `.\gradlew.bat test --console=plain --rerun-tasks`
-- `.\gradlew.bat build --console=plain`
 - `.\gradlew.bat runGameTestServer --no-configuration-cache --console=plain`
-- `git diff --check`
-- `jar tf` against every `build/libs/*.jar`, followed by exact marker scans
+- `.\gradlew.bat compileJava --console=plain --rerun-tasks`
+- `.\gradlew.bat build --console=plain --rerun-tasks`
+- `git diff --check` in both worktrees.
+- Entry-name and content scans against every `build/libs/*.jar`, followed by tracked-source/staging exclusion scans.
 
-The first sandboxed compile and test invocations could not download `gradle-8.9-bin.zip` (`java.net.SocketException: Permission denied`). They were rerun without source changes in an approved environment with dependency access and passed. This was an environment restriction, not a source failure.
+## 31. Final automated results
 
-## 31. Current automated results
-
+- Rails exact gate at seed `20972`: PASS; 66 runs, 426 assertions, 0 failures, 0 errors.
+- Quest harness: PASS independently and at seeds `20972`, `40740`, `1`, `12345`, `42424`, and `65535`; each complete-file run was 7 runs, 56 assertions.
+- Provisional-user repair tests: PASS; 6 runs, 31 assertions.
+- Existing Minitest stub users: PASS; 17 runs, 115 assertions.
+- Rails authentication, compact bootstrap/registry, verification/economy, Zeitwerk, migration, Ruby syntax, and whitespace checks: PASS.
+- NeoForge JUnit: PASS; 23 suites, 107 tests, 0 failures, 0 errors, 0 skipped.
 - Compile: PASS (`BUILD SUCCESSFUL`); two existing warnings (`PlayerSleepMixin` missing `@Overwrite` Javadoc and deprecated `OrderShieldItem.initializeClient`).
-- JUnit: PASS; 42/42, no failures/errors/skips.
-- Full build: PASS (`BUILD SUCCESSFUL`).
-- GameTests: PASS; all 12 required tests passed in 2.247 seconds and Gradle exited successfully.
+- Full forced build: PASS (`BUILD SUCCESSFUL`).
+- GameTests: PASS; all 12 required tests passed and Gradle exited successfully.
 - `git diff --check`: PASS; no whitespace errors. Git emitted only LF-to-CRLF working-copy warnings.
 
-The GameTest development server also logged unrelated existing environment warnings (missing local config with defaults used, client-only mixin target on dedicated server, and existing event log noise); none failed a required test.
+The GameTest development server logged unrelated existing environment warnings (missing local config with defaults used, client-only mixin target on dedicated server, and existing event log noise); none failed a required test.
 
 ## 32. JAR inspection
 
-- `build/libs/Britannia_Mod-0.1.7k.jar`: 4,641 entries; 0 `ServiceNpcSpawnGameTests` entries; 0 `service_npc_spawn_test_empty` entries; 0 other case-insensitive `gametest` entries.
-- `build/libs/Britannia_Mod-0.1.7k-all.jar`: 4,645 entries; 0 `ServiceNpcSpawnGameTests` entries; 0 `service_npc_spawn_test_empty` entries; 0 other case-insensitive `gametest` entries.
+- `build/libs/Britannia_Mod-auth-hardening-0.1.7k.jar`: 4,665 entries.
+- `build/libs/Britannia_Mod-auth-hardening-0.1.7k-all.jar`: 4,669 entries.
 
-Both distributable JARs are clean of the Milestone 4 holder, structure template, and other development-only GameTest artifacts.
+Each fresh artifact contained zero test classes, GameTest classes, GameTest fixtures, deleted credential classes, synthetic credential files, runtime files, world data, or logs. Content scans found zero legacy bearer/Authorization strings, verification-world markers, diagnostic fingerprint, or WorldEdit references. Required server-auth implementation classes are code only; no credential value or credential configuration file is packaged.
 
 ## 33. Known limitations
 
-- Milestone 4 records local durable intent only. It does not deliver to Rails, retry, back off, acknowledge remote work, authenticate HTTP, or assign/spawn NPCs.
+- The spawn-point pending store records local durable intent only. Milestone 4 does not deliver, retry, back off, acknowledge remote work, or assign/spawn NPCs.
 - `REGISTERED` and assignment/sync fields are compatibility/display state only in this milestone.
 - Stale claims conservatively cause rekeying; they are not automatically stolen.
 - Third-party tools that bypass block loading, ticking, or normal callbacks may bypass or delay duplicate repair/removal capture.
-- Actual client UI behavior, Ctrl+middle-click, the production WorldEdit version, and real pending-store restart persistence require manual evidence.
+- The Service NPC Spawn Block is invisible and untargetable in Adventure mode, but visible and targetable in Creative mode. Server-side configuration authorization remains permission-based, so operator verification was completed safely in Creative mode.
+- De-op closes an already-open configuration menu. This prevents a stale normal-client Save; direct unauthorized handler rejection is covered automatically.
 
-## 34. Manual verification still required
+## 34. Manual verification
 
-All four sections in `docs/service_npc_spawn_milestone4_manual_verification.md` remain `NOT RUN`: UI/authorization/restart; ordinary and Ctrl+middle-click identity stripping; production WorldEdit copy/paste; and real pending-store restart with UPSERT plus REMOVE. Automated tests do not replace them.
+Authentication/bootstrap: PASS. Section A: `PASS — ACCEPTED DESIGN VARIANCE`. Sections B, C, and D: PASS.
 
-## 35. Rails scope confirmation
+The live stale-menu `UNAUTHORIZED` response was not reachable because permission loss closed the menu before Save. No mutation, revision increment, UUID change, or additional pending work occurred. Ambiguous-target and accidental operator-input attempts were recorded as invalid instructions/input, not product failures.
 
-No Rails application/repository file was accessed or modified during recovery closeout. No Rails change is part of the implementation or repair diff. Milestone 4 adds no new Rails call, credential, token, endpoint, or delivery behavior.
+Section B passed ordinary and Ctrl+middle-click identity stripping. Section C passed with WorldEdit 7.3.8+6939-7d32b45. Section D used `m4_auth_hardened_pending_verification` and produced exactly one UPSERT plus one REMOVE; the store survived restart byte-for-byte with SHA-256 `99314F4A2FD05C213B53F0EA83C3571605EF61D45456637624A0DFBE8A63AA17` and zero credential markers.
+
+## 35. Rails closeout scope
+
+Rails now enforces shard-bound server authentication for the active NeoForge endpoints and provides the `minecraft_server` compact bootstrap profile with bounded query growth and profile-isolated ETags. NeoForge treats `api_base_url` as the service origin, centralizes `/api` construction, uses bounded/cancellable HTTP, and accepts null bootstrap inventory/stats as empty objects.
+
+Closeout also loaded official Minitest mock support, repaired provisional-user purchased-item/badge/shard preservation atomically, and replaced brittle Quest-versus-PlayerQuestState numeric-ID inequalities with domain relationship and named-field assertions. An explicit equal-ID regression proves equal primary-key numbers across the two tables are harmless.
 
 ## 36. Milestone boundary confirmation
 
-Milestone 5 was not started. The branch was not merged, rebased, amended, squashed, or pushed during this closeout. It is ready for manual verification, not for merge into `banking`.
+**Completion status: Implementation and manual verification complete.**
+
+Milestone 5 was not started. Nothing was merged, rebased, amended, squashed, or pushed. Runtime files, credentials, worlds, logs, screenshots, NBT evidence, WorldEdit, EULA, server properties, operator data, and build outputs remain outside the selective commits.

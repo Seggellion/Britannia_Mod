@@ -1,8 +1,5 @@
 package com.seggellion.britannia_mod.skill;
 
-import com.seggellion.britannia_mod.config.ModConfig;
-
-
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,7 +7,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.Style;
 
@@ -24,18 +25,15 @@ import org.slf4j.Logger;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 public class SkillManager {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Random RNG = new Random();
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private static final int MAX_RESPONSE_BYTES = 512 * 1024;
     private static final ResourceLocation FONT_UO_CLASSIC =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final TextColor TEAL_0093A4 = TextColor.fromRgb(0x0093A4);
@@ -152,7 +150,7 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
     // Ensure the player has a skills map right now so gains won’t be dropped in MP
     PLAYER_SKILLS.putIfAbsent(sp.getUUID(), new PlayerSkills());
 
-    EXECUTOR.submit(() -> {
+    ServerHttpExecutor.run(sp.server, () -> {
         try {
             // Load defs if needed
             if (SKILL_DEFS.isEmpty()) {
@@ -188,7 +186,7 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
 
     private static void fetchSkillConfig(ServerPlayer sp) {
         try {
-            JsonArray arr = doGetJson(ModConfig.API_BASE_URL + "skills/config", sp).getAsJsonArray();
+            JsonArray arr = doGetJson(Endpoint.SKILL_CONFIG, Map.of(), sp).getAsJsonArray();
             for (JsonElement el : arr) {
                 JsonObject o = el.getAsJsonObject();
                 SkillDef def = new SkillDef(o);
@@ -219,11 +217,13 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
     }
 
     private static void postSetSkill(ServerPlayer sp, String skillName, float newVal) {
-        EXECUTOR.submit(() -> {
+        ServerHttpExecutor.run(sp.server, () -> {
             try {
                 // Notice this targets a new "skills/set" endpoint, not "skills/gain"
-                URL url = new URL(ModConfig.API_BASE_URL + "skills/set");
-                HttpURLConnection c = (HttpURLConnection) url.openConnection();
+                var requestUri = ServerAuthRegistry.credentials(sp.server).orElseThrow().apiUrls()
+                        .resolve(Endpoint.SKILL_SET);
+                HttpURLConnection c = (HttpURLConnection) requestUri.toURL().openConnection();
+                BoundedHttp.configure(c);
                 c.setRequestMethod("POST");
                 c.setRequestProperty("Content-Type", "application/json");
                 c.setConnectTimeout(5000);
@@ -232,21 +232,14 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
                 // FIX 2: ServerWorld / getServerWorld() -> ServerLevel / serverLevel()
                 ServerLevel world = sp.serverLevel();
                 
-                // FIX 3: ApiTokenData -> CityAPITokenData
-                CityAPITokenData data = CityAPITokenData.getOrCreate(world);
-
-                String token = data.getApiToken();
-                String shardSecret = data.getShardSecret();
-
-                if (token != null && !token.isEmpty()) c.setRequestProperty("Authorization", "Bearer " + token);
-                if (shardSecret != null && !shardSecret.isEmpty()) c.setRequestProperty("Shard-Secret", shardSecret);
+                if (!RailsRequestAuthenticator.apply(c, world.getServer())) throw new IllegalStateException("Server authentication unavailable");
 
                 c.setDoOutput(true);
 
                 JsonObject body = new JsonObject();
                 // FIX 4: getUuid() -> getUUID()
                 body.addProperty("uuid", sp.getUUID().toString());
-                body.addProperty("shard", ModConfig.SHARD_NAME);
+                body.addProperty("shard", shardName(sp));
                 body.addProperty("skill_name", skillName);
                 body.addProperty("username", sp.getGameProfile().getName());
                 body.addProperty("value", newVal);
@@ -254,9 +247,7 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
                 try (OutputStream os = c.getOutputStream()) {
                     os.write(body.toString().getBytes(StandardCharsets.UTF_8));
                 }
-                try (InputStream is = c.getInputStream()) {
-                    while (is.read() != -1) { /* drain */ }
-                }
+                BoundedHttp.readUtf8(c.getInputStream(), 64 * 1024);
             } catch (Exception e) {
                 LOGGER.warn("Failed to POST admin skill set to Rails", e);
             }
@@ -266,13 +257,7 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
 
 private static void fetchPlayerSkills(ServerPlayer sp) {
     try {
-        String url = ModConfig.API_BASE_URL +
-                "player_skills?" +
-                "uuid=" + encode(sp.getUUID().toString()) +  
-                "&username=" + encode(sp.getScoreboardName()) +
-                "&shard=" + encode(ModConfig.SHARD_NAME);
-
-        JsonArray arr = doGetJson(url, sp).getAsJsonArray();
+        JsonArray arr = doGetJson(Endpoint.PLAYER_SKILLS, playerSkillQuery(sp), sp).getAsJsonArray();
 
         PlayerSkills ps = new PlayerSkills();
         for (JsonElement el : arr) {
@@ -291,33 +276,31 @@ private static void fetchPlayerSkills(ServerPlayer sp) {
 
 // 5) Harden networking (timeouts on POST too)
 private static void postGain(ServerPlayer sp, String skillName, float newVal) {
-    EXECUTOR.submit(() -> {
+    ServerHttpExecutor.run(sp.server, () -> {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + "skills/gain");
-            HttpURLConnection c = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(sp.server).orElseThrow().apiUrls()
+                    .resolve(Endpoint.SKILL_GAIN);
+            HttpURLConnection c = (HttpURLConnection) requestUri.toURL().openConnection();
+            BoundedHttp.configure(c);
             c.setRequestMethod("POST");
             c.setRequestProperty("Content-Type", "application/json");
             c.setConnectTimeout(5000);
             c.setReadTimeout(5000);
 
-            CityAPITokenData data = CityAPITokenData.getOrCreate(sp.serverLevel());
-            String token = data.getApiToken();
-            if (!token.isEmpty()) c.setRequestProperty("Authorization", "Bearer " + token);
+            if (!RailsRequestAuthenticator.apply(c, sp.server)) throw new IllegalStateException("Server authentication unavailable");
 
             c.setDoOutput(true);
 
             JsonObject body = new JsonObject();
             body.addProperty("uuid", sp.getUUID().toString());
-            body.addProperty("shard", ModConfig.SHARD_NAME);
+            body.addProperty("shard", shardName(sp));
             body.addProperty("skill_name", skillName);
             body.addProperty("value", newVal);
 
             try (OutputStream os = c.getOutputStream()) {
                 os.write(body.toString().getBytes(StandardCharsets.UTF_8));
             }
-            try (InputStream is = c.getInputStream()) {
-                while (is.read() != -1) { /* drain */ }
-            }
+            BoundedHttp.readUtf8(c.getInputStream(), 64 * 1024);
         } catch (Exception e) {
             LOGGER.warn("Failed to POST skill gain to Rails", e);
         }
@@ -328,7 +311,7 @@ private static void postGain(ServerPlayer sp, String skillName, float newVal) {
 // 4) Async helpers: normalize keys and be tolerant
 private static Map<String, SkillDef> fetchSkillConfigAsync(ServerPlayer sp) {
     try {
-        JsonArray arr = doGetJson(ModConfig.API_BASE_URL + "skills/config", sp).getAsJsonArray();
+        JsonArray arr = doGetJson(Endpoint.SKILL_CONFIG, Map.of(), sp).getAsJsonArray();
         Map<String, SkillDef> fresh = new HashMap<>();
         for (JsonElement el : arr) {
             SkillDef def = new SkillDef(el.getAsJsonObject());
@@ -344,12 +327,7 @@ private static Map<String, SkillDef> fetchSkillConfigAsync(ServerPlayer sp) {
 
 private static PlayerSkills fetchPlayerSkillsAsync(ServerPlayer sp) {
     try {
-        String url = ModConfig.API_BASE_URL +
-            "player_skills?uuid=" + encode(sp.getUUID().toString()) +
-            "&username=" + encode(sp.getScoreboardName()) +
-            "&shard=" + encode(ModConfig.SHARD_NAME);
-
-        JsonArray arr = doGetJson(url, sp).getAsJsonArray();
+        JsonArray arr = doGetJson(Endpoint.PLAYER_SKILLS, playerSkillQuery(sp), sp).getAsJsonArray();
         PlayerSkills ps = new PlayerSkills();
         for (JsonElement el : arr) {
             JsonObject o = el.getAsJsonObject();
@@ -367,28 +345,30 @@ private static PlayerSkills fetchPlayerSkillsAsync(ServerPlayer sp) {
  /* =====  Tiny JSON util  ===== */
 
 // Add timeouts so MP servers don’t hang
-private static JsonElement doGetJson(String spec, ServerPlayer sp) throws IOException {
-    HttpURLConnection c = (HttpURLConnection) new URL(spec).openConnection();
+private static JsonElement doGetJson(Endpoint endpoint, Map<String, String> query,
+                                     ServerPlayer sp) throws IOException {
+    var requestUri = ServerAuthRegistry.credentials(sp.server).orElseThrow().apiUrls()
+            .resolveQuery(endpoint, query);
+    HttpURLConnection c = (HttpURLConnection) requestUri.toURL().openConnection();
     c.setRequestProperty("Accept", "application/json");
-    c.setConnectTimeout(5000); // 5s connect timeout
-    c.setReadTimeout(5000);    // 5s read timeout
+    BoundedHttp.configure(c);
 
-    CityAPITokenData data = CityAPITokenData.getOrCreate(sp.serverLevel());
-    String token = data.getApiToken();
-    if (!token.isEmpty()) {
-        c.setRequestProperty("Authorization", "Bearer " + token);
-    }
+    if (!RailsRequestAuthenticator.apply(c, sp.server)) throw new IllegalStateException("Server authentication unavailable");
 
-    try (InputStream in = c.getInputStream()) {
-        return JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-    }
+    String response = BoundedHttp.readUtf8(c.getInputStream(), MAX_RESPONSE_BYTES);
+    return JsonParser.parseString(response);
 }
 
-   
+private static String shardName(ServerPlayer player) {
+    return ServerAuthRegistry.credentials(player.server).orElseThrow().shardName();
+}
 
-
-    private static String encode(String s) throws UnsupportedEncodingException {
-        return java.net.URLEncoder.encode(s, StandardCharsets.UTF_8);
+private static Map<String, String> playerSkillQuery(ServerPlayer player) {
+    return Map.of(
+            "uuid", player.getUUID().toString(),
+            "username", player.getScoreboardName(),
+            "shard", shardName(player)
+    );
     }
 
     /* =====  Data classes  ===== */

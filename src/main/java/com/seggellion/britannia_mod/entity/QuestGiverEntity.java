@@ -66,7 +66,7 @@ private static final Style UO_STYLE = Style.EMPTY
                 if (gender == null || gender.isEmpty()) gender = "unknown";
                 final String finalGender = gender;
                 
-                QuestClient.interactWithNpc(internalApiId, response -> {
+                QuestClient.interactWithNpc(this.getId(), this.getUUID(), response -> {
                     if (response != null && response.error == null) {
                         if (net.neoforged.fml.loading.FMLLoader.getDist().isClient()) {
                             com.seggellion.britannia_mod.network.ClientNetworkHandler.openQuestDecisionScreen(
