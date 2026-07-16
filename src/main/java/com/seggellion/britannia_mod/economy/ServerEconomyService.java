@@ -22,7 +22,11 @@ import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.trader.ITrader;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -41,7 +45,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,7 +52,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ServerEconomyService {
@@ -114,12 +116,27 @@ public final class ServerEconomyService {
 
     private static void submitReservedSale(ServerPlayer player, ServerLevel level, String cityName, String role,
                                            Entity trader, List<SaleStack> selected) {
-        if (!ensureTraderNpcSynced(level, trader, cityName, role)) {
-            LOGGER.warn("Wood sale preflight NPC sync failure player={} trader={} city={} role={}",
-                    player.getStringUUID(), trader.getUUID(), cityName, role);
-            fail(player, "Sale rejected: trader NPC could not sync.");
-            return;
+        MinecraftServer server = level.getServer();
+        try {
+            ServerHttpExecutor.submit(server, () -> ensureTraderNpcSynced(level, trader, cityName, role))
+                .whenComplete((synced, failure) -> server.execute(() -> {
+                    if (server.getPlayerList().getPlayer(player.getUUID()) != player
+                        || !trader.isAlive() || player.distanceToSqr(trader) > MAX_SALE_DISTANCE_SQ) return;
+                    if (failure != null || !Boolean.TRUE.equals(synced)) {
+                        LOGGER.warn("Trader sale preflight NPC sync failed player={} trader={} city={} role={}",
+                            player.getStringUUID(), trader.getUUID(), cityName, role);
+                        fail(player, "Sale rejected: trader NPC could not sync.");
+                        return;
+                    }
+                    reserveAndSubmitSale(player, level, cityName, role, trader, selected);
+                }));
+        } catch (java.util.concurrent.RejectedExecutionException rejected) {
+            fail(player, "Sale rejected: economy queue is full.");
         }
+    }
+
+    private static void reserveAndSubmitSale(ServerPlayer player, ServerLevel level, String cityName, String role,
+                                             Entity trader, List<SaleStack> selected) {
 
         Reservation reservation = reserveItems(player, selected);
         if (reservation.isEmpty()) {
@@ -138,8 +155,8 @@ public final class ServerEconomyService {
         LOGGER.info("Wood/trader sale start key={} player={} city={} role={} trader={} items={}",
                 idempotencyKey, player.getStringUUID(), cityName, role, trader.getUUID(), reservation.items().size());
 
-        CompletableFuture
-                .supplyAsync(() -> postSale(level, payload, idempotencyKey))
+        ServerHttpExecutor
+                .submit(server, () -> postSale(level, payload, idempotencyKey))
                 .whenComplete((result, error) -> server.execute(() -> {
                     if (error != null) {
                         LOGGER.warn("Wood sale failure key={} error={}", idempotencyKey, error.toString());
@@ -433,19 +450,21 @@ public final class ServerEconomyService {
     }
 
     private static SaleResult postSale(ServerLevel level, JsonObject payload, String idempotencyKey) {
-        SaleResult result = postSaleToEndpoint(level, "trader_transactions", payload, idempotencyKey);
+        SaleResult result = postSaleToEndpoint(level, Endpoint.TRADER_SALE, payload, idempotencyKey);
         if (result.statusCode() == HttpURLConnection.HTTP_NOT_FOUND ||
                 result.statusCode() == HttpURLConnection.HTTP_BAD_METHOD) {
             LOGGER.warn("Rails trader_transactions endpoint unavailable, falling back to transactions for key={}", idempotencyKey);
-            return postSaleToEndpoint(level, "transactions", payload, idempotencyKey);
+            return postSaleToEndpoint(level, Endpoint.TRANSACTION, payload, idempotencyKey);
         }
         return result;
     }
 
-    private static SaleResult postSaleToEndpoint(ServerLevel level, String endpoint, JsonObject payload, String idempotencyKey) {
+    private static SaleResult postSaleToEndpoint(ServerLevel level, Endpoint endpoint,
+                                                 JsonObject payload, String idempotencyKey) {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + endpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(level.getServer()).orElseThrow().apiUrls().resolve(endpoint);
+            HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
+            BoundedHttp.configure(conn);
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -457,7 +476,8 @@ public final class ServerEconomyService {
             }
 
             int status = conn.getResponseCode();
-            String body = readBody(status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream());
+            String body = BoundedHttp.readUtf8(
+                    status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream(), 1_048_576);
             if (status < 200 || status >= 300) {
                 return SaleResult.failure(status, body, "Sale rejected by economy server.");
             }
@@ -471,7 +491,8 @@ public final class ServerEconomyService {
                     : "";
             boolean idempotentReplay = booleanFrom(response, "idempotent_replay");
 
-            LOGGER.info("Rails commodity response key={} endpoint={} body={}", idempotencyKey, endpoint, body);
+            LOGGER.info("Rails commodity response key={} endpoint={} body={}",
+                    idempotencyKey, endpoint.symbolicName(), body);
             return SaleResult.success(status, body, response, receipt, idempotentReplay,
                     payout.gold(), payout.silver(), payout.copper());
         } catch (Exception e) {
@@ -481,26 +502,8 @@ public final class ServerEconomyService {
     }
 
     private static void attachServerAuth(ServerLevel level, HttpURLConnection conn) {
-        CityAPITokenData data = CityAPITokenData.getOrCreate(level);
-        String apiToken = data.getApiToken();
-        if (apiToken != null && !apiToken.isBlank()) {
-            conn.setRequestProperty("Authorization", "Bearer " + apiToken);
-        }
-        String shardSecret = data.getShardSecret();
-        if (shardSecret != null && !shardSecret.isBlank()) {
-            conn.setRequestProperty("Shard-Secret", shardSecret);
-        }
-    }
-
-    private static String readBody(InputStream stream) throws Exception {
-        if (stream == null) return "";
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            StringBuilder out = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                out.append(line);
-            }
-            return out.toString();
+        if (!RailsRequestAuthenticator.apply(conn, level.getServer())) {
+            throw new IllegalStateException("Server authentication unavailable");
         }
     }
 

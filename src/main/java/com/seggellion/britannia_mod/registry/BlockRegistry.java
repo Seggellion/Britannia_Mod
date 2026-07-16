@@ -82,6 +82,7 @@ import com.seggellion.britannia_mod.block.TraderSpawnBlock;
 import com.seggellion.britannia_mod.block.MerchantSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.QuestGiverSpawnBlock;
+import com.seggellion.britannia_mod.block.ServiceNpcSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.QuestDestinationBlock;
 import com.seggellion.britannia_mod.block.DecorativeItems3x3Block;
@@ -230,6 +231,9 @@ public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.r
 
     public static final DeferredHolder<Block, QuestGiverSpawnBlock> QUEST_GIVER_SPAWN_BLOCK =
             BLOCKS.register("quest_giver_spawn_block", QuestGiverSpawnBlock::new);
+
+    public static final DeferredHolder<Block, ServiceNpcSpawnBlock> SERVICE_NPC_SPAWN_BLOCK =
+            BLOCKS.register("service_npc_spawn_block", ServiceNpcSpawnBlock::new);
 
 public static final DeferredHolder<Block, QuestDestinationBlock> QUEST_DESTINATION_BLOCK =
             BLOCKS.register("quest_destination_block", QuestDestinationBlock::new);

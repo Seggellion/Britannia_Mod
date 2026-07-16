@@ -12,8 +12,10 @@ import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataManager;
 import com.seggellion.britannia_mod.entity.CitizenEntity;
 import com.seggellion.britannia_mod.trader.ITrader;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
-import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +29,6 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -44,17 +45,13 @@ public class CityDataSync {
 
     public static double[] fetchFoodAndWoodSupply(ServerLevel serverLevel, String cityName) {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + "cities/" + cityName + "/food_and_wood_supply"); // New endpoint
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                    .resolvePath(Endpoint.CITY_FOOD_AND_WOOD_SUPPLY, Map.of("city", cityName));
+            HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
 
-            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-            String apiToken = data.getApiToken();
-
-            if (!apiToken.isEmpty()) {
-                connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-            }
+            attachAuth(serverLevel, connection);
 
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
@@ -75,16 +72,12 @@ public class CityDataSync {
 
     public static double fetchFoodSupply(ServerLevel serverLevel, String cityName) {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + "/cities/" + cityName + "/food_supply");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                    .resolvePath(Endpoint.CITY_FOOD_SUPPLY, Map.of("city", cityName));
+            HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
-            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-            String apiToken = data.getApiToken(); // Might be empty if not set
-                // Include the token in a header, for example, "Authorization: Bearer <token>"
-                if (!apiToken.isEmpty()) {
-                    connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-                }
+            attachAuth(serverLevel, connection);
             
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
@@ -111,52 +104,15 @@ public class CityDataSync {
         return new JsonArray();
     }
 
-    public static List<UUID> getAssociatedMerchants(String cityName) {
-            try {
-                URL url = new URL(ModConfig.API_BASE_URL + "/cities/" + cityName + "/merchants");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Accept", "application/json");
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    JsonObject response = JsonParser.parseReader(new InputStreamReader(conn.getInputStream())).getAsJsonObject();
-                    if (response.has("merchants")) {
-                        JsonArray merchantsArray = response.getAsJsonArray("merchants");
-                        List<UUID> merchants = new ArrayList<>();
-                        for (JsonElement element : merchantsArray) {
-                            try {
-                                merchants.add(UUID.fromString(element.getAsString()));
-                            } catch (IllegalArgumentException e) {
-                            }
-                        }
-                        return merchants;
-                    }
-                } else {
-                }
-                conn.disconnect();
-            } catch (Exception e) {
-            }
-            return new ArrayList<>();
-        }
-
     public static void registerNpc(ServerLevel serverLevel, UUID npcId, String npcType, String cityName, String name, String description, int level, int health, int mana, boolean isActive, String spawnLocation, String gender) {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + "/npcs");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                    .resolve(Endpoint.NPC_CREATE);
+            HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
-            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-            String apiToken = data.getApiToken(); // Might be empty if not set
-            // Include the token in a header, for example, "Authorization: Bearer <token>"
-            if (!apiToken.isEmpty()) {
-                connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-            }
-            String secret = CityAPITokenData.getClientShardSecret();
-            if (secret != null && !secret.isEmpty()) {
-                connection.setRequestProperty("Shard-Secret", secret);
-            }
+            attachAuth(serverLevel, connection);
 
             JsonObject payload = new JsonObject();
             payload.addProperty("npc_id", npcId.toString());
@@ -170,7 +126,9 @@ public class CityDataSync {
             payload.addProperty("is_active", isActive);
             payload.addProperty("spawn_location", spawnLocation);
             payload.addProperty("gender", gender);
-            payload.addProperty("shard", data.getShardSecret());
+            payload.addProperty("shard",
+                    com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.credentials(serverLevel.getServer())
+                            .orElseThrow().shardName());
 
             connection.getOutputStream().write(payload.toString().getBytes());
             int responseCode = connection.getResponseCode();
@@ -183,20 +141,11 @@ public class CityDataSync {
 
     public static void removeNpc(ServerLevel serverLevel, UUID npcId) {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + "/npcs/" + npcId);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                    .resolvePath(Endpoint.NPC_DELETE, Map.of("npc_id", npcId.toString()));
+            HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
             connection.setRequestMethod("DELETE");
-            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-            String apiToken = data.getApiToken(); // Might be empty if not set
-                // Include the token in a header, for example, "Authorization: Bearer <token>"
-                if (!apiToken.isEmpty()) {
-                    connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-                }
-
-            String secret = data.getShardSecret();
-            if (secret != null && !secret.isEmpty()) {
-                connection.setRequestProperty("Shard-Secret", secret);
-            }
+            attachAuth(serverLevel, connection);
 
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
@@ -206,45 +155,15 @@ public class CityDataSync {
     }
 
 
-    private static boolean isCityStarving(String cityName) {
-        try {
-            URL url = new URL(ModConfig.API_BASE_URL + "/" + cityName + "/starvation_status");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
-
-            int responseCode = conn.getResponseCode();
-            if (responseCode == 200) {
-                JsonObject response = JsonParser.parseReader(new InputStreamReader(conn.getInputStream())).getAsJsonObject();
-                boolean starving = response.get("starving").getAsBoolean();
-                conn.disconnect();
-                return starving;
-            } else {
-            }
-            conn.disconnect();
-        } catch (Exception e) {
-        }
-        return false;
-    }
-
-    // Example stub for listing all city names
-    private static List<String> fetchAllCityNames() {
-        // Return a static list or call another API endpoint
-        return Arrays.asList("Britain", "Trinsic");
-    }
-
 public static JsonObject fetchCityDataWithMarketPrices(ServerLevel serverLevel, String cityName) {
     try {
-        URL url = new URL(ModConfig.API_BASE_URL + "cities/" + cityName + "/trade_data"); // New endpoint
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                .resolvePath(Endpoint.CITY_TRADE_DATA, Map.of("city", cityName));
+        HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json");
 
-        CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-        String apiToken = data.getApiToken();
-        if (!apiToken.isEmpty()) {
-            connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-        }
+        attachAuth(serverLevel, connection);
 
         int responseCode = connection.getResponseCode();
         if (responseCode == 200) {
@@ -267,7 +186,7 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
 
     LOGGER.info("NPC upsert request sent npc={} type={} city={} source={} status={} endpoint=npcs/upsert",
             npcId, npcType, cityName, sourceId, status);
-    ApiResult upsert = sendJson(serverLevel, "POST", "npcs/upsert", payload);
+    ApiResult upsert = sendJson(serverLevel, "POST", Endpoint.NPC_UPSERT, Map.of(), payload);
     if (upsert.isSuccess()) {
         LOGGER.info("NPC upsert success npc={} type={} city={} source={}", npcId, npcType, cityName, sourceId);
         return true;
@@ -276,7 +195,7 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
     if (upsert.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
         LOGGER.info("NPC upsert fallback request sent npc={} type={} city={} source={} status={} endpoint=npcs/sync",
                 npcId, npcType, cityName, sourceId, status);
-        ApiResult legacy = sendJson(serverLevel, "POST", "npcs/sync", payload);
+        ApiResult legacy = sendJson(serverLevel, "POST", Endpoint.NPC_SYNC, Map.of(), payload);
         if (legacy.isSuccess()) {
             LOGGER.info("NPC upsert success via legacy sync npc={} type={} city={} source={}",
                     npcId, npcType, cityName, sourceId);
@@ -296,7 +215,8 @@ public static boolean heartbeatLiveNpc(ServerLevel serverLevel, Entity npc, Stri
     payload.addProperty("sync_action", "heartbeat");
     payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
 
-    ApiResult result = sendJson(serverLevel, "POST", "npcs/" + npc.getUUID() + "/heartbeat", payload);
+    ApiResult result = sendJson(serverLevel, "POST", Endpoint.NPC_HEARTBEAT,
+            Map.of("npc_id", npc.getUUID().toString()), payload);
     if (result.isSuccess()) {
         LOGGER.debug("NPC heartbeat success npc={} city={} source={}", npc.getUUID(), cityName, sourceId);
         return true;
@@ -320,13 +240,15 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
     payload.addProperty("is_active", false);
     payload.addProperty("sync_action", apiStatus);
     payload.addProperty("despawn_reason", reason);
-    payload.addProperty("shard", ModConfig.SHARD_NAME);
+    payload.addProperty("shard", ServerAuthRegistry.credentials(serverLevel.getServer())
+            .orElseThrow().shardName());
     payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
 
-    String endpoint = "npcs/" + npcId + "/" + statusEndpoint(apiStatus);
+    Endpoint endpoint = statusEndpoint(apiStatus);
+    Map<String, String> pathParameters = Map.of("npc_id", npcId.toString());
     LOGGER.info("NPC inactive sync request sent npc={} type={} city={} source={} requestedStatus={} apiStatus={} reason={} endpoint={}",
-            npcId, npcType, cityName, sourceId, status, apiStatus, reason, endpoint);
-    ApiResult statusSync = sendJson(serverLevel, "POST", endpoint, payload);
+            npcId, npcType, cityName, sourceId, status, apiStatus, reason, endpoint.symbolicName());
+    ApiResult statusSync = sendJson(serverLevel, "POST", endpoint, pathParameters, payload);
     if (statusSync.isSuccess()) {
         LOGGER.info("NPC inactive sync success npc={} status={} reason={}", npcId, apiStatus, reason);
         return true;
@@ -334,7 +256,7 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
 
     LOGGER.info("NPC inactive fallback request sent npc={} type={} city={} source={} requestedStatus={} apiStatus={} reason={} endpoint=npcs/{}/status",
             npcId, npcType, cityName, sourceId, status, apiStatus, reason, npcId);
-    ApiResult legacyStatus = sendJson(serverLevel, "POST", "npcs/" + npcId + "/status", payload);
+    ApiResult legacyStatus = sendJson(serverLevel, "POST", Endpoint.NPC_STATUS, pathParameters, payload);
     if (legacyStatus.isSuccess()) {
         LOGGER.info("NPC inactive sync success via status endpoint npc={} status={} reason={}", npcId, apiStatus, reason);
         return true;
@@ -343,7 +265,7 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
     if ("despawned".equals(apiStatus)) {
         LOGGER.info("NPC delete fallback request sent npc={} type={} city={} source={} reason={} endpoint=npcs/{}",
                 npcId, npcType, cityName, sourceId, reason, npcId);
-        ApiResult delete = sendJson(serverLevel, "DELETE", "npcs/" + npcId, null);
+        ApiResult delete = sendJson(serverLevel, "DELETE", Endpoint.NPC_DELETE, pathParameters, null);
         if (delete.isSuccess()) {
             LOGGER.info("NPC delete fallback success npc={} reason={}", npcId, reason);
             return true;
@@ -366,12 +288,12 @@ private static String inactiveStatusForApi(String status) {
     };
 }
 
-private static String statusEndpoint(String status) {
+private static Endpoint statusEndpoint(String status) {
     String normalized = status == null ? "" : status.trim().toLowerCase(Locale.ROOT);
     return switch (normalized) {
-        case "dead", "death" -> "death";
-        case "despawned", "despawn", "replaced", "replacement" -> "despawn";
-        default -> "inactive";
+        case "dead", "death" -> Endpoint.NPC_DEATH;
+        case "despawned", "despawn", "replaced", "replacement" -> Endpoint.NPC_DESPAWN;
+        default -> Endpoint.NPC_INACTIVE;
     };
 }
 
@@ -404,7 +326,8 @@ private static JsonObject buildLiveNpcPayload(ServerLevel serverLevel, Entity np
         payload.addProperty("texture_key", citizen.getOutfitKey());
         payload.add("stats", appearanceStats(citizen, modelKey));
     }
-    payload.addProperty("shard", ModConfig.SHARD_NAME);
+    payload.addProperty("shard", ServerAuthRegistry.credentials(serverLevel.getServer())
+            .orElseThrow().shardName());
     payload.addProperty("dimension", serverLevel.dimension().location().toString());
     payload.addProperty("x", npc.getX());
     payload.addProperty("y", npc.getY());
@@ -446,12 +369,14 @@ private static String getStringByReflection(Entity npc, String method, String fa
     return fallback;
 }
 
-private static ApiResult sendJson(ServerLevel serverLevel, String method, String endpoint, JsonObject payload) {
+private static ApiResult sendJson(ServerLevel serverLevel, String method, Endpoint endpoint,
+                                  Map<String, String> pathParameters, JsonObject payload) {
     HttpURLConnection connection = null;
     try {
-        String normalized = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
-        URL url = new URL(ModConfig.API_BASE_URL + normalized);
-        connection = (HttpURLConnection) url.openConnection();
+        var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()
+                .resolvePath(endpoint, pathParameters);
+        connection = (HttpURLConnection) requestUri.toURL().openConnection();
+        BoundedHttp.configure(connection);
         connection.setRequestMethod(method);
         connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         connection.setRequestProperty("Accept", "application/json");
@@ -465,12 +390,13 @@ private static ApiResult sendJson(ServerLevel serverLevel, String method, String
         }
 
         int responseCode = connection.getResponseCode();
-        String body = readResponseBody(responseCode >= 200 && responseCode < 300
+        String body = BoundedHttp.readUtf8(responseCode >= 200 && responseCode < 300
                 ? connection.getInputStream()
-                : connection.getErrorStream());
+                : connection.getErrorStream(), 1_048_576);
         return new ApiResult(responseCode, body);
     } catch (Exception e) {
-        LOGGER.warn("Rails NPC sync request failed method={} endpoint={} error={}", method, endpoint, e.toString());
+        LOGGER.warn("Rails NPC sync request failed method={} endpoint={} error={}",
+                method, endpoint.symbolicName(), e.toString());
         return new ApiResult(0, e.toString());
     } finally {
         if (connection != null) connection.disconnect();
@@ -478,14 +404,9 @@ private static ApiResult sendJson(ServerLevel serverLevel, String method, String
 }
 
 private static void attachAuth(ServerLevel serverLevel, HttpURLConnection connection) {
-    CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-    String apiToken = data.getApiToken();
-    if (apiToken != null && !apiToken.isBlank()) {
-        connection.setRequestProperty("Authorization", "Bearer " + apiToken);
-    }
-    String secret = data.getShardSecret();
-    if (secret != null && !secret.isBlank()) {
-        connection.setRequestProperty("Shard-Secret", secret);
+    BoundedHttp.configure(connection);
+    if (!RailsRequestAuthenticator.apply(connection, serverLevel.getServer())) {
+        throw new IllegalStateException("Server authentication unavailable");
     }
 }
 

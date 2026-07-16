@@ -8,7 +8,6 @@ import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.BritanniaMod;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.item.WeightedFishItem;
 import net.minecraft.world.item.Item;
@@ -59,38 +58,6 @@ public class CityCommands {
                             .then(Commands.argument("weight", FloatArgumentType.floatArg(0.1f, 100.0f))
                                 .executes(CityCommands::createWeightedFish))));
 
-        // New command for setting the API token:
-        dispatcher.register(
-            Commands.literal("britannia_api")
-                .requires(source -> source.hasPermission(2)) // ensure only ops
-                .then(Commands.literal("set_token")
-                    .then(Commands.argument("token", StringArgumentType.string())
-                        .executes(CityCommands::setApiToken)
-                    )
-                )
-        );
-
-    }
-
-      // This is the method that actually sets the token
-    private static int setApiToken(CommandContext<CommandSourceStack> context) {
-        CommandSourceStack source = context.getSource();
-        String token = StringArgumentType.getString(context, "token");
-
-        // We assume this command is run on the server context
-        if (source.getLevel() instanceof ServerLevel serverLevel) {
-            // Retrieve or create the saved data
-            CityAPITokenData data = CityAPITokenData.getOrCreate(serverLevel);
-            data.setApiToken(token);
-
-            source.sendSuccess(() -> Component.literal("API Token set successfully!"), false);
-
-            LOGGER.info("API Token stored on the server: {}", token);
-            return 1;
-        }
-
-        source.sendFailure(Component.literal("Unable to set API token. Not in a server level context."));
-        return 0;
     }
 
     private static int showCityInventory(CommandContext<CommandSourceStack> context) {

@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.npc.TraderRoleHandler;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.npc.NpcRoleHandler;
+import com.seggellion.britannia_mod.shop.Product;
 
 import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPayload;
@@ -30,12 +31,13 @@ import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDestinationScreen;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
-import com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
+import com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen;
+import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
@@ -68,6 +70,18 @@ public class ClientNetworkHandler {
     private static final ResourceLocation FONT_UO_CLASSIC =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
+
+    public static void handleServiceNpcSpawnState(
+            ServiceNpcSpawnStateS2CPayload payload,
+            IPayloadContext context
+    ) {
+        context.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen instanceof ServiceNpcSpawnScreen screen) {
+                screen.acceptState(payload);
+            }
+        });
+    }
 // 1. Your existing 4-argument method for NPCs
     public static void openQuestDecisionScreen(
         com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse response, 
@@ -122,9 +136,14 @@ public class ClientNetworkHandler {
             NpcRoleHandler roleHandler = com.seggellion.britannia_mod.npc.TraderRoleHandlers.create(
                     pkt.npcType(), pkt.role(), pkt.city());
 
-            // Fetch catalog before opening the screen
-            roleHandler.fetchCatalog(player, pkt.city(), products -> {
-              if (products == null || products.isEmpty()) {
+            java.util.List<Product> products = pkt.products().stream().map(product -> new Product(
+                    product.itemId(),
+                    product.name(),
+                    product.price(),
+                    product.currency(),
+                    product.icon().isBlank() ? null : ResourceLocation.tryParse(product.icon())
+            )).toList();
+            if (products.isEmpty()) {
                     String msg = pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT
                             ? pkt.role() + " says: 'I have nothing the city can produce right now.'"
                             : pkt.role() + " says: 'I am not interested in anything you have.'";
@@ -132,10 +151,10 @@ public class ClientNetworkHandler {
                             .withFont(FONT_UO_CLASSIC)
                             .withColor(GRAY_848484);
                     player.sendSystemMessage(Component.literal(msg).withStyle(style));
-                    return; // Cancel screen open
-                }
+                    return;
+            }
 
-                mc.setScreen(new NpcCatalogScreen(
+            mc.setScreen(new NpcCatalogScreen(
                     pkt.npcType(),
                     pkt.role(),
                     pkt.city(),
@@ -143,8 +162,7 @@ public class ClientNetworkHandler {
                     player,
                     roleHandler,
                     products
-                ));
-            });
+            ));
         });
     }
 
@@ -183,11 +201,6 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
     ctx.enqueueWork(() -> {
         com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
             if (response != null && response.success) {
-                // Claim items if the API granted any
-                if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                    sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
-                }
-                
                 // Open the screen
                 openQuestDecisionScreen(response, "The Guardian", null);
             }
@@ -228,10 +241,6 @@ public static void handleQuestTriggerResult(QuestTriggerResultS2CPayload payload
         }
 
         QuestManager.getInstance().setCurrentQuestState(response);
-
-        if (response.granted_items != null && !response.granted_items.isEmpty()) {
-            sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
-        }
 
         handleQuestClientActions(response, payload.questId(), payload.triggerKey());
 
@@ -336,9 +345,6 @@ private static MutableComponent uoMessage(String text) {
         ctx.enqueueWork(() -> {
             com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
                 if (response != null && response.success) {
-                    if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                        sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
-                    }
                     Minecraft.getInstance().setScreen(
                         new QuestDecisionScreen(
                             response, 

@@ -65,6 +65,15 @@ runs {
         }
     }
 
+    gameTestServer {
+        workingDirectory = file("run/gametest")
+        modSource sourceSets.main
+        systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+        dependencies {
+            runtime 'org.nanohttpd:nanohttpd:2.2.0'
+        }
+    }
+
 
     configureEach {
         systemProperty "forge.logging.markers", "REGISTRIES"
@@ -86,9 +95,31 @@ jarJar {
 sourceSets {
     main {
         resources {
-            srcDirs = ['src/main/resources', 'src/generated/resources']
+            srcDirs = ['src/main/resources', 'src/generated/resources', 'build/generated/gametest']
         }
     }
+}
+
+tasks.register('generateServiceNpcSpawnGameTestStructure') {
+    def encodedStructure = layout.projectDirectory.file('src/gametest/service_npc_spawn_test_empty.nbt.b64')
+    def generatedStructure = layout.buildDirectory.file(
+            'generated/gametest/data/britannia_mod/structure/service_npc_spawn_test_empty.nbt')
+    inputs.file encodedStructure
+    outputs.file generatedStructure
+    doLast {
+        def outputFile = generatedStructure.get().asFile
+        outputFile.parentFile.mkdirs()
+        outputFile.bytes = Base64.decoder.decode(encodedStructure.asFile.text.trim())
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn tasks.named('generateServiceNpcSpawnGameTestStructure')
+}
+
+tasks.named('jar', Jar) {
+    exclude 'com/seggellion/britannia_mod/gametest/**'
+    exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
 }
 
 tasks.register("generateModMetadata", ProcessResources) {

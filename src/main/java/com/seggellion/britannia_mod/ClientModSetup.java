@@ -86,6 +86,14 @@ public class ClientModSetup {
     private static boolean clientGameHandlersRegistered = false;
 
     @SubscribeEvent
+    public static void registerMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(
+                com.seggellion.britannia_mod.registry.MenuRegistry.SERVICE_NPC_SPAWN_MENU.get(),
+                com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen::new
+        );
+    }
+
+    @SubscribeEvent
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
         new ClientOnlyItemRegistry().registerSpawnEggColors(event);
 

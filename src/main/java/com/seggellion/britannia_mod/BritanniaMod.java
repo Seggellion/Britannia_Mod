@@ -50,6 +50,7 @@ import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -90,6 +91,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
+import java.nio.file.Path;
 
 @Mod(BritanniaMod.MODID)
 public class BritanniaMod {
@@ -115,7 +117,7 @@ CraftableRegistry.init();
         WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
         PaintingRegistry.register(modEventBus);
-      //  MenuRegistry.register(modEventBus);
+        MenuRegistry.register(modEventBus);
 
         ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
@@ -170,6 +172,7 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new SurvivalZoneHandler());
           NeoForge.EVENT_BUS.register(new StructureProtectionHandler());
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 
 
         ManaHandler.register();
@@ -217,6 +220,7 @@ public void onServerStopping(ServerStoppingEvent event) {
     }
     if (railsUpdateServer != null) {
         railsUpdateServer.stop();
+        railsUpdateServer = null;
         LOGGER.info("🛑 railsUpdateServer stopped");
     }
 
@@ -224,6 +228,8 @@ public void onServerStopping(ServerStoppingEvent event) {
 
     // === NEW: Monster cleanup ===
     MinecraftServer server = event.getServer();
+    WorldBootstrapHandler.onServerStopping(server);
+    ServerAuthRegistry.clear(server);
     for (ServerLevel level : server.getAllLevels()) {
         int viewDistance = level.getServer().getPlayerList().getViewDistance();
 
@@ -252,6 +258,9 @@ public void onServerStopping(ServerStoppingEvent event) {
 }
 
 public void onServerStarting(ServerStartingEvent event) {
+    MinecraftServer minecraftServer = event.getServer();
+    boolean dedicatedServer = minecraftServer instanceof net.minecraft.server.dedicated.DedicatedServer;
+    ServerAuthRegistry.initialize(minecraftServer, Path.of("."), dedicatedServer);
     NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
 
     try {
@@ -263,6 +272,9 @@ public void onServerStarting(ServerStartingEvent event) {
         LOGGER.error("❌ Failed to start DeedHttpServer", e);
     }
 
+    if (ServerAuthRegistry.credentials(minecraftServer)
+        .map(credentials -> credentials.railsUpdateListenerEnabled())
+        .orElse(false)) {
     try {
         // Start the Rails Update API server (new)
         railsUpdateServer = new RailsUpdateServer(8081, event.getServer());
@@ -270,6 +282,7 @@ public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("✅ RailsUpdateServer started on port 8081");
     } catch (IOException e) {
         LOGGER.error("❌ Failed to start RailsUpdateServer", e);
+    }
     }
 }
 
