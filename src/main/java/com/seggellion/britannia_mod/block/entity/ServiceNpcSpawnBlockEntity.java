@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCollisionRepairCoordinator;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnIdentityResolver;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnLocation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingData;
@@ -80,16 +81,34 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
 
     public void serverTick() {
         if (!(level instanceof ServerLevel serverLevel)) return;
-        if (!identityReconciled) {
-            reconcileIdentity(serverLevel);
-        }
+        if (!identityReconciled) reconcileIdentityOrDeferForCollision(serverLevel);
         if (identityReconciled) {
+            ServiceNpcSpawnCollisionRepairCoordinator.reconcileBlock(serverLevel, this);
             ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(serverLevel, this);
         }
     }
 
     public void ensureIdentity(ServerLevel level) {
-        if (!identityReconciled) reconcileIdentity(level);
+        if (!identityReconciled) reconcileIdentityOrDeferForCollision(level);
+    }
+
+    private void reconcileIdentityOrDeferForCollision(ServerLevel level) {
+        if (spawnPointId != null) {
+            ServiceNpcSpawnLocation current = currentLocation(level);
+            ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+            ServiceNpcSpawnPendingRecord direct = data.findPending(spawnPointId);
+            boolean directCollision = direct != null
+                && direct.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+                && direct.location().equals(current);
+            boolean stagedFromCurrent = data.findStagedReplacement(spawnPointId, current) != null;
+            if (directCollision || stagedFromCurrent) {
+                identityOrigin = current;
+                identityReconciled = true;
+                setChanged();
+                return;
+            }
+        }
+        reconcileIdentity(level);
     }
 
     private void reconcileIdentity(ServerLevel level) {
@@ -180,8 +199,23 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     ) {
         ensureIdentity(level);
         if (spawnPointId == null) return ServiceNpcSpawnValidationError.CLAIM_STORE_ERROR;
-        ServiceNpcSpawnClaim claim = ServiceNpcSpawnClaimData.get(level).find(spawnPointId);
         ServiceNpcSpawnLocation current = currentLocation(level);
+        ServiceNpcSpawnPendingData pendingData = ServiceNpcSpawnPendingData.get(level);
+        ServiceNpcSpawnPendingRecord direct = pendingData.findPending(spawnPointId);
+        boolean stagedRepair = direct != null
+            && direct.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+            && direct.supersedesSpawnPointId() != null
+            && direct.location().equals(current);
+        stagedRepair = stagedRepair
+            || pendingData.findStagedReplacement(spawnPointId, current) != null;
+        if (stagedRepair) {
+            registrationState = ServiceNpcSpawnRegistrationState.ERROR;
+            lastErrorCode = "uuid_collision_pending_repair";
+            setChanged();
+            syncAuthoritativeState();
+            return ServiceNpcSpawnValidationError.PENDING_STORE_ERROR;
+        }
+        ServiceNpcSpawnClaim claim = ServiceNpcSpawnClaimData.get(level).find(spawnPointId);
         if (claim == null || !claim.location().equals(current)) {
             return ServiceNpcSpawnValidationError.CLAIM_STORE_ERROR;
         }
@@ -385,6 +419,95 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         return lastAcknowledgedRecordedAtEpochMillis;
     }
 
+    public boolean matchesCollisionSource(
+            ServiceNpcSpawnPendingRecord source, ServerLevel serverLevel
+    ) {
+        return source != null
+            && source.operation() == ServiceNpcSpawnPendingOperation.UPSERT
+            && source.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+            && source.supersedesSpawnPointId() == null
+            && spawnPointId != null
+            && spawnPointId.equals(source.spawnPointId())
+            && configurationRevision == source.configurationRevision()
+            && currentLocation(serverLevel).equals(source.location())
+            && matchesConfiguration(source);
+    }
+
+    public boolean matchesStagedCollisionReplacement(
+            ServiceNpcSpawnPendingRecord staged, ServerLevel serverLevel
+    ) {
+        if (staged == null
+                || staged.operation() != ServiceNpcSpawnPendingOperation.UPSERT
+                || staged.disposition() != ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+                || staged.supersedesSpawnPointId() == null
+                || staged.configurationRevision() != 1L
+                || spawnPointId == null
+                || !currentLocation(serverLevel).equals(staged.location())
+                || !matchesConfiguration(staged)) {
+            return false;
+        }
+        if (spawnPointId.equals(staged.spawnPointId())) {
+            return configurationRevision == 1L;
+        }
+        return spawnPointId.equals(staged.supersedesSpawnPointId())
+            && configurationRevision > 0L;
+    }
+
+    public boolean applyStagedCollisionReplacement(
+            ServiceNpcSpawnPendingRecord staged, ServerLevel serverLevel
+    ) {
+        if (!matchesStagedCollisionReplacement(staged, serverLevel)) return false;
+        if (spawnPointId.equals(staged.spawnPointId())) return true;
+        UUID previousId = spawnPointId;
+        spawnPointId = staged.spawnPointId();
+        cityPublicId = staged.cityPublicId();
+        serviceNpcTypeKey = staged.serviceNpcTypeKey();
+        enabled = staged.enabled();
+        configurationRevision = 1L;
+        registrationState = ServiceNpcSpawnRegistrationState.PENDING_REGISTRATION;
+        lastErrorCode = null;
+        assignedNpcPublicId = null;
+        assignedNpcDisplayName = null;
+        assignmentRevision = 0L;
+        lastSuccessfulSyncEpochMillis = null;
+        lastAcknowledgedOperationId = null;
+        lastAcknowledgedRecordedAtEpochMillis = null;
+        identityOrigin = currentLocation(serverLevel);
+        identityReconciled = true;
+        destructionHandled = false;
+        setChanged();
+        syncAuthoritativeState(previousId);
+        return true;
+    }
+
+    public boolean applyCollisionRepairFailure(
+            ServiceNpcSpawnPendingRecord record, ServerLevel serverLevel, String safeCode
+    ) {
+        if (record == null || safeCode == null || spawnPointId == null
+                || !currentLocation(serverLevel).equals(record.location())
+                || !matchesConfiguration(record)) {
+            return false;
+        }
+        boolean exactIdentity = spawnPointId.equals(record.spawnPointId())
+            || record.supersedesSpawnPointId() != null
+                && spawnPointId.equals(record.supersedesSpawnPointId());
+        if (!exactIdentity) return false;
+        registrationState = ServiceNpcSpawnRegistrationState.ERROR;
+        lastErrorCode = safeCode;
+        setChanged();
+        syncAuthoritativeState();
+        return true;
+    }
+
+    private boolean matchesConfiguration(ServiceNpcSpawnPendingRecord record) {
+        return cityPublicId != null
+            && serviceNpcTypeKey != null
+            && !serviceNpcTypeKey.isBlank()
+            && cityPublicId.equals(record.cityPublicId())
+            && serviceNpcTypeKey.equals(record.serviceNpcTypeKey())
+            && enabled == record.enabled();
+    }
+
     public boolean matchesAcknowledgement(
             ServiceNpcSpawnAcknowledgementReceipt receipt, ServerLevel serverLevel
     ) {
@@ -451,6 +574,10 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     }
 
     private void syncAuthoritativeState() {
+        syncAuthoritativeState(null);
+    }
+
+    private void syncAuthoritativeState(@Nullable UUID previousSpawnPointId) {
         if (!(level instanceof ServerLevel serverLevel)) return;
         BlockState state = getBlockState();
         serverLevel.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
@@ -459,7 +586,9 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
                     && menu.dimension().equals(serverLevel.dimension())
                     && menu.pos().equals(worldPosition)
                     && spawnPointId != null
-                    && menu.spawnPointId().equals(spawnPointId)) {
+                    && (menu.spawnPointId().equals(spawnPointId)
+                        || previousSpawnPointId != null
+                            && menu.spawnPointId().equals(previousSpawnPointId))) {
                 ServiceNpcSpawnStateS2CPayload.send(
                     player, menu, ServiceNpcSpawnValidationError.NONE
                 );

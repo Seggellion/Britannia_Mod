@@ -119,6 +119,7 @@ public final class ServiceNpcSpawnDeliveryProcessor {
     private void processCycle() {
         if (stopped) return;
         long now = nonNegativeNow();
+        ServiceNpcSpawnCollisionRepairCoordinator.processCycle(server);
         ServiceNpcSpawnReceiptReconciler.reconcileReceipts(server);
         if (now < circuitOpenUntilEpochMillis) return;
 

@@ -6,6 +6,18 @@ public final class ServiceNpcSpawnFailureCodes {
     public static final String SHARD_MISMATCH = "shard_mismatch";
     public static final String UUID_COLLISION_PENDING_REPAIR = "uuid_collision_pending_repair";
     public static final String INVALID_LOCAL_OPERATION = "invalid_local_operation";
+    public static final String UUID_COLLISION_SAME_LOCATION = "uuid_collision_same_location";
+    public static final String UUID_COLLISION_REPAIR_EXHAUSTED = "uuid_collision_repair_exhausted";
+    public static final String UUID_GENERATION_EXHAUSTED = "uuid_generation_exhausted";
+    public static final String COLLISION_REPAIR_BLOCK_MISSING = "collision_repair_block_missing";
+    public static final String COLLISION_REPAIR_BLOCK_MISMATCH = "collision_repair_block_mismatch";
+    public static final String COLLISION_REPAIR_CONFIGURATION_MISMATCH =
+        "collision_repair_configuration_mismatch";
+    public static final String COLLISION_REPAIR_CLAIM_CONFLICT = "collision_repair_claim_conflict";
+    public static final String COLLISION_REPAIR_INVALID_EVIDENCE = "collision_repair_invalid_evidence";
+    public static final String COLLISION_REPAIR_STAGED_STATE_INVALID =
+        "collision_repair_staged_state_invalid";
+    public static final String COLLISION_REPAIR_FAILED = "collision_repair_failed";
 
     private ServiceNpcSpawnFailureCodes() {}
 

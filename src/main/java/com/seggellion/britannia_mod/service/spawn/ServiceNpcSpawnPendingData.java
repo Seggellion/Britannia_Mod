@@ -10,10 +10,13 @@ import net.minecraft.world.level.saveddata.SavedData;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 public final class ServiceNpcSpawnPendingData extends SavedData implements ServiceNpcSpawnPendingWorkSource {
     public enum MutationResult {
@@ -23,6 +26,10 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         REJECTED_CONFLICT,
         READ_ONLY_SCHEMA
     }
+
+    public record CollisionReplacementStage(
+        MutationResult result, @Nullable ServiceNpcSpawnPendingRecord replacement
+    ) {}
 
     public static final String DATA_NAME = "britannia_service_npc_spawn_pending";
     public static final int SCHEMA_VERSION = 2;
@@ -123,7 +130,7 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         MutationResult decision = decide(existing, incoming);
         if (decision == MutationResult.ACCEPTED) {
             boolean replacesPriorState = existing != null || acknowledgements.containsKey(incoming.spawnPointId());
-            ServiceNpcSpawnPendingRecord stored = replacesPriorState ? incoming.asFreshLocalOperation() : incoming;
+            ServiceNpcSpawnPendingRecord stored = replacesPriorState ? incoming.asFreshLocalOperation(existing) : incoming;
             records.put(incoming.spawnPointId(), stored);
             acknowledgements.remove(incoming.spawnPointId());
             setDirty();
@@ -172,6 +179,114 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
 
     public ServiceNpcSpawnAcknowledgementReceipt findAcknowledgement(UUID spawnPointId) {
         return acknowledgements.get(spawnPointId);
+    }
+
+    public ServiceNpcSpawnPendingRecord findPending(UUID spawnPointId) {
+        return records.get(spawnPointId);
+    }
+
+    public ServiceNpcSpawnPendingRecord findStagedReplacement(
+            UUID supersededSpawnPointId, ServiceNpcSpawnLocation location
+    ) {
+        if (supersededSpawnPointId == null || location == null) return null;
+        return records.values().stream()
+            .filter(record -> record.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR)
+            .filter(record -> supersededSpawnPointId.equals(record.supersedesSpawnPointId()))
+            .filter(record -> location.equals(record.location()))
+            .sorted(Comparator
+                .comparingLong(ServiceNpcSpawnPendingRecord::recordedAtEpochMillis)
+                .thenComparing(ServiceNpcSpawnPendingRecord::spawnPointId)
+                .thenComparing(ServiceNpcSpawnPendingRecord::operationId))
+            .findFirst()
+            .orElse(null);
+    }
+
+    public List<ServiceNpcSpawnPendingRecord> snapshotCollisionRepairs(int limit) {
+        if (limit < 0) throw new IllegalArgumentException("negative collision-repair limit");
+        return records.values().stream()
+            .filter(record -> record.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR)
+            .sorted(Comparator
+                .comparingLong(ServiceNpcSpawnPendingRecord::recordedAtEpochMillis)
+                .thenComparing(ServiceNpcSpawnPendingRecord::spawnPointId)
+                .thenComparing(ServiceNpcSpawnPendingRecord::operationId))
+            .limit(limit)
+            .toList();
+    }
+
+    public boolean isUuidAvailable(UUID candidate) {
+        return candidate != null && !records.containsKey(candidate)
+            && !acknowledgements.containsKey(candidate);
+    }
+
+    public boolean isOperationIdAvailable(UUID candidate) {
+        return candidate != null
+            && records.values().stream()
+                .noneMatch(record -> record.operationId().equals(candidate))
+            && acknowledgements.values().stream()
+                .noneMatch(receipt -> receipt.operationId().equals(candidate));
+    }
+
+    public CollisionReplacementStage stageCollisionReplacement(
+            ServiceNpcSpawnPendingOperationToken token,
+            ServiceNpcSpawnCollisionEvidence evidence,
+            UUID replacementSpawnPointId,
+            UUID replacementOperationId,
+            ServiceNpcSpawnLocation currentLocation,
+            UUID cityPublicId,
+            String serviceNpcTypeKey,
+            boolean enabled,
+            long recordedAtEpochMillis
+    ) {
+        if (readOnlyFutureSchema) {
+            return new CollisionReplacementStage(MutationResult.READ_ONLY_SCHEMA, null);
+        }
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null) {
+            return new CollisionReplacementStage(MutationResult.REJECTED_STALE, null);
+        }
+        boolean exactSource = current.operation() == ServiceNpcSpawnPendingOperation.UPSERT
+            && current.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+            && current.collisionEvidence() != null
+            && current.collisionEvidence().equals(evidence)
+            && evidence.replacementUuidRequired()
+            && current.location().equals(currentLocation)
+            && Objects.equals(current.cityPublicId(), cityPublicId)
+            && Objects.equals(current.serviceNpcTypeKey(), serviceNpcTypeKey)
+            && current.enabled() == enabled;
+        if (!exactSource || current.collisionRepairCount() >= ServiceNpcSpawnCollisionRepairCoordinator.MAX_REPLACEMENTS
+                || replacementSpawnPointId.equals(current.spawnPointId())
+                || !isUuidAvailable(replacementSpawnPointId)
+                || !isOperationIdAvailable(replacementOperationId)) {
+            return new CollisionReplacementStage(MutationResult.REJECTED_CONFLICT, null);
+        }
+        ServiceNpcSpawnPendingRecord replacement = current.stagedCollisionReplacement(
+            replacementSpawnPointId, replacementOperationId, recordedAtEpochMillis
+        );
+        ServiceNpcSpawnAcknowledgementReceipt oldReceipt = acknowledgements.get(current.spawnPointId());
+        if (oldReceipt != null
+                && oldReceipt.location().equals(current.location())
+                && oldReceipt.configurationRevision() == current.configurationRevision()) {
+            acknowledgements.remove(current.spawnPointId());
+        }
+        records.remove(current.spawnPointId());
+        records.put(replacement.spawnPointId(), replacement);
+        setDirty();
+        checkWarningThreshold();
+        return new CollisionReplacementStage(MutationResult.ACCEPTED, replacement);
+    }
+
+    public boolean markCollisionReplacementReady(
+            ServiceNpcSpawnPendingOperationToken token, UUID expectedSupersededSpawnPointId
+    ) {
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null
+                || current.disposition() != ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+                || current.supersedesSpawnPointId() == null
+                || !current.supersedesSpawnPointId().equals(expectedSupersededSpawnPointId)) {
+            return false;
+        }
+        replace(current.withCollisionReplacementReady());
+        return true;
     }
 
     public boolean markAttemptStarted(

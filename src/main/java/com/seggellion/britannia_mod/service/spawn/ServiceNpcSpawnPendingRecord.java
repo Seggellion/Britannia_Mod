@@ -120,11 +120,15 @@ public record ServiceNpcSpawnPendingRecord(
         );
     }
 
-    ServiceNpcSpawnPendingRecord asFreshLocalOperation() {
+    ServiceNpcSpawnPendingRecord asFreshLocalOperation(@Nullable ServiceNpcSpawnPendingRecord previous) {
+        boolean retainLineage = previous != null && previous.spawnPointId.equals(spawnPointId);
         return new ServiceNpcSpawnPendingRecord(
             operation, spawnPointId, shardName, location, cityPublicId, serviceNpcTypeKey, enabled,
             configurationRevision, recordedAtEpochMillis, UUID.randomUUID(),
-            ServiceNpcSpawnPendingDisposition.READY, 0, null, 0L, null, null, 0, null
+            ServiceNpcSpawnPendingDisposition.READY, 0, null, 0L, null,
+            retainLineage ? previous.supersedesSpawnPointId : null,
+            retainLineage ? previous.collisionRepairCount : 0,
+            null
         );
     }
 
@@ -149,8 +153,51 @@ public record ServiceNpcSpawnPendingRecord(
     ServiceNpcSpawnPendingRecord withCollisionRepair(
             ServiceNpcSpawnCollisionEvidence evidence, String failureCode
     ) {
-        return copy(ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR, attemptCount,
-            lastAttemptAtEpochMillis, 0L, failureCode, evidence);
+        return new ServiceNpcSpawnPendingRecord(
+            operation, spawnPointId, shardName, location, cityPublicId, serviceNpcTypeKey, enabled,
+            configurationRevision, recordedAtEpochMillis, operationId,
+            ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR,
+            attemptCount, lastAttemptAtEpochMillis, 0L, failureCode,
+            null, collisionRepairCount, evidence
+        );
+    }
+
+    ServiceNpcSpawnPendingRecord stagedCollisionReplacement(
+            UUID replacementSpawnPointId,
+            UUID replacementOperationId,
+            long replacementRecordedAtEpochMillis
+    ) {
+        if (operation != ServiceNpcSpawnPendingOperation.UPSERT
+                || disposition != ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR
+                || collisionEvidence == null
+                || !collisionEvidence.replacementUuidRequired()
+                || replacementSpawnPointId.equals(spawnPointId)) {
+            throw new IllegalStateException("invalid collision replacement source");
+        }
+        return new ServiceNpcSpawnPendingRecord(
+            ServiceNpcSpawnPendingOperation.UPSERT,
+            replacementSpawnPointId,
+            shardName,
+            location,
+            cityPublicId,
+            serviceNpcTypeKey,
+            enabled,
+            1L,
+            replacementRecordedAtEpochMillis,
+            replacementOperationId,
+            ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR,
+            0,
+            null,
+            0L,
+            null,
+            spawnPointId,
+            Math.incrementExact(collisionRepairCount),
+            collisionEvidence
+        );
+    }
+
+    ServiceNpcSpawnPendingRecord withCollisionReplacementReady() {
+        return copy(ServiceNpcSpawnPendingDisposition.READY, 0, null, 0L, null, null);
     }
 
     private ServiceNpcSpawnPendingRecord copy(

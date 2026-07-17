@@ -102,6 +102,15 @@ public final class ServiceNpcSpawnClaimData extends SavedData {
         return claims.get(spawnPointId);
     }
 
+    public boolean isUuidAvailable(UUID spawnPointId) {
+        return spawnPointId != null && !claims.containsKey(spawnPointId);
+    }
+
+    public boolean claimMatches(UUID spawnPointId, ServiceNpcSpawnLocation location) {
+        ServiceNpcSpawnClaim claim = claims.get(spawnPointId);
+        return claim != null && claim.location().equals(location);
+    }
+
     public Map<UUID, ServiceNpcSpawnClaim> snapshot() {
         return Map.copyOf(claims);
     }

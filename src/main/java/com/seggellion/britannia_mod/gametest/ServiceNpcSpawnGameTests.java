@@ -15,10 +15,12 @@ import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCanonicalLocation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClientResult;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCollisionEvidence;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCollisionRepairCoordinator;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnConfigurationValidator;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnDeliveryProcessor;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnLocation;
@@ -631,34 +633,356 @@ public final class ServiceNpcSpawnGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
-    public static void permanentAndCollisionStatesAreVisibleWithoutRekey(GameTestHelper helper) {
+    @GameTest(template = TEMPLATE, timeoutTicks = 80)
+    public static void permanentFailureAndRedactedCollisionRepairConvergeSafely(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 5L);
+        PendingFixture permanent = pendingPost(helper, new BlockPos(1, 1, 1), 5L);
         ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
-        UUID originalId = fixture.pending.spawnPointId();
-
-        check(data.markPermanentFailure(fixture.pending.token(), "invalid_city"),
+        check(data.markPermanentFailure(permanent.pending.token(), "invalid_city"),
             "could not persist permanent failure");
-        fixture.post.serverTick();
-        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.ERROR
-                && "invalid_city".equals(fixture.post.getLastErrorCode()),
+        permanent.post.serverTick();
+        check(permanent.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.ERROR
+                && "invalid_city".equals(permanent.post.getLastErrorCode()),
             "permanent failure was not visible on the exact block");
+
+        BlockPos repairRelative = new BlockPos(3, 1, 1);
+        PendingFixture repair = pendingPost(helper, repairRelative, 6L);
+        UUID oldId = repair.pending.spawnPointId();
+        UUID oldOperationId = repair.pending.operationId();
+        UUID city = repair.pending.cityPublicId();
+        CompoundTag cached = repair.post.saveCustomOnly(level.registryAccess());
+        cached.putUUID("AssignedNpcPublicId", UUID.randomUUID());
+        cached.putString("AssignedNpcDisplayName", "Stale Assignment");
+        cached.putLong("AssignmentRevision", 9L);
+        cached.putLong("LastSuccessfulSyncEpochMillis", 8_000L);
+        cached.putUUID("LastAcknowledgedOperationId", UUID.randomUUID());
+        cached.putLong("LastAcknowledgedRecordedAtEpochMillis", 7_000L);
+        repair.post.loadCustomOnly(cached, level.registryAccess());
+
+        ServiceNpcSpawnClaimData claims = ServiceNpcSpawnClaimData.get(level);
+        ServiceNpcSpawnLocation repairLocation = repair.pending.location();
+        ServiceNpcSpawnLocation canonicalElsewhere = new ServiceNpcSpawnLocation(
+            repairLocation.worldName(), repairLocation.dimension(),
+            repairLocation.pos().offset(4, 0, 0)
+        );
+        check(claims.releaseIfMatches(oldId, repairLocation),
+            "could not release duplicate-location A claim fixture");
+        check(claims.claim(oldId, canonicalElsewhere) == ServiceNpcSpawnClaimData.ClaimResult.CLAIMED,
+            "could not establish canonical A claim elsewhere");
 
         ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
             ServiceNpcSpawnCollisionEvidence.CollisionKind.REDACTED, true, null, 6_000L
         );
         check(data.markCollisionRepair(
-                fixture.pending.token(), evidence, "uuid_collision_pending_repair"),
+                repair.pending.token(), evidence, "uuid_collision_pending_repair"),
             "could not persist collision-repair disposition");
+        repair.post.serverTick();
+
+        UUID replacementId = repair.post.getSpawnPointId();
+        check(replacementId != null && !replacementId.equals(oldId),
+            "redacted collision did not generate a replacement UUID");
+        ServiceNpcSpawnPendingRecord replacement = data.findPending(replacementId);
+        check(replacement != null
+                && replacement.disposition() == ServiceNpcSpawnPendingDisposition.READY,
+            "confirmed local replacement did not become READY");
+        check(replacement.configurationRevision() == 1L
+                && repair.post.getConfigurationRevision() == 1L,
+            "replacement revision did not reset to one");
+        check(replacement.operationId() != oldOperationId,
+            "replacement reused the colliding operation ID");
+        check(oldId.equals(replacement.supersedesSpawnPointId())
+                && replacement.collisionRepairCount() == 1,
+            "replacement lineage or repair count was not preserved");
+        check(city.equals(repair.post.getCityPublicId())
+                && repair.pending.serviceNpcTypeKey().equals(repair.post.getServiceNpcTypeKey())
+                && repair.pending.enabled() == repair.post.isEnabled(),
+            "collision repair did not preserve current configuration");
+        check(repair.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.PENDING_REGISTRATION
+                && repair.post.getLastErrorCode() == null,
+            "replacement did not enter clean PENDING_REGISTRATION");
+        check(repair.post.getAssignedNpcPublicId() == null
+                && repair.post.getAssignedNpcDisplayName() == null
+                && repair.post.getAssignmentRevision() == 0L
+                && repair.post.getLastSuccessfulSyncEpochMillis() == null
+                && repair.post.getLastAcknowledgedOperationId() == null
+                && repair.post.getLastAcknowledgedRecordedAtEpochMillis() == null,
+            "replacement retained assignment or acknowledgement cache");
+        check(claims.claimMatches(oldId, canonicalElsewhere),
+            "repair altered canonical A claim at another location");
+        check(claims.claimMatches(replacementId, repairLocation),
+            "replacement B claim was not created at the repaired location");
+        check(data.findPending(oldId) == null,
+            "repair retained or created pending work for canonical A");
+        check(data.snapshot().values().stream()
+                .noneMatch(record -> record.spawnPointId().equals(oldId)
+                    && record.operation() == ServiceNpcSpawnPendingOperation.REMOVE),
+            "repair created a REMOVE for canonical A");
+
+        check(data.acknowledgeSuccess(
+                replacement.token(),
+                successResponse(replacement, ServiceNpcSpawnOutcome.APPLIED, 9_000L)),
+            "replacement UPSERT could not use normal exact acknowledgement");
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, repair.post);
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, repair.post);
+        check(repair.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+            "replacement did not reach REGISTERED through normal receipt application");
+
+        helper.setBlock(repairRelative, Blocks.AIR);
+        ServiceNpcSpawnPendingRecord remove = data.findPending(replacementId);
+        check(remove != null && remove.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
+            "destruction after repair did not create REMOVE for B");
+        check(data.findPending(oldId) == null,
+            "destruction after repair created work for canonical A");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void stagedReplacementReplaysAcrossBlockEntityReload(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        PendingFixture fixture = pendingPost(helper, relative, 10L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.TOMBSTONED, true, null, 10_000L
+        );
+        check(data.markCollisionRepair(
+                fixture.pending.token(), evidence, "uuid_collision_pending_repair"),
+            "could not create TOMBSTONED collision fixture");
+        ServiceNpcSpawnPendingRecord source = data.findPending(fixture.pending.spawnPointId());
+        UUID replacementId = UUID.randomUUID();
+        UUID replacementOperationId = UUID.randomUUID();
+        ServiceNpcSpawnPendingData.CollisionReplacementStage stage =
+            data.stageCollisionReplacement(
+                source.token(), evidence, replacementId, replacementOperationId,
+                source.location(), source.cityPublicId(), source.serviceNpcTypeKey(),
+                source.enabled(), 10_001L
+            );
+        ServiceNpcSpawnPendingRecord staged = stage.replacement();
+        check(stage.result() == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED && staged != null,
+            "could not stage Phase-B replay fixture");
+
+        CompoundTag savedA = fixture.post.saveCustomOnly(level.registryAccess());
+        level.removeBlockEntity(absolute);
+        ServiceNpcSpawnBlockEntity reloaded = new ServiceNpcSpawnBlockEntity(
+            absolute, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get().defaultBlockState()
+        );
+        reloaded.loadCustomOnly(savedA, level.registryAccess());
+        level.setBlockEntity(reloaded);
+        reloaded.serverTick();
+
+        check(replacementId.equals(reloaded.getSpawnPointId()),
+            "staged A-to-B replay generated or selected a different UUID");
+        ServiceNpcSpawnPendingRecord ready = data.findPending(replacementId);
+        check(ready != null
+                && ready.operationId().equals(replacementOperationId)
+                && ready.disposition() == ServiceNpcSpawnPendingDisposition.READY,
+            "staged replacement did not retain its operation ID and become READY");
+        check(ServiceNpcSpawnClaimData.get(level).claimMatches(replacementId, staged.location()),
+            "replay did not reconcile the B claim");
+        check(!ServiceNpcSpawnClaimData.get(level)
+                .claimMatches(fixture.pending.spawnPointId(), staged.location()),
+            "replay did not release exact local A claim");
+        reloaded.serverTick();
+        check(replacementId.equals(reloaded.getSpawnPointId())
+                && replacementOperationId.equals(data.findPending(replacementId).operationId()),
+            "repeated reconciliation was not idempotent");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void fourthCollisionFailsWithoutGeneratingAnotherUuid(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 20L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        UUID previousId = fixture.pending.spawnPointId();
+
+        for (int expectedCount = 1; expectedCount <= 3; expectedCount++) {
+            ServiceNpcSpawnPendingRecord current = data.findPending(previousId);
+            ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+                ServiceNpcSpawnCollisionEvidence.CollisionKind.REDACTED, true, null,
+                20_000L + expectedCount
+            );
+            check(data.markCollisionRepair(
+                    current.token(), evidence, "uuid_collision_pending_repair"),
+                "could not persist repeated collision " + expectedCount);
+            fixture.post.serverTick();
+            UUID nextId = fixture.post.getSpawnPointId();
+            check(nextId != null && !nextId.equals(previousId),
+                "collision " + expectedCount + " did not generate a replacement");
+            ServiceNpcSpawnPendingRecord replacement = data.findPending(nextId);
+            check(replacement != null
+                    && replacement.collisionRepairCount() == expectedCount
+                    && replacement.disposition() == ServiceNpcSpawnPendingDisposition.READY,
+                "collision " + expectedCount + " did not converge to bounded READY state");
+            previousId = nextId;
+        }
+
+        ServiceNpcSpawnPendingRecord third = data.findPending(previousId);
+        ServiceNpcSpawnCollisionEvidence fourthEvidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.REDACTED, true, null, 20_100L
+        );
+        check(data.markCollisionRepair(
+                third.token(), fourthEvidence, "uuid_collision_pending_repair"),
+            "could not persist fourth collision fixture");
+        UUID exhaustedId = previousId;
         fixture.post.serverTick();
+        ServiceNpcSpawnPendingRecord exhausted = data.findPending(exhaustedId);
+        check(exhaustedId.equals(fixture.post.getSpawnPointId()),
+            "fourth collision generated a forbidden replacement UUID");
+        check(exhausted != null
+                && exhausted.disposition() == ServiceNpcSpawnPendingDisposition.PERMANENT_FAILURE
+                && "uuid_collision_repair_exhausted".equals(exhausted.lastFailureCode()),
+            "fourth collision did not become permanent repair exhaustion");
         check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.ERROR
-                && "uuid_collision_pending_repair".equals(fixture.post.getLastErrorCode()),
-            "collision state was not visible on the exact block");
-        check(originalId.equals(fixture.post.getSpawnPointId()),
-            "collision visibility changed the spawn UUID");
-        check(data.snapshot().get(originalId).collisionRepairCount() == 0,
-            "Slice 3B incremented collision repair count");
+                && "uuid_collision_repair_exhausted".equals(fixture.post.getLastErrorCode()),
+            "repair exhaustion was not visible on the exact block");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void sameLocationLiveCollisionFailsWithoutRekey(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 30L);
+        UUID serverKey = UUID.randomUUID();
+        ServiceNpcSpawnLocation location = fixture.pending.location();
+        ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.LIVE,
+            true,
+            new ServiceNpcSpawnCanonicalLocation(
+                serverKey, "Different Diagnostic Name", location.dimension(),
+                location.pos().getX(), location.pos().getY(), location.pos().getZ()
+            ),
+            30_000L
+        );
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.markCollisionRepair(
+                fixture.pending.token(), evidence, "uuid_collision_pending_repair"),
+            "could not persist same-location LIVE collision");
+        ServiceNpcSpawnCollisionRepairCoordinator.processExactForGameTest(
+            level.getServer(), fixture.pending.spawnPointId(), serverKey
+        );
+        ServiceNpcSpawnPendingRecord failed = data.findPending(fixture.pending.spawnPointId());
+        check(fixture.pending.spawnPointId().equals(fixture.post.getSpawnPointId()),
+            "same-location LIVE collision changed the UUID");
+        check(failed != null
+                && failed.disposition() == ServiceNpcSpawnPendingDisposition.PERMANENT_FAILURE
+                && "uuid_collision_same_location".equals(failed.lastFailureCode()),
+            "same-location LIVE collision did not fail safely");
+        check(ServiceNpcSpawnClaimData.get(level)
+                .claimMatches(fixture.pending.spawnPointId(), fixture.pending.location()),
+            "same-location LIVE failure altered the exact claim");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void unloadedCollisionRepairDefersWithoutForceLoading(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos far = new BlockPos(19_000_000, 64, 19_000_000);
+        ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
+            ServiceNpcSpawnPendingOperation.UPSERT,
+            UUID.randomUUID(),
+            ModConfig.SHARD_NAME,
+            new ServiceNpcSpawnLocation(
+                level.getServer().getWorldData().getLevelName(),
+                level.dimension().location(),
+                far
+            ),
+            UUID.randomUUID(),
+            "bank_teller",
+            true,
+            1L,
+            40_000L
+        );
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.put(pending) == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED,
+            "could not create unloaded collision-repair fixture");
+        ServiceNpcSpawnPendingRecord stored = data.findPending(pending.spawnPointId());
+        ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.REDACTED, true, null, 40_001L
+        );
+        check(data.markCollisionRepair(
+                stored.token(), evidence, "uuid_collision_pending_repair"),
+            "could not persist unloaded collision evidence");
+        ServiceNpcSpawnPendingRecord before = data.findPending(stored.spawnPointId());
+        check(!level.hasChunk(far.getX() >> 4, far.getZ() >> 4),
+            "far collision fixture chunk unexpectedly started loaded");
+
+        ServiceNpcSpawnCollisionRepairCoordinator.processExactForGameTest(
+            level.getServer(), stored.spawnPointId(), UUID.randomUUID()
+        );
+
+        check(!level.hasChunk(far.getX() >> 4, far.getZ() >> 4),
+            "collision repair force-loaded an unavailable chunk");
+        check(before.equals(data.findPending(stored.spawnPointId())),
+            "unloaded collision repair mutated its durable Phase-A record");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void stagedReplacementNeverStealsConflictingClaim(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 50_000L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.TOMBSTONED, true, null, 50_001L
+        );
+        check(data.markCollisionRepair(
+                fixture.pending.token(), evidence, "uuid_collision_pending_repair"),
+            "could not create claim-conflict collision fixture");
+        ServiceNpcSpawnPendingRecord source = data.findPending(fixture.pending.spawnPointId());
+        UUID replacementId = UUID.randomUUID();
+        ServiceNpcSpawnPendingData.CollisionReplacementStage stage =
+            data.stageCollisionReplacement(
+                source.token(), evidence, replacementId, UUID.randomUUID(),
+                source.location(), source.cityPublicId(), source.serviceNpcTypeKey(),
+                source.enabled(), 50_002L
+            );
+        ServiceNpcSpawnPendingRecord staged = stage.replacement();
+        check(stage.result() == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED && staged != null,
+            "could not stage claim-conflict replacement");
+        ServiceNpcSpawnLocation elsewhere = new ServiceNpcSpawnLocation(
+            staged.location().worldName(), staged.location().dimension(),
+            staged.location().pos().offset(5, 0, 0)
+        );
+        ServiceNpcSpawnClaimData claims = ServiceNpcSpawnClaimData.get(level);
+        check(claims.claim(replacementId, elsewhere) == ServiceNpcSpawnClaimData.ClaimResult.CLAIMED,
+            "could not reserve replacement UUID elsewhere");
+
+        fixture.post.serverTick();
+
+        ServiceNpcSpawnPendingRecord failed = data.findPending(replacementId);
+        check(failed != null
+                && failed.disposition() == ServiceNpcSpawnPendingDisposition.PERMANENT_FAILURE
+                && "collision_repair_claim_conflict".equals(failed.lastFailureCode()),
+            "conflicting B claim did not permanently block staged delivery");
+        check(claims.claimMatches(replacementId, elsewhere),
+            "repair stole the replacement UUID claim");
+        check(fixture.pending.spawnPointId().equals(fixture.post.getSpawnPointId()),
+            "claim-conflicted repair changed the block UUID");
+        check(claims.claimMatches(fixture.pending.spawnPointId(), fixture.pending.location()),
+            "claim-conflicted repair released A prematurely");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void destructionBeforeCollisionStagingLeavesRemoveAuthoritative(GameTestHelper helper) {
+        BlockPos relative = new BlockPos(1, 1, 1);
+        PendingFixture fixture = pendingPost(helper, relative, 60_000L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(helper.getLevel());
+        ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.REDACTED, true, null, 60_001L
+        );
+        check(data.markCollisionRepair(
+                fixture.pending.token(), evidence, "uuid_collision_pending_repair"),
+            "could not create pre-destruction collision fixture");
+        helper.setBlock(relative, Blocks.AIR);
+        ServiceNpcSpawnPendingRecord remove = data.findPending(fixture.pending.spawnPointId());
+        check(remove != null && remove.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
+            "destruction before staging did not supersede collision with REMOVE A");
+        check(data.snapshot().values().stream()
+                .noneMatch(record -> fixture.pending.spawnPointId().equals(record.supersedesSpawnPointId())),
+            "destruction before staging generated a replacement UUID");
         helper.succeed();
     }
 
