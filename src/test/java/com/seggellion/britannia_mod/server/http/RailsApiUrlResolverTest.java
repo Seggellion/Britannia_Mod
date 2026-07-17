@@ -29,6 +29,15 @@ class RailsApiUrlResolverTest {
             "http://127.0.0.1:3000/api/world_bootstrap/Britannia",
             resolver.resolvePath(Endpoint.WORLD_BOOTSTRAP, Map.of("shard", "Britannia")).toString()
         );
+        URI spawnOperations = resolver.resolve(Endpoint.SERVICE_NPC_SPAWN_OPERATIONS);
+        assertEquals("http://127.0.0.1:3000/api/service_npc_spawn_operations", spawnOperations.toString());
+        assertFalse(spawnOperations.toString().contains("/api/api/"));
+        assertThrows(IllegalArgumentException.class, () -> resolver.resolveQuery(
+            Endpoint.SERVICE_NPC_SPAWN_OPERATIONS, Map.of("next", "https://elsewhere.test")
+        ));
+        assertThrows(IllegalArgumentException.class, () -> resolver.resolvePath(
+            Endpoint.SERVICE_NPC_SPAWN_OPERATIONS, Map.of("path", "injected")
+        ));
     }
 
     @ParameterizedTest

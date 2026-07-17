@@ -21,10 +21,12 @@ public final class ServerCredentialSource {
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final String SHARD_NAME_ENV = "ULTIMACRAFT_SHARD_NAME";
     public static final String SHARD_SECRET_ENV = "ULTIMACRAFT_SHARD_SECRET";
+    public static final String MINECRAFT_SERVER_KEY_ENV = "ULTIMACRAFT_MINECRAFT_SERVER_KEY";
     public static final Path RELATIVE_SERVER_FILE = Path.of("config", "britannia_mod-server.properties");
     private static final long MAX_FILE_BYTES = 65_536L;
     private static final Set<String> ALLOWED_KEYS = Set.of(
-        "shard_name", "shard_secret", "api_base_url", "allow_integrated_server", "rails_update_listener_enabled"
+        "shard_name", "shard_secret", "api_base_url", "minecraft_server_key",
+        "allow_integrated_server", "rails_update_listener_enabled"
     );
 
     private ServerCredentialSource() {}
@@ -47,7 +49,8 @@ public final class ServerCredentialSource {
         if (namePresent) {
             return Optional.of(new ServerCredentials(
                 validateName(environmentName), validateSecret(environmentSecret), validateApiBaseUrl(ModConfig.API_BASE_URL),
-                ServerCredentials.Source.ENVIRONMENT, false, false
+                ServerCredentials.Source.ENVIRONMENT, false, false,
+                environment.get(MINECRAFT_SERVER_KEY_ENV)
             ));
         }
 
@@ -61,13 +64,16 @@ public final class ServerCredentialSource {
         checkFileLocation(root, credentialFile);
         checkPermissions(credentialFile);
         Map<String, String> values = readProperties(credentialFile);
+        String environmentServerKey = normalized(environment.get(MINECRAFT_SERVER_KEY_ENV));
+        String configuredServerKey = environmentServerKey.isEmpty()
+            ? values.get("minecraft_server_key") : environmentServerKey;
         return Optional.of(new ServerCredentials(
             validateName(required(values, "shard_name")),
             validateSecret(required(values, "shard_secret")),
             validateApiBaseUrl(required(values, "api_base_url")),
             ServerCredentials.Source.SERVER_FILE,
             parseBoolean(values, "allow_integrated_server", false),
-            parseBoolean(values, "rails_update_listener_enabled", false)
+            parseBoolean(values, "rails_update_listener_enabled", false), configuredServerKey
         ));
     }
 

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,6 +65,53 @@ class ServerCredentialSourceTest {
         );
         assertTrue(credentials.integratedServerAllowed());
         assertFalse(credentials.railsUpdateListenerEnabled());
+    }
+
+    @Test
+    void serverKeyLoadsFromFileAndEnvironmentOverridesOnlyThatValue() throws Exception {
+        UUID fileKey = UUID.randomUUID();
+        UUID environmentKey = UUID.randomUUID();
+        writeServerFile("""
+            shard_name=Britannia
+            shard_secret=local-development-secret
+            api_base_url=http://127.0.0.1:3000
+            minecraft_server_key=%s
+            """.formatted(fileKey));
+
+        ServerCredentials fromFile = ServerCredentialSource.load(gameDirectory, Map.of()).orElseThrow();
+        ServerCredentials overridden = ServerCredentialSource.load(gameDirectory, Map.of(
+            ServerCredentialSource.MINECRAFT_SERVER_KEY_ENV, environmentKey.toString()
+        )).orElseThrow();
+
+        assertEquals(fileKey, fromFile.minecraftServerKey().orElseThrow());
+        assertEquals(environmentKey, overridden.minecraftServerKey().orElseThrow());
+        assertFalse(fromFile.toString().contains(fileKey.toString()));
+        assertFalse(overridden.toString().contains(environmentKey.toString()));
+    }
+
+    @Test
+    void missingOrMalformedServerKeyDoesNotDisableExistingCredentials() throws Exception {
+        writeServerFile("""
+            shard_name=Britannia
+            shard_secret=local-development-secret
+            api_base_url=http://127.0.0.1:3000
+            """);
+        ServerCredentials missing = ServerCredentialSource.load(gameDirectory, Map.of()).orElseThrow();
+        assertTrue(missing.minecraftServerKey().isEmpty());
+        assertEquals(ServerCredentials.MinecraftServerKeyStatus.MISSING, missing.minecraftServerKeyStatus());
+        assertEquals("minecraft_server_key_missing", missing.minecraftServerKeyUnavailableCode());
+        assertEquals("Britannia", missing.shardName());
+
+        writeServerFile("""
+            shard_name=Britannia
+            shard_secret=local-development-secret
+            api_base_url=http://127.0.0.1:3000
+            minecraft_server_key=not-a-uuid
+            """);
+        ServerCredentials malformed = ServerCredentialSource.load(gameDirectory, Map.of()).orElseThrow();
+        assertTrue(malformed.minecraftServerKey().isEmpty());
+        assertEquals(ServerCredentials.MinecraftServerKeyStatus.INVALID, malformed.minecraftServerKeyStatus());
+        assertEquals("minecraft_server_key_invalid", malformed.minecraftServerKeyUnavailableCode());
     }
 
     @Test

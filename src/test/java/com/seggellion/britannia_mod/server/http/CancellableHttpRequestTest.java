@@ -4,13 +4,17 @@ import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -147,6 +151,26 @@ class CancellableHttpRequestTest {
             () -> JsonParser.parseString(new String(response.body(), StandardCharsets.UTF_8)).getAsJsonObject());
     }
 
+    @Test
+    void writesFixedLengthRequestBodyAndCopiesResponseHeaders() throws Exception {
+        FakeConnection connection = new FakeConnection(
+            200, new TrackingInputStream("{}".getBytes(StandardCharsets.UTF_8)), null);
+        connection.headers = Map.of("Retry-After", List.of("12"));
+        byte[] outbound = "{\"hello\":\"world\"}".getBytes(StandardCharsets.UTF_8);
+
+        CancellableHttpRequest.Response response = request(connection, 64).execute(
+            conn -> conn.setRequestMethod("POST"), outbound
+        );
+        outbound[0] = 'X';
+
+        assertArrayEquals("{\"hello\":\"world\"}".getBytes(StandardCharsets.UTF_8),
+            connection.output.toByteArray());
+        assertEquals(connection.output.size(), connection.fixedLength());
+        assertEquals("12", response.firstHeader("retry-after"));
+        assertThrows(UnsupportedOperationException.class,
+            () -> response.headers().put("unsafe", List.of("value")));
+    }
+
     private static CancellableHttpRequest request(FakeConnection connection, int limit) {
         return new CancellableHttpRequest(URI_UNDER_TEST, limit, ignored -> connection);
     }
@@ -156,6 +180,8 @@ class CancellableHttpRequestTest {
         private final InputStream errorStream;
         private IOException connectFailure;
         private boolean disconnected;
+        private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        private Map<String, List<String>> headers = Map.of();
 
         FakeConnection(int status, InputStream successStream, InputStream errorStream) {
             super(url());
@@ -178,6 +204,20 @@ class CancellableHttpRequestTest {
         @Override
         public InputStream getErrorStream() {
             return errorStream;
+        }
+
+        @Override
+        public OutputStream getOutputStream() {
+            return output;
+        }
+
+        @Override
+        public Map<String, List<String>> getHeaderFields() {
+            return headers;
+        }
+
+        int fixedLength() {
+            return fixedContentLength;
         }
 
         @Override

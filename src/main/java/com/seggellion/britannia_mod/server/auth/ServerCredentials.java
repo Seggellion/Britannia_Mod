@@ -7,9 +7,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 public final class ServerCredentials {
     public enum Source { ENVIRONMENT, SERVER_FILE }
+    public enum MinecraftServerKeyStatus { AVAILABLE, MISSING, INVALID }
 
     private final String shardName;
     private final String shardSecret;
@@ -19,9 +22,12 @@ public final class ServerCredentials {
     private final boolean integratedServerAllowed;
     private final boolean railsUpdateListenerEnabled;
     private final String fingerprint;
+    private final UUID minecraftServerKey;
+    private final MinecraftServerKeyStatus minecraftServerKeyStatus;
 
     ServerCredentials(String shardName, String shardSecret, URI serviceOrigin, Source source,
-                      boolean integratedServerAllowed, boolean railsUpdateListenerEnabled) {
+                      boolean integratedServerAllowed, boolean railsUpdateListenerEnabled,
+                      String configuredMinecraftServerKey) {
         this.shardName = Objects.requireNonNull(shardName, "shardName");
         this.shardSecret = Objects.requireNonNull(shardSecret, "shardSecret");
         this.serviceOrigin = Objects.requireNonNull(serviceOrigin, "serviceOrigin");
@@ -30,6 +36,18 @@ public final class ServerCredentials {
         this.integratedServerAllowed = integratedServerAllowed;
         this.railsUpdateListenerEnabled = railsUpdateListenerEnabled;
         this.fingerprint = fingerprint(shardSecret);
+        UUID parsedKey = null;
+        MinecraftServerKeyStatus parsedStatus = MinecraftServerKeyStatus.MISSING;
+        if (configuredMinecraftServerKey != null && !configuredMinecraftServerKey.isBlank()) {
+            try {
+                parsedKey = UUID.fromString(configuredMinecraftServerKey.trim());
+                parsedStatus = MinecraftServerKeyStatus.AVAILABLE;
+            } catch (IllegalArgumentException invalid) {
+                parsedStatus = MinecraftServerKeyStatus.INVALID;
+            }
+        }
+        this.minecraftServerKey = parsedKey;
+        this.minecraftServerKeyStatus = parsedStatus;
     }
 
     public String shardName() { return shardName; }
@@ -40,6 +58,12 @@ public final class ServerCredentials {
     public boolean integratedServerAllowed() { return integratedServerAllowed; }
     public boolean railsUpdateListenerEnabled() { return railsUpdateListenerEnabled; }
     public String fingerprint() { return fingerprint; }
+    public Optional<UUID> minecraftServerKey() { return Optional.ofNullable(minecraftServerKey); }
+    public MinecraftServerKeyStatus minecraftServerKeyStatus() { return minecraftServerKeyStatus; }
+    public String minecraftServerKeyUnavailableCode() {
+        return minecraftServerKeyStatus == MinecraftServerKeyStatus.INVALID
+            ? "minecraft_server_key_invalid" : "minecraft_server_key_missing";
+    }
 
     @Override
     public String toString() {

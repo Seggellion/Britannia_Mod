@@ -2,9 +2,13 @@ package com.seggellion.britannia_mod.server.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +37,12 @@ public final class CancellableHttpRequest {
     }
 
     public Response execute(ConnectionConfigurer configurer) throws RequestException {
+        return execute(configurer, null);
+    }
+
+    public Response execute(ConnectionConfigurer configurer, byte[] requestBody) throws RequestException {
         Objects.requireNonNull(configurer, "configurer");
+        byte[] outboundBody = requestBody == null ? null : requestBody.clone();
         if (!started.compareAndSet(false, true)) {
             throw new IllegalStateException("HTTP request can only be executed once");
         }
@@ -51,8 +60,17 @@ public final class CancellableHttpRequest {
             BoundedHttp.configure(connection);
             connection.setInstanceFollowRedirects(false);
             configurer.configure(connection);
+            if (outboundBody != null) {
+                connection.setDoOutput(true);
+                connection.setFixedLengthStreamingMode(outboundBody.length);
+            }
             try {
                 connection.connect();
+                if (outboundBody != null) {
+                    try (OutputStream output = connection.getOutputStream()) {
+                        output.write(outboundBody);
+                    }
+                }
             } catch (SocketTimeoutException timeout) {
                 throw failure(FailureCode.CONNECT_TIMEOUT, timeout);
             }
@@ -66,7 +84,7 @@ public final class CancellableHttpRequest {
                 int limit = status >= 200 && status < 300 ? maxBodyBytes : MAX_ERROR_BYTES;
                 byte[] body = BoundedHttp.readBytes(stream, limit);
                 if (cancelled.get()) throw failure(FailureCode.CANCELLED, null);
-                return new Response(status, body);
+                return new Response(status, body, connection.getHeaderFields());
             } catch (SocketTimeoutException timeout) {
                 throw failure(FailureCode.READ_TIMEOUT, timeout);
             } catch (BoundedHttp.ResponseTooLargeException tooLarge) {
@@ -108,14 +126,40 @@ public final class CancellableHttpRequest {
         return new RequestException(code, cause);
     }
 
-    public record Response(int status, byte[] body) {
+    public record Response(int status, byte[] body, Map<String, List<String>> headers) {
         public Response {
             body = body == null ? new byte[0] : body.clone();
+            Map<String, List<String>> copied = new LinkedHashMap<>();
+            if (headers != null) {
+                headers.forEach((name, values) -> {
+                    if (name != null && values != null) copied.put(name, List.copyOf(values));
+                });
+            }
+            headers = Map.copyOf(copied);
+        }
+
+        public Response(int status, byte[] body) {
+            this(status, body, Map.of());
         }
 
         @Override
         public byte[] body() {
             return body.clone();
+        }
+
+        @Override
+        public Map<String, List<String>> headers() {
+            return headers;
+        }
+
+        public String firstHeader(String name) {
+            if (name == null) return null;
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                if (entry.getKey().equalsIgnoreCase(name) && !entry.getValue().isEmpty()) {
+                    return entry.getValue().getFirst();
+                }
+            }
+            return null;
         }
     }
 

@@ -1,0 +1,18 @@
+package com.seggellion.britannia_mod.service.spawn;
+
+/** Exact closed outcome registry committed by Rails Slice 1. */
+public enum ServiceNpcSpawnOutcome {
+    APPLIED, ALREADY_APPLIED,
+    UNAUTHORIZED, SERVER_NOT_AUTHORIZED,
+    MALFORMED_REQUEST, UNSUPPORTED_PROTOCOL, UNSUPPORTED_OPERATION, UNEXPECTED_FIELD,
+    INVALID_OPERATION_ID, INVALID_SPAWN_UUID, INVALID_REVISION, INVALID_LOCATION,
+    INVALID_WORLD_NAME, INVALID_DIMENSION, INVALID_COORDINATES, PAYLOAD_TOO_LARGE,
+    INVALID_CITY, INVALID_SERVICE_NPC_TYPE, SERVICE_NPC_TYPE_INACTIVE,
+    SERVICE_NPC_TYPE_NOT_SPAWNABLE,
+    STALE_REVISION, REVISION_CONFLICT, UUID_COLLISION, LOCATION_OCCUPIED,
+    SERVICE_UNAVAILABLE;
+
+    public static ServiceNpcSpawnOutcome parse(String value) {
+        try { return valueOf(value); } catch (RuntimeException invalid) { return null; }
+    }
+}
