@@ -40,14 +40,17 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
     private final LinkedHashMap<UUID, ServiceNpcSpawnAcknowledgementReceipt> acknowledgements = new LinkedHashMap<>();
     private final LinkedHashMap<UUID, ServiceNpcSpawnAcknowledgedRegistration> acknowledgedRegistrations =
         new LinkedHashMap<>();
+    private final LinkedHashMap<UUID, ServiceNpcSpawnMissingPostReport> missingPostReports = new LinkedHashMap<>();
     private final List<CompoundTag> quarantinedRecords = new ArrayList<>();
     private final List<CompoundTag> quarantinedAcknowledgements = new ArrayList<>();
     private final List<CompoundTag> quarantinedAcknowledgedRegistrations = new ArrayList<>();
+    private final List<CompoundTag> quarantinedMissingPostReports = new ArrayList<>();
     private boolean readOnlyFutureSchema;
     private CompoundTag futureRoot;
     private boolean warnedLargeRecords;
     private boolean warnedLargeAcknowledgements;
     private boolean warnedLargeAcknowledgedRegistrations;
+    private boolean warnedLargeMissingPostReports;
 
     public static ServiceNpcSpawnPendingData get(ServerLevel level) {
         ServerLevel overworld = level.getServer().overworld();
@@ -129,6 +132,30 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
                     }
                 }
             }
+            if (tag.contains("MissingPostReports")) {
+                Tag rawReports = tag.get("MissingPostReports");
+                if (!(rawReports instanceof ListTag reports)
+                        || (!reports.isEmpty() && reports.getElementType() != Tag.TAG_COMPOUND)) {
+                    return data.readOnly(tag, "malformed_missing_post_reports_collection");
+                }
+                if (reports.size() > MAX_COLLECTION_ENTRIES) {
+                    return data.readOnly(tag, "missing_post_reports_over_limit");
+                }
+                for (int index = 0; index < reports.size(); index++) {
+                    CompoundTag reportTag = reports.getCompound(index);
+                    try {
+                        ServiceNpcSpawnMissingPostReport report =
+                            ServiceNpcSpawnMissingPostReport.fromNbt(reportTag);
+                        if (data.missingPostReports.putIfAbsent(report.spawnPointId(), report) != null) {
+                            throw new IllegalArgumentException("duplicate SpawnPointId");
+                        }
+                    } catch (RuntimeException exception) {
+                        data.quarantinedMissingPostReports.add(reportTag.copy());
+                        LOGGER.error("Quarantined corrupt Service NPC spawn missing-post report at index {}",
+                            index, exception);
+                    }
+                }
+            }
         } else {
             data.setDirty();
         }
@@ -152,6 +179,10 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         acknowledgedRegistrations.values().forEach(snapshot -> snapshots.add(snapshot.toNbt()));
         quarantinedAcknowledgedRegistrations.forEach(snapshot -> snapshots.add(snapshot.copy()));
         tag.put("AcknowledgedRegistrations", snapshots);
+        ListTag reports = new ListTag();
+        missingPostReports.values().forEach(report -> reports.add(report.toNbt()));
+        quarantinedMissingPostReports.forEach(report -> reports.add(report.copy()));
+        tag.put("MissingPostReports", reports);
         return tag;
     }
 
@@ -219,6 +250,31 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
 
     public ServiceNpcSpawnAcknowledgedRegistration findAcknowledgedRegistration(UUID spawnPointId) {
         return acknowledgedRegistrations.get(spawnPointId);
+    }
+
+    public Map<UUID, ServiceNpcSpawnMissingPostReport> snapshotMissingPostReports() {
+        return Map.copyOf(missingPostReports);
+    }
+
+    public ServiceNpcSpawnMissingPostReport findMissingPostReport(UUID spawnPointId) {
+        return missingPostReports.get(spawnPointId);
+    }
+
+    /** Purely observational: never touches {@link #acknowledgedRegistrations}. */
+    public boolean recordMissingPostReport(ServiceNpcSpawnMissingPostReport report) {
+        if (readOnlyFutureSchema) return false;
+        Objects.requireNonNull(report, "report");
+        missingPostReports.put(report.spawnPointId(), report);
+        setDirty();
+        checkWarningThreshold();
+        return true;
+    }
+
+    public boolean clearMissingPostReport(UUID spawnPointId) {
+        if (readOnlyFutureSchema) return false;
+        boolean removed = missingPostReports.remove(spawnPointId) != null;
+        if (removed) setDirty();
+        return removed;
     }
 
     public ServiceNpcSpawnPendingRecord findPending(UUID spawnPointId) {
@@ -518,9 +574,11 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         records.clear();
         acknowledgements.clear();
         acknowledgedRegistrations.clear();
+        missingPostReports.clear();
         quarantinedRecords.clear();
         quarantinedAcknowledgements.clear();
         quarantinedAcknowledgedRegistrations.clear();
+        quarantinedMissingPostReports.clear();
         LOGGER.error("Service NPC spawn pending data is unsupported ({}); store is read-only", reason);
         return this;
     }
@@ -538,6 +596,11 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
             warnedLargeAcknowledgedRegistrations = true;
             LOGGER.warn("Service NPC spawn pending store contains {} acknowledged registration snapshots",
                 acknowledgedRegistrations.size());
+        }
+        if (!warnedLargeMissingPostReports && missingPostReports.size() >= MAX_COLLECTION_ENTRIES) {
+            warnedLargeMissingPostReports = true;
+            LOGGER.warn("Service NPC spawn pending store contains {} missing-post reports",
+                missingPostReports.size());
         }
     }
 }

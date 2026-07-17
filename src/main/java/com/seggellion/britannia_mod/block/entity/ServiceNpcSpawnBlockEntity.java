@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.menu.ServiceNpcSpawnMenu;
 import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgedRegistration;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
@@ -117,6 +118,7 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
             resetAsNewPost(UUID.randomUUID(), current);
         }
 
+        boolean rekeyed = false;
         ServiceNpcSpawnClaimData claims = ServiceNpcSpawnClaimData.get(level);
         ServiceNpcSpawnClaim existing = claims.find(spawnPointId);
         if (ServiceNpcSpawnIdentityResolver.decide(current, existing, identityOrigin)
@@ -125,6 +127,7 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
             ServiceNpcSpawnLocation canonical = existing != null ? existing.location() : identityOrigin;
             UUID replacement = UUID.randomUUID();
             resetAsNewPost(replacement, current);
+            rekeyed = true;
             LOGGER.warn(
                     "Rekeyed copied Service NPC spawn post original_uuid={} canonical_location={} copied_location={} replacement_uuid={}",
                     copiedId,
@@ -148,6 +151,7 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
                 markIdentityError("claim_store_error");
                 return;
             }
+            rekeyed = true;
             LOGGER.warn(
                     "Rekeyed racing copied Service NPC spawn post original_uuid={} canonical_location={} copied_location={} replacement_uuid={}",
                     copiedId,
@@ -160,9 +164,68 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
             return;
         }
 
+        if (!rekeyed) {
+            resubmitIfRestoredTombstone(level, current);
+        }
+
         identityOrigin = current;
         identityReconciled = true;
         setChanged();
+    }
+
+    /**
+     * A block can be restored (backup rollback, chunk regen, or NBT that was never actually
+     * broken locally) while Rails already tombstoned this exact UUID at or beyond the revision
+     * we last knew about. Trusting our own stale state here would silently diverge from Rails,
+     * so this must go through the same revision-aware pending-UPSERT flow as any other
+     * configuration change — never flip {@code registrationState} to REGISTERED locally. If
+     * Rails still refuses (tombstoned UUID), the existing collision-repair path takes over
+     * exactly as it does for any other UUID_COLLISION response.
+     */
+    private void resubmitIfRestoredTombstone(ServerLevel level, ServiceNpcSpawnLocation current) {
+        if (spawnPointId == null || cityPublicId == null
+                || serviceNpcTypeKey == null || serviceNpcTypeKey.isBlank()) {
+            return;
+        }
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        ServiceNpcSpawnAcknowledgedRegistration snapshot = data.findAcknowledgedRegistration(spawnPointId);
+        if (snapshot == null || snapshot.state() != ServiceNpcSpawnAcknowledgedRegistration.State.REMOVED
+                || snapshot.revision() < configurationRevision) {
+            return;
+        }
+        if (data.findPending(spawnPointId) != null) {
+            return;
+        }
+
+        final long newRevision;
+        try {
+            newRevision = ServiceNpcSpawnStateMachine.nextRevision(Math.max(configurationRevision, snapshot.revision()));
+        } catch (ArithmeticException overflow) {
+            markIdentityError("revision_overflow");
+            return;
+        }
+        ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
+                ServiceNpcSpawnPendingOperation.UPSERT, spawnPointId, ModConfig.SHARD_NAME, current,
+                cityPublicId, serviceNpcTypeKey, enabled, newRevision, System.currentTimeMillis()
+        );
+        ServiceNpcSpawnPendingData.MutationResult result = data.put(pending);
+        if (result != ServiceNpcSpawnPendingData.MutationResult.ACCEPTED
+                && result != ServiceNpcSpawnPendingData.MutationResult.IDEMPOTENT) {
+            registrationState = ServiceNpcSpawnRegistrationState.ERROR;
+            lastErrorCode = result == ServiceNpcSpawnPendingData.MutationResult.READ_ONLY_SCHEMA
+                    ? "pending_store_future_schema" : "pending_store_rejected";
+            return;
+        }
+
+        LOGGER.warn(
+                "Resubmitting restored Service NPC spawn post against a Rails tombstone uuid={} location={} revision={}",
+                spawnPointId, current, newRevision
+        );
+        configurationRevision = newRevision;
+        registrationState = ServiceNpcSpawnStateMachine.afterAcceptedChange(registrationState);
+        lastErrorCode = null;
+        lastAcknowledgedOperationId = null;
+        lastAcknowledgedRecordedAtEpochMillis = null;
     }
 
     private void resetAsNewPost(UUID newId, ServiceNpcSpawnLocation current) {

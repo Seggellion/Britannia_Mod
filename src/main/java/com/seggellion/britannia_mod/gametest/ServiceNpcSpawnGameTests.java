@@ -14,6 +14,7 @@ import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgedRegistration;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCanonicalLocation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
@@ -983,6 +984,126 @@ public final class ServiceNpcSpawnGameTests {
         check(data.snapshot().values().stream()
                 .noneMatch(record -> fixture.pending.spawnPointId().equals(record.supersedesSpawnPointId())),
             "destruction before staging generated a replacement UUID");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void restoredTombstonedPostResubmitsAndClearsOnRailsConfirmedHigherRevision(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        PendingFixture fixture = pendingPost(helper, relative, 10L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        UUID id = fixture.pending.spawnPointId();
+
+        check(data.acknowledgeSuccess(fixture.pending.token(),
+                successResponse(fixture.pending, ServiceNpcSpawnOutcome.APPLIED, 100L)),
+            "could not acknowledge initial UPSERT");
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, fixture.post);
+        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+            "fixture did not reach REGISTERED before simulating an out-of-band tombstone");
+        check(data.findAcknowledgedRegistration(id).state() == ServiceNpcSpawnAcknowledgedRegistration.State.LIVE,
+            "fixture did not have a LIVE snapshot before simulating an out-of-band tombstone");
+
+        // Simulate Rails tombstoning this exact UUID out-of-band while the physical block/claim
+        // never change locally -- functionally identical to a backup restore recreating a block
+        // whose UUID Rails had already tombstoned.
+        ServiceNpcSpawnPendingRecord removal = new ServiceNpcSpawnPendingRecord(
+            ServiceNpcSpawnPendingOperation.REMOVE, id, fixture.pending.shardName(), fixture.pending.location(),
+            null, null, true, 1L, 50L
+        );
+        check(data.put(removal) == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED,
+            "could not stage the out-of-band REMOVE fixture");
+        ServiceNpcSpawnPendingRecord storedRemoval = data.snapshot().get(id);
+        check(data.acknowledgeSuccess(storedRemoval.token(),
+                successResponse(storedRemoval, ServiceNpcSpawnOutcome.APPLIED, 200L)),
+            "could not acknowledge the out-of-band REMOVE fixture");
+        check(data.findAcknowledgedRegistration(id).state() == ServiceNpcSpawnAcknowledgedRegistration.State.REMOVED,
+            "fixture snapshot did not become REMOVED");
+        check(data.findPending(id) == null, "REMOVE acknowledgement left a pending record behind");
+
+        // The physical block and its claim were never touched; reload the still-REGISTERED,
+        // revision-1 NBT to simulate the restored/never-destroyed block and force reconciliation.
+        CompoundTag registeredNbt = fixture.post.saveCustomOnly(level.registryAccess());
+        fixture.post.loadCustomOnly(registeredNbt, level.registryAccess());
+        fixture.post.serverTick();
+
+        check(fixture.post.getRegistrationState() != ServiceNpcSpawnRegistrationState.REGISTERED,
+            "restored tombstoned post kept trusting stale local REGISTERED state instead of resubmitting");
+        check(fixture.post.getSpawnPointId().equals(id),
+            "restored tombstoned post was rekeyed instead of resubmitted under its own UUID");
+        ServiceNpcSpawnPendingRecord resubmitted = data.findPending(id);
+        check(resubmitted != null && resubmitted.operation() == ServiceNpcSpawnPendingOperation.UPSERT,
+            "restored tombstoned post did not resubmit through the normal pending-UPSERT flow");
+        check(resubmitted.configurationRevision() == 2L,
+            "resubmission did not use a revision higher than the tombstone");
+        check(data.findAcknowledgedRegistration(id).state() == ServiceNpcSpawnAcknowledgedRegistration.State.REMOVED,
+            "resubmission prematurely cleared the REMOVED snapshot before any Rails acknowledgement");
+
+        // Rails-confirmed higher revision clears the tombstone through the existing acknowledgement path.
+        check(data.acknowledgeSuccess(resubmitted.token(),
+                successResponse(resubmitted, ServiceNpcSpawnOutcome.APPLIED, 300L)),
+            "Rails-confirmed higher-revision UPSERT was not accepted");
+        check(data.findAcknowledgedRegistration(id).state() == ServiceNpcSpawnAcknowledgedRegistration.State.LIVE,
+            "Rails-confirmed higher revision did not clear the REMOVED snapshot");
+        check(data.findAcknowledgedRegistration(id).revision() == 2L,
+            "cleared snapshot did not carry the new revision");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void duplicateRestoredTombstonedUuidRekeysThroughExistingClaimConflict(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos canonicalRelative = new BlockPos(1, 1, 1);
+        BlockPos duplicateRelative = new BlockPos(4, 1, 1);
+        PendingFixture fixture = pendingPost(helper, canonicalRelative, 10L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        UUID id = fixture.pending.spawnPointId();
+
+        check(data.acknowledgeSuccess(fixture.pending.token(),
+                successResponse(fixture.pending, ServiceNpcSpawnOutcome.APPLIED, 100L)),
+            "could not acknowledge initial UPSERT");
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, fixture.post);
+        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+            "fixture did not reach REGISTERED before duplicating it");
+        CompoundTag registeredNbt = fixture.post.saveCustomOnly(level.registryAccess());
+
+        ServiceNpcSpawnPendingRecord removal = new ServiceNpcSpawnPendingRecord(
+            ServiceNpcSpawnPendingOperation.REMOVE, id, fixture.pending.shardName(), fixture.pending.location(),
+            null, null, true, 1L, 50L
+        );
+        check(data.put(removal) == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED,
+            "could not stage the out-of-band REMOVE fixture");
+        ServiceNpcSpawnPendingRecord storedRemoval = data.snapshot().get(id);
+        check(data.acknowledgeSuccess(storedRemoval.token(),
+                successResponse(storedRemoval, ServiceNpcSpawnOutcome.APPLIED, 200L)),
+            "could not acknowledge the out-of-band REMOVE fixture");
+        check(data.findAcknowledgedRegistration(id).state() == ServiceNpcSpawnAcknowledgedRegistration.State.REMOVED,
+            "fixture snapshot did not become REMOVED");
+
+        // A duplicate bearing the SAME already-tombstoned UUID appears at a different location
+        // (e.g. a structure paste of the same backup). It must not simply keep the UUID: the
+        // existing claim-conflict path rekeys it exactly as it would any other physical duplicate.
+        ServiceNpcSpawnBlockEntity duplicate = placePost(helper, duplicateRelative);
+        duplicate.loadCustomOnly(registeredNbt, level.registryAccess());
+        duplicate.serverTick();
+        check(!id.equals(duplicate.getSpawnPointId()),
+            "duplicate post claiming an already-owned UUID was not rekeyed");
+        check(duplicate.getConfigurationRevision() == 0L
+                && duplicate.getRegistrationState() == ServiceNpcSpawnRegistrationState.UNCONFIGURED,
+            "rekeyed duplicate did not reset to a fresh, unconfigured identity");
+        check(data.findPending(duplicate.getSpawnPointId()) == null,
+            "rekeyed duplicate incorrectly created pending Rails work on its own");
+
+        // The canonical post (still holding the real claim) goes through the normal resubmission flow.
+        fixture.post.loadCustomOnly(registeredNbt, level.registryAccess());
+        fixture.post.serverTick();
+        check(fixture.post.getSpawnPointId().equals(id),
+            "canonical restored post was rekeyed instead of keeping its claimed UUID");
+        check(fixture.post.getRegistrationState() != ServiceNpcSpawnRegistrationState.REGISTERED,
+            "canonical restored post kept trusting stale local REGISTERED state instead of resubmitting");
+        ServiceNpcSpawnPendingRecord resubmitted = data.findPending(id);
+        check(resubmitted != null && resubmitted.operation() == ServiceNpcSpawnPendingOperation.UPSERT,
+            "canonical restored post did not resubmit through the normal pending-UPSERT flow");
         helper.succeed();
     }
 

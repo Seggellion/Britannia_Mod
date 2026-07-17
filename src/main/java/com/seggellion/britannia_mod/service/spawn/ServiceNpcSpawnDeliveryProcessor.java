@@ -45,6 +45,7 @@ public final class ServiceNpcSpawnDeliveryProcessor {
     private final LongSupplier clock;
     private final String controlledShardName;
     private final Map<UUID, InFlight> inFlightByOperation = new HashMap<>();
+    private final ServiceNpcSpawnMissingPostReconciler missingPostReconciler;
     private boolean stopped;
     private int ticksUntilCycle = TICK_CADENCE;
     private long cycleCount;
@@ -57,6 +58,9 @@ public final class ServiceNpcSpawnDeliveryProcessor {
         this.client = Objects.requireNonNull(client, "client");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.controlledShardName = controlledShardName;
+        this.missingPostReconciler = new ServiceNpcSpawnMissingPostReconciler(
+            ServiceNpcSpawnMissingPostReconciler.realProbe(server), clock
+        );
     }
 
     public static synchronized ServiceNpcSpawnDeliveryProcessor start(MinecraftServer server) {
@@ -121,9 +125,10 @@ public final class ServiceNpcSpawnDeliveryProcessor {
         long now = nonNegativeNow();
         ServiceNpcSpawnCollisionRepairCoordinator.processCycle(server);
         ServiceNpcSpawnReceiptReconciler.reconcileReceipts(server);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(server.overworld());
+        missingPostReconciler.processCycle(data);
         if (now < circuitOpenUntilEpochMillis) return;
 
-        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(server.overworld());
         Set<UUID> activeOperations = Set.copyOf(inFlightByOperation.keySet());
         Set<UUID> activeSpawns = new HashSet<>();
         inFlightByOperation.values().forEach(entry -> activeSpawns.add(entry.token.spawnPointId()));
