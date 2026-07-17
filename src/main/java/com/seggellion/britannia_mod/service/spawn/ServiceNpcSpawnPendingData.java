@@ -25,39 +25,47 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
     }
 
     public static final String DATA_NAME = "britannia_service_npc_spawn_pending";
-    public static final int SCHEMA_VERSION = 1;
-    private static final int WARNING_RECORD_COUNT = 16_384;
+    public static final int SCHEMA_VERSION = 2;
+    static final int MAX_COLLECTION_ENTRIES = 16_384;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private final LinkedHashMap<UUID, ServiceNpcSpawnPendingRecord> records = new LinkedHashMap<>();
+    private final LinkedHashMap<UUID, ServiceNpcSpawnAcknowledgementReceipt> acknowledgements = new LinkedHashMap<>();
     private final List<CompoundTag> quarantinedRecords = new ArrayList<>();
+    private final List<CompoundTag> quarantinedAcknowledgements = new ArrayList<>();
     private boolean readOnlyFutureSchema;
     private CompoundTag futureRoot;
-    private boolean warnedLarge;
+    private boolean warnedLargeRecords;
+    private boolean warnedLargeAcknowledgements;
 
     public static ServiceNpcSpawnPendingData get(ServerLevel level) {
         ServerLevel overworld = level.getServer().overworld();
         return overworld.getDataStorage().computeIfAbsent(
-                new SavedData.Factory<>(ServiceNpcSpawnPendingData::new, ServiceNpcSpawnPendingData::load),
-                DATA_NAME
+            new SavedData.Factory<>(ServiceNpcSpawnPendingData::new, ServiceNpcSpawnPendingData::load),
+            DATA_NAME
         );
     }
 
     public static ServiceNpcSpawnPendingData load(CompoundTag tag, HolderLookup.Provider provider) {
         ServiceNpcSpawnPendingData data = new ServiceNpcSpawnPendingData();
+        if (!tag.contains("SchemaVersion", Tag.TAG_INT)) return data.readOnly(tag, "missing_or_malformed");
         int schema = tag.getInt("SchemaVersion");
-        if (schema != SCHEMA_VERSION) {
-            data.readOnlyFutureSchema = true;
-            data.futureRoot = tag.copy();
-            LOGGER.error("Service NPC spawn pending data schema {} is unsupported; store is read-only", schema);
-            return data;
+        if (schema != 1 && schema != SCHEMA_VERSION) {
+            return data.readOnly(tag, "unsupported_" + schema);
         }
 
-        ListTag list = tag.getList("Records", Tag.TAG_COMPOUND);
+        Tag rawRecords = tag.get("Records");
+        if (!(rawRecords instanceof ListTag list)
+                || (!list.isEmpty() && list.getElementType() != Tag.TAG_COMPOUND)) {
+            return data.readOnly(tag, "malformed_records_collection");
+        }
+        if (list.size() > MAX_COLLECTION_ENTRIES) return data.readOnly(tag, "records_over_limit");
         for (int index = 0; index < list.size(); index++) {
             CompoundTag recordTag = list.getCompound(index);
             try {
-                ServiceNpcSpawnPendingRecord record = ServiceNpcSpawnPendingRecord.fromNbt(recordTag);
+                ServiceNpcSpawnPendingRecord record = schema == 1
+                    ? ServiceNpcSpawnPendingRecord.fromSchemaOneNbt(recordTag)
+                    : ServiceNpcSpawnPendingRecord.fromNbt(recordTag);
                 if (data.records.putIfAbsent(record.spawnPointId(), record) != null) {
                     throw new IllegalArgumentException("duplicate SpawnPointId");
                 }
@@ -65,6 +73,29 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
                 data.quarantinedRecords.add(recordTag.copy());
                 LOGGER.error("Quarantined corrupt Service NPC spawn pending record at index {}", index, exception);
             }
+        }
+        if (schema == SCHEMA_VERSION) {
+            Tag rawAcknowledgements = tag.get("Acknowledgements");
+            if (!(rawAcknowledgements instanceof ListTag receipts)
+                    || (!receipts.isEmpty() && receipts.getElementType() != Tag.TAG_COMPOUND)) {
+                return data.readOnly(tag, "malformed_acknowledgements_collection");
+            }
+            if (receipts.size() > MAX_COLLECTION_ENTRIES) return data.readOnly(tag, "acknowledgements_over_limit");
+            for (int index = 0; index < receipts.size(); index++) {
+                CompoundTag receiptTag = receipts.getCompound(index);
+                try {
+                    ServiceNpcSpawnAcknowledgementReceipt receipt =
+                        ServiceNpcSpawnAcknowledgementReceipt.fromNbt(receiptTag);
+                    if (!data.mergeAcknowledgement(receipt)) {
+                        throw new IllegalArgumentException("conflicting acknowledgement");
+                    }
+                } catch (RuntimeException exception) {
+                    data.quarantinedAcknowledgements.add(receiptTag.copy());
+                    LOGGER.error("Quarantined corrupt Service NPC spawn acknowledgement at index {}", index, exception);
+                }
+            }
+        } else {
+            data.setDirty();
         }
         data.checkWarningThreshold();
         return data;
@@ -78,15 +109,23 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         records.values().forEach(record -> list.add(record.toNbt()));
         quarantinedRecords.forEach(record -> list.add(record.copy()));
         tag.put("Records", list);
+        ListTag receipts = new ListTag();
+        acknowledgements.values().forEach(receipt -> receipts.add(receipt.toNbt()));
+        quarantinedAcknowledgements.forEach(receipt -> receipts.add(receipt.copy()));
+        tag.put("Acknowledgements", receipts);
         return tag;
     }
 
     public MutationResult put(ServiceNpcSpawnPendingRecord incoming) {
+        if (incoming == null) throw new IllegalArgumentException("incoming record is required");
         if (readOnlyFutureSchema) return MutationResult.READ_ONLY_SCHEMA;
         ServiceNpcSpawnPendingRecord existing = records.get(incoming.spawnPointId());
         MutationResult decision = decide(existing, incoming);
         if (decision == MutationResult.ACCEPTED) {
-            records.put(incoming.spawnPointId(), incoming);
+            boolean replacesPriorState = existing != null || acknowledgements.containsKey(incoming.spawnPointId());
+            ServiceNpcSpawnPendingRecord stored = replacesPriorState ? incoming.asFreshLocalOperation() : incoming;
+            records.put(incoming.spawnPointId(), stored);
+            acknowledgements.remove(incoming.spawnPointId());
             setDirty();
             checkWarningThreshold();
         }
@@ -127,22 +166,126 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         return Map.copyOf(records);
     }
 
-    @Override
-    public boolean acknowledgeIfMatches(
-            UUID spawnPointId,
-            ServiceNpcSpawnPendingOperation operation,
-            long configurationRevision,
-            long recordedAtEpochMillis
+    public Map<UUID, ServiceNpcSpawnAcknowledgementReceipt> snapshotAcknowledgements() {
+        return Map.copyOf(acknowledgements);
+    }
+
+    public ServiceNpcSpawnAcknowledgementReceipt findAcknowledgement(UUID spawnPointId) {
+        return acknowledgements.get(spawnPointId);
+    }
+
+    public boolean markAttemptStarted(
+            ServiceNpcSpawnPendingOperationToken token,
+            long attemptedAtEpochMillis,
+            long provisionalNextAttemptAtEpochMillis
     ) {
-        if (readOnlyFutureSchema) return false;
-        ServiceNpcSpawnPendingRecord existing = records.get(spawnPointId);
-        if (existing == null
-                || existing.operation() != operation
-                || existing.configurationRevision() != configurationRevision
-                || existing.recordedAtEpochMillis() != recordedAtEpochMillis) {
+        if (attemptedAtEpochMillis < 0 || provisionalNextAttemptAtEpochMillis < 0) {
+            throw new IllegalArgumentException("negative attempt timestamp");
+        }
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null) return false;
+        boolean eligible = current.disposition() == ServiceNpcSpawnPendingDisposition.READY
+            || (current.disposition() == ServiceNpcSpawnPendingDisposition.RETRY_WAIT
+                && current.nextAttemptAtEpochMillis() <= attemptedAtEpochMillis);
+        if (!eligible || current.attemptCount() == Integer.MAX_VALUE) return false;
+        replace(current.withAttemptStarted(attemptedAtEpochMillis, provisionalNextAttemptAtEpochMillis));
+        return true;
+    }
+
+    public boolean markRetryWait(
+            ServiceNpcSpawnPendingOperationToken token, String failureCode, long nextAttemptAtEpochMillis
+    ) {
+        if (nextAttemptAtEpochMillis < 0) throw new IllegalArgumentException("negative retry timestamp");
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null) return false;
+        replace(current.withRetryWait(failureCode, nextAttemptAtEpochMillis));
+        return true;
+    }
+
+    public boolean markPermanentFailure(ServiceNpcSpawnPendingOperationToken token, String failureCode) {
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null) return false;
+        replace(current.withPermanentFailure(failureCode));
+        return true;
+    }
+
+    public boolean markCollisionRepair(
+            ServiceNpcSpawnPendingOperationToken token,
+            ServiceNpcSpawnCollisionEvidence evidence,
+            String failureCode
+    ) {
+        if (evidence == null || !evidence.replacementUuidRequired()) {
+            throw new IllegalArgumentException("replacement collision evidence is required");
+        }
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null) return false;
+        replace(current.withCollisionRepair(evidence, failureCode));
+        return true;
+    }
+
+    @Override
+    public boolean acknowledgeSuccess(
+            ServiceNpcSpawnPendingOperationToken token,
+            ServiceNpcSpawnProtocolResponse response
+    ) {
+        ServiceNpcSpawnPendingRecord current = matching(token);
+        if (current == null || response == null || !response.success()
+                || response.protocolVersion() != ServiceNpcSpawnOperationRequest.PROTOCOL_VERSION
+                || response.retryable()
+                || (response.outcome() != ServiceNpcSpawnOutcome.APPLIED
+                    && response.outcome() != ServiceNpcSpawnOutcome.ALREADY_APPLIED)
+                || !token.operationId().equals(response.operationId())
+                || !token.spawnPointId().equals(response.spawnUuid())
+                || response.submittedRevision() == null
+                || response.submittedRevision() != token.configurationRevision()
+                || response.acknowledgedRevision() == null
+                || response.registrationState() == null
+                || response.acknowledgedAt() == null) {
             return false;
         }
-        records.remove(spawnPointId);
+
+        if (current.operation() == ServiceNpcSpawnPendingOperation.UPSERT) {
+            if (response.acknowledgedRevision() != current.configurationRevision()
+                    || response.registrationState() != ServiceNpcSpawnProtocolResponse.RegistrationState.LIVE) {
+                return false;
+            }
+            long acknowledgedAt;
+            try {
+                acknowledgedAt = response.acknowledgedAt().toEpochMilli();
+            } catch (ArithmeticException invalid) {
+                return false;
+            }
+            if (acknowledgedAt < 0) return false;
+            ServiceNpcSpawnAcknowledgementReceipt receipt = new ServiceNpcSpawnAcknowledgementReceipt(
+                current.operationId(), current.spawnPointId(), current.operation(),
+                current.configurationRevision(), current.recordedAtEpochMillis(), current.location(),
+                response.acknowledgedRevision(), response.registrationState(), acknowledgedAt, response.outcome()
+            );
+            acknowledgements.put(current.spawnPointId(), receipt);
+        } else {
+            if (response.acknowledgedRevision() < current.configurationRevision()
+                    || response.registrationState() != ServiceNpcSpawnProtocolResponse.RegistrationState.REMOVED) {
+                return false;
+            }
+            acknowledgements.remove(current.spawnPointId());
+        }
+        records.remove(current.spawnPointId());
+        setDirty();
+        return true;
+    }
+
+    public boolean consumeAcknowledgementIfMatches(
+            UUID spawnPointId,
+            ServiceNpcSpawnLocation location,
+            long configurationRevision,
+            UUID expectedOperationId
+    ) {
+        if (readOnlyFutureSchema) return false;
+        ServiceNpcSpawnAcknowledgementReceipt receipt = acknowledgements.get(spawnPointId);
+        if (receipt == null || !receipt.matchesBlock(location, configurationRevision, expectedOperationId)) {
+            return false;
+        }
+        acknowledgements.remove(spawnPointId);
         setDirty();
         return true;
     }
@@ -151,10 +294,58 @@ public final class ServiceNpcSpawnPendingData extends SavedData implements Servi
         return readOnlyFutureSchema;
     }
 
+    private ServiceNpcSpawnPendingRecord matching(ServiceNpcSpawnPendingOperationToken token) {
+        if (readOnlyFutureSchema || token == null) return null;
+        ServiceNpcSpawnPendingRecord current = records.get(token.spawnPointId());
+        return current != null && current.token().equals(token) ? current : null;
+    }
+
+    private void replace(ServiceNpcSpawnPendingRecord record) {
+        records.put(record.spawnPointId(), record);
+        setDirty();
+    }
+
+    private boolean mergeAcknowledgement(ServiceNpcSpawnAcknowledgementReceipt incoming) {
+        ServiceNpcSpawnAcknowledgementReceipt existing = acknowledgements.get(incoming.spawnPointId());
+        if (existing == null) {
+            acknowledgements.put(incoming.spawnPointId(), incoming);
+            return true;
+        }
+        if (incoming.acknowledgedRevision() < existing.acknowledgedRevision()) return false;
+        if (incoming.equals(existing)) return true;
+        if (incoming.acknowledgedRevision() > existing.acknowledgedRevision()) {
+            acknowledgements.put(incoming.spawnPointId(), incoming);
+            return true;
+        }
+        boolean sameSnapshot = incoming.location().equals(existing.location())
+            && incoming.configurationRevision() == existing.configurationRevision()
+            && incoming.registrationState() == existing.registrationState();
+        if (sameSnapshot && incoming.acknowledgedAtEpochMillis() >= existing.acknowledgedAtEpochMillis()) {
+            acknowledgements.put(incoming.spawnPointId(), incoming);
+            return true;
+        }
+        return false;
+    }
+
+    private ServiceNpcSpawnPendingData readOnly(CompoundTag tag, String reason) {
+        readOnlyFutureSchema = true;
+        futureRoot = tag.copy();
+        records.clear();
+        acknowledgements.clear();
+        quarantinedRecords.clear();
+        quarantinedAcknowledgements.clear();
+        LOGGER.error("Service NPC spawn pending data is unsupported ({}); store is read-only", reason);
+        return this;
+    }
+
     private void checkWarningThreshold() {
-        if (!warnedLarge && records.size() >= WARNING_RECORD_COUNT) {
-            warnedLarge = true;
+        if (!warnedLargeRecords && records.size() >= MAX_COLLECTION_ENTRIES) {
+            warnedLargeRecords = true;
             LOGGER.warn("Service NPC spawn pending store contains {} unacknowledged records", records.size());
+        }
+        if (!warnedLargeAcknowledgements && acknowledgements.size() >= MAX_COLLECTION_ENTRIES) {
+            warnedLargeAcknowledgements = true;
+            LOGGER.warn("Service NPC spawn pending store contains {} acknowledgement receipts", acknowledgements.size());
         }
     }
 }

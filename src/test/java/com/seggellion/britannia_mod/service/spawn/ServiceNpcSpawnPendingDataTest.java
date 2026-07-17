@@ -65,6 +65,7 @@ class ServiceNpcSpawnPendingDataTest {
         records.add(record.toNbt());
         records.add(new CompoundTag());
         root.put("Records", records);
+        root.put("Acknowledgements", new ListTag());
 
         ServiceNpcSpawnPendingData loaded = ServiceNpcSpawnPendingData.load(root, null);
         assertEquals(1, loaded.snapshot().size());
