@@ -2,14 +2,19 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.config.ModConfig;
+import com.seggellion.britannia_mod.menu.ServiceNpcSpawnMenu;
+import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnIdentityResolver;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnLocation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingData;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingOperation;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingDisposition;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingRecord;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnReceiptReconciler;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnRegistrationState;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnStateMachine;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnItemDataSanitizer;
@@ -19,13 +24,16 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
@@ -44,6 +52,9 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     @Nullable private String assignedNpcDisplayName;
     private long assignmentRevision;
     @Nullable private Long lastSuccessfulSyncEpochMillis;
+
+    @Nullable private UUID lastAcknowledgedOperationId;
+    @Nullable private Long lastAcknowledgedRecordedAtEpochMillis;
 
     @Nullable private ServiceNpcSpawnLocation identityOrigin;
     private boolean identityReconciled;
@@ -68,8 +79,13 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     }
 
     public void serverTick() {
-        if (!(level instanceof ServerLevel serverLevel) || identityReconciled) return;
-        reconcileIdentity(serverLevel);
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        if (!identityReconciled) {
+            reconcileIdentity(serverLevel);
+        }
+        if (identityReconciled) {
+            ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(serverLevel, this);
+        }
     }
 
     public void ensureIdentity(ServerLevel level) {
@@ -142,6 +158,8 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         assignedNpcDisplayName = null;
         assignmentRevision = 0L;
         lastSuccessfulSyncEpochMillis = null;
+        lastAcknowledgedOperationId = null;
+        lastAcknowledgedRecordedAtEpochMillis = null;
         identityOrigin = current;
         destructionHandled = false;
     }
@@ -211,6 +229,8 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         configurationRevision = newRevision;
         registrationState = nextState;
         lastErrorCode = null;
+        lastAcknowledgedOperationId = null;
+        lastAcknowledgedRecordedAtEpochMillis = null;
         setChanged();
         return ServiceNpcSpawnValidationError.NONE;
     }
@@ -275,6 +295,12 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         if (lastSuccessfulSyncEpochMillis != null) {
             tag.putLong("LastSuccessfulSyncEpochMillis", lastSuccessfulSyncEpochMillis);
         }
+        if (lastAcknowledgedOperationId != null) {
+            tag.putUUID("LastAcknowledgedOperationId", lastAcknowledgedOperationId);
+        }
+        if (lastAcknowledgedRecordedAtEpochMillis != null) {
+            tag.putLong("LastAcknowledgedRecordedAtEpochMillis", lastAcknowledgedRecordedAtEpochMillis);
+        }
         if (identityOrigin != null) {
             tag.putString("IdentityWorldName", identityOrigin.worldName());
             tag.putString("IdentityDimension", identityOrigin.dimension().toString());
@@ -306,6 +332,10 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         assignmentRevision = Math.max(0L, tag.getLong("AssignmentRevision"));
         lastSuccessfulSyncEpochMillis = tag.contains("LastSuccessfulSyncEpochMillis")
                 ? tag.getLong("LastSuccessfulSyncEpochMillis") : null;
+        lastAcknowledgedOperationId = tag.hasUUID("LastAcknowledgedOperationId")
+                ? tag.getUUID("LastAcknowledgedOperationId") : null;
+        lastAcknowledgedRecordedAtEpochMillis = tag.contains("LastAcknowledgedRecordedAtEpochMillis")
+                ? Math.max(0L, tag.getLong("LastAcknowledgedRecordedAtEpochMillis")) : null;
         ResourceLocation originDimension = tag.contains("IdentityDimension")
                 ? ResourceLocation.tryParse(tag.getString("IdentityDimension")) : null;
         if (originDimension != null && tag.contains("IdentityWorldName")
@@ -350,4 +380,90 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
     public long getAssignmentRevision() { return assignmentRevision; }
     @Nullable public Long getLastSuccessfulSyncEpochMillis() { return lastSuccessfulSyncEpochMillis; }
     @Nullable public ServiceNpcSpawnLocation getIdentityOrigin() { return identityOrigin; }
+    @Nullable public UUID getLastAcknowledgedOperationId() { return lastAcknowledgedOperationId; }
+    @Nullable public Long getLastAcknowledgedRecordedAtEpochMillis() {
+        return lastAcknowledgedRecordedAtEpochMillis;
+    }
+
+    public boolean matchesAcknowledgement(
+            ServiceNpcSpawnAcknowledgementReceipt receipt, ServerLevel serverLevel
+    ) {
+        return spawnPointId != null
+            && spawnPointId.equals(receipt.spawnPointId())
+            && configurationRevision == receipt.configurationRevision()
+            && currentLocation(serverLevel).equals(receipt.location())
+            && receipt.operation() == ServiceNpcSpawnPendingOperation.UPSERT
+            && receipt.registrationState() == com.seggellion.britannia_mod.service.spawn
+                .ServiceNpcSpawnProtocolResponse.RegistrationState.LIVE
+            && (receipt.outcome() == com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnOutcome.APPLIED
+                || receipt.outcome() == com.seggellion.britannia_mod.service.spawn
+                    .ServiceNpcSpawnOutcome.ALREADY_APPLIED);
+    }
+
+    public boolean hasAcknowledgementMarker(ServiceNpcSpawnAcknowledgementReceipt receipt) {
+        return receipt.operationId().equals(lastAcknowledgedOperationId)
+            && Objects.equals(receipt.recordedAtEpochMillis(), lastAcknowledgedRecordedAtEpochMillis);
+    }
+
+    public boolean applyAcknowledgement(ServiceNpcSpawnAcknowledgementReceipt receipt) {
+        if (hasAcknowledgementMarker(receipt)) return false;
+        registrationState = ServiceNpcSpawnRegistrationState.REGISTERED;
+        lastErrorCode = null;
+        lastSuccessfulSyncEpochMillis = receipt.acknowledgedAtEpochMillis();
+        lastAcknowledgedOperationId = receipt.operationId();
+        lastAcknowledgedRecordedAtEpochMillis = receipt.recordedAtEpochMillis();
+        setChanged();
+        syncAuthoritativeState();
+        return true;
+    }
+
+    public boolean matchesPending(ServiceNpcSpawnPendingRecord pending, ServerLevel serverLevel) {
+        return spawnPointId != null
+            && spawnPointId.equals(pending.spawnPointId())
+            && configurationRevision == pending.configurationRevision()
+            && currentLocation(serverLevel).equals(pending.location());
+    }
+
+    public boolean applyPendingDeliveryState(ServiceNpcSpawnPendingRecord pending) {
+        ServiceNpcSpawnRegistrationState nextState;
+        String nextError;
+        if (pending.disposition() == ServiceNpcSpawnPendingDisposition.PERMANENT_FAILURE) {
+            nextState = ServiceNpcSpawnRegistrationState.ERROR;
+            nextError = pending.lastFailureCode() == null
+                ? "invalid_local_operation" : pending.lastFailureCode();
+        } else if (pending.disposition() == ServiceNpcSpawnPendingDisposition.COLLISION_REPAIR) {
+            nextState = ServiceNpcSpawnRegistrationState.ERROR;
+            nextError = "uuid_collision_pending_repair";
+        } else {
+            nextState = lastSuccessfulSyncEpochMillis != null
+                || registrationState == ServiceNpcSpawnRegistrationState.REGISTERED
+                || registrationState == ServiceNpcSpawnRegistrationState.PENDING_UPDATE
+                    ? ServiceNpcSpawnRegistrationState.PENDING_UPDATE
+                    : ServiceNpcSpawnRegistrationState.PENDING_REGISTRATION;
+            nextError = pending.lastFailureCode();
+        }
+        if (registrationState == nextState && Objects.equals(lastErrorCode, nextError)) return false;
+        registrationState = nextState;
+        lastErrorCode = nextError;
+        setChanged();
+        syncAuthoritativeState();
+        return true;
+    }
+
+    private void syncAuthoritativeState() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        BlockState state = getBlockState();
+        serverLevel.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+        for (ServerPlayer player : serverLevel.players()) {
+            if (player.containerMenu instanceof ServiceNpcSpawnMenu menu
+                    && menu.dimension().equals(serverLevel.dimension())
+                    && menu.pos().equals(worldPosition)
+                    && spawnPointId != null
+                    && menu.spawnPointId().equals(spawnPointId)) {
+                ServiceNpcSpawnStateS2CPayload.send(
+                    player, menu, ServiceNpcSpawnValidationError.NONE
+                );
+            }
+        }
+    }
 }

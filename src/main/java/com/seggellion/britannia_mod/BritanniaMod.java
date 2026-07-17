@@ -51,6 +51,7 @@ import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnDeliveryProcessor;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -78,6 +79,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -172,6 +174,8 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new SurvivalZoneHandler());
           NeoForge.EVENT_BUS.register(new StructureProtectionHandler());
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(this::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(this::onServerTick);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 
 
@@ -228,6 +232,7 @@ public void onServerStopping(ServerStoppingEvent event) {
 
     // === NEW: Monster cleanup ===
     MinecraftServer server = event.getServer();
+    ServiceNpcSpawnDeliveryProcessor.stop(server);
     WorldBootstrapHandler.onServerStopping(server);
     ServerAuthRegistry.clear(server);
     for (ServerLevel level : server.getAllLevels()) {
@@ -255,6 +260,14 @@ public void onServerStopping(ServerStoppingEvent event) {
     }
 
 
+}
+
+public void onServerStarted(ServerStartedEvent event) {
+    ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
+}
+
+public void onServerTick(ServerTickEvent.Post event) {
+    ServiceNpcSpawnDeliveryProcessor.tick(event.getServer());
 }
 
 public void onServerStarting(ServerStartingEvent event) {

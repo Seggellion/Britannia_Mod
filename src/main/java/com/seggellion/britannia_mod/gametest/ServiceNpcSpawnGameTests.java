@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.gametest;
 import com.mojang.authlib.GameProfile;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
+import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
 import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
@@ -13,12 +14,24 @@ import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaimData;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClientResult;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnCollisionEvidence;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnConfigurationValidator;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnDeliveryProcessor;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnLocation;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnOperation;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnOperationRequest;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnOutcome;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingData;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingDisposition;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingOperation;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingRecord;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnPendingRequestAdapter;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnProtocolResponse;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnReceiptReconciler;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnRegistrationState;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnValidationError;
 import com.seggellion.britannia_mod.structure.StructureRecord;
@@ -45,6 +58,10 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -53,6 +70,8 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class ServiceNpcSpawnGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
+    private static final String CONTROLLED_SHARD_ONE = "gametest_delivery_one";
+    private static final String CONTROLLED_SHARD_TWO = "gametest_delivery_two";
 
     private ServiceNpcSpawnGameTests() {
     }
@@ -417,6 +436,448 @@ public final class ServiceNpcSpawnGameTests {
                     "spawn-post drop retained identity/configuration data");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 180)
+    public static void automaticDeliveryRegistersExactPost(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        AtomicLong clock = new AtomicLong(1_000_000L);
+        PendingFixture fixture = pendingPost(
+            helper, new BlockPos(1, 1, 1), 0L, CONTROLLED_SHARD_ONE);
+        List<ServiceNpcSpawnOperationRequest> submitted = new ArrayList<>();
+        ServiceNpcSpawnDeliveryProcessor processor =
+            ServiceNpcSpawnDeliveryProcessor.replaceForGameTest(
+                level.getServer(),
+                (server, request) -> {
+                    submitted.add(request);
+                    return completedSubmission(success(request, ServiceNpcSpawnOutcome.APPLIED, clock.get()));
+                },
+                clock::get,
+                CONTROLLED_SHARD_ONE
+            );
+        processor.processNowForGameTest();
+
+        helper.runAfterDelay(3, () -> {
+            check(submitted.size() == 1, "automatic processor did not submit exactly one operation");
+            check(submitted.getFirst().operationId().equals(fixture.pending.operationId()),
+                "automatic submission changed the stable operation ID");
+            check(submitted.getFirst().spawnUuid().equals(fixture.pending.spawnPointId()),
+                "automatic submission changed the spawn UUID");
+            check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+                "valid Rails success did not register the exact loaded post");
+            check(!ServiceNpcSpawnPendingData.get(level).snapshot().containsKey(fixture.pending.spawnPointId()),
+                "successful UPSERT remained pending");
+            verifyProcessorBoundsShutdownAndReplacementThenDestroy(helper);
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void receiptApplicationIsReplaySafeAndTwoPass(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 1L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.acknowledgeSuccess(
+                fixture.pending.token(),
+                successResponse(fixture.pending, ServiceNpcSpawnOutcome.ALREADY_APPLIED, 2_000L)),
+            "could not create durable UPSERT receipt");
+        ServiceNpcSpawnAcknowledgementReceipt receipt =
+            data.findAcknowledgement(fixture.pending.spawnPointId());
+        check(receipt != null, "UPSERT acknowledgement did not create a receipt");
+
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, fixture.post);
+        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+            "first receipt pass did not register the post");
+        check(fixture.post.hasAcknowledgementMarker(receipt),
+            "first receipt pass did not write the exact acknowledgement marker");
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) != null,
+            "first receipt pass consumed the receipt too early");
+
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, fixture.post);
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) == null,
+            "later matching pass did not consume the receipt");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void receiptMarkerSurvivesBlockSaveReload(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        PendingFixture fixture = pendingPost(helper, relative, 2L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.acknowledgeSuccess(
+                fixture.pending.token(),
+                successResponse(fixture.pending, ServiceNpcSpawnOutcome.APPLIED, 3_000L)),
+            "could not create save/reload receipt");
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, fixture.post);
+        CompoundTag saved = fixture.post.saveCustomOnly(level.registryAccess());
+
+        level.removeBlockEntity(absolute);
+        ServiceNpcSpawnBlockEntity reloaded = new ServiceNpcSpawnBlockEntity(
+            absolute, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get().defaultBlockState()
+        );
+        reloaded.loadCustomOnly(saved, level.registryAccess());
+        level.setBlockEntity(reloaded);
+        reloaded.serverTick();
+
+        check(reloaded.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+            "save/reload lost the acknowledged REGISTERED state");
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) == null,
+            "reloaded exact marker did not consume the replayed receipt");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void unavailableBlockEntityReplaysReceiptAfterReload(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        BlockPos absolute = helper.absolutePos(relative);
+        PendingFixture fixture = pendingPost(helper, relative, 3L);
+        CompoundTag savedBeforeAcknowledgement =
+            fixture.post.saveCustomOnly(level.registryAccess());
+        level.removeBlockEntity(absolute);
+
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.acknowledgeSuccess(
+                fixture.pending.token(),
+                successResponse(fixture.pending, ServiceNpcSpawnOutcome.APPLIED, 3_500L)),
+            "could not acknowledge unavailable block fixture");
+        ServiceNpcSpawnAcknowledgementReceipt receipt =
+            data.findAcknowledgement(fixture.pending.spawnPointId());
+        check(receipt != null, "unavailable block acknowledgement was not durable");
+        ServiceNpcSpawnReceiptReconciler.reconcileLocation(level.getServer(), receipt);
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) != null,
+            "receipt disappeared while its block entity was unavailable");
+
+        ServiceNpcSpawnBlockEntity reloaded = new ServiceNpcSpawnBlockEntity(
+            absolute, BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get().defaultBlockState()
+        );
+        reloaded.loadCustomOnly(savedBeforeAcknowledgement, level.registryAccess());
+        level.setBlockEntity(reloaded);
+        reloaded.serverTick();
+        check(reloaded.getRegistrationState() == ServiceNpcSpawnRegistrationState.REGISTERED,
+            "reloaded matching block did not apply its durable receipt");
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) != null,
+            "first reload application consumed the receipt");
+        reloaded.serverTick();
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) == null,
+            "later reload pass did not consume the applied receipt");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void unloadedReceiptDoesNotForceLoadChunk(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos far = new BlockPos(20_000_000, 64, 20_000_000);
+        ServiceNpcSpawnPendingRecord pending = new ServiceNpcSpawnPendingRecord(
+            ServiceNpcSpawnPendingOperation.UPSERT,
+            UUID.randomUUID(),
+            ModConfig.SHARD_NAME,
+            new ServiceNpcSpawnLocation(
+                level.getServer().getWorldData().getLevelName(),
+                level.dimension().location(),
+                far
+            ),
+            UUID.randomUUID(),
+            "bank_teller",
+            true,
+            1L,
+            3L
+        );
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.put(pending) == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED,
+            "could not queue unloaded receipt fixture");
+        ServiceNpcSpawnPendingRecord stored = data.snapshot().get(pending.spawnPointId());
+        check(data.acknowledgeSuccess(
+                stored.token(), successResponse(stored, ServiceNpcSpawnOutcome.APPLIED, 4_000L)),
+            "could not acknowledge unloaded receipt fixture");
+        ServiceNpcSpawnAcknowledgementReceipt receipt =
+            data.findAcknowledgement(stored.spawnPointId());
+        check(receipt != null, "unloaded success did not remain durable");
+        check(!level.hasChunk(far.getX() >> 4, far.getZ() >> 4),
+            "far fixture chunk unexpectedly started loaded");
+
+        ServiceNpcSpawnReceiptReconciler.reconcileLocation(level.getServer(), receipt);
+
+        check(!level.hasChunk(far.getX() >> 4, far.getZ() >> 4),
+            "receipt reconciliation force-loaded an unavailable chunk");
+        check(data.findAcknowledgement(stored.spawnPointId()) != null,
+            "unavailable-chunk receipt was discarded");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void staleReceiptCannotRegisterNewerRevision(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 4L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        check(data.acknowledgeSuccess(
+                fixture.pending.token(),
+                successResponse(fixture.pending, ServiceNpcSpawnOutcome.APPLIED, 5_000L)),
+            "could not create stale receipt fixture");
+
+        CompoundTag newer = fixture.post.saveCustomOnly(level.registryAccess());
+        newer.putLong("ConfigurationRevision", fixture.pending.configurationRevision() + 1L);
+        newer.putString("RegistrationState", ServiceNpcSpawnRegistrationState.PENDING_UPDATE.name());
+        newer.remove("LastAcknowledgedOperationId");
+        newer.remove("LastAcknowledgedRecordedAtEpochMillis");
+        fixture.post.loadCustomOnly(newer, level.registryAccess());
+        ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(level, fixture.post);
+
+        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.PENDING_UPDATE,
+            "stale receipt registered a newer block revision");
+        check(data.findAcknowledgement(fixture.pending.spawnPointId()) != null,
+            "stale receipt was consumed against a newer revision");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void permanentAndCollisionStatesAreVisibleWithoutRekey(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        PendingFixture fixture = pendingPost(helper, new BlockPos(1, 1, 1), 5L);
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        UUID originalId = fixture.pending.spawnPointId();
+
+        check(data.markPermanentFailure(fixture.pending.token(), "invalid_city"),
+            "could not persist permanent failure");
+        fixture.post.serverTick();
+        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.ERROR
+                && "invalid_city".equals(fixture.post.getLastErrorCode()),
+            "permanent failure was not visible on the exact block");
+
+        ServiceNpcSpawnCollisionEvidence evidence = new ServiceNpcSpawnCollisionEvidence(
+            ServiceNpcSpawnCollisionEvidence.CollisionKind.REDACTED, true, null, 6_000L
+        );
+        check(data.markCollisionRepair(
+                fixture.pending.token(), evidence, "uuid_collision_pending_repair"),
+            "could not persist collision-repair disposition");
+        fixture.post.serverTick();
+        check(fixture.post.getRegistrationState() == ServiceNpcSpawnRegistrationState.ERROR
+                && "uuid_collision_pending_repair".equals(fixture.post.getLastErrorCode()),
+            "collision state was not visible on the exact block");
+        check(originalId.equals(fixture.post.getSpawnPointId()),
+            "collision visibility changed the spawn UUID");
+        check(data.snapshot().get(originalId).collisionRepairCount() == 0,
+            "Slice 3B incremented collision repair count");
+        helper.succeed();
+    }
+
+    private static void verifyProcessorBoundsShutdownAndReplacementThenDestroy(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var server = level.getServer();
+        String shard = "gametest-lifecycle-bounds";
+        List<PendingFixture> fixtures = List.of(
+            pendingPost(helper, new BlockPos(3, 1, 3), 100L, shard),
+            pendingPost(helper, new BlockPos(4, 1, 3), 101L, shard),
+            pendingPost(helper, new BlockPos(5, 1, 3), 102L, shard)
+        );
+        List<ControlledSubmission> handles = new ArrayList<>();
+        List<ServiceNpcSpawnOperationRequest> submitted = new ArrayList<>();
+        ServiceNpcSpawnDeliveryProcessor processor =
+            ServiceNpcSpawnDeliveryProcessor.replaceForGameTest(
+                server,
+                (activeServer, request) -> {
+                    submitted.add(request);
+                    ControlledSubmission handle = new ControlledSubmission();
+                    handles.add(handle);
+                    return handle;
+                },
+                () -> 8_000L,
+                shard
+            );
+        check(ServiceNpcSpawnDeliveryProcessor.start(server) == processor,
+            "starting an active server created a second processor");
+        check(ServiceNpcSpawnDeliveryProcessor.activeProcessorCount() == 1,
+            "server did not retain exactly one active processor");
+        for (int tick = 0; tick < ServiceNpcSpawnDeliveryProcessor.TICK_CADENCE - 1; tick++) {
+            ServiceNpcSpawnDeliveryProcessor.tick(server);
+        }
+        check(submitted.isEmpty(), "processor selected work before the 20-tick cadence elapsed");
+        ServiceNpcSpawnDeliveryProcessor.tick(server);
+        check(submitted.size() == ServiceNpcSpawnDeliveryProcessor.MAX_IN_FLIGHT,
+            "processor did not enforce the two-request in-flight limit");
+        check(processor.inFlightCount() == ServiceNpcSpawnDeliveryProcessor.MAX_IN_FLIGHT,
+            "runtime in-flight tracking exceeded its configured bound");
+        check(ServiceNpcSpawnPendingData.get(level).snapshot()
+                .get(fixtures.get(2).pending.spawnPointId()).attemptCount() == 0,
+            "processor submitted beyond available in-flight capacity");
+
+        ServiceNpcSpawnDeliveryProcessor.stop(server);
+        check(processor.inFlightCount() == 0, "processor retained entries after shutdown cancellation");
+        check(handles.stream().allMatch(handle -> handle.future.isCancelled()),
+            "shutdown did not request cancellation for every active handle");
+        processor.processNowForGameTest();
+        ServiceNpcSpawnDeliveryProcessor.tick(server);
+        check(submitted.size() == ServiceNpcSpawnDeliveryProcessor.MAX_IN_FLIGHT,
+            "stopped processor continued selecting work");
+
+        String replacementShard = "gametest-block-replacement";
+        BlockPos replacementRelative = new BlockPos(6, 1, 3);
+        PendingFixture replacement = pendingPost(
+            helper, replacementRelative, 200L, replacementShard);
+        ControlledSubmission replacementHandle = new ControlledSubmission();
+        List<ServiceNpcSpawnOperationRequest> replacementRequests = new ArrayList<>();
+        ServiceNpcSpawnDeliveryProcessor replacementProcessor =
+            ServiceNpcSpawnDeliveryProcessor.replaceForGameTest(
+                server,
+                (activeServer, request) -> {
+                    replacementRequests.add(request);
+                    return replacementHandle;
+                },
+                () -> 9_000L,
+                replacementShard
+            );
+        replacementProcessor.processNowForGameTest();
+        check(replacementRequests.size() == 1, "replacement fixture did not enter flight");
+        helper.setBlock(replacementRelative, Blocks.STONE);
+        replacementHandle.future.complete(success(
+            replacementRequests.getFirst(), ServiceNpcSpawnOutcome.APPLIED, 9_000L
+        ));
+        helper.runAfterDelay(3, () -> {
+            check(level.getBlockState(helper.absolutePos(replacementRelative)).is(Blocks.STONE),
+                "obsolete UPSERT completion mutated the replacement block");
+            ServiceNpcSpawnPendingRecord current = ServiceNpcSpawnPendingData.get(level)
+                .snapshot().get(replacement.pending.spawnPointId());
+            check(current != null && current.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
+                "block replacement did not leave REMOVE authoritative");
+            check(ServiceNpcSpawnPendingData.get(level)
+                    .findAcknowledgement(replacement.pending.spawnPointId()) == null,
+                "obsolete replacement completion created a receipt");
+            destroyDuringInflightUpsertLeavesRemoveAuthoritative(helper);
+        });
+    }
+
+    private static void destroyDuringInflightUpsertLeavesRemoveAuthoritative(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        AtomicLong clock = new AtomicLong(7_000L);
+        PendingFixture fixture = pendingPost(
+            helper, new BlockPos(3, 1, 1), 0L, CONTROLLED_SHARD_TWO);
+        ControlledSubmission controlled = new ControlledSubmission();
+        List<ServiceNpcSpawnOperationRequest> submitted = new ArrayList<>();
+        ServiceNpcSpawnDeliveryProcessor processor =
+            ServiceNpcSpawnDeliveryProcessor.replaceForGameTest(
+                level.getServer(),
+                (server, request) -> {
+                    submitted.add(request);
+                    return controlled;
+                },
+                clock::get,
+                CONTROLLED_SHARD_TWO
+            );
+        processor.processNowForGameTest();
+        check(submitted.size() == 1 && processor.inFlightCount() == 1,
+            "fixture UPSERT did not enter in-flight tracking");
+
+        helper.setBlock(new BlockPos(3, 1, 1), Blocks.AIR);
+        ServiceNpcSpawnPendingRecord remove =
+            ServiceNpcSpawnPendingData.get(level).snapshot().get(fixture.pending.spawnPointId());
+        check(remove != null && remove.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
+            "destruction did not replace in-flight UPSERT with terminal REMOVE");
+        controlled.future.complete(success(
+            submitted.getFirst(), ServiceNpcSpawnOutcome.APPLIED, clock.get()
+        ));
+
+        helper.runAfterDelay(3, () -> {
+            ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+            ServiceNpcSpawnPendingRecord current = data.snapshot().get(fixture.pending.spawnPointId());
+            check(current != null && current.operation() == ServiceNpcSpawnPendingOperation.REMOVE,
+                "obsolete UPSERT completion removed the authoritative REMOVE");
+            check(data.findAcknowledgement(fixture.pending.spawnPointId()) == null,
+                "obsolete UPSERT completion created a receipt");
+            resetProcessor(level);
+            helper.succeed();
+        });
+    }
+
+    private static PendingFixture pendingPost(
+            GameTestHelper helper, BlockPos relative, long recordedAt
+    ) {
+        return pendingPost(helper, relative, recordedAt, ModConfig.SHARD_NAME);
+    }
+
+    private static PendingFixture pendingPost(
+            GameTestHelper helper, BlockPos relative, long recordedAt, String shardName
+    ) {
+        ServerLevel level = helper.getLevel();
+        ServiceNpcSpawnBlockEntity post = placePost(helper, relative);
+        UUID id = requireId(post);
+        UUID city = UUID.randomUUID();
+        CompoundTag configured = post.saveCustomOnly(level.registryAccess());
+        configured.putUUID("CityPublicId", city);
+        configured.putString("ServiceNpcTypeKey", "bank_teller");
+        configured.putBoolean("Enabled", true);
+        configured.putLong("ConfigurationRevision", 1L);
+        configured.putString("RegistrationState", ServiceNpcSpawnRegistrationState.PENDING_REGISTRATION.name());
+        post.loadCustomOnly(configured, level.registryAccess());
+        post.serverTick();
+        ServiceNpcSpawnPendingRecord incoming = new ServiceNpcSpawnPendingRecord(
+            ServiceNpcSpawnPendingOperation.UPSERT,
+            id,
+            shardName,
+            post.currentLocation(level),
+            city,
+            "bank_teller",
+            true,
+            1L,
+            recordedAt
+        );
+        ServiceNpcSpawnPendingData data = ServiceNpcSpawnPendingData.get(level);
+        ServiceNpcSpawnPendingData.MutationResult result = data.put(incoming);
+        check(result == ServiceNpcSpawnPendingData.MutationResult.ACCEPTED,
+            "could not create pending GameTest fixture: " + result);
+        return new PendingFixture(post, data.snapshot().get(id));
+    }
+
+    private static ServiceNpcSpawnClientResult.Protocol success(
+            ServiceNpcSpawnOperationRequest request,
+            ServiceNpcSpawnOutcome outcome,
+            long acknowledgedAt
+    ) {
+        return new ServiceNpcSpawnClientResult.Protocol(
+            new ServiceNpcSpawnProtocolResponse(
+                1, true, outcome, false, request.operationId(), request.spawnUuid(),
+                request.sourceRevision(), request.sourceRevision(), request.sourceRevision(),
+                request.operation() == ServiceNpcSpawnOperation.UPSERT
+                    ? ServiceNpcSpawnProtocolResponse.RegistrationState.LIVE
+                    : ServiceNpcSpawnProtocolResponse.RegistrationState.REMOVED,
+                Instant.ofEpochMilli(acknowledgedAt), true, null, null, null, null, null
+            ),
+            ServiceNpcSpawnClientResult.Disposition.SUCCESS
+        );
+    }
+
+    private static ServiceNpcSpawnProtocolResponse successResponse(
+            ServiceNpcSpawnPendingRecord pending,
+            ServiceNpcSpawnOutcome outcome,
+            long acknowledgedAt
+    ) {
+        return success(ServiceNpcSpawnPendingRequestAdapter.adapt(pending), outcome, acknowledgedAt).response();
+    }
+
+    private static ServiceNpcSpawnDeliveryProcessor.Submission completedSubmission(
+            ServiceNpcSpawnClientResult result
+    ) {
+        return new ServiceNpcSpawnDeliveryProcessor.Submission() {
+            private final CompletableFuture<ServiceNpcSpawnClientResult> future =
+                CompletableFuture.completedFuture(result);
+            @Override public CompletableFuture<ServiceNpcSpawnClientResult> future() { return future; }
+            @Override public boolean cancel() { return false; }
+        };
+    }
+
+    private static void resetProcessor(ServerLevel level) {
+        ServiceNpcSpawnDeliveryProcessor.stop(level.getServer());
+        ServiceNpcSpawnDeliveryProcessor.start(level.getServer());
+    }
+
+    private record PendingFixture(
+        ServiceNpcSpawnBlockEntity post, ServiceNpcSpawnPendingRecord pending
+    ) {}
+
+    private static final class ControlledSubmission implements ServiceNpcSpawnDeliveryProcessor.Submission {
+        private final CompletableFuture<ServiceNpcSpawnClientResult> future = new CompletableFuture<>();
+        @Override public CompletableFuture<ServiceNpcSpawnClientResult> future() { return future; }
+        @Override public boolean cancel() { return future.cancel(true); }
     }
 
     private static ServiceNpcSpawnBlockEntity placePost(GameTestHelper helper, BlockPos relative) {

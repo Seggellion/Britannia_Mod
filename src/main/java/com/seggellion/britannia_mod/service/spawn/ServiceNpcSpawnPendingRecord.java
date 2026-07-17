@@ -133,7 +133,7 @@ public record ServiceNpcSpawnPendingRecord(
         ServiceNpcSpawnPendingDisposition nextDisposition = provisionalNextAttemptAt > attemptedAt
             ? ServiceNpcSpawnPendingDisposition.RETRY_WAIT : disposition;
         return copy(nextDisposition, attemptCount + 1, attemptedAt, provisionalNextAttemptAt,
-            lastFailureCode, collisionEvidence);
+            null, collisionEvidence);
     }
 
     ServiceNpcSpawnPendingRecord withRetryWait(String failureCode, long nextAttemptAt) {
