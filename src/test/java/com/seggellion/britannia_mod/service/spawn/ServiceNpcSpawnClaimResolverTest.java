@@ -46,6 +46,20 @@ class ServiceNpcSpawnClaimResolverTest {
     }
 
     @Test
+    void worldNameOnlyChangeDoesNotRekey() {
+        UUID id = UUID.randomUUID();
+        ServiceNpcSpawnLocation renamed = new ServiceNpcSpawnLocation("renamed-world", OVERWORLD, new BlockPos(1, 64, 0));
+        assertEquals(ServiceNpcSpawnIdentityResolver.Decision.CANONICAL,
+                ServiceNpcSpawnIdentityResolver.decide(
+                        renamed,
+                        new ServiceNpcSpawnClaim(id, location(1)),
+                        location(1)
+                ));
+        assertEquals(ServiceNpcSpawnIdentityResolver.Decision.CANONICAL,
+                ServiceNpcSpawnIdentityResolver.decide(renamed, null, location(1)));
+    }
+
+    @Test
     void claimCodecPersistsAndFutureSchemaIsReadOnly() {
         UUID id = UUID.randomUUID();
         ServiceNpcSpawnClaim claim = new ServiceNpcSpawnClaim(id, location(3));

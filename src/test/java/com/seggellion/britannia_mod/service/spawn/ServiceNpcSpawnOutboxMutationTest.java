@@ -139,12 +139,17 @@ class ServiceNpcSpawnOutboxMutationTest {
         ServiceNpcSpawnPendingData loaded = ServiceNpcSpawnPendingData.load(saved, null);
         assertEquals(1, loaded.snapshotAcknowledgements().size());
         assertFalse(loaded.consumeAcknowledgementIfMatches(
-            id, new ServiceNpcSpawnLocation("other", location().dimension(), location().pos()),
+            id, new ServiceNpcSpawnLocation(
+                location().worldName(), location().dimension(), location().pos().offset(4, 0, 0)
+            ),
             1, record.operationId()
         ));
         assertFalse(loaded.consumeAcknowledgementIfMatches(id, location(), 2, record.operationId()));
         assertFalse(loaded.consumeAcknowledgementIfMatches(id, location(), 1, UUID.randomUUID()));
-        assertTrue(loaded.consumeAcknowledgementIfMatches(id, location(), 1, record.operationId()));
+        assertTrue(loaded.consumeAcknowledgementIfMatches(
+            id, new ServiceNpcSpawnLocation("other", location().dimension(), location().pos()),
+            1, record.operationId()
+        ));
         assertTrue(loaded.snapshotAcknowledgements().isEmpty());
 
         ServiceNpcSpawnPendingData edit = ServiceNpcSpawnPendingData.load(saved, null);

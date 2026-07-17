@@ -18,4 +18,18 @@ public record ServiceNpcSpawnLocation(String worldName, ResourceLocation dimensi
         }
         pos = pos.immutable();
     }
+
+    // worldName is diagnostic only (Rails active-coordinate identity is server + dimension + x/y/z);
+    // physical identity must not change on a world-name-only rename.
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof ServiceNpcSpawnLocation that
+            && dimension.equals(that.dimension)
+            && pos.equals(that.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dimension, pos);
+    }
 }
