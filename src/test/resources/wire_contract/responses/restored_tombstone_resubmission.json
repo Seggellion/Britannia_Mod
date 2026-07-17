@@ -1,0 +1,1 @@
+{"protocol_version":1,"success":false,"outcome":"UUID_COLLISION","retryable":false,"operation_id":"30000000-0000-4000-8000-000000000005","spawn_uuid":"20000000-0000-4000-8000-000000000002","submitted_revision":2,"collision_kind":"TOMBSTONED","replacement_uuid_required":true}
