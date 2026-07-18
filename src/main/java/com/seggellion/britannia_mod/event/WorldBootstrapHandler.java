@@ -15,6 +15,7 @@ import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
 import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.sync.WorldBootstrapAPI;
 import com.seggellion.britannia_mod.util.FishCatalog;
@@ -72,6 +73,10 @@ public final class WorldBootstrapHandler {
 
     private static void apply(ServerPlayer player, WorldBootstrapAPI.WorldBootstrapData data) {
         ServiceNpcRegistryCache.replace(data.serviceNpcRegistry());
+        // Durable, unlike ServiceNpcRegistryCache: this is the last-known-good cache a
+        // future offline startup reads before any bootstrap fetch succeeds, so it is
+        // intentionally never cleared in onServerStopping below.
+        ServiceNpcAssignmentsCache.get(player.serverLevel()).replace(data.serviceNpcAssignments());
         try {
             BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(
                 data.cities().stream()

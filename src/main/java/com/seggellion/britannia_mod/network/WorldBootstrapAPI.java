@@ -12,6 +12,8 @@ import com.seggellion.britannia_mod.server.http.CancellableHttpRequest;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.QuestEntryParser;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsParser;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsSnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryParser;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 
@@ -139,6 +141,12 @@ public final class WorldBootstrapAPI {
                 // a partially applicable bootstrap result.
                 CoreBootstrapData core = parseCore(root);
 
+                // Bootstrap has no per-server credential, so the parsed section spans
+                // every Minecraft server on the shard; narrow it to this server's own
+                // entries before it ever leaves this method.
+                ServiceNpcAssignmentsSnapshot serviceNpcAssignments = core.serviceNpcAssignments()
+                        .filteredForServer(credentials.minecraftServerKey().orElse(null));
+
                 // 5) Grape Varieties
                 List<com.seggellion.britannia_mod.winery.GrapeVariety> grapesList = new ArrayList<>();
                 if (root.has("grapes") && root.get("grapes").isJsonArray()) {
@@ -207,6 +215,7 @@ public final class WorldBootstrapAPI {
                         core.cities(),
                         core.acceptedQuests(),
                         core.serviceNpcRegistry(),
+                        serviceNpcAssignments,
                         grapesList,
                         true,
                         null
@@ -232,11 +241,12 @@ public final class WorldBootstrapAPI {
 
     public record WorldBootstrapData(
             Map<ResourceLocation, FishCatalog.FishMeta> fish,
-            List<RegionData> regions, 
+            List<RegionData> regions,
             ShardUserData shardUser,
             List<CityBootstrapData> cities,
             List<ClientQuestEntry> acceptedQuests,
             ServiceNpcRegistrySnapshot serviceNpcRegistry,
+            ServiceNpcAssignmentsSnapshot serviceNpcAssignments,
             List<com.seggellion.britannia_mod.winery.GrapeVariety> grapes,
             boolean successful,
             String failureCode
@@ -253,6 +263,7 @@ public final class WorldBootstrapAPI {
                     List.of(),
                     List.of(),
                     ServiceNpcRegistrySnapshot.empty(),
+                    ServiceNpcAssignmentsSnapshot.empty(),
                     List.of(),
                     false,
                     failureCode
@@ -295,7 +306,8 @@ public final class WorldBootstrapAPI {
             ShardUserData shardUser,
             List<CityBootstrapData> cities,
             List<ClientQuestEntry> acceptedQuests,
-            ServiceNpcRegistrySnapshot serviceNpcRegistry
+            ServiceNpcRegistrySnapshot serviceNpcRegistry,
+            ServiceNpcAssignmentsSnapshot serviceNpcAssignments
     ) {}
 
     static CoreBootstrapData parseCore(JsonObject root) {
@@ -315,11 +327,19 @@ public final class WorldBootstrapAPI {
                     serviceNpcRegistry.error());
         }
 
+        ServiceNpcAssignmentsParser.ParseResult serviceNpcAssignments =
+                ServiceNpcAssignmentsParser.parseBootstrapRoot(root);
+        if (serviceNpcAssignments.status() == ServiceNpcAssignmentsParser.ParseStatus.REJECTED) {
+            LOGGER.warn("Rejected Service NPC assignments without rejecting unrelated bootstrap data: {}",
+                    serviceNpcAssignments.error());
+        }
+
         return new CoreBootstrapData(
                 shardUser,
                 List.copyOf(cities),
                 List.copyOf(acceptedQuests),
-                serviceNpcRegistry.snapshot()
+                serviceNpcRegistry.snapshot(),
+                serviceNpcAssignments.snapshot()
         );
     }
 
