@@ -518,6 +518,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.QUEST_GIVER.get(), QuestGiverEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ALCOHOL_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.SERVICE_NPC.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.MEAT_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ORE_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.STONE_TRADER.get(), CitizenEntityRenderer::new);

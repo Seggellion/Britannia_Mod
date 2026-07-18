@@ -78,6 +78,7 @@ import com.seggellion.britannia_mod.entity.OreTraderEntity;
 import com.seggellion.britannia_mod.entity.ProduceTraderEntity;
 import com.seggellion.britannia_mod.entity.SalvageTraderEntity;
 import com.seggellion.britannia_mod.entity.AlcoholTraderEntity;
+import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.entity.StoneTraderEntity;
 import com.seggellion.britannia_mod.entity.TavernkeeperEntity;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
@@ -126,6 +127,12 @@ public static final DeferredHolder<EntityType<?>, EntityType<AlcoholTraderEntity
             () -> EntityType.Builder.of(AlcoholTraderEntity::new, MobCategory.MISC)
                     .sized(0.6F, 1.95F)
                     .build("britannia_mod:alcohol_trader"));
+
+public static final DeferredHolder<EntityType<?>, EntityType<ServiceNpcEntity>> SERVICE_NPC =
+        ENTITIES.register("service_npc",
+            () -> EntityType.Builder.of(ServiceNpcEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:service_npc"));
 
 public static final DeferredHolder<EntityType<?>, EntityType<MeatTraderEntity>> MEAT_TRADER =
         ENTITIES.register("meat_trader",
@@ -699,6 +706,7 @@ event.put(BEAR_BROWN_ENTITY.get(), BearBrownEntity.createAttributes().build());
         event.put(TAVERNKEEPER.get(), TavernkeeperEntity.createAttributes().build());
         event.put(COSTERMONGER.get(), CostermongerEntity.createAttributes().build());
         event.put(ALCOHOL_TRADER.get(), AlcoholTraderEntity.createAttributes().build());
+        event.put(SERVICE_NPC.get(), ServiceNpcEntity.createAttributes().build());
 
 
         event.put(TOWNSPERSON.get(), TownPersonEntity.createAttributes().build());
