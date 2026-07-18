@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.menu.ServiceNpcSpawnMenu;
 import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcAssignmentReconciler;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgedRegistration;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnAcknowledgementReceipt;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnClaim;
@@ -86,6 +87,7 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         if (identityReconciled) {
             ServiceNpcSpawnCollisionRepairCoordinator.reconcileBlock(serverLevel, this);
             ServiceNpcSpawnReceiptReconciler.reconcileLoadedBlock(serverLevel, this);
+            ServiceNpcAssignmentReconciler.reconcileBlock(serverLevel, this);
         }
     }
 
@@ -601,6 +603,23 @@ public final class ServiceNpcSpawnBlockEntity extends BlockEntity {
         setChanged();
         syncAuthoritativeState();
         return true;
+    }
+
+    /**
+     * Narrow write path for {@code ServiceNpcAssignmentReconciler} (Milestone 6 Slice
+     * 3c) to record the currently-reconciled runtime assignment, mirroring the
+     * apply*-style entry points the other spawn reconcilers already use to mutate this
+     * block entity from outside. Cache/assignment data is always authoritative, so
+     * this simply overwrites rather than conditionally merging.
+     */
+    public void applyAssignmentReconciliation(
+            @Nullable UUID assignedNpcPublicId, @Nullable String assignedNpcDisplayName, long assignmentRevision
+    ) {
+        this.assignedNpcPublicId = assignedNpcPublicId;
+        this.assignedNpcDisplayName = assignedNpcDisplayName;
+        this.assignmentRevision = assignmentRevision;
+        setChanged();
+        syncAuthoritativeState();
     }
 
     public boolean matchesPending(ServiceNpcSpawnPendingRecord pending, ServerLevel serverLevel) {
