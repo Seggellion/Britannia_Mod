@@ -2902,10 +2902,10 @@ Codex should identify these as explicit project decisions rather than silently g
 7. Name uniqueness scope
 8. Existing GCS asset lookup contract
 9. Canonical ItemStack serialization codec
-10. Whether nested container items may be banked
+10. Whether nested container items may be banked — Resolved — see compatibility map ADR-009
 11. Exact item weight source
 12. Bank check minimum and maximum
-13. Whether silver and copper checks are planned
+13. Whether silver and copper checks are planned — Resolved — see compatibility map ADR-012
 14. Spawn block edit permission model
 15. Whether spawn blocks should send periodic heartbeats
 16. Timeout before a missing spawn point is considered stale

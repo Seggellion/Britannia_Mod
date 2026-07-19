@@ -180,6 +180,60 @@ timestamps/nonces, and replay protection. The current client exposure of city
 API tokens and secrets is a compatibility fact, not a precedent to copy.
 Milestone 1 does not change authentication.
 
+### ADR-009: Nested containers are bankable in the first release
+
+Date: 2026-07-19. Status: Human-approved (not Codex-inferred).
+
+Nested containers (shulker boxes, bundles) with contents are bankable in the
+first release. The canonical ItemStack codec must serialize container
+contents recursively; it must not treat a nested container as an opaque
+blob. This directly affects Milestone 8 Slice 1's codec work already in
+progress on this branch — Slice 1's test coverage should be checked against
+this requirement once its report is available.
+
+### ADR-010: Quest-bound items carry no banking restriction in the first release
+
+Date: 2026-07-19. Status: Human-approved (not Codex-inferred).
+
+Quest-bound and other non-transferable items require no banking restriction
+in the first release. No eligibility check needs to be added for this item
+class before Milestone 9 enables inventory mutation.
+
+### ADR-011: "Bank check" is renamed to "bank cheque" for all new work
+
+Date: 2026-07-19. Status: Human-approved (not Codex-inferred).
+
+"Bank check" is renamed to "bank cheque" throughout this project, effective
+immediately and before any Milestone 11 implementation begins. Future class
+names, table names, API fields, and documentation should use "cheque" (for
+example `BankCheque`, `bank_cheques`), not "check". This entry governs new
+work only: it does not rewrite existing historical references to "check" in
+the milestone playbook or in this document's own already-written sections
+and ADRs (including ADR-001 through ADR-008 above and the Open Decisions
+cross-references below).
+
+### ADR-012: Bank cheques carry one authoritative monetary value, not a gold-only or per-currency amount
+
+Date: 2026-07-19. Status: Human-approved (not Codex-inferred).
+
+Bank cheques (Milestone 11) carry a single authoritative monetary value in
+Rails, not separate per-currency amounts and not a gold-only restriction.
+This explicitly overrides Milestone 11's own stated default assumption of
+gold-only-unless-otherwise-approved. On redemption, the value converts into
+an appropriate mix of gold/silver/copper coins, and reserves settle between
+the issuing account/city and the redeeming location as appropriate.
+
+The exact settlement mechanics between issuing and redeeming locations are
+not resolved by this entry and remain open design work for Milestone 11
+itself.
+
+A prerequisite was found during Milestone 8 recon: gold/silver/copper
+conversion is not currently centralized anywhere in the codebase —
+`MerchantEconomyService` and `ServerEconomyService.Payout` each implement the
+1:100:10000 ratio independently. Milestone 11 must establish one single
+authoritative conversion source before cheque redemption can convert a value
+into coins safely.
+
 ## 5. Authority and extension matrix
 
 | Domain | Current authority | Verified current representation | Extension rule |
