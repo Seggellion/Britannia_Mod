@@ -1,8 +1,13 @@
 package com.seggellion.britannia_mod.entity;
 
+import com.seggellion.britannia_mod.service.ServiceActionDispatcher;
+import com.seggellion.britannia_mod.service.banking.BankingCapability;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -14,6 +19,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.DifficultyInstance;
 
 import javax.annotation.Nullable;
@@ -113,6 +119,36 @@ public class ServiceNpcEntity extends CitizenEntity {
      */
     public void assignHomePost(BlockPos pos, int radius) {
         this.restrictTo(pos, radius);
+    }
+
+    // ---------- Interaction: Milestone 7 Slice A entry point ----------
+    // Genuinely new: ServiceNpcEntity had no interactAt/mobInteract override before this
+    // slice (confirmed by recon). Deliberately server-side-only rather than mirroring
+    // QuestGiverEntity's own client-triggered-then-C2S-payload mechanism: vanilla already
+    // calls interactAt on the logical server for a real player interaction (this is the
+    // authoritative call, not a mirror of client prediction), so there is no need to
+    // round-trip a client-supplied entity/UUID through a new payload just to get back to
+    // a server context we are already in. The `player instanceof ServerPlayer` pattern
+    // match is what actually excludes the client-side call (a client-side interactAt
+    // invocation receives a client-only Player, never a ServerPlayer, so it can never
+    // satisfy this branch and falls through to super unconditionally); `!level().isClientSide`
+    // is kept alongside it as a second, redundant-by-construction guard consistent with
+    // this codebase's layered-validation convention elsewhere.
+    //
+    // Gated on live capability, not a hardcoded service key: only a teller whose current
+    // ServiceNpcType (from the server-side ServiceNpcRegistryCache, the same source
+    // ServiceActionDispatcher already trusts) actually allows "bank.open" triggers this at
+    // all. Any other teller (a future non-banking Service NPC type) falls through to
+    // super.interactAt unchanged.
+    @Override
+    public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND && !level().isClientSide
+                && player instanceof ServerPlayer serverPlayer
+                && BankingCapability.supportsBankOpen(this.getServiceNpcTypeKey())) {
+            ServiceActionDispatcher.dispatchBankOpen(serverPlayer, this);
+            return InteractionResult.sidedSuccess(false);
+        }
+        return super.interactAt(player, hit, hand);
     }
 
     // ---------- Despawn prevention ----------

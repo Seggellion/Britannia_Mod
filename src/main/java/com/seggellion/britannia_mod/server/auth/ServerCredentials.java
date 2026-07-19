@@ -50,6 +50,21 @@ public final class ServerCredentials {
         this.minecraftServerKeyStatus = parsedStatus;
     }
 
+    /**
+     * Test-only construction, analogous to {@code ServerCredentialsTestFactory} (which
+     * lives in {@code src/test} and is unreachable from GameTests living in
+     * {@code src/main}'s {@code gametest} package by this codebase's own convention).
+     * Public for the same cross-package-test-access reason
+     * {@link com.seggellion.britannia_mod.service.banking.BankingOpenClient}'s own test
+     * constructor and functional interfaces were widened.
+     */
+    public static ServerCredentials forGameTesting(URI serviceOrigin, @javax.annotation.Nullable UUID minecraftServerKey) {
+        return new ServerCredentials(
+                "Test Shard", "test-only-secret-sentinel", serviceOrigin, Source.SERVER_FILE, false, false,
+                minecraftServerKey == null ? null : minecraftServerKey.toString()
+        );
+    }
+
     public String shardName() { return shardName; }
     String shardSecret() { return shardSecret; }
     public URI serviceOrigin() { return serviceOrigin; }
