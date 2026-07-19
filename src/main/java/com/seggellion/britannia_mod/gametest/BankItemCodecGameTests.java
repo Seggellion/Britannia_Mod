@@ -28,6 +28,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -195,6 +196,62 @@ public final class BankItemCodecGameTests {
         ItemStack decoded = roundTrip(helper, original);
         check(decoded.getDamageValue() == 7, "damage value did not survive the round trip");
         assertSemanticallyEqualAndSameFingerprint(helper, original, decoded);
+        helper.succeed();
+    }
+
+    // ---------- Nested containers (ADR-009) ----------
+    // ADR-009 (docs/ultimacraft_banking_service_npc_compatibility_map.md): nested containers
+    // are bankable and "the canonical ItemStack codec must serialize container contents
+    // recursively; it must not treat a nested container as an opaque blob." Vanilla's own
+    // ItemContainerContents.CODEC (the real DataComponents.CONTAINER component a shulker box
+    // uses -- confirmed by reading ItemContainerContents.java directly, not assumed) already
+    // encodes each contained ItemStack through ItemStack.CODEC itself, and its equals() uses
+    // ItemStack.listMatches (full per-stack component equality), not a shortcut. Since
+    // BankItemCodec wraps ItemStack.CODEC generically rather than hand-selecting fields, this
+    // recursion should already work with no special-casing. These tests prove that directly.
+
+    @GameTest(template = TEMPLATE)
+    public static void shulkerBoxRoundTripPreservesNestedItemsIncludingNestedCustomData(GameTestHelper helper) {
+        ItemStack nestedSword = qualitySwordStack(4, UOMetalToolMaterial.VALORITE);
+        ItemStack nestedDiamonds = new ItemStack(Items.DIAMOND, 3);
+        ItemStack original = shulkerBoxStack(List.of(nestedSword, nestedDiamonds));
+
+        ItemStack decoded = roundTrip(helper, original);
+
+        List<ItemStack> decodedContents = decoded.get(DataComponents.CONTAINER).stream().toList();
+        check(decodedContents.size() == 2, "nested item count did not survive the round trip: " + decodedContents.size());
+        check(BankItemEquality.semanticEquals(decodedContents.get(0), nestedSword),
+                "nested quality sword was not semantically equal after the round trip");
+        check(QualitySwordItem.getQuality(decodedContents.get(0)) == 4,
+                "nested quality sword's Quality custom data did not survive the round trip");
+        check("valorite".equals(QualitySwordItem.getMaterial(decodedContents.get(0))),
+                "nested quality sword's Material custom data did not survive the round trip");
+        check(BankItemEquality.semanticEquals(decodedContents.get(1), nestedDiamonds),
+                "nested plain diamond stack was not semantically equal after the round trip");
+
+        assertSemanticallyEqualAndSameFingerprint(helper, original, decoded);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void fingerprintDiffersWhenContainerContentsDifferButTheContainerItselfDoesNot(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+
+        ItemStack emptyContentsSword = qualitySwordStack(4, UOMetalToolMaterial.VALORITE);
+        ItemStack differentContentsSword = qualitySwordStack(3, UOMetalToolMaterial.VALORITE);
+        ItemStack boxA = shulkerBoxStack(List.of(emptyContentsSword));
+        ItemStack boxB = shulkerBoxStack(List.of(differentContentsSword));
+
+        check(!BankItemFingerprint.fingerprint(boxA, registries).equals(BankItemFingerprint.fingerprint(boxB, registries)),
+                "two shulker boxes with different nested contents (same outer item) fingerprinted identically -- "
+                        + "the container was treated as an opaque blob, contradicting ADR-009");
+        check(!BankItemEquality.semanticEquals(boxA, boxB),
+                "two shulker boxes with different nested contents were considered semantically equal");
+
+        ItemStack boxAAgain = shulkerBoxStack(List.of(qualitySwordStack(4, UOMetalToolMaterial.VALORITE)));
+        check(BankItemFingerprint.fingerprint(boxA, registries).equals(BankItemFingerprint.fingerprint(boxAAgain, registries)),
+                "two independently constructed shulker boxes with gameplay-identical contents fingerprinted differently");
+
         helper.succeed();
     }
 
@@ -462,6 +519,12 @@ public final class BankItemCodecGameTests {
         ItemStack stack = new ItemStack(WeaponRegistry.VIKING_SWORD.get());
         QualitySwordItem.setQuality(stack, quality);
         QualitySwordItem.setMaterial(stack, material);
+        return stack;
+    }
+
+    private static ItemStack shulkerBoxStack(List<ItemStack> contents) {
+        ItemStack stack = new ItemStack(Items.SHULKER_BOX);
+        stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contents));
         return stack;
     }
 
