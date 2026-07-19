@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.gametest;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.bank.item.BankItemNesting;
 import com.seggellion.britannia_mod.bank.item.BankItemWeight;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
@@ -266,7 +267,69 @@ public final class BankItemWeightGameTests {
         helper.succeed();
     }
 
+    // ---------- Nesting-depth guard (BankItemNesting.MAX_DEPTH) ----------
+    // Unlike BankItemCodec/BankItemFingerprint, resolve() never throws here -- it must always
+    // return a usable number for any real ItemStack. An over-limit structure is charged one
+    // flat DEFAULT_UNIT_WEIGHT for whatever's beyond the cutoff instead of being walked
+    // further, or recursed into unboundedly. These tests use a deliberately heavy item at the
+    // very bottom of the chain (weight 1000.0) to prove the guard actually truncates -- if the
+    // walk were still fully descending, the result would be dominated by that 1000.0; if it
+    // is genuinely bounded, the result stays small regardless of what the hidden item weighs.
+
+    @GameTest(template = TEMPLATE)
+    public static void resolveIsFullyAccurateWhenNestedExactlyAtMaxDepth(GameTestHelper helper) {
+        // MAX_DEPTH - 1 shulker boxes (each unmapped, base weight 1.0) wrapping one heavy
+        // WeightedWoodItem at the deepest position. Expected: every level's own 1.0 base plus
+        // the heavy item's real weight, fully accounted for -- (MAX_DEPTH - 1) * 1.0 + 1000.0.
+        ItemStack chain = nestedShulkerBoxChainWithInnermost(BankItemNesting.MAX_DEPTH, heavyWoodStack(1000.0));
+        double expected = (BankItemNesting.MAX_DEPTH - 1) * BankItemWeight.DEFAULT_UNIT_WEIGHT + 1000.0;
+        double actual = BankItemWeight.resolve(chain);
+        check(actual == expected,
+                "a stack nested exactly at MAX_DEPTH was not fully and accurately resolved: expected " + expected + " got " + actual);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void resolveTruncatesRatherThanCountingTheRealWeightWhenNestedBeyondMaxDepth(GameTestHelper helper) {
+        // One level deeper than the previous test: MAX_DEPTH shulker boxes wrapping the same
+        // heavy item, now one level past what the walk is willing to descend into. If the
+        // 1000.0 item were still being counted, the result would be far larger than this.
+        ItemStack chain = nestedShulkerBoxChainWithInnermost(BankItemNesting.MAX_DEPTH + 1, heavyWoodStack(1000.0));
+        // MAX_DEPTH box levels, each contributing its own 1.0 base weight, plus one extra flat
+        // DEFAULT_UNIT_WEIGHT charged at the depth-MAX_DEPTH box for detecting (but not
+        // descending into) the hidden heavy item beyond it: (MAX_DEPTH + 1) * 1.0.
+        double expected = (BankItemNesting.MAX_DEPTH + 1) * BankItemWeight.DEFAULT_UNIT_WEIGHT;
+        double actual = BankItemWeight.resolve(chain);
+        check(actual == expected,
+                "a stack nested one level beyond MAX_DEPTH was not truncated to the expected flat-charged total: expected "
+                        + expected + " got " + actual);
+        check(actual < 1000.0, "the hidden heavy item's real weight leaked through the depth guard: " + actual);
+        helper.succeed();
+    }
+
     // ---------- Helpers ----------
+
+    private static ItemStack heavyWoodStack(double weight) {
+        ItemStack stack = new ItemStack(ItemRegistry.WEIGHTED_WOOD_ITEM.get());
+        ((WeightedWoodItem) stack.getItem()).setWeight(stack, weight);
+        return stack;
+    }
+
+    /**
+     * A chain of {@code depth} nested shulker boxes wrapping {@code innermost} at the bottom:
+     * {@code depth == 1} returns {@code innermost} itself (no container), {@code depth == N}
+     * wraps it in N - 1 shulker boxes. Built by direct component construction, not any normal
+     * gameplay action, specifically to exercise the {@link BankItemNesting#MAX_DEPTH} guard.
+     */
+    private static ItemStack nestedShulkerBoxChainWithInnermost(int depth, ItemStack innermost) {
+        ItemStack current = innermost;
+        for (int level = 1; level < depth; level++) {
+            ItemStack box = new ItemStack(Items.SHULKER_BOX);
+            box.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(current)));
+            current = box;
+        }
+        return current;
+    }
 
     private static ItemStack corruptWoodWeightStack(double corruptValue) {
         ItemStack stack = new ItemStack(ItemRegistry.WEIGHTED_WOOD_ITEM.get());

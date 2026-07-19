@@ -46,9 +46,10 @@ import net.minecraft.world.item.component.ItemContainerContents;
  * to weight rather than serialization: a shulker box full of heavy items must cost real bank
  * capacity, not the flat cost of one empty box. Treating a full container as weighing the same
  * as an empty one would be exactly the same class of capacity-integrity gap the zero-default
- * decision above is guarding against, just via a different route. Nesting recurses to
- * arbitrary depth (a bundle inside a shulker box inside a bundle, etc.) since each contained
- * stack's weight is resolved through this same {@link #resolve(ItemStack)} entry point.
+ * decision above is guarding against, just via a different route. Nesting recurses (a bundle
+ * inside a shulker box inside a bundle, etc.) since each contained stack's weight is resolved
+ * through this same recursive walk, up to {@link BankItemNesting#MAX_DEPTH} levels deep -- see
+ * {@link #perUnitWeight} for what happens beyond that.
  *
  * <h2>Guards</h2>
  * A per-unit weight source that produces a negative, {@code NaN}, or infinite value (a
@@ -57,7 +58,10 @@ import net.minecraft.world.item.component.ItemContainerContents;
  * zero for bad data would let corrupt or adversarial weight data bank for free, the same
  * integrity concern the default-weight decision above exists to prevent. The final result
  * (after recursion and count multiplication) is guarded the same way as a last line of
- * defense against summation/overflow edge cases.
+ * defense against summation/overflow edge cases. Unlike {@link BankItemCodec}/
+ * {@link BankItemFingerprint}, exceeding {@link BankItemNesting#MAX_DEPTH} here never throws
+ * -- {@code resolve} must always produce a usable number for any real ItemStack; see
+ * {@link #perUnitWeight} for the flat-charge convention that keeps it that way.
  */
 public final class BankItemWeight {
     /**
@@ -75,13 +79,15 @@ public final class BankItemWeight {
      * or infinite for any real ItemStack; an empty/null stack resolves to {@code 0.0} (weight
      * of nothing is legitimately nothing -- unlike {@link BankItemCodec#serialize}, an empty
      * stack here is not a programmer-error precondition, just a stack with no weight).
+     *
+     * <p>Recursion is bounded by {@link BankItemNesting#MAX_DEPTH}, but unlike
+     * {@link BankItemCodec}/{@link BankItemFingerprint} this method never throws: {@code
+     * resolve} must always return <em>a</em> usable number for any real ItemStack, including
+     * one built some other way than a real deposit ever would be. See {@link #perUnitWeight}
+     * for how an over-limit structure is charged instead of walked.
      */
     public static double resolve(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) {
-            return 0.0;
-        }
-        double perUnit = sanitizePerUnit(perUnitWeight(stack));
-        return sanitizeFinal(perUnit * stack.getCount());
+        return resolveAtDepth(stack, 1);
     }
 
     /**
@@ -97,13 +103,34 @@ public final class BankItemWeight {
         return sanitizeFinal(total);
     }
 
+    private static double resolveAtDepth(ItemStack stack, int depth) {
+        if (stack == null || stack.isEmpty()) {
+            return 0.0;
+        }
+        double perUnit = sanitizePerUnit(perUnitWeight(stack, depth));
+        return sanitizeFinal(perUnit * stack.getCount());
+    }
+
     /**
      * The weight of one unit of {@code stack} (not multiplied by count), before the final
      * sanitization pass: dispatches to whichever existing {@code Weighted*} class already
      * covers this item, adds recursively resolved nested-container contents on top, or falls
      * back to {@link #DEFAULT_UNIT_WEIGHT} for anything unmapped.
+     *
+     * <p>{@code depth} is 1 for the outermost stack a caller passed to {@link #resolve}. Once
+     * an item's own depth reaches {@link BankItemNesting#MAX_DEPTH}, its contents are not
+     * walked further -- {@link BankItemCodec#serialize} is the real gate that prevents an
+     * over-limit stack from ever reaching the bank in the first place, so this path is only
+     * reachable for a stack assembled some other way (a test, a command). Rather than
+     * recursing further (unbounded stack risk) or silently charging zero for whatever is down
+     * there (the same free-weight exploit {@link #DEFAULT_UNIT_WEIGHT} itself exists to
+     * prevent), the entire over-limit subtree is charged one flat {@link #DEFAULT_UNIT_WEIGHT}
+     * instead of being walked. A stack that genuinely has nothing nested beyond the limit --
+     * including one exactly {@link BankItemNesting#MAX_DEPTH} levels deep -- is charged
+     * nothing extra here, so this only ever changes the result for a stack already over the
+     * limit.
      */
-    private static double perUnitWeight(ItemStack stack) {
+    private static double perUnitWeight(ItemStack stack, int depth) {
         Item item = stack.getItem();
         double base;
         if (item instanceof WeightedWoodItem woodItem) {
@@ -117,31 +144,44 @@ public final class BankItemWeight {
         }
         base = sanitizePerUnit(base);
 
-        return base + resolveContainerContentsWeight(stack);
+        if (depth >= BankItemNesting.MAX_DEPTH) {
+            return hasAnyContainerContents(stack) ? base + DEFAULT_UNIT_WEIGHT : base;
+        }
+
+        return base + resolveContainerContentsWeight(stack, depth + 1);
     }
 
     /**
      * The recursively resolved weight of everything inside {@code stack}, per ADR-009 --
      * {@code 0.0} if {@code stack} is not a container/bundle or carries no contents.
      */
-    private static double resolveContainerContentsWeight(ItemStack stack) {
+    private static double resolveContainerContentsWeight(ItemStack stack, int depth) {
         double total = 0.0;
 
         ItemContainerContents container = stack.get(DataComponents.CONTAINER);
         if (container != null) {
             for (ItemStack contained : container.stream().toList()) {
-                total += resolve(contained);
+                total += resolveAtDepth(contained, depth);
             }
         }
 
         BundleContents bundle = stack.get(DataComponents.BUNDLE_CONTENTS);
         if (bundle != null) {
             for (ItemStack contained : bundle.items()) {
-                total += resolve(contained);
+                total += resolveAtDepth(contained, depth);
             }
         }
 
         return total;
+    }
+
+    private static boolean hasAnyContainerContents(ItemStack stack) {
+        ItemContainerContents container = stack.get(DataComponents.CONTAINER);
+        if (container != null && container.stream().findAny().isPresent()) {
+            return true;
+        }
+        BundleContents bundle = stack.get(DataComponents.BUNDLE_CONTENTS);
+        return bundle != null && !bundle.isEmpty();
     }
 
     private static double sanitizePerUnit(double value) {

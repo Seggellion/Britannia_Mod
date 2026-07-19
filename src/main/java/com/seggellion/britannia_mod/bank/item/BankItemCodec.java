@@ -43,13 +43,22 @@ public final class BankItemCodec {
 
     /**
      * Serializes {@code stack} into a durable, opaque byte payload carrying an explicit
-     * schema version tag. Throws for a programming error (a null/empty stack is never a
-     * valid banked item); it does not return a result type because there is no recoverable
-     * caller decision to make here, unlike {@link #deserialize}.
+     * schema version tag. Throws for a programming error (a null/empty stack, or one nested
+     * deeper than {@link BankItemNesting#MAX_DEPTH}, is never a valid banked item); it does
+     * not return a result type because there is no recoverable caller decision to make here,
+     * unlike {@link #deserialize}. The nesting-depth check specifically is a caller-error
+     * guard, not a security boundary -- {@code stack} is always an in-memory ItemStack a real
+     * caller already holds (a player's inventory slot), not untrusted bytes, so an
+     * over-the-limit stack reaching here can only mean it was assembled some other way (a
+     * test, a command) than a real deposit ever would.
      */
     public static byte[] serialize(ItemStack stack, HolderLookup.Provider registries) {
         if (stack == null || stack.isEmpty()) {
             throw new IllegalArgumentException("Cannot serialize an empty ItemStack for banking");
+        }
+        if (BankItemNesting.containerNestingDepthOf(stack) > BankItemNesting.MAX_DEPTH) {
+            throw new IllegalArgumentException(
+                    "Cannot serialize an ItemStack nested more than " + BankItemNesting.MAX_DEPTH + " containers deep");
         }
 
         RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, registries);
@@ -98,6 +107,15 @@ public final class BankItemCodec {
         Tag itemTag = outer.get(KEY_ITEM);
         if (itemTag == null) {
             return new BankItemDecodeResult.Corrupt("missing " + KEY_ITEM + " field");
+        }
+        // Checked on the raw, undecoded tag -- before ItemStack.CODEC.parse ever runs -- so a
+        // maliciously deep payload is rejected before vanilla's own unbounded codec recursion
+        // touches it. This is the real security boundary for nesting depth (unlike serialize's
+        // caller-error throw): the payload is untrusted external input, not an in-memory
+        // ItemStack a caller already holds.
+        if (BankItemNesting.containerNestingDepthOfTag(itemTag) > BankItemNesting.MAX_DEPTH) {
+            return new BankItemDecodeResult.Corrupt(
+                    "item payload is nested more than " + BankItemNesting.MAX_DEPTH + " containers deep");
         }
 
         try {

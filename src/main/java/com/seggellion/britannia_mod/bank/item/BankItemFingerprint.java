@@ -57,9 +57,21 @@ public final class BankItemFingerprint {
     private BankItemFingerprint() {
     }
 
+    /**
+     * Throws (rather than returning a typed failure) both for an empty stack and for one
+     * nested deeper than {@link BankItemNesting#MAX_DEPTH} -- matching
+     * {@link BankItemCodec#serialize}'s own convention rather than {@code deserialize}'s,
+     * since both operate on a real in-memory ItemStack a caller already holds, not untrusted
+     * bytes. A legitimate stack a player is actually holding should never exceed the limit;
+     * one that does can only have been assembled some other way than a real deposit would.
+     */
     public static String fingerprint(ItemStack stack, HolderLookup.Provider registries) {
         if (stack == null || stack.isEmpty()) {
             throw new IllegalArgumentException("Cannot fingerprint an empty ItemStack");
+        }
+        if (BankItemNesting.containerNestingDepthOf(stack) > BankItemNesting.MAX_DEPTH) {
+            throw new IllegalArgumentException(
+                    "Cannot fingerprint an ItemStack nested more than " + BankItemNesting.MAX_DEPTH + " containers deep");
         }
 
         RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, registries);

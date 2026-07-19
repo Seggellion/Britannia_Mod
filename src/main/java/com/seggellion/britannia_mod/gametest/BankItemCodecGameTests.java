@@ -5,6 +5,8 @@ import com.seggellion.britannia_mod.bank.item.BankItemCodec;
 import com.seggellion.britannia_mod.bank.item.BankItemDecodeResult;
 import com.seggellion.britannia_mod.bank.item.BankItemEquality;
 import com.seggellion.britannia_mod.bank.item.BankItemFingerprint;
+import com.seggellion.britannia_mod.bank.item.BankItemNesting;
+import com.seggellion.britannia_mod.bank.item.BankItemSchemaVersion;
 import com.seggellion.britannia_mod.component.WineData;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.MaterialQualityJewelryItem;
@@ -23,7 +25,10 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -424,6 +429,95 @@ public final class BankItemCodecGameTests {
         helper.succeed();
     }
 
+    // ---------- Shared nesting-depth guard (BankItemNesting.MAX_DEPTH) ----------
+    // serialize()/fingerprint() throw (caller-error convention, matching their own existing
+    // empty-stack throw): the input is always an in-memory ItemStack a real caller already
+    // holds, not untrusted bytes. deserialize() returns its existing typed Corrupt result
+    // instead (external-input convention, matching its own existing corrupt/truncated-payload
+    // handling): the payload is untrusted, so a rejection must be a value the caller branches
+    // on, not a thrown exception.
+
+    @GameTest(template = TEMPLATE)
+    public static void serializeSucceedsWhenNestedExactlyAtMaxDepth(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack atLimit = nestedShulkerBoxChain(BankItemNesting.MAX_DEPTH);
+
+        byte[] payload = BankItemCodec.serialize(atLimit, registries);
+        BankItemDecodeResult result = BankItemCodec.deserialize(payload, registries);
+        check(result instanceof BankItemDecodeResult.Success,
+                "a stack nested exactly at MAX_DEPTH did not round trip successfully: " + result);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void serializeThrowsWhenNestedBeyondMaxDepth(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack tooDeep = nestedShulkerBoxChain(BankItemNesting.MAX_DEPTH + 1);
+
+        boolean threw = false;
+        try {
+            BankItemCodec.serialize(tooDeep, registries);
+        } catch (IllegalArgumentException expected) {
+            threw = true;
+        }
+        check(threw, "serialize() did not throw IllegalArgumentException for a stack nested one level beyond MAX_DEPTH");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void deserializeSucceedsWhenPayloadNestedExactlyAtMaxDepth(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack atLimit = nestedShulkerBoxChain(BankItemNesting.MAX_DEPTH);
+
+        byte[] payload = buildPayloadBypassingSerializeGuard(atLimit, registries);
+        BankItemDecodeResult result = BankItemCodec.deserialize(payload, registries);
+        check(result instanceof BankItemDecodeResult.Success,
+                "a payload nested exactly at MAX_DEPTH was not decoded successfully: " + result);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void deserializeReturnsCorruptWhenPayloadNestedBeyondMaxDepth(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack tooDeep = nestedShulkerBoxChain(BankItemNesting.MAX_DEPTH + 1);
+
+        // Built by hand, bypassing serialize()'s own throwing guard, to simulate an
+        // adversarial payload arriving over the wire/storage -- exactly the case the raw-tag
+        // pre-check inside deserialize() (checked before ItemStack.CODEC.parse ever runs)
+        // exists for.
+        byte[] payload = buildPayloadBypassingSerializeGuard(tooDeep, registries);
+        BankItemDecodeResult result = BankItemCodec.deserialize(payload, registries);
+        check(result instanceof BankItemDecodeResult.Corrupt,
+                "deserialize() did not report Corrupt for a payload nested one level beyond MAX_DEPTH: " + result);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void fingerprintSucceedsWhenNestedExactlyAtMaxDepth(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack atLimit = nestedShulkerBoxChain(BankItemNesting.MAX_DEPTH);
+
+        String fingerprint = BankItemFingerprint.fingerprint(atLimit, registries);
+        check(fingerprint != null && !fingerprint.isEmpty(),
+                "fingerprint() did not produce a real value for a stack nested exactly at MAX_DEPTH");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void fingerprintThrowsWhenNestedBeyondMaxDepth(GameTestHelper helper) {
+        HolderLookup.Provider registries = helper.getLevel().registryAccess();
+        ItemStack tooDeep = nestedShulkerBoxChain(BankItemNesting.MAX_DEPTH + 1);
+
+        boolean threw = false;
+        try {
+            BankItemFingerprint.fingerprint(tooDeep, registries);
+        } catch (IllegalArgumentException expected) {
+            threw = true;
+        }
+        check(threw, "fingerprint() did not throw IllegalArgumentException for a stack nested one level beyond MAX_DEPTH");
+        helper.succeed();
+    }
+
     // ---------- Payload size measurement ----------
 
     @GameTest(template = TEMPLATE)
@@ -526,6 +620,46 @@ public final class BankItemCodecGameTests {
         ItemStack stack = new ItemStack(Items.SHULKER_BOX);
         stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(contents));
         return stack;
+    }
+
+    /**
+     * A chain of {@code depth} nested shulker boxes wrapping a plain diamond at the bottom:
+     * {@code depth == 1} is just the diamond itself (no container), {@code depth == N} is
+     * N - 1 shulker boxes deep. Built by direct component construction, not any normal
+     * gameplay action, specifically to exercise the {@link BankItemNesting#MAX_DEPTH} guard.
+     */
+    private static ItemStack nestedShulkerBoxChain(int depth) {
+        ItemStack current = new ItemStack(Items.DIAMOND);
+        for (int level = 1; level < depth; level++) {
+            ItemStack box = new ItemStack(Items.SHULKER_BOX);
+            box.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(current)));
+            current = box;
+        }
+        return current;
+    }
+
+    /**
+     * Replicates {@link BankItemCodec#serialize}'s own envelope format exactly, but without
+     * its nesting-depth guard -- used only to construct an "already too deep" payload for
+     * testing {@link BankItemCodec#deserialize}'s own independent depth check, since
+     * {@code serialize} itself now refuses to produce one.
+     */
+    private static byte[] buildPayloadBypassingSerializeGuard(ItemStack stack, HolderLookup.Provider registries) {
+        RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, registries);
+        Tag itemTag = ItemStack.CODEC.encodeStart(ops, stack)
+                .getOrThrow(error -> new IllegalStateException("test setup failed to encode: " + error));
+
+        CompoundTag outer = new CompoundTag();
+        outer.putInt("schema_version", BankItemSchemaVersion.CURRENT);
+        outer.put("item", itemTag);
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            NbtIo.writeCompressed(outer, buffer);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return buffer.toByteArray();
     }
 
     private static ItemStack jewelryStack(MaterialQualityJewelryItem.QualityTier quality, MaterialQualityJewelryItem.UOMaterial material) {
