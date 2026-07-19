@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.service.banking;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,7 +10,7 @@ import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,6 +82,28 @@ public final class BankingProxyService {
         IN_FLIGHT.clear();
     }
 
+    /**
+     * Test-only seam for the Bank Screen open step, mirroring
+     * {@link #useClientForTesting(BankingOpenClient)} exactly: substituting a recording
+     * sender lets a GameTest assert precisely when (and with what data) the real screen
+     * would open, and — just as importantly — that it is never invoked for any non-success
+     * outcome or stale session, without needing a real client connection to observe.
+     */
+    @FunctionalInterface
+    public interface AccountScreenSender {
+        void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account);
+    }
+
+    private static AccountScreenSender accountScreenSender = BankAccountOpenedS2CPayload::send;
+
+    public static void useAccountScreenSenderForTesting(AccountScreenSender testSender) {
+        accountScreenSender = testSender;
+    }
+
+    public static void resetAccountScreenSenderForTesting() {
+        accountScreenSender = BankAccountOpenedS2CPayload::send;
+    }
+
     public static void handle(ServerPlayer player, ServiceNpcEntity entity) {
         ResolvedTeller resolved = resolve(player, entity);
         if (resolved == null) return;
@@ -111,7 +134,7 @@ public final class BankingProxyService {
         } catch (RuntimeException submissionFailure) {
             IN_FLIGHT.remove(connectedPlayerId);
             LOGGER.warn("banking/open submission threw synchronously for {}", connectedPlayerId, submissionFailure);
-            applyPlaceholderResult(player, new BankingOpenClientResult.TransportFailure("synchronous_submission_failure"));
+            applyResult(player, null, new BankingOpenClientResult.TransportFailure("synchronous_submission_failure"));
             return;
         }
 
@@ -119,20 +142,23 @@ public final class BankingProxyService {
             IN_FLIGHT.remove(connectedPlayerId);
             if (server.getPlayerList().getPlayer(connectedPlayerId) != player) return;
             if (failure != null || result == null) {
-                applyPlaceholderResult(player, new BankingOpenClientResult.TransportFailure("unexpected_client_error"));
+                applyResult(player, null, new BankingOpenClientResult.TransportFailure("unexpected_client_error"));
                 return;
             }
 
             // The teller may have been discarded, reassigned, or moved out of range by
             // the chunk-load reconciler (or the player themselves) while the HTTP call
-            // was in flight; never apply a result to a stale teller/player pairing.
+            // was in flight; never apply a result to a stale teller/player pairing. This
+            // is also this design's one and only session-validity check for the Bank
+            // Screen (see BankScreen's own class doc): once this passes and the screen
+            // opens, nothing continues to validate the session afterward.
             Entity current = player.serverLevel().getEntity(entityUuid);
-            if (!(current instanceof ServiceNpcEntity) || !current.isAlive()
+            if (!(current instanceof ServiceNpcEntity teller) || !current.isAlive()
                     || player.distanceToSqr(current) > MAX_INTERACTION_DISTANCE_SQR) {
                 LOGGER.info("Discarding banking/open result: teller {} is no longer live/in range", entityUuid);
                 return;
             }
-            applyPlaceholderResult(player, result);
+            applyResult(player, teller, result);
         }));
     }
 
@@ -156,29 +182,40 @@ public final class BankingProxyService {
     }
 
     /**
-     * Slice A placeholder for Slice B's real Bank Screen. This is the only method in the
-     * whole flow that inspects a result for display purposes — swapping it for a screen
-     * in Slice B means replacing this one method body (and, client-side, adding the S2C
-     * payload this currently skips by using {@link ServerPlayer#displayClientMessage}
-     * directly), not touching resolve/dispatch/parse above it.
+     * Slice A's only-ever chat-message placeholder for {@code OPENED}; from Slice B on,
+     * that case opens the real Bank Screen instead ({@link #accountScreenSender}). Every
+     * other outcome keeps a chat/status-message-style response exactly as Slice A
+     * established — the existing cached teller/dialogue (whatever, if anything, the
+     * client currently has on screen) stays visible; nothing here ever opens a screen for
+     * a non-success result. Wording is deliberately diegetic (no raw
+     * {@link BankingOpenOutcome} wire name or transport code is ever shown to a player),
+     * per this milestone's explicit requirement.
      */
-    private static void applyPlaceholderResult(ServerPlayer player, BankingOpenClientResult result) {
+    private static void applyResult(ServerPlayer player, @Nullable ServiceNpcEntity teller, BankingOpenClientResult result) {
         LOGGER.info("banking/open result for {}: {}", player.getStringUUID(), result);
-        String message = switch (result) {
-            case BankingOpenClientResult.Success success -> describeSuccess(success.account());
-            case BankingOpenClientResult.Rejected rejected -> "The teller cannot help you right now ("
-                    + rejected.outcome().name().toLowerCase(Locale.ROOT).replace('_', ' ') + ").";
+        switch (result) {
+            case BankingOpenClientResult.Success success ->
+                    accountScreenSender.send(player, Objects.requireNonNull(teller, "teller"), success.account());
+            case BankingOpenClientResult.Rejected ignored ->
+                    player.displayClientMessage(Component.literal(REJECTED_MESSAGE), false);
             case BankingOpenClientResult.TransportFailure ignored ->
-                    "The bank service is unavailable right now. Please try again shortly.";
-            case BankingOpenClientResult.LocalFailure ignored -> "Banking is not configured on this server.";
-        };
-        player.displayClientMessage(Component.literal(message), false);
+                    player.displayClientMessage(Component.literal(SERVICE_UNAVAILABLE_MESSAGE), false);
+            case BankingOpenClientResult.LocalFailure ignored ->
+                    player.displayClientMessage(Component.literal(NOT_CONFIGURED_MESSAGE), false);
+        }
     }
 
-    private static String describeSuccess(BankingOpenAccount account) {
-        return "The teller opens your " + account.bankingMode().replace('_', ' ') + " account (balance: "
-                + account.goldBalance() + "g " + account.silverBalance() + "s " + account.copperBalance() + "c).";
-    }
+    /**
+     * Public (like the rest of this class's test seams) so a GameTest in the {@code
+     * gametest} package can assert these read as diegetic in-world dialogue rather than a
+     * raw protocol code, without duplicating the literal text.
+     */
+    public static final String REJECTED_MESSAGE =
+            "The teller checks the ledger and shakes their head: \"I'm afraid I can't help you with that right now.\"";
+    public static final String SERVICE_UNAVAILABLE_MESSAGE =
+            "The ledger is unavailable right now. Please try again shortly.";
+    public static final String NOT_CONFIGURED_MESSAGE =
+            "Banking is not configured on this server.";
 
     public record ResolvedTeller(UUID entityUuid, UUID worldNpcPublicId) {
     }

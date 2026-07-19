@@ -42,6 +42,9 @@ import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
 
+import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
+import com.seggellion.britannia_mod.client.screen.BankScreen;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.network.chat.Style;
@@ -356,6 +359,11 @@ private static MutableComponent uoMessage(String text) {
                 }
             });
         });
+    }
+
+    // Milestone 7 Slice B: real Bank Screen (replaces Slice A's chat-message placeholder)
+    public static void handleBankAccountOpened(BankAccountOpenedS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> Minecraft.getInstance().setScreen(new BankScreen(payload)));
     }
 
     public static void handleQuestGiverSpawnScreen(QuestGiverSpawnScreenS2CPayload payload, IPayloadContext ctx) {

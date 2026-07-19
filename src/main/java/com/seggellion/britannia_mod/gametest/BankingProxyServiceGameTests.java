@@ -1,18 +1,25 @@
 package com.seggellion.britannia_mod.gametest;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistrySnapshot;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
+import com.seggellion.britannia_mod.service.banking.BankingOpenAccount;
 import com.seggellion.britannia_mod.service.banking.BankingOpenClient;
 import com.seggellion.britannia_mod.service.banking.BankingOpenClientResult;
+import com.seggellion.britannia_mod.service.banking.BankingOpenOutcome;
 import com.seggellion.britannia_mod.service.banking.BankingProxyService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -21,14 +28,19 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Milestone 7 Slice A: {@link ServiceNpcEntity#interactAt} and
@@ -367,6 +379,271 @@ public final class BankingProxyServiceGameTests {
         helper.succeed();
     }
 
+    // ---------- Slice B: OPENED result opens the real Bank Screen with correct content ----------
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void handleOpensTheAccountScreenWithCorrectContentInGlobalMode(GameTestHelper helper) {
+        installBankRegistry();
+        BankingOpenAccount account = new BankingOpenAccount(
+                UUID.randomUUID(), "global", null, 250, 12.5, 3, 47, 92, 1
+        );
+        BankingProxyService.useClientForTesting(new BankingOpenClient(
+                gameTestCredentials(),
+                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account)),
+                (uri, max) -> null
+        ));
+        AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount) ->
+                sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount)));
+
+        ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+        npc.setPersonalName("Aldric the Banker");
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+
+        BankingProxyService.handle(player, npc);
+
+        helper.succeedWhen(() -> {
+            BankAccountOpenedS2CPayload payload = sent.get();
+            check(payload != null, "the account screen sender was never invoked for a successful OPENED result");
+            check(payload.tellerName().equals("Aldric the Banker"),
+                    "teller name was not carried through: " + payload.tellerName());
+            check(payload.cityDisplayName() == null,
+                    "global-mode account must not carry a city display name, got " + payload.cityDisplayName());
+            check(payload.weightLimit() == 250, "weight limit mismatch: " + payload.weightLimit());
+            check(payload.currentWeight() == 12.5, "current weight mismatch: " + payload.currentWeight());
+            check(payload.goldBalance() == 3 && payload.silverBalance() == 47 && payload.copperBalance() == 92,
+                    "balance mismatch: " + payload.goldBalance() + "/" + payload.silverBalance() + "/" + payload.copperBalance());
+
+            BankingProxyService.resetClientForTesting();
+            BankingProxyService.resetAccountScreenSenderForTesting();
+            BankingProxyService.resetInFlightTrackingForTesting();
+            ServiceNpcRegistryCache.clear();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void handleOpensTheAccountScreenWithCorrectContentInCityLocalMode(GameTestHelper helper) {
+        installBankRegistry();
+        UUID cityId = UUID.randomUUID();
+        BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(
+                List.of(new BootstrapCityDefinition(cityId, "Britain"))
+        ));
+        BankingOpenAccount account = new BankingOpenAccount(
+                UUID.randomUUID(), "city_local", cityId, 250, 0.0, 0, 0, 0, 1
+        );
+        try {
+            BankingProxyService.useClientForTesting(new BankingOpenClient(
+                    gameTestCredentials(),
+                    (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account)),
+                    (uri, max) -> null
+            ));
+            AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
+            BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount) ->
+                    sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount)));
+
+            ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+            npc.setPersonalName("Isolde the Banker");
+            ServerPlayer player = helper.makeMockServerPlayerInLevel();
+            player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+
+            BankingProxyService.handle(player, npc);
+
+            helper.succeedWhen(() -> {
+                BankAccountOpenedS2CPayload payload = sent.get();
+                check(payload != null, "the account screen sender was never invoked for a successful OPENED result");
+                check("Britain".equals(payload.cityDisplayName()),
+                        "city-local account did not carry the resolved city display name, got " + payload.cityDisplayName());
+
+                BankingProxyService.resetClientForTesting();
+                BankingProxyService.resetAccountScreenSenderForTesting();
+                BankingProxyService.resetInFlightTrackingForTesting();
+                ServiceNpcRegistryCache.clear();
+            });
+        } finally {
+            BootstrapCityRegistryCache.clear();
+        }
+    }
+
+    // ---------- Slice B: every non-OPENED outcome keeps the screen closed ----------
+    // Traced Slice A's full BankingOpenOutcome vocabulary (every value but OPENED itself is
+    // a non-success outcome) plus the transport-failure branch: none of them may ever reach
+    // the account screen sender. Dispatches one outcome at a time via a recursive
+    // runAfterDelay chain (the same fixed-delay-then-continue idiom the existing
+    // disconnect/discard tests already use), rather than throwing every tick as a retry
+    // signal from inside succeedWhen -- an earlier version of this test did that and it
+    // escaped GameTestSequence's tolerance entirely, crashing the whole tick loop instead of
+    // just failing the one GameTest. check() still throws, but only ever to report a real
+    // assertion failure, exactly like every other test in this file.
+    @GameTest(template = TEMPLATE, timeoutTicks = 300)
+    public static void everyNonOpenedOutcomeNeverOpensTheAccountScreen(GameTestHelper helper) {
+        installBankRegistry();
+        List<BankingOpenOutcome> outcomes = Arrays.stream(BankingOpenOutcome.values())
+                .filter(outcome -> outcome != BankingOpenOutcome.OPENED)
+                .toList();
+
+        AtomicBoolean sent = new AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account) -> sent.set(true));
+
+        ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+
+        dispatchNextNonOpenedOutcome(helper, player, npc, outcomes, 0, sent);
+    }
+
+    private static void dispatchNextNonOpenedOutcome(
+            GameTestHelper helper, ServerPlayer player, ServiceNpcEntity npc,
+            List<BankingOpenOutcome> outcomes, int index, AtomicBoolean sent
+    ) {
+        if (index >= outcomes.size()) {
+            BankingProxyService.resetClientForTesting();
+            BankingProxyService.resetAccountScreenSenderForTesting();
+            BankingProxyService.resetInFlightTrackingForTesting();
+            ServiceNpcRegistryCache.clear();
+            helper.succeed();
+            return;
+        }
+        BankingOpenOutcome outcome = outcomes.get(index);
+        BankingOpenClientResult result = outcome == BankingOpenOutcome.SERVICE_UNAVAILABLE
+                ? new BankingOpenClientResult.TransportFailure("service_unavailable")
+                : new BankingOpenClientResult.Rejected(outcome, outcome.expectedRetryable());
+        sent.set(false);
+        BankingProxyService.resetInFlightTrackingForTesting();
+        BankingProxyService.useClientForTesting(new BankingOpenClient(
+                gameTestCredentials(),
+                (ignored, task) -> CompletableFuture.completedFuture(result),
+                (uri, max) -> null
+        ));
+        BankingProxyService.handle(player, npc);
+
+        helper.runAfterDelay(3, () -> {
+            check(!sent.get(), "the account screen opened for a non-OPENED outcome: " + outcome);
+            dispatchNextNonOpenedOutcome(helper, player, npc, outcomes, index + 1, sent);
+        });
+    }
+
+    // ---------- Slice B: session-invalidation is checked once, at completion time ----------
+    // Decision (see BankScreen's class doc): this screen is a plain, static one-shot
+    // snapshot with no ongoing server-side validity check once open, matching
+    // QuestDecisionScreen's own real production mechanism exactly. The one and only gate is
+    // the existing revalidation in handle()'s completion callback -- these tests prove that
+    // gate actually suppresses opening the screen for a session that went stale in flight,
+    // directly (by observing the account screen sender), not merely by asserting no crash.
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void handleDoesNotOpenTheAccountScreenForAPlayerWhoDisconnectedWhileTheCallWasInFlight(GameTestHelper helper) {
+        installBankRegistry();
+        CompletableFuture<BankingOpenClientResult> pending = new CompletableFuture<>();
+        BankingProxyService.useClientForTesting(new BankingOpenClient(
+                gameTestCredentials(), (ignored, task) -> pending, (uri, max) -> null
+        ));
+        AtomicBoolean sent = new AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account) -> sent.set(true));
+
+        ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+
+        BankingProxyService.handle(player, npc);
+        helper.getLevel().getServer().getPlayerList().remove(player);
+        pending.complete(new BankingOpenClientResult.Success(
+                new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1)
+        ));
+
+        helper.runAfterDelay(4, () -> {
+            check(!sent.get(), "the account screen opened for a player who had disconnected while the call was in flight");
+            BankingProxyService.resetClientForTesting();
+            BankingProxyService.resetAccountScreenSenderForTesting();
+            ServiceNpcRegistryCache.clear();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void handleDoesNotOpenTheAccountScreenIfTheTellerIsDiscardedWhileTheCallWasInFlight(GameTestHelper helper) {
+        installBankRegistry();
+        CompletableFuture<BankingOpenClientResult> pending = new CompletableFuture<>();
+        BankingProxyService.useClientForTesting(new BankingOpenClient(
+                gameTestCredentials(), (ignored, task) -> pending, (uri, max) -> null
+        ));
+        AtomicBoolean sent = new AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account) -> sent.set(true));
+
+        ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+
+        BankingProxyService.handle(player, npc);
+        npc.discard();
+        pending.complete(new BankingOpenClientResult.Success(
+                new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1)
+        ));
+
+        helper.runAfterDelay(4, () -> {
+            check(!sent.get(), "the account screen opened for a teller that had been discarded while the call was in flight");
+            BankingProxyService.resetClientForTesting();
+            BankingProxyService.resetAccountScreenSenderForTesting();
+            BankingProxyService.resetInFlightTrackingForTesting();
+            ServiceNpcRegistryCache.clear();
+            helper.succeed();
+        });
+    }
+
+    // ---------- Slice B: non-negotiable invariant -- no bank data persists anywhere ----------
+    // ServiceNpcAssignmentsSnapshot (and everything it's built from -- spawn point, world NPC,
+    // and assignment definitions) is proven structurally, not just by this test: read in full,
+    // none of those four record shapes has any field that could hold currency, weight, or an
+    // account identifier. There is no runtime check for that cache below for exactly this
+    // reason -- an earlier version of this test asserted its snapshot reference never changed,
+    // but that cache is anchored to the whole game-test server's overworld DataStorage (shared
+    // across every test and the background WorldBootstrapHandler login coordinator, which
+    // legitimately replaces it independently of anything this test does), so a reference
+    // check on it is a false-positive-prone proxy for an invariant the type system already
+    // guarantees outright. ServiceNpcEntity, in contrast, is a class this slice actually
+    // touches (reads its display name) and controls, so it gets a real runtime NBT check.
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void openingAnAccountNeverWritesBankDataToPersistedNbt(GameTestHelper helper) {
+        installBankRegistry();
+        BankingOpenAccount account = new BankingOpenAccount(
+                UUID.randomUUID(), "global", null, 987, 65.25, 111, 222, 333, 4
+        );
+        BankingProxyService.useClientForTesting(new BankingOpenClient(
+                gameTestCredentials(),
+                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account)),
+                (uri, max) -> null
+        ));
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount) -> {
+        });
+
+        ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
+        npc.setPersonalName("Aldric the Banker");
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.teleportTo(npc.getX() + 1.0, npc.getY(), npc.getZ());
+
+        BankingProxyService.handle(player, npc);
+
+        helper.runAfterDelay(4, () -> {
+            CompoundTag tellerTag = new CompoundTag();
+            npc.saveWithoutId(tellerTag);
+            Set<String> forbiddenBankDataKeys = Set.of(
+                    "GoldBalance", "SilverBalance", "CopperBalance", "WeightLimit", "CurrentWeight",
+                    "BankAccountPublicId", "AccountPublicId", "BankingMode", "AccountRevision",
+                    "CityPublicId", "BankAccount"
+            );
+            for (String key : tellerTag.getAllKeys()) {
+                check(!forbiddenBankDataKeys.contains(key),
+                        "ServiceNpcEntity NBT unexpectedly contains a bank-data key: " + key);
+            }
+
+            BankingProxyService.resetClientForTesting();
+            BankingProxyService.resetAccountScreenSenderForTesting();
+            BankingProxyService.resetInFlightTrackingForTesting();
+            ServiceNpcRegistryCache.clear();
+            helper.succeed();
+        });
+    }
+
     // ---------- Threading: the HTTP-performing work never runs on the calling thread ----------
 
     @GameTest(template = TEMPLATE)
@@ -406,6 +683,19 @@ public final class BankingProxyServiceGameTests {
                 (ignored, task) -> CompletableFuture.completedFuture(null),
                 (uri, max) -> null
         );
+    }
+
+    /**
+     * Real (non-empty) credentials so a substituted {@code TransportSubmitter} genuinely
+     * reaches the transport layer instead of {@link BankingOpenClient#submit} short-circuiting
+     * with {@code LocalFailure} first -- the same reason the Part A/B verification passes
+     * needed {@link com.seggellion.britannia_mod.server.auth.ServerCredentials#forGameTesting}
+     * in the first place.
+     */
+    private static BankingOpenClient.CredentialsProvider gameTestCredentials() {
+        return server -> Optional.of(com.seggellion.britannia_mod.server.auth.ServerCredentials.forGameTesting(
+                URI.create("http://127.0.0.1"), UUID.randomUUID()
+        ));
     }
 
     private static ServiceNpcEntity spawnBankTeller(GameTestHelper helper, BlockPos relative) {

@@ -553,6 +553,15 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
+// Milestone 7 Slice B: real Bank Screen (replaces Slice A's chat-message placeholder)
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleBankAccountOpened
+        : (p, c) -> {}
+);
+
 
     
 }
