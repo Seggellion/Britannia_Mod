@@ -1,5 +1,108 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 3: Data Registries and Validation Pipeline
+
+### Files changed
+
+- Added immutable registry primitives and the aggregate `RegistrySnapshot` under `bannerdyeing/registry`.
+- Added resource discovery, structural decoding, cross-reference validation, fixed-point production disabling,
+  atomic publication, read-only global access, and the common/server reload listener.
+- Added structured validation severity, stage, issue, summary, report, and policy types under
+  `bannerdyeing/validation`.
+- Registered the reload listener explicitly from `BritanniaMod` on the NeoForge game event bus.
+- Added `RegistryDatasetFixtures` and `RegistryDataLoaderTest` under test sources. The fixtures are generated in
+  test code from the Milestone 2 codecs and never enter packaged resources.
+- Updated `OPEN_QUESTIONS.md` with the unresolved physical-asset mapping boundary.
+
+### Commands and results
+
+1. Required Git preflight:
+   - `git branch --show-current` - `banners-dyetub`.
+   - `git status --short --branch` - only the preserved modified `ModConfig.java` and preserved untracked root
+     specifications, `.claude/`, `logs/`, and `tmp/` were present.
+   - `git merge-base banners-dyetub patch-18` - `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+   - `git rev-list --left-right --count patch-18...banners-dyetub` - `0 3`.
+   - Milestone 2 full hash - `31e46ddba426136e904a7d59cfddb32322ca3a8b`.
+2. Initial restricted `.\gradlew.bat compileJava --no-daemon --stacktrace` - Gradle distribution access was denied
+   by the sandbox. The approved retry passed in 1 minute 2 seconds and confirmed the two existing warnings: missing
+   `@Overwrite` Javadoc on `PlayerSleepMixin`, and the deprecated-for-removal `Item.initializeClient` override in
+   `OrderShieldItem`.
+3. First `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.RegistryDataLoaderTest"
+   --no-daemon --stacktrace` - 25 tests ran; one report-order test assertion failed because it compared the report's
+   explicit enum/domain ordering to unrelated ordinary string ordering. The redundant string-sort assertion was
+   removed; validation ordering and production code were not weakened.
+4. Corrected narrow registry test command - 25 tests passed, 0 failures, 0 errors, 0 skipped.
+5. Completed narrow registry test command after the remaining structural-attribution cases were added - 29 tests
+   passed, 0 failures, 0 errors, 0 skipped.
+6. Final `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` -
+   passed in 32 seconds. XML results: 159 tests, 0 failures, 0 errors, 0 skipped.
+7. Final `.\gradlew.bat clean --no-daemon` - passed in 12 seconds.
+8. Final `.\gradlew.bat test --no-daemon --stacktrace` - passed in 41 seconds. XML results: 159 tests,
+   0 failures, 0 errors, 0 skipped.
+9. Final `.\gradlew.bat build --no-daemon` - passed in 22 seconds; `jar`, `jarJar`, `assemble`, and `build`
+   completed.
+10. Common-source scan - no `net.minecraft.client`, Blaze3D, gameplay objects, item stacks, block entities, screens,
+    packets, or `DeferredRegister` usage in the registry/validation implementation.
+11. `git diff --check`, staged-diff checks, and final scope checks are recorded in the milestone handoff report.
+
+### Registry and resource-loading decisions
+
+- The six registries are typed views inside one immutable aggregate snapshot. Active lookup maps, deterministic
+  definition lists, source-bearing entries, and disabled diagnostic lists are all defensively copied and read-only.
+- `AtomicReference<RegistrySnapshot>` is the sole publication mechanism. Candidate work occurs off to the side and
+  one reference write exposes the complete new snapshot to concurrent readers.
+- `AddReloadListenerEvent` is the repository-compatible NeoForge 21.1 server-data hook. Effective resources are read
+  and structurally decoded during `SimplePreparableReloadListener.prepare`; policy validation and publication occur
+  during `apply`.
+- Folders are exactly `banner_definitions`, `fabric_materials`, `pigments`, `material_palettes`, `banner_mounts`, and
+  `placement_profiles` below each data namespace.
+- `ResourceManager.listResources` supplies only the effective resource at a path, so ordinary higher-priority pack
+  replacement is not a duplicate. Duplicate checks operate on embedded IDs across distinct effective resources.
+- Embedded stable IDs are authoritative. Filenames and namespaces are retained as exact diagnostics but are not
+  required to match an embedded ID. This permits pack organization without inventing a filename identity contract.
+
+### Validation and policy decisions
+
+- Stage 1 parses every effective JSON resource and reuses the Milestone 2 codecs for required fields, schema,
+  dimensions, colours, OKLab values, identifiers, and local collection constraints. It never publishes partial data.
+- Stage 2 validates palette owners, material/palette and natural-colour agreement, override pigments, default
+  materials, default/supported mounts, placement-profile existence, and dimension containment. Profile width and
+  height must be at least the banner's declared width and height; rotations and occupied cells remain deferred.
+- Development/fail-fast rejects any candidate with an error, retains the prior snapshot, exposes/logs the complete
+  report, and lets the reload framework surface failure without terminating the JVM from low-level code.
+- Production/disable-invalid removes the owner of each invalid decoded definition, validates again, and repeats to a
+  stable fixed point. A bad palette can therefore disable its material and then banners using that material. Authored
+  immutable definitions are never mutated and unrelated substitutes are never selected.
+- Every issue carries stage, severity, domain, optional definition ID, exact source resource, stable issue code,
+  message, and optional related ID. Reports are deduplicated and deterministically ordered before logging once.
+
+### Test coverage and integration boundary
+
+- Test-only generated datasets cover valid data, every applicable missing/mismatch case, malformed and unknown-schema
+  resources, duplicate IDs, simultaneous errors, dependency cascades, replacement and preservation, reference-safe
+  production subsets, deterministic ordering, immutable exposure, empty datasets, and authoritative embedded IDs.
+- Atomic publication has a concurrent-reader test, and common registry classes are scanned for client references.
+- The listener is compiled and wired to `AddReloadListenerEvent`, but no automated Minecraft bootstrap/GameTest was
+  added. Runtime resource-manager override behavior and listener invocation therefore have isolated core coverage plus
+  API compilation, not a live-server integration test. `ResourceManager.listResources` itself owns pack priority.
+
+### Known limitations and deviations
+
+- Logical asset IDs are syntax-validated. Physical geometry/model/texture existence is not checked until the project
+  chooses a reliable mapping across vanilla, GeckoLib, texture, and custom-loader resource types; this is recorded in
+  `OPEN_QUESTIONS.md`.
+- Structurally undecodable resources remain visible in the report but cannot appear in a disabled typed-definition
+  list because no valid immutable definition exists to retain.
+- No resource-pack-stack integration test was added because constructing the actual Minecraft pack/bootstrap layer is
+  unsuitable for the ordinary unit harness. Same-path replacement uses the platform's effective-resource map.
+- No production definitions, catalogue manifest, assets, gameplay registrations, components, items, blocks, block
+  entities, screens, packets, rendering, recipes, commands, placement mechanics, or Milestone 4 work were added.
+
+### Next milestone
+
+Stop after the Milestone 3 commit and owner review. The next permitted work is Milestone 4 - Scaffold All 33 Banner
+Placeholders - only; do not begin it as part of this milestone.
+
 ## 2026-07-20 - Milestone 2: Core Data Records and Codecs
 
 ### Files changed

@@ -2,7 +2,17 @@
 
 Date: 2026-07-20
 
-Milestone: 2
+Milestone: 3
+
+## Milestone 3 physical-asset validation boundary
+
+Milestone 3 validates every authored geometry, texture, palette, and other logical reference as a namespaced
+`ResourceLocation`. It does not validate physical model or texture existence. Repository evidence does not yet define
+one reliable mapping from the extensionless logical IDs in `BannerAssets` and `MountDefinition` to packaged files:
+the project uses vanilla JSON models, GeckoLib geometry, textures with `.png` suffixes, and a custom geometry loader.
+Choosing one path convention here would reject valid future assets or silently bless the wrong resource type. The
+rendering/content milestone must establish that mapping before physical existence checks can be made authoritative.
+This is an asset convention question only; it does not affect stable definition IDs or snapshot safety.
 
 ## Milestone 2 placement-profile boundary
 

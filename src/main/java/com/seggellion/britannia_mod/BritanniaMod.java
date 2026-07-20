@@ -50,6 +50,7 @@ import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
+import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegistration;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -134,6 +135,7 @@ CraftableRegistry.init();
 
         ModSounds.register(modEventBus);
         CommandRegistry.register();
+        BannerDataReloadRegistration.register(NeoForge.EVENT_BUS);
 
         // Register event handlers
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
