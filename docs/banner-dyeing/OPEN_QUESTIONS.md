@@ -1,0 +1,68 @@
+# Banner and Dyeing Open Questions
+
+Date: 2026-07-20
+
+Milestone: 0
+
+This register separates facts that the repository can resolve from product decisions that require owner input. A question is blocking only when proceeding would force an incompatible public API, saved-data contract, stable ID, or asset convention.
+
+## Questions answerable from the repository
+
+These questions were resolved during Milestone 0 and are not owner decisions.
+
+| Question | Resolution | Evidence |
+|---|---|---|
+| What platform is this? | Minecraft 1.21.1 on NeoForge 21.1.72, Java 21 | `build.gradle`, `gradle.properties`, generated mod metadata |
+| What mappings are active? | Official mappings through NeoForm/UserDev; Parchment properties exist but are unused | `neoFormApplyOfficialMappings` task output and no Parchment configuration in `build.gradle` |
+| What is the mod ID/package? | `britannia_mod` / `com.seggellion.britannia_mod` | `gradle.properties`, `BritanniaMod.java` |
+| How are items, blocks, block entities, and components registered? | NeoForge `DeferredRegister` / `DeferredHolder` on the mod event bus | Classes under `registry/` and `BritanniaMod` constructor |
+| How should new item instance state be stored? | A typed registered `DataComponentType` with persistent `Codec` and network `StreamCodec` | `DataComponentRegistry`, `WineData`, `WineBottleItem` |
+| How do block entities persist and sync? | `saveAdditional` / `loadAdditional`, update tag/packet, `setChanged`, block update | `WineBottleBlockEntity` |
+| How are packets registered? | `CustomPacketPayload` + `StreamCodec` through `RegisterPayloadHandlersEvent` and `PayloadRegistrar` | `NetworkHandler` and payload records |
+| How are non-container screens opened? | Client-only `Screen` opened from an S2C handler; actions sent by C2S payload | Blacksmith screen and payload flow |
+| Is there a shared material ID type suitable for fabrics? | No. Existing material enums are metal- and item-family-specific | `UOMetalToolMaterial`, `MaterialQualityJewelryItem.UOMaterial` |
+| Is there a resource-reload registry convention? | No. The only local JSON loader is startup-only classpath/Gson loading | `OreVeinLoader`; no reload listener registrations |
+| Is data generation implemented? | No provider exists; only the `runData` task and generated-resource path are configured | `build.gradle`, Gradle task list, absent `src/generated` |
+| What tests exist? | No unit or GameTest sources; `test` is `NO-SOURCE`; `runGameTestServer` exists | source tree and baseline Gradle output |
+| What renderer conventions exist? | Static JSON models, GeckoLib renderers, custom geometry loader, and block-entity renderers registered in client setup | assets tree, `ClientModSetup`, `OrderShieldRenderer` |
+
+Repository-answerable follow-up for the rendering milestone: verify the supported NeoForge 21.1 replacement for deprecated `Item.initializeClient(IClientItemExtensions)` before choosing the banner item renderer. The current code compiles but the baseline emits a removal warning, so copying it without verification is unsafe. This does not block Milestones 0–8.
+
+## Product decisions requiring owner input
+
+These decisions affect player experience or content approval. The data model can represent all options, so none blocks the next architecture milestone unless noted.
+
+1. Does loading a dye tub consume one dye item, retain it, or partially consume a multi-use dye source?
+2. Are dye tubs unlimited-use in the first release, or do they store a finite use count?
+3. Can a loaded tub be emptied or washed, and does that recover anything?
+4. Is direct dyeing of placed banners in the first release, or must players break, dye, and replace them?
+5. Is mount style fixed at crafting time, or can it be swapped later?
+6. Do all 33 designs support both brass and iron mounts, or does each definition have an approved subset?
+7. Do cotton, wool, linen, and silk use distinct fabric textures in release one, or palette differences only?
+8. Must every dye operation use a confirmation screen, or may repeat dyeing support an expedited interaction?
+9. How are special dyes such as ice dye obtained and priced?
+10. Should nearest-colour matching always choose the closest compatible colour, or reject results beyond an owner-defined threshold?
+11. Is there a natural/bleach operation to restore an undyed material colour?
+12. Approve final banner names, dimensions, orientations, mounts, and art as content batches reach their review gates.
+
+## Deferred non-blocking decisions
+
+- Default reversible dye-tub behavior if still unanswered at its milestone: replace the stored pigment, consume one dye item, and use unlimited tub applications, as specified by the build playbook.
+- Direct placed-banner dyeing can remain outside the first release.
+- Rare dye economy, visual effects, multi-region tinting, washing, dye crafting, and other dyeable textiles are post-release hooks.
+- Final palette size, authored OKLab values, and material art direction can be filled in after the deterministic data contracts and resolver tests exist.
+- Whether the first banner data loader supports live resource reload on day one or initially loads validated server data at startup can be decided in the registry milestone without changing stable IDs or item state.
+- A documentation/scaffold implementation language will be selected from tools already accepted by the project when Milestone 4 begins.
+- The Gradle combined `clean build` NeoForm race can be owned by build maintenance; separate `clean` then `build` succeeds and is sufficient for continued feature verification.
+
+## Blocking decisions
+
+None blocks Milestone 1.
+
+The following become blocking at their stated review gates:
+
+- Before players can obtain catalogue items (Gate B): approve the 33 stable banner IDs. Renaming stable IDs after world data exists would require migration.
+- Before a final content entry is marked complete: approve its final name, dimensions, supported orientations, mounts, and original art.
+- Before release: explicitly approve any catalogue entries that remain provisional/placeholders.
+
+The lack of final names or dimensions is not currently blocking. Exactly 33 entries must still be present; unnamed banners receive stable provisional IDs and a visible `Name Required` status, and provisional names/dimensions are not approved lore.
