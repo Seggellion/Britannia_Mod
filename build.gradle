@@ -37,6 +37,9 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     implementation "io.github.llamalad7:mixinextras-common:0.3.5"
     annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
 }
 
 runs {
@@ -121,6 +124,10 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 idea {

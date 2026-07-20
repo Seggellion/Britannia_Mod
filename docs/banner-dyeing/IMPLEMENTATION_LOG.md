@@ -1,5 +1,49 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 — Milestone 1: Feature Skeleton, IDs, and Test Harness
+
+### Files changed
+
+- Added common feature entry points: `BannerFeature`, `DyeFeature`, and `BannerDyeingBootstrap`.
+- Added the shared `StableResourceId` contract and immutable `ResourceLocation` wrappers for banner definitions, fabric materials, pigments, resolved colours, mounts, and placement profiles.
+- Added the stable `BannerOrientation` enum for wall-parallel and wall-perpendicular orientations.
+- Added `BannerDyeingConstants` with schema version 1 and the initial cotton, brass, and iron IDs.
+- Added JUnit Jupiter test dependencies and enabled the JUnit Platform in `build.gradle`.
+- Added reusable ID fixtures and tests covering construction, parsing, equality, string form, persistent codecs, stream codecs, invalid identifiers, null rejection, orientation serialization, bootstrap constants, logger categories, and common-code client-reference safety.
+
+### Commands and results
+
+1. `git branch --show-current` — `banners-dyetub`.
+2. `git merge-base patch-18 HEAD` — `62df1dc97c5113a86f9c0f258cb90538f31efe89`; `git rev-list --left-right --count patch-18...banners-dyetub` returned `0 1` before this milestone commit.
+3. Initial restricted-sandbox narrow Gradle invocation — could not download/access the Gradle distribution because network access was denied; rerun with approved dependency access.
+4. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` — first approved run reached project compilation and found one test-only `JsonOps` input type error. The test was corrected to use `JsonPrimitive`; production code compiled.
+5. The same narrow test command after correction — passed in 13 seconds. XML results: 53 tests, 0 failures, 0 errors, 0 skipped.
+6. `.\gradlew.bat clean --no-daemon` — passed in 17 seconds.
+7. `.\gradlew.bat test --no-daemon --stacktrace` — passed in 59 seconds. XML results: 53 tests, 0 failures, 0 errors, 0 skipped.
+8. `.\gradlew.bat build --no-daemon` — passed in 22 seconds; `jar`, `jarJar`, `assemble`, and `build` completed.
+9. Common-source client-reference scan — passed with no `net.minecraft.client` or `com.mojang.blaze3d` references.
+10. Out-of-scope API scan — passed with no registrations, block entities, menus, screens, renderers, recipes, or custom payload APIs in the Milestone 1 packages.
+
+### Decisions
+
+- Model stable domain identifiers as small immutable record wrappers around `ResourceLocation`, with a shared read-only contract while retaining distinct compile-time types.
+- Put both persistent `Codec` and network `StreamCodec` definitions on each identifier type so later milestones share one canonical serialization boundary.
+- Reject malformed identifiers through the repository's Minecraft 1.21.1 `ResourceLocation` validation rather than adding a second validation grammar.
+- Keep the feature bootstraps side-effect-free in this milestone. Registration and gameplay wiring belong to later milestones.
+- Use structured logger categories dedicated to banner and dye content validation.
+- Add the smallest conventional JUnit 5 harness because the repository had no test framework or test sources.
+
+### Known limitations and deviations
+
+- No registries, content catalogue, JSON loading, blocks, items, block entities, screens, renderers, packets, recipes, or gameplay behavior are implemented; these are intentionally outside Milestone 1.
+- The bootstrap classes establish common boundaries but are not invoked by the main mod initializer until a later registration milestone has real work to wire.
+- This milestone has unit-level common-code safety checks only. No manual in-game check is meaningful for a registration-free skeleton.
+- The first approved narrow run exposed and led to correction of a test-only compile error before the successful validation runs; it was not a production-code failure.
+
+### Next milestone
+
+Stop after the Milestone 1 commit and owner review. The next permitted work is Milestone 2 only; do not begin it as part of this milestone.
+
 ## 2026-07-20 — Milestone 0: Repository Discovery and Implementation Facts
 
 ### Branch-creation evidence
