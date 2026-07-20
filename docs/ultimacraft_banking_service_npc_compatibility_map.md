@@ -234,6 +234,39 @@ conversion is not currently centralized anywhere in the codebase —
 authoritative conversion source before cheque redemption can convert a value
 into coins safely.
 
+### ADR-013: Quest-bound items are not bankable in the first release (revises ADR-010)
+
+Date: 2026-07-20. Status: Human-approved (not Codex-inferred).
+
+Quest-bound items are not bankable in the first release. This revises
+ADR-010's "no restriction" finding: `QuestCleanupService`'s cleanup mechanic
+(`cleanupAfterQuestQuit`, `cleanupStaleLocalQuestState`) only scans a
+player's live inventory, so banking a quest item would let it silently
+escape that cleanup — an implication ADR-010 was not written knowing.
+
+Detection uses the existing informal marker `QuestRewardService` already
+stamps onto these items (the `quest_item` `CUSTOM_DATA` key, confirmed during
+Milestone 8 recon) — no new formal item type or component is introduced;
+this reads the same ad hoc convention `QuestCleanupService` itself already
+relies on.
+
+### ADR-014: Items from unrecognized/unsupported mod origins are not bankable in the first release
+
+Date: 2026-07-20. Status: Human-approved (not Codex-inferred).
+
+Items from unrecognized/unsupported mod origins are not bankable in the
+first release. Enforced via an allowlist keyed by registry namespace (not a
+denylist — the set of known-compatible origins is small and enumerable; the
+set of possibly-incompatible mods is not). Only vanilla (`minecraft`) and
+this mod's own namespace (`britannia_mod`, confirmed against
+`BritanniaMod.MODID`) are permitted at the item's own registry-key level.
+
+Component-level origin (for example a foreign enchantment attached to an
+otherwise-eligible item) is explicitly not checked in this pass. This is a
+known, documented boundary of this ADR, not a silent gap: an item whose own
+registry key is vanilla or `britannia_mod` is accepted even if some
+component attached to it originates elsewhere.
+
 ## 5. Authority and extension matrix
 
 | Domain | Current authority | Verified current representation | Extension rule |

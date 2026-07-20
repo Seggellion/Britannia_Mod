@@ -30,9 +30,14 @@ import java.io.IOException;
  * {@code ItemStack.CODEC} itself carries no version tag and this mod has no existing
  * out-of-world-save persistence format for items to extend.
  *
- * Eligibility policy (which items may reach this codec at all -- nested containers,
- * quest-bound items, bank checks, etc.) is explicitly out of scope: this class serializes
- * whatever non-empty ItemStack it is given.
+ * Item-eligibility policy is enforced via {@link BankItemEligibility#checkEligible} -- see that
+ * class for the full, current list of carve-outs (currency, quest-bound items, unsupported mod
+ * origins) and the deliberate order they are checked in. Two boundaries remain explicitly out
+ * of scope, not silently missing: bank cheques (no cheque {@code Item} exists yet to check
+ * against -- not yet applicable, not yet decided), and component-level origin (a foreign
+ * enchantment or other component attached to an item whose own registry key is otherwise
+ * supported is not detected -- ADR-014's own stated boundary). Every item that clears
+ * {@link BankItemEligibility#checkEligible} is serialized as-is.
  */
 public final class BankItemCodec {
     private static final String KEY_SCHEMA_VERSION = "schema_version";
@@ -44,18 +49,22 @@ public final class BankItemCodec {
     /**
      * Serializes {@code stack} into a durable, opaque byte payload carrying an explicit
      * schema version tag. Throws for a programming error (a null/empty stack, or one nested
-     * deeper than {@link BankItemNesting#MAX_DEPTH}, is never a valid banked item); it does
-     * not return a result type because there is no recoverable caller decision to make here,
-     * unlike {@link #deserialize}. The nesting-depth check specifically is a caller-error
-     * guard, not a security boundary -- {@code stack} is always an in-memory ItemStack a real
-     * caller already holds (a player's inventory slot), not untrusted bytes, so an
-     * over-the-limit stack reaching here can only mean it was assembled some other way (a
-     * test, a command) than a real deposit ever would.
+     * deeper than {@link BankItemNesting#MAX_DEPTH}, is never a valid banked item) and for any
+     * eligibility violation {@link BankItemEligibility#checkEligible} finds anywhere in the
+     * nested structure (currency, quest-bound, unsupported origin), via
+     * {@link BankItemEligibility.IneligibleItemException} rather than silently serializing an
+     * ineligible item as a generic one. It does not return a result type because there is no
+     * recoverable caller decision to make here, unlike {@link #deserialize}. The nesting-depth
+     * check specifically is a caller-error guard, not a security boundary -- {@code stack} is
+     * always an in-memory ItemStack a real caller already holds (a player's inventory slot),
+     * not untrusted bytes, so an over-the-limit stack reaching here can only mean it was
+     * assembled some other way (a test, a command) than a real deposit ever would.
      */
     public static byte[] serialize(ItemStack stack, HolderLookup.Provider registries) {
         if (stack == null || stack.isEmpty()) {
             throw new IllegalArgumentException("Cannot serialize an empty ItemStack for banking");
         }
+        BankItemEligibility.checkEligible(stack);
         if (BankItemNesting.containerNestingDepthOf(stack) > BankItemNesting.MAX_DEPTH) {
             throw new IllegalArgumentException(
                     "Cannot serialize an ItemStack nested more than " + BankItemNesting.MAX_DEPTH + " containers deep");
