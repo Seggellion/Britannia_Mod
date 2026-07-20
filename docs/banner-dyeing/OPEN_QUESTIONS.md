@@ -2,7 +2,16 @@
 
 Date: 2026-07-20
 
-Milestone: 0
+Milestone: 2
+
+## Milestone 2 placement-profile boundary
+
+The specifications establish declared width/height and wall-support requirements, but they do not yet establish
+authoritative occupied-cell offsets, facing transforms, anchor-cell selection, or whether support must exist behind
+every occupied cell. Milestone 2 therefore stores only versioned profile identity, declared dimensions, and
+`requires_wall_support`. Milestone 3 may validate that a definition and referenced profile agree on dimensions, but
+the final occupied-cell saved-data contract remains deferred until the placement design is implemented in Milestones
+10 through 12. No offset or anchor semantics were guessed in this milestone.
 
 This register separates facts that the repository can resolve from product decisions that require owner input. A question is blocking only when proceeding would force an incompatible public API, saved-data contract, stable ID, or asset convention.
 

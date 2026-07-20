@@ -1,5 +1,97 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 2: Core Data Records and Codecs
+
+### Files changed
+
+- Added banner data contracts under `banner/data`: `BannerDefinition`, `BannerDimensions`, `BannerAssets`,
+  `BannerSourceReference`, `BannerContentStatus`, `MountDefinition`, and `PlacementProfile`.
+- Added common item-compatible banner state under `banner/state`: `BannerInstanceState`.
+- Added dye definitions under `dye/data`: `FabricMaterialDefinition` and `PigmentDefinition`.
+- Added palette contracts under `dye/palette`: `MaterialPalette` and `MaterialPaletteEntry`.
+- Added dye state and result contracts: `DyeTubState`, `DyeResult`, and `MatchType`.
+- Added `DataCodecs` for the shared schema, canonical sRGB, finite-number, OKLab, tag, and non-blank-string
+  structural codecs.
+- Added `CoreDataFixtures`, `CoreDataCodecTest`, and `CoreDataValidationTest`.
+- Updated `OPEN_QUESTIONS.md` with the deliberately deferred occupied-cell/anchor semantics for placement profiles.
+
+### Commands and results
+
+1. Required Git preflight:
+   - `git branch --show-current` - `banners-dyetub`.
+   - `git status --short --branch` - only the preserved modified `ModConfig.java` and preserved untracked root
+     specifications, `.claude/`, `logs/`, and `tmp/` were present.
+   - `git merge-base banners-dyetub patch-18` - `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+   - `git rev-list --left-right --count patch-18...banners-dyetub` - `0 2`.
+   - `git log --oneline --decorate -5` - expected Milestone 1 `129ed2d` and Milestone 0 `e43bbc5` were the first
+     two feature commits.
+2. Initial restricted `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon
+   --stacktrace` - could not access/download the Gradle 8.9 distribution because sandbox network access was denied.
+3. The first approved retry was given an accidentally short command timeout. Its orphaned worker temporarily held
+   `build/test-results/test/binary/output.bin`; the next retry reported that output-lock error. `.\gradlew.bat --stop`
+   stopped the one orphaned daemon. No source or test assertion failed in either attempt.
+4. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` after the
+   complete fixture coverage was added - passed in 11 seconds. XML results: 130 tests, 0 failures, 0 errors,
+   0 skipped.
+5. `.\gradlew.bat clean --no-daemon` - passed in 9 seconds.
+6. `.\gradlew.bat test --no-daemon --stacktrace` - passed in 39 seconds. XML results: 130 tests, 0 failures,
+   0 errors, 0 skipped.
+7. `.\gradlew.bat build --no-daemon` - passed in 14 seconds; `jar`, `jarJar`, `assemble`, and `build` completed.
+8. `git diff --check` - passed before documentation/staging review; repeated during final review.
+9. Common-source client/API scan - no `net.minecraft.client`, Blaze3D, gameplay objects, registration APIs,
+   reload listeners, payloads, screens, renderers, items, blocks, or block entities in the Milestone 2 data packages.
+
+No initially failing JUnit test required correction. The only initial failures were Gradle environment access and an
+orphaned-worker file lock, as described above.
+
+### Structural validation decisions
+
+- Reused all six Milestone 1 stable ID wrappers. Asset, model, texture, and palette identities use namespaced
+  `ResourceLocation` values rather than a parallel identifier system.
+- All stored top-level contracts use `BannerDyeingConstants.CURRENT_SCHEMA_VERSION`; unknown versions fail with an
+  explicit codec error. Nested value records and the transient `DyeResult` do not repeat a schema field.
+- Persistent codecs require every non-optional field and do not provide invalid-value defaults. Network codecs exist
+  only for `BannerInstanceState` and `DyeTubState`, the two contracts selected for future typed synchronized item
+  components by `PROJECT_FACTS.md`.
+- Banner width is limited to one through three blocks. Height is limited to one through 16 blocks; 16 is a documented
+  conservative occupancy bound that exceeds the current catalogue while preventing unbounded structural input.
+- Banner orientations and mounts must be non-empty, and the default mount must be in the supported mount collection.
+- Canonical sRGB is uppercase six-digit `#RRGGBB`. OKLab components and dye-result distances must be finite; distances
+  must also be non-negative. Numeric fixture values remain illustrative authored data, not scientifically verified
+  production colours.
+- Palettes reject duplicate entry IDs, require their natural colour to be one of their own entries, and require local
+  pigment overrides to target one of those entries. Overrides are copied into lexical pigment-ID order for stable
+  output.
+- Unlimited dye-tub uses have one representation: an absent `remaining_uses`. Finite counts may be zero or positive;
+  a use count without a loaded pigment is structurally invalid. No consumption or replacement policy is encoded.
+- Lists and maps are defensively copied and exposed as immutable collections. Source-sheet labels are preserved only
+  as provenance and are never promoted to display names.
+
+### Validation deferred to Milestone 3
+
+- Registry membership and existence of referenced definitions, materials, pigments, colours, mounts, palettes,
+  placement profiles, models, and textures.
+- Agreement between a banner definition and its referenced placement profile or material palette.
+- Cross-resource uniqueness, missing resources, disabled-entry policy, and complete registry-set validation.
+- Whether an absent source pigment corresponds to the material's natural colour; that requires loaded material and
+  palette data. Decoding intentionally remains valid without live registries.
+
+### Known limitations and deviations
+
+- `PlacementProfile` deliberately contains only schema version, stable ID, declared dimensions, and a wall-support
+  flag. Occupied offsets, rotations, anchor choice, support-cell rules, and placed-state persistence remain deferred
+  to the placement milestones and are recorded in `OPEN_QUESTIONS.md`.
+- No data loading, registries, catalogue data, palette resolution, colour conversion, gameplay objects, components,
+  packets, rendering, placement behavior, commands, recipes, or assets were added.
+- `MaterialPaletteEntry` is nested in a versioned `MaterialPalette`; it does not repeat `schema_version`.
+- `DyeResult` is a small immutable resolver result and is not a stored top-level state object, so it does not include a
+  schema field or a network codec.
+
+### Next milestone
+
+Stop after the Milestone 2 commit and owner review. The next permitted work is Milestone 3 - Data Registries and
+Validation Pipeline - only; do not begin it as part of this milestone.
+
 ## 2026-07-20 — Milestone 1: Feature Skeleton, IDs, and Test Harness
 
 ### Files changed
