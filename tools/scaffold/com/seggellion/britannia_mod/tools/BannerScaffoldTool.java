@@ -1,0 +1,1136 @@
+package com.seggellion.britannia_mod.tools;
+
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.bannerdyeing.registry.DefinitionResource;
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+import com.seggellion.britannia_mod.bannerdyeing.registry.RegistryDataLoader;
+import com.seggellion.britannia_mod.bannerdyeing.registry.RegistryDomain;
+import com.seggellion.britannia_mod.bannerdyeing.registry.RegistryLoadResult;
+import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshotPublisher;
+import com.seggellion.britannia_mod.bannerdyeing.validation.ValidationPolicy;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
+
+/** Deterministic Milestone 4 catalogue generator and verifier. */
+public final class BannerScaffoldTool {
+    public static final String MANIFEST_PATH = "content/banner_catalogue.yml";
+    public static final String STATUS_PATH = "content/banner_catalogue_status.md";
+    public static final String METADATA_PATH = "content/.banner_scaffold_metadata.json";
+    public static final String LOCALIZATION_PATH =
+            "src/main/resources/assets/britannia_mod/lang/en_us.json";
+    public static final int TARGET_COUNT = 33;
+
+    private static final String DATA_ROOT = "src/main/resources/data/britannia_mod/";
+    private static final String ASSET_ROOT = "src/main/resources/assets/britannia_mod/";
+    private static final Set<String> GROUPS = Set.of("large", "medium-wall", "medium", "small", "x-small");
+    private static final Gson GSON = new GsonBuilder()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .setPrettyPrinting()
+            .disableHtmlEscaping()
+            .create();
+    private static final Pattern SAFE_ID = Pattern.compile("[a-z0-9_]+");
+    private static final String PROVISIONAL_SUFFIX = " (Name Required)";
+
+    private static final List<CanonicalEntry> CANONICAL = canonicalEntries();
+
+    private BannerScaffoldTool() {
+    }
+
+    public record Options(boolean check, boolean force) {
+        public Options {
+            if (check && force) {
+                throw new IllegalArgumentException("--check and --force cannot be used together");
+            }
+        }
+    }
+
+    public record RunSummary(
+            int manifestEntries,
+            int generatedDefinitions,
+            int activeDefinitions,
+            int disabledDefinitions,
+            int localizationEntries,
+            int provisionalNames,
+            int provisionalDimensions,
+            int placeholderAssetFamilies,
+            List<String> customizedFiles) {
+        public RunSummary {
+            customizedFiles = List.copyOf(customizedFiles);
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            Options options = parseOptions(args);
+            RunSummary summary = execute(Path.of(".").toAbsolutePath().normalize(), options, System.out);
+            System.out.printf(Locale.ROOT,
+                    "Banner scaffold %s: manifest=%d definitions=%d active=%d disabled=%d localization=%d "
+                            + "provisional_names=%d provisional_dimensions=%d asset_families=%d%n",
+                    options.check ? "check passed" : "generation completed",
+                    summary.manifestEntries, summary.generatedDefinitions, summary.activeDefinitions,
+                    summary.disabledDefinitions, summary.localizationEntries, summary.provisionalNames,
+                    summary.provisionalDimensions, summary.placeholderAssetFamilies);
+        } catch (RuntimeException | IOException exception) {
+            System.err.println("Banner scaffold failed: " + exception.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public static RunSummary execute(Path repositoryRoot, Options options, PrintStream output) throws IOException {
+        Objects.requireNonNull(repositoryRoot, "repositoryRoot");
+        Objects.requireNonNull(options, "options");
+        Objects.requireNonNull(output, "output");
+        Path root = repositoryRoot.toAbsolutePath().normalize();
+        Manifest manifest = readAndValidateManifest(root.resolve(MANIFEST_PATH));
+        ResolvedCatalogue catalogue = resolve(manifest);
+        LinkedHashMap<String, byte[]> expected = buildExpectedFiles(catalogue);
+        RegistryLoadResult registry = validateRegistry(expected);
+        expected.put(STATUS_PATH, utf8(statusReport(catalogue, registry)));
+        validateAssetMappings(catalogue, expected.keySet());
+
+        if (options.check) {
+            checkOutputs(root, catalogue, expected);
+            return summary(catalogue, registry, List.of());
+        }
+
+        Metadata metadata = readMetadata(root.resolve(METADATA_PATH));
+        List<String> customized = findCustomizedFiles(root, expected, metadata);
+        if (options.force && !customized.isEmpty()) {
+            output.println("WARNING: --force will overwrite these customized declared outputs:");
+            customized.forEach(path -> output.println("  " + path));
+        }
+
+        Set<String> customizedSet = Set.copyOf(customized);
+        for (Map.Entry<String, byte[]> entry : expected.entrySet()) {
+            if (!customizedSet.contains(entry.getKey()) || options.force) {
+                writeAtomic(root.resolve(entry.getKey()), entry.getValue());
+            } else {
+                output.println("Preserved customized output: " + entry.getKey());
+            }
+        }
+
+        LocalizationResult localization = mergeLocalization(root, catalogue, metadata, options.force, output);
+        Metadata refreshed = refreshMetadata(root, expected, metadata, catalogue, localization);
+        writeAtomic(root.resolve(METADATA_PATH), utf8(json(refreshed.toJson())));
+
+        if (customized.isEmpty() && localization.customizedKeys.isEmpty()) {
+            checkOutputs(root, catalogue, expected);
+        }
+        List<String> allCustomized = new ArrayList<>(customized);
+        localization.customizedKeys.forEach(key -> allCustomized.add(LOCALIZATION_PATH + "#" + key));
+        return summary(catalogue, registry, allCustomized);
+    }
+
+    public static Manifest readAndValidateManifest(Path path) throws IOException {
+        String raw = Files.readString(path, StandardCharsets.UTF_8);
+        Manifest manifest;
+        try {
+            manifest = GSON.fromJson(raw, Manifest.class);
+        } catch (JsonParseException exception) {
+            throw new ScaffoldException("Manifest must be valid JSON-compatible YAML 1.2: " + exception.getMessage());
+        }
+        validateManifest(manifest);
+        return manifest;
+    }
+
+    private static Options parseOptions(String[] args) {
+        boolean check = false;
+        boolean force = false;
+        for (String argument : args) {
+            switch (argument) {
+                case "--check" -> check = true;
+                case "--force" -> force = true;
+                case "" -> { }
+                default -> throw new ScaffoldException("Unknown argument: " + argument);
+            }
+        }
+        return new Options(check, force);
+    }
+
+    private static void validateManifest(Manifest manifest) {
+        require(manifest != null, "Manifest root is required");
+        require(manifest.schemaVersion == 1, "schema_version must be 1");
+        require(manifest.defaults != null, "defaults are required");
+        require(manifest.groups != null, "groups are required");
+        require(manifest.sharedPlaceholderAssets != null, "shared_placeholder_assets are required");
+        require(manifest.banners != null, "banners are required");
+        require(manifest.banners.size() == TARGET_COUNT,
+                "Manifest must contain exactly 33 entries; found " + manifest.banners.size());
+        require(manifest.groups.keySet().equals(GROUPS),
+                "groups must be exactly " + GROUPS + "; found " + manifest.groups.keySet());
+
+        Defaults defaults = manifest.defaults;
+        require("britannia_mod:cotton".equals(defaults.defaultMaterial),
+                "default_material must be britannia_mod:cotton");
+        require(List.of("britannia_mod:brass", "britannia_mod:iron").equals(defaults.supportedMounts),
+                "supported_mounts must be brass then iron");
+        require("britannia_mod:brass".equals(defaults.defaultMount),
+                "default_mount must be britannia_mod:brass");
+        require(List.of("wall_parallel", "wall_perpendicular").equals(defaults.supportedOrientations),
+                "supported_orientations must contain the two scaffold defaults in canonical order");
+        require("placeholder".equals(defaults.contentStatus), "content_status must be placeholder");
+        require(Boolean.TRUE.equals(defaults.dimensionsProvisional),
+                "all initial dimensions must be marked provisional");
+        validateResourceId(defaults.fabricBase, "fabric_base");
+        validateResourceId(defaults.dyeMask, "dye_mask");
+        validateResourceId(defaults.staticOverlay, "static_overlay");
+
+        Set<Integer> indices = new LinkedHashSet<>();
+        Set<String> ids = new LinkedHashSet<>();
+        for (int position = 0; position < manifest.banners.size(); position++) {
+            BannerEntry entry = manifest.banners.get(position);
+            require(entry != null, "Banner entry " + (position + 1) + " is null");
+            require(indices.add(entry.index), "Duplicate index: " + entry.index);
+            require(entry.id != null && SAFE_ID.matcher(entry.id).matches(),
+                    "Unsafe or invalid stable ID: " + entry.id);
+            require(!entry.id.contains("..") && !entry.id.contains("/") && !entry.id.contains("\\"),
+                    "Output traversal or unsafe path rejected: " + entry.id);
+            require(ids.add(entry.id), "Duplicate stable ID: " + entry.id);
+            require(GROUPS.contains(entry.group), "Unknown group for " + entry.id + ": " + entry.group);
+            require(entry.page > 0 && entry.row > 0,
+                    "Source page and row must be positive for " + entry.id);
+            require(notBlank(entry.displayName), "display_name is required for " + entry.id);
+            require("provisional".equals(entry.nameStatus) || "source-named".equals(entry.nameStatus),
+                    "Unknown name_status for " + entry.id + ": " + entry.nameStatus);
+            if ("provisional".equals(entry.nameStatus)) {
+                require(entry.sourceLabel == null, "Provisional entry must not claim a source label: " + entry.id);
+                require(notBlank(entry.notes) && entry.notes.contains("Name Required"),
+                        "Provisional entry must visibly retain Name Required status: " + entry.id);
+                require(localizedName(entry).contains("Name Required"),
+                        "Generated provisional localization must be visibly temporary: " + entry.id);
+            } else {
+                require(notBlank(entry.sourceLabel), "Source-named entry needs source_label: " + entry.id);
+            }
+            String contentStatus = first(entry.contentStatus, defaults.contentStatus);
+            require(!"complete".equals(contentStatus), "Initial entry cannot be complete: " + entry.id);
+            require("placeholder".equals(contentStatus), "Initial content_status must be placeholder: " + entry.id);
+            require(Boolean.TRUE.equals(first(entry.dimensionsProvisional, defaults.dimensionsProvisional)),
+                    "Initial dimensions must remain provisional: " + entry.id);
+        }
+        require(indices.equals(range(1, TARGET_COUNT)),
+                "Indices must be continuous from 1 through 33; found " + indices);
+
+        for (int i = 0; i < CANONICAL.size(); i++) {
+            CanonicalEntry expected = CANONICAL.get(i);
+            BannerEntry actual = manifest.banners.get(i);
+            require(expected.matches(actual), "Canonical catalogue mismatch at index " + expected.index
+                    + "; expected " + expected + ", found " + actual);
+        }
+        Map<String, Long> groupCounts = counts(manifest.banners, entry -> entry.group);
+        require(groupCounts.equals(Map.of("large", 6L, "medium-wall", 6L, "medium", 8L,
+                        "small", 6L, "x-small", 7L)),
+                "Canonical group counts do not match: " + groupCounts);
+
+        validateGroup(manifest.groups.get("large"), 3, 2, "placeholder_large", "large");
+        validateGroup(manifest.groups.get("medium-wall"), 2, 2, "placeholder_medium_wall", "medium_wall");
+        validateGroup(manifest.groups.get("medium"), 1, 2, "placeholder_medium", "medium");
+        validateGroup(manifest.groups.get("small"), 1, 1, "placeholder_small", "small");
+        validateGroup(manifest.groups.get("x-small"), 1, 1, "placeholder_x_small", "x_small");
+    }
+
+    private static void validateGroup(Group group, int width, int height, String profile, String geometry) {
+        require(group != null, "Missing canonical group");
+        require(group.widthBlocks == width && group.heightBlocks == height,
+                "Canonical provisional dimensions do not match for " + profile);
+        require(("britannia_mod:" + profile).equals(group.placementProfile),
+                "Unexpected placement profile for " + profile);
+        require(("britannia_mod:banner/placeholder/" + geometry).equals(group.geometry),
+                "Unexpected geometry for " + profile);
+    }
+
+    private static ResolvedCatalogue resolve(Manifest manifest) {
+        List<ResolvedBanner> banners = new ArrayList<>();
+        for (BannerEntry entry : manifest.banners) {
+            Group group = manifest.groups.get(entry.group);
+            banners.add(new ResolvedBanner(
+                    entry.index, entry.id, entry.group, entry.page, entry.row, entry.sourceLabel,
+                    entry.displayName, entry.nameStatus,
+                    first(entry.contentStatus, manifest.defaults.contentStatus),
+                    first(entry.widthBlocks, group.widthBlocks),
+                    first(entry.heightBlocks, group.heightBlocks),
+                    first(entry.dimensionsProvisional, manifest.defaults.dimensionsProvisional),
+                    first(entry.supportedOrientations, manifest.defaults.supportedOrientations),
+                    first(entry.supportedMounts, manifest.defaults.supportedMounts),
+                    first(entry.defaultMount, manifest.defaults.defaultMount),
+                    first(entry.defaultMaterial, manifest.defaults.defaultMaterial),
+                    first(entry.geometry, group.geometry),
+                    first(entry.fabricBase, manifest.defaults.fabricBase),
+                    first(entry.dyeMask, manifest.defaults.dyeMask),
+                    first(entry.staticOverlay, manifest.defaults.staticOverlay),
+                    first(entry.placementProfile, group.placementProfile), entry.notes));
+        }
+        return new ResolvedCatalogue(List.copyOf(banners));
+    }
+
+    private static LinkedHashMap<String, byte[]> buildExpectedFiles(ResolvedCatalogue catalogue) {
+        LinkedHashMap<String, byte[]> output = new LinkedHashMap<>();
+        for (ResolvedBanner banner : catalogue.banners) {
+            output.put(DATA_ROOT + "banner_definitions/" + banner.id + ".json",
+                    utf8(json(bannerDefinition(banner))));
+        }
+        output.put(DATA_ROOT + "fabric_materials/cotton.json", utf8(json(cottonMaterial())));
+        output.put(DATA_ROOT + "material_palettes/cotton_placeholder.json", utf8(json(cottonPalette())));
+        output.put(DATA_ROOT + "banner_mounts/brass.json", utf8(json(mount("brass", "Brass"))));
+        output.put(DATA_ROOT + "banner_mounts/iron.json", utf8(json(mount("iron", "Iron"))));
+        output.put(DATA_ROOT + "placement_profiles/placeholder_large.json",
+                utf8(json(profile("large", 3, 2))));
+        output.put(DATA_ROOT + "placement_profiles/placeholder_medium_wall.json",
+                utf8(json(profile("medium_wall", 2, 2))));
+        output.put(DATA_ROOT + "placement_profiles/placeholder_medium.json",
+                utf8(json(profile("medium", 1, 2))));
+        output.put(DATA_ROOT + "placement_profiles/placeholder_small.json",
+                utf8(json(profile("small", 1, 1))));
+        output.put(DATA_ROOT + "placement_profiles/placeholder_x_small.json",
+                utf8(json(profile("x_small", 1, 1))));
+
+        output.put(ASSET_ROOT + "textures/banner/placeholder/fabric_base.png", png(PngKind.FABRIC_BASE));
+        output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
+        output.put(ASSET_ROOT + "textures/banner/placeholder/static_overlay.png", png(PngKind.STATIC_OVERLAY));
+        output.put(ASSET_ROOT + "textures/banner/placeholder/missing.png", png(PngKind.MISSING));
+        for (String family : List.of("large", "medium_wall", "medium", "small", "x_small")) {
+            output.put(ASSET_ROOT + "models/banner/placeholder/" + family + ".json",
+                    utf8(json(placeholderModel(family))));
+        }
+        return output;
+    }
+
+    private static JsonObject bannerDefinition(ResolvedBanner banner) {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:" + banner.id);
+        root.addProperty("display_name_key", translationKey(banner.id));
+        root.addProperty("content_status", banner.contentStatus);
+        JsonObject source = new JsonObject();
+        source.addProperty("page", banner.page);
+        source.addProperty("row", banner.row);
+        if (banner.sourceLabel != null) {
+            source.addProperty("source_label", banner.sourceLabel);
+        }
+        root.add("source_reference", source);
+        root.addProperty("catalogue_group", banner.group);
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", banner.widthBlocks);
+        dimensions.addProperty("height_blocks", banner.heightBlocks);
+        dimensions.addProperty("provisional", banner.dimensionsProvisional);
+        root.add("dimensions", dimensions);
+        root.add("supported_orientations", strings(banner.supportedOrientations));
+        root.add("supported_mounts", strings(banner.supportedMounts));
+        root.addProperty("default_mount", banner.defaultMount);
+        root.addProperty("default_material", banner.defaultMaterial);
+        JsonObject assets = new JsonObject();
+        assets.addProperty("geometry", banner.geometry);
+        assets.addProperty("fabric_base", banner.fabricBase);
+        assets.addProperty("dye_mask", banner.dyeMask);
+        assets.addProperty("static_overlay", banner.staticOverlay);
+        root.add("assets", assets);
+        root.addProperty("placement_profile", banner.placementProfile);
+        return root;
+    }
+
+    private static JsonObject cottonMaterial() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:cotton");
+        root.addProperty("display_name_key", "material.britannia_mod.cotton");
+        root.addProperty("natural_colour_id", "britannia_mod:cotton_natural");
+        root.addProperty("palette_id", "britannia_mod:cotton_placeholder");
+        root.add("tags", strings(List.of("fabric", "placeholder", "development_scaffold")));
+        return root;
+    }
+
+    private static JsonObject cottonPalette() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:cotton_placeholder");
+        root.addProperty("material_id", "britannia_mod:cotton");
+        root.addProperty("natural_colour_id", "britannia_mod:cotton_natural");
+        JsonObject natural = new JsonObject();
+        natural.addProperty("id", "britannia_mod:cotton_natural");
+        natural.addProperty("display_name_key", "colour.britannia_mod.cotton_natural");
+        natural.addProperty("display_srgb", "#C8C1AD");
+        JsonArray oklab = new JsonArray();
+        oklab.add(0.8);
+        oklab.add(0.0);
+        oklab.add(0.0);
+        natural.add("match_oklab", oklab);
+        natural.addProperty("priority", 0);
+        natural.add("tags", strings(List.of("natural", "placeholder")));
+        natural.add("allowed_pigment_tags", new JsonArray());
+        natural.add("excluded_pigment_tags", new JsonArray());
+        JsonArray entries = new JsonArray();
+        entries.add(natural);
+        root.add("entries", entries);
+        root.add("pigment_overrides", new JsonObject());
+        return root;
+    }
+
+    private static JsonObject mount(String id, String label) {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:" + id);
+        root.addProperty("display_name_key", "mount.britannia_mod." + id);
+        root.addProperty("geometry", "britannia_mod:banner/placeholder/small");
+        root.addProperty("texture", "britannia_mod:banner/placeholder/missing");
+        root.add("tags", strings(List.of("metal", "placeholder", "development_scaffold")));
+        return root;
+    }
+
+    private static JsonObject profile(String suffix, int width, int height) {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:placeholder_" + suffix);
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", width);
+        dimensions.addProperty("height_blocks", height);
+        dimensions.addProperty("provisional", true);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        return root;
+    }
+
+    private static JsonObject placeholderModel(String family) {
+        JsonObject root = new JsonObject();
+        root.addProperty("credit", "Milestone 4 diagnostic placeholder for " + family + "; not final geometry");
+        root.addProperty("parent", "minecraft:block/block");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("fabric", "britannia_mod:banner/placeholder/fabric_base");
+        textures.addProperty("particle", "britannia_mod:banner/placeholder/fabric_base");
+        root.add("textures", textures);
+        JsonObject element = new JsonObject();
+        element.add("from", numbers(0, 0, 7.5));
+        element.add("to", numbers(16, 16, 8.5));
+        JsonObject faces = new JsonObject();
+        JsonObject north = new JsonObject();
+        north.addProperty("texture", "#fabric");
+        JsonObject south = new JsonObject();
+        south.addProperty("texture", "#fabric");
+        faces.add("north", north);
+        faces.add("south", south);
+        element.add("faces", faces);
+        JsonArray elements = new JsonArray();
+        elements.add(element);
+        root.add("elements", elements);
+        return root;
+    }
+
+    private static RegistryLoadResult validateRegistry(Map<String, byte[]> expected) {
+        List<DefinitionResource> resources = new ArrayList<>();
+        for (Map.Entry<String, byte[]> entry : expected.entrySet()) {
+            RegistryDomain domain = domainFor(entry.getKey());
+            if (domain == null) {
+                continue;
+            }
+            String file = entry.getKey().substring((DATA_ROOT + domain.folder() + "/").length());
+            resources.add(DefinitionResource.text(domain, "britannia_mod:" + domain.folder() + "/" + file,
+                    new String(entry.getValue(), StandardCharsets.UTF_8)));
+        }
+        RegistryDataLoader loader = new RegistryDataLoader();
+        RegistryLoadResult result = loader.apply(loader.prepare(resources), ValidationPolicy.DEVELOPMENT_FAIL_FAST,
+                new RegistrySnapshotPublisher());
+        require(result.published(), "Generated production dataset failed development validation: "
+                + result.report().issues());
+        ProductionBannerCatalogue.requireComplete(result.snapshot());
+        require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
+        require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
+        require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 5,
+                "Five placement profiles did not become active");
+        require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
+        return result;
+    }
+
+    private static RegistryDomain domainFor(String path) {
+        for (RegistryDomain domain : RegistryDomain.values()) {
+            if (path.startsWith(DATA_ROOT + domain.folder() + "/") && path.endsWith(".json")) {
+                return domain;
+            }
+        }
+        return null;
+    }
+
+    private static void validateAssetMappings(ResolvedCatalogue catalogue, Set<String> outputs) {
+        Set<String> geometry = new LinkedHashSet<>();
+        Set<String> textures = new LinkedHashSet<>();
+        for (ResolvedBanner banner : catalogue.banners) {
+            geometry.add(banner.geometry);
+            textures.add(banner.fabricBase);
+            textures.add(banner.dyeMask);
+            textures.add(banner.staticOverlay);
+        }
+        for (String id : geometry) {
+            String physical = assetPath(id, "models", ".json");
+            require(outputs.contains(physical), "Geometry ID has no declared placeholder file: " + id
+                    + " -> " + physical);
+        }
+        for (String id : textures) {
+            String physical = assetPath(id, "textures", ".png");
+            require(outputs.contains(physical), "Texture ID has no declared placeholder file: " + id
+                    + " -> " + physical);
+        }
+    }
+
+    private static String assetPath(String id, String kind, String extension) {
+        validateResourceId(id, kind + " asset");
+        String[] parts = id.split(":", 2);
+        return "src/main/resources/assets/" + parts[0] + "/" + kind + "/" + parts[1] + extension;
+    }
+
+    private static void checkOutputs(
+            Path root, ResolvedCatalogue catalogue, Map<String, byte[]> expected) throws IOException {
+        List<String> failures = new ArrayList<>();
+        for (Map.Entry<String, byte[]> entry : expected.entrySet()) {
+            Path path = root.resolve(entry.getKey());
+            if (!Files.isRegularFile(path)) {
+                failures.add("missing " + entry.getKey());
+            } else if (!Arrays.equals(Files.readAllBytes(path), entry.getValue())) {
+                failures.add("changed " + entry.getKey());
+            }
+        }
+        checkLocalization(root.resolve(LOCALIZATION_PATH), catalogue, failures);
+        if (!failures.isEmpty()) {
+            throw new ScaffoldException("--check found " + failures.size() + " problem(s): "
+                    + String.join("; ", failures));
+        }
+    }
+
+    private static void checkLocalization(Path path, ResolvedCatalogue catalogue, List<String> failures)
+            throws IOException {
+        if (!Files.isRegularFile(path)) {
+            failures.add("missing " + LOCALIZATION_PATH);
+            return;
+        }
+        String raw = Files.readString(path, StandardCharsets.UTF_8);
+        JsonObject object = parseJsonObject(raw, LOCALIZATION_PATH);
+        int found = 0;
+        for (ResolvedBanner banner : catalogue.banners) {
+            String key = translationKey(banner.id);
+            int occurrences = countJsonKey(raw, key);
+            if (occurrences != 1) {
+                failures.add("translation key occurrence count " + occurrences + " for " + key);
+                continue;
+            }
+            JsonElement value = object.get(key);
+            if (value == null || !value.isJsonPrimitive()
+                    || !localizedName(banner).equals(value.getAsString())) {
+                failures.add("changed localization " + key);
+            } else {
+                found++;
+            }
+        }
+        if (found != TARGET_COUNT) {
+            failures.add("expected exactly 33 valid generated localization entries; found " + found);
+        }
+    }
+
+    private static List<String> findCustomizedFiles(
+            Path root, Map<String, byte[]> expected, Metadata metadata) throws IOException {
+        List<String> customized = new ArrayList<>();
+        for (Map.Entry<String, byte[]> entry : expected.entrySet()) {
+            Path path = root.resolve(entry.getKey());
+            if (!Files.exists(path)) {
+                continue;
+            }
+            byte[] current = Files.readAllBytes(path);
+            if (Arrays.equals(current, entry.getValue())) {
+                continue;
+            }
+            String priorHash = metadata.fileHashes.get(entry.getKey());
+            if (priorHash == null || !priorHash.equals(sha256(current))) {
+                customized.add(entry.getKey());
+            }
+        }
+        Collections.sort(customized);
+        return List.copyOf(customized);
+    }
+
+    private static LocalizationResult mergeLocalization(
+            Path root, ResolvedCatalogue catalogue, Metadata metadata, boolean force, PrintStream output)
+            throws IOException {
+        Path path = root.resolve(LOCALIZATION_PATH);
+        String raw = Files.exists(path) ? Files.readString(path, StandardCharsets.UTF_8) : "{}\n";
+        JsonObject parsed = parseJsonObject(raw, LOCALIZATION_PATH);
+        List<String> customized = new ArrayList<>();
+        LinkedHashMap<String, String> missing = new LinkedHashMap<>();
+
+        for (ResolvedBanner banner : catalogue.banners) {
+            String key = translationKey(banner.id);
+            String wanted = localizedName(banner);
+            int occurrences = countJsonKey(raw, key);
+            require(occurrences <= 1, "Duplicate generated localization key: " + key);
+            JsonElement existing = parsed.get(key);
+            if (existing == null) {
+                missing.put(key, wanted);
+                continue;
+            }
+            require(existing.isJsonPrimitive() && existing.getAsJsonPrimitive().isString(),
+                    "Generated localization value must be a string: " + key);
+            String current = existing.getAsString();
+            if (current.equals(wanted)) {
+                continue;
+            }
+            String previousGenerated = metadata.localizationValues.get(key);
+            boolean isCustomized = previousGenerated == null || !previousGenerated.equals(current);
+            if (isCustomized && !force) {
+                customized.add(key);
+                output.println("Preserved customized localization: " + key);
+                continue;
+            }
+            if (isCustomized) {
+                output.println("WARNING: --force will overwrite customized localization: " + key);
+            }
+            raw = replaceJsonStringValue(raw, key, wanted);
+            parsed.addProperty(key, wanted);
+        }
+        if (!missing.isEmpty()) {
+            raw = appendJsonProperties(raw, missing);
+        }
+        parseJsonObject(raw, LOCALIZATION_PATH);
+        if (!raw.endsWith("\n")) {
+            raw += "\n";
+        }
+        String original = Files.exists(path) ? Files.readString(path, StandardCharsets.UTF_8) : null;
+        if (!raw.equals(original)) {
+            writeAtomic(path, utf8(raw));
+        }
+        return new LocalizationResult(List.copyOf(customized));
+    }
+
+    private static String replaceJsonStringValue(String raw, String key, String value) {
+        Pattern pattern = Pattern.compile("(\\\"" + Pattern.quote(key)
+                + "\\\"\\s*:\\s*)\\\"(?:\\\\.|[^\\\"\\\\])*\\\"");
+        Matcher matcher = pattern.matcher(raw);
+        require(matcher.find(), "Could not locate localization key for safe replacement: " + key);
+        String replacement = matcher.group(1) + GSON.toJson(value);
+        int start = matcher.start();
+        int end = matcher.end();
+        require(!matcher.find(), "Duplicate localization key during replacement: " + key);
+        return raw.substring(0, start) + replacement + raw.substring(end);
+    }
+
+    private static String appendJsonProperties(String raw, LinkedHashMap<String, String> additions) {
+        int closing = raw.lastIndexOf('}');
+        require(closing >= 0, "Localization root object is missing its closing brace");
+        int previous = closing - 1;
+        while (previous >= 0 && Character.isWhitespace(raw.charAt(previous))) {
+            previous--;
+        }
+        boolean empty = previous >= 0 && raw.charAt(previous) == '{';
+        boolean alreadyComma = previous >= 0 && raw.charAt(previous) == ',';
+        String beforeClosing = raw.substring(0, closing);
+        if (!empty && !alreadyComma) {
+            beforeClosing = beforeClosing.substring(0, previous + 1) + ','
+                    + beforeClosing.substring(previous + 1);
+        }
+        StringBuilder builder = new StringBuilder(beforeClosing);
+        builder.append('\n');
+        int position = 0;
+        for (Map.Entry<String, String> addition : additions.entrySet()) {
+            builder.append("  ").append(GSON.toJson(addition.getKey())).append(": ")
+                    .append(GSON.toJson(addition.getValue()));
+            if (++position < additions.size()) {
+                builder.append(',');
+            }
+            builder.append('\n');
+        }
+        builder.append(raw.substring(closing));
+        return builder.toString();
+    }
+
+    private static Metadata refreshMetadata(
+            Path root,
+            Map<String, byte[]> expected,
+            Metadata previous,
+            ResolvedCatalogue catalogue,
+            LocalizationResult localization) throws IOException {
+        LinkedHashMap<String, String> hashes = new LinkedHashMap<>(previous.fileHashes);
+        for (Map.Entry<String, byte[]> entry : expected.entrySet()) {
+            Path path = root.resolve(entry.getKey());
+            if (Files.isRegularFile(path) && Arrays.equals(Files.readAllBytes(path), entry.getValue())) {
+                hashes.put(entry.getKey(), sha256(entry.getValue()));
+            }
+        }
+        LinkedHashMap<String, String> localized = new LinkedHashMap<>(previous.localizationValues);
+        JsonObject actual = parseJsonObject(
+                Files.readString(root.resolve(LOCALIZATION_PATH), StandardCharsets.UTF_8), LOCALIZATION_PATH);
+        Set<String> customized = Set.copyOf(localization.customizedKeys);
+        for (ResolvedBanner banner : catalogue.banners) {
+            String key = translationKey(banner.id);
+            if (!customized.contains(key) && actual.has(key)
+                    && localizedName(banner).equals(actual.get(key).getAsString())) {
+                localized.put(key, localizedName(banner));
+            }
+        }
+        return new Metadata(hashes, localized);
+    }
+
+    private static Metadata readMetadata(Path path) throws IOException {
+        if (!Files.exists(path)) {
+            return Metadata.empty();
+        }
+        JsonObject root = parseJsonObject(Files.readString(path, StandardCharsets.UTF_8), METADATA_PATH);
+        require(root.has("schema_version") && root.get("schema_version").getAsInt() == 1,
+                "Unsupported scaffold metadata schema");
+        return new Metadata(stringMap(root.getAsJsonObject("files")),
+                stringMap(root.getAsJsonObject("localization")));
+    }
+
+    private static LinkedHashMap<String, String> stringMap(JsonObject object) {
+        LinkedHashMap<String, String> result = new LinkedHashMap<>();
+        if (object != null) {
+            object.entrySet().stream().sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> result.put(entry.getKey(), entry.getValue().getAsString()));
+        }
+        return result;
+    }
+
+    private static String statusReport(ResolvedCatalogue catalogue, RegistryLoadResult registry) {
+        Map<String, Long> groupCounts = counts(catalogue.banners, banner -> banner.group);
+        Map<String, Long> nameCounts = counts(catalogue.banners, banner -> banner.nameStatus);
+        Map<String, Long> contentCounts = counts(catalogue.banners, banner -> banner.contentStatus);
+        StringBuilder report = new StringBuilder();
+        report.append("# Banner Catalogue Status\n\n")
+                .append("Generated by `tools/scaffold_banners.bat`; do not infer content approval from generation.\n\n")
+                .append("- Catalogue target: exactly 33\n")
+                .append("- Total manifest entries: 33\n")
+                .append("- Total generated definitions: 33\n")
+                .append("- Total active registry entries: ").append(registry.snapshot().banners().activeCount())
+                .append("\n- Total disabled entries: ").append(registry.snapshot().banners().disabledCount())
+                .append("\n- Missing output files: none\n")
+                .append("- Duplicate IDs: none\n- Duplicate indices: none\n- Missing indices: none\n")
+                .append("- Definitions that failed validation: none\n")
+                .append("- Final names approved: no, except where separately confirmed\n")
+                .append("- Final dimensions approved: no\n")
+                .append("- Final artwork complete: no\n\n")
+                .append("## Counts by catalogue group\n\n");
+        appendCounts(report, groupCounts, List.of("large", "medium-wall", "medium", "small", "x-small"));
+        report.append("\n## Counts by name status\n\n");
+        appendCounts(report, nameCounts, List.of("provisional", "source-named"));
+        report.append("\n## Counts by content status\n\n");
+        appendCounts(report, contentCounts, List.of("placeholder", "in_progress", "complete"));
+        report.append("\n## Catalogue\n\n")
+                .append("| Index | Stable ID | Display label | Name status | Group | Source | Provisional dimensions | Content status | Placeholder assets |\n")
+                .append("|---:|---|---|---|---|---|---|---|---|\n");
+        for (ResolvedBanner banner : catalogue.banners) {
+            report.append("| ").append(String.format(Locale.ROOT, "%02d", banner.index)).append(" | `")
+                    .append(banner.id).append("` | ").append(escapeMarkdown(banner.displayName)).append(" | ")
+                    .append(banner.nameStatus).append(" | ").append(banner.group).append(" | Page ")
+                    .append(banner.page).append(", row ").append(banner.row).append(" | ")
+                    .append(banner.widthBlocks).append(" x ").append(banner.heightBlocks).append(" (provisional) | ")
+                    .append(banner.contentStatus).append(" | `").append(banner.geometry).append("`; common tint layers |\n");
+        }
+        report.append("\n## Provisional entries\n\n");
+        catalogue.banners.stream().filter(banner -> "provisional".equals(banner.nameStatus))
+                .forEach(banner -> report.append("- `").append(banner.id).append("` - ")
+                        .append(localizedName(banner)).append("; Page ").append(banner.page)
+                        .append(", row ").append(banner.row).append("\n"));
+        report.append("\n## Placeholder asset references\n\n")
+                .append("- Geometry families: `large`, `medium_wall`, `medium`, `small`, `x_small`\n")
+                .append("- Fabric base: `britannia_mod:banner/placeholder/fabric_base`\n")
+                .append("- Dye mask: `britannia_mod:banner/placeholder/dye_mask`\n")
+                .append("- Static overlay: `britannia_mod:banner/placeholder/static_overlay`\n")
+                .append("- Diagnostic fallback: `britannia_mod:banner/placeholder/missing`\n")
+                .append("- Every logical identifier above maps deterministically to a declared model JSON or PNG output.\n\n")
+                .append("## Gate B review\n\n")
+                .append("Gate B must review all 33 stable IDs, every provisional name, every provisional dimension, ")
+                .append("and the manifest editing workflow. `Tournament Medium` versus `Tournament`, and ")
+                .append("`Pennon of Silver` versus `Silver Pennon`, remain explicit label-review items. ")
+                .append("Generation does not approve names, dimensions, orientations, mounts, or artwork.\n");
+        return report.toString();
+    }
+
+    private static RunSummary summary(
+            ResolvedCatalogue catalogue, RegistryLoadResult registry, List<String> customized) {
+        int provisional = (int) catalogue.banners.stream()
+                .filter(banner -> "provisional".equals(banner.nameStatus)).count();
+        int provisionalDimensions = (int) catalogue.banners.stream()
+                .filter(banner -> banner.dimensionsProvisional).count();
+        return new RunSummary(catalogue.banners.size(), catalogue.banners.size(),
+                registry.snapshot().banners().activeCount(), registry.snapshot().banners().disabledCount(),
+                catalogue.banners.size(), provisional, provisionalDimensions, 5, customized);
+    }
+
+    private static void appendCounts(StringBuilder target, Map<String, Long> counts, List<String> order) {
+        for (String key : order) {
+            if (counts.containsKey(key) || !Set.of("in_progress", "complete").contains(key)) {
+                target.append("- ").append(key).append(": ").append(counts.getOrDefault(key, 0L)).append('\n');
+            }
+        }
+    }
+
+    private static <T> Map<String, Long> counts(List<T> values, java.util.function.Function<T, String> classifier) {
+        LinkedHashMap<String, Long> counts = new LinkedHashMap<>();
+        values.forEach(value -> counts.merge(classifier.apply(value), 1L, Long::sum));
+        return Collections.unmodifiableMap(counts);
+    }
+
+    private static byte[] png(PngKind kind) {
+        BufferedImage image = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
+                int argb = switch (kind) {
+                    case FABRIC_BASE -> {
+                        int shade = ((x + y) & 1) == 0 ? 184 : 168;
+                        if (x == 0 || y == 0 || x == 15 || y == 15) {
+                            shade = 76;
+                        }
+                        yield new Color(shade, shade, shade, 255).getRGB();
+                    }
+                    case DYE_MASK -> {
+                        int value = x == 0 || y == 0 || x == 15 || y == 15 ? 0 : 255;
+                        yield new Color(value, value, value, 255).getRGB();
+                    }
+                    case STATIC_OVERLAY -> {
+                        if (x == 0 || y == 0 || x == 15 || y == 15) {
+                            yield new Color(35, 35, 35, 255).getRGB();
+                        }
+                        if ((x >= 6 && x <= 9 && (y == 6 || y == 9))
+                                || (y >= 6 && y <= 9 && (x == 6 || x == 9))) {
+                            yield new Color(245, 245, 245, 255).getRGB();
+                        }
+                        yield 0x00000000;
+                    }
+                    case MISSING -> {
+                        boolean diagnostic = ((x / 4) + (y / 4)) % 2 == 0;
+                        yield diagnostic ? new Color(220, 0, 220, 255).getRGB()
+                                : new Color(20, 20, 20, 255).getRGB();
+                    }
+                };
+                image.setRGB(x, y, argb);
+            }
+        }
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            require(ImageIO.write(image, "png", output), "JDK PNG writer is unavailable");
+            return output.toByteArray();
+        } catch (IOException exception) {
+            throw new ScaffoldException("Could not create placeholder PNG", exception);
+        }
+    }
+
+    private static void writeAtomic(Path path, byte[] bytes) throws IOException {
+        Path absolute = path.toAbsolutePath().normalize();
+        Files.createDirectories(absolute.getParent());
+        Path temporary = Files.createTempFile(absolute.getParent(), absolute.getFileName().toString(), ".tmp");
+        boolean moved = false;
+        try {
+            Files.write(temporary, bytes);
+            try {
+                Files.move(temporary, absolute, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporary, absolute, StandardCopyOption.REPLACE_EXISTING);
+            }
+            moved = true;
+        } finally {
+            if (!moved) {
+                Files.deleteIfExists(temporary);
+            }
+        }
+    }
+
+    private static JsonObject parseJsonObject(String raw, String description) {
+        try {
+            JsonElement parsed = JsonParser.parseString(raw);
+            require(parsed.isJsonObject(), description + " must contain one JSON object");
+            return parsed.getAsJsonObject();
+        } catch (JsonParseException exception) {
+            throw new ScaffoldException(description + " is invalid JSON: " + exception.getMessage());
+        }
+    }
+
+    private static int countJsonKey(String raw, String key) {
+        Matcher matcher = Pattern.compile("\\\"" + Pattern.quote(key) + "\\\"\\s*:").matcher(raw);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
+    }
+
+    private static String sha256(byte[] bytes) {
+        try {
+            return java.util.HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException("JDK does not provide SHA-256", exception);
+        }
+    }
+
+    private static JsonArray strings(List<String> values) {
+        JsonArray array = new JsonArray();
+        values.forEach(array::add);
+        return array;
+    }
+
+    private static JsonArray numbers(double... values) {
+        JsonArray array = new JsonArray();
+        for (double value : values) {
+            array.add(value);
+        }
+        return array;
+    }
+
+    private static String json(JsonElement element) {
+        return GSON.toJson(element) + "\n";
+    }
+
+    private static byte[] utf8(String value) {
+        return value.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String translationKey(String id) {
+        return "banner.britannia_mod." + id;
+    }
+
+    private static String localizedName(BannerEntry entry) {
+        return entry.displayName + ("provisional".equals(entry.nameStatus) ? PROVISIONAL_SUFFIX : "");
+    }
+
+    private static String localizedName(ResolvedBanner entry) {
+        return entry.displayName + ("provisional".equals(entry.nameStatus) ? PROVISIONAL_SUFFIX : "");
+    }
+
+    private static String escapeMarkdown(String value) {
+        return value.replace("|", "\\|");
+    }
+
+    private static void validateResourceId(String value, String field) {
+        require(notBlank(value) && value.matches("[a-z0-9_.-]+:[a-z0-9_./-]+")
+                        && !value.contains("..") && !value.contains("\\"),
+                "Invalid or unsafe " + field + " resource ID: " + value);
+    }
+
+    private static boolean notBlank(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) {
+            throw new ScaffoldException(message);
+        }
+    }
+
+    private static Set<Integer> range(int first, int last) {
+        LinkedHashSet<Integer> values = new LinkedHashSet<>();
+        for (int value = first; value <= last; value++) {
+            values.add(value);
+        }
+        return values;
+    }
+
+    private static <T> T first(T value, T fallback) {
+        return value == null ? fallback : value;
+    }
+
+    private static int first(Integer value, int fallback) {
+        return value == null ? fallback : value;
+    }
+
+    private static List<CanonicalEntry> canonicalEntries() {
+        String table = """
+                1|large_01|large|1|1|Large Banner 01|provisional
+                2|large_02|large|1|2|Large Banner 02|provisional
+                3|large_03|large|1|3|Large Banner 03|provisional
+                4|large_04|large|1|4|Large Banner 04|provisional
+                5|large_05|large|1|5|Large Banner 05|provisional
+                6|large_06|large|1|6|Large Banner 06|provisional
+                7|medium_wall_01|medium-wall|1|7|Medium Wall Banner 01|provisional
+                8|medium_wall_02|medium-wall|1|8|Medium Wall Banner 02|provisional
+                9|medium_wall_03|medium-wall|2|1|Medium Wall Banner 03|provisional
+                10|medium_wall_04|medium-wall|2|2|Medium Wall Banner 04|provisional
+                11|medium_wall_05|medium-wall|2|3|Medium Wall Banner 05|provisional
+                12|joined_wards|medium-wall|2|4|Joined Wards|source-named
+                13|tournament_medium|medium|2|5|Tournament Medium|source-named
+                14|ceremonial_tournament|medium|2|6|Ceremonial Tournament|source-named
+                15|iron_quarter|medium|2|7|Iron Quarter|source-named
+                16|outer_ward|medium|2|8|Outer Ward|source-named
+                17|ward_of_serpents|medium|2|9|Ward of Serpents|source-named
+                18|serpent_guard|medium|2|10|Serpent Guard|source-named
+                19|crossroad_guard|medium|2|11|Crossroad Guard|source-named
+                20|argent_shield|medium|3|1|Argent Shield|source-named
+                21|silver_and_gold_pennon|small|3|2|Silver and Gold Pennon|source-named
+                22|end_01|small|3|3|End Banner 01|provisional
+                23|end_02|small|3|4|End Banner 02|provisional
+                24|pennon_of_silver|small|3|5|Pennon of Silver|source-named
+                25|iron_ward|small|3|6|Iron Ward|source-named
+                26|iron_ward_auxiliary|small|3|7|Iron Ward Auxiliary|source-named
+                27|road_guard|x-small|3|8|Road Guard|source-named
+                28|pale_road_guard|x-small|3|9|Pale Road Guard|source-named
+                29|red_crosslets|x-small|3|10|Red Crosslets|source-named
+                30|captains_red_crosslets|x-small|3|11|Captain's Red Crosslets|source-named
+                31|scarlet_court|x-small|3|12|Scarlet Court|source-named
+                32|verdant_court|x-small|4|1|Verdant Court|source-named
+                33|x_small_unnamed_01|x-small|4|2|Extra-Small Banner 01|provisional
+                """;
+        return table.lines().filter(line -> !line.isBlank()).map(line -> {
+            String[] columns = line.strip().split("\\|", -1);
+            return new CanonicalEntry(Integer.parseInt(columns[0]), columns[1], columns[2],
+                    Integer.parseInt(columns[3]), Integer.parseInt(columns[4]), columns[5], columns[6]);
+        }).toList();
+    }
+
+    public record Manifest(
+            int schemaVersion,
+            Defaults defaults,
+            Map<String, Group> groups,
+            Map<String, String> sharedPlaceholderAssets,
+            List<BannerEntry> banners) {
+    }
+
+    public record Defaults(
+            String defaultMaterial,
+            List<String> supportedMounts,
+            String defaultMount,
+            List<String> supportedOrientations,
+            String contentStatus,
+            Boolean dimensionsProvisional,
+            String fabricBase,
+            String dyeMask,
+            String staticOverlay) {
+    }
+
+    public record Group(
+            int widthBlocks,
+            int heightBlocks,
+            String placementProfile,
+            String geometry) {
+    }
+
+    public record BannerEntry(
+            int index,
+            String id,
+            String group,
+            int page,
+            int row,
+            String sourceLabel,
+            String displayName,
+            String nameStatus,
+            String contentStatus,
+            Integer widthBlocks,
+            Integer heightBlocks,
+            Boolean dimensionsProvisional,
+            List<String> supportedOrientations,
+            List<String> supportedMounts,
+            String defaultMount,
+            String defaultMaterial,
+            String geometry,
+            String fabricBase,
+            String dyeMask,
+            String staticOverlay,
+            String placementProfile,
+            String notes) {
+    }
+
+    private record ResolvedCatalogue(List<ResolvedBanner> banners) {
+    }
+
+    private record ResolvedBanner(
+            int index,
+            String id,
+            String group,
+            int page,
+            int row,
+            String sourceLabel,
+            String displayName,
+            String nameStatus,
+            String contentStatus,
+            int widthBlocks,
+            int heightBlocks,
+            boolean dimensionsProvisional,
+            List<String> supportedOrientations,
+            List<String> supportedMounts,
+            String defaultMount,
+            String defaultMaterial,
+            String geometry,
+            String fabricBase,
+            String dyeMask,
+            String staticOverlay,
+            String placementProfile,
+            String notes) {
+    }
+
+    private record CanonicalEntry(
+            int index,
+            String id,
+            String group,
+            int page,
+            int row,
+            String displayName,
+            String nameStatus) {
+        boolean matches(BannerEntry entry) {
+            return index == entry.index && id.equals(entry.id) && group.equals(entry.group)
+                    && page == entry.page && row == entry.row && displayName.equals(entry.displayName)
+                    && nameStatus.equals(entry.nameStatus);
+        }
+    }
+
+    private record LocalizationResult(List<String> customizedKeys) {
+    }
+
+    private record Metadata(
+            LinkedHashMap<String, String> fileHashes,
+            LinkedHashMap<String, String> localizationValues) {
+        static Metadata empty() {
+            return new Metadata(new LinkedHashMap<>(), new LinkedHashMap<>());
+        }
+
+        JsonObject toJson() {
+            JsonObject root = new JsonObject();
+            root.addProperty("schema_version", 1);
+            JsonObject files = new JsonObject();
+            fileHashes.entrySet().stream().sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> files.addProperty(entry.getKey(), entry.getValue()));
+            root.add("files", files);
+            JsonObject localization = new JsonObject();
+            localizationValues.entrySet().stream().sorted(Map.Entry.comparingByKey())
+                    .forEach(entry -> localization.addProperty(entry.getKey(), entry.getValue()));
+            root.add("localization", localization);
+            return root;
+        }
+    }
+
+    private enum PngKind {
+        FABRIC_BASE,
+        DYE_MASK,
+        STATIC_OVERLAY,
+        MISSING
+    }
+
+    public static final class ScaffoldException extends RuntimeException {
+        public ScaffoldException(String message) {
+            super(message);
+        }
+
+        public ScaffoldException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+}

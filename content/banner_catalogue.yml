@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "defaults": {
+    "default_material": "britannia_mod:cotton",
+    "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+    "default_mount": "britannia_mod:brass",
+    "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+    "content_status": "placeholder",
+    "dimensions_provisional": true,
+    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
+    "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
+    "static_overlay": "britannia_mod:banner/placeholder/static_overlay"
+  },
+  "groups": {
+    "large": {
+      "width_blocks": 3,
+      "height_blocks": 2,
+      "placement_profile": "britannia_mod:placeholder_large",
+      "geometry": "britannia_mod:banner/placeholder/large"
+    },
+    "medium-wall": {
+      "width_blocks": 2,
+      "height_blocks": 2,
+      "placement_profile": "britannia_mod:placeholder_medium_wall",
+      "geometry": "britannia_mod:banner/placeholder/medium_wall"
+    },
+    "medium": {
+      "width_blocks": 1,
+      "height_blocks": 2,
+      "placement_profile": "britannia_mod:placeholder_medium",
+      "geometry": "britannia_mod:banner/placeholder/medium"
+    },
+    "small": {
+      "width_blocks": 1,
+      "height_blocks": 1,
+      "placement_profile": "britannia_mod:placeholder_small",
+      "geometry": "britannia_mod:banner/placeholder/small"
+    },
+    "x-small": {
+      "width_blocks": 1,
+      "height_blocks": 1,
+      "placement_profile": "britannia_mod:placeholder_x_small",
+      "geometry": "britannia_mod:banner/placeholder/x_small"
+    }
+  },
+  "shared_placeholder_assets": {
+    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
+    "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
+    "static_overlay": "britannia_mod:banner/placeholder/static_overlay",
+    "missing": "britannia_mod:banner/placeholder/missing"
+  },
+  "banners": [
+    {"index": 1, "id": "large_01", "group": "large", "page": 1, "row": 1, "source_label": null, "display_name": "Large Banner 01", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 2, "id": "large_02", "group": "large", "page": 1, "row": 2, "source_label": null, "display_name": "Large Banner 02", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 3, "id": "large_03", "group": "large", "page": 1, "row": 3, "source_label": null, "display_name": "Large Banner 03", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 4, "id": "large_04", "group": "large", "page": 1, "row": 4, "source_label": null, "display_name": "Large Banner 04", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 5, "id": "large_05", "group": "large", "page": 1, "row": 5, "source_label": null, "display_name": "Large Banner 05", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 6, "id": "large_06", "group": "large", "page": 1, "row": 6, "source_label": null, "display_name": "Large Banner 06", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 7, "id": "medium_wall_01", "group": "medium-wall", "page": 1, "row": 7, "source_label": null, "display_name": "Medium Wall Banner 01", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 8, "id": "medium_wall_02", "group": "medium-wall", "page": 1, "row": 8, "source_label": null, "display_name": "Medium Wall Banner 02", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 9, "id": "medium_wall_03", "group": "medium-wall", "page": 2, "row": 1, "source_label": null, "display_name": "Medium Wall Banner 03", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 10, "id": "medium_wall_04", "group": "medium-wall", "page": 2, "row": 2, "source_label": null, "display_name": "Medium Wall Banner 04", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 11, "id": "medium_wall_05", "group": "medium-wall", "page": 2, "row": 3, "source_label": null, "display_name": "Medium Wall Banner 05", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 12, "id": "joined_wards", "group": "medium-wall", "page": 2, "row": 4, "source_label": "Joined Wards", "display_name": "Joined Wards", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 13, "id": "tournament_medium", "group": "medium", "page": 2, "row": 5, "source_label": "Tournament Medium", "display_name": "Tournament Medium", "name_status": "source-named", "notes": "Canonical playbook label preserved; companion design shortens this to Tournament; Gate B review required."},
+    {"index": 14, "id": "ceremonial_tournament", "group": "medium", "page": 2, "row": 6, "source_label": "Ceremonial Tournament", "display_name": "Ceremonial Tournament", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 15, "id": "iron_quarter", "group": "medium", "page": 2, "row": 7, "source_label": "Iron Quarter", "display_name": "Iron Quarter", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 16, "id": "outer_ward", "group": "medium", "page": 2, "row": 8, "source_label": "Outer Ward", "display_name": "Outer Ward", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 17, "id": "ward_of_serpents", "group": "medium", "page": 2, "row": 9, "source_label": "Ward of Serpents", "display_name": "Ward of Serpents", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 18, "id": "serpent_guard", "group": "medium", "page": 2, "row": 10, "source_label": "Serpent Guard", "display_name": "Serpent Guard", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 19, "id": "crossroad_guard", "group": "medium", "page": 2, "row": 11, "source_label": "Crossroad Guard", "display_name": "Crossroad Guard", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 20, "id": "argent_shield", "group": "medium", "page": 3, "row": 1, "source_label": "Argent Shield", "display_name": "Argent Shield", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 21, "id": "silver_and_gold_pennon", "group": "small", "page": 3, "row": 2, "source_label": "Silver and Gold Pennon", "display_name": "Silver and Gold Pennon", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 22, "id": "end_01", "group": "small", "page": 3, "row": 3, "source_label": null, "display_name": "End Banner 01", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 23, "id": "end_02", "group": "small", "page": 3, "row": 4, "source_label": null, "display_name": "End Banner 02", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."},
+    {"index": 24, "id": "pennon_of_silver", "group": "small", "page": 3, "row": 5, "source_label": "Pennon of Silver", "display_name": "Pennon of Silver", "name_status": "source-named", "notes": "Canonical playbook label preserved; companion design says Silver Pennon; Gate B review required."},
+    {"index": 25, "id": "iron_ward", "group": "small", "page": 3, "row": 6, "source_label": "Iron Ward", "display_name": "Iron Ward", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 26, "id": "iron_ward_auxiliary", "group": "small", "page": 3, "row": 7, "source_label": "Iron Ward Auxiliary", "display_name": "Iron Ward Auxiliary", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 27, "id": "road_guard", "group": "x-small", "page": 3, "row": 8, "source_label": "Road Guard", "display_name": "Road Guard", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 28, "id": "pale_road_guard", "group": "x-small", "page": 3, "row": 9, "source_label": "Pale Road Guard", "display_name": "Pale Road Guard", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 29, "id": "red_crosslets", "group": "x-small", "page": 3, "row": 10, "source_label": "Red Crosslets", "display_name": "Red Crosslets", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 30, "id": "captains_red_crosslets", "group": "x-small", "page": 3, "row": 11, "source_label": "Captain's Red Crosslets", "display_name": "Captain's Red Crosslets", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 31, "id": "scarlet_court", "group": "x-small", "page": 3, "row": 12, "source_label": "Scarlet Court", "display_name": "Scarlet Court", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 32, "id": "verdant_court", "group": "x-small", "page": 4, "row": 1, "source_label": "Verdant Court", "display_name": "Verdant Court", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
+    {"index": 33, "id": "x_small_unnamed_01", "group": "x-small", "page": 4, "row": 2, "source_label": null, "display_name": "Extra-Small Banner 01", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."}
+  ]
+}

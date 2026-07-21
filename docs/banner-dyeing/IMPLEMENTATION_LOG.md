@@ -1,5 +1,140 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 4: Scaffold All 33 Banner Placeholders
+
+### Files and generated content
+
+- Added the canonical editable manifest at `content/banner_catalogue.yml`. It is YAML 1.2 expressed in its
+  JSON-compatible syntax so the existing Gson/Java/Gradle dependency set can validate it without a new runtime or
+  parser dependency.
+- Added the Java scaffold implementation under `tools/scaffold`, the Gradle `scaffoldBanners` task, and the Windows
+  entry point `tools/scaffold_banners.bat`.
+- Generated exactly 33 definitions under
+  `src/main/resources/data/britannia_mod/banner_definitions`, in canonical manifest order.
+- Generated minimal supporting definitions: one placeholder cotton material, one single-natural-colour cotton
+  palette, brass and iron mounts, and five size-family placement profiles. No pigment is required for the natural
+  scaffold state.
+- Generated four 16 x 16 diagnostic PNGs and five shared vanilla-model JSON placeholders under
+  `assets/britannia_mod/.../banner/placeholder`. The images are neutral grayscale fabric/mask/overlay assets plus a
+  conventional high-contrast missing texture; they contain no final heraldry.
+- Structurally merged exactly 33 banner translation keys into the existing `en_us.json` while retaining unrelated
+  keys and the file's existing layout.
+- Generated `content/banner_catalogue_status.md` and the sidecar
+  `content/.banner_scaffold_metadata.json` used for non-overwrite detection.
+- Added catalogue-specific runtime validation in `ProductionBannerCatalogue` and the real reload listener without
+  changing the generic Milestone 3 loader or its small-dataset behavior.
+- Added 48 Milestone 4 tests across manifest, generator, production content, catalogue-boundary, asset, localization,
+  scope, and safety cases.
+- Updated `OPEN_QUESTIONS.md` with Gate B label discrepancies and the remaining universal runtime asset-mapping
+  decision.
+
+### Scaffold architecture and invocation
+
+- Generation command: `.\tools\scaffold_banners.bat`.
+- Non-mutating verification command: `.\tools\scaffold_banners.bat --check`.
+- Destructive opt-in command: `.\tools\scaffold_banners.bat --force`.
+- The tool validates the complete manifest before calculating or writing any output. It requires exactly 33 entries,
+  unique stable IDs, unique continuous indices 1 through 33, the canonical ID/order/table, canonical group counts,
+  positive source references, visible provisional status, placeholder content status, provisional dimensions, safe
+  output IDs, supported groups, and the scaffold defaults.
+- Normal generation compares each declared output with the last generated SHA-256 recorded in the sidecar. An
+  unmodified generated output can be refreshed; a customized output is reported and preserved. Unknown and unrelated
+  files are never deleted or rewritten.
+- Localization is handled per generated key. Existing unrelated keys remain untouched, customized generated values
+  are preserved normally, and `--force` warns before replacing them.
+- `--check` writes nothing and returns non-zero for missing, changed, duplicate, unsafe, undecodable, inactive, or
+  otherwise invalid output.
+- `--force` prints an explicit list of customized declared files and localization keys before overwriting them. It
+  still does not touch unrelated files.
+- File replacement uses a same-directory temporary file followed by `ATOMIC_MOVE` where the filesystem supports it,
+  with a same-filesystem replace fallback.
+
+### Catalogue and registry results
+
+- Manifest entries: 33.
+- Unique IDs: 33.
+- Unique indices: 33, continuous from 1 through 33.
+- Group counts: large 6, medium-wall 6, medium 8, small 6, x-small 7.
+- Name status counts: provisional 14, source-named 19.
+- Content status counts: placeholder 33, in-progress 0, complete 0.
+- Provisional dimensions: 33.
+- Generated banner definitions: 33.
+- Generated localization entries: 33.
+- Active banner definitions after Milestone 3 development validation: 33.
+- Disabled banner definitions: 0.
+- Supporting active definitions: one material, one palette, two mounts, five profiles, zero pigments.
+- Placeholder asset families: 5; common diagnostic textures: 4.
+- All emitted logical placeholder geometry and texture IDs map deterministically to a file in the scaffold's declared
+  output set.
+
+### Commands and exact results
+
+1. Required Git preflight:
+   - `git branch --show-current` - `banners-dyetub`.
+   - `git status --short --branch` - only the preserved modified `ModConfig.java` and preserved untracked root
+     specifications, `.claude/`, `logs/`, and `tmp/` were present.
+   - `git merge-base banners-dyetub patch-18` - `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+   - `git rev-list --left-right --count patch-18...banners-dyetub` - `0 4`.
+   - `git rev-parse HEAD` - `343e65f436c9cb07ce9c96aec39c752dc318c1d0`.
+2. Initial restricted `compileScaffoldJava` and generation attempts could not access the Gradle 8.9 distribution
+   because sandbox network access was denied. Approved retries used the existing configured Gradle toolchain.
+3. `.\gradlew.bat compileScaffoldJava --no-daemon --stacktrace` - passed in 33 seconds. It confirmed the two existing
+   compiler warnings: missing `@Overwrite` Javadoc on `PlayerSleepMixin`, and the deprecated-for-removal
+   `Item.initializeClient` override in `OrderShieldItem`.
+4. `.\tools\scaffold_banners.bat` - passed in 22 seconds and reported 33 manifest entries, 33 generated definitions,
+   33 active, 0 disabled, 33 localization entries, 14 provisional names, 33 provisional dimensions, and 5 asset
+   families.
+5. `.\tools\scaffold_banners.bat --check` - passed after generation; the final post-fix check passed in 11 seconds
+   with the same counts.
+6. The first narrow 48-test Milestone 4 run compiled successfully and found one failure in the localization force-path
+   test. The replacement helper called `Matcher.start()` after a second `find()` invalidated the prior match. The
+   offsets are now captured before the duplicate-match check; no validation or safety assertion was weakened.
+7. The corrected narrow command selecting `BannerCatalogueManifestTest`, `BannerScaffoldToolTest`,
+   `GeneratedBannerCatalogueTest`, and `ProductionBannerCatalogueTest` passed: 48 tests, 0 failures, 0 errors,
+   0 skipped.
+8. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` - passed in
+   1 minute 6 seconds. XML results: 207 tests, 0 failures, 0 errors, 0 skipped.
+9. `.\gradlew.bat clean --no-daemon` - passed in 21 seconds.
+10. `.\gradlew.bat test --no-daemon --stacktrace` - passed in 53 seconds. XML results: 207 tests, 0 failures,
+    0 errors, 0 skipped.
+11. `.\gradlew.bat build --no-daemon` - passed in 29 seconds; `jar`, `jarJar`, `assemble`, and `build` completed.
+12. Packaged-JAR entry inspection found exactly 33 banner-definition JSON files, 5 placeholder model JSON files,
+    4 placeholder PNG files, and the merged `en_us.json` in `Britannia_Mod-0.1.7k-all.jar`.
+13. `git diff --check` passed during implementation review; staged checks are required immediately before commit.
+
+### Validation and scope decisions
+
+- The tool feeds all generated JSON through the Milestone 2 codecs and the complete generated data set through the
+  Milestone 3 development policy. It does not introduce a second runtime format or bypass the loader.
+- The release assertion is held in `ProductionBannerCatalogue`, not `DefinitionRegistry` or `RegistryDataLoader`.
+  It activates when canonical production IDs are present and requires the exact ID set, 33 active entries, and zero
+  disabled entries. Empty and intentionally small generic fixtures remain outside the boundary.
+- The reload listener validates a candidate snapshot before atomically publishing it globally, so an incomplete real
+  catalogue does not replace the last valid snapshot.
+- The placeholder palette's single natural colour and illustrative structural OKLab triple exist only because the
+  Milestone 2 codec requires them. No conversion, distance calculation, dye resolution, authored production palette,
+  or Milestone 5 behavior was added.
+- Placeholder model JSON and PNG existence is proven by the scaffold's deterministic mapping. No claim is made that
+  the later renderer uses these files, because rendering is outside this milestone.
+
+### Known limitations and Gate B
+
+- Final names are not approved. Fourteen entries remain visibly `Name Required`; source-named labels are preserved
+  but are not represented as final owner approval.
+- `Tournament Medium` versus `Tournament`, and `Pennon of Silver` versus `Silver Pennon`, require Gate B review.
+- All 33 dimensions are provisional. Final per-banner orientation and mount support are also unapproved scaffold
+  defaults.
+- Final original heraldic art, renderer integration, gameplay registrations, placement mechanics, items, blocks,
+  components, packets, screens, recipes, crafting, and commands are not implemented or manually verified.
+- The universal future logical-ID-to-vanilla/GeckoLib/custom-loader mapping remains open; only the Milestone 4
+  placeholder output set has an authoritative mapper.
+- No in-game or runtime rendering test was performed because there is no banner item, block, or renderer in scope.
+
+### Next milestone
+
+Stop for Gate B review of the complete 33-entry catalogue, stable IDs, provisional names/dimensions, and manifest
+workflow. Milestone 5 has not started and must not begin before Gate B approval.
+
 ## 2026-07-20 - Milestone 3: Data Registries and Validation Pipeline
 
 ### Files changed

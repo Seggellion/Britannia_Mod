@@ -2,7 +2,27 @@
 
 Date: 2026-07-20
 
-Milestone: 3
+Milestone: 4
+
+## Milestone 4 Gate B catalogue review
+
+The scaffold preserves the playbook's canonical labels and does not guess through two companion-document wording
+differences:
+
+- Index 13 remains `tournament_medium` / `Tournament Medium`; the companion design's source-name list says
+  `Tournament`.
+- Index 24 remains `pennon_of_silver` / `Pennon of Silver`; the companion design's source-name list says
+  `Silver Pennon`.
+
+Gate B must decide whether these are shorthand descriptions or source-label corrections. Neither stable ID nor
+localization was silently changed. Gate B must also approve (or explicitly defer) all 33 stable IDs. Final dimensions,
+per-banner orientation support, per-banner mount support, and final original artwork remain unapproved scaffold
+values, even though every placeholder definition is active and valid.
+
+Milestone 4 now provides a deterministic scaffold-level mapping from every emitted logical placeholder asset ID to
+its declared JSON model or PNG file. The broader runtime mapping across future vanilla models, GeckoLib geometry,
+textures, and the custom geometry loader remains unresolved until the rendering asset convention is selected. The
+placeholder mapper is deliberately not presented as that universal rendering contract.
 
 ## Milestone 3 physical-asset validation boundary
 

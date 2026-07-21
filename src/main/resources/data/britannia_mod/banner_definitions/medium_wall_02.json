@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:medium_wall_02",
+  "display_name_key": "banner.britannia_mod.medium_wall_02",
+  "content_status": "placeholder",
+  "source_reference": {
+    "page": 1,
+    "row": 8
+  },
+  "catalogue_group": "medium-wall",
+  "dimensions": {
+    "width_blocks": 2,
+    "height_blocks": 2,
+    "provisional": true
+  },
+  "supported_orientations": [
+    "wall_parallel",
+    "wall_perpendicular"
+  ],
+  "supported_mounts": [
+    "britannia_mod:brass",
+    "britannia_mod:iron"
+  ],
+  "default_mount": "britannia_mod:brass",
+  "default_material": "britannia_mod:cotton",
+  "assets": {
+    "geometry": "britannia_mod:banner/placeholder/medium_wall",
+    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
+    "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
+    "static_overlay": "britannia_mod:banner/placeholder/static_overlay"
+  },
+  "placement_profile": "britannia_mod:placeholder_medium_wall"
+}

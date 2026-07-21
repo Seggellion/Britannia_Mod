@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:placeholder_x_small",
+  "dimensions": {
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "provisional": true
+  },
+  "requires_wall_support": true
+}

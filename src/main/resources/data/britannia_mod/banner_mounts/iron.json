@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:iron",
+  "display_name_key": "mount.britannia_mod.iron",
+  "geometry": "britannia_mod:banner/placeholder/small",
+  "texture": "britannia_mod:banner/placeholder/missing",
+  "tags": [
+    "metal",
+    "placeholder",
+    "development_scaffold"
+  ]
+}

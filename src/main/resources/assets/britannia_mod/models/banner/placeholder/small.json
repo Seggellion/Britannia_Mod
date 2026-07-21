@@ -1,0 +1,30 @@
+{
+  "credit": "Milestone 4 diagnostic placeholder for small; not final geometry",
+  "parent": "minecraft:block/block",
+  "textures": {
+    "fabric": "britannia_mod:banner/placeholder/fabric_base",
+    "particle": "britannia_mod:banner/placeholder/fabric_base"
+  },
+  "elements": [
+    {
+      "from": [
+        0.0,
+        0.0,
+        7.5
+      ],
+      "to": [
+        16.0,
+        16.0,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#fabric"
+        },
+        "south": {
+          "texture": "#fabric"
+        }
+      }
+    }
+  ]
+}

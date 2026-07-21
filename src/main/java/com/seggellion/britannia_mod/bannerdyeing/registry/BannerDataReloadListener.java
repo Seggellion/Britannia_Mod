@@ -25,11 +25,22 @@ final class BannerDataReloadListener extends SimplePreparableReloadListener<Prep
 
     @Override
     protected void apply(PreparedRegistryData prepared, ResourceManager resourceManager, ProfilerFiller profiler) {
-        RegistryLoadResult result = loader.apply(prepared, policy, BannerDataRegistries.publisher());
+        RegistrySnapshotPublisher candidatePublisher = new RegistrySnapshotPublisher(BannerDataRegistries.current());
+        RegistryLoadResult result = loader.apply(prepared, policy, candidatePublisher);
         log(result);
         if (!result.published()) {
             throw new IllegalStateException("Banner data reload rejected: " + summaryText(result.report().summary()));
         }
+        if (ProductionBannerCatalogue.isProductionCatalogue(result.snapshot())) {
+            ProductionBannerCatalogue.requireComplete(result.snapshot());
+            long placeholders = result.snapshot().banners().activeDefinitions().stream()
+                    .filter(definition -> definition.contentStatus()
+                            == com.seggellion.britannia_mod.banner.data.BannerContentStatus.PLACEHOLDER)
+                    .count();
+            BannerFeature.CONTENT_VALIDATION_LOGGER.info(
+                    "Production banner catalogue active=33 disabled=0 placeholders={}", placeholders);
+        }
+        BannerDataRegistries.publisher().publish(result.snapshot());
     }
 
     private static void log(RegistryLoadResult result) {
