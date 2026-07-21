@@ -46,14 +46,16 @@ public final class BankTransferReceipts {
     public static BankTransferReceiptStore.RecordOutcome record(
             ServerLevel level,
             UUID operationId,
+            UUID playerUuid,
             BankTransferOperationType operationType,
             byte[] itemPayload,
             Long currencyAmount,
+            @javax.annotation.Nullable UUID bankItemPublicId,
             long nowEpochMillis
     ) {
         BankTransferReceiptStore store = BankTransferReceiptStore.get(level);
         BankTransferReceipt receipt = new BankTransferReceipt(
-            operationId, operationType, itemPayload, currencyAmount,
+            operationId, playerUuid, operationType, itemPayload, currencyAmount, bankItemPublicId,
             BankTransferReceiptStatus.PENDING_LOCAL_ACTION, nowEpochMillis
         );
         BankTransferReceiptStore.RecordOutcome outcome = store.record(receipt);

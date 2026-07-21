@@ -171,13 +171,28 @@ public final class BankingDepositProxyService {
     public static CompletableFuture<BankingDepositResult> confirmDepositForTesting(
             ServerPlayer player, UUID operationPublicId, UUID bankItemPublicId
     ) {
-        return confirmDeposit(player, operationPublicId, bankItemPublicId);
+        return confirmDeposit(player.server, player.getUUID(), operationPublicId, bankItemPublicId);
+    }
+
+    /**
+     * Milestone 9 NeoForge Slice 3b: the startup-reconciliation entry point for a receipt still
+     * {@code PENDING_LOCAL_ACTION} -- resuming steps 6-8 for an operation whose risky physical
+     * action (removal) already happened, with no live {@code ServerPlayer} on hand (the player
+     * may not even be online at startup). This is the exact same {@link #confirmDeposit} core
+     * every live confirm already runs through -- not a reimplementation -- parameterized by
+     * {@code playerUuid} (now carried on the receipt itself) instead of extracted from a
+     * {@code ServerPlayer}, and by {@code server} directly instead of {@code player.server}.
+     */
+    public static CompletableFuture<BankingDepositResult> resumeConfirmDeposit(
+            MinecraftServer server, UUID playerUuid, UUID operationPublicId, UUID bankItemPublicId
+    ) {
+        return confirmDeposit(server, playerUuid, operationPublicId, bankItemPublicId);
     }
 
     private static CompletableFuture<BankingDepositResult> continueToConfirm(ServerPlayer player, PrepareAndRemoveOutcome outcome) {
         return switch (outcome) {
             case PrepareAndRemoveOutcome.Removed removed ->
-                    confirmDeposit(player, removed.operationPublicId(), removed.bankItemPublicId());
+                    confirmDeposit(player.server, player.getUUID(), removed.operationPublicId(), removed.bankItemPublicId());
             case PrepareAndRemoveOutcome.RemovalFailed removalFailed ->
                     CompletableFuture.completedFuture(new BankingDepositResult.RemovalFailed(removalFailed.operationPublicId()));
             case PrepareAndRemoveOutcome.RejectedLocally rejectedLocally ->
@@ -303,8 +318,8 @@ public final class BankingDepositProxyService {
 
         ServerLevel level = player.serverLevel();
         BankTransferReceiptStore.RecordOutcome recordOutcome = BankTransferReceipts.record(
-                level, success.operationPublicId(), BankTransferOperationType.DEPOSIT, capture.payload(), null,
-                System.currentTimeMillis()
+                level, success.operationPublicId(), player.getUUID(), BankTransferOperationType.DEPOSIT, capture.payload(), null,
+                success.bankItemPublicId(), System.currentTimeMillis()
         );
         if (recordOutcome == BankTransferReceiptStore.RecordOutcome.READ_ONLY_SCHEMA) {
             LOGGER.error(
@@ -319,14 +334,13 @@ public final class BankingDepositProxyService {
     // ---- Steps 6-8: confirm, then resolve or (deliberately) leave unresolved ----
 
     private static CompletableFuture<BankingDepositResult> confirmDeposit(
-            ServerPlayer player, UUID operationPublicId, UUID bankItemPublicId
+            MinecraftServer server, UUID playerUuid, UUID operationPublicId, UUID bankItemPublicId
     ) {
-        MinecraftServer server = player.server;
         CompletableFuture<BankingDepositResult> result = new CompletableFuture<>();
 
         final CompletableFuture<BankingConfirmResult> confirmFuture;
         try {
-            confirmFuture = client.confirm(server, BankingOperationRequest.confirm(player.getUUID(), operationPublicId));
+            confirmFuture = client.confirm(server, BankingOperationRequest.confirm(playerUuid, operationPublicId));
         } catch (RuntimeException synchronousFailure) {
             LOGGER.warn("banking/confirm submission threw synchronously for operation {}", operationPublicId, synchronousFailure);
             // The item is already removed and the receipt is already written -- left
@@ -343,7 +357,7 @@ public final class BankingDepositProxyService {
                 result.complete(new BankingDepositResult.TransportFailure(BankingDepositStage.CONFIRM, "unexpected_client_error"));
                 return;
             }
-            ServerLevel level = player.serverLevel();
+            ServerLevel level = server.overworld();
             switch (confirmResult) {
                 case BankingConfirmResult.Confirmed ignored -> {
                     BankTransferReceipts.resolve(level, operationPublicId);

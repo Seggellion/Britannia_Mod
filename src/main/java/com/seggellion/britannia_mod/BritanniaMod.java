@@ -264,6 +264,7 @@ public void onServerStopping(ServerStoppingEvent event) {
 
 public void onServerStarted(ServerStartedEvent event) {
     ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
+    com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.runStartupReconciliation(event.getServer());
 }
 
 public void onServerTick(ServerTickEvent.Post event) {

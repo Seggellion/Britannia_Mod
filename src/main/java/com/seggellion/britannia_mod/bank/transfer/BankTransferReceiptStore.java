@@ -107,7 +107,14 @@ public final class BankTransferReceiptStore extends SavedData {
     }
 
     public static final String DATA_NAME = "britannia_bank_transfer_receipts";
-    public static final int SCHEMA_VERSION = 1;
+    /**
+     * 2 (Milestone 9 NeoForge Slice 3b): {@link BankTransferReceipt} gained a required {@code
+     * playerUuid} field so startup reconciliation can resume a confirm without a live {@code
+     * ServerPlayer} -- see that class's own docs. A schema-1 store (this program's own
+     * pre-Slice-3b testing only; never a real shipped server) correctly falls back to the
+     * unsupported-schema path below rather than being silently misread as schema 2.
+     */
+    public static final int SCHEMA_VERSION = 2;
     static final int MAX_COLLECTION_ENTRIES = 16_384;
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -208,6 +215,20 @@ public final class BankTransferReceiptStore extends SavedData {
     }
 
     /**
+     * Test-only seam: forces an {@link UnreadableEntry} into this live instance directly,
+     * without going through {@link #load}. Needed because a real unreadable entry can only
+     * otherwise be produced by loading genuinely corrupt/future-schema NBT from disk -- and this
+     * store's own {@code get(ServerLevel)} caches the first-loaded instance for the rest of a
+     * server session, so a GameTest cannot force a fresh reload mid-batch (this exact store is
+     * shared server-wide across up to 50 concurrently-batched GameTests, per this class's own
+     * docs). This lets a test exercise the real {@code scanUnresolved()}/reconciliation
+     * integration against a genuine {@link UnreadableEntry} without that fragility.
+     */
+    public void addUnreadableEntryForTesting(UnreadableEntry entry) {
+        unreadable.add(Objects.requireNonNull(entry, "entry"));
+    }
+
+    /**
      * Transitions an existing receipt to {@link BankTransferReceiptStatus#RECONCILIATION_REQUIRED}
      * -- Rails has reported its own {@code RECONCILIATION_REQUIRED} confirm outcome for this
      * operation, so this side must stop treating it as an ordinary pending retry candidate.
@@ -226,8 +247,8 @@ public final class BankTransferReceiptStore extends SavedData {
         if (existing.status() == BankTransferReceiptStatus.RECONCILIATION_REQUIRED) return EscalateOutcome.ALREADY_ESCALATED;
 
         BankTransferReceipt escalated = new BankTransferReceipt(
-            existing.operationId(), existing.operationType(), existing.itemPayload(), existing.currencyAmount(),
-            BankTransferReceiptStatus.RECONCILIATION_REQUIRED, existing.createdAtEpochMillis()
+            existing.operationId(), existing.playerUuid(), existing.operationType(), existing.itemPayload(), existing.currencyAmount(),
+            existing.bankItemPublicId(), BankTransferReceiptStatus.RECONCILIATION_REQUIRED, existing.createdAtEpochMillis()
         );
         receipts.put(operationId, escalated);
         setDirty();

@@ -215,13 +215,42 @@ public final class BankingWithdrawalProxyService {
     public static CompletableFuture<BankingWithdrawalResult> confirmWithdrawalForTesting(
             ServerPlayer player, UUID operationPublicId, UUID bankItemPublicId
     ) {
-        return confirmWithdrawal(player, operationPublicId, bankItemPublicId);
+        return confirmWithdrawal(player.server, player.getUUID(), operationPublicId, bankItemPublicId);
+    }
+
+    /**
+     * Milestone 9 NeoForge Slice 3b: the startup-reconciliation entry point for a receipt still
+     * {@code PENDING_LOCAL_ACTION} -- resuming steps 6-8 for an operation whose risky physical
+     * action (insertion) already happened, with no live {@code ServerPlayer} on hand. Exactly
+     * the same {@link #confirmWithdrawal} core every live confirm already runs through, just
+     * parameterized by {@code playerUuid} (now carried on the receipt itself) and {@code
+     * server} directly instead of a {@code ServerPlayer}.
+     *
+     * <p>Registers in {@link #IN_FLIGHT} for {@code bankItemPublicId}, exactly like {@link
+     * #triggerWithdrawal} does -- a verification-pass finding, not the original design: without
+     * this, a live player reconnecting while their own resumed confirm is still in flight could
+     * trigger a brand-new withdrawal for the exact same bank item, racing the resume with no
+     * local dedup at all (Rails' own row lock on the item's {@code available} status would
+     * still catch it server-side, but only after an avoidable extra round trip and a confusing
+     * rejection for an item that is, in fact, already theirs). Unlike {@link #triggerWithdrawal},
+     * a collision here ({@code IN_FLIGHT.add} returning {@code false}) means some other resume
+     * or live trigger already owns this item; this call is simply skipped -- the receipt stays
+     * {@code PENDING_LOCAL_ACTION} for a later reconciliation pass rather than being abandoned.
+     */
+    public static CompletableFuture<BankingWithdrawalResult> resumeConfirmWithdrawal(
+            MinecraftServer server, UUID playerUuid, UUID operationPublicId, UUID bankItemPublicId
+    ) {
+        if (!IN_FLIGHT.add(bankItemPublicId)) {
+            return CompletableFuture.completedFuture(new BankingWithdrawalResult.LocalFailure("withdrawal_already_in_flight"));
+        }
+        return confirmWithdrawal(server, playerUuid, operationPublicId, bankItemPublicId)
+                .whenComplete((result, error) -> IN_FLIGHT.remove(bankItemPublicId));
     }
 
     private static CompletableFuture<BankingWithdrawalResult> continueToConfirm(ServerPlayer player, PrepareAndInsertOutcome outcome) {
         return switch (outcome) {
             case PrepareAndInsertOutcome.Inserted inserted ->
-                    confirmWithdrawal(player, inserted.operationPublicId(), inserted.bankItemPublicId());
+                    confirmWithdrawal(player.server, player.getUUID(), inserted.operationPublicId(), inserted.bankItemPublicId());
             case PrepareAndInsertOutcome.Aborted aborted ->
                     CompletableFuture.completedFuture(new BankingWithdrawalResult.Aborted(aborted.operationPublicId(), aborted.reason()));
             case PrepareAndInsertOutcome.Rejected rejected -> CompletableFuture.completedFuture(
@@ -319,8 +348,8 @@ public final class BankingWithdrawalProxyService {
 
         ServerLevel level = player.serverLevel();
         BankTransferReceiptStore.RecordOutcome recordOutcome = BankTransferReceipts.record(
-                level, success.operationPublicId(), BankTransferOperationType.WITHDRAWAL, success.payload(), null,
-                System.currentTimeMillis()
+                level, success.operationPublicId(), player.getUUID(), BankTransferOperationType.WITHDRAWAL, success.payload(), null,
+                success.bankItemPublicId(), System.currentTimeMillis()
         );
         if (recordOutcome == BankTransferReceiptStore.RecordOutcome.READ_ONLY_SCHEMA) {
             LOGGER.error(
@@ -472,14 +501,13 @@ public final class BankingWithdrawalProxyService {
     // ---- Steps 6-8: confirm, then resolve or (deliberately) escalate/leave unresolved ----
 
     private static CompletableFuture<BankingWithdrawalResult> confirmWithdrawal(
-            ServerPlayer player, UUID operationPublicId, UUID bankItemPublicId
+            MinecraftServer server, UUID playerUuid, UUID operationPublicId, UUID bankItemPublicId
     ) {
-        MinecraftServer server = player.server;
         CompletableFuture<BankingWithdrawalResult> result = new CompletableFuture<>();
 
         final CompletableFuture<BankingConfirmResult> confirmFuture;
         try {
-            confirmFuture = client.confirm(server, BankingOperationRequest.confirm(player.getUUID(), operationPublicId));
+            confirmFuture = client.confirm(server, BankingOperationRequest.confirm(playerUuid, operationPublicId));
         } catch (RuntimeException synchronousFailure) {
             LOGGER.warn("banking/confirm submission threw synchronously for operation {}", operationPublicId, synchronousFailure);
             // The item is already inserted and the receipt is already written -- left
@@ -496,7 +524,7 @@ public final class BankingWithdrawalProxyService {
                 result.complete(new BankingWithdrawalResult.TransportFailure(BankingWithdrawalStage.CONFIRM, "unexpected_client_error"));
                 return;
             }
-            ServerLevel level = player.serverLevel();
+            ServerLevel level = server.overworld();
             switch (confirmResult) {
                 case BankingConfirmResult.Confirmed ignored -> {
                     BankTransferReceipts.resolve(level, operationPublicId);

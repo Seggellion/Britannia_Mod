@@ -4,6 +4,7 @@ import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -17,6 +18,27 @@ import java.util.UUID;
  * {@code BankTransferOperation} public UUID once Milestone 9 actually wires a live caller, but
  * this class does not know or care where the UUID came from.
  *
+ * <p>{@code playerUuid} and {@code bankItemPublicId} (Milestone 9 NeoForge Slice 3b) exist so a
+ * startup reconciliation can resume a confirm with no live {@code ServerPlayer} on hand (the
+ * player may not even be online) and no other context to draw on:
+ * <ul>
+ *   <li>{@code playerUuid} is required because Rails' own {@code confirm} action genuinely
+ *       re-validates it -- traced directly, not assumed: {@code resolve_owned_operation}
+ *       resolves a {@code User} from {@code player_uuid} and re-scopes the {@code
+ *       BankTransferOperation} lookup to that user's own {@code bank_accounts}.</li>
+ *   <li>{@code bankItemPublicId} (present only for an item transfer, mirroring {@code
+ *       itemPayload}/{@code currencyAmount}'s own mutual exclusivity) is never sent to Rails by
+ *       confirm itself, but is required by {@code BankingDepositResult.Confirmed}/{@code
+ *       BankingWithdrawalResult.Confirmed}'s own non-null contract -- the same one every live
+ *       confirm already populates from the original prepare response.</li>
+ * </ul>
+ * Both are a real, deliberate schema change (not an addition made to fit within the existing
+ * shape), which is why {@link BankTransferReceiptStore#SCHEMA_VERSION} moves to 2 alongside
+ * them -- any receipt written under schema 1 (this program's own pre-Slice-3b testing, never a
+ * real shipped server) has neither field to recover, so the whole store correctly falls back to
+ * its existing unsupported-schema path (every entry surfaces as {@link
+ * BankTransferReceiptStore.UnreadableEntry}) rather than being silently misread.
+ *
  * Exactly one of {@code itemPayload} or {@code currencyAmount} is present, never both, never
  * neither -- mirroring the same nullable-forward-compat shape Rails' own {@code BankTransaction}
  * already uses for {@code bank_item_id}. Only the item path is exercised by this slice (no
@@ -28,21 +50,26 @@ import java.util.UUID;
  */
 public record BankTransferReceipt(
     UUID operationId,
+    UUID playerUuid,
     BankTransferOperationType operationType,
     byte[] itemPayload,
     Long currencyAmount,
+    @Nullable UUID bankItemPublicId,
     BankTransferReceiptStatus status,
     long createdAtEpochMillis
 ) {
     private static final String KEY_OPERATION_ID = "OperationId";
+    private static final String KEY_PLAYER_UUID = "PlayerUuid";
     private static final String KEY_OPERATION_TYPE = "OperationType";
     private static final String KEY_ITEM_PAYLOAD = "ItemPayload";
     private static final String KEY_CURRENCY_AMOUNT = "CurrencyAmount";
+    private static final String KEY_BANK_ITEM_PUBLIC_ID = "BankItemPublicId";
     private static final String KEY_STATUS = "Status";
     private static final String KEY_CREATED_AT = "CreatedAtEpochMillis";
 
     public BankTransferReceipt {
         Objects.requireNonNull(operationId, "operationId");
+        Objects.requireNonNull(playerUuid, "playerUuid");
         Objects.requireNonNull(operationType, "operationType");
         Objects.requireNonNull(status, "status");
         if (createdAtEpochMillis < 0L) {
@@ -56,6 +83,10 @@ public record BankTransferReceipt(
         }
         if (hasCurrency && currencyAmount < 0L) {
             throw new IllegalArgumentException("currencyAmount must not be negative");
+        }
+        if (hasItem == (bankItemPublicId == null)) {
+            throw new IllegalArgumentException(
+                "bankItemPublicId must be present for an item transfer and absent for a currency transfer");
         }
         // Defensive copy: the caller's array must never be mutated out from under a stored
         // receipt after construction.
@@ -75,9 +106,11 @@ public record BankTransferReceipt(
     CompoundTag toNbt() {
         CompoundTag tag = new CompoundTag();
         tag.putUUID(KEY_OPERATION_ID, operationId);
+        tag.putUUID(KEY_PLAYER_UUID, playerUuid);
         tag.putString(KEY_OPERATION_TYPE, operationType.name());
         if (itemPayload != null) {
             tag.put(KEY_ITEM_PAYLOAD, new ByteArrayTag(itemPayload));
+            tag.putUUID(KEY_BANK_ITEM_PUBLIC_ID, bankItemPublicId);
         } else {
             tag.putLong(KEY_CURRENCY_AMOUNT, currencyAmount);
         }
@@ -88,6 +121,7 @@ public record BankTransferReceipt(
 
     static BankTransferReceipt fromNbt(CompoundTag tag) {
         if (!tag.hasUUID(KEY_OPERATION_ID)
+                || !tag.hasUUID(KEY_PLAYER_UUID)
                 || !tag.contains(KEY_OPERATION_TYPE, Tag.TAG_STRING)
                 || !tag.contains(KEY_STATUS, Tag.TAG_STRING)
                 || !tag.contains(KEY_CREATED_AT, Tag.TAG_LONG)) {
@@ -98,11 +132,16 @@ public record BankTransferReceipt(
         if (hasItem == hasCurrency) {
             throw new IllegalArgumentException("receipt must carry exactly one of ItemPayload or CurrencyAmount");
         }
+        if (hasItem && !tag.hasUUID(KEY_BANK_ITEM_PUBLIC_ID)) {
+            throw new IllegalArgumentException("item-transfer receipt missing BankItemPublicId");
+        }
         return new BankTransferReceipt(
             tag.getUUID(KEY_OPERATION_ID),
+            tag.getUUID(KEY_PLAYER_UUID),
             BankTransferOperationType.valueOf(tag.getString(KEY_OPERATION_TYPE)),
             hasItem ? tag.getByteArray(KEY_ITEM_PAYLOAD) : null,
             hasCurrency ? tag.getLong(KEY_CURRENCY_AMOUNT) : null,
+            hasItem ? tag.getUUID(KEY_BANK_ITEM_PUBLIC_ID) : null,
             BankTransferReceiptStatus.valueOf(tag.getString(KEY_STATUS)),
             tag.getLong(KEY_CREATED_AT)
         );
@@ -114,15 +153,17 @@ public record BankTransferReceipt(
         if (!(other instanceof BankTransferReceipt that)) return false;
         return createdAtEpochMillis == that.createdAtEpochMillis
             && operationId.equals(that.operationId)
+            && playerUuid.equals(that.playerUuid)
             && operationType == that.operationType
             && java.util.Arrays.equals(itemPayload, that.itemPayload)
             && Objects.equals(currencyAmount, that.currencyAmount)
+            && Objects.equals(bankItemPublicId, that.bankItemPublicId)
             && status == that.status;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(operationId, operationType, currencyAmount, status, createdAtEpochMillis);
+        int result = Objects.hash(operationId, playerUuid, operationType, currencyAmount, bankItemPublicId, status, createdAtEpochMillis);
         return 31 * result + java.util.Arrays.hashCode(itemPayload);
     }
 }

@@ -60,7 +60,7 @@ public final class BankTransferReceiptGameTests {
         byte[] payload = {1, 2, 3, 4, 5};
 
         BankTransferReceiptStore.RecordOutcome outcome = BankTransferReceipts.record(
-            level, operationId, BankTransferOperationType.DEPOSIT, payload, null, 1_000L
+            level, operationId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, payload, null, UUID.randomUUID(), 1_000L
         );
         check(outcome == BankTransferReceiptStore.RecordOutcome.CREATED, "record() did not report CREATED");
 
@@ -81,7 +81,9 @@ public final class BankTransferReceiptGameTests {
         UUID operationId = UUID.randomUUID();
         byte[] payload = {9, 8, 7};
 
-        BankTransferReceipts.record(level, operationId, BankTransferOperationType.WITHDRAWAL, payload, null, 2_000L);
+        BankTransferReceipts.record(
+            level, operationId, UUID.randomUUID(), BankTransferOperationType.WITHDRAWAL, payload, null, UUID.randomUUID(), 2_000L
+        );
         // Deliberately never call resolve() -- this is the "crash after possible insertion,
         // before any resolve call" scenario Section A.6 describes.
 
@@ -108,7 +110,9 @@ public final class BankTransferReceiptGameTests {
         ServerLevel level = helper.getLevel();
         UUID operationId = UUID.randomUUID();
 
-        BankTransferReceipts.record(level, operationId, BankTransferOperationType.DEPOSIT, new byte[]{1}, null, 3_000L);
+        BankTransferReceipts.record(
+            level, operationId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{1}, null, UUID.randomUUID(), 3_000L
+        );
         boolean resolved = BankTransferReceipts.resolve(level, operationId);
         check(resolved, "resolve() did not report success for a receipt that was just recorded");
 
@@ -174,7 +178,9 @@ public final class BankTransferReceiptGameTests {
         check(nether != overworld, "test is meaningless if the 'different dimension' level is actually the overworld");
 
         UUID operationId = UUID.randomUUID();
-        BankTransferReceipts.record(nether, operationId, BankTransferOperationType.DEPOSIT, new byte[]{7}, null, 6_000L);
+        BankTransferReceipts.record(
+            nether, operationId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{7}, null, UUID.randomUUID(), 6_000L
+        );
 
         BankTransferReceiptStore fromOverworld = BankTransferReceiptStore.get(overworld);
         BankTransferReceiptStore fromNether = BankTransferReceiptStore.get(nether);
@@ -192,8 +198,12 @@ public final class BankTransferReceiptGameTests {
         UUID depositId = UUID.randomUUID();
         UUID withdrawalId = UUID.randomUUID();
 
-        BankTransferReceipts.record(level, depositId, BankTransferOperationType.DEPOSIT, new byte[]{1, 1}, null, 4_000L);
-        BankTransferReceipts.record(level, withdrawalId, BankTransferOperationType.WITHDRAWAL, new byte[]{2, 2}, null, 4_100L);
+        BankTransferReceipts.record(
+            level, depositId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{1, 1}, null, UUID.randomUUID(), 4_000L
+        );
+        BankTransferReceipts.record(
+            level, withdrawalId, UUID.randomUUID(), BankTransferOperationType.WITHDRAWAL, new byte[]{2, 2}, null, UUID.randomUUID(), 4_100L
+        );
         BankTransferReceipts.resolve(level, depositId);
         // withdrawalId is deliberately left unresolved -- the simulated crash point.
 
