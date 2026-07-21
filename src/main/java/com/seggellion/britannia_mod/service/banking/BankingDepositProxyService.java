@@ -107,11 +107,12 @@ public final class BankingDepositProxyService {
     }
 
     /**
-     * The full deposit sequence, steps 1-8. Test-support-only entry point (see class docs).
-     * Must be called from the main server thread, matching every other live-inventory-touching
-     * entry point in this mod.
+     * The full deposit sequence, steps 1-8 -- the one and only production entry point (Slice
+     * 3a), reached from a real {@code BankDepositRequestC2SPayload} via {@link
+     * BankingTransferPacketService}. Must be called from the main server thread, matching every
+     * other live-inventory-touching entry point in this mod.
      */
-    public static CompletableFuture<BankingDepositResult> triggerDepositForTesting(
+    public static CompletableFuture<BankingDepositResult> triggerDeposit(
             ServerPlayer player, ServiceNpcEntity teller, int slotIndex
     ) {
         SlotKey key = new SlotKey(player.getUUID(), slotIndex);
@@ -121,6 +122,17 @@ public final class BankingDepositProxyService {
         return prepareAndRemoveInternal(player, teller, slotIndex)
                 .thenCompose(outcome -> continueToConfirm(player, outcome))
                 .whenComplete((result, error) -> IN_FLIGHT.remove(key));
+    }
+
+    /**
+     * Test-support alias for {@link #triggerDeposit} -- kept so every existing test written
+     * against this name keeps compiling and exercising the exact same real logic, not a
+     * parallel copy of it.
+     */
+    public static CompletableFuture<BankingDepositResult> triggerDepositForTesting(
+            ServerPlayer player, ServiceNpcEntity teller, int slotIndex
+    ) {
+        return triggerDeposit(player, teller, slotIndex);
     }
 
     /**

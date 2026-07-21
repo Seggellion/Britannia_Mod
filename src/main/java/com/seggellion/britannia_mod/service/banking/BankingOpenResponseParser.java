@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.service.banking;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -8,6 +9,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,6 +22,13 @@ import java.util.UUID;
  */
 public final class BankingOpenResponseParser {
     private static final int PROTOCOL_VERSION = 1;
+
+    /**
+     * A defensive bound on the parsed list, not a real business limit -- Rails paginates via
+     * {@code next_cursor} (not yet followed by this client) long before a real account could
+     * plausibly reach this many available items in one page.
+     */
+    private static final int MAX_BANK_ITEMS = 10_000;
 
     private BankingOpenResponseParser() {
     }
@@ -62,9 +72,38 @@ public final class BankingOpenResponseParser {
         if (accountElement == null || !accountElement.isJsonObject()) fail("missing_account");
         BankingOpenAccount account = parseAccount(accountElement.getAsJsonObject());
 
-        if (!root.has("bank_items") || !root.get("bank_items").isJsonObject()) fail("missing_bank_items");
+        JsonElement bankItemsElement = root.get("bank_items");
+        if (bankItemsElement == null || !bankItemsElement.isJsonObject()) fail("missing_bank_items");
+        List<BankItemSummary> bankItems = parseBankItems(bankItemsElement.getAsJsonObject());
 
-        return new BankingOpenClientResult.Success(account);
+        return new BankingOpenClientResult.Success(account, bankItems);
+    }
+
+    /**
+     * Rails' real {@code bank_items} envelope (Milestone 9 Rails Slice 1): every {@code
+     * available} item the account holds, list-view only -- no {@code payload} field exists
+     * here (that only appears in {@code banking/withdrawal/prepare}'s response, per
+     * docs/banking_item_transfer.md), so only {@code public_id} and {@code weight} are read.
+     * {@code next_cursor} is not yet paginated through by this client (this slice's own scope
+     * does not require it -- matches Rails' own admission of the same, in its
+     * {@code bank_items_envelope} doc comment).
+     */
+    private static List<BankItemSummary> parseBankItems(JsonObject bankItemsEnvelope) throws ProtocolException {
+        JsonElement itemsElement = bankItemsEnvelope.get("items");
+        if (itemsElement == null || !itemsElement.isJsonArray()) fail("missing_bank_items_list");
+        JsonArray itemsArray = itemsElement.getAsJsonArray();
+        if (itemsArray.size() > MAX_BANK_ITEMS) fail("too_many_bank_items");
+
+        List<BankItemSummary> items = new ArrayList<>(itemsArray.size());
+        for (JsonElement itemElement : itemsArray) {
+            if (!itemElement.isJsonObject()) fail("invalid_bank_item");
+            JsonObject item = itemElement.getAsJsonObject();
+            UUID publicId = requiredUuid(item, "public_id");
+            double weight = requiredNumber(item, "weight");
+            if (weight < 0) fail("invalid_bank_item_weight");
+            items.add(new BankItemSummary(publicId, weight));
+        }
+        return items;
     }
 
     private static BankingOpenAccount parseAccount(JsonObject account) throws ProtocolException {

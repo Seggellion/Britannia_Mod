@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.service.banking;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,10 +17,16 @@ public sealed interface BankingOpenClientResult permits
 
     boolean retryable();
 
-    /** {@code OPENED}: the account was resolved. */
-    record Success(BankingOpenAccount account) implements BankingOpenClientResult {
+    /**
+     * {@code OPENED}: the account was resolved. {@code bankItems} is Rails' real {@code
+     * bank_items.items} array (Milestone 9 Rails Slice 1) -- a sibling of {@code account} in
+     * the wire envelope, not a field on it, matching Rails' own envelope shape exactly.
+     */
+    record Success(BankingOpenAccount account, List<BankItemSummary> bankItems) implements BankingOpenClientResult {
         public Success {
             Objects.requireNonNull(account, "account");
+            Objects.requireNonNull(bankItems, "bankItems");
+            bankItems = List.copyOf(bankItems);
         }
 
         @Override

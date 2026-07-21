@@ -562,6 +562,33 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
+// Milestone 9 Slice 3a: real deposit/withdrawal triggers from BankScreen
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleDeposit(p, payload);
+        }
+    })
+);
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleWithdrawal(p, payload);
+        }
+    })
+);
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLLoader.getDist().isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleBankTransferResult
+        : (p, c) -> {}
+);
+
 
     
 }

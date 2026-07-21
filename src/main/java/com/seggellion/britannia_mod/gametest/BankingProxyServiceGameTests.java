@@ -256,7 +256,7 @@ public final class BankingProxyServiceGameTests {
         // disconnected player's connection) when it actually runs a tick or two from now.
         pending.complete(new BankingOpenClientResult.Success(new com.seggellion.britannia_mod.service.banking.BankingOpenAccount(
                 UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1
-        )));
+        ), java.util.List.of()));
         helper.runAfterDelay(2, () -> {
             BankingProxyService.resetClientForTesting();
             ServiceNpcRegistryCache.clear();
@@ -389,12 +389,12 @@ public final class BankingProxyServiceGameTests {
         );
         BankingProxyService.useClientForTesting(new BankingOpenClient(
                 gameTestCredentials(),
-                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account)),
+                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account, java.util.List.of())),
                 (uri, max) -> null
         ));
         AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
-        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount) ->
-                sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount)));
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) ->
+                sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems)));
 
         ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
         npc.setPersonalName("Aldric the Banker");
@@ -435,12 +435,12 @@ public final class BankingProxyServiceGameTests {
         try {
             BankingProxyService.useClientForTesting(new BankingOpenClient(
                     gameTestCredentials(),
-                    (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account)),
+                    (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account, java.util.List.of())),
                     (uri, max) -> null
             ));
             AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
-            BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount) ->
-                    sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount)));
+            BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) ->
+                    sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems)));
 
             ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
             npc.setPersonalName("Isolde the Banker");
@@ -483,7 +483,7 @@ public final class BankingProxyServiceGameTests {
                 .toList();
 
         AtomicBoolean sent = new AtomicBoolean();
-        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account) -> sent.set(true));
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account, bankItems) -> sent.set(true));
 
         ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -539,7 +539,7 @@ public final class BankingProxyServiceGameTests {
                 gameTestCredentials(), (ignored, task) -> pending, (uri, max) -> null
         ));
         AtomicBoolean sent = new AtomicBoolean();
-        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account) -> sent.set(true));
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account, bankItems) -> sent.set(true));
 
         ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -548,7 +548,7 @@ public final class BankingProxyServiceGameTests {
         BankingProxyService.handle(player, npc);
         helper.getLevel().getServer().getPlayerList().remove(player);
         pending.complete(new BankingOpenClientResult.Success(
-                new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1)
+                new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1), java.util.List.of()
         ));
 
         helper.runAfterDelay(4, () -> {
@@ -568,7 +568,7 @@ public final class BankingProxyServiceGameTests {
                 gameTestCredentials(), (ignored, task) -> pending, (uri, max) -> null
         ));
         AtomicBoolean sent = new AtomicBoolean();
-        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account) -> sent.set(true));
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, account, bankItems) -> sent.set(true));
 
         ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -577,7 +577,7 @@ public final class BankingProxyServiceGameTests {
         BankingProxyService.handle(player, npc);
         npc.discard();
         pending.complete(new BankingOpenClientResult.Success(
-                new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1)
+                new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 1), java.util.List.of()
         ));
 
         helper.runAfterDelay(4, () -> {
@@ -610,10 +610,10 @@ public final class BankingProxyServiceGameTests {
         );
         BankingProxyService.useClientForTesting(new BankingOpenClient(
                 gameTestCredentials(),
-                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account)),
+                (ignored, task) -> CompletableFuture.completedFuture(new BankingOpenClientResult.Success(account, java.util.List.of())),
                 (uri, max) -> null
         ));
-        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount) -> {
+        BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) -> {
         });
 
         ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));

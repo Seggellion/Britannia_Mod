@@ -366,6 +366,25 @@ private static MutableComponent uoMessage(String text) {
         ctx.enqueueWork(() -> Minecraft.getInstance().setScreen(new BankScreen(payload)));
     }
 
+    /**
+     * Milestone 9 Slice 3a: a clean-rejection or reconciliation-required outcome for an
+     * in-flight deposit/withdrawal. A clean confirm never reaches this handler at all -- see
+     * {@code BankTransferResultS2CPayload}'s own docs for why the account/bank_items refresh
+     * (a fresh {@link BankAccountOpenedS2CPayload}, handled just above) is the success signal
+     * instead. If {@code BankScreen} is no longer the open screen (the player closed it while
+     * the request was in flight), this is silently dropped -- there is nothing left to update.
+     */
+    public static void handleBankTransferResult(
+            com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload payload, IPayloadContext ctx
+    ) {
+        ctx.enqueueWork(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.screen instanceof BankScreen screen) {
+                screen.acceptTransferResult(payload);
+            }
+        });
+    }
+
     public static void handleQuestGiverSpawnScreen(QuestGiverSpawnScreenS2CPayload payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Minecraft.getInstance().setScreen(

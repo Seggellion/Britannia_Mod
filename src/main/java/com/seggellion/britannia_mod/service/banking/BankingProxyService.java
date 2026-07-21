@@ -91,7 +91,7 @@ public final class BankingProxyService {
      */
     @FunctionalInterface
     public interface AccountScreenSender {
-        void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account);
+        void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account, java.util.List<BankItemSummary> bankItems);
     }
 
     private static AccountScreenSender accountScreenSender = BankAccountOpenedS2CPayload::send;
@@ -195,7 +195,9 @@ public final class BankingProxyService {
         LOGGER.info("banking/open result for {}: {}", player.getStringUUID(), result);
         switch (result) {
             case BankingOpenClientResult.Success success ->
-                    accountScreenSender.send(player, Objects.requireNonNull(teller, "teller"), success.account());
+                    accountScreenSender.send(
+                            player, Objects.requireNonNull(teller, "teller"), success.account(), success.bankItems()
+                    );
             case BankingOpenClientResult.Rejected ignored ->
                     player.displayClientMessage(Component.literal(REJECTED_MESSAGE), false);
             case BankingOpenClientResult.TransportFailure ignored ->

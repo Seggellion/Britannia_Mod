@@ -55,6 +55,68 @@ class BankingOpenResponseParserTest {
     }
 
     @Test
+    void opensParsesARealNonEmptyBankItemsList() {
+        UUID firstItem = UUID.randomUUID();
+        UUID secondItem = UUID.randomUUID();
+        String body = """
+                {
+                  "protocol_version": 1,
+                  "success": true,
+                  "outcome": "OPENED",
+                  "retryable": false,
+                  "account": {
+                    "public_id": "5c1e4e1a-0000-4000-8000-000000000001",
+                    "banking_mode": "global",
+                    "city_public_id": null,
+                    "weight_limit": 250,
+                    "current_weight": 4.5,
+                    "gold_balance": 0,
+                    "silver_balance": 0,
+                    "copper_balance": 0,
+                    "revision": 1
+                  },
+                  "bank_items": {
+                    "items": [
+                      { "public_id": "%s", "status": "available", "revision": 1, "schema_version": 1,
+                        "fingerprint": "deadbeef", "weight": 2.5 },
+                      { "public_id": "%s", "status": "available", "revision": 1, "schema_version": 1,
+                        "fingerprint": "cafebabe", "weight": 2.0 }
+                    ],
+                    "next_cursor": null
+                  }
+                }
+                """.formatted(firstItem, secondItem);
+        BankingOpenClientResult result = parse(200, body);
+        BankingOpenClientResult.Success success = assertInstanceOf(BankingOpenClientResult.Success.class, result);
+        assertEquals(2, success.bankItems().size());
+        assertEquals(firstItem, success.bankItems().get(0).publicId());
+        assertEquals(2.5, success.bankItems().get(0).weight());
+        assertEquals(secondItem, success.bankItems().get(1).publicId());
+        assertEquals(2.0, success.bankItems().get(1).weight());
+    }
+
+    @Test
+    void missingBankItemPublicIdIsATransportFailure() {
+        String body = "{ \"protocol_version\": 1, \"success\": true, \"outcome\": \"OPENED\", \"retryable\": false, "
+                + "\"account\": { \"public_id\": \"" + UUID.randomUUID() + "\", \"banking_mode\": \"global\", "
+                + "\"city_public_id\": null, \"weight_limit\": 250, \"current_weight\": 0.0, \"gold_balance\": 0, "
+                + "\"silver_balance\": 0, \"copper_balance\": 0, \"revision\": 1 }, "
+                + "\"bank_items\": { \"items\": [ { \"weight\": 1.0 } ], \"next_cursor\": null } }";
+        assertInstanceOf(BankingOpenClientResult.TransportFailure.class, parse(200, body));
+    }
+
+    @Test
+    void negativeBankItemWeightIsATransportFailure() {
+        String body = "{ \"protocol_version\": 1, \"success\": true, \"outcome\": \"OPENED\", \"retryable\": false, "
+                + "\"account\": { \"public_id\": \"" + UUID.randomUUID() + "\", \"banking_mode\": \"global\", "
+                + "\"city_public_id\": null, \"weight_limit\": 250, \"current_weight\": 0.0, \"gold_balance\": 0, "
+                + "\"silver_balance\": 0, \"copper_balance\": 0, \"revision\": 1 }, "
+                + "\"bank_items\": { \"items\": [ { \"public_id\": \"" + UUID.randomUUID() + "\", \"weight\": -1.0 } ], "
+                + "\"next_cursor\": null } }";
+        assertInstanceOf(BankingOpenClientResult.TransportFailure.class, parse(200, body));
+    }
+
+    @Test
     void opensCityLocalParsesTheCityPublicId() {
         UUID city = UUID.randomUUID();
         String body = accountBody("city_local", city, 250, 12.5, 3, 40, 7, 2);
