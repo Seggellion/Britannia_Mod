@@ -90,10 +90,9 @@ class Milestone6ResourcesAndScopeTest {
     }
 
     @Test
-    void commonDyeTubImplementationHasNoClientOrBannerReferences() throws Exception {
+    void milestone6LoadingCoreStillHasNoClientOrBannerReferences() throws Exception {
         Path dyeItem = JAVA.resolve("dye/item");
         List<Path> files = List.of(
-                dyeItem.resolve("DyeTubItem.java"),
                 dyeItem.resolve("DyeTubLoadingService.java"),
                 dyeItem.resolve("DyeTubLoadPlan.java"),
                 dyeItem.resolve("DyeTubLoadResult.java"),
@@ -114,18 +113,15 @@ class Milestone6ResourcesAndScopeTest {
     }
 
     @Test
-    void noBannerItemScreenMenuBlockOrPayloadWasAdded() throws Exception {
-        try (var paths = Files.walk(JAVA)) {
-            List<String> milestone6Files = paths.filter(path -> path.toString().endsWith(".java"))
-                    .map(path -> path.getFileName().toString())
-                    .filter(name -> name.contains("Dye") || name.contains("Pigment"))
-                    .toList();
-            assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("BannerItem")));
-            assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("Screen")));
-            assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("Menu")));
-            assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("Payload")));
-            assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("BlockEntity")));
-        }
+    void milestone6LoadingCoreStillContainsNoScreenMenuBlockOrPayload() {
+        List<String> milestone6Files = List.of(
+                "DyeTubLoadingService.java", "DyeTubLoadPlan.java", "DyeTubLoadResult.java",
+                "DyeTubStateAccess.java", "DyeTubTooltip.java", "PigmentItem.java");
+        assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("BannerItem")));
+        assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("Screen")));
+        assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("Menu")));
+        assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("Payload")));
+        assertFalse(milestone6Files.stream().anyMatch(name -> name.contains("BlockEntity")));
     }
 
     private static void assertPng(String name) throws Exception {

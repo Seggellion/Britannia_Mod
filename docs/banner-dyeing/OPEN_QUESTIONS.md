@@ -2,7 +2,26 @@
 
 Date: 2026-07-20
 
-Milestone: 7
+Milestone: 8
+
+## Milestone 8 provisional preview and finite-use decisions
+
+- Dye preview sessions live for 30 seconds, are bound to one player, use random UUID identities, and allow one active
+  session per player. A new preview replaces the previous one. This lifetime and replacement UX remain provisional.
+- Session staleness uses exact `ItemStack` copies (`ItemStack.matches`, including item, count, and all components) and
+  the immutable registry snapshot's publication object identity. The registry layer has no numeric generation API;
+  any newly published snapshot object invalidates the preview even when its decoded content is equivalent.
+- Exact no-op means both resolved colour and source pigment already match. It consumes no finite use and closes the
+  preview with `ALREADY_DYED`. Closing on this result is the selected clear UX but remains revisable.
+- A different pigment resolving to the same colour is a real application: provenance changes, and one finite use is
+  consumed. This preserves the established historical source-pigment contract.
+- A finite tub reaching zero remains loaded with its pigment for diagnostics. It cannot preview or apply again and is
+  not emptied, destroyed, replaced, or washed automatically. This zero-use behavior remains provisional.
+- The Milestone 8 screen shows the existing static banner icon, localized state text, and authoritative current/new
+  colour swatches only. Full layered heraldry preview remains exclusively Milestone 9 work.
+
+Still unresolved: final session lifetime/UX, final finite tub capacity and acquisition rules, whether depleted tubs
+can later be refilled or washed, and whether exact no-op should retain rather than close the preview.
 
 ## Milestone 7 provisional item decisions
 
@@ -130,7 +149,7 @@ These decisions affect player experience or content approval. The data model can
 
 ## Blocking decisions
 
-None blocks Milestone 1.
+None blocks Milestone 9.
 
 The following become blocking at their stated review gates:
 

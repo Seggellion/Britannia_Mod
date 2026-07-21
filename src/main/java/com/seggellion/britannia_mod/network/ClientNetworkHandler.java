@@ -36,6 +36,9 @@ import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
+import com.seggellion.britannia_mod.client.screen.DyePreviewScreen;
+import com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload;
+import com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
@@ -374,6 +377,20 @@ private static MutableComponent uoMessage(String text) {
                 chessScreen.updateState(payload.state());
             } else {
                 mc.setScreen(new ChessBoardScreen(payload.pos(), payload.state()));
+            }
+        });
+    }
+
+    public static void handleOpenDyePreview(S2COpenDyePreviewPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> Minecraft.getInstance().setScreen(new DyePreviewScreen(payload)));
+    }
+
+    public static void handleDyeApplicationResult(
+            S2CDyeApplicationResultPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen instanceof DyePreviewScreen screen) {
+                screen.handleResult(payload);
             }
         });
     }

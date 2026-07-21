@@ -1,5 +1,145 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 8: Dye Preview and Confirmed Item Dyeing
+
+### Player flow and interaction routing
+
+- Completed the first player-facing item dyeing path: a loaded registered dye tub in `MAIN_HAND` plus a configured
+  shared banner in `OFF_HAND` is validated and resolved on the server, opens a client-only preview, and mutates only
+  after a server-confirmed apply. Physical left/right hands are not hard-coded.
+- `DyeTubItem` routes a recognized off-hand `PigmentItem` first through the unchanged Milestone 6 loading service;
+  otherwise the shared banner item requests preview; empty or unknown items retain the existing typed invalid-off-hand
+  loading result. Off-hand tub use returns pass before client or server mutation.
+- Normal server-side item use is already the preview intent, so no redundant `C2S_RequestDyePreview` was added.
+  Client prediction performs no component write, consumption, success sound, or particle emission.
+
+### Network architecture and authority
+
+Four typed play payloads were added under `network/payload/dye` and registered through the existing protocol-`1`
+`PayloadRegistrar` path in `NetworkHandler`:
+
+| ID | Direction | Fields |
+|---|---|---|
+| `britannia_mod:open_dye_preview` | S2C | session UUID, display-only preview projection, lifetime milliseconds |
+| `britannia_mod:confirm_dye_application` | C2S | session UUID only |
+| `britannia_mod:cancel_dye_preview` | C2S | session UUID only |
+| `britannia_mod:dye_application_result` | S2C | session UUID, typed result enum, close-screen flag |
+
+- The display projection contains localization keys, explicit/nearest match type, perceptual distance, current/new
+  sRGB swatches, and placeholder/provisional flags. It is never returned to or trusted by the server.
+- Confirm and cancel contain no pigment, material, banner definition, mount, resolved colour, match type, distance,
+  banner state, or tub state. C2S handlers enqueue authoritative work and resolve the `ServerPlayer`; S2C handlers are
+  selected only on the client distribution and open/update `DyePreviewScreen` from `ClientNetworkHandler`.
+- Common packet records and all common preview/session/application classes contain no Minecraft client or Blaze3D
+  imports. The client-only screen is annotated and isolated under `client/screen`.
+
+### Preview session design
+
+- `DyePreviewSessionService` is runtime-only, synchronized, and keyed by player UUID. Sessions use random UUIDs,
+  expire after 30,000 milliseconds, and allow exactly one active session per player. Creating a new preview replaces
+  the previous session.
+- A session stores creation/expiry time, expected main/off item identities, defensive exact copies of both stacks,
+  authoritative pigment, complete current banner/tub states, resolved colour/match/distance, display projection, and
+  the immutable registry snapshot reference used for resolution.
+- Exact stack matching includes item, count, and every component, so custom names, custom data, unrelated components,
+  banner state, tub state, and hand swaps all stale the relevant confirmation.
+- The registry system has no numeric generation counter. Snapshot publication replaces the immutable aggregate
+  object, so reference identity is the exact runtime publication identity; any reload publication requires a fresh
+  preview.
+- A matching confirmation removes/marks the session consumed before validation or mutation. Short-lived terminal
+  tombstones distinguish expired, cancelled, replaced, and replayed IDs without persisting data. Cleanup is lazy on
+  create/claim/cancel/count; no tick handler or saved player data exists.
+- Logout, dimension change, death, and server stop remove sessions. Successful and failed matched confirmations are
+  one-use; cancellation removes the matching session; duplicate confirmation returns `SESSION_REPLAYED`.
+
+### Preview validation and display
+
+Validation is non-mutating and ordered across: exact main-hand tub; exact off-hand shared banner; configured banner
+component; loaded/non-depleted tub; published registry availability; active/disabled pigment; complete banner
+validation (definition, material, palette, stored colour, mount, supported mount); resolver success; and the generic
+`DyeableItem` colour-update plan. Missing stored colour is not auto-repaired to open a preview.
+
+Typed failures distinguish invalid hands, empty/depleted tub, unconfigured/invalid banner, unavailable registry,
+missing/disabled pigment/material/definition/mount, missing palette, resolver failure, no compatible colour, generic
+dyeable rejection, and session creation failure. Preview creation changes neither stack and never decrements uses.
+
+`DyePreviewScreen` displays banner/material/mount, current colour and optional source pigment, tub pigment, resolved
+new colour, explicit or closest-available label, static registered banner icon, current/new authoritative swatches,
+placeholder warning, restrained provisional-dimension warning, Cancel, and Apply Dye. Apply disables immediately,
+remains disabled in flight, and disables on the advisory local timeout. Escape, inventory key, and Cancel send only
+the opaque cancellation intent. The screen has no menu, container, layered renderer, dye mask, overlay, geometry, or
+final heraldry dependency; layered item rendering remains deferred to Milestone 9.
+
+### Confirmation, atomicity, finite use, and feedback
+
+Confirmation claims the player-bound session, checks expiry, re-reads exact hands, compares exact stack copies,
+verifies registered item identities, checks the same registry publication, revalidates tub and generic banner state,
+re-runs `DyeResolver`, and requires an exact match with the previewed authoritative `DyeResult`.
+
+The service then detects exact no-op, plans the banner colour/source update and finite tub decrement completely, and
+only then applies the banner component followed by the tub component. Expected failures change neither stack. An
+unexpected runtime failure logs player/session/pigment/material context and restores the prior approved components on
+a best-effort narrow rollback boundary.
+
+- Unlimited tub: component remains exactly unchanged.
+- Finite tub: one successful real application decrements exactly once.
+- Finite one: becomes zero while retaining its pigment; later preview/apply is typed `TUB_DEPLETED`.
+- Exact same colour and pigment: `ALREADY_DYED`, no mutation, use, sound, or particles; screen closes.
+- Same colour with a different pigment: source provenance updates and one finite use is consumed.
+- Banner schema, definition, material, mount, custom name, and unrelated components remain unchanged.
+- Success emits one vanilla `DYE_USE` sound, six restrained `HAPPY_VILLAGER` particles, localized action-bar feedback,
+  and a typed close result. Failures and cancellation emit no success effects.
+
+### Automated coverage and corrections
+
+- Added registered-`ItemStack` JUnit coverage for preview validation, missing/disabled registry content, no compatible
+  colour, resolver failure, non-mutation, finite preview, exact stack staleness, session uniqueness/replacement,
+  expiry/cancel/disconnect/replay/cross-player rejection, explicit and nearest application, finite/unlimited use,
+  exact no-op, same-colour provenance, sequential re-dyes, resolver/registry changes, component preservation,
+  rollback, all four packet codecs/IDs, C2S authority fields, view-model state, localization, routing, and client-class
+  isolation.
+- No GameTest was added. The repository still has no GameTest source root, annotated bootstrap, templates, or test
+  registration. Registered production-shaped items/components plus isolated packet/client-server boundaries exercise
+  this item-only milestone without introducing unrelated framework infrastructure. No live in-game claim is made.
+- The first restricted `compileJava` attempt could not access the Gradle distribution because sandbox networking was
+  denied. The approved retry passed with only the two existing compiler warnings.
+- The first focused test command completed after the tool timeout; its XML proved 23 tests, 0 failures/errors/skips.
+  The expanded focused command then passed normally: 27 tests, 0 failures/errors/skips.
+- The first complete 402-test banner/dye run found two obsolete Milestone 6 scope-only guards: one included the now-
+  required `DyeTubItem` banner routing, and one prohibited every future dye-named payload/screen. Both guards were
+  narrowed to the exact unchanged Milestone 6 loading-core files; their no-client/no-banner/no-payload guarantees
+  remain intact, and no stale-state, replay, authority, or atomicity assertion was weakened.
+- Corrected required banner/dye command: 402 tests, 0 failures, 0 errors, 0 skipped.
+
+### Final commands and results
+
+1. `.\tools\scaffold_banners.bat --check` passed in 35 seconds: manifest=33, definitions=33, active=33,
+   disabled=0, localization=33, provisional names=14, provisional dimensions=33, asset families=5.
+2. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` passed
+   after the documented scope-guard correction: 402 tests, 0 failures, 0 errors, 0 skipped.
+3. `.\gradlew.bat clean --no-daemon` passed in 39 seconds.
+4. `.\gradlew.bat test --no-daemon --stacktrace` passed from clean state in 3 minutes 20 seconds: 402 tests,
+   0 failures, 0 errors, 0 skipped.
+5. `.\gradlew.bat build --no-daemon` passed in 53 seconds; check, jar, jarJar, assemble, and build completed.
+6. `git diff --check` passed during source review; final staged diff checks are recorded in the handoff report.
+
+The unchanged compiler warnings are missing `@Overwrite` Javadoc on `PlayerSleepMixin` and the deprecated-for-removal
+`Item.initializeClient` override in `OrderShieldItem`.
+
+### Counts, manual boundary, limitations, and next milestone
+
+- Production content remains 33 active/0 disabled banners, 4 materials, 4 palettes, 7 pigments, and 2 mounts.
+  Gameplay registrations remain one shared banner, one dye tub, seven pigment items, and two banner/dye typed data
+  components (three total registrations in `DataComponentRegistry`, including pre-existing wine data).
+- The full manual obtain/open/cancel/apply/stale/double-click/expiry/re-dye/relog checklist was not performed because
+  there is still no safe banner acquisition path before Milestone 15 and no live client/server session was launched.
+  Automated persistence and handler tests are not presented as in-game, multiplayer, relog, or world-save evidence.
+- Preview is text, static icon, and swatches only. There is no layered item rendering, placed banner, block, block
+  entity, placement, crafting, recipe, admin command, NPC integration, or direct-world dyeing.
+- Session lifetime, finite-use zero policy, and exact no-op close UX remain provisional as recorded in
+  `OPEN_QUESTIONS.md`.
+- Next milestone: Milestone 9 - Layered Item Rendering - only. It has not started.
+
 ## 2026-07-20 - Milestone 7: Generic Dyeable Item API and Banner Item State
 
 ### Files and architecture

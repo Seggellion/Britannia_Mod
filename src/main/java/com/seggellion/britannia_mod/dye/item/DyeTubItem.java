@@ -1,12 +1,15 @@
 package com.seggellion.britannia_mod.dye.item;
 
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries;
+import com.seggellion.britannia_mod.dye.preview.DyePreviewRuntime;
+import com.seggellion.britannia_mod.registry.BannerItemRegistry;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.DyeItemRegistry;
 import java.util.List;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -33,6 +36,12 @@ public final class DyeTubItem extends Item {
         }
 
         ItemStack pigmentStack = player.getOffhandItem();
+        if (DyeItemRegistry.pigmentId(pigmentStack.getItem()).isEmpty()
+                && pigmentStack.getItem() == BannerItemRegistry.BANNER.get()
+                && player instanceof ServerPlayer serverPlayer) {
+            DyePreviewRuntime.openPreview(serverPlayer);
+            return InteractionResultHolder.sidedSuccess(tubStack, false);
+        }
         DyeTubLoadPlan plan = DyeTubLoadingService.plan(
                 tubStack,
                 this,

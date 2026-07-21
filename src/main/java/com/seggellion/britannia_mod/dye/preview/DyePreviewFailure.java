@@ -1,0 +1,25 @@
+package com.seggellion.britannia_mod.dye.preview;
+
+/** Expected failures while creating a non-mutating dye preview. */
+public enum DyePreviewFailure {
+    NONE,
+    INVALID_HAND_CONTRACT,
+    TUB_EMPTY,
+    TUB_DEPLETED,
+    BANNER_UNCONFIGURED,
+    BANNER_INVALID,
+    REGISTRY_UNAVAILABLE,
+    PIGMENT_MISSING,
+    PIGMENT_DISABLED,
+    MATERIAL_MISSING,
+    MATERIAL_DISABLED,
+    PALETTE_MISSING,
+    DEFINITION_MISSING,
+    DEFINITION_DISABLED,
+    MOUNT_MISSING,
+    MOUNT_DISABLED,
+    RESOLVER_FAILURE,
+    NO_COMPATIBLE_COLOUR,
+    DYEABLE_REJECTED,
+    SESSION_CREATION_FAILURE
+}
