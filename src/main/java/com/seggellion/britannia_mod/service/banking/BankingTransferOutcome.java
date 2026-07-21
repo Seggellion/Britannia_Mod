@@ -4,17 +4,19 @@ import javax.annotation.Nullable;
 
 /**
  * Closed outcome vocabulary for {@code POST /api/banking/deposit/prepare}, {@code
- * POST /api/banking/confirm}, and {@code POST /api/banking/cancel} -- mirroring
- * {@link BankingOpenOutcome}'s own approach (a direct wire-name match for every Rails
- * outcome string, exhaustively mapped to its expected HTTP status), but shared across all
- * three actions in a single enum rather than one per action. This mirrors Rails' own design:
- * {@code Banking::Protocol::OUTCOMES} (docs/banking_item_transfer.md, Milestone 9 Rails
- * Slice 1) is itself one flat outcome list shared by every banking action, not a separate
- * vocabulary per endpoint -- this enum follows that same precedent rather than inventing a
- * per-action split Rails itself does not have.
+ * POST /api/banking/withdrawal/prepare}, {@code POST /api/banking/confirm}, and {@code
+ * POST /api/banking/cancel} -- mirroring {@link BankingOpenOutcome}'s own approach (a direct
+ * wire-name match for every Rails outcome string, exhaustively mapped to its expected HTTP
+ * status), but shared across all four actions in a single enum rather than one per action.
+ * This mirrors Rails' own design: {@code Banking::Protocol::OUTCOMES}
+ * (docs/banking_item_transfer.md) is itself one flat outcome list shared by every banking
+ * action, not a separate vocabulary per endpoint -- this enum follows that same precedent
+ * rather than inventing a per-action split Rails itself does not have.
  *
- * <p>Deliberately excludes withdrawal-prepare-only outcomes ({@code ITEM_NOT_FOUND}, {@code
- * ITEM_NOT_AVAILABLE}) -- out of scope for this slice (no withdrawal logic exists yet).
+ * <p>{@code ITEM_NOT_FOUND} and {@code ITEM_NOT_AVAILABLE} are withdrawal-prepare-only (Slice
+ * 1 deliberately excluded them since deposit never returns them; Slice 2 adds them here now
+ * that a real caller exists, extending the same shared list rather than starting a parallel
+ * one).
  */
 public enum BankingTransferOutcome {
     PREPARED,
@@ -23,6 +25,8 @@ public enum BankingTransferOutcome {
     RECONCILIATION_REQUIRED,
     INVALID_TRANSITION,
     CAPACITY_EXCEEDED,
+    ITEM_NOT_FOUND,
+    ITEM_NOT_AVAILABLE,
     OPERATION_NOT_FOUND,
     UNAUTHORIZED,
     SERVER_NOT_AUTHORIZED,
@@ -67,7 +71,8 @@ public enum BankingTransferOutcome {
                  TELLER_NOT_ACTIVE, TELLER_NOT_ASSIGNED, POST_REMOVED, POST_DISABLED,
                  TELLER_SERVICE_NOT_SUPPORTED, INVALID_CITY_FOR_BANKING_MODE, CITY_SHARD_MISMATCH,
                  CAPACITY_EXCEEDED, UNSUPPORTED_SCHEMA_VERSION, PAYLOAD_TOO_LARGE, INVALID_WEIGHT,
-                 OPERATION_NOT_FOUND, INVALID_TRANSITION, RECONCILIATION_REQUIRED -> 422;
+                 OPERATION_NOT_FOUND, INVALID_TRANSITION, RECONCILIATION_REQUIRED,
+                 ITEM_NOT_FOUND, ITEM_NOT_AVAILABLE -> 422;
             case SERVICE_UNAVAILABLE -> 503;
         };
     }

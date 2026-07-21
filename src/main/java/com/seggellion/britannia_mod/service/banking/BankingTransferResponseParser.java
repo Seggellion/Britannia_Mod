@@ -8,13 +8,15 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 
 /**
- * Parses raw {@code banking/deposit/prepare}, {@code banking/confirm}, and {@code
- * banking/cancel} HTTP responses, mirroring {@link BankingOpenResponseParser}: cross-validates
- * status/success/retryable against what Rails itself defines for that outcome
- * (docs/banking_item_transfer.md), and fails hard (never guesses) on anything unexpected.
+ * Parses raw {@code banking/deposit/prepare}, {@code banking/withdrawal/prepare}, {@code
+ * banking/confirm}, and {@code banking/cancel} HTTP responses, mirroring {@link
+ * BankingOpenResponseParser}: cross-validates status/success/retryable against what Rails itself
+ * defines for that outcome (docs/banking_item_transfer.md), and fails hard (never guesses) on
+ * anything unexpected.
  *
  * <p>Deliberately does not deep-parse every field of the nested {@code operation}/{@code
  * bank_item} objects -- only what {@link BankingDepositProxyService} actually needs downstream
@@ -52,6 +54,32 @@ public final class BankingTransferResponseParser {
             return new BankingDepositPrepareResult.Success(operationPublicId, bankItemPublicId);
         } catch (ProtocolException malformed) {
             return new BankingDepositPrepareResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
+    public static BankingWithdrawalPrepareResult parseWithdrawalPrepare(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingWithdrawalPrepareResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome != BankingTransferOutcome.PREPARED) {
+            return new BankingWithdrawalPrepareResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            UUID operationPublicId = requiredUuid(requiredObject(envelope.root, "operation"), "public_id");
+            JsonObject bankItem = requiredObject(envelope.root, "bank_item");
+            UUID bankItemPublicId = requiredUuid(bankItem, "public_id");
+            int schemaVersion = requiredInt(bankItem, "schema_version");
+            byte[] payload = requiredBase64(bankItem, "payload");
+            String fingerprint = requiredString(bankItem, "fingerprint");
+            double weight = requiredDouble(bankItem, "weight");
+            return new BankingWithdrawalPrepareResult.Success(
+                    operationPublicId, bankItemPublicId, schemaVersion, payload, fingerprint, weight);
+        } catch (ProtocolException malformed) {
+            return new BankingWithdrawalPrepareResult.TransportFailure("malformed_protocol_response");
         }
     }
 
@@ -162,6 +190,29 @@ public final class BankingTransferResponseParser {
         } catch (NumberFormatException invalid) {
             fail("invalid_" + name);
             return 0;
+        }
+    }
+
+    private static double requiredDouble(JsonObject root, String name) throws ProtocolException {
+        JsonElement value = root.get(name);
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+            fail("missing_or_invalid_" + name);
+        }
+        try {
+            return value.getAsDouble();
+        } catch (NumberFormatException invalid) {
+            fail("invalid_" + name);
+            return 0;
+        }
+    }
+
+    private static byte[] requiredBase64(JsonObject root, String name) throws ProtocolException {
+        String encoded = requiredString(root, name);
+        try {
+            return Base64.getDecoder().decode(encoded);
+        } catch (IllegalArgumentException invalid) {
+            fail("invalid_" + name);
+            return null;
         }
     }
 
