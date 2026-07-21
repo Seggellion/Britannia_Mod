@@ -56,6 +56,13 @@ public final class BankTransferReceiptStore extends SavedData {
         READ_ONLY_SCHEMA
     }
 
+    public enum EscalateOutcome {
+        ESCALATED,
+        ALREADY_ESCALATED,
+        NOT_FOUND,
+        READ_ONLY_SCHEMA
+    }
+
     /**
      * An entry that exists on disk but could not be turned into a {@link BankTransferReceipt}
      * -- either a single corrupt record (schema otherwise supported), or an entry recovered
@@ -72,18 +79,30 @@ public final class BankTransferReceiptStore extends SavedData {
     }
 
     /**
-     * The startup-scan result: {@code pending} is every receipt that parsed cleanly (the
-     * ordinary "crash after possible insertion" candidates Section A.6 describes), and
-     * {@code unreadable} is every entry that exists but could not be parsed at all -- kept as
-     * its own distinct category rather than silently absent, because an unreadable entry might
-     * just as easily represent a real in-flight operation this scan is specifically meant to
-     * catch. A caller that only inspects {@code pending} and ignores a non-empty
-     * {@code unreadable} is making the same silent-assumption mistake this program's A.6
-     * philosophy rejects everywhere else.
+     * The startup-scan result, in three distinct buckets, each needing different handling:
+     * <ul>
+     *   <li>{@code pending} -- a receipt still in {@link BankTransferReceiptStatus#PENDING_LOCAL_ACTION}
+     *       (the ordinary "crash after possible insertion" candidates Section A.6 describes).
+     *       Safe to retry/resolve normally once its true Rails-side state is established.</li>
+     *   <li>{@code reconciliationRequired} -- a receipt Rails has already told this side is
+     *       {@code RECONCILIATION_REQUIRED} (via {@link BankTransferReceiptStatus#RECONCILIATION_REQUIRED}).
+     *       Terminal: Rails itself has declared this unresolvable automatically, so this is never
+     *       a normal retry candidate -- it needs Rails-side human resolution, not another confirm
+     *       attempt.</li>
+     *   <li>{@code unreadable} -- an entry that exists but could not be parsed at all (corrupt, or
+     *       recovered best-effort from an unsupported future schema). Kept as its own distinct
+     *       category rather than silently absent, because an unreadable entry might just as
+     *       easily represent a real in-flight operation of either of the other two kinds.</li>
+     * </ul>
+     * A caller that only inspects {@code pending} and ignores a non-empty {@code
+     * reconciliationRequired} or {@code unreadable} is making the same silent-assumption mistake
+     * this program's A.6 philosophy rejects everywhere else.
      */
-    public record ScanResult(List<BankTransferReceipt> pending, List<UnreadableEntry> unreadable) {
+    public record ScanResult(
+            List<BankTransferReceipt> pending, List<BankTransferReceipt> reconciliationRequired, List<UnreadableEntry> unreadable
+    ) {
         public boolean isEmpty() {
-            return pending.isEmpty() && unreadable.isEmpty();
+            return pending.isEmpty() && reconciliationRequired.isEmpty() && unreadable.isEmpty();
         }
     }
 
@@ -189,16 +208,55 @@ public final class BankTransferReceiptStore extends SavedData {
     }
 
     /**
-     * The startup-scan candidate list Section A.6 describes: every cleanly-parsed receipt
-     * still present is, by definition, unresolved -- {@link #resolve} removes a receipt the
-     * moment it is no longer needed. Also surfaces every entry that exists but could not be
-     * parsed (corrupt records, or entries recovered best-effort from an unsupported future
-     * schema) as its own distinct {@link UnreadableEntry} category -- never silently absent,
-     * because an unreadable entry might just as easily be a real in-flight operation this scan
-     * exists specifically to catch.
+     * Transitions an existing receipt to {@link BankTransferReceiptStatus#RECONCILIATION_REQUIRED}
+     * -- Rails has reported its own {@code RECONCILIATION_REQUIRED} confirm outcome for this
+     * operation, so this side must stop treating it as an ordinary pending retry candidate.
+     * Idempotent both ways, matching {@link #record}/{@link #resolve}'s own established
+     * conventions: escalating an already-escalated receipt is a no-op ({@link
+     * EscalateOutcome#ALREADY_ESCALATED}), not an error, and escalating an operationId with no
+     * receipt at all is reported distinctly ({@link EscalateOutcome#NOT_FOUND}) rather than
+     * silently creating one -- this method only ever transitions an existing receipt, it never
+     * fabricates one.
+     */
+    public EscalateOutcome escalateToReconciliationRequired(UUID operationId) {
+        if (readOnlyFutureSchema) return EscalateOutcome.READ_ONLY_SCHEMA;
+
+        BankTransferReceipt existing = receipts.get(operationId);
+        if (existing == null) return EscalateOutcome.NOT_FOUND;
+        if (existing.status() == BankTransferReceiptStatus.RECONCILIATION_REQUIRED) return EscalateOutcome.ALREADY_ESCALATED;
+
+        BankTransferReceipt escalated = new BankTransferReceipt(
+            existing.operationId(), existing.operationType(), existing.itemPayload(), existing.currencyAmount(),
+            BankTransferReceiptStatus.RECONCILIATION_REQUIRED, existing.createdAtEpochMillis()
+        );
+        receipts.put(operationId, escalated);
+        setDirty();
+        return EscalateOutcome.ESCALATED;
+    }
+
+    /**
+     * The startup-scan candidate list Section A.6 describes, split into {@link
+     * BankTransferReceiptStatus#PENDING_LOCAL_ACTION} and {@link
+     * BankTransferReceiptStatus#RECONCILIATION_REQUIRED} buckets (see {@link ScanResult}'s own
+     * docs for why these need different handling) -- every cleanly-parsed receipt still present
+     * is, by definition, unresolved in one of those two ways, since {@link #resolve} removes a
+     * receipt the moment it is no longer needed regardless of which status it was in. Also
+     * surfaces every entry that exists but could not be parsed (corrupt records, or entries
+     * recovered best-effort from an unsupported future schema) as its own distinct {@link
+     * UnreadableEntry} category -- never silently absent, because an unreadable entry might just
+     * as easily be a real in-flight operation of either kind.
      */
     public ScanResult scanUnresolved() {
-        return new ScanResult(List.copyOf(receipts.values()), List.copyOf(unreadable));
+        List<BankTransferReceipt> pending = new ArrayList<>();
+        List<BankTransferReceipt> reconciliationRequired = new ArrayList<>();
+        for (BankTransferReceipt receipt : receipts.values()) {
+            if (receipt.status() == BankTransferReceiptStatus.RECONCILIATION_REQUIRED) {
+                reconciliationRequired.add(receipt);
+            } else {
+                pending.add(receipt);
+            }
+        }
+        return new ScanResult(List.copyOf(pending), List.copyOf(reconciliationRequired), List.copyOf(unreadable));
     }
 
     public boolean isReadOnlyFutureSchema() {

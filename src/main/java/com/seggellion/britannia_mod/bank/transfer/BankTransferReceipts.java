@@ -71,6 +71,23 @@ public final class BankTransferReceipts {
     }
 
     /**
+     * Milestone 9's deposit path calls this on a Rails confirm response of {@code
+     * RECONCILIATION_REQUIRED} (Section A.6): a real, persisted transition to {@link
+     * BankTransferReceiptStatus#RECONCILIATION_REQUIRED}, not just leaving the receipt as an
+     * ordinary pending entry. Flushes synchronously only when an actual transition happened
+     * ({@link BankTransferReceiptStore.EscalateOutcome#ESCALATED}), matching {@link #resolve}'s
+     * own pattern of only forcing a write when something actually changed.
+     */
+    public static BankTransferReceiptStore.EscalateOutcome escalateToReconciliationRequired(ServerLevel level, UUID operationId) {
+        BankTransferReceiptStore store = BankTransferReceiptStore.get(level);
+        BankTransferReceiptStore.EscalateOutcome outcome = store.escalateToReconciliationRequired(operationId);
+        if (outcome == BankTransferReceiptStore.EscalateOutcome.ESCALATED) {
+            forceSynchronousFlush(level);
+        }
+        return outcome;
+    }
+
+    /**
      * The startup-scan capability: every cleanly-parsed receipt still present when this is
      * called is a candidate needing reconciliation -- the exact "crash after possible
      * insertion" scenario Section A.6 describes -- and every entry that exists but could not be

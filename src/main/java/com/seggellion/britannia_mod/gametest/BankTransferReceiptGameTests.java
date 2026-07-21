@@ -85,11 +85,18 @@ public final class BankTransferReceiptGameTests {
         // Deliberately never call resolve() -- this is the "crash after possible insertion,
         // before any resolve call" scenario Section A.6 describes.
 
+        // Scoped to this test's own operationId, not the store's total unresolved count -- the
+        // GameTest runner executes many tests concurrently against this same single,
+        // server-wide store (confirmed directly: this assertion failed nondeterministically
+        // from cross-test contamination once enough other concurrent receipt-writing tests
+        // existed in the same batch, not from a real defect).
         BankTransferReceiptStore freshFromDisk = readFreshFromDisk(level);
-        List<BankTransferReceipt> unresolved = freshFromDisk.scanUnresolved().pending();
-        check(unresolved.size() == 1, "expected exactly one unresolved receipt after the simulated crash");
-        check(unresolved.get(0).operationId().equals(operationId), "the wrong receipt was found unresolved");
-        check(unresolved.get(0).operationType() == BankTransferOperationType.WITHDRAWAL,
+        BankTransferReceipt survived = freshFromDisk.scanUnresolved().pending().stream()
+            .filter(receipt -> receipt.operationId().equals(operationId))
+            .findFirst()
+            .orElse(null);
+        check(survived != null, "expected this operation's receipt to be found unresolved after the simulated crash");
+        check(survived.operationType() == BankTransferOperationType.WITHDRAWAL,
             "the recovered receipt's operation type did not survive the simulated crash");
 
         BankTransferReceipts.resolve(level, operationId);
@@ -105,8 +112,12 @@ public final class BankTransferReceiptGameTests {
         boolean resolved = BankTransferReceipts.resolve(level, operationId);
         check(resolved, "resolve() did not report success for a receipt that was just recorded");
 
+        // Scoped to this operationId specifically -- see the comment in
+        // aReceiptSurvivesASimulatedCrashAndIsFoundByAFreshStartupScan for why an unscoped
+        // check against this shared, server-wide store is unsafe under concurrent GameTest
+        // batching.
         BankTransferReceiptStore freshFromDisk = readFreshFromDisk(level);
-        check(freshFromDisk.scanUnresolved().isEmpty(),
+        check(freshFromDisk.find(operationId) == null,
             "a cleanly resolved receipt was still present in a fresh reload from disk");
         helper.succeed();
     }
@@ -186,10 +197,13 @@ public final class BankTransferReceiptGameTests {
         BankTransferReceipts.resolve(level, depositId);
         // withdrawalId is deliberately left unresolved -- the simulated crash point.
 
+        // Scoped to each of this test's own two operationIds -- see the comment in
+        // aReceiptSurvivesASimulatedCrashAndIsFoundByAFreshStartupScan for why an unscoped
+        // check against this shared, server-wide store is unsafe under concurrent GameTest
+        // batching.
         BankTransferReceiptStore freshFromDisk = readFreshFromDisk(level);
-        List<BankTransferReceipt> unresolved = freshFromDisk.scanUnresolved().pending();
-        check(unresolved.size() == 1, "the resolved deposit leaked into the fresh startup scan, or the withdrawal did not survive");
-        check(unresolved.get(0).operationId().equals(withdrawalId), "cross-contamination between independent receipts");
+        check(freshFromDisk.find(depositId) == null, "the resolved deposit leaked into the fresh startup scan");
+        check(freshFromDisk.find(withdrawalId) != null, "the withdrawal did not survive the simulated crash");
 
         BankTransferReceipts.resolve(level, withdrawalId);
         helper.succeed();

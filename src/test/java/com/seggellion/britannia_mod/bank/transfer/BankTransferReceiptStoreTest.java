@@ -209,6 +209,104 @@ class BankTransferReceiptStoreTest {
         assertTrue(loaded.scanUnresolved().pending().isEmpty());
     }
 
+    // ---------- Part A: RECONCILIATION_REQUIRED escalation ----------
+
+    @Test
+    void escalateToReconciliationRequiredTransitionsAnExistingReceiptAndIsIdempotent() {
+        BankTransferReceiptStore store = new BankTransferReceiptStore();
+        UUID id = UUID.randomUUID();
+        store.record(itemReceipt(id, new byte[]{1, 2, 3}, 100L));
+
+        assertEquals(BankTransferReceiptStore.EscalateOutcome.ESCALATED, store.escalateToReconciliationRequired(id));
+        assertEquals(BankTransferReceiptStatus.RECONCILIATION_REQUIRED, store.find(id).status(),
+            "escalation must actually change the stored receipt's status");
+
+        assertEquals(BankTransferReceiptStore.EscalateOutcome.ALREADY_ESCALATED, store.escalateToReconciliationRequired(id),
+            "escalating an already-escalated receipt must be a no-op, not an error");
+        assertEquals(BankTransferReceiptStatus.RECONCILIATION_REQUIRED, store.find(id).status());
+    }
+
+    @Test
+    void escalateToReconciliationRequiredReportsNotFoundForAMissingOperationRatherThanFabricatingAReceipt() {
+        BankTransferReceiptStore store = new BankTransferReceiptStore();
+        UUID id = UUID.randomUUID();
+
+        assertEquals(BankTransferReceiptStore.EscalateOutcome.NOT_FOUND, store.escalateToReconciliationRequired(id));
+        assertNull(store.find(id), "escalating a missing operation must never create a receipt");
+    }
+
+    @Test
+    void escalateToReconciliationRequiredPreservesEveryOtherFieldOfTheReceipt() {
+        BankTransferReceiptStore store = new BankTransferReceiptStore();
+        UUID id = UUID.randomUUID();
+        BankTransferReceipt original = itemReceipt(BankTransferOperationType.WITHDRAWAL, id, new byte[]{9, 8, 7}, 555L);
+        store.record(original);
+
+        store.escalateToReconciliationRequired(id);
+        BankTransferReceipt escalated = store.find(id);
+
+        assertEquals(original.operationId(), escalated.operationId());
+        assertEquals(original.operationType(), escalated.operationType());
+        assertArrayEquals(original.itemPayload(), escalated.itemPayload());
+        assertEquals(original.createdAtEpochMillis(), escalated.createdAtEpochMillis());
+        assertEquals(BankTransferReceiptStatus.RECONCILIATION_REQUIRED, escalated.status());
+    }
+
+    @Test
+    void escalateToReconciliationRequiredIsANoOpOnAReadOnlyFutureSchemaStore() {
+        CompoundTag root = new CompoundTag();
+        root.putInt("SchemaVersion", 99);
+        BankTransferReceiptStore loaded = BankTransferReceiptStore.load(root, null);
+
+        assertEquals(BankTransferReceiptStore.EscalateOutcome.READ_ONLY_SCHEMA,
+            loaded.escalateToReconciliationRequired(UUID.randomUUID()));
+    }
+
+    // Part A: proves scanUnresolved() actually separates all three categories when a store
+    // contains one of each simultaneously, not just that each category works in isolation
+    // (already covered by the tests above and the pre-existing corrupt/future-schema tests).
+    @Test
+    void scanUnresolvedSeparatesPendingReconciliationRequiredAndUnreadableIntoDistinctBuckets() {
+        BankTransferReceiptStore store = new BankTransferReceiptStore();
+        UUID pendingId = UUID.randomUUID();
+        UUID reconciliationRequiredId = UUID.randomUUID();
+
+        store.record(itemReceipt(pendingId, new byte[]{1}, 10L));
+        store.record(itemReceipt(reconciliationRequiredId, new byte[]{2}, 20L));
+        assertEquals(BankTransferReceiptStore.EscalateOutcome.ESCALATED,
+            store.escalateToReconciliationRequired(reconciliationRequiredId));
+
+        CompoundTag corrupt = new CompoundTag();
+        corrupt.putUUID("OperationId", UUID.randomUUID());
+        CompoundTag root = new CompoundTag();
+        root.putInt("SchemaVersion", BankTransferReceiptStore.SCHEMA_VERSION);
+        ListTag list = new ListTag();
+        list.add(itemReceipt(pendingId, new byte[]{1}, 10L).toNbt());
+        BankTransferReceipt reconciliationRequiredReceipt = new BankTransferReceipt(
+            reconciliationRequiredId, BankTransferOperationType.DEPOSIT, new byte[]{2}, null,
+            BankTransferReceiptStatus.RECONCILIATION_REQUIRED, 20L
+        );
+        list.add(reconciliationRequiredReceipt.toNbt());
+        list.add(corrupt);
+        root.put("Receipts", list);
+
+        BankTransferReceiptStore.ScanResult scan = BankTransferReceiptStore.load(root, null).scanUnresolved();
+
+        assertEquals(1, scan.pending().size(), "expected exactly one ordinary pending receipt");
+        assertEquals(pendingId, scan.pending().get(0).operationId());
+
+        assertEquals(1, scan.reconciliationRequired().size(), "expected exactly one reconciliation_required receipt");
+        assertEquals(reconciliationRequiredId, scan.reconciliationRequired().get(0).operationId());
+        assertEquals(BankTransferReceiptStatus.RECONCILIATION_REQUIRED, scan.reconciliationRequired().get(0).status());
+
+        assertEquals(1, scan.unreadable().size(), "expected exactly one unreadable entry");
+        assertFalse(scan.isEmpty());
+
+        // Cross-checks: neither real receipt leaked into the other's bucket.
+        assertTrue(scan.pending().stream().noneMatch(r -> r.operationId().equals(reconciliationRequiredId)));
+        assertTrue(scan.reconciliationRequired().stream().noneMatch(r -> r.operationId().equals(pendingId)));
+    }
+
     private static BankTransferReceipt itemReceipt(UUID operationId, byte[] payload, long createdAt) {
         return itemReceipt(BankTransferOperationType.DEPOSIT, operationId, payload, createdAt);
     }
