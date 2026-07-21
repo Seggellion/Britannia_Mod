@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.banner.renderdata.BannerPreviewRenderState;
 import com.seggellion.britannia_mod.dye.preview.DyeApplicationResultCode;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewDisplayData;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewViewModel;
@@ -40,7 +41,8 @@ class DyePreviewPayloadAndViewModelTest {
 
     @Test
     void allFourStreamCodecsRoundTrip() {
-        S2COpenDyePreviewPayload open = new S2COpenDyePreviewPayload(SESSION, explicit(), 30_000);
+        S2COpenDyePreviewPayload open = new S2COpenDyePreviewPayload(
+                SESSION, explicit(), currentRender(), proposedRender(), 30_000);
         assertEquals(open, roundTrip(open, S2COpenDyePreviewPayload.STREAM_CODEC));
         C2SConfirmDyeApplicationPayload confirm = new C2SConfirmDyeApplicationPayload(SESSION);
         assertEquals(confirm, roundTrip(confirm, C2SConfirmDyeApplicationPayload.STREAM_CODEC));
@@ -55,7 +57,8 @@ class DyePreviewPayloadAndViewModelTest {
     void malformedConstructionIsRejectedSafely() {
         assertThrows(NullPointerException.class, () -> new C2SConfirmDyeApplicationPayload(null));
         assertThrows(NullPointerException.class, () -> new C2SCancelDyePreviewPayload(null));
-        assertThrows(IllegalArgumentException.class, () -> new S2COpenDyePreviewPayload(SESSION, explicit(), 0));
+        assertThrows(IllegalArgumentException.class, () -> new S2COpenDyePreviewPayload(
+                SESSION, explicit(), currentRender(), proposedRender(), 0));
         assertThrows(IllegalArgumentException.class, () -> new DyePreviewDisplayData(
                 "banner", "material", "mount", "current", Optional.empty(), "pigment", "new",
                 MatchType.NEAREST_COLOUR, Double.NaN, 0, 0, false, false));
@@ -134,6 +137,21 @@ class DyePreviewPayloadAndViewModelTest {
                 "banner.key", "material.key", "mount.key", "current.key", Optional.of("source.key"),
                 "tub.key", "new.key", MatchType.EXPLICIT_MAPPING, 0.1,
                 0xAA1122, 0xCC3344, true, false);
+    }
+
+    private static BannerPreviewRenderState currentRender() {
+        return new BannerPreviewRenderState(
+                com.seggellion.britannia_mod.banner.api.BannerDefinitionId.parse("britannia_mod:ward_of_serpents"),
+                com.seggellion.britannia_mod.dye.api.FabricMaterialId.parse("britannia_mod:cotton"),
+                com.seggellion.britannia_mod.dye.api.ResolvedColourId.parse("britannia_mod:cotton_natural"),
+                com.seggellion.britannia_mod.banner.api.MountId.parse("britannia_mod:brass"));
+    }
+
+    private static BannerPreviewRenderState proposedRender() {
+        BannerPreviewRenderState current = currentRender();
+        return new BannerPreviewRenderState(current.bannerDefinitionId(), current.materialId(),
+                com.seggellion.britannia_mod.dye.api.ResolvedColourId.parse("britannia_mod:cotton_red"),
+                current.mountId());
     }
 
     private static Class<?>[] componentTypes(Class<?> recordType) {

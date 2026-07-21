@@ -2,6 +2,11 @@ package com.seggellion.britannia_mod.network.payload.dye;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewDisplayData;
+import com.seggellion.britannia_mod.banner.renderdata.BannerPreviewRenderState;
+import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
+import com.seggellion.britannia_mod.banner.api.MountId;
+import com.seggellion.britannia_mod.dye.api.FabricMaterialId;
+import com.seggellion.britannia_mod.dye.api.ResolvedColourId;
 import com.seggellion.britannia_mod.dye.service.MatchType;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +19,8 @@ import net.minecraft.resources.ResourceLocation;
 public record S2COpenDyePreviewPayload(
         UUID sessionId,
         DyePreviewDisplayData displayData,
+        BannerPreviewRenderState currentRenderState,
+        BannerPreviewRenderState proposedRenderState,
         long lifetimeMillis) implements CustomPacketPayload {
     public static final ResourceLocation TYPE_ID = ResourceLocation.fromNamespaceAndPath(
             BritanniaMod.MODID, "open_dye_preview");
@@ -24,6 +31,8 @@ public record S2COpenDyePreviewPayload(
     public S2COpenDyePreviewPayload {
         java.util.Objects.requireNonNull(sessionId, "sessionId");
         java.util.Objects.requireNonNull(displayData, "displayData");
+        java.util.Objects.requireNonNull(currentRenderState, "currentRenderState");
+        java.util.Objects.requireNonNull(proposedRenderState, "proposedRenderState");
         if (lifetimeMillis <= 0) {
             throw new IllegalArgumentException("lifetimeMillis must be positive");
         }
@@ -46,6 +55,8 @@ public record S2COpenDyePreviewPayload(
         buffer.writeInt(data.newSrgb());
         buffer.writeBoolean(data.placeholder());
         buffer.writeBoolean(data.provisionalDimensions());
+        writeRenderState(buffer, payload.currentRenderState);
+        writeRenderState(buffer, payload.proposedRenderState);
         buffer.writeVarLong(payload.lifetimeMillis);
     }
 
@@ -64,11 +75,28 @@ public record S2COpenDyePreviewPayload(
         int newSrgb = buffer.readInt();
         boolean placeholder = buffer.readBoolean();
         boolean provisional = buffer.readBoolean();
+        BannerPreviewRenderState currentRenderState = readRenderState(buffer);
+        BannerPreviewRenderState proposedRenderState = readRenderState(buffer);
         long lifetime = buffer.readVarLong();
         return new S2COpenDyePreviewPayload(sessionId,
                 new DyePreviewDisplayData(banner, material, mount, currentColour, currentPigment,
                         tubPigment, newColour, matchType, distance, currentSrgb, newSrgb,
-                        placeholder, provisional), lifetime);
+                        placeholder, provisional), currentRenderState, proposedRenderState, lifetime);
+    }
+
+    private static void writeRenderState(FriendlyByteBuf buffer, BannerPreviewRenderState state) {
+        buffer.writeResourceLocation(state.bannerDefinitionId().value());
+        buffer.writeResourceLocation(state.materialId().value());
+        buffer.writeResourceLocation(state.resolvedColourId().value());
+        buffer.writeResourceLocation(state.mountId().value());
+    }
+
+    private static BannerPreviewRenderState readRenderState(FriendlyByteBuf buffer) {
+        return new BannerPreviewRenderState(
+                new BannerDefinitionId(buffer.readResourceLocation()),
+                new FabricMaterialId(buffer.readResourceLocation()),
+                new ResolvedColourId(buffer.readResourceLocation()),
+                new MountId(buffer.readResourceLocation()));
     }
 
     @Override

@@ -2,8 +2,8 @@
   "schema_version": 1,
   "id": "britannia_mod:brass",
   "display_name_key": "mount.britannia_mod.brass",
-  "geometry": "britannia_mod:banner/placeholder/small",
-  "texture": "britannia_mod:banner/placeholder/missing",
+  "geometry": "britannia_mod:banner/mount/brass",
+  "texture": "britannia_mod:banner/mount/brass",
   "tags": [
     "metal",
     "placeholder",

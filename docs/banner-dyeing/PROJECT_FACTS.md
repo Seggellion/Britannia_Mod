@@ -54,12 +54,27 @@ The authoritative specifications were read in full before the feature branch or 
 | Container menus | Only vanilla `ChestMenu.threeRows` is used by inventory block entities; no custom `MenuType` is registered | The dye preview has no inventory slots, so the repository's direct `Screen` + payload pattern is the selected convention unless a later requirement introduces server-managed slots |
 | Client-only separation | One Java source set, client packages, `@EventBusSubscriber(... value = Dist.CLIENT)`, `@OnlyIn(Dist.CLIENT)`, and `FMLLoader.getDist().isClient()` guards | Put screens/models/renderers under `com.seggellion.britannia_mod.client`; register them from the `Dist.CLIENT` subscriber; common state, codecs, registries, and packet definitions must not import `net.minecraft.client` |
 | Placed rendering | `EntityRenderersEvent.RegisterRenderers` and `registerBlockEntityRenderer` in `ClientModSetup` | Register the anchor renderer through `ClientModSetup`; only the anchor renders the complete multi-block banner |
-| Item rendering | Static JSON item models are dominant; the one stateful custom item example uses GeckoLib `GeoItemRenderer` via `IClientItemExtensions` / `BlockEntityWithoutLevelRenderer` | Re-evaluate the supported NeoForge 21.1 dynamic item-render API in the rendering milestone; the existing `OrderShieldItem.initializeClient` path compiles but emits a removal warning and must not be copied blindly |
+| Item rendering | NeoForge 21.1.72 `ModelEvent.RegisterAdditional` + `ModelEvent.ModifyBakingResult`, vanilla `ItemOverrides`, and `IBakedModelExtension.getRenderPasses` support a current dynamic baked-model path | The shared banner item installs one wrapper model at bake/reload time, resolves immutable stack appearance keys through overrides, and returns family/mount baked passes; do not copy deprecated `Item.initializeClient` |
 | Models/assets | `assets/britannia_mod/models`, `textures`, `geo`, blockstates, language JSON, GeckoLib geometry, and a custom geometry loader registered in `ClientModSetup` | Place banner assets under `src/main/resources/assets/britannia_mod/...`; keep dyeable fabric, dye mask, static overlay, and mount resources separate as required by the specifications |
 | Commands | Brigadier command classes with a static `register(CommandDispatcher<CommandSourceStack>)`, collected by `CommandRegistry` on `RegisterCommandsEvent` | Add later admin/debug commands as a focused command class registered by `CommandRegistry`, with permission predicates and registry-backed suggestions |
 | Recipes | One static vanilla recipe override at `src/main/resources/data/minecraft/recipes/diamond_pickaxe.json`; blacksmith crafting uses the in-code `CraftableRegistry`, `CraftableDef`, payload, and server-side `BlacksmithCrafting` service | Reuse the blacksmith server-validation flow and material-from-input concept, but banner recipes require a fabric-specific identity rather than the metal enum |
 | Data generation | `runData` exists and `src/generated/resources` is configured, but there are no providers, `GatherDataEvent` listeners, or generated resources | The first banner data-generation milestone must establish the repository's first provider/check workflow; until then, authored JSON belongs under `src/main/resources/data/britannia_mod` |
 | Tests | Gradle `test` and NeoForge `runGameTestServer` tasks exist; there are no unit or GameTest sources and no explicit test dependencies in `build.gradle` | Add deterministic codec/colour tests under `src/test/java`; use `runGameTestServer` for placement/persistence tests once a GameTest source/configuration is established |
+
+## Milestone 9 item-rendering and client-data decision
+
+The actual NeoForge 21.1.72 source JAR marks `Item.initializeClient` deprecated for removal and directs callers to
+`RegisterClientExtensionsEvent`. A client extension/BEWLR is unnecessary for banners: the current baked-model API
+provides `ModelEvent.RegisterAdditional`, `ModelEvent.ModifyBakingResult`, stack-aware `ItemOverrides`, standard
+`applyTransform(ItemDisplayContext, ...)`, and `IBakedModelExtension.getRenderPasses`. Milestone 9 therefore uses one
+client-only baked-model wrapper for the one shared item and keeps repository-standard transforms for GUI, hand,
+ground, and fixed contexts.
+
+Packaged models and textures remain client resources, while authoritative definition assets, material palette
+display sRGB values, mount assets, and placeholder status are projected from the server registry into a display-only
+`S2CBannerRenderDataPayload` on login and data-pack synchronization. Client publication is atomic and generation
+tracked. It cannot resolve dyes or authorize mutation. A server override may reference a client-packaged asset; an
+unknown or absent asset is intentionally diagnostic because server data packs do not distribute client resources.
 
 ## Item data decision
 

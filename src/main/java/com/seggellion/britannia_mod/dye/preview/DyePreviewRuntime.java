@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import com.seggellion.britannia_mod.dye.service.DyeResolver;
 import com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload;
 import com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload;
+import com.seggellion.britannia_mod.banner.renderdata.BannerPreviewRenderState;
 import com.seggellion.britannia_mod.registry.BannerItemRegistry;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.DyeItemRegistry;
@@ -49,8 +50,13 @@ public final class DyePreviewRuntime {
             return DyePreviewFailure.SESSION_CREATION_FAILURE;
         }
         DyePreviewSession session = created.orElseThrow();
+        BannerPreviewRenderState currentRender = BannerPreviewRenderState.from(session.bannerState());
+        BannerPreviewRenderState proposedRender = new BannerPreviewRenderState(
+                session.bannerState().bannerDefinitionId(), session.bannerState().materialId(),
+                session.resolvedResult().resolvedColourId(), session.bannerState().mountId());
         player.connection.send(new ClientboundCustomPayloadPacket(new S2COpenDyePreviewPayload(
-                session.sessionId(), session.displayData(), SESSIONS.lifetimeMillis())));
+                session.sessionId(), session.displayData(), currentRender, proposedRender,
+                SESSIONS.lifetimeMillis())));
         return DyePreviewFailure.NONE;
     }
 

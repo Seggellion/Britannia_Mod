@@ -2,26 +2,28 @@ package com.seggellion.britannia_mod.client.screen;
 
 import com.seggellion.britannia_mod.dye.preview.DyePreviewDisplayData;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewViewModel;
+import com.seggellion.britannia_mod.client.banner.BannerPreviewStacks;
 import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.network.payload.dye.C2SCancelDyePreviewPayload;
 import com.seggellion.britannia_mod.network.payload.dye.C2SConfirmDyeApplicationPayload;
 import com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload;
 import com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload;
 import com.seggellion.britannia_mod.registry.BannerItemRegistry;
+import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
 
-/** Text, static item icon, and authoritative swatches only; layered heraldry begins in Milestone 9. */
+/** Current/proposed shared banner item rendering plus authoritative text and swatches. */
 @OnlyIn(Dist.CLIENT)
 public final class DyePreviewScreen extends Screen {
     private final DyePreviewViewModel model;
+    private final BannerPreviewStacks previewStacks;
     private Button applyButton;
     private boolean terminalResponse;
     private boolean cancelSent;
@@ -30,6 +32,9 @@ public final class DyePreviewScreen extends Screen {
         super(Component.translatable("screen.britannia_mod.dye_preview.title"));
         model = new DyePreviewViewModel(
                 payload.sessionId(), payload.displayData(), payload.lifetimeMillis(), System::currentTimeMillis);
+        previewStacks = BannerPreviewStacks.create(BannerItemRegistry.BANNER.get(),
+                DataComponentRegistry.BANNER_INSTANCE_STATE.get(),
+                payload.currentRenderState(), payload.proposedRenderState());
     }
 
     @Override
@@ -90,7 +95,8 @@ public final class DyePreviewScreen extends Screen {
         int left = width / 2 - 145;
         int top = height / 2 - 112;
         graphics.drawCenteredString(font, title, width / 2, top, 0xFFFFFF);
-        graphics.renderItem(new ItemStack(BannerItemRegistry.BANNER.get()), left + 8, top + 19);
+        graphics.renderItem(previewStacks.current(), left + 8, top + 19);
+        graphics.renderItem(previewStacks.proposed(), left + 266, top + 19);
         drawLine(graphics, "screen.britannia_mod.dye_preview.banner", data.bannerNameKey(), left + 36, top + 20);
         drawLine(graphics, "screen.britannia_mod.dye_preview.material", data.materialNameKey(), left + 36, top + 34);
         drawLine(graphics, "screen.britannia_mod.dye_preview.mount", data.mountNameKey(), left + 36, top + 48);

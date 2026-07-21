@@ -2,7 +2,23 @@
 
 Date: 2026-07-20
 
-Milestone: 8
+Milestone: 9
+
+## Milestone 9 client-resource boundary
+
+- Server banner definitions, canonical palette display colours, mount references, and placeholder status are
+  synchronized to each client as immutable display-only metadata on login and server data-pack reload.
+- Models and textures are client resource-pack content. A server data-pack can override display metadata and select
+  an asset already packaged by the client, but it cannot distribute a new model or texture. Unknown or absent assets
+  therefore render the explicit missing-content diagnostic rather than substituting another banner.
+- The current placeholder architecture uses one neutral base, one grayscale dye mask, one untinted overlay, and
+  palette-authored sRGB differences for all four materials. Final material-specific fabric textures remain an owner
+  decision.
+- The full in-game rendering matrix remains unperformed until a safe configured-banner acquisition path exists; no
+  recipes, commands, or creative catalogue entries were added solely for rendering QA.
+
+Still unresolved: whether future multiplayer releases require an associated client resource-pack distribution
+policy for server-defined banner assets, and whether release art uses distinct authored fabric textures per material.
 
 ## Milestone 8 provisional preview and finite-use decisions
 
@@ -17,8 +33,8 @@ Milestone: 8
   consumed. This preserves the established historical source-pigment contract.
 - A finite tub reaching zero remains loaded with its pigment for diagnostics. It cannot preview or apply again and is
   not emptied, destroyed, replaced, or washed automatically. This zero-use behavior remains provisional.
-- The Milestone 8 screen shows the existing static banner icon, localized state text, and authoritative current/new
-  colour swatches only. Full layered heraldry preview remains exclusively Milestone 9 work.
+- Milestone 9 upgrades the screen to render detached current/proposed banner stacks through the same shared item
+  renderer while retaining the Milestone 8 localized text and authoritative colour swatches.
 
 Still unresolved: final session lifetime/UX, final finite tub capacity and acquisition rules, whether depleted tubs
 can later be refilled or washed, and whether exact no-op should retain rather than close the preview.
@@ -67,10 +83,10 @@ Gate B approved the 33-definition identity set and closed the two scaffold-label
 Final display names, dimensions, orientations, mount support, recipes, geometry, and artwork remain unapproved.
 The current source page/row references remain authoritative catalogue references.
 
-Milestone 4 now provides a deterministic scaffold-level mapping from every emitted logical placeholder asset ID to
-its declared JSON model or PNG file. The broader runtime mapping across future vanilla models, GeckoLib geometry,
-textures, and the custom geometry loader remains unresolved until the rendering asset convention is selected. The
-placeholder mapper is deliberately not presented as that universal rendering contract.
+Milestone 4 established deterministic scaffold paths. Milestone 9 selects vanilla JSON baked models and block-atlas
+PNG textures for the item renderer: extensionless geometry IDs map to `models/<path>.json`, and fabric/mask/overlay/
+mount texture IDs map to `textures/<path>.png`. This resolves the item-placeholder convention only; final artwork and
+future placed-banner rendering remain separate decisions.
 
 ## Milestone 3 physical-asset validation boundary
 
@@ -113,7 +129,8 @@ These questions were resolved during Milestone 0 and are not owner decisions.
 | What tests exist? | No unit or GameTest sources; `test` is `NO-SOURCE`; `runGameTestServer` exists | source tree and baseline Gradle output |
 | What renderer conventions exist? | Static JSON models, GeckoLib renderers, custom geometry loader, and block-entity renderers registered in client setup | assets tree, `ClientModSetup`, `OrderShieldRenderer` |
 
-Repository-answerable follow-up for the rendering milestone: verify the supported NeoForge 21.1 replacement for deprecated `Item.initializeClient(IClientItemExtensions)` before choosing the banner item renderer. The current code compiles but the baseline emits a removal warning, so copying it without verification is unsafe. This does not block Milestones 0–8.
+Resolved in Milestone 9: the supported banner path uses baked-model registration/replacement and render passes; no
+new `Item.initializeClient` hook or BEWLR was added. The unrelated `OrderShieldItem` warning remains unchanged.
 
 ## Product decisions requiring owner input
 

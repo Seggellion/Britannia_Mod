@@ -316,10 +316,18 @@ public final class BannerScaffoldTool {
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
         output.put(ASSET_ROOT + "textures/banner/placeholder/static_overlay.png", png(PngKind.STATIC_OVERLAY));
         output.put(ASSET_ROOT + "textures/banner/placeholder/missing.png", png(PngKind.MISSING));
+        output.put(ASSET_ROOT + "textures/banner/mount/brass.png", png(PngKind.BRASS_MOUNT));
+        output.put(ASSET_ROOT + "textures/banner/mount/iron.png", png(PngKind.IRON_MOUNT));
         for (String family : List.of("large", "medium_wall", "medium", "small", "x_small")) {
             output.put(ASSET_ROOT + "models/banner/placeholder/" + family + ".json",
                     utf8(json(placeholderModel(family))));
         }
+        output.put(ASSET_ROOT + "models/banner/placeholder/missing_item.json",
+                utf8(json(generatedItemModel("britannia_mod:banner/placeholder/missing"))));
+        output.put(ASSET_ROOT + "models/banner/mount/brass.json",
+                utf8(json(generatedItemModel("britannia_mod:banner/mount/brass"))));
+        output.put(ASSET_ROOT + "models/banner/mount/iron.json",
+                utf8(json(generatedItemModel("britannia_mod:banner/mount/iron"))));
         return output;
     }
 
@@ -400,8 +408,8 @@ public final class BannerScaffoldTool {
         root.addProperty("schema_version", 1);
         root.addProperty("id", "britannia_mod:" + id);
         root.addProperty("display_name_key", "mount.britannia_mod." + id);
-        root.addProperty("geometry", "britannia_mod:banner/placeholder/small");
-        root.addProperty("texture", "britannia_mod:banner/placeholder/missing");
+        root.addProperty("geometry", "britannia_mod:banner/mount/" + id);
+        root.addProperty("texture", "britannia_mod:banner/mount/" + id);
         root.add("tags", strings(List.of("metal", "placeholder", "development_scaffold")));
         return root;
     }
@@ -424,23 +432,53 @@ public final class BannerScaffoldTool {
         root.addProperty("credit", "Milestone 4 diagnostic placeholder for " + family + "; not final geometry");
         root.addProperty("parent", "minecraft:block/block");
         JsonObject textures = new JsonObject();
-        textures.addProperty("fabric", "britannia_mod:banner/placeholder/fabric_base");
+        textures.addProperty("fabric_base", "britannia_mod:banner/placeholder/fabric_base");
+        textures.addProperty("dye_mask", "britannia_mod:banner/placeholder/dye_mask");
+        textures.addProperty("static_overlay", "britannia_mod:banner/placeholder/static_overlay");
         textures.addProperty("particle", "britannia_mod:banner/placeholder/fabric_base");
         root.add("textures", textures);
+        double[] bounds = switch (family) {
+            case "large" -> new double[] {0, 4, 16, 12};
+            case "medium_wall" -> new double[] {2, 2, 14, 14};
+            case "medium" -> new double[] {4, 0, 12, 16};
+            case "small" -> new double[] {3, 3, 13, 13};
+            case "x_small" -> new double[] {5, 5, 11, 11};
+            default -> throw new ScaffoldException("Unknown placeholder family " + family);
+        };
+        JsonArray elements = new JsonArray();
+        elements.add(layerElement(bounds, "#fabric_base", 7.49, 7.51, null));
+        elements.add(layerElement(bounds, "#dye_mask", 7.47, 7.53, 1));
+        elements.add(layerElement(bounds, "#static_overlay", 7.45, 7.55, null));
+        root.add("elements", elements);
+        return root;
+    }
+
+    private static JsonObject layerElement(
+            double[] bounds, String texture, double fromZ, double toZ, Integer tintIndex) {
         JsonObject element = new JsonObject();
-        element.add("from", numbers(0, 0, 7.5));
-        element.add("to", numbers(16, 16, 8.5));
+        element.add("from", numbers(bounds[0], bounds[1], fromZ));
+        element.add("to", numbers(bounds[2], bounds[3], toZ));
         JsonObject faces = new JsonObject();
         JsonObject north = new JsonObject();
-        north.addProperty("texture", "#fabric");
+        north.addProperty("texture", texture);
         JsonObject south = new JsonObject();
-        south.addProperty("texture", "#fabric");
+        south.addProperty("texture", texture);
+        if (tintIndex != null) {
+            north.addProperty("tintindex", tintIndex);
+            south.addProperty("tintindex", tintIndex);
+        }
         faces.add("north", north);
         faces.add("south", south);
         element.add("faces", faces);
-        JsonArray elements = new JsonArray();
-        elements.add(element);
-        root.add("elements", elements);
+        return element;
+    }
+
+    private static JsonObject generatedItemModel(String texture) {
+        JsonObject root = new JsonObject();
+        root.addProperty("parent", "minecraft:item/generated");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("layer0", texture);
+        root.add("textures", textures);
         return root;
     }
 
@@ -503,6 +541,12 @@ public final class BannerScaffoldTool {
             String physical = assetPath(id, "textures", ".png");
             require(outputs.contains(physical), "Texture ID has no declared placeholder file: " + id
                     + " -> " + physical);
+        }
+        for (String id : List.of("britannia_mod:banner/mount/brass", "britannia_mod:banner/mount/iron")) {
+            require(outputs.contains(assetPath(id, "models", ".json")),
+                    "Mount geometry has no declared placeholder file: " + id);
+            require(outputs.contains(assetPath(id, "textures", ".png")),
+                    "Mount texture has no declared placeholder file: " + id);
         }
     }
 
@@ -767,6 +811,8 @@ public final class BannerScaffoldTool {
                 .append("- Dye mask: `britannia_mod:banner/placeholder/dye_mask`\n")
                 .append("- Static overlay: `britannia_mod:banner/placeholder/static_overlay`\n")
                 .append("- Diagnostic fallback: `britannia_mod:banner/placeholder/missing`\n")
+                .append("- Brass mount: `britannia_mod:banner/mount/brass`\n")
+                .append("- Iron mount: `britannia_mod:banner/mount/iron`\n")
                 .append("- Every logical identifier above maps deterministically to a declared model JSON or PNG output.\n\n")
                 .append("## Gate B decisions\n\n")
                 .append("Gate B approved exactly 33 stable IDs, retained all 14 unnamed banners under visibly ")
@@ -815,8 +861,11 @@ public final class BannerScaffoldTool {
                         yield new Color(shade, shade, shade, 255).getRGB();
                     }
                     case DYE_MASK -> {
-                        int value = x == 0 || y == 0 || x == 15 || y == 15 ? 0 : 255;
-                        yield new Color(value, value, value, 255).getRGB();
+                        if (x == 0 || y == 0 || x == 15 || y == 15) {
+                            yield 0x00000000;
+                        }
+                        int shade = ((x + y) & 1) == 0 ? 184 : 168;
+                        yield new Color(shade, shade, shade, 255).getRGB();
                     }
                     case STATIC_OVERLAY -> {
                         if (x == 0 || y == 0 || x == 15 || y == 15) {
@@ -832,6 +881,20 @@ public final class BannerScaffoldTool {
                         boolean diagnostic = ((x / 4) + (y / 4)) % 2 == 0;
                         yield diagnostic ? new Color(220, 0, 220, 255).getRGB()
                                 : new Color(20, 20, 20, 255).getRGB();
+                    }
+                    case BRASS_MOUNT, IRON_MOUNT -> {
+                        boolean hardware = (y >= 1 && y <= 2 && x >= 2 && x <= 13)
+                                || ((x == 3 || x == 12) && y >= 3 && y <= 5);
+                        if (!hardware) {
+                            yield 0x00000000;
+                        }
+                        boolean highlight = ((x + y) & 1) == 0;
+                        if (kind == PngKind.BRASS_MOUNT) {
+                            yield highlight ? new Color(225, 185, 79, 255).getRGB()
+                                    : new Color(151, 104, 31, 255).getRGB();
+                        }
+                        yield highlight ? new Color(173, 181, 187, 255).getRGB()
+                                : new Color(83, 91, 98, 255).getRGB();
                     }
                 };
                 image.setRGB(x, y, argb);
@@ -1129,7 +1192,9 @@ public final class BannerScaffoldTool {
         FABRIC_BASE,
         DYE_MASK,
         STATIC_OVERLAY,
-        MISSING
+        MISSING,
+        BRASS_MOUNT,
+        IRON_MOUNT
     }
 
     public static final class ScaffoldException extends RuntimeException {

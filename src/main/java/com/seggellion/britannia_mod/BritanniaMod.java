@@ -51,6 +51,7 @@ import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegistration;
+import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 
 import net.minecraft.core.BlockPos;
@@ -139,6 +140,7 @@ CraftableRegistry.init();
         ModSounds.register(modEventBus);
         CommandRegistry.register();
         BannerDataReloadRegistration.register(NeoForge.EVENT_BUS);
+        BannerRenderDataSync.register(NeoForge.EVENT_BUS);
         DyePreviewLifecycle.register(NeoForge.EVENT_BUS);
 
         // Register event handlers

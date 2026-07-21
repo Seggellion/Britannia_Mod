@@ -1,5 +1,115 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-21 - Milestone 9: Layered Item Rendering
+
+### Rendering API and side boundary
+
+- Verified the exact NeoForge 21.1.72 sources before selecting an API. `Item.initializeClient` is deprecated for
+  removal and directs extension users to `RegisterClientExtensionsEvent`; Milestone 9 adds neither that deprecated
+  override nor a BEWLR. The banner instead uses current `ModelEvent.RegisterAdditional`,
+  `ModelEvent.ModifyBakingResult`, stack-aware vanilla `ItemOverrides`, standard `applyTransform`, and NeoForge baked
+  render passes.
+- One `BannerItemBakedModel` wraps the one shared `britannia_mod:banner` inventory model. Its override resolves a
+  stack-specific immutable appearance to the five family geometry models plus the selected mount pass. It delegates
+  GUI, first/third-person, ground, and fixed transforms to the repository-standard item model.
+- Renderer, model repository, cache, state extractor, tint registration, preview stack helper, and connection cleanup
+  are isolated under `client/banner`. Common state projections and payloads contain no client or Blaze3D imports.
+  `BritanniaMod` references only the common render-data sync listener.
+
+### Client render data and authority
+
+- Added an immutable display-only projection of active banner assets/status, material natural-colour and palette
+  display sRGB entries, and mount assets. `S2CBannerRenderDataPayload` synchronizes this projection on login and
+  `OnDatapackSyncEvent`; the client publishes it atomically with a monotonically increasing generation and clears it
+  on disconnect.
+- Server gameplay continues to use `RegistrySnapshot`; the client projection is never used for dye resolution,
+  confirmation, validation, or mutation. Stable resolved-colour IDs remain authoritative. Missing/stale data, unknown
+  server IDs, and absent local assets select the diagnostic fallback rather than another lexical entry or colour.
+- Server data-pack overrides to display metadata are synchronized. Models/textures remain client resource-pack
+  content, so a server override can select only an asset available in the client's packs; new server-only assets fall
+  back diagnostically. This exact multiplayer boundary is recorded in `OPEN_QUESTIONS.md`.
+
+### Render state, layers, cache, and fallback
+
+- The typed immutable state contains definition/material/colour/mount IDs, canonical display sRGB, geometry, neutral
+  fabric base, grayscale dye mask, untinted static overlay, mount geometry/texture, placeholder status, natural flag,
+  typed fallback reason/stable diagnostic ID, and client-data generation. Extraction reads but never validates,
+  repairs, substitutes, or mutates `ItemStack` state.
+- The render key contains every appearance field plus client-data and baked-resource generations. It intentionally
+  excludes `ItemStack`, source pigment, custom name, player, level, screen, registry maps, and timestamps.
+- Layer order is neutral fabric base, tint-index-1 dye mask, untinted static overlay, and untinted brass/iron mount.
+  The item-colour handler returns canonical palette ARGB only for tint index 1. Authored mask alpha/quads control tint
+  participation; overlay and mount faces have no tint index.
+- A synchronized access-ordered client cache stores at most 256 immutable-key-to-baked-model entries. Model bake or
+  resource reload and client render-data replacement clear entries and missing-log identities. Diagnostics are
+  de-duplicated by reason, stable ID, data generation, and resource generation, preventing per-frame log spam while
+  allowing a later successful reload.
+- Missing component, registry, definition, material, colour, mount, geometry, base, mask, overlay, mount model, or
+  mount texture returns the one missing-item model. Original components and stable IDs remain untouched.
+
+### Assets and preview integration
+
+- Updated the scaffold templates before regenerating scaffold-owned files. The item boundary now packages five
+  visibly distinct family JSON models, one neutral base texture, one grayscale/cutout dye mask, one untinted overlay,
+  one missing texture/model, and visibly different brass and iron mount models/textures. This is diagnostic
+  placeholder presentation, not final heraldic art.
+- Mount definitions now reference `banner/mount/brass` and `banner/mount/iron`. The scaffold metadata owns the new
+  outputs and `--check` remains deterministic. Catalogue identities, names, dimensions, and all 33 definition IDs are
+  unchanged.
+- Extended only the S2C preview payload with current/proposed display-only stable-ID descriptors. The screen creates
+  detached client stacks and calls the normal item renderer twice, so inventory and preview share the same layered
+  architecture. Existing current/new swatches and localized details remain. The proposed stack never mutates the held
+  item, and `C2SConfirmDyeApplicationPayload` remains exactly one session UUID.
+
+### Automated coverage, initial failures, and corrections
+
+- Added 25 focused rendering tests covering all 33 definitions, all five families, four materials, natural/dyed
+  cotton, brass/iron, canonical colour projection, render-key equality/invalidation/exclusions, exact layer order and
+  tint indices, alpha/cutout pixels, every typed fallback, non-mutation, asset packaging/ownership, bounded cache,
+  reload invalidation, log de-duplication, packet round-trip, atomic publication, detached previews, shared screen
+  renderer, confirmation authority, current model events/transforms, and client/common isolation.
+- The first restricted scaffold and Gradle attempts could not download/use the wrapper distribution because sandbox
+  socket access was denied. Approved retries used the configured Gradle 8.9/Java 21 toolchain.
+- The first `compileTestJava` failed because the Milestone 8 payload test still called the former three-argument open
+  payload constructor. It was corrected to provide current/proposed render descriptors; compilation then passed.
+- The first 426-test banner/dye regression run had one failure: `BannerScaffoldToolTest` expected five placeholder
+  models but the new missing diagnostic model makes six. The assertion was corrected and expanded to require the two
+  mount models and two mount textures. The rerun and clean full suite passed without weakening tint, fallback, cache,
+  authority, or isolation coverage.
+
+### Final commands and results
+
+1. Normal scaffold generation passed: manifest=33, definitions=33, active=33, disabled=0, localization=33,
+   provisional names=14, provisional dimensions=33, asset families=5.
+2. `.\tools\scaffold_banners.bat --check` passed in 25 seconds with the same counts.
+3. Focused `BannerRender*` tests passed after final disabled-content coverage in 1 minute 38 seconds: 25 tests,
+   0 failures, 0 errors, 0 skipped.
+4. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace`
+   passed after the documented scaffold count correction: 426 tests, 0 failures, 0 errors, 0 skipped.
+5. Final `.\gradlew.bat clean --no-daemon` passed in 19 seconds.
+6. Final `.\gradlew.bat test --no-daemon --stacktrace` passed immediately after clean in 56 seconds: 427 tests,
+   0 failures, 0 errors, 0 skipped across 30 suites.
+7. Final `.\gradlew.bat build --no-daemon` passed in 36 seconds; `jar`, `jarJar`, `assemble`, `check`, and
+   `build` completed. The production JAR contains 24 banner-client class entries, 8 banner models, 6 banner textures,
+   and the common render-data payload.
+8. `git diff --check` passed; only repository line-ending conversion notices were emitted.
+
+The unchanged compiler warnings are missing `@Overwrite` Javadoc on `PlayerSleepMixin` and the deprecated-for-removal
+`Item.initializeClient` override in `OrderShieldItem`. No new warning was introduced.
+
+### Counts, manual boundary, limitations, and next milestone
+
+- Production content remains 33 active/0 disabled banners, 4 materials, 4 palettes, 7 pigments, and 2 mounts.
+  Registrations remain one shared banner, one dye tub, seven pigment items, and two banner/dye components (three total
+  component registrations including pre-existing wine data). Cache capacity is 256 entries and the tested resource
+  and client-data generation replacements retain zero obsolete entries after clear.
+- The manual size/material/mount/context rendering matrix was not performed. There is still no safe configured-banner
+  acquisition path, and no recipes, creative catalogue, or Milestone 15 command was added solely for QA. Automated
+  model/pixel/JAR tests are not represented as live inventory, hand, dropped-item, frame, or preview screenshots.
+- Final heraldic art, placed-banner blocks/entities/rendering, placement, collision, drops, crafting, recipes,
+  commands, NPC integration, and direct-world dyeing remain absent.
+- Next milestone: Milestone 10 only. It has not started.
+
 ## 2026-07-20 - Milestone 8: Dye Preview and Confirmed Item Dyeing
 
 ### Player flow and interaction routing
