@@ -1,5 +1,140 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 6: Dye Items and Stateful Dye Tub
+
+### Files and architecture
+
+- Added one focused `DyeItemRegistry` with `britannia_mod:dye_tub` and seven pigment items whose registry paths match
+  the seven existing pigment-definition IDs exactly: `madder_red`, `woad_blue`, `verdigris`, `weld_gold`,
+  `soot_black`, `chalk_white`, and `ice_blue`.
+- Added one reusable immutable-identity `PigmentItem` and one reusable `DyeTubItem`. The tub has a default maximum
+  stack size of one; pigment items retain the normal maximum of 64.
+- Added `britannia_mod:dye_tub_state` to the existing `DataComponentRegistry`. Its type attaches the established
+  persistent `DyeTubState.CODEC` and network `DyeTubState.STREAM_CODEC`. Every newly registered tub has an explicit
+  `DyeTubState.empty()` prototype component.
+- Added `DyeTubStateAccess`. Reads normalize a missing legacy component to `DyeTubState.empty()` without mutating the
+  stack; writes always install one explicit typed component. Empty, finite, and unlimited states retain their existing
+  versioned contract, and unlimited remains represented only by absent `remaining_uses`.
+- Added typed loading results and a plan/apply service. Planning validates the exact tub, exact off-hand stack,
+  server-owned item mapping, snapshot availability, active/disabled pigment membership, current tub state, same-
+  pigment no-op, and complete replacement state before mutation. Apply rechecks the planned stack identities/state,
+  writes only the tub component, then shrinks the off-hand stack by one only in survival.
+- The authoritative mapping is a fixed item-registry-ID to `PigmentId` map plus an immutable `PigmentItem` identity
+  check. Client-editable components and custom data never supply the pigment ID.
+- Extended snapshot publication with an explicit first-publication flag so an unloaded empty snapshot is distinct
+  from a published snapshot whose requested definition is missing.
+- `DyeTubItem.use` accepts only `InteractionHand.MAIN_HAND`, reads `player.getOffhandItem()`, returns pass from the off
+  hand, performs no client-side mutation, and uses the normal item-use round trip without a custom payload.
+- Successful server mutation plays vanilla `SoundEvents.BOTTLE_FILL` once and sends eight restrained vanilla
+  `ParticleTypes.SPLASH` particles. No-op and failure results emit no success effects. Action-bar feedback is sent
+  once from the server after planning/application.
+- Tooltips use translations for empty/hint, contains, uses, and unlimited text. Loaded pigment names come from the
+  current active snapshot. Missing or removed definitions preserve the stored stable ID and display an unavailable-
+  pigment diagnostic rather than mutating or erasing state.
+- Added the tub and seven pigments to the existing Britannia items creative tab without reordering unrelated items.
+- Added eight minimal generated item models and two original shared 32 x 32 placeholder textures. The final project
+  assets were generated with the built-in image tool as crisp diagnostic pixel-art sprites, keyed to transparency,
+  and downscaled with nearest-neighbour sampling. They are placeholders, not final item art.
+- Added focused component, mapping, loading, atomicity, tooltip, feedback, scope, resource, registry-availability,
+  real `ItemStack` persistence, and registered network-component tests.
+
+### State, loading, and provisional gameplay decisions
+
+1. Canonical new-tub state is the explicit typed `DyeTubState.empty()` component. An absent legacy component reads as
+   the same value without a read-side write.
+2. A successful load stores schema version 1, the server-derived stable pigment ID, and absent `remaining_uses`.
+3. Survival consumes exactly one off-hand pigment after the component write; creative inventory permissions consume
+   zero. Loading a different pigment replaces the old value.
+4. Loading the same pigment returns `ALREADY_CONTAINS`, changes neither stack, consumes nothing, and emits no success
+   effects.
+5. Empty/unsupported off hands, unavailable registry data, missing or disabled definitions, an invalid tub, or stale
+   plan/state modify neither stack. The result model distinguishes every case without using exceptions for expected
+   interactions.
+6. These consumption, replacement, capacity, and no-op rules are reversible provisional defaults and are not final
+   product approval.
+
+### Persistence and integration boundary
+
+- Plain JUnit registers a narrow test component and the eight production-shaped items into the real Minecraft built-
+  in registries after the required version/bootstrap initialization. Tests then use the actual `ItemStack` persistent
+  codec boundary for explicit empty, loaded unlimited, stable pigment ID, and finite fixture round trips.
+- The registered component type's attached network stream codec is exercised from a component read on a registered
+  tub and written back to another registered tub. The plain-JUnit registry view intentionally does not claim full
+  connection-level item-registry ID synchronization, which NeoForge only configures during a real modded connection.
+- Different loaded components remain unequal under `ItemStack.isSameItemSameComponents`; the tub maximum stack size
+  is one, so one state cannot represent or load multiple tubs. Pigment items remain stackable to 64.
+- No GameTest was added. `runGameTestServer` exists, but the repository still has no GameTest source root, annotated
+  tests, templates, or test registration bootstrap. Building that unrelated framework would exceed this narrow item
+  milestone. The registered `ItemStack` codec and loading-service boundary is the closest practical integration test.
+- No in-game client, relog, or save/reload check was performed. Automated `ItemStack` serialization is evidence for
+  component persistence, not a claim that a world relog was manually verified.
+
+### Commands and exact results
+
+1. Git preflight matched exactly: branch `banners-dyetub`; merge base
+   `62df1dc97c5113a86f9c0f258cb90538f31efe89`; divergence `0 6`; starting HEAD
+   `c897bf440aeefdc8f17c21621a38146987e5cc9f`; and only the preserved modified `ModConfig.java` plus the preserved
+   untracked root specifications, `.claude/`, `logs/`, and `tmp/` were present.
+2. The first restricted `compileJava` could not access the Gradle 8.9 distribution because sandbox networking was
+   denied. The approved retry reached compilation and found one new compile error: `Component.withStyle` is not on
+   the immutable interface. The tooltip now calls `copy().withStyle(...)`; the corrected compile passed in 26 seconds.
+3. Focused-test harness corrections, with no production assertion weakened:
+   - the first 35-test attempt had 22 initialization failures because real built-in registry access requires Minecraft
+     bootstrap;
+   - the first bootstrap patch placed two `@BeforeAll` methods after their class braces and caused four test-source
+     compile errors; the methods were moved inside their test classes;
+   - the next 39-test run had 24 initialization failures because Minecraft version detection must precede bootstrap;
+     `SharedConstants.tryDetectVersion()` was added before `Bootstrap.bootStrap()` and NeoForge registry unfreezing;
+   - the next 43-test run had one network assertion failure because plain JUnit does not mark the built-in item
+     registry as connection-synchronized. The test was corrected to the requirement's registered component stream-
+     codec boundary; persistent tests continue to use the actual `ItemStack` codec.
+4. Final focused command selecting the Milestone 6 component, mapping, loading, tooltip, resource/scope, persistence,
+   and availability tests passed in 24 seconds: 43 tests, 0 failures, 0 errors, 0 skipped.
+5. `.\tools\scaffold_banners.bat --check` passed in 53 seconds: 33 manifest entries, 33 definitions, 33 active,
+   0 disabled, 33 generated banner localization entries, 14 provisional names, 33 provisional dimensions, and 5
+   placeholder asset families.
+6. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` passed in
+   37 seconds. XML results: 297 tests, 0 failures, 0 errors, 0 skipped.
+7. `.\gradlew.bat clean --no-daemon` passed in 23 seconds.
+8. `.\gradlew.bat test --no-daemon --stacktrace` passed in 72 seconds. XML results: 297 tests, 0 failures, 0 errors,
+   0 skipped.
+9. `.\gradlew.bat build --no-daemon` passed in 22 seconds; `test`, `check`, `jar`, `jarJar`, `assemble`, and `build`
+   completed.
+10. Final review tightened registry publication so the availability flag and immutable snapshot remain one atomic
+    publication value. The focused 43-test selection then passed again in 37 seconds, the full 297-test suite passed
+    again in 31 seconds, and `build` passed again in 16 seconds.
+11. Final diff, staging, and commit checks are recorded in the Milestone 6 handoff report.
+
+The existing compiler warnings remain unchanged: missing `@Overwrite` Javadoc on `PlayerSleepMixin` and the
+deprecated-for-removal `Item.initializeClient` override in `OrderShieldItem`.
+
+### Catalogue, registry, manual, and scope results
+
+- Registered content: seven pigment items, one dye tub, one new typed component, and seven deterministic mappings.
+- Production data remains 33 active/0 disabled banners, 4 active materials, 4 active palettes, and 7 active pigments.
+- Survival service evidence consumes one item; creative evidence consumes zero; replacement changes the pigment;
+  same-pigment evidence changes nothing and consumes zero.
+- The complete manual checklist remains unperformed: obtain items; verify empty tooltip; load main-hand tub from off-
+  hand pigment; verify survival consumption and loaded tooltip; relog/save-reload; replace pigment; repeat same
+  pigment; verify creative no-consumption; and try a non-pigment. No in-game claim is made.
+- No banner item, banner component, dyeable-item API, banner state adapter, preview screen, menu, payload, colour
+  application, block, block entity, placement, renderer, crafting, recipe, command, NPC shop, or direct-world dyeing
+  was added. Milestone 7 has not started.
+
+### Known limitations and deviations
+
+- Consumption rules remain provisional; tub capacity is unlimited for now; washing/emptying and finite-use gameplay
+  are absent.
+- Final item art and final pigment availability/acquisition are unresolved; current access is development creative-tab
+  access only.
+- There is no banner item, banner dyeing path, or preview screen.
+- Live GameTest, in-game multiplayer, relog, and world-save checks were not performed for the documented repository-
+  infrastructure reason above.
+
+### Next milestone
+
+Milestone 7 - Generic Dyeable Item API and Banner Item State - only. It has not started.
+
 ## 2026-07-20 - Milestone 5: Materials, Palettes, and Colour Mathematics
 
 ### Files and architecture

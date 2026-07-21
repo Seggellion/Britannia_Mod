@@ -28,10 +28,28 @@ public final class RegistrySnapshotTestFactory {
                 empty(), registry(materials), registry(pigments), registry(palettes), empty(), empty());
     }
 
+    public static RegistrySnapshot pigmentSnapshot(
+            Map<PigmentId, PigmentDefinition> active,
+            List<PigmentDefinition> disabled) {
+        java.util.LinkedHashMap<PigmentId, DefinitionEntry<PigmentId, PigmentDefinition>> activeEntries =
+                new java.util.LinkedHashMap<>();
+        active.forEach((id, definition) -> activeEntries.put(id, entry(id, definition, "active")));
+        List<DefinitionEntry<PigmentId, PigmentDefinition>> disabledEntries = disabled.stream()
+                .map(definition -> entry(definition.id(), definition, "disabled"))
+                .toList();
+        return new RegistrySnapshot(
+                empty(), empty(), new DefinitionRegistry<>(activeEntries, disabledEntries),
+                empty(), empty(), empty());
+    }
+
+    private static <I, T> DefinitionEntry<I, T> entry(I id, T definition, String kind) {
+        return new DefinitionEntry<>(id, definition,
+                ResourceLocation.parse("britannia_mod:test/" + kind + "/" + id.toString().replace(':', '_')));
+    }
+
     private static <I, T> DefinitionRegistry<I, T> registry(Map<I, T> definitions) {
         java.util.LinkedHashMap<I, DefinitionEntry<I, T>> entries = new java.util.LinkedHashMap<>();
-        definitions.forEach((id, definition) -> entries.put(id, new DefinitionEntry<>(id, definition,
-                ResourceLocation.parse("britannia_mod:test/" + id.toString().replace(':', '_')))));
+        definitions.forEach((id, definition) -> entries.put(id, entry(id, definition, "active")));
         return new DefinitionRegistry<>(entries, List.of());
     }
 

@@ -326,6 +326,16 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());
                 safeAccept(output, ItemRegistry.MANDRAKE_ROOT.get());
 
+                // Banner-dyeing development items
+                safeAccept(output, DyeItemRegistry.DYE_TUB.get());
+                safeAccept(output, DyeItemRegistry.MADDER_RED.get());
+                safeAccept(output, DyeItemRegistry.WOAD_BLUE.get());
+                safeAccept(output, DyeItemRegistry.VERDIGRIS.get());
+                safeAccept(output, DyeItemRegistry.WELD_GOLD.get());
+                safeAccept(output, DyeItemRegistry.SOOT_BLACK.get());
+                safeAccept(output, DyeItemRegistry.CHALK_WHITE.get());
+                safeAccept(output, DyeItemRegistry.ICE_BLUE.get());
+
                 // General items
                 
                 safeAccept(output, ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());

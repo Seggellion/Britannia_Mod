@@ -2,7 +2,22 @@
 
 Date: 2026-07-20
 
-Milestone: 5
+Milestone: 6
+
+## Milestone 6 provisional gameplay defaults
+
+Milestone 6 implements the build playbook's reversible defaults so the item/component interaction can be tested end
+to end. These are provisional development rules, not permanently approved product rules:
+
+- Loading a tub consumes exactly one pigment item in normal survival play.
+- Players with creative inventory permissions consume no pigment.
+- Loading a different pigment replaces the pigment already stored in the tub.
+- Loaded tubs have unlimited uses, represented only by absent `remaining_uses`.
+- Loading the same pigment is a successful no-change interaction: it consumes nothing and emits no success sound or
+  particles.
+
+Still unresolved: whether any of these defaults are final; whether a loaded tub can be emptied or washed; whether
+finite uses will be enabled; final item artwork; and final pigment availability, acquisition, and economy.
 
 ## Gate B decisions closed before Milestone 5
 

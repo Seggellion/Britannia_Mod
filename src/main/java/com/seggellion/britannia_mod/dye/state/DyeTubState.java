@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.seggellion.britannia_mod.bannerdyeing.api.DataCodecs;
+import com.seggellion.britannia_mod.bannerdyeing.BannerDyeingConstants;
 import com.seggellion.britannia_mod.dye.api.PigmentId;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
@@ -35,6 +36,17 @@ public record DyeTubState(int schemaVersion, Optional<PigmentId> pigmentId, Opti
         if (pigmentId.isEmpty() && remainingUses.isPresent()) {
             throw new IllegalArgumentException("remainingUses requires a loaded pigment");
         }
+    }
+
+    public static DyeTubState empty() {
+        return new DyeTubState(BannerDyeingConstants.CURRENT_SCHEMA_VERSION, Optional.empty(), Optional.empty());
+    }
+
+    public static DyeTubState loadedUnlimited(PigmentId pigmentId) {
+        return new DyeTubState(
+                BannerDyeingConstants.CURRENT_SCHEMA_VERSION,
+                Optional.of(Objects.requireNonNull(pigmentId, "pigmentId")),
+                Optional.empty());
     }
 
     private static DataResult<DyeTubState> decode(Decoded decoded) {

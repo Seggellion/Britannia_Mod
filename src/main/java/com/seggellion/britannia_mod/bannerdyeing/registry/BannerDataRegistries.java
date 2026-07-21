@@ -11,6 +11,10 @@ public final class BannerDataRegistries {
         return PUBLISHER.current();
     }
 
+    public static boolean isAvailable() {
+        return PUBLISHER.hasPublishedSnapshot();
+    }
+
     static RegistrySnapshotPublisher publisher() {
         return PUBLISHER;
     }
