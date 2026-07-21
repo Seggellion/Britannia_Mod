@@ -42,6 +42,65 @@ public final class RegistrySnapshotTestFactory {
                 empty(), empty(), empty());
     }
 
+    public static RegistrySnapshot withoutBanner(RegistrySnapshot source, BannerDefinitionId id) {
+        return new RegistrySnapshot(without(source.banners(), id), source.fabricMaterials(), source.pigments(),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withDisabledBanner(RegistrySnapshot source, BannerDefinitionId id) {
+        return new RegistrySnapshot(disable(source.banners(), id), source.fabricMaterials(), source.pigments(),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withoutMaterial(RegistrySnapshot source, FabricMaterialId id) {
+        return new RegistrySnapshot(source.banners(), without(source.fabricMaterials(), id), source.pigments(),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withDisabledMaterial(RegistrySnapshot source, FabricMaterialId id) {
+        return new RegistrySnapshot(source.banners(), disable(source.fabricMaterials(), id), source.pigments(),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withoutPalette(RegistrySnapshot source, ResourceLocation id) {
+        return new RegistrySnapshot(source.banners(), source.fabricMaterials(), source.pigments(),
+                without(source.materialPalettes(), id), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withoutPigment(RegistrySnapshot source, PigmentId id) {
+        return new RegistrySnapshot(source.banners(), source.fabricMaterials(), without(source.pigments(), id),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withDisabledPigment(RegistrySnapshot source, PigmentId id) {
+        return new RegistrySnapshot(source.banners(), source.fabricMaterials(), disable(source.pigments(), id),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withoutMount(RegistrySnapshot source, MountId id) {
+        return new RegistrySnapshot(source.banners(), source.fabricMaterials(), source.pigments(),
+                source.materialPalettes(), without(source.mounts(), id), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot withDisabledMount(RegistrySnapshot source, MountId id) {
+        return new RegistrySnapshot(source.banners(), source.fabricMaterials(), source.pigments(),
+                source.materialPalettes(), disable(source.mounts(), id), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot replacePalette(RegistrySnapshot source, MaterialPalette replacement) {
+        Map<ResourceLocation, MaterialPalette> palettes = definitions(source.materialPalettes());
+        palettes.put(replacement.id(), replacement);
+        return new RegistrySnapshot(source.banners(), source.fabricMaterials(), source.pigments(), registry(palettes),
+                source.mounts(), source.placementProfiles());
+    }
+
+    public static RegistrySnapshot replaceBanner(RegistrySnapshot source, BannerDefinition replacement) {
+        Map<BannerDefinitionId, BannerDefinition> banners = definitions(source.banners());
+        banners.put(replacement.id(), replacement);
+        return new RegistrySnapshot(registry(banners), source.fabricMaterials(), source.pigments(),
+                source.materialPalettes(), source.mounts(), source.placementProfiles());
+    }
+
     private static <I, T> DefinitionEntry<I, T> entry(I id, T definition, String kind) {
         return new DefinitionEntry<>(id, definition,
                 ResourceLocation.parse("britannia_mod:test/" + kind + "/" + id.toString().replace(':', '_')));
@@ -51,6 +110,29 @@ public final class RegistrySnapshotTestFactory {
         java.util.LinkedHashMap<I, DefinitionEntry<I, T>> entries = new java.util.LinkedHashMap<>();
         definitions.forEach((id, definition) -> entries.put(id, entry(id, definition, "active")));
         return new DefinitionRegistry<>(entries, List.of());
+    }
+
+    private static <I, T> DefinitionRegistry<I, T> without(DefinitionRegistry<I, T> source, I id) {
+        Map<I, T> remaining = definitions(source);
+        remaining.remove(id);
+        return registry(remaining);
+    }
+
+    private static <I, T> DefinitionRegistry<I, T> disable(DefinitionRegistry<I, T> source, I id) {
+        java.util.LinkedHashMap<I, DefinitionEntry<I, T>> active = new java.util.LinkedHashMap<>(source.activeEntries());
+        DefinitionEntry<I, T> removed = active.remove(id);
+        if (removed == null) {
+            return source;
+        }
+        List<DefinitionEntry<I, T>> disabled = new java.util.ArrayList<>(source.disabledEntries());
+        disabled.add(entry(id, removed.definition(), "disabled"));
+        return new DefinitionRegistry<>(active, disabled);
+    }
+
+    private static <I, T> Map<I, T> definitions(DefinitionRegistry<I, T> source) {
+        Map<I, T> definitions = new java.util.LinkedHashMap<>();
+        source.activeEntries().forEach((id, entry) -> definitions.put(id, entry.definition()));
+        return definitions;
     }
 
     private static <I, T> DefinitionRegistry<I, T> empty() {

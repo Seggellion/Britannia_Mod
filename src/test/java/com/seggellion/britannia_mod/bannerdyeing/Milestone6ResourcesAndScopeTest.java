@@ -90,11 +90,15 @@ class Milestone6ResourcesAndScopeTest {
     }
 
     @Test
-    void commonDyeTubCodeHasNoClientOrMilestone7References() throws Exception {
-        List<Path> files;
-        try (var paths = Files.walk(JAVA.resolve("dye"))) {
-            files = paths.filter(path -> path.toString().endsWith(".java")).toList();
-        }
+    void commonDyeTubImplementationHasNoClientOrBannerReferences() throws Exception {
+        Path dyeItem = JAVA.resolve("dye/item");
+        List<Path> files = List.of(
+                dyeItem.resolve("DyeTubItem.java"),
+                dyeItem.resolve("DyeTubLoadingService.java"),
+                dyeItem.resolve("DyeTubLoadPlan.java"),
+                dyeItem.resolve("DyeTubLoadResult.java"),
+                dyeItem.resolve("DyeTubStateAccess.java"),
+                dyeItem.resolve("DyeTubTooltip.java"));
         String combined = String.join("\n", files.stream().map(path -> {
             try {
                 return Files.readString(path);
@@ -105,8 +109,8 @@ class Milestone6ResourcesAndScopeTest {
         assertFalse(combined.contains("net.minecraft.client"));
         assertFalse(combined.contains("Screen"));
         assertFalse(combined.contains("CustomPacketPayload"));
-        assertFalse(combined.contains("DyeableItem"));
         assertFalse(combined.contains("BannerInstanceState"));
+        assertFalse(combined.contains("BannerItem"));
     }
 
     @Test

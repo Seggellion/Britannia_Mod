@@ -2,7 +2,24 @@
 
 Date: 2026-07-20
 
-Milestone: 6
+Milestone: 7
+
+## Milestone 7 provisional item decisions
+
+- The one shared banner item has maximum stack size 1. This is the conservative repository-compatible state-safety
+  default and remains a product decision; component equality is still tested independently so a later approved stack
+  size increase cannot merge different banner states.
+- Raw `britannia_mod:banner` stacks contain no default banner component and are visibly unconfigured. No definition,
+  material, colour, or mount is silently selected.
+- No banner stack is added to the creative tab in Milestone 7. The tab callback has no safe dependency on the
+  server-data reload snapshot needed to generate configured stacks. Factory tests provide development access until
+  Milestone 15 admin tooling; an invalid raw stack is not exposed in the tab.
+- Missing-colour natural fallback retains an unavailable historical `source_pigment_id`. This preserves provenance;
+  full validation continues to report the unavailable pigment until content returns or an explicit later migration
+  changes policy.
+
+Still unresolved: whether banner stacks should ever exceed one item, and whether a later component-aware creative-tab
+bootstrap is desirable before the Milestone 15 admin tools.
 
 ## Milestone 6 provisional gameplay defaults
 

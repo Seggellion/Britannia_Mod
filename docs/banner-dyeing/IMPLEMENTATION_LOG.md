@@ -1,5 +1,110 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 7: Generic Dyeable Item API and Banner Item State
+
+### Files and architecture
+
+- Added exactly one shared `britannia_mod:banner` registration through `BannerItemRegistry`. It has provisional
+  maximum stack size 1 and no prototype banner component, so a raw stack is explicitly unconfigured rather than an
+  arbitrary `large_01`/cotton/brass banner. No per-definition, material, colour, or mount items were registered.
+- Added exactly one `britannia_mod:banner_instance_state` component to `DataComponentRegistry`, attaching the existing
+  immutable `BannerInstanceState.CODEC` for persistent `ItemStack` storage and
+  `BannerInstanceState.STREAM_CODEC` for component network synchronization. No raw custom NBT or custom packet is an
+  authoritative banner-state path.
+- Added the common-side `DyeableItem` contract plus banner-neutral read, update-plan, and typed-failure values. It
+  exposes material, resolved colour, optional source pigment, pigment applicability, pure colour-update planning, and
+  explicit stale-safe application without assuming `BannerInstanceState` for future textiles.
+- Added `BannerItemStateAccess`, typed validation status/issues, immutable colour-update and repair plans, and explicit
+  apply methods. Reads, validation, tooltips, planning, and reload inspection never mutate stacks. Apply changes only
+  the typed banner component, preserving custom names and every unrelated component.
+- Validation distinguishes valid, valid-with-diagnostics, unconfigured, registry-unavailable, repairable, and invalid
+  state. Issues retain stable IDs for missing/disabled definitions, materials, pigments and mounts; missing palettes,
+  colours, unsupported mounts, component/decode failures where observable, invalid items, and stale plans.
+- A missing source pigment is diagnostic while an existing resolved colour remains usable. Missing definition,
+  material, palette, or mount never triggers substitution or erasure.
+- Added `BannerItemFactory` typed results for natural cotton admin banners, crafted-material natural banners, and
+  fully specified development banners. Cotton/material natural colours are read from the active material/palette;
+  mounts and every supplied reference are validated without silent fallback.
+- Added missing-colour repair planning. An active stored pigment is re-resolved with `DyeResolver`; otherwise the
+  material natural colour is proposed. Definition, material, mount, schema version, and historical source-pigment ID
+  are retained. Natural fallback deliberately retains unavailable pigment provenance and reports it diagnostically.
+- Added safe localized tooltip projection for natural, dyed, placeholder, provisional-dimension, both-orientation,
+  one-orientation, unconfigured, repairable, and missing-reference states. Configured names use the active banner
+  definition; player custom names still win through normal `ItemStack` behavior.
+- Added one static item model using the existing original high-contrast banner placeholder texture. No renderer or
+  final heraldic artwork was added.
+- Creative/development access uses the smallest safe boundary: the shared item is registered but no raw or generated
+  banner stack is added to the creative tab because its callback cannot safely depend on the reload-published server
+  data snapshot. Factory integration tests cover acquisition until Milestone 15.
+
+### Factories, persistence, merge, and repair evidence
+
+- Natural cotton admin factory: success; cotton natural colour, definition default mount, no source pigment.
+- Crafted factories: cotton, wool, linen, and silk all succeed with their authored natural colours. Explicit brass
+  and iron mounts succeed; unsupported/missing references return typed failures.
+- Fully specified dyed silk/ruby/madder/brass factory: success and full validation success.
+- All 33 active definitions create valid natural cotton stacks using the same registered item and each definition ID,
+  material, natural colour, default mount, and absent source pigment are asserted.
+- Actual registered `ItemStack` persistence covers raw, natural, all four crafted materials, fully specified dyed,
+  custom name, unrelated custom data, and every one of the 33 catalogue definitions. The registered component stream
+  codec round trip preserves all five identities and schema version.
+- Merge compatibility independently distinguishes definition, material, resolved colour, present/different/absent
+  source pigment, mount, and configured/unconfigured state after serialization. Identical states are component-
+  compatible, but the selected maximum stack size 1 prevents inventory stacking.
+- Missing colour with an active source pigment produces a re-resolved repair; missing/no source uses natural colour;
+  unavailable historical source uses natural colour while retaining provenance. Plans do not mutate before apply,
+  stale plans fail, and missing definition/material/mount are not repaired.
+
+### Registry, catalogue, manual, and integration boundary
+
+- Production counts remain 33 active/0 disabled banners, 4 active materials, 4 active palettes, 7 active pigments,
+  2 active mounts, one dye tub, and seven pigment items. The Milestone 6 loading/resolver/component regressions pass.
+- Registry-removal tests cover definition, material, palette, resolved colour, source pigment, and mount; disabled
+  tests cover definition, material, source pigment, and mount; registry-unavailable state retains the component.
+- No GameTest was added. The repository still has no GameTest source root, annotated bootstrap, or templates, and the
+  existing registered-`ItemStack` JUnit integration boundary directly exercises the component/persistence/merge work
+  in scope without introducing unrelated framework infrastructure.
+- No in-game acquisition path exists before Milestone 15, so the manual obtain/tooltip/relog/merge/missing-content
+  checklist was not performed. Automated persistence is not claimed as a live world-save or relog test.
+
+### Commands and exact results
+
+1. Git preflight matched exactly: branch `banners-dyetub`; merge base
+   `62df1dc97c5113a86f9c0f258cb90538f31efe89`; divergence `0 7`; starting HEAD
+   `56b67c02cbb668544300df3f07a4e9dd966c6be4`; and only preserved modified `ModConfig.java` plus the preserved
+   untracked root specifications, `.claude/`, `logs/`, and `tmp/` were present.
+2. The first restricted `compileJava` could not access the Gradle 8.9 distribution because sandbox networking was
+   denied. The approved retry passed in 28 seconds with only the two existing compiler warnings.
+3. The first focused `Banner*` run executed 113 tests and found two fixture-boundary failures: the missing-colour
+   parameter used a natural stack whose colour existed, and the configured-name assertion supplied a fixture snapshot
+   while `getName` reads the global runtime snapshot. The fixture now uses the dyed stack and `configuredName` exposes
+   the same snapshot-backed projection used by `getName`; the corrected 113-test run passed.
+4. The first complete banner/dye run executed 375 tests and found one obsolete Milestone 6 scope assertion that
+   scanned the entire `dye` package and prohibited the now-required generic `DyeableItem` API. It now scans the exact
+   Milestone 6 dye-tub implementation files, preserving the original no-banner/client/UI coupling guarantee. The
+   corrected required narrow command passed in 32 seconds: 375 tests, 0 failures, 0 errors, 0 skipped.
+5. `.\\tools\\scaffold_banners.bat --check` passed in
+   11 seconds: manifest=33, definitions=33, active=33, disabled=0, localization=33, provisional names=14,
+   provisional dimensions=33, asset families=5.
+6. `.\\gradlew.bat clean --no-daemon` passed in 11 seconds.
+7. `.\\gradlew.bat test --no-daemon --stacktrace` passed from clean state in 63 seconds: 375 tests, 0 failures,
+   0 errors, 0 skipped.
+8. `.\\gradlew.bat build --no-daemon` passed in 21 seconds; test/check, jar, jarJar, assemble, and build completed.
+9. `git diff --check` passed during implementation review. Final staged checks and commit evidence are recorded in the
+   Milestone 7 handoff report.
+
+The unchanged compiler warnings are missing `@Overwrite` Javadoc on `PlayerSleepMixin` and the deprecated-for-removal
+`Item.initializeClient` override in `OrderShieldItem`.
+
+### Known limitations and next milestone
+
+- No dye-preview/confirmation screen, menu, packet, held-item banner dyeing, tub use, block, block entity, placement,
+  renderer, recipe, crafting integration, command, NPC shop, or direct-world dyeing was added.
+- Item art is diagnostic placeholder art; no final heraldry exists. Stack size 1 remains provisional.
+- No manual in-game, save/reload, relog, multiplayer, or GameTest verification was performed for the documented
+  infrastructure/acquisition reasons.
+- Next milestone: Milestone 8 - Dye Preview and Confirmed Item Dyeing - only. It has not started.
+
 ## 2026-07-20 - Milestone 6: Dye Items and Stateful Dye Tub
 
 ### Files and architecture
