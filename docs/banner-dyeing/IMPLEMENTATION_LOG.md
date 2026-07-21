@@ -1,5 +1,99 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-21 - Milestone 10: Single-Block Placement Foundation
+
+### Scope and registration
+
+- Added one focused `BannerBlockRegistry` with exactly one `britannia_mod:banner` block and one matching block entity
+  type. No `BlockItem` or per-definition block registration was added; the existing shared `BannerItem` remains the
+  only inventory form and now routes `useOn` through the placement service.
+- Eligibility is data-driven from the immutable registry snapshot. A banner is placeable only when its active
+  definition is exactly 1x1 with a supported wall orientation and its stored material, palette colour, optional source
+  pigment, and mount all remain resolvable and active. The 13 currently eligible definitions are selected by these
+  traits rather than an ID allowlist; the other 20 definitions fail with a typed deferred/unsupported result.
+- Added a four-way horizontal blockstate and one thin diagnostic block model that reuses the existing missing texture.
+  This milestone intentionally adds no block-entity renderer, layered placed-banner rendering, child/part blocks, or
+  final heraldic art.
+
+### Planning, authority, and transaction boundary
+
+- Placement is server-authoritative. The planner is read-only and validates the shared item, complete stored state,
+  current registry publication, single-block eligibility, horizontal clicked face, replaceable target, world and
+  border bounds, sturdy wall support, protection checks, block-entity compatibility, and state acceptance before any
+  mutation. `FACING` points outward and the support is the block opposite that direction.
+- The executor mutates exactly one target cell, locates the new banner block entity, transfers the complete
+  `BannerInstanceState`, verifies exact equality, and only then consumes one item in survival. Creative placement does
+  not consume. Sounds and the block-place game event occur only after a committed success.
+- A placement, block-entity, state-transfer, or verification failure restores the exact original target block state
+  with drops suppressed. Typed failures are localized to server action-bar feedback. The live adapter respects
+  `ServerLevel.mayInteract`, `Player.mayUseItemAt`, the world border, build height, replaceability, and sturdy-face
+  support checks.
+
+### Persistence, synchronization, support, and item return
+
+- `BannerBlockEntity` persists the complete versioned state through `BannerInstanceState.CODEC`, including banner
+  definition, material, resolved colour, optional source pigment, and mount. Load failures are contained and logged as
+  structurally invalid state rather than crashing or silently substituting another catalogue entry.
+- Runtime status distinguishes configured-valid, configured-with-missing-references, unconfigured, and structurally
+  invalid. Missing data-pack references never rewrite the stored stable IDs. State changes mark the entity changed and
+  send the normal block-entity update; update tags and packets use the same persisted representation.
+- Normal break, support loss, explosion/default block drops, and pick-block all use the block entity as the sole source
+  for reconstructing one shared banner item. Valid and reference-missing states preserve all six state fields exactly.
+  Unconfigured or structurally invalid entities safely return one raw, unconfigured shared banner rather than a guessed
+  configuration. There is no duplicate loot-table path.
+- The wall-parallel shape rotates with `FACING`. Removing the supporting face transitions the block to air through
+  normal neighbor-update behavior, allowing the same one-item drop path to run.
+
+### Automated coverage and corrections
+
+- Added 33 focused tests for data-driven 13/20 eligibility, all typed planning failures, one-cell targeting and outward
+  facing, planner non-mutation, exact state transfer, survival/creative consumption, every rollback branch, natural
+  and dyed persistence, optional pigment, update tag/packet application, invalid NBT containment, missing-reference ID
+  preservation, break/pick transfer, registrations, absence of a `BlockItem`, shape/support/drop ownership, assets,
+  localization, and common/client/Milestone-11 scope isolation.
+- No GameTest was added. The repository has no GameTest source root, bootstrap, templates, or registration. The tests
+  instead exercise the actual block, block entity, shared item/component codecs, planner, transaction executor, and
+  packaged resources. No claim of live-world visual or interaction testing is made.
+- The first focused run exposed a test-fixture issue: constructing a vanilla block-entity update packet calls through
+  the attached level for registry access. The packet-application test was corrected to construct the actual packet
+  from the persisted update tag and apply it through `onDataPacket`; production packet creation remains unchanged.
+- During the clean full-suite run, a short-lived earlier Gradle launcher retained
+  `build/test-results/test/binary/output.bin`. `gradlew --stop` released the two stale daemons; the rerun passed without
+  changing code or tests.
+
+### Final commands and results
+
+1. Normal scaffold generation passed: manifest=33, definitions=33, active=33, disabled=0, localization=33,
+   provisional names=14, provisional dimensions=33, asset families=5.
+2. Focused Milestone 10 tests passed: 33 tests, 0 failures, 0 errors, 0 skipped.
+3. `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace`
+   passed with 460 tests, 0 failures, 0 errors, and 0 skipped across 35 suites.
+4. Final `.\gradlew.bat clean --no-daemon` passed in 11 seconds.
+5. Final `.\gradlew.bat test --no-daemon --stacktrace` passed from the clean output: 460 tests, 0 failures,
+   0 errors, 0 skipped across 35 suites.
+6. Final `.\gradlew.bat build --no-daemon --stacktrace` passed in 16 seconds; `jar`, `jarJar`, `assemble`, `check`,
+   and `build` completed. `Britannia_Mod-0.1.7k-all.jar` contains the new block/BE/placement classes, one banner
+   blockstate, one banner block model, and localization resource.
+7. `git diff --check` passed; only repository line-ending conversion notices were emitted.
+
+The unchanged compiler warnings are missing `@Overwrite` Javadoc on `PlayerSleepMixin` and the deprecated-for-removal
+`Item.initializeClient` override in `OrderShieldItem`. No new warning was introduced.
+
+### Counts, manual boundary, limitations, and next milestone
+
+- Production content remains 33 active/0 disabled banners, 4 materials, 4 palettes, 7 pigments, and 2 mounts. Exactly
+  13 current definitions are 1x1 wall-placeable and 20 remain deferred. New registrations are one block, one block
+  entity type, and zero separate block items; existing registrations remain one shared banner, one dye tub, seven
+  pigment items, and three total data components including wine data.
+- The live survival/creative, support-loss, protected-area, explosion, pick-block, save/reload, relog, and multiplayer
+  matrix was not performed because the repository still has no safe configured-banner acquisition path. No recipe,
+  creative entry, debug command, or Milestone 15 command was introduced solely for QA. Automated state, transaction,
+  codec, resource, and ownership tests are not represented as in-game screenshots.
+- Placed banners use diagnostic static geometry only. Custom item names are not part of `BannerInstanceState` and are
+  therefore not transferred through placement. Multi-block layouts, placed layered rendering, direct-world dyeing,
+  crafting, commands, and NPC integration remain outside this milestone.
+- Next milestone: Milestone 11 only. It has not started.
+
 ## 2026-07-21 - Milestone 9: Layered Item Rendering
 
 ### Rendering API and side boundary

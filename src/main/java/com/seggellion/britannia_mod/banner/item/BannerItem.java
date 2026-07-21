@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.banner.item;
 
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
+import com.seggellion.britannia_mod.banner.placement.BannerPlacementService;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import com.seggellion.britannia_mod.dye.api.DyeableItem;
@@ -17,6 +18,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.context.UseOnContext;
 import net.neoforged.fml.loading.FMLEnvironment;
 
 /** The one shared banner item. Design, textile, colour and mount are typed instance state. */
@@ -30,6 +33,11 @@ public final class BannerItem extends Item implements DyeableItem {
 
     public BannerItemStateAccess stateAccess() {
         return stateAccess;
+    }
+
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        return BannerPlacementService.place(context);
     }
 
     @Override

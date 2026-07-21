@@ -51,6 +51,7 @@ import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegistration;
+import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 
@@ -113,6 +114,7 @@ CraftableRegistry.init();
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
+        BannerBlockRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);
         BannerItemRegistry.register(modEventBus);

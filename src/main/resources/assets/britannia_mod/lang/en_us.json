@@ -777,5 +777,14 @@
   "message.britannia_mod.dye_preview.tub_changed": "The dye tub changed or is depleted.",
   "message.britannia_mod.dye_preview.banner_changed": "The banner changed.",
   "message.britannia_mod.dye_preview.registry_changed": "Banner or dye data changed. Open a new preview.",
-  "message.britannia_mod.dye_preview.application_failure": "The dye could not be applied safely."
+  "message.britannia_mod.dye_preview.application_failure": "The dye could not be applied safely.",
+  "message.britannia_mod.banner.placement.unconfigured": "This banner is not configured.",
+  "message.britannia_mod.banner.placement.data_unavailable": "Banner data is unavailable.",
+  "message.britannia_mod.banner.placement.multi_block_deferred": "This banner requires multi-block placement.",
+  "message.britannia_mod.banner.placement.unsupported_orientation": "This banner cannot be placed parallel to a wall.",
+  "message.britannia_mod.banner.placement.horizontal_face_required": "A horizontal wall face is required.",
+  "message.britannia_mod.banner.placement.target_occupied": "The target space is occupied.",
+  "message.britannia_mod.banner.placement.invalid_support": "The wall cannot support the banner.",
+  "message.britannia_mod.banner.placement.protected": "Placement is protected or denied.",
+  "message.britannia_mod.banner.placement.failed_safely": "Banner placement failed safely."
 }
