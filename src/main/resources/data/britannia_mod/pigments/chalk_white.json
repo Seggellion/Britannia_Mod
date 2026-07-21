@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:chalk_white",
+  "display_name_key": "pigment.britannia_mod.chalk_white",
+  "reference_srgb": "#EDE8DD",
+  "reference_oklab": [0.9318875135, 0.0009752656, 0.0156190482],
+  "tags": ["colour_family_white", "mundane", "neutral", "common"],
+  "rarity": "common"
+}

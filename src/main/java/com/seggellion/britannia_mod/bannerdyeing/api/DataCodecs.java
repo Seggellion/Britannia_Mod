@@ -5,9 +5,11 @@ import com.mojang.serialization.DataResult;
 import com.seggellion.britannia_mod.bannerdyeing.BannerDyeingConstants;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /** Shared structural codecs for the banner and material-aware dyeing data contracts. */
 public final class DataCodecs {
+    private static final Pattern TAG_PATTERN = Pattern.compile("[a-z0-9_]+");
     public static final Codec<Integer> CURRENT_SCHEMA_VERSION = Codec.INT.validate(version ->
             version == BannerDyeingConstants.CURRENT_SCHEMA_VERSION
                     ? DataResult.success(version)
@@ -31,7 +33,14 @@ public final class DataCodecs {
                     ? DataResult.success(value)
                     : DataResult.error(() -> "Number must not be negative: " + value));
     public static final Codec<List<Double>> OKLAB_COMPONENTS = FINITE_DOUBLE.listOf(3, 3);
-    public static final Codec<List<String>> TAGS = NON_BLANK_STRING.listOf(0, 128);
+    public static final Codec<String> TAG = NON_BLANK_STRING.validate(value ->
+            TAG_PATTERN.matcher(value).matches()
+                    ? DataResult.success(value)
+                    : DataResult.error(() -> "Tag must use lowercase letters, digits, and underscores: " + value));
+    public static final Codec<List<String>> TAGS = TAG.listOf(0, 128).validate(values ->
+            values.stream().distinct().count() == values.size()
+                    ? DataResult.success(values)
+                    : DataResult.error(() -> "Tags must be unique: " + values));
 
     private DataCodecs() {
     }
@@ -66,6 +75,20 @@ public final class DataCodecs {
         }
         if (value.stream().anyMatch(component -> component == null || !Double.isFinite(component))) {
             throw new IllegalArgumentException(fieldName + " components must be finite");
+        }
+        return List.copyOf(value);
+    }
+
+    public static List<String> requireTags(List<String> value, String fieldName) {
+        Objects.requireNonNull(value, fieldName);
+        if (value.size() > 128) {
+            throw new IllegalArgumentException(fieldName + " must contain no more than 128 tags");
+        }
+        if (value.stream().anyMatch(tag -> tag == null || !TAG_PATTERN.matcher(tag).matches())) {
+            throw new IllegalArgumentException(fieldName + " must use lowercase letters, digits, and underscores");
+        }
+        if (value.stream().distinct().count() != value.size()) {
+            throw new IllegalArgumentException(fieldName + " must not contain duplicate tags");
         }
         return List.copyOf(value);
     }

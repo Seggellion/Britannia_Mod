@@ -191,6 +191,27 @@ class CoreDataValidationTest {
                 CoreDataFixtures.NATURAL_COLOUR_ID,
                 List.of(CoreDataFixtures.naturalEntry()),
                 Map.of(CoreDataFixtures.PIGMENT_ID, CoreDataFixtures.DYED_COLOUR_ID)));
+        JsonObject json = encodedPalette();
+        json.getAsJsonObject("pigment_overrides").addProperty(
+                CoreDataFixtures.PIGMENT_ID.toString(), "britannia_mod:missing_colour");
+        assertCodecError(MaterialPalette.CODEC, json);
+    }
+
+    @Test
+    void emptyPaletteIsRejectedStructurally() {
+        JsonObject json = encodedPalette();
+        json.add("entries", new JsonArray());
+        assertCodecError(MaterialPalette.CODEC, json);
+    }
+
+    @Test
+    void compatibilityTagsMustBeUniqueLowercaseStableTokens() {
+        assertThrows(IllegalArgumentException.class, () -> new MaterialPaletteEntry(
+                CoreDataFixtures.DYED_COLOUR_ID, "colour.test", "#A81742",
+                CoreDataFixtures.dyedEntry().matchOklab(), 0, List.of(), List.of("Ice"), List.of()));
+        assertThrows(IllegalArgumentException.class, () -> new MaterialPaletteEntry(
+                CoreDataFixtures.DYED_COLOUR_ID, "colour.test", "#A81742",
+                CoreDataFixtures.dyedEntry().matchOklab(), 0, List.of(), List.of("ice", "ice"), List.of()));
     }
 
     @Test

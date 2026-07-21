@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "files": {
-    "content/banner_catalogue_status.md": "0d84fd058c569eccdf9b679ec2ba1850293b147b26ff9305960b76753ea638e7",
+    "content/banner_catalogue_status.md": "3c354843b2ca5a13e76033e0bdd23c2ce220c9229de70194fa68c41617c905ef",
     "src/main/resources/assets/britannia_mod/models/banner/placeholder/large.json": "2994dedc2f3dea7450ac66df274aa94c02d5ef27b0e2517aeea570c09ad09a31",
     "src/main/resources/assets/britannia_mod/models/banner/placeholder/medium.json": "a21cc6af2078e1246226dcd5083dfe4eff8c7e8da267f20bb669d4c4423eafee",
     "src/main/resources/assets/britannia_mod/models/banner/placeholder/medium_wall.json": "f8c92ea5f8db54e342751ce2d6cd3d5b3a48aeeafa772157ec075f54a1184955",
@@ -46,8 +46,6 @@
     "src/main/resources/data/britannia_mod/banner_definitions/x_small_unnamed_01.json": "a0946b0db33cf7ff94cb6c5d23ee0fed9a23f224d68ede993c9b876c5a0db1aa",
     "src/main/resources/data/britannia_mod/banner_mounts/brass.json": "b4f514cd5a5410fd30f57b6c57d36c34fd87435b1d2b1a752a3917ca68f8612b",
     "src/main/resources/data/britannia_mod/banner_mounts/iron.json": "d84a8d3bb5f76cafed2c613c2765f8234e4eae4743022cab911712bc30a9e588",
-    "src/main/resources/data/britannia_mod/fabric_materials/cotton.json": "0ec8c89a4e57f2ecc1f285284a031e6d33931ed5fe1a2aa95c78d98c2d2ff1fa",
-    "src/main/resources/data/britannia_mod/material_palettes/cotton_placeholder.json": "41b47ab17759c771e1e47586fb08a210693ecaa2532dfe33c781aee5ae00b132",
     "src/main/resources/data/britannia_mod/placement_profiles/placeholder_large.json": "c58a9f7b775748f09e5ffb57d2039797be9b1c57c9eb04ee2f154f744a2c3375",
     "src/main/resources/data/britannia_mod/placement_profiles/placeholder_medium.json": "a1440e25f3fecc7f5a98e4d28f413ae03af2afebf29bdbe0d6eb8a2c9d071d14",
     "src/main/resources/data/britannia_mod/placement_profiles/placeholder_medium_wall.json": "4769ac81c815d02d47d8f26b1be8918009158edf05be165853ccefec5ceceb1b",

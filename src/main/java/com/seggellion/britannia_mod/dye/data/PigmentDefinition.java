@@ -32,7 +32,7 @@ public record PigmentDefinition(
         displayNameKey = DataCodecs.requireNonBlank(displayNameKey, "displayNameKey");
         referenceSrgb = DataCodecs.requireCanonicalSrgb(referenceSrgb, "referenceSrgb");
         referenceOklab = DataCodecs.requireOklab(referenceOklab, "referenceOklab");
-        tags = List.copyOf(Objects.requireNonNull(tags, "tags"));
+        tags = DataCodecs.requireTags(tags, "tags");
         rarity = DataCodecs.requireNonBlank(rarity, "rarity");
     }
 }

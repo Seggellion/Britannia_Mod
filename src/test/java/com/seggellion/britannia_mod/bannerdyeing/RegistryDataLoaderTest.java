@@ -198,6 +198,26 @@ class RegistryDataLoaderTest {
     }
 
     @Test
+    void excessivePigmentAuthoredComputedOklabMismatchIsRejected() {
+        assertIssue(RegistryDatasetFixtures.withMutation(RegistryDomain.PIGMENT,
+                        RegistryDatasetFixtures.PIGMENT_SOURCE,
+                        json -> json.getAsJsonArray("reference_oklab").set(0,
+                                new com.google.gson.JsonPrimitive(0.9))),
+                "PIGMENT_OKLAB_MISMATCH", RegistryDatasetFixtures.PIGMENT_SOURCE,
+                ValidationStage.CROSS_REFERENCE);
+    }
+
+    @Test
+    void excessivePaletteAuthoredComputedOklabMismatchIsRejected() {
+        assertIssue(RegistryDatasetFixtures.withMutation(RegistryDomain.MATERIAL_PALETTE,
+                        RegistryDatasetFixtures.PALETTE_SOURCE,
+                        json -> json.getAsJsonArray("entries").get(0).getAsJsonObject()
+                                .getAsJsonArray("match_oklab").set(0, new com.google.gson.JsonPrimitive(0.1))),
+                "PALETTE_OKLAB_MISMATCH", RegistryDatasetFixtures.PALETTE_SOURCE,
+                ValidationStage.CROSS_REFERENCE);
+    }
+
+    @Test
     void malformedAssetIdentifierIsStructuralAndSourceAttributed() {
         assertIssue(RegistryDatasetFixtures.withMutation(RegistryDomain.BANNER_DEFINITION,
                         RegistryDatasetFixtures.BANNER_SOURCE,

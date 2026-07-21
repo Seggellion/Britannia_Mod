@@ -32,8 +32,8 @@ public record MaterialPaletteEntry(
         displayNameKey = DataCodecs.requireNonBlank(displayNameKey, "displayNameKey");
         displaySrgb = DataCodecs.requireCanonicalSrgb(displaySrgb, "displaySrgb");
         matchOklab = DataCodecs.requireOklab(matchOklab, "matchOklab");
-        tags = List.copyOf(Objects.requireNonNull(tags, "tags"));
-        allowedPigmentTags = List.copyOf(Objects.requireNonNull(allowedPigmentTags, "allowedPigmentTags"));
-        excludedPigmentTags = List.copyOf(Objects.requireNonNull(excludedPigmentTags, "excludedPigmentTags"));
+        tags = DataCodecs.requireTags(tags, "tags");
+        allowedPigmentTags = DataCodecs.requireTags(allowedPigmentTags, "allowedPigmentTags");
+        excludedPigmentTags = DataCodecs.requireTags(excludedPigmentTags, "excludedPigmentTags");
     }
 }

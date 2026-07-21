@@ -33,6 +33,7 @@ final class BannerDataReloadListener extends SimplePreparableReloadListener<Prep
         }
         if (ProductionBannerCatalogue.isProductionCatalogue(result.snapshot())) {
             ProductionBannerCatalogue.requireComplete(result.snapshot());
+            ProductionDyeContent.requireComplete(result.snapshot());
             long placeholders = result.snapshot().banners().activeDefinitions().stream()
                     .filter(definition -> definition.contentStatus()
                             == com.seggellion.britannia_mod.banner.data.BannerContentStatus.PLACEHOLDER)

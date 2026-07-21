@@ -1,5 +1,146 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-20 - Milestone 5: Materials, Palettes, and Colour Mathematics
+
+### Files and architecture
+
+- Added an isolated common-side colour layer under `dye/colour`: strict canonical sRGB parsing, eight-bit channel
+  normalization, the standard inverse sRGB transfer function, linear-sRGB-to-OKLab conversion, Euclidean OKLab
+  distance, authored-reference comparison, and explicit comparison/tie tolerances.
+- Added `DyeResolver` and immutable resolution outcome/explanation records under `dye/service`. Expected content
+  failures are returned as typed values rather than generic unchecked exceptions. Lightweight and explanatory entry
+  points share one selection algorithm and return the same `DyeResult`.
+- Extended the existing Milestone 3 cross-reference pipeline to reject authored pigment or palette OKLab values that
+  disagree excessively with their canonical sRGB. Added `ProductionDyeContent` as a release/development-content
+  boundary for the four required materials without hard-coding that requirement into the generic loader.
+- Authored four material definitions, four compact material palettes, and seven pigment definitions under the existing
+  data-resource folders. No parallel colour model, item registration, gameplay object, component, packet, screen,
+  renderer, recipe, command, block, or block entity was introduced.
+- Transferred the Milestone 4 cotton placeholder material/palette out of scaffold ownership. The scaffold now uses a
+  private in-memory cotton fixture only to cross-validate its banner outputs; it emits no colour resources. Normal
+  regeneration refreshed the sidecar metadata, and `--check` remains clean.
+- Added material, resolved-colour, and pigment localization while retaining all 33 banner localization keys exactly.
+- Added independent reference, resolver, compatibility, ordering, immutability, registry-integration, production-data,
+  and common-side safety tests.
+
+### Colour mathematics and numeric policy
+
+- Canonical input remains uppercase six-digit `#RRGGBB`. Parsing produces three integer channels in `[0, 255]`, then
+  normalizes each channel to `[0, 1]`; malformed, lowercase, short, prefixless, non-finite, and out-of-range values are
+  rejected rather than clamped.
+- The inverse sRGB transfer function is `c / 12.92` at `c <= 0.04045`, otherwise
+  `((c + 0.055) / 1.055)^2.4`. Source: W3C CSS Color 4's sRGB conversion algorithm, which reproduces IEC
+  61966-2-1: https://www.w3.org/TR/css-color-4/#color-conversion-code .
+- Linear sRGB is converted directly to OKLab with Bjorn Ottosson's updated 2021-01-25 matrices and signed cube-root
+  stage: https://bottosson.github.io/posts/oklab/ . The implementation uses the published ten-decimal constants.
+- All calculations use Java `double`. `COMPARISON_EPSILON` is `1e-12`; values at or below it are treated as numerical
+  zero. `TIE_EPSILON` is `1e-9`. Independent reference-vector assertions use a `5e-9` tolerance.
+- Authored OKLab triples may contain any finite doubles because the established codec permits them; they are not
+  clamped. Registry validation compares them with their computed canonical-sRGB values and rejects a definition when
+  Euclidean disagreement exceeds `5e-7`. NaN and both infinities remain structural errors.
+- The computed OKLab value from canonical sRGB is authoritative for matching. Authored `reference_oklab` and
+  `match_oklab` remain persisted audit values and must agree within the validation tolerance; disagreement cannot be
+  silent. No conversion cache was added because the current immutable dataset is small and keeping the utility pure
+  avoids shared mutable state; a future immutable snapshot-local cache may be added without changing results.
+
+### Resolver semantics
+
+1. Look up the pigment, material, and material palette in one immutable `RegistrySnapshot`.
+2. Verify palette ownership and non-empty content defensively.
+3. If a pigment override exists, verify its target and return it immediately as `EXPLICIT_MAPPING`; compatibility and
+   mathematical proximity cannot displace it.
+4. Otherwise filter entries. Any shared excluded pigment tag rejects the entry first. Empty allowed tags impose no
+   positive restriction; non-empty allowed tags require at least one shared pigment tag.
+5. Compute Euclidean distance between pigment and entry OKLab values derived from canonical sRGB.
+6. Select lowest distance; values within `1e-9` enter tie-breaking. Then prefer a shared colour-family tag, higher
+   priority, and finally the lexicographically smaller resolved-colour ID.
+7. Only tags with the `colour_family_` prefix count as colour families. Generic tags such as `common`, `development`,
+   `fabric`, and rarity tags never affect that tie stage.
+8. Candidate input is normalized to stable-ID order, and explanation candidates/rejections are emitted in a
+   deterministic order. Registry, JSON, map, set, and resource load order cannot affect the result.
+9. No compatible entry returns `NO_COMPATIBLE_COLOUR` with ordered rejection reasons. Missing IDs, ownership errors,
+   missing natural colours, and malformed explicit mappings use other typed failures. The resolver never substitutes
+   an incompatible or natural colour silently.
+10. Dedicated natural lookup returns the material's authored natural colour with `MatchType.NATURAL`; it does not
+    represent natural state as a pigment.
+
+### Development content counts
+
+- Materials: 4 - `cotton`, `wool`, `linen`, and `silk`.
+- Palettes: 4. Cotton, wool, and linen each contain 8 entries; silk contains 9; total entries: 33.
+- Pigments: 7 - `madder_red`, `woad_blue`, `verdigris`, `weld_gold`, `soot_black`, `chalk_white`, and `ice_blue`.
+- Explicit overrides: 4, one `madder_red` mapping in each material palette.
+- Compatibility-restricted entries: 1, `silk_glacial`, allowed for `ice` and excluded for `mundane` pigments.
+- `madder_red` representative results:
+  - cotton -> `cotton_red`, explicit mapping, distance `0.060252859817`;
+  - wool -> `wool_oxblood`, explicit mapping, distance `0.049274171079`;
+  - linen -> `linen_madder`, explicit mapping, distance `0.113283634696`;
+  - silk -> `silk_ruby`, explicit mapping, distance `0.074164136656`.
+- All values above are development data for architecture proof and are not final art-direction-approved colours.
+
+### Commands and exact results
+
+1. Required Git preflight:
+   - `git branch --show-current` - `banners-dyetub`.
+   - `git status --short --branch` - only the preserved modified `ModConfig.java` and preserved untracked root
+     specifications, `.claude/`, `logs/`, and `tmp/` were present.
+   - `git merge-base banners-dyetub patch-18` - `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+   - `git rev-list --left-right --count patch-18...banners-dyetub` - `0 5`.
+   - starting `HEAD` - `f75635f03af636c0699c3458c26538fc415f4dbe`.
+2. The first restricted `compileJava compileScaffoldJava` attempt could not access the Gradle 8.9 distribution because
+   sandbox network access was denied. The approved retry passed in 56 seconds. It confirmed the two existing compiler
+   warnings: missing `@Overwrite` Javadoc on `PlayerSleepMixin`, and the deprecated-for-removal
+   `Item.initializeClient` override in `OrderShieldItem`.
+3. The first complete narrow Milestone 5 run passed in 31 seconds. After final defensive/order tests and scaffold
+   wording regeneration, the final required narrow command
+   `.\gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` passed in
+   23 seconds. XML results: 254 tests, 0 failures, 0 errors, 0 skipped.
+4. `.\tools\scaffold_banners.bat` regenerated only scaffold-owned status/metadata successfully: 33 definitions,
+   33 active, 0 disabled, 33 localization entries, 14 provisional names, and 33 provisional dimensions.
+5. Final `.\tools\scaffold_banners.bat --check` passed in 16 seconds with the same counts.
+6. `.\gradlew.bat clean --no-daemon` passed in 11 seconds.
+7. `.\gradlew.bat test --no-daemon --stacktrace` passed in 56 seconds. XML results: 254 tests, 0 failures,
+   0 errors, 0 skipped.
+8. `.\gradlew.bat build --no-daemon` passed in 21 seconds; `test`, `check`, `jar`, `jarJar`, `assemble`, and `build`
+   completed.
+9. `git diff --check` passed before documentation/staging review. Final staged checks are recorded in the handoff.
+
+No JUnit test initially failed and no production validation or test assertion was weakened. The only initial failure
+was the expected restricted-sandbox Gradle distribution access error; the approved retry used the configured
+toolchain successfully.
+
+### Catalogue, validation, and scope results
+
+- Catalogue entries: 33 active, 0 disabled. Stable IDs, source references, display labels, provisional dimensions,
+  definitions, and the manifest count are unchanged.
+- Gate B decisions are reflected in the generated status report and `OPEN_QUESTIONS.md`: all 33 stable IDs remain,
+  all 14 unnamed entries remain visibly provisional, and `Tournament Medium` / `Pennon of Silver` remain canonical
+  scaffold labels.
+- Registry validation reports 4 active materials, 4 active palettes, 7 active pigments, 33 active banners, and no
+  validation errors or warnings for the authored development dataset.
+- Generic intentionally small registry fixtures still publish successfully; the four-material rule exists only in
+  `ProductionDyeContent` and is invoked at the production-catalogue boundary.
+- Common-side class scans found no Minecraft client, Blaze3D, gameplay registration, component, payload, screen,
+  block-entity, recipe, or command references in the colour/resolver implementation.
+- No manual visual or in-game check was performed because this milestone contains no item, tub, UI, rendering, or
+  gameplay path. Correctness is established by reference vectors and deterministic automated tests, not screenshots.
+
+### Known limitations and deviations
+
+- Development palette colours are not final art-approved palettes, and the pigment catalogue is not final.
+- Final special-dye restrictions and rare-pigment semantics remain open.
+- The approximation-rejection threshold remains deferred; nearest matching currently selects the closest compatible
+  entry regardless of absolute distance.
+- Whether authored OKLab remains persisted long term is open. Milestone 5 retains it with strict consistency
+  validation for backward compatibility.
+- There are no dye items, dye tubs, held-item interactions, components, item state adapters, consumption rules,
+  tooltips, particles, sounds, UI, networking, rendering, blocks, block entities, placement, crafting, recipes,
+  commands, NPC shops, or direct-world dyeing.
+
+### Next milestone
+
+Milestone 6 - Dye Items and Stateful Dye Tub - only. It has not started.
+
 ## 2026-07-20 - Milestone 4: Scaffold All 33 Banner Placeholders
 
 ### Files and generated content

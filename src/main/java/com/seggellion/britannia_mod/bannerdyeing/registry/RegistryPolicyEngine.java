@@ -14,6 +14,7 @@ import com.seggellion.britannia_mod.bannerdyeing.validation.ValidationStage;
 import com.seggellion.britannia_mod.bannerdyeing.validation.ValidationSummary;
 import com.seggellion.britannia_mod.dye.api.FabricMaterialId;
 import com.seggellion.britannia_mod.dye.api.PigmentId;
+import com.seggellion.britannia_mod.dye.colour.ColourMath;
 import com.seggellion.britannia_mod.dye.data.FabricMaterialDefinition;
 import com.seggellion.britannia_mod.dye.data.PigmentDefinition;
 import com.seggellion.britannia_mod.dye.palette.MaterialPalette;
@@ -57,10 +58,23 @@ final class RegistryPolicyEngine {
 
     private static List<ValidationIssue> validate(WorkingSet data) {
         List<ValidationIssue> issues = new ArrayList<>();
+        validatePigments(data, issues);
         validatePalettes(data, issues);
         validateMaterials(data, issues);
         validateBanners(data, issues);
         return issues.stream().distinct().sorted(ValidationIssue.ORDER).toList();
+    }
+
+    private static void validatePigments(WorkingSet data, List<ValidationIssue> issues) {
+        for (DefinitionEntry<PigmentId, PigmentDefinition> entry : data.pigments.values()) {
+            PigmentDefinition pigment = entry.definition();
+            double difference = ColourMath.authoredDifference(pigment.referenceSrgb(), pigment.referenceOklab());
+            if (difference > ColourMath.AUTHORED_OKLAB_TOLERANCE) {
+                issues.add(error(RegistryDomain.PIGMENT, entry, "PIGMENT_OKLAB_MISMATCH",
+                        "Authored reference_oklab differs from computed reference_srgb by " + difference,
+                        pigment.id()));
+            }
+        }
     }
 
     private static void validatePalettes(WorkingSet data, List<ValidationIssue> issues) {
@@ -78,6 +92,15 @@ final class RegistryPolicyEngine {
                 if (!data.pigments.containsKey(pigmentId)) {
                     issues.add(error(RegistryDomain.MATERIAL_PALETTE, entry, "MISSING_OVERRIDE_PIGMENT",
                             "Pigment override references a missing pigment", pigmentId));
+                }
+            }
+            for (var colour : palette.entries()) {
+                double difference = ColourMath.authoredDifference(colour.displaySrgb(), colour.matchOklab());
+                if (difference > ColourMath.AUTHORED_OKLAB_TOLERANCE) {
+                    issues.add(error(RegistryDomain.MATERIAL_PALETTE, entry, "PALETTE_OKLAB_MISMATCH",
+                            "Palette entry " + colour.id()
+                                    + " authored match_oklab differs from computed display_srgb by " + difference,
+                            colour.id()));
                 }
             }
         }

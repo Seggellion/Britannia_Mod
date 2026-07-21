@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:verdigris",
+  "display_name_key": "pigment.britannia_mod.verdigris",
+  "reference_srgb": "#3E8058",
+  "reference_oklab": [0.5449827472, -0.0841768436, 0.0390755755],
+  "tags": ["colour_family_green", "mundane", "common"],
+  "rarity": "common"
+}

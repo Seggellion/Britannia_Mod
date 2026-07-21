@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:madder_red",
+  "display_name_key": "pigment.britannia_mod.madder_red",
+  "reference_srgb": "#A51C30",
+  "reference_oklab": [0.4700933679, 0.1600390174, 0.0582344978],
+  "tags": ["colour_family_red", "mundane", "common"],
+  "rarity": "common"
+}

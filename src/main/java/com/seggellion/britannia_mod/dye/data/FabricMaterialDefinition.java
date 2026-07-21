@@ -34,6 +34,6 @@ public record FabricMaterialDefinition(
         displayNameKey = DataCodecs.requireNonBlank(displayNameKey, "displayNameKey");
         Objects.requireNonNull(naturalColourId, "naturalColourId");
         Objects.requireNonNull(paletteId, "paletteId");
-        tags = List.copyOf(Objects.requireNonNull(tags, "tags"));
+        tags = DataCodecs.requireTags(tags, "tags");
     }
 }

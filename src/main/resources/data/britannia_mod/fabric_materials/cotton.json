@@ -3,10 +3,10 @@
   "id": "britannia_mod:cotton",
   "display_name_key": "material.britannia_mod.cotton",
   "natural_colour_id": "britannia_mod:cotton_natural",
-  "palette_id": "britannia_mod:cotton_placeholder",
+  "palette_id": "britannia_mod:cotton",
   "tags": [
     "fabric",
-    "placeholder",
-    "development_scaffold"
+    "development_palette",
+    "balanced"
   ]
 }

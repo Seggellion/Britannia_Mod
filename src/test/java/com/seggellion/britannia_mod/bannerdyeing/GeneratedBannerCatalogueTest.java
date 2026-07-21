@@ -13,12 +13,14 @@ import com.seggellion.britannia_mod.banner.data.MountDefinition;
 import com.seggellion.britannia_mod.banner.data.PlacementProfile;
 import com.seggellion.britannia_mod.bannerdyeing.registry.DefinitionResource;
 import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionDyeContent;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistryDataLoader;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistryDomain;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistryLoadResult;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshotPublisher;
 import com.seggellion.britannia_mod.bannerdyeing.validation.ValidationPolicy;
 import com.seggellion.britannia_mod.dye.data.FabricMaterialDefinition;
+import com.seggellion.britannia_mod.dye.data.PigmentDefinition;
 import com.seggellion.britannia_mod.dye.palette.MaterialPalette;
 import com.seggellion.britannia_mod.tools.BannerScaffoldTool;
 import java.awt.image.BufferedImage;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,10 +77,9 @@ class GeneratedBannerCatalogueTest {
 
     @Test
     void allSupportingDefinitionsDecodeThroughMilestoneTwoCodecs() throws Exception {
-        assertTrue(FabricMaterialDefinition.CODEC.parse(JsonOps.INSTANCE, json("fabric_materials/cotton.json"))
-                .result().isPresent());
-        assertTrue(MaterialPalette.CODEC.parse(JsonOps.INSTANCE,
-                json("material_palettes/cotton_placeholder.json")).result().isPresent());
+        assertEquals(4, decodeFolder("fabric_materials", FabricMaterialDefinition.CODEC));
+        assertEquals(4, decodeFolder("material_palettes", MaterialPalette.CODEC));
+        assertEquals(7, decodeFolder("pigments", PigmentDefinition.CODEC));
         assertEquals(2, decodeFolder("banner_mounts", MountDefinition.CODEC));
         assertEquals(5, decodeFolder("placement_profiles", PlacementProfile.CODEC));
     }
@@ -130,8 +132,9 @@ class GeneratedBannerCatalogueTest {
 
     @Test
     void cottonPaletteBrassAndIronCrossReferencesAreActive() {
-        assertEquals(1, result.snapshot().fabricMaterials().activeCount());
-        assertEquals(1, result.snapshot().materialPalettes().activeCount());
+        assertEquals(4, result.snapshot().fabricMaterials().activeCount());
+        assertEquals(4, result.snapshot().materialPalettes().activeCount());
+        assertEquals(7, result.snapshot().pigments().activeCount());
         assertEquals(2, result.snapshot().mounts().activeCount());
         assertEquals(5, result.snapshot().placementProfiles().activeCount());
         assertTrue(result.snapshot().fabricMaterials().activeEntries().keySet().stream()
@@ -139,12 +142,46 @@ class GeneratedBannerCatalogueTest {
         assertEquals(Set.of("britannia_mod:brass", "britannia_mod:iron"),
                 result.snapshot().mounts().activeEntries().keySet().stream().map(Object::toString)
                         .collect(java.util.stream.Collectors.toSet()));
+        ProductionDyeContent.requireComplete(result.snapshot());
     }
 
     @Test
-    void naturalPlaceholderCatalogueRequiresNoPigment() {
-        assertEquals(0, result.snapshot().pigments().activeCount());
-        assertFalse(Files.exists(DATA_ROOT.resolve("pigments")));
+    void allBannersRemainActiveAndDefaultToCottonWithDevelopmentDyeContent() {
+        assertEquals(33, result.snapshot().banners().activeCount());
+        assertEquals(0, result.snapshot().banners().disabledCount());
+        assertTrue(result.snapshot().banners().activeDefinitions().stream()
+                .allMatch(banner -> banner.defaultMaterial().toString().equals("britannia_mod:cotton")));
+    }
+
+    @Test
+    void developmentPaletteAndPigmentCountsAreExactAndAuthored() {
+        Map<String, Integer> entries = result.snapshot().materialPalettes().activeDefinitions().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        palette -> palette.materialId().toString(), palette -> palette.entries().size()));
+        assertEquals(Map.of(
+                "britannia_mod:cotton", 8,
+                "britannia_mod:wool", 8,
+                "britannia_mod:linen", 8,
+                "britannia_mod:silk", 9), entries);
+        assertEquals(4, result.snapshot().materialPalettes().activeDefinitions().stream()
+                .mapToInt(palette -> palette.pigmentOverrides().size()).sum());
+        assertEquals(1, result.snapshot().materialPalettes().activeDefinitions().stream()
+                .flatMap(palette -> palette.entries().stream())
+                .filter(entry -> !entry.allowedPigmentTags().isEmpty()
+                        || !entry.excludedPigmentTags().isEmpty()).count());
+    }
+
+    @Test
+    void everyMaterialColourAndPigmentHasLocalization() throws Exception {
+        JsonObject language = JsonParser.parseString(Files.readString(Path.of(BannerScaffoldTool.LOCALIZATION_PATH)))
+                .getAsJsonObject();
+        result.snapshot().fabricMaterials().activeDefinitions().forEach(material ->
+                assertTrue(language.has(material.displayNameKey()), material.displayNameKey()));
+        result.snapshot().materialPalettes().activeDefinitions().stream()
+                .flatMap(palette -> palette.entries().stream()).forEach(entry ->
+                        assertTrue(language.has(entry.displayNameKey()), entry.displayNameKey()));
+        result.snapshot().pigments().activeDefinitions().forEach(pigment ->
+                assertTrue(language.has(pigment.displayNameKey()), pigment.displayNameKey()));
     }
 
     @Test
@@ -176,9 +213,12 @@ class GeneratedBannerCatalogueTest {
         assertEquals(14, provisional.size());
         provisional.forEach(id -> assertTrue(status.contains("`" + id + "`"), id));
         assertTrue(status.contains("Catalogue target: exactly 33"));
-        assertTrue(status.contains("Final names approved: no, except where separately confirmed"));
+        assertTrue(status.contains("Stable identity set approved at Gate B: yes"));
+        assertTrue(status.contains("Final display names approved: no"));
         assertTrue(status.contains("Final dimensions approved: no"));
         assertTrue(status.contains("Final artwork complete: no"));
+        assertTrue(status.contains("retained `Tournament Medium`"));
+        assertTrue(status.contains("`Pennon of Silver` as the canonical scaffold labels"));
     }
 
     @Test

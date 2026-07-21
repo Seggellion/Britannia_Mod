@@ -2,22 +2,19 @@
 
 Date: 2026-07-20
 
-Milestone: 4
+Milestone: 5
 
-## Milestone 4 Gate B catalogue review
+## Gate B decisions closed before Milestone 5
 
-The scaffold preserves the playbook's canonical labels and does not guess through two companion-document wording
-differences:
+Gate B approved the 33-definition identity set and closed the two scaffold-label questions:
 
-- Index 13 remains `tournament_medium` / `Tournament Medium`; the companion design's source-name list says
-  `Tournament`.
-- Index 24 remains `pennon_of_silver` / `Pennon of Silver`; the companion design's source-name list says
-  `Silver Pennon`.
+- `tournament_medium` remains the stable ID and `Tournament Medium` remains the current canonical scaffold label.
+- `pennon_of_silver` remains the stable ID and `Pennon of Silver` remains the current canonical scaffold label.
+- All 14 unnamed banners remain under their approved provisional stable IDs with visible `Name Required` labels.
+- Stable IDs do not change merely because a display label changes later.
 
-Gate B must decide whether these are shorthand descriptions or source-label corrections. Neither stable ID nor
-localization was silently changed. Gate B must also approve (or explicitly defer) all 33 stable IDs. Final dimensions,
-per-banner orientation support, per-banner mount support, and final original artwork remain unapproved scaffold
-values, even though every placeholder definition is active and valid.
+Final display names, dimensions, orientations, mount support, recipes, geometry, and artwork remain unapproved.
+The current source page/row references remain authoritative catalogue references.
 
 Milestone 4 now provides a deterministic scaffold-level mapping from every emitted logical placeholder asset ID to
 its declared JSON model or PNG file. The broader runtime mapping across future vanilla models, GeckoLib geometry,
@@ -82,14 +79,19 @@ These decisions affect player experience or content approval. The data model can
 9. How are special dyes such as ice dye obtained and priced?
 10. Should nearest-colour matching always choose the closest compatible colour, or reject results beyond an owner-defined threshold?
 11. Is there a natural/bleach operation to restore an undyed material colour?
-12. Approve final banner names, dimensions, orientations, mounts, and art as content batches reach their review gates.
+12. Approve final banner display names, dimensions, orientations, mounts, and art as content batches reach their
+    review gates; the stable identity set itself is already approved.
+13. Approve or revise the Milestone 5 development palette colours and the final pigment catalogue.
+14. Decide final special-pigment compatibility restrictions and whether rare pigments need additional semantics.
+15. Decide whether authored OKLab remains persisted long term or is migrated to computed-only data.
 
 ## Deferred non-blocking decisions
 
 - Default reversible dye-tub behavior if still unanswered at its milestone: replace the stored pigment, consume one dye item, and use unlimited tub applications, as specified by the build playbook.
 - Direct placed-banner dyeing can remain outside the first release.
 - Rare dye economy, visual effects, multi-region tinting, washing, dye crafting, and other dyeable textiles are post-release hooks.
-- Final palette size, authored OKLab values, and material art direction can be filled in after the deterministic data contracts and resolver tests exist.
+- Milestone 5 development palettes and pigments prove the architecture but are not final art-direction-approved
+  content.
 - Whether the first banner data loader supports live resource reload on day one or initially loads validated server data at startup can be decided in the registry milestone without changing stable IDs or item state.
 - A documentation/scaffold implementation language will be selected from tools already accepted by the project when Milestone 4 begins.
 - The Gradle combined `clean build` NeoForm race can be owned by build maintenance; separate `clean` then `build` succeeds and is sufficient for continued feature verification.
@@ -100,7 +102,6 @@ None blocks Milestone 1.
 
 The following become blocking at their stated review gates:
 
-- Before players can obtain catalogue items (Gate B): approve the 33 stable banner IDs. Renaming stable IDs after world data exists would require migration.
 - Before a final content entry is marked complete: approve its final name, dimensions, supported orientations, mounts, and original art.
 - Before release: explicitly approve any catalogue entries that remain provisional/placeholders.
 

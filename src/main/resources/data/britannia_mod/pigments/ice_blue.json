@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:ice_blue",
+  "display_name_key": "pigment.britannia_mod.ice_blue",
+  "reference_srgb": "#8ED8E8",
+  "reference_oklab": [0.8392981584, -0.0644016410, -0.0414863437],
+  "tags": ["colour_family_blue", "ice", "special"],
+  "rarity": "development_special"
+}

@@ -299,8 +299,6 @@ public final class BannerScaffoldTool {
             output.put(DATA_ROOT + "banner_definitions/" + banner.id + ".json",
                     utf8(json(bannerDefinition(banner))));
         }
-        output.put(DATA_ROOT + "fabric_materials/cotton.json", utf8(json(cottonMaterial())));
-        output.put(DATA_ROOT + "material_palettes/cotton_placeholder.json", utf8(json(cottonPalette())));
         output.put(DATA_ROOT + "banner_mounts/brass.json", utf8(json(mount("brass", "Brass"))));
         output.put(DATA_ROOT + "banner_mounts/iron.json", utf8(json(mount("iron", "Iron"))));
         output.put(DATA_ROOT + "placement_profiles/placeholder_large.json",
@@ -358,7 +356,8 @@ public final class BannerScaffoldTool {
         return root;
     }
 
-    private static JsonObject cottonMaterial() {
+    /** Private validation fixture only; Milestone 5 colour resources are authored outside this scaffold. */
+    private static JsonObject validationCottonMaterial() {
         JsonObject root = new JsonObject();
         root.addProperty("schema_version", 1);
         root.addProperty("id", "britannia_mod:cotton");
@@ -369,7 +368,8 @@ public final class BannerScaffoldTool {
         return root;
     }
 
-    private static JsonObject cottonPalette() {
+    /** Private validation fixture only; it is never emitted or tracked as a scaffold-owned output. */
+    private static JsonObject validationCottonPalette() {
         JsonObject root = new JsonObject();
         root.addProperty("schema_version", 1);
         root.addProperty("id", "britannia_mod:cotton_placeholder");
@@ -380,9 +380,9 @@ public final class BannerScaffoldTool {
         natural.addProperty("display_name_key", "colour.britannia_mod.cotton_natural");
         natural.addProperty("display_srgb", "#C8C1AD");
         JsonArray oklab = new JsonArray();
-        oklab.add(0.8);
-        oklab.add(0.0);
-        oklab.add(0.0);
+        oklab.add(0.8111740091);
+        oklab.add(-0.0004676910);
+        oklab.add(0.0284677327);
         natural.add("match_oklab", oklab);
         natural.addProperty("priority", 0);
         natural.add("tags", strings(List.of("natural", "placeholder")));
@@ -455,6 +455,12 @@ public final class BannerScaffoldTool {
             resources.add(DefinitionResource.text(domain, "britannia_mod:" + domain.folder() + "/" + file,
                     new String(entry.getValue(), StandardCharsets.UTF_8)));
         }
+        resources.add(DefinitionResource.text(RegistryDomain.FABRIC_MATERIAL,
+                "britannia_mod:fabric_materials/scaffold_validation_cotton.json",
+                json(validationCottonMaterial())));
+        resources.add(DefinitionResource.text(RegistryDomain.MATERIAL_PALETTE,
+                "britannia_mod:material_palettes/scaffold_validation_cotton.json",
+                json(validationCottonPalette())));
         RegistryDataLoader loader = new RegistryDataLoader();
         RegistryLoadResult result = loader.apply(loader.prepare(resources), ValidationPolicy.DEVELOPMENT_FAIL_FAST,
                 new RegistrySnapshotPublisher());
@@ -673,7 +679,7 @@ public final class BannerScaffoldTool {
             Metadata previous,
             ResolvedCatalogue catalogue,
             LocalizationResult localization) throws IOException {
-        LinkedHashMap<String, String> hashes = new LinkedHashMap<>(previous.fileHashes);
+        LinkedHashMap<String, String> hashes = new LinkedHashMap<>();
         for (Map.Entry<String, byte[]> entry : expected.entrySet()) {
             Path path = root.resolve(entry.getKey());
             if (Files.isRegularFile(path) && Arrays.equals(Files.readAllBytes(path), entry.getValue())) {
@@ -729,7 +735,8 @@ public final class BannerScaffoldTool {
                 .append("\n- Missing output files: none\n")
                 .append("- Duplicate IDs: none\n- Duplicate indices: none\n- Missing indices: none\n")
                 .append("- Definitions that failed validation: none\n")
-                .append("- Final names approved: no, except where separately confirmed\n")
+                .append("- Stable identity set approved at Gate B: yes\n")
+                .append("- Final display names approved: no\n")
                 .append("- Final dimensions approved: no\n")
                 .append("- Final artwork complete: no\n\n")
                 .append("## Counts by catalogue group\n\n");
@@ -761,11 +768,12 @@ public final class BannerScaffoldTool {
                 .append("- Static overlay: `britannia_mod:banner/placeholder/static_overlay`\n")
                 .append("- Diagnostic fallback: `britannia_mod:banner/placeholder/missing`\n")
                 .append("- Every logical identifier above maps deterministically to a declared model JSON or PNG output.\n\n")
-                .append("## Gate B review\n\n")
-                .append("Gate B must review all 33 stable IDs, every provisional name, every provisional dimension, ")
-                .append("and the manifest editing workflow. `Tournament Medium` versus `Tournament`, and ")
-                .append("`Pennon of Silver` versus `Silver Pennon`, remain explicit label-review items. ")
-                .append("Generation does not approve names, dimensions, orientations, mounts, or artwork.\n");
+                .append("## Gate B decisions\n\n")
+                .append("Gate B approved exactly 33 stable IDs, retained all 14 unnamed banners under visibly ")
+                .append("provisional `Name Required` labels, and retained `Tournament Medium` and ")
+                .append("`Pennon of Silver` as the canonical scaffold labels. Source page and row references remain ")
+                .append("authoritative. Final display names, dimensions, orientations, mounts, recipes, geometry, ")
+                .append("and artwork remain unapproved. Stable IDs do not change merely because labels change.\n");
         return report.toString();
     }
 

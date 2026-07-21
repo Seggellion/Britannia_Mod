@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:linen",
+  "display_name_key": "material.britannia_mod.linen",
+  "natural_colour_id": "britannia_mod:linen_natural",
+  "palette_id": "britannia_mod:linen",
+  "tags": ["fabric", "development_palette", "muted", "historical"]
+}

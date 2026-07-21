@@ -37,7 +37,7 @@ class BannerScaffoldToolTest {
 
         assertEquals(33, summary.generatedDefinitions());
         assertEquals(33, countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
-        assertEquals(9, countSupportingJson(root));
+        assertEquals(7, countSupportingJson(root));
         assertEquals(5, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/placeholder")));
         assertEquals(4, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.STATUS_PATH)));
@@ -257,8 +257,7 @@ class BannerScaffoldToolTest {
 
     private static long countSupportingJson(Path root) throws Exception {
         long count = 0;
-        for (String folder : new String[] {"fabric_materials", "material_palettes", "banner_mounts",
-                "placement_profiles"}) {
+        for (String folder : new String[] {"banner_mounts", "placement_profiles"}) {
             count += countJson(root.resolve("src/main/resources/data/britannia_mod/" + folder));
         }
         return count;

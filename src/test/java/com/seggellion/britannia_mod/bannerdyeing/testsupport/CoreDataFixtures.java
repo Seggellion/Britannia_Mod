@@ -126,7 +126,7 @@ public final class CoreDataFixtures {
                 PIGMENT_ID,
                 "pigment.britannia_mod.test_crimson",
                 "#A51C30",
-                List.of(0.48, 0.17, 0.07),
+                List.of(0.4700933679, 0.1600390174, 0.0582344978),
                 List.of("red", "common"),
                 "common");
     }
@@ -137,7 +137,7 @@ public final class CoreDataFixtures {
                 PIGMENT_ID,
                 "pigment.britannia_mod.test_crimson",
                 "#A51C30",
-                List.of(0.48, 0.17, 0.07),
+                List.of(0.4700933679, 0.1600390174, 0.0582344978),
                 List.of(),
                 "common");
     }
@@ -147,7 +147,7 @@ public final class CoreDataFixtures {
                 NATURAL_COLOUR_ID,
                 "colour.britannia_mod.test_silk_natural",
                 "#E8DDC4",
-                List.of(0.88, 0.01, 0.04),
+                List.of(0.8997493176, 0.0018039649, 0.0353435453),
                 0,
                 List.of("natural"),
                 List.of(),
@@ -159,7 +159,7 @@ public final class CoreDataFixtures {
                 NATURAL_COLOUR_ID,
                 "colour.britannia_mod.test_silk_natural",
                 "#E8DDC4",
-                List.of(0.88, 0.01, 0.04),
+                List.of(0.8997493176, 0.0018039649, 0.0353435453),
                 0,
                 List.of(),
                 List.of(),
@@ -171,7 +171,7 @@ public final class CoreDataFixtures {
                 DYED_COLOUR_ID,
                 "colour.britannia_mod.test_silk_ruby",
                 "#A81742",
-                List.of(0.50, 0.18, 0.05),
+                List.of(0.4763099643, 0.1732271674, 0.0357119059),
                 10,
                 List.of("red", "rich"),
                 List.of("red"),
