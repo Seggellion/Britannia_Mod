@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.banner.blockentity;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
+import com.seggellion.britannia_mod.banner.structure.BannerPlacedStructure;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import java.util.Optional;
@@ -23,10 +24,13 @@ import org.slf4j.Logger;
 /** Common-side authoritative owner of the complete placed banner state. */
 public final class BannerBlockEntity extends BlockEntity {
     public static final String STATE_TAG = "banner_state";
+    public static final String PLACEMENT_TAG = "placed_structure";
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private Optional<BannerInstanceState> bannerState = Optional.empty();
+    private Optional<BannerPlacedStructure> placedStructure = Optional.of(BannerPlacedStructure.legacyOneCell());
     private boolean structurallyInvalid;
+    private boolean migratedLegacyPlacement;
 
     public BannerBlockEntity(BlockPos pos, BlockState state) {
         this(BannerBlockRegistry.BANNER_BLOCK_ENTITY.get(), pos, state);
@@ -41,6 +45,14 @@ public final class BannerBlockEntity extends BlockEntity {
         return bannerState;
     }
 
+    public Optional<BannerPlacedStructure> placedStructure() {
+        return placedStructure;
+    }
+
+    public boolean migratedLegacyPlacement() {
+        return migratedLegacyPlacement;
+    }
+
     public boolean setBannerState(BannerInstanceState state) {
         if (state == null) {
             return false;
@@ -52,6 +64,25 @@ public final class BannerBlockEntity extends BlockEntity {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
         return true;
+    }
+
+    public boolean setPlacedState(BannerInstanceState state, BannerPlacedStructure structure) {
+        if (state == null || structure == null) {
+            return false;
+        }
+        bannerState = Optional.of(state);
+        placedStructure = Optional.of(structure);
+        structurallyInvalid = false;
+        migratedLegacyPlacement = false;
+        setChanged();
+        return true;
+    }
+
+    public void synchronize() {
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     public BannerBlockEntityStatus status(RegistrySnapshot snapshot, boolean registryAvailable) {
@@ -87,23 +118,43 @@ public final class BannerBlockEntity extends BlockEntity {
                 .resultOrPartial(message -> LOGGER.error(
                         "Could not encode banner block entity state at {}: {}", worldPosition, message))
                 .ifPresent(encoded -> tag.put(STATE_TAG, encoded)));
+        placedStructure.ifPresent(structure -> BannerPlacedStructure.CODEC
+                .encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), structure)
+                .resultOrPartial(message -> LOGGER.error(
+                        "Could not encode banner placed structure at {}: {}", worldPosition, message))
+                .ifPresent(encoded -> tag.put(PLACEMENT_TAG, encoded)));
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         bannerState = Optional.empty();
+        placedStructure = Optional.empty();
         structurallyInvalid = false;
+        migratedLegacyPlacement = false;
         Tag encoded = tag.get(STATE_TAG);
-        if (encoded == null) {
+        if (encoded != null) {
+            DataResult<BannerInstanceState> decoded = BannerInstanceState.CODEC.parse(
+                    registries.createSerializationContext(NbtOps.INSTANCE), encoded);
+            decoded.resultOrPartial(message -> {
+                structurallyInvalid = true;
+                LOGGER.warn("Ignoring structurally invalid banner block entity state at {}: {}", worldPosition, message);
+            }).ifPresent(state -> bannerState = Optional.of(state));
+        }
+
+        Tag encodedPlacement = tag.get(PLACEMENT_TAG);
+        if (encodedPlacement == null) {
+            placedStructure = Optional.of(BannerPlacedStructure.legacyOneCell());
+            migratedLegacyPlacement = true;
+            setChanged();
             return;
         }
-        DataResult<BannerInstanceState> decoded = BannerInstanceState.CODEC.parse(
-                registries.createSerializationContext(NbtOps.INSTANCE), encoded);
-        decoded.resultOrPartial(message -> {
+        DataResult<BannerPlacedStructure> decodedPlacement = BannerPlacedStructure.CODEC.parse(
+                registries.createSerializationContext(NbtOps.INSTANCE), encodedPlacement);
+        decodedPlacement.resultOrPartial(message -> {
             structurallyInvalid = true;
-            LOGGER.warn("Ignoring structurally invalid banner block entity state at {}: {}", worldPosition, message);
-        }).ifPresent(state -> bannerState = Optional.of(state));
+            LOGGER.warn("Ignoring structurally invalid banner placement at {}: {}", worldPosition, message);
+        }).ifPresent(structure -> placedStructure = Optional.of(structure));
     }
 
     @Override

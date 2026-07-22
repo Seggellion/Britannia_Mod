@@ -23,12 +23,14 @@ class BannerBlockRegistrationAssetsAndScopeTest {
     private static final Path RESOURCES = Path.of("src/main/resources");
 
     @Test
-    void exactlyOneBannerBlockAndOneAcceptingBlockEntityAreRegisteredWithNoBlockItem() throws Exception {
+    void oneAnchorOneGenericPartAndOneAcceptingAnchorEntityAreRegisteredWithNoBlockItem() throws Exception {
         String registry = Files.readString(MAIN.resolve("registry/BannerBlockRegistry.java"));
         assertEquals(1, count(registry, "BLOCKS\\.register\\(\"banner\""));
+        assertEquals(1, count(registry, "BLOCKS\\.register\\(\"banner_part\""));
         assertEquals(1, count(registry, "BLOCK_ENTITIES\\.register\\(\"banner\""));
         assertTrue(registry.contains("BannerBlockEntity::new, BANNER.get()"));
         assertFalse(registry.contains("BlockItem"));
+        assertEquals(2, count(registry, "pushReaction\\(PushReaction\\.BLOCK\\)"));
 
         String itemRegistry = Files.readString(MAIN.resolve("registry/BannerItemRegistry.java"));
         assertEquals(1, count(itemRegistry, "ITEMS\\.register\\(\\s*\"banner\""));
@@ -38,7 +40,7 @@ class BannerBlockRegistrationAssetsAndScopeTest {
     }
 
     @Test
-    void blockUsesOutwardFacingSupportLookupThinRotatedShapeAndSingleDropPath() throws Exception {
+    void anchorUsesOutwardFacingSupportLookupThinRotatedShapeAndCentralLifecycleDropPath() throws Exception {
         BannerBlock block = new BannerBlock(BlockBehaviour.Properties.of());
         var north = block.defaultBlockState().setValue(BannerBlock.FACING, Direction.NORTH)
                 .getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds();
@@ -52,20 +54,25 @@ class BannerBlockRegistrationAssetsAndScopeTest {
 
         String source = Files.readString(MAIN.resolve("banner/block/BannerBlock.java"));
         assertTrue(source.contains("pos.relative(facing.getOpposite())"));
-        assertTrue(source.contains("direction == state.getValue(FACING).getOpposite()"));
+        assertTrue(source.contains("BannerStructureIntegrity.checkAnchor"));
         assertEquals(1, count(source, "getDrops\\("));
         assertEquals(1, count(source, "getCloneItemStack\\("));
+        assertTrue(source.contains("onDestroyedByPlayer"));
+        assertTrue(source.contains("BannerStructureLifecycle.removeFrom"));
         assertFalse(Files.exists(RESOURCES.resolve("data/britannia_mod/loot_tables/blocks/banner.json")));
     }
 
     @Test
-    void staticDiagnosticAssetsPackageFourHorizontalVariantsWithoutTintOrLayeredRendering() throws Exception {
+    void staticDiagnosticAnchorAndPartAssetsPackageFacingWithoutTintOrLayeredRendering() throws Exception {
         Path blockstatePath = RESOURCES.resolve("assets/britannia_mod/blockstates/banner.json");
         Path modelPath = RESOURCES.resolve("assets/britannia_mod/models/block/banner.json");
         Path texturePath = RESOURCES.resolve("assets/britannia_mod/textures/banner/placeholder/missing.png");
         assertTrue(Files.isRegularFile(blockstatePath));
         assertTrue(Files.isRegularFile(modelPath));
         assertTrue(Files.isRegularFile(texturePath));
+        assertTrue(Files.isRegularFile(RESOURCES.resolve("assets/britannia_mod/blockstates/banner_part.json")));
+        assertTrue(Files.isRegularFile(RESOURCES.resolve("assets/britannia_mod/models/block/banner_part.json")));
+        assertFalse(Files.exists(RESOURCES.resolve("assets/britannia_mod/models/item/banner_part.json")));
 
         JsonObject variants = JsonParser.parseString(Files.readString(blockstatePath))
                 .getAsJsonObject().getAsJsonObject("variants");
@@ -80,7 +87,7 @@ class BannerBlockRegistrationAssetsAndScopeTest {
     }
 
     @Test
-    void commonClassesHaveNoClientImportsAndNoPlacedRendererOrMilestoneElevenPartsExist() throws Exception {
+    void commonClassesHaveNoClientImportsPlacedRendererOrChildBlockEntity() throws Exception {
         for (Path folder : Set.of(MAIN.resolve("banner/block"), MAIN.resolve("banner/blockentity"),
                 MAIN.resolve("banner/placement"))) {
             try (var paths = Files.walk(folder)) {
@@ -95,8 +102,9 @@ class BannerBlockRegistrationAssetsAndScopeTest {
         try (var paths = Files.walk(MAIN.resolve("banner"))) {
             Set<String> names = paths.filter(Files::isRegularFile)
                     .map(path -> path.getFileName().toString()).collect(java.util.stream.Collectors.toSet());
-            assertFalse(names.stream().anyMatch(name -> name.contains("Child") || name.contains("Part")
-                    || name.contains("Anchor") || name.contains("BlockEntityRenderer")));
+            assertTrue(names.contains("BannerPartBlock.java"));
+            assertFalse(names.stream().anyMatch(name -> name.contains("PartBlockEntity")
+                    || name.contains("ChildBlockEntity") || name.contains("BlockEntityRenderer")));
         }
     }
 
@@ -116,7 +124,7 @@ class BannerBlockRegistrationAssetsAndScopeTest {
         assertFalse(service.contains("npc"));
 
         String lang = Files.readString(RESOURCES.resolve("assets/britannia_mod/lang/en_us.json"));
-        for (String key : Set.of("unconfigured", "data_unavailable", "multi_block_deferred",
+        for (String key : Set.of("unconfigured", "data_unavailable", "invalid_footprint", "chunk_unloaded",
                 "unsupported_orientation", "horizontal_face_required", "target_occupied", "invalid_support",
                 "protected", "failed_safely")) {
             assertTrue(lang.contains("message.britannia_mod.banner.placement." + key), key);

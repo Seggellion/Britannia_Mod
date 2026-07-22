@@ -2,7 +2,28 @@
 
 Date: 2026-07-20
 
-Milestone: 9
+Milestone: 11
+
+## Milestone 11 provisional structure policies
+
+- Wall-parallel placement uses a top-mounted hanging rule: every occupied top-row cell requires a sturdy backing
+  face, while lower cloth cells do not. Removing any top-row support removes the complete structure and returns one
+  configured item; removing only a lower backing block does not. Gate D may revise this with orientation/mount work.
+- Explosions remove the complete structure but return no configured item. This is deliberate because the actual
+  NeoForge callback calculates per-cell loot before block removal; the no-drop policy makes repeated callbacks
+  deterministic and duplicate-proof.
+- Player survival break and support loss are the only Milestone 11 configured-drop causes. Creative removal, placement
+  rollback, orphan cleanup, explosions, administrative cleanup, and detected external replacement drop nothing.
+- A missing part is restored only when its persisted occupied cell is loaded and replaceable. An obstruction is never
+  overwritten; the remaining known banner cells are removed without a drop and the obstruction is preserved.
+- External block replacement is detected through `onRemove` for ordinary `setBlock` paths. A world-edit tool that
+  bypasses normal block callbacks can temporarily leave parts until the deferred chunk integrity pass; no universal
+  hook exists for tools that bypass both callbacks and chunk lifecycle.
+- Development placement remains static diagnostic anchor/part block models. No layered placed renderer, placement
+  ghost, orientation selection, recipe, command, or direct placed-banner dyeing was introduced.
+
+Still unresolved: whether Gate D retains top-row-only support and the no-drop explosion policy, and whether a later
+world-edit compatibility integration should expose an explicit structure-removal API.
 
 ## Milestone 9 client-resource boundary
 

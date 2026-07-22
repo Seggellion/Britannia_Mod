@@ -1,5 +1,109 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-21 - Milestone 11: Multi-Block Anchor and Occupied Parts
+
+### Structure content, footprint, and transform
+
+- Kept `britannia_mod:banner` and its existing `britannia_mod:banner` block entity as the single authoritative anchor.
+  Added exactly one generic `britannia_mod:banner_part` occupied-part block with no block entity and no `BlockItem`.
+  Parts store only bounded local offsets plus facing; the anchor alone owns the complete `BannerInstanceState` and
+  authoritative placed footprint.
+- All 33 active wall-parallel definitions are eligible from catalogue dimensions: 13 use 1x1, 8 use 1x2, 6 use
+  2x2, and 6 use 3x2. Maximum occupancy is six cells. Placeholder/provisional status does not affect eligibility,
+  and there is no stable-ID or group-name footprint switch.
+- The clicked wall-adjacent target is the top-left anchor when viewed from the front. `FACING` points outward;
+  viewer-right is `FACING.getCounterClockWise()`. Local horizontal offsets increase viewer-right and vertical offsets
+  increase downward. Cells and stored offsets are deterministically ordered by vertical offset and then horizontal
+  offset, with the anchor first.
+
+### Saved placement state and Milestone 10 migration
+
+- Added versioned placed-structure schema 1 under anchor NBT key `placed_structure`. It stores stable orientation,
+  width, height, and the complete ordered occupied offsets. The stored footprint remains authoritative if a later data
+  pack changes a definition's dimensions, and it can be decoded without the live banner registry.
+- A Milestone 10 anchor missing `placed_structure` migrates to a valid one-cell wall-parallel placement and is marked
+  changed for the next save. Unknown/future or malformed placement data is contained as structurally invalid without
+  erasing otherwise decodable banner state.
+- The same banner and placement records are used by disk NBT, update tags, and update packets. Placement transfers both
+  records before child placement and synchronizes only after the complete structure verifies.
+
+### Placement transaction and support
+
+- Planning remains read-only and server-authoritative. It validates item state, registry references, profile,
+  rectangular dimensions, every world/border/build-height position, every already-loaded chunk, replaceability,
+  protection, all top-row wall supports, anchor block-entity compatibility, part offset encoding, and final blockstate
+  acceptance before mutation. It never requests or force-loads a chunk.
+- The support policy is one sturdy wall face behind every top-row cell; lower rows do not require their own wall face.
+  Placement order is anchor block, anchor banner/placement data, row-major parts, exact cell and anchor-state
+  verification, client synchronization, neighbor/effect notification, and finally item consumption. Survival consumes
+  exactly one shared banner after success; creative consumes none.
+- Every failure restores exact pre-placement blockstates in reverse mutation order with drops suppressed. Rollback and
+  structure mutation run under the shared lifecycle guard, and consumption/effects never occur for a failed attempt.
+
+### Removal, drops, pistons, and pick block
+
+- One central lifecycle service owns anchor break, child break, support loss, explosions, external replacement, orphan
+  cleanup, recovery failure, and rollback cleanup. A per-level/anchor reentrancy guard prevents callbacks from removing
+  twice or duplicating drops.
+- Survival anchor break, child break, and support loss remove every occupied banner cell and emit exactly one item at
+  the anchor, reconstructed from the anchor's exact state. Creative removal emits none. Explosion policy is complete
+  removal with no banner drop. Vanilla block loot/player-destroy callbacks emit no competing item.
+- External replacement preserves the replacement cell and cleans the remaining known banner cells without a drop.
+  Both anchor and part use `PushReaction.BLOCK`, preventing piston push and sticky pull.
+- Pick block on the anchor reconstructs the exact shared banner item. Pick block on a child resolves its encoded anchor
+  without loading chunks, validates membership against synchronized anchor placement data, and returns the same item.
+
+### Chunk integrity and recovery
+
+- Chunk-load inspection is deferred until `ServerTickEvent.Post`, because NeoForge warns against level interaction in
+  the load callback. Placement, part resolution, inspection, and repair use only already-loaded chunks through
+  `hasChunk`, `hasChunkAt`, and `getChunkNow`.
+- A child whose anchor chunk is unloaded is left untouched. A definitively absent/invalid/mismatched anchor makes the
+  child an orphan and removes it without a drop. Missing expected parts are repaired only when their chunks are loaded
+  and cells are replaceable. Any obstruction is preserved and the remaining known structure is removed without a
+  drop; repair never overwrites unrelated content.
+- Persisted offsets drive reload, integrity, repair, removal, and definition-change behavior. Cross-chunk placement is
+  accepted only when every involved chunk is already loaded; subsequent independently ordered chunk loads do not cause
+  false orphan deletion.
+
+### Assets, scope, and validation evidence
+
+- Packaged diagnostic resources contain the existing anchor blockstate/model and the new part blockstate/model. The
+  part is a thin full-cell occupancy marker with outline/collision geometry supplied by its block. The production JAR
+  contains `BannerPartBlock`, the anchor block entity, and all structure services; it contains no part item model,
+  part block entity, banner block-entity renderer, or placed layered renderer.
+- No GameTest was added because the repository has no GameTest source root, bootstrap, templates, or registration.
+  Unit tests exercise actual blocks and block entities plus the footprint, planner, transaction, persistence, lifecycle
+  policy, resources, and source-level platform boundaries. Live in-game interaction/visual checks were not performed
+  because no safe configured-banner acquisition path exists; no recipe, creative entry, or admin command was added for
+  QA.
+- Narrow Milestone 11 tests passed: 38 tests, 0 failures, 0 errors, 0 skipped. The first run had one test-fixture
+  failure because a multi-block support position was hard-coded at y=70 while the planned click was at y=0; the test
+  now derives that support position from the plan, and production code was unchanged.
+- `tools\\scaffold_banners.bat --check` passed: manifest=33, definitions=33, active=33, disabled=0,
+  localization=33, provisional names=14, provisional dimensions=33, asset families=5.
+- `gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` passed with
+  480 tests, 0 failures, 0 errors, 0 skipped across 38 suites. `gradlew.bat clean --no-daemon` passed in 13 seconds.
+  The clean `gradlew.bat test --no-daemon --stacktrace` passed in 1 minute 53 seconds with the same 480/0/0/0 result.
+  `gradlew.bat build --no-daemon` passed in 22 seconds and completed `jar`, `jarJar`, `assemble`, `check`, and `build`.
+- One earlier `compileTestJava` launcher timed out while Gradle daemons remained active; `gradlew.bat --stop` stopped two
+  daemons and the immediate rerun passed without a source change. Existing compiler warnings remain the missing
+  `@Overwrite` Javadoc on `PlayerSleepMixin` and deprecated-for-removal `OrderShieldItem.initializeClient`; no new
+  compiler warning was introduced.
+
+### Counts, limitations, and next milestone
+
+- Production content remains 33 active/0 disabled banners, 4 materials, 4 palettes, 7 pigments, and 2 mounts.
+  Registration remains one shared banner item, one dye tub, seven pigment items, and three total data components
+  including wine data. This milestone adds one block but zero items and zero block-entity types.
+- Development presentation remains static diagnostic geometry. Wall-perpendicular placement, orientation selection,
+  cycling, placement ghosts, mount-dependent occupancy, placed layered rendering, direct placed-banner dyeing,
+  recipes, commands, NPC integration, and final heraldic artwork remain out of scope.
+- Ordinary external `setBlock` replacement is handled through block callbacks. A world-edit tool that bypasses normal
+  callbacks can temporarily leave parts until deferred chunk integrity processing; no universal hook exists for tools
+  that bypass both callbacks and chunk lifecycle.
+- No approved catalogue identity or dimension changed. Next milestone: Milestone 12 only. It has not started.
+
 ## 2026-07-21 - Milestone 10: Single-Block Placement Foundation
 
 ### Scope and registration

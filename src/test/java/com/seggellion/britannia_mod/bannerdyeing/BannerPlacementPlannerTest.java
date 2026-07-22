@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
 import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.api.MountId;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
+import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.data.BannerDefinition;
 import com.seggellion.britannia_mod.banner.data.BannerDimensions;
 import com.seggellion.britannia_mod.banner.item.BannerItem;
@@ -45,6 +46,7 @@ class BannerPlacementPlannerTest {
     private static BannerItem item;
     private static BannerItemFactory factory;
     private static BannerBlock block;
+    private static BannerPartBlock partBlock;
 
     @BeforeAll
     static void setup() throws Exception {
@@ -53,6 +55,7 @@ class BannerPlacementPlannerTest {
         item = Milestone7RegisteredTestContent.banner();
         factory = new BannerItemFactory(item, item.stateAccess());
         block = new BannerBlock(BlockBehaviour.Properties.of());
+        partBlock = new BannerPartBlock(BlockBehaviour.Properties.of());
     }
 
     @Test
@@ -62,10 +65,11 @@ class BannerPlacementPlannerTest {
         BannerPlacementPlanningResult result = plan(stack, production, true, Direction.EAST, world);
         assertTrue(result.successful());
         var plan = result.plan().orElseThrow();
-        assertEquals(BlockPos.ZERO, plan.supportPos());
-        assertEquals(new BlockPos(1, 0, 0), plan.targetPos());
+        assertEquals(new BlockPos(1, 0, 0), plan.anchorPos());
         assertEquals(Direction.EAST, plan.facing());
-        assertEquals(Direction.EAST, plan.bannerBlockState().getValue(BannerBlock.FACING));
+        assertEquals(Direction.EAST, plan.anchorBlockState().getValue(BannerBlock.FACING));
+        assertEquals(1, plan.cells().size());
+        assertEquals(List.of(BlockPos.ZERO), plan.requiredSupportPositions());
         assertEquals(item.stateAccess().read(stack).orElseThrow(), plan.bannerState());
         assertEquals(1, stack.getCount());
         assertEquals(0, world.mutations);
@@ -139,7 +143,7 @@ class BannerPlacementPlannerTest {
     }
 
     @Test
-    void unsupportedOrientationAndMultiCellAreRejectedBeforeWorldChecks() {
+    void unsupportedOrientationIsRejectedBeforeWorldChecksAndMultiCellUsesTheFootprintPath() {
         BannerDefinition source = production.banners().require(SMALL);
         BannerDefinition perpendicular = copy(source, source.dimensions(),
                 List.of(BannerOrientation.WALL_PERPENDICULAR), source.supportedMounts());
@@ -148,9 +152,9 @@ class BannerPlacementPlannerTest {
         assertEquals(BannerPlacementFailure.UNSUPPORTED_ORIENTATION,
                 plan(natural(SMALL), RegistrySnapshotTestFactory.replaceBanner(production, perpendicular), true,
                         Direction.NORTH, world).failure());
-        assertEquals(BannerPlacementFailure.MULTI_BLOCK_PLACEMENT_DEFERRED,
+        assertEquals(BannerPlacementFailure.TARGET_OCCUPIED,
                 plan(natural(MULTI), production, true, Direction.NORTH, world).failure());
-        assertEquals(0, world.worldChecks);
+        assertTrue(world.worldChecks > 0);
     }
 
     @Test
@@ -183,7 +187,7 @@ class BannerPlacementPlannerTest {
 
     private static BannerPlacementPlanningResult plan(
             ItemStack stack, RegistrySnapshot snapshot, boolean available, Direction face, FakeWorld world) {
-        return BannerPlacementPlanner.plan(item, stack, snapshot, available, BlockPos.ZERO, face, block, world);
+        return BannerPlacementPlanner.plan(item, stack, snapshot, available, BlockPos.ZERO, face, block, partBlock, world);
     }
 
     private static ItemStack natural(BannerDefinitionId id) {
@@ -210,15 +214,19 @@ class BannerPlacementPlannerTest {
         boolean allowed = true;
         boolean canCreate = true;
         boolean canAccept = true;
+        boolean loaded = true;
         int worldChecks;
         int mutations;
 
         @Override public BlockState blockState(BlockPos pos) { worldChecks++; return Blocks.SHORT_GRASS.defaultBlockState(); }
         @Override public boolean targetReplaceable(BlockPos pos) { worldChecks++; return replaceable; }
         @Override public boolean inWorldBounds(BlockPos pos) { worldChecks++; return inBounds; }
+        @Override public boolean chunkLoaded(BlockPos pos) { worldChecks++; return loaded; }
+        @Override public boolean unrelatedBannerCell(BlockPos pos) { worldChecks++; return false; }
         @Override public boolean validWallSupport(BlockPos pos, Direction facing) { worldChecks++; return support; }
         @Override public boolean placementAllowed(BlockPos pos, Direction facing, ItemStack stack) { worldChecks++; return allowed; }
         @Override public boolean canCreateBannerBlockEntity(BlockState state) { worldChecks++; return canCreate; }
+        @Override public boolean canEncodePart(BlockState state) { worldChecks++; return true; }
         @Override public boolean canAcceptState(BannerInstanceState state) { worldChecks++; return canAccept; }
     }
 }

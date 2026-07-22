@@ -786,5 +786,11 @@
   "message.britannia_mod.banner.placement.target_occupied": "The target space is occupied.",
   "message.britannia_mod.banner.placement.invalid_support": "The wall cannot support the banner.",
   "message.britannia_mod.banner.placement.protected": "Placement is protected or denied.",
-  "message.britannia_mod.banner.placement.failed_safely": "Banner placement failed safely."
+  "message.britannia_mod.banner.placement.failed_safely": "Multi-block banner placement failed safely.",
+  "message.britannia_mod.banner.placement.invalid_footprint": "The banner footprint is invalid.",
+  "message.britannia_mod.banner.placement.chunk_unloaded": "A required banner chunk is not loaded.",
+  "message.britannia_mod.banner.structure.incomplete": "The banner structure is incomplete.",
+  "message.britannia_mod.banner.structure.orphan_removed": "An orphan banner part was removed.",
+  "message.britannia_mod.banner.structure.recovery_failed": "The banner could not be recovered safely.",
+  "block.britannia_mod.banner_part": "Banner Occupied Part"
 }

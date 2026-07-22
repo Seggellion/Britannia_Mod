@@ -11,6 +11,9 @@ import com.seggellion.britannia_mod.banner.item.BannerItem;
 import com.seggellion.britannia_mod.banner.item.BannerItemFactory;
 import com.seggellion.britannia_mod.banner.placement.BannerBlockItemTransfer;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
+import com.seggellion.britannia_mod.banner.structure.BannerFootprint;
+import com.seggellion.britannia_mod.banner.structure.BannerPlacedStructure;
+import com.seggellion.britannia_mod.banner.data.BannerDimensions;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshotTestFactory;
 import com.seggellion.britannia_mod.bannerdyeing.testsupport.DyeResolverFixtures;
@@ -66,6 +69,7 @@ class BannerBlockEntityPersistenceTest {
         assertTrue(entity.setBannerState(dyed));
         CompoundTag saved = entity.saveWithoutMetadata(RegistryAccess.EMPTY);
         assertTrue(saved.contains(BannerBlockEntity.STATE_TAG));
+        assertTrue(saved.contains(BannerBlockEntity.PLACEMENT_TAG));
         String encoded = saved.get(BannerBlockEntity.STATE_TAG).toString();
         assertTrue(encoded.contains("schema_version"));
         assertTrue(encoded.contains("banner_definition_id"));
@@ -75,6 +79,50 @@ class BannerBlockEntityPersistenceTest {
         assertTrue(encoded.contains("mount_id"));
         assertFalse(encoded.contains("display_srgb"));
         assertFalse(encoded.contains("render"));
+    }
+
+    @Test
+    void milestoneTenSaveWithoutPlacementMigratesToOneCellAndWritesCurrentSchema() {
+        BannerBlockEntity source = entity();
+        source.setBannerState(dyed);
+        CompoundTag legacy = source.saveWithoutMetadata(RegistryAccess.EMPTY);
+        legacy.remove(BannerBlockEntity.PLACEMENT_TAG);
+
+        BannerBlockEntity migrated = entity();
+        migrated.loadWithComponents(legacy, RegistryAccess.EMPTY);
+        assertEquals(dyed, migrated.bannerState().orElseThrow());
+        assertEquals(BannerPlacedStructure.legacyOneCell(), migrated.placedStructure().orElseThrow());
+        assertTrue(migrated.migratedLegacyPlacement());
+        assertTrue(migrated.saveWithoutMetadata(RegistryAccess.EMPTY).contains(BannerBlockEntity.PLACEMENT_TAG));
+    }
+
+    @Test
+    void multiCellPlacementRoundTripsThroughSaveUpdateTagAndPacketData() {
+        BannerPlacedStructure structure = BannerPlacedStructure.fromFootprint(
+                BannerFootprint.fromDimensions(new BannerDimensions(3, 2, true)).footprint());
+        BannerBlockEntity entity = entity();
+        assertTrue(entity.setPlacedState(dyed, structure));
+        BannerBlockEntity decoded = entity();
+        decoded.loadWithComponents(entity.saveWithoutMetadata(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
+        assertEquals(dyed, decoded.bannerState().orElseThrow());
+        assertEquals(structure, decoded.placedStructure().orElseThrow());
+
+        BannerBlockEntity updated = entity();
+        updated.handleUpdateTag(entity.getUpdateTag(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
+        assertEquals(structure, updated.placedStructure().orElseThrow());
+    }
+
+    @Test
+    void unknownFuturePlacementSchemaIsRejectedWithoutErasingBannerState() {
+        BannerBlockEntity source = entity();
+        source.setBannerState(dyed);
+        CompoundTag saved = source.saveWithoutMetadata(RegistryAccess.EMPTY);
+        saved.getCompound(BannerBlockEntity.PLACEMENT_TAG).putInt("schema_version", 999);
+        BannerBlockEntity decoded = entity();
+        decoded.loadWithComponents(saved, RegistryAccess.EMPTY);
+        assertEquals(dyed, decoded.bannerState().orElseThrow());
+        assertTrue(decoded.placedStructure().isEmpty());
+        assertEquals(BannerBlockEntityStatus.STRUCTURALLY_INVALID, decoded.status(production, true));
     }
 
     @Test

@@ -1,12 +1,18 @@
 package com.seggellion.britannia_mod.banner.placement;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
+import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
 import com.seggellion.britannia_mod.banner.item.BannerItem;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
+import com.seggellion.britannia_mod.banner.structure.BannerPlacedStructure;
+import com.seggellion.britannia_mod.banner.structure.BannerStructureCell;
+import com.seggellion.britannia_mod.banner.structure.BannerStructureLifecycle;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries;
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import java.util.Optional;
+import org.slf4j.Logger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -22,8 +28,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-/** Live server adapter for the testable planner and one-cell transaction executor. */
+/** Live server adapter for the complete multi-cell planner and transactional executor. */
 public final class BannerPlacementService {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private BannerPlacementService() {
     }
 
@@ -39,6 +46,7 @@ public final class BannerPlacementService {
         Player player = context.getPlayer();
         ItemStack stack = context.getItemInHand();
         BannerBlock block = BannerBlockRegistry.BANNER.get();
+        BannerPartBlock partBlock = BannerBlockRegistry.BANNER_PART.get();
         BlockPlaceContext placeContext = new BlockPlaceContext(context);
 
         BannerPlacementWorld world = new BannerPlacementWorld() {
@@ -58,6 +66,17 @@ public final class BannerPlacementService {
             }
 
             @Override
+            public boolean chunkLoaded(BlockPos pos) {
+                return level.getChunkSource().hasChunk(pos.getX() >> 4, pos.getZ() >> 4);
+            }
+
+            @Override
+            public boolean unrelatedBannerCell(BlockPos pos) {
+                BlockState state = level.getBlockState(pos);
+                return state.getBlock() instanceof BannerBlock || state.getBlock() instanceof BannerPartBlock;
+            }
+
+            @Override
             public boolean validWallSupport(BlockPos supportPos, Direction outwardFacing) {
                 return level.getBlockState(supportPos).isFaceSturdy(level, supportPos, outwardFacing);
             }
@@ -74,6 +93,14 @@ public final class BannerPlacementService {
             }
 
             @Override
+            public boolean canEncodePart(BlockState partState) {
+                return partState.getBlock() instanceof BannerPartBlock
+                        && partState.hasProperty(BannerPartBlock.FACING)
+                        && partState.hasProperty(BannerPartBlock.HORIZONTAL_OFFSET)
+                        && partState.hasProperty(BannerPartBlock.VERTICAL_OFFSET);
+            }
+
+            @Override
             public boolean canAcceptState(BannerInstanceState state) {
                 return state != null;
             }
@@ -81,7 +108,7 @@ public final class BannerPlacementService {
 
         BannerPlacementPlanningResult planning = BannerPlacementPlanner.plan(
                 item, stack, BannerDataRegistries.current(), BannerDataRegistries.isAvailable(),
-                context.getClickedPos(), context.getClickedFace(), block, world);
+                context.getClickedPos(), context.getClickedFace(), block, partBlock, world);
         if (!planning.successful()) {
             feedback(player, planning.failure());
             return InteractionResult.FAIL;
@@ -90,7 +117,8 @@ public final class BannerPlacementService {
         BannerPlacementMutation mutation = mutation(level, player);
         BannerPlacementFailure result;
         try {
-            result = BannerPlacementExecutor.execute(plan, mutation, stack, player.hasInfiniteMaterials());
+            result = BannerStructureLifecycle.duringPlacement(level, plan.anchorPos(), () ->
+                    BannerPlacementExecutor.execute(plan, mutation, stack, player.hasInfiniteMaterials()));
         } catch (RuntimeException exception) {
             result = mutation.rollback(plan)
                     ? BannerPlacementFailure.STATE_TRANSFER_FAILURE
@@ -106,42 +134,84 @@ public final class BannerPlacementService {
     private static BannerPlacementMutation mutation(ServerLevel level, Player player) {
         return new BannerPlacementMutation() {
             @Override
-            public boolean placeBanner(BannerPlacementPlan plan) {
-                return level.setBlock(plan.targetPos(), plan.bannerBlockState(), Block.UPDATE_ALL_IMMEDIATE);
+            public boolean placeCell(BannerPlacementPlan plan, BannerStructureCell cell) {
+                int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+                return level.setBlock(cell.worldPosition(), cell.placedState(), flags)
+                        || level.getBlockState(cell.worldPosition()).equals(cell.placedState());
             }
 
             @Override
             public Optional<StateTarget> bannerBlockEntity(BannerPlacementPlan plan) {
-                BlockEntity blockEntity = level.getBlockEntity(plan.targetPos());
+                BlockEntity blockEntity = level.getBlockEntity(plan.anchorPos());
                 if (!(blockEntity instanceof BannerBlockEntity banner)) return Optional.empty();
                 return Optional.of(new StateTarget() {
                     @Override
-                    public boolean assign(BannerInstanceState state) {
-                        return banner.setBannerState(state);
+                    public boolean assign(BannerInstanceState state, BannerPlacedStructure structure) {
+                        return banner.setPlacedState(state, structure);
                     }
 
                     @Override
                     public Optional<BannerInstanceState> currentState() {
                         return banner.bannerState();
                     }
+
+                    @Override
+                    public Optional<BannerPlacedStructure> currentStructure() {
+                        return banner.placedStructure();
+                    }
+
+                    @Override
+                    public boolean synchronize() {
+                        banner.synchronize();
+                        return true;
+                    }
                 });
+            }
+
+            @Override
+            public boolean verifyCell(BannerPlacementPlan plan, BannerStructureCell cell) {
+                if (!level.getBlockState(cell.worldPosition()).equals(cell.placedState())) {
+                    return false;
+                }
+                if (cell.offset().isAnchor()) {
+                    BlockEntity entity = level.getBlockEntity(cell.worldPosition());
+                    return entity instanceof BannerBlockEntity banner
+                            && banner.bannerState().equals(Optional.of(plan.bannerState()))
+                            && banner.placedStructure().equals(Optional.of(plan.placedStructure()));
+                }
+                return level.getBlockEntity(cell.worldPosition()) == null;
             }
 
             @Override
             public boolean rollback(BannerPlacementPlan plan) {
                 int flags = Block.UPDATE_ALL_IMMEDIATE | Block.UPDATE_SUPPRESS_DROPS;
-                boolean restored = level.setBlock(plan.targetPos(), plan.originalTargetState(), flags);
-                return restored && level.getBlockState(plan.targetPos()).equals(plan.originalTargetState())
-                        && !(level.getBlockEntity(plan.targetPos()) instanceof BannerBlockEntity);
+                boolean restored = true;
+                for (int index = plan.cells().size() - 1; index >= 0; index--) {
+                    BannerStructureCell cell = plan.cells().get(index);
+                    boolean set = level.setBlock(cell.worldPosition(), cell.originalState(), flags);
+                    restored &= set || level.getBlockState(cell.worldPosition()).equals(cell.originalState());
+                }
+                for (BannerStructureCell cell : plan.cells()) {
+                    restored &= level.getBlockState(cell.worldPosition()).equals(cell.originalState());
+                }
+                restored &= !(level.getBlockEntity(plan.anchorPos()) instanceof BannerBlockEntity);
+                if (!restored) {
+                    LOGGER.error("Banner rollback failed for positions {}",
+                            plan.cells().stream().map(BannerStructureCell::worldPosition).toList());
+                }
+                return restored;
             }
 
             @Override
             public void afterSuccess(BannerPlacementPlan plan) {
-                var sound = plan.bannerBlockState().getSoundType(level, plan.targetPos(), player);
-                level.playSound(player, plan.targetPos(), sound.getPlaceSound(), SoundSource.BLOCKS,
+                for (BannerStructureCell cell : plan.cells()) {
+                    level.updateNeighborsAt(cell.worldPosition(), cell.placedState().getBlock());
+                }
+                var sound = plan.anchorBlockState().getSoundType(level, plan.anchorPos(), player);
+                level.playSound(player, plan.anchorPos(), sound.getPlaceSound(), SoundSource.BLOCKS,
                         (sound.getVolume() + 1.0F) / 2.0F, sound.getPitch() * 0.8F);
-                level.gameEvent(GameEvent.BLOCK_PLACE, plan.targetPos(),
-                        GameEvent.Context.of(player, plan.bannerBlockState()));
+                level.gameEvent(GameEvent.BLOCK_PLACE, plan.anchorPos(),
+                        GameEvent.Context.of(player, plan.anchorBlockState()));
             }
         };
     }
@@ -151,11 +221,14 @@ public final class BannerPlacementService {
             case UNCONFIGURED_BANNER -> "unconfigured";
             case REGISTRY_UNAVAILABLE, DEFINITION_MISSING, DEFINITION_DISABLED,
                     MATERIAL_MISSING, MATERIAL_DISABLED, PALETTE_MISSING, COLOUR_MISSING,
+                    PIGMENT_MISSING, PIGMENT_DISABLED,
                     MOUNT_MISSING, MOUNT_DISABLED, UNSUPPORTED_MOUNT -> "data_unavailable";
-            case MULTI_BLOCK_PLACEMENT_DEFERRED -> "multi_block_deferred";
+            case UNSUPPORTED_WIDTH, UNSUPPORTED_HEIGHT, MALFORMED_FOOTPRINT,
+                    UNSUPPORTED_PLACEMENT_PROFILE, PART_STATE_ENCODING_FAILURE -> "invalid_footprint";
             case UNSUPPORTED_ORIENTATION -> "unsupported_orientation";
             case INVALID_CLICKED_FACE -> "horizontal_face_required";
-            case TARGET_OCCUPIED -> "target_occupied";
+            case TARGET_OCCUPIED, UNRELATED_BANNER_CELL -> "target_occupied";
+            case REQUIRED_CHUNK_UNLOADED -> "chunk_unloaded";
             case INVALID_WALL_SUPPORT -> "invalid_support";
             case PROTECTED_PLACEMENT -> "protected";
             default -> "failed_safely";

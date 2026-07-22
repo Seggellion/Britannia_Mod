@@ -6,6 +6,27 @@ Milestone: 0 — Repository Discovery and Implementation Facts
 
 Feature branch: `banners-dyetub`
 
+## Milestone 11 placement and lifecycle integration facts
+
+- Registered structure content is `britannia_mod:banner` (authoritative anchor),
+  `britannia_mod:banner_part` (one generic occupied-part block), and
+  `britannia_mod:banner` (the existing anchor-only block-entity type). The part has neither a block entity nor a
+  `BlockItem`.
+- NeoForge 21.1.72 calls `IBlockExtension.onDestroyedByPlayer` while the block and its block entity are intact, before
+  vanilla removes the selected block and later invokes `playerDestroy`. Banner anchor and part blocks use that hook
+  to claim whole-structure removal; their vanilla `playerDestroy`/loot paths are intentionally empty.
+- `BlockBehaviour.onExplosionHit` evaluates loot before invoking `onBlockExploded`. Both banner blocks override the
+  former and route directly to the lifecycle service. The selected Milestone 11 policy is no configured banner drop
+  from explosions, so callbacks for several occupied cells cannot duplicate an item.
+- `PushReaction.BLOCK` is the platform-supported immovable reaction for both pushing and sticky-piston pulling; both
+  anchor and part properties use it.
+- `ChunkEvent.Load` explicitly warns against immediate level access before promotion to a full chunk. Banner integrity
+  work is therefore queued and processed after `ServerTickEvent.Post`, using `getChunkNow`/`hasChunk` only. Placement,
+  resolution, and repair never request or force-load a chunk.
+- The clicked wall-adjacent target is the top-left anchor viewed from the banner front. `FACING` points outward toward
+  the viewer; viewer-right is `FACING.getCounterClockWise()`. Local horizontal offsets increase viewer-right and local
+  vertical offsets increase downward.
+
 ## Evidence basis
 
 These facts are grounded in the two root specifications, repository files at commit `62df1dc97c5113a86f9c0f258cb90538f31efe89`, Git output after `git fetch --prune origin`, and the baseline Gradle output recorded in `IMPLEMENTATION_LOG.md`.

@@ -1,0 +1,8 @@
+{
+  "multipart": [
+    { "when": { "facing": "north" }, "apply": { "model": "britannia_mod:block/banner_part" } },
+    { "when": { "facing": "east" }, "apply": { "model": "britannia_mod:block/banner_part", "y": 90 } },
+    { "when": { "facing": "south" }, "apply": { "model": "britannia_mod:block/banner_part", "y": 180 } },
+    { "when": { "facing": "west" }, "apply": { "model": "britannia_mod:block/banner_part", "y": 270 } }
+  ]
+}

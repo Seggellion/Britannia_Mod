@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
+import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
@@ -14,7 +15,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The complete Milestone 10 gameplay registration surface: one block and one block entity. */
+/** One authoritative anchor, one generic occupied-part block, and one anchor-only block entity. */
 public final class BannerBlockRegistry {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(Registries.BLOCK, BritanniaMod.MODID);
@@ -27,7 +28,15 @@ public final class BannerBlockRegistry {
                     .strength(0.5F)
                     .sound(SoundType.WOOL)
                     .noOcclusion()
-                    .pushReaction(PushReaction.DESTROY)));
+                    .pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredHolder<Block, BannerPartBlock> BANNER_PART = BLOCKS.register("banner_part", () ->
+            new BannerPartBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_GRAY)
+                    .strength(0.5F)
+                    .sound(SoundType.WOOL)
+                    .noOcclusion()
+                    .pushReaction(PushReaction.BLOCK)));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BannerBlockEntity>> BANNER_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("banner", () -> BlockEntityType.Builder.of(

@@ -11,8 +11,11 @@ public interface BannerPlacementWorld {
     BlockState blockState(BlockPos pos);
     boolean targetReplaceable(BlockPos pos);
     boolean inWorldBounds(BlockPos pos);
+    boolean chunkLoaded(BlockPos pos);
+    boolean unrelatedBannerCell(BlockPos pos);
     boolean validWallSupport(BlockPos supportPos, Direction outwardFacing);
     boolean placementAllowed(BlockPos targetPos, Direction outwardFacing, ItemStack stack);
     boolean canCreateBannerBlockEntity(BlockState bannerState);
+    boolean canEncodePart(BlockState partState);
     boolean canAcceptState(BannerInstanceState state);
 }

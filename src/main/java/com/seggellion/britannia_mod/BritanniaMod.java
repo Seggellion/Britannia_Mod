@@ -53,6 +53,7 @@ import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegistration;
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
+import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrityHandler;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 
 import net.minecraft.core.BlockPos;
@@ -115,6 +116,7 @@ CraftableRegistry.init();
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
         BannerBlockRegistry.register(modEventBus);
+        BannerStructureIntegrityHandler.register();
         ItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);
         BannerItemRegistry.register(modEventBus);
