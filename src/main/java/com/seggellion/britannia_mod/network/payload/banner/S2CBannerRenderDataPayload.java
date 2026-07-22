@@ -5,6 +5,8 @@ import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
 import com.seggellion.britannia_mod.banner.api.MountId;
 import com.seggellion.britannia_mod.banner.data.BannerAssets;
 import com.seggellion.britannia_mod.banner.data.BannerContentStatus;
+import com.seggellion.britannia_mod.banner.data.BannerDimensions;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSnapshot;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDefinition;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderMaterial;
@@ -41,6 +43,13 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
             buffer.writeResourceLocation(definition.id().value());
             writeAssets(buffer, definition.assets());
             buffer.writeEnum(definition.contentStatus());
+            buffer.writeVarInt(definition.dimensions().widthBlocks());
+            buffer.writeVarInt(definition.dimensions().heightBlocks());
+            buffer.writeBoolean(definition.dimensions().provisional());
+            buffer.writeVarInt(definition.supportedOrientations().size());
+            definition.supportedOrientations().forEach(buffer::writeEnum);
+            buffer.writeVarInt(definition.supportedMounts().size());
+            definition.supportedMounts().forEach(id -> buffer.writeResourceLocation(id.value()));
         });
 
         buffer.writeVarInt(snapshot.materials().size());
@@ -68,8 +77,22 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
         Map<BannerDefinitionId, BannerRenderDefinition> banners = new LinkedHashMap<>();
         for (int index = 0; index < bannerCount; index++) {
             BannerDefinitionId id = new BannerDefinitionId(buffer.readResourceLocation());
+            BannerAssets assets = readAssets(buffer);
+            BannerContentStatus status = buffer.readEnum(BannerContentStatus.class);
+            BannerDimensions dimensions = new BannerDimensions(
+                    buffer.readVarInt(), buffer.readVarInt(), buffer.readBoolean());
+            int orientationCount = readBoundedCount(buffer, 2, "orientation");
+            java.util.List<BannerOrientation> orientations = new java.util.ArrayList<>(orientationCount);
+            for (int orientationIndex = 0; orientationIndex < orientationCount; orientationIndex++) {
+                orientations.add(buffer.readEnum(BannerOrientation.class));
+            }
+            int supportedMountCount = readBoundedCount(buffer, 32, "supported mount");
+            java.util.List<MountId> supportedMounts = new java.util.ArrayList<>(supportedMountCount);
+            for (int mountIndex = 0; mountIndex < supportedMountCount; mountIndex++) {
+                supportedMounts.add(new MountId(buffer.readResourceLocation()));
+            }
             BannerRenderDefinition previous = banners.put(id,
-                    new BannerRenderDefinition(id, readAssets(buffer), buffer.readEnum(BannerContentStatus.class)));
+                    new BannerRenderDefinition(id, assets, status, dimensions, orientations, supportedMounts));
             requireUnique(previous, id);
         }
 

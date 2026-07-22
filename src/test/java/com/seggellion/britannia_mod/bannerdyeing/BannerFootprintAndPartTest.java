@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mojang.serialization.JsonOps;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
 import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.data.BannerDimensions;
 import com.seggellion.britannia_mod.banner.structure.BannerFootprint;
 import com.seggellion.britannia_mod.banner.structure.BannerLocalOffset;
@@ -74,8 +75,13 @@ class BannerFootprintAndPartTest {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             assertEquals(expectedRight.get(facing), BannerStructureTransform.viewerRight(facing));
             for (BannerLocalOffset offset : footprint(3, 2).offsets()) {
-                BlockPos world = BannerStructureTransform.worldPosition(anchor, facing, offset);
-                assertEquals(anchor, BannerStructureTransform.anchorPosition(world, facing, offset));
+                for (BannerOrientation orientation : BannerOrientation.values()) {
+                    BlockPos world = BannerStructureTransform.worldPosition(anchor, facing, orientation, offset);
+                    assertEquals(anchor,
+                            BannerStructureTransform.anchorPosition(world, facing, orientation, offset));
+                    assertEquals(offset, BannerStructureTransform.localOffset(
+                            anchor, facing, orientation, world).orElseThrow());
+                }
             }
         }
     }
@@ -103,12 +109,16 @@ class BannerFootprintAndPartTest {
         for (BannerDimensions dimensions : java.util.List.of(
                 new BannerDimensions(1, 1, true), new BannerDimensions(1, 2, true),
                 new BannerDimensions(2, 2, true), new BannerDimensions(3, 2, true))) {
-            BannerPlacedStructure structure = BannerPlacedStructure.fromFootprint(
-                    BannerFootprint.fromDimensions(dimensions).footprint());
-            var encoded = BannerPlacedStructure.CODEC.encodeStart(JsonOps.INSTANCE, structure).result().orElseThrow();
-            assertEquals(structure, BannerPlacedStructure.CODEC.parse(JsonOps.INSTANCE, encoded).result().orElseThrow());
-            encoded.getAsJsonObject().addProperty("schema_version", 999);
-            assertTrue(BannerPlacedStructure.CODEC.parse(JsonOps.INSTANCE, encoded).error().isPresent());
+            for (BannerOrientation orientation : BannerOrientation.values()) {
+                BannerPlacedStructure structure = BannerPlacedStructure.fromFootprint(
+                        orientation, BannerFootprint.fromDimensions(dimensions).footprint());
+                var encoded = BannerPlacedStructure.CODEC.encodeStart(JsonOps.INSTANCE, structure)
+                        .result().orElseThrow();
+                assertEquals(structure,
+                        BannerPlacedStructure.CODEC.parse(JsonOps.INSTANCE, encoded).result().orElseThrow());
+                encoded.getAsJsonObject().addProperty("schema_version", 999);
+                assertTrue(BannerPlacedStructure.CODEC.parse(JsonOps.INSTANCE, encoded).error().isPresent());
+            }
         }
     }
 

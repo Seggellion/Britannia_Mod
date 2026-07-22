@@ -1,16 +1,15 @@
 package com.seggellion.britannia_mod.banner.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
 import com.seggellion.britannia_mod.banner.placement.BannerBlockItemTransfer;
 import com.seggellion.britannia_mod.banner.structure.BannerRemovalCause;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrity;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureLifecycle;
+import com.seggellion.britannia_mod.banner.structure.BannerStructureTransform;
 import java.util.function.BiConsumer;
 import java.util.List;
-import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
@@ -31,6 +30,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -38,19 +38,18 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-/** One thin, wall-parallel diagnostic banner block. FACING points away from its supporting wall. */
+/** One thin diagnostic banner anchor. FACING points away from its supporting wall. */
 public final class BannerBlock extends BaseEntityBlock {
     public static final MapCodec<BannerBlock> CODEC = simpleCodec(BannerBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    private static final Map<Direction, VoxelShape> SHAPES = Maps.newEnumMap(ImmutableMap.of(
-            Direction.NORTH, Block.box(1.0, 1.0, 14.0, 15.0, 15.0, 16.0),
-            Direction.SOUTH, Block.box(1.0, 1.0, 0.0, 15.0, 15.0, 2.0),
-            Direction.WEST, Block.box(14.0, 1.0, 1.0, 16.0, 15.0, 15.0),
-            Direction.EAST, Block.box(0.0, 1.0, 1.0, 2.0, 15.0, 15.0)));
+    public static final EnumProperty<BannerOrientation> ORIENTATION =
+            EnumProperty.create("orientation", BannerOrientation.class);
 
     public BannerBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(ORIENTATION, BannerOrientation.WALL_PARALLEL));
     }
 
     @Override
@@ -66,7 +65,8 @@ public final class BannerBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(state.getValue(FACING));
+        return BannerStructureTransform.cellShape(
+                state.getValue(ORIENTATION), state.getValue(FACING), true);
     }
 
     @Override
@@ -153,6 +153,6 @@ public final class BannerBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, ORIENTATION);
     }
 }

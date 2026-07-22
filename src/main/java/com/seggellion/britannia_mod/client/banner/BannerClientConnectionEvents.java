@@ -15,5 +15,6 @@ public final class BannerClientConnectionEvents {
     @SubscribeEvent
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientBannerRenderData.clear();
+        ClientBannerPlacementState.clear();
     }
 }

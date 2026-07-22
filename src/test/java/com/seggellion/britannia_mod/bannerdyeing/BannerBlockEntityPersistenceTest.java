@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntityStatus;
 import com.seggellion.britannia_mod.banner.item.BannerItem;
@@ -98,18 +99,20 @@ class BannerBlockEntityPersistenceTest {
 
     @Test
     void multiCellPlacementRoundTripsThroughSaveUpdateTagAndPacketData() {
-        BannerPlacedStructure structure = BannerPlacedStructure.fromFootprint(
-                BannerFootprint.fromDimensions(new BannerDimensions(3, 2, true)).footprint());
-        BannerBlockEntity entity = entity();
-        assertTrue(entity.setPlacedState(dyed, structure));
-        BannerBlockEntity decoded = entity();
-        decoded.loadWithComponents(entity.saveWithoutMetadata(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
-        assertEquals(dyed, decoded.bannerState().orElseThrow());
-        assertEquals(structure, decoded.placedStructure().orElseThrow());
+        for (BannerOrientation orientation : BannerOrientation.values()) {
+            BannerPlacedStructure structure = BannerPlacedStructure.fromFootprint(
+                    orientation, BannerFootprint.fromDimensions(new BannerDimensions(3, 2, true)).footprint());
+            BannerBlockEntity entity = entity();
+            assertTrue(entity.setPlacedState(dyed, structure));
+            BannerBlockEntity decoded = entity();
+            decoded.loadWithComponents(entity.saveWithoutMetadata(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
+            assertEquals(dyed, decoded.bannerState().orElseThrow());
+            assertEquals(structure, decoded.placedStructure().orElseThrow());
 
-        BannerBlockEntity updated = entity();
-        updated.handleUpdateTag(entity.getUpdateTag(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
-        assertEquals(structure, updated.placedStructure().orElseThrow());
+            BannerBlockEntity updated = entity();
+            updated.handleUpdateTag(entity.getUpdateTag(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
+            assertEquals(structure, updated.placedStructure().orElseThrow());
+        }
     }
 
     @Test

@@ -36,8 +36,13 @@ public record BannerPlacedStructure(
     }
 
     public static BannerPlacedStructure fromFootprint(BannerFootprint footprint) {
+        return fromFootprint(BannerOrientation.WALL_PARALLEL, footprint);
+    }
+
+    public static BannerPlacedStructure fromFootprint(
+            BannerOrientation orientation, BannerFootprint footprint) {
         return new BannerPlacedStructure(BannerDyeingConstants.CURRENT_SCHEMA_VERSION,
-                BannerOrientation.WALL_PARALLEL, footprint.width(), footprint.height(), footprint.offsets());
+                orientation, footprint.width(), footprint.height(), footprint.offsets());
     }
 
     /** Migration value for Milestone 10 saves that have no placement record. */
@@ -61,9 +66,6 @@ public record BannerPlacedStructure(
 
     private static void validate(
             BannerOrientation orientation, int width, int height, List<BannerLocalOffset> offsets) {
-        if (orientation != BannerOrientation.WALL_PARALLEL) {
-            throw new IllegalArgumentException("Only wall_parallel placed structures are supported");
-        }
         if (width < 1 || width > 3 || height < 1 || height > 2 || offsets.size() != width * height
                 || !offsets.contains(BannerLocalOffset.ANCHOR) || new HashSet<>(offsets).size() != offsets.size()) {
             throw new IllegalArgumentException("Placed structure is not a complete supported rectangle");

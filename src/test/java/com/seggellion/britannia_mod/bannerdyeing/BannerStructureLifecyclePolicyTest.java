@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
 import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.data.BannerDimensions;
@@ -54,20 +55,26 @@ class BannerStructureLifecyclePolicyTest {
     }
 
     @Test
-    void membershipRejectsWrongFacingWrongOffsetAndPartAsAnchor() {
+    void membershipRejectsWrongFacingOrientationOffsetAndPartAsAnchor() {
         BannerBlock anchor = new BannerBlock(BlockBehaviour.Properties.of());
         BannerPartBlock part = new BannerPartBlock(BlockBehaviour.Properties.of());
         var footprint = BannerFootprint.fromDimensions(new BannerDimensions(3, 2, true)).footprint();
         for (var offset : footprint.offsets()) {
             var state = offset.isAnchor()
                     ? anchor.defaultBlockState().setValue(BannerBlock.FACING, Direction.SOUTH)
-                    : part.stateFor(Direction.SOUTH, offset);
-            assertTrue(BannerStructureLifecycle.isExpectedCell(state, Direction.SOUTH, offset));
-            assertFalse(BannerStructureLifecycle.isExpectedCell(state, Direction.NORTH, offset));
+                            .setValue(BannerBlock.ORIENTATION, BannerOrientation.WALL_PERPENDICULAR)
+                    : part.stateFor(Direction.SOUTH, BannerOrientation.WALL_PERPENDICULAR, offset);
+            assertTrue(BannerStructureLifecycle.isExpectedCell(
+                    state, Direction.SOUTH, BannerOrientation.WALL_PERPENDICULAR, offset));
+            assertFalse(BannerStructureLifecycle.isExpectedCell(
+                    state, Direction.NORTH, BannerOrientation.WALL_PERPENDICULAR, offset));
+            assertFalse(BannerStructureLifecycle.isExpectedCell(
+                    state, Direction.SOUTH, BannerOrientation.WALL_PARALLEL, offset));
         }
         assertFalse(BannerStructureLifecycle.isExpectedCell(
-                part.stateFor(Direction.SOUTH, footprint.offsets().get(1)), Direction.SOUTH,
-                footprint.offsets().get(2)));
+                part.stateFor(Direction.SOUTH, BannerOrientation.WALL_PERPENDICULAR,
+                        footprint.offsets().get(1)),
+                Direction.SOUTH, BannerOrientation.WALL_PERPENDICULAR, footprint.offsets().get(2)));
     }
 
     @Test
@@ -106,7 +113,7 @@ class BannerStructureLifecyclePolicyTest {
         assertTrue(source.contains("actual.canBeReplaced()"));
         assertTrue(source.contains("obstruction was preserved"));
         assertTrue(source.contains("BannerRemovalCause.SUPPORT_LOSS"));
-        assertTrue(source.contains("offset.vertical() != 0"));
+        assertTrue(source.contains("requiredSupportPositions"));
 
         String handler = Files.readString(MAIN.resolve("banner/structure/BannerStructureIntegrityHandler.java"));
         assertTrue(handler.contains("ChunkEvent.Load"));

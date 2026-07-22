@@ -3,11 +3,11 @@ package com.seggellion.britannia_mod.banner.placement;
 import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.data.BannerDefinition;
 
-/** Eligibility is deliberately based on authored dimensions/orientation, never catalogue IDs or groups. */
+/** Legacy one-cell classification, now evaluated against the caller's selected orientation. */
 public final class BannerSingleBlockEligibility {
     public enum Result {
         ELIGIBLE,
-        WALL_PARALLEL_UNSUPPORTED,
+        ORIENTATION_UNSUPPORTED,
         MULTI_BLOCK_DEFERRED
     }
 
@@ -15,8 +15,12 @@ public final class BannerSingleBlockEligibility {
     }
 
     public static Result evaluate(BannerDefinition definition) {
-        if (!definition.supportedOrientations().contains(BannerOrientation.WALL_PARALLEL)) {
-            return Result.WALL_PARALLEL_UNSUPPORTED;
+        return evaluate(definition, definition.supportedOrientations().getFirst());
+    }
+
+    public static Result evaluate(BannerDefinition definition, BannerOrientation orientation) {
+        if (!definition.supportedOrientations().contains(orientation)) {
+            return Result.ORIENTATION_UNSUPPORTED;
         }
         return definition.dimensions().widthBlocks() == 1 && definition.dimensions().heightBlocks() == 1
                 ? Result.ELIGIBLE
@@ -25,5 +29,9 @@ public final class BannerSingleBlockEligibility {
 
     public static boolean isEligible(BannerDefinition definition) {
         return evaluate(definition) == Result.ELIGIBLE;
+    }
+
+    public static boolean isEligible(BannerDefinition definition, BannerOrientation orientation) {
+        return evaluate(definition, orientation) == Result.ELIGIBLE;
     }
 }

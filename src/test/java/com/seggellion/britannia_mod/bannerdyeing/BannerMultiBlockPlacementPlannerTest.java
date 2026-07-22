@@ -99,6 +99,7 @@ class BannerMultiBlockPlacementPlannerTest {
         BannerPlacementPlanningResult result = plan(stack, clicked, Direction.SOUTH, world);
         assertEquals(BannerPlacementFailure.REQUIRED_CHUNK_UNLOADED, result.failure());
         assertFalse(world.forceLoaded);
+        assertEquals(0, world.blockStateReads);
         assertEquals(0, world.mutations);
         assertEquals(1, stack.getCount());
     }
@@ -151,9 +152,13 @@ class BannerMultiBlockPlacementPlannerTest {
         final Set<BlockPos> supportChecks = new HashSet<>();
         final Set<String> unloadedChunks = new HashSet<>();
         int mutations;
+        int blockStateReads;
         boolean forceLoaded;
 
-        @Override public BlockState blockState(BlockPos pos) { return Blocks.SHORT_GRASS.defaultBlockState(); }
+        @Override public BlockState blockState(BlockPos pos) {
+            blockStateReads++;
+            return Blocks.SHORT_GRASS.defaultBlockState();
+        }
         @Override public boolean targetReplaceable(BlockPos pos) { return !occupied.contains(pos); }
         @Override public boolean inWorldBounds(BlockPos pos) { return true; }
         @Override public boolean chunkLoaded(BlockPos pos) {

@@ -44,6 +44,17 @@ class BannerScaffoldToolTest {
         assertEquals(2, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/mount")));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.STATUS_PATH)));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.METADATA_PATH)));
+        String status = Files.readString(root.resolve(BannerScaffoldTool.STATUS_PATH));
+        assertTrue(status.contains("Supported orientations"));
+        assertTrue(status.contains("Parallel automated"));
+        assertTrue(status.contains("Perpendicular automated"));
+        assertTrue(status.contains("Brass automated"));
+        assertTrue(status.contains("Iron automated"));
+        assertTrue(status.contains("Manual result"));
+        assertTrue(status.contains("Final per-definition orientations approved: no"));
+        assertTrue(status.contains("Final per-definition mounts approved: no"));
+        assertTrue(status.contains("Final placed artwork approved: no"));
+        assertEquals(33, status.lines().filter(line -> line.matches("\\| \\d{2} \\|.*")).count());
     }
 
     @Test

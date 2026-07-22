@@ -24,6 +24,7 @@ public final class BannerStructureIntegrity {
         VALID,
         DEFERRED_UNLOADED_CHUNK,
         REPAIRED_MISSING_PARTS,
+        REPAIRED_DIAGNOSTIC_STATE,
         REMOVED_FOR_SUPPORT_LOSS,
         REMOVED_OBSTRUCTED_STRUCTURE,
         REMOVED_ORPHAN,
@@ -46,24 +47,36 @@ public final class BannerStructureIntegrity {
         }
         BannerPlacedStructure structure = anchor.placedStructure().orElseThrow();
         Direction facing = anchorState.getValue(BannerBlock.FACING);
-
-        for (BannerLocalOffset offset : structure.occupiedOffsets()) {
-            BlockPos cellPos = BannerStructureTransform.worldPosition(anchorPos, facing, offset);
-            if (!loaded(level, cellPos)) {
-                return Result.DEFERRED_UNLOADED_CHUNK;
+        boolean repairedDiagnostic = false;
+        if (anchorState.getValue(BannerBlock.ORIENTATION) != structure.orientation()) {
+            BlockState corrected = anchorState.setValue(BannerBlock.ORIENTATION, structure.orientation());
+            int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+            boolean repaired = BannerStructureLifecycle.duringPlacement(level, anchorPos, () ->
+                    level.setBlock(anchorPos, corrected, flags)
+                            || level.getBlockState(anchorPos).equals(corrected));
+            if (!repaired) {
+                return Result.INVALID_ANCHOR;
             }
-            if (offset.vertical() == 0) {
-                BlockPos supportPos = cellPos.relative(facing.getOpposite());
-                if (!loaded(level, supportPos)) {
-                    return Result.DEFERRED_UNLOADED_CHUNK;
-                }
-            }
+            anchorState = corrected;
+            repairedDiagnostic = true;
         }
 
         for (BannerLocalOffset offset : structure.occupiedOffsets()) {
-            if (offset.vertical() != 0) continue;
-            BlockPos cellPos = BannerStructureTransform.worldPosition(anchorPos, facing, offset);
-            BlockPos supportPos = cellPos.relative(facing.getOpposite());
+            BlockPos cellPos = BannerStructureTransform.worldPosition(
+                    anchorPos, facing, structure.orientation(), offset);
+            if (!loaded(level, cellPos)) {
+                return Result.DEFERRED_UNLOADED_CHUNK;
+            }
+        }
+        List<BlockPos> supportPositions = BannerStructureTransform.requiredSupportPositions(
+                anchorPos, facing, structure.orientation(), structure.occupiedOffsets());
+        for (BlockPos supportPos : supportPositions) {
+            if (!loaded(level, supportPos)) {
+                return Result.DEFERRED_UNLOADED_CHUNK;
+            }
+        }
+
+        for (BlockPos supportPos : supportPositions) {
             if (!level.getBlockState(supportPos).isFaceSturdy(level, supportPos, facing)) {
                 BannerStructureLifecycle.removeAnchor(level, anchorPos, anchor,
                         BannerRemovalCause.SUPPORT_LOSS, null, null);
@@ -73,15 +86,17 @@ public final class BannerStructureIntegrity {
 
         List<Map.Entry<BlockPos, BlockState>> repairs = new ArrayList<>();
         for (BannerLocalOffset offset : structure.occupiedOffsets()) {
-            BlockPos cellPos = BannerStructureTransform.worldPosition(anchorPos, facing, offset);
+            BlockPos cellPos = BannerStructureTransform.worldPosition(
+                    anchorPos, facing, structure.orientation(), offset);
             BlockState actual = level.getBlockState(cellPos);
-            if (BannerStructureLifecycle.isExpectedCell(actual, facing, offset)) {
+            if (BannerStructureLifecycle.isExpectedCell(actual, facing, structure.orientation(), offset)) {
                 continue;
             }
             if (offset.isAnchor()) {
                 return Result.INVALID_ANCHOR;
             }
-            BlockState expected = BannerBlockRegistry.BANNER_PART.get().stateFor(facing, offset);
+            BlockState expected = BannerBlockRegistry.BANNER_PART.get()
+                    .stateFor(facing, structure.orientation(), offset);
             if (actual.canBeReplaced() || actual.getBlock() instanceof BannerPartBlock) {
                 repairs.add(Map.entry(cellPos, expected));
                 continue;
@@ -94,7 +109,7 @@ public final class BannerStructureIntegrity {
         }
 
         if (repairs.isEmpty()) {
-            return Result.VALID;
+            return repairedDiagnostic ? Result.REPAIRED_DIAGNOSTIC_STATE : Result.VALID;
         }
         return BannerStructureLifecycle.duringPlacement(level, anchorPos, () -> {
             int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;

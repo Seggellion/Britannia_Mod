@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
 import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.placement.BannerBlockItemTransfer;
 import java.util.HashSet;
 import java.util.Optional;
@@ -93,8 +94,9 @@ public final class BannerStructureLifecycle {
                     BannerLocalOffset.ANCHOR);
         }
         Direction facing = sourceState.getValue(BannerPartBlock.FACING);
+        BannerOrientation orientation = sourceState.getValue(BannerPartBlock.ORIENTATION);
         BannerLocalOffset offset = BannerPartBlock.localOffset(sourceState);
-        BlockPos anchorPos = BannerStructureTransform.anchorPosition(sourcePos, facing, offset);
+        BlockPos anchorPos = BannerStructureTransform.anchorPosition(sourcePos, facing, orientation, offset);
         if (!level.getChunkSource().hasChunk(anchorPos.getX() >> 4, anchorPos.getZ() >> 4)) {
             return new Resolution(ResolutionStatus.ANCHOR_CHUNK_UNLOADED, anchorPos, null, offset);
         }
@@ -105,8 +107,9 @@ public final class BannerStructureLifecycle {
         }
         Optional<BannerPlacedStructure> structure = banner.placedStructure();
         boolean matches = anchorState.getValue(BannerBlock.FACING) == facing
-                && structure.filter(value -> value.contains(offset)).isPresent()
-                && BannerStructureTransform.worldPosition(anchorPos, facing, offset).equals(sourcePos);
+                && anchorState.getValue(BannerBlock.ORIENTATION) == orientation
+                && structure.filter(value -> value.orientation() == orientation && value.contains(offset)).isPresent()
+                && BannerStructureTransform.worldPosition(anchorPos, facing, orientation, offset).equals(sourcePos);
         return matches
                 ? new Resolution(ResolutionStatus.VALID, anchorPos, banner, offset)
                 : new Resolution(ResolutionStatus.INVALID_MEMBERSHIP, anchorPos, banner, offset);
@@ -155,12 +158,19 @@ public final class BannerStructureLifecycle {
             int removed = 0;
             for (int index = structure.occupiedOffsets().size() - 1; index >= 0; index--) {
                 BannerLocalOffset offset = structure.occupiedOffsets().get(index);
-                BlockPos cellPos = BannerStructureTransform.worldPosition(anchorPos, facing, offset);
+                BlockPos cellPos = BannerStructureTransform.worldPosition(
+                        anchorPos, facing, structure.orientation(), offset);
                 if (cellPos.equals(preservePosition)) {
                     continue;
                 }
                 BlockState actual = level.getBlockState(cellPos);
-                if (!isExpectedCell(actual, facing, offset)) {
+                // Persisted structure data is authoritative for geometry. A diagnostic orientation
+                // mismatch on the anchor must not strand that anchor when teardown is requested.
+                boolean expected = offset.isAnchor()
+                        ? actual.getBlock() instanceof BannerBlock
+                                && actual.getValue(BannerBlock.FACING) == facing
+                        : isExpectedCell(actual, facing, structure.orientation(), offset);
+                if (!expected) {
                     continue;
                 }
                 int flags = Block.UPDATE_ALL_IMMEDIATE | Block.UPDATE_SUPPRESS_DROPS;
@@ -185,11 +195,19 @@ public final class BannerStructureLifecycle {
     }
 
     public static boolean isExpectedCell(BlockState state, Direction facing, BannerLocalOffset offset) {
+        return isExpectedCell(state, facing, BannerOrientation.WALL_PARALLEL, offset);
+    }
+
+    public static boolean isExpectedCell(
+            BlockState state, Direction facing, BannerOrientation orientation, BannerLocalOffset offset) {
         if (offset.isAnchor()) {
-            return state.getBlock() instanceof BannerBlock && state.getValue(BannerBlock.FACING) == facing;
+            return state.getBlock() instanceof BannerBlock
+                    && state.getValue(BannerBlock.FACING) == facing
+                    && state.getValue(BannerBlock.ORIENTATION) == orientation;
         }
         return state.getBlock() instanceof BannerPartBlock
                 && state.getValue(BannerPartBlock.FACING) == facing
+                && state.getValue(BannerPartBlock.ORIENTATION) == orientation
                 && BannerPartBlock.localOffset(state).equals(offset);
     }
 }

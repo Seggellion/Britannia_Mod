@@ -2,7 +2,23 @@
 
 Date: 2026-07-20
 
-Milestone: 11
+Milestone: 12
+
+## Milestone 12 Gate D provisional decisions
+
+- Both stable orientations are implemented. Wall-parallel width grows viewer-right and retains top-row wall support;
+  wall-perpendicular width grows outward and uses anchor-only wall support. These are development policies, not final
+  per-definition content approval.
+- Sneak-use cycles a server-owned per-player orientation preference; ordinary use places with the normalized
+  selection. This interaction is provisional until manual usability review.
+- Brass and iron flow end-to-end as mount variants but do not alter occupancy or support. Static placed blocks remain
+  neutral diagnostic geometry; the ghost distinguishes brass, iron, blocked, invalid-support, and missing-data states.
+- Client ghosts are explicitly advisory where server-only protection cannot be known. Manual in-game checks were not
+  performed in this non-interactive milestone run.
+
+Still unresolved at Gate D: approve or revise final dimensions, each definition's allowed orientations and mounts,
+default mounts, support semantics, selection UX, mount-specific geometry/occupancy, and final placed artwork. The
+generated 33-row automated matrix is evidence of implementation coverage, not content or visual approval.
 
 ## Milestone 11 provisional structure policies
 

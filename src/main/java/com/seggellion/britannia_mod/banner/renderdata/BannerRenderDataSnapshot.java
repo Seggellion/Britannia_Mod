@@ -31,7 +31,8 @@ public record BannerRenderDataSnapshot(
         Objects.requireNonNull(snapshot, "snapshot");
         LinkedHashMap<BannerDefinitionId, BannerRenderDefinition> banners = new LinkedHashMap<>();
         snapshot.banners().activeDefinitions().forEach(definition -> banners.put(definition.id(),
-                new BannerRenderDefinition(definition.id(), definition.assets(), definition.contentStatus())));
+                new BannerRenderDefinition(definition.id(), definition.assets(), definition.contentStatus(),
+                        definition.dimensions(), definition.supportedOrientations(), definition.supportedMounts())));
 
         LinkedHashMap<FabricMaterialId, BannerRenderMaterial> materials = new LinkedHashMap<>();
         snapshot.fabricMaterials().activeDefinitions().forEach(material -> {

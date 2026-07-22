@@ -7,7 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
+import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
+import com.seggellion.britannia_mod.banner.structure.BannerLocalOffset;
+import com.seggellion.britannia_mod.bannerdyeing.testsupport.Milestone7RegisteredTestContent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
@@ -16,11 +20,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class BannerBlockRegistrationAssetsAndScopeTest {
     private static final Path MAIN = Path.of("src/main/java/com/seggellion/britannia_mod");
     private static final Path RESOURCES = Path.of("src/main/resources");
+
+    @BeforeAll
+    static void setup() {
+        Milestone7RegisteredTestContent.ensureRegistered();
+    }
 
     @Test
     void oneAnchorOneGenericPartAndOneAcceptingAnchorEntityAreRegisteredWithNoBlockItem() throws Exception {
@@ -63,6 +73,36 @@ class BannerBlockRegistrationAssetsAndScopeTest {
     }
 
     @Test
+    void anchorAndPartShapesFollowBothOrientationsForEveryHorizontalFacing() {
+        BannerBlock anchor = new BannerBlock(BlockBehaviour.Properties.of());
+        BannerPartBlock part = new BannerPartBlock(BlockBehaviour.Properties.of());
+        BannerLocalOffset child = new BannerLocalOffset(1, 0);
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            var parallelAnchor = anchor.defaultBlockState()
+                    .setValue(BannerBlock.FACING, facing)
+                    .setValue(BannerBlock.ORIENTATION, BannerOrientation.WALL_PARALLEL)
+                    .getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds();
+            var perpendicularAnchor = anchor.defaultBlockState()
+                    .setValue(BannerBlock.FACING, facing)
+                    .setValue(BannerBlock.ORIENTATION, BannerOrientation.WALL_PERPENDICULAR)
+                    .getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds();
+            var parallelPart = part.stateFor(facing, BannerOrientation.WALL_PARALLEL, child)
+                    .getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds();
+            var perpendicularPart = part.stateFor(facing, BannerOrientation.WALL_PERPENDICULAR, child)
+                    .getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds();
+
+            assertEquals(0.125, axisSize(parallelAnchor, facing.getAxis()));
+            assertEquals(1.0, axisSize(perpendicularAnchor, facing.getAxis()));
+            assertEquals(0.125, axisSize(parallelPart, facing.getAxis()));
+            assertEquals(1.0, axisSize(perpendicularPart, facing.getAxis()));
+            assertEquals(0.125, axisSize(perpendicularAnchor,
+                    facing.getAxis() == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X));
+            assertEquals(1.0, axisSize(perpendicularPart, Direction.Axis.Y));
+            assertEquals(0.875, axisSize(parallelAnchor, Direction.Axis.Y));
+        }
+    }
+
+    @Test
     void staticDiagnosticAnchorAndPartAssetsPackageFacingWithoutTintOrLayeredRendering() throws Exception {
         Path blockstatePath = RESOURCES.resolve("assets/britannia_mod/blockstates/banner.json");
         Path modelPath = RESOURCES.resolve("assets/britannia_mod/models/block/banner.json");
@@ -76,8 +116,20 @@ class BannerBlockRegistrationAssetsAndScopeTest {
 
         JsonObject variants = JsonParser.parseString(Files.readString(blockstatePath))
                 .getAsJsonObject().getAsJsonObject("variants");
-        assertEquals(Set.of("facing=north", "facing=east", "facing=south", "facing=west"),
+        assertEquals(Set.of(
+                        "facing=north,orientation=wall_parallel",
+                        "facing=east,orientation=wall_parallel",
+                        "facing=south,orientation=wall_parallel",
+                        "facing=west,orientation=wall_parallel",
+                        "facing=north,orientation=wall_perpendicular",
+                        "facing=east,orientation=wall_perpendicular",
+                        "facing=south,orientation=wall_perpendicular",
+                        "facing=west,orientation=wall_perpendicular"),
                 variants.keySet());
+        assertTrue(Files.isRegularFile(RESOURCES.resolve(
+                "assets/britannia_mod/models/block/banner_perpendicular.json")));
+        assertTrue(Files.isRegularFile(RESOURCES.resolve(
+                "assets/britannia_mod/models/block/banner_part_perpendicular.json")));
         String model = Files.readString(modelPath);
         assertTrue(model.contains("banner/placeholder/missing"));
         assertFalse(model.contains("tintindex"));
@@ -118,7 +170,7 @@ class BannerBlockRegistrationAssetsAndScopeTest {
         assertTrue(service.contains("mayInteract"));
         assertTrue(service.contains("mayUseItemAt"));
         assertTrue(service.contains("UPDATE_SUPPRESS_DROPS"));
-        assertFalse(service.contains("wall_perpendicular"));
+        assertTrue(service.contains("BannerOrientationPreferenceService"));
         assertFalse(service.contains("recipe"));
         assertFalse(service.contains("command"));
         assertFalse(service.contains("npc"));
@@ -133,5 +185,13 @@ class BannerBlockRegistrationAssetsAndScopeTest {
 
     private static long count(String input, String regex) {
         return Pattern.compile(regex, Pattern.MULTILINE).matcher(input).results().count();
+    }
+
+    private static double axisSize(net.minecraft.world.phys.AABB bounds, Direction.Axis axis) {
+        return switch (axis) {
+            case X -> bounds.maxX - bounds.minX;
+            case Y -> bounds.maxY - bounds.minY;
+            case Z -> bounds.maxZ - bounds.minZ;
+        };
     }
 }

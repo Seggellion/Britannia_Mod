@@ -54,6 +54,7 @@ import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegist
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrityHandler;
+import com.seggellion.britannia_mod.banner.placement.BannerOrientationPreferenceLifecycle;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 
 import net.minecraft.core.BlockPos;
@@ -117,6 +118,7 @@ CraftableRegistry.init();
         BlockEntityRegistry.register(modEventBus);
         BannerBlockRegistry.register(modEventBus);
         BannerStructureIntegrityHandler.register();
+        BannerOrientationPreferenceLifecycle.register(NeoForge.EVENT_BUS);
         ItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);
         BannerItemRegistry.register(modEventBus);

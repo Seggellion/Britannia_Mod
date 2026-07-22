@@ -1,5 +1,68 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-21 - Milestone 12: Orientation-Aware Placement and Mount Variants
+
+### Orientation selection and authority
+
+- Added stable wall-parallel and wall-perpendicular placement modes without adding orientation to
+  `BannerInstanceState`. Sneak-use cycles a server-owned, per-player ephemeral preference in stable order, normalizes
+  it against the held definition, and synchronizes only the selected display value to the client. Logout and server
+  stop clear preference state; no client-to-server orientation payload or item-stack mutation was introduced.
+- Definitions that expose one orientation remain fixed to that mode. Definitions that expose both default
+  deterministically to wall-parallel. Unsupported orientation and mount choices fail before world reads or mutation.
+
+### Geometry, support, persistence, and lifecycle
+
+- The shared local/world transform now drives placement, preview, part-to-anchor resolution, persistence, repair,
+  removal, pick block, and diagnostic shapes for both orientations and every horizontal facing. Parallel width grows
+  viewer-right and requires wall support behind every top-row cell. Perpendicular width grows outward from the wall
+  and requires only the anchor's wall support.
+- Anchor and generic part blockstates persist orientation. The anchor's versioned placed-structure record remains
+  authoritative across reload and definition changes; legacy records still migrate to one-cell wall-parallel.
+  Integrity repairs a stale anchor orientation property from the persisted record, rejects mismatched parts, and
+  teardown remains duplicate-proof and rollback-safe.
+- Brass and iron remain instance mount IDs flowing through planning, persistence, preview, item return, and render
+  descriptors. They do not change occupied cells or support requirements in this milestone.
+
+### Client ghost and presentation boundary
+
+- Added a client-only world-space wireframe ghost after particles. It uses synchronized display-only registry data,
+  the held configured shared banner, the selected orientation, already-loaded chunks, and the same pure transforms as
+  server planning. It renders planned cells, required supports, dimensions, orientation, mount, and typed local
+  failures without changing blocks or sending per-frame packets.
+- Locally clear plans remain advisory because server protection is not fully knowable on the client. The preview says
+  so explicitly and server placement always revalidates. Brass uses gold, iron gray, missing mount data magenta,
+  blocked cells red, and invalid supports orange. Placed models remain neutral diagnostic assets; final cloth and
+  mount artwork are intentionally deferred.
+
+### Gate D status and validation evidence
+
+- The generated catalogue status now contains one row for every stable ID with dimensions, supported orientations,
+  supported/default mounts, automated parallel/perpendicular/brass/iron results, manual result, and content status.
+  All 33 rows pass the automated matrix; manual in-game validation was not performed. Final names, dimensions,
+  per-definition orientations, per-definition mounts, and placed artwork remain unapproved.
+- Normal scaffold generation and `tools\\scaffold_banners.bat --check` passed with 33 manifest entries,
+  33 definitions, 33 active/0 disabled entries, 33 localization entries, 14 provisional names, 33 provisional
+  dimensions, and five placeholder asset families.
+- Focused M12 validation passed with 88 tests across 13 suites, 0 failures, 0 errors, and 0 skipped. Its planner
+  matrix executes 1,056 successful plans: 33 definitions x two mounts x two orientations x four facings.
+- `gradlew.bat test --tests "com.seggellion.britannia_mod.bannerdyeing.*" --no-daemon --stacktrace` passed with
+  496 tests across 41 suites before the final planner read-order hardening. Final `gradlew.bat clean --no-daemon
+  --stacktrace` passed in 25 seconds; the clean full `gradlew.bat test --no-daemon --stacktrace` passed in 2 minutes
+  57 seconds with 498 tests across 41 suites, 0 failures, 0 errors, and 0 skipped.
+- Final `gradlew.bat build --no-daemon --stacktrace` passed in 51 seconds and completed `jar`, `jarJar`, `assemble`,
+  `check`, and `build`. `Britannia_Mod-0.1.7k-all.jar` contains the M12 preference, preview, ghost, payload, and
+  perpendicular-model resources; it contains zero part block entities, placed block-entity renderers, or part item
+  models. Existing compiler warnings are unchanged and no M12 warning was introduced.
+- Milestone commit subject: `feat(banners): add orientation-aware placement and mount variants`; the resulting hash
+  is reported in the handoff because a commit cannot contain its own hash.
+
+### Scope boundary and next milestone
+
+- No recipe, creative-tab entry, admin/debug command, NPC integration, direct placed-banner dyeing, new banner item,
+  per-definition block, part block entity, placed block-entity renderer, or final heraldic asset was added.
+- Stop at Gate D after the Milestone 12 commit. Do not begin Milestone 13.
+
 ## 2026-07-21 - Milestone 11: Multi-Block Anchor and Occupied Parts
 
 ### Structure content, footprint, and transform

@@ -62,13 +62,15 @@ class BannerSingleBlockEligibilityTest {
     }
 
     @Test
-    void unsupportedWallParallelOrientationWinsOverDimensions() {
+    void selectedOrientationEligibilitySupportsPerpendicularOnlyDefinitions() {
         BannerDefinition base = production.banners().activeDefinitions().stream()
                 .filter(BannerSingleBlockEligibility::isEligible).findFirst().orElseThrow();
         BannerDefinition perpendicular = copy(base, base.catalogueGroup(), base.dimensions(),
                 List.of(BannerOrientation.WALL_PERPENDICULAR), base.contentStatus());
-        assertEquals(BannerSingleBlockEligibility.Result.WALL_PARALLEL_UNSUPPORTED,
-                BannerSingleBlockEligibility.evaluate(perpendicular));
+        assertEquals(BannerSingleBlockEligibility.Result.ELIGIBLE,
+                BannerSingleBlockEligibility.evaluate(perpendicular, BannerOrientation.WALL_PERPENDICULAR));
+        assertEquals(BannerSingleBlockEligibility.Result.ORIENTATION_UNSUPPORTED,
+                BannerSingleBlockEligibility.evaluate(perpendicular, BannerOrientation.WALL_PARALLEL));
     }
 
     @Test

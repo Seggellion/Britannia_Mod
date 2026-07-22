@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.banner.placement;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
 import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
 import com.seggellion.britannia_mod.banner.item.BannerItem;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
@@ -11,12 +12,15 @@ import com.seggellion.britannia_mod.banner.structure.BannerStructureCell;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureLifecycle;
 import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries;
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
+import com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload;
 import java.util.Optional;
 import org.slf4j.Logger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -45,6 +49,9 @@ public final class BannerPlacementService {
         }
         Player player = context.getPlayer();
         ItemStack stack = context.getItemInHand();
+        if (player.isShiftKeyDown()) {
+            return cycle(player, stack, item);
+        }
         BannerBlock block = BannerBlockRegistry.BANNER.get();
         BannerPartBlock partBlock = BannerBlockRegistry.BANNER_PART.get();
         BlockPlaceContext placeContext = new BlockPlaceContext(context);
@@ -106,11 +113,13 @@ public final class BannerPlacementService {
             }
         };
 
+        BannerOrientation selectedOrientation = selectedOrientation(player, item, stack);
         BannerPlacementPlanningResult planning = BannerPlacementPlanner.plan(
                 item, stack, BannerDataRegistries.current(), BannerDataRegistries.isAvailable(),
+                selectedOrientation,
                 context.getClickedPos(), context.getClickedFace(), block, partBlock, world);
         if (!planning.successful()) {
-            feedback(player, planning.failure());
+            feedback(player, planning.failure(), selectedOrientation);
             return InteractionResult.FAIL;
         }
         BannerPlacementPlan plan = planning.plan().orElseThrow();
@@ -128,6 +137,47 @@ public final class BannerPlacementService {
             feedback(player, result);
             return InteractionResult.FAIL;
         }
+        return InteractionResult.SUCCESS;
+    }
+
+    private static BannerOrientation selectedOrientation(Player player, BannerItem item, ItemStack stack) {
+        if (!BannerDataRegistries.isAvailable()) {
+            return BannerOrientation.WALL_PARALLEL;
+        }
+        return item.stateAccess().read(stack)
+                .flatMap(state -> BannerDataRegistries.current().banners().find(state.bannerDefinitionId()))
+                .map(definition -> BannerOrientationPreferenceService.currentNormalized(
+                        player.getUUID(), definition.supportedOrientations()))
+                .orElse(BannerOrientation.WALL_PARALLEL);
+    }
+
+    private static InteractionResult cycle(Player player, ItemStack stack, BannerItem item) {
+        if (!BannerDataRegistries.isAvailable()) {
+            feedback(player, BannerPlacementFailure.REGISTRY_UNAVAILABLE);
+            return InteractionResult.FAIL;
+        }
+        BannerInstanceState state = item.stateAccess().read(stack).orElse(null);
+        if (state == null) {
+            feedback(player, BannerPlacementFailure.UNCONFIGURED_BANNER);
+            return InteractionResult.FAIL;
+        }
+        var definition = BannerDataRegistries.current().banners().find(state.bannerDefinitionId()).orElse(null);
+        if (definition == null) {
+            feedback(player, BannerPlacementFailure.DEFINITION_MISSING);
+            return InteractionResult.FAIL;
+        }
+        BannerOrientationPreferenceService.CycleResult result =
+                BannerOrientationPreferenceService.cycle(player.getUUID(), definition.supportedOrientations());
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection.send(new ClientboundCustomPayloadPacket(
+                    new S2CBannerPlacementOrientationPayload(result.orientation())));
+        }
+        String orientationKey = "message.britannia_mod.banner.orientation."
+                + (result.orientation() == BannerOrientation.WALL_PARALLEL ? "parallel" : "perpendicular");
+        String key = result.onlySupportedMode()
+                ? "message.britannia_mod.banner.orientation.only"
+                : "message.britannia_mod.banner.orientation.changed";
+        player.displayClientMessage(Component.translatable(key, Component.translatable(orientationKey)), true);
         return InteractionResult.SUCCESS;
     }
 
@@ -234,5 +284,17 @@ public final class BannerPlacementService {
             default -> "failed_safely";
         };
         player.displayClientMessage(Component.translatable("message.britannia_mod.banner.placement." + suffix), true);
+    }
+
+    private static void feedback(
+            Player player, BannerPlacementFailure failure, BannerOrientation orientation) {
+        if (failure == BannerPlacementFailure.INVALID_WALL_SUPPORT) {
+            String suffix = orientation == BannerOrientation.WALL_PARALLEL
+                    ? "parallel_support" : "perpendicular_support";
+            player.displayClientMessage(
+                    Component.translatable("message.britannia_mod.banner.placement." + suffix), true);
+            return;
+        }
+        feedback(player, failure);
     }
 }

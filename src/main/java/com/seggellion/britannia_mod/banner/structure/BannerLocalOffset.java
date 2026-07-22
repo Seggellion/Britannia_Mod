@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.banner.structure;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-/** A deterministic wall-parallel cell coordinate measured rightward and downward from the anchor. */
+/** A deterministic orientation-local cell coordinate measured along the span axis and downward from the anchor. */
 public record BannerLocalOffset(int horizontal, int vertical) implements Comparable<BannerLocalOffset> {
     public static final int MAX_HORIZONTAL = 2;
     public static final int MAX_VERTICAL = 1;

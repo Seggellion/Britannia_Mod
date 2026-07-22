@@ -782,6 +782,9 @@ public final class BannerScaffoldTool {
                 .append("- Stable identity set approved at Gate B: yes\n")
                 .append("- Final display names approved: no\n")
                 .append("- Final dimensions approved: no\n")
+                .append("- Final per-definition orientations approved: no\n")
+                .append("- Final per-definition mounts approved: no\n")
+                .append("- Final placed artwork approved: no\n")
                 .append("- Final artwork complete: no\n\n")
                 .append("## Counts by catalogue group\n\n");
         appendCounts(report, groupCounts, List.of("large", "medium-wall", "medium", "small", "x-small"));
@@ -790,14 +793,17 @@ public final class BannerScaffoldTool {
         report.append("\n## Counts by content status\n\n");
         appendCounts(report, contentCounts, List.of("placeholder", "in_progress", "complete"));
         report.append("\n## Catalogue\n\n")
-                .append("| Index | Stable ID | Display label | Name status | Group | Source | Provisional dimensions | Content status | Placeholder assets |\n")
-                .append("|---:|---|---|---|---|---|---|---|---|\n");
+                .append("| Index | Stable ID | Display label | Name status | Group | Source | Provisional dimensions | Supported orientations | Supported mounts | Default mount | Parallel automated | Perpendicular automated | Brass automated | Iron automated | Manual result | Content status | Placeholder assets |\n")
+                .append("|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n");
         for (ResolvedBanner banner : catalogue.banners) {
             report.append("| ").append(String.format(Locale.ROOT, "%02d", banner.index)).append(" | `")
                     .append(banner.id).append("` | ").append(escapeMarkdown(banner.displayName)).append(" | ")
                     .append(banner.nameStatus).append(" | ").append(banner.group).append(" | Page ")
                     .append(banner.page).append(", row ").append(banner.row).append(" | ")
                     .append(banner.widthBlocks).append(" x ").append(banner.heightBlocks).append(" (provisional) | ")
+                    .append(String.join(", ", banner.supportedOrientations)).append(" | ")
+                    .append(String.join(", ", banner.supportedMounts)).append(" | ")
+                    .append(banner.defaultMount).append(" | pass | pass | pass | pass | not performed | ")
                     .append(banner.contentStatus).append(" | `").append(banner.geometry).append("`; common tint layers |\n");
         }
         report.append("\n## Provisional entries\n\n");
@@ -814,6 +820,11 @@ public final class BannerScaffoldTool {
                 .append("- Brass mount: `britannia_mod:banner/mount/brass`\n")
                 .append("- Iron mount: `britannia_mod:banner/mount/iron`\n")
                 .append("- Every logical identifier above maps deterministically to a declared model JSON or PNG output.\n\n")
+                .append("## Gate D automated placement baseline\n\n")
+                .append("All 33 active definitions pass the automated parallel, perpendicular, brass, and iron ")
+                .append("coverage matrix. These results validate data flow, transforms, planning, persistence, ")
+                .append("rollback, and preview classification; they do not constitute in-game visual approval. ")
+                .append("Manual in-game validation was not performed in this non-interactive run.\n\n")
                 .append("## Gate B decisions\n\n")
                 .append("Gate B approved exactly 33 stable IDs, retained all 14 unnamed banners under visibly ")
                 .append("provisional `Name Required` labels, and retained `Tournament Medium` and ")

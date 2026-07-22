@@ -722,6 +722,14 @@ registrar.playToClient(
         : (payload, context) -> {}
 );
 
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleBannerPlacementOrientation
+        : (payload, context) -> {}
+);
+
 
     
 }

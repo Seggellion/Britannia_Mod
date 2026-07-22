@@ -6,6 +6,25 @@ Milestone: 0 — Repository Discovery and Implementation Facts
 
 Feature branch: `banners-dyetub`
 
+## Milestone 12 orientation and preview integration facts
+
+- `BannerOrientation` is a stable string-serializable blockstate property. The selected orientation is ephemeral
+  server-owned per-player state, not part of `BannerInstanceState`; only an S2C display update is required because
+  standard item `useOn` already reaches the server with sneak state.
+- The authoritative persisted placement record stores orientation with its ordered footprint. Parallel and
+  perpendicular transforms, inverse part lookup, support positions, and per-cell shapes are centralized in
+  `BannerStructureTransform` and shared by placement, lifecycle, integrity, and preview code.
+- Parallel width follows viewer-right (`FACING.getCounterClockWise()`) and its top row requires backing faces.
+  Perpendicular width follows outward `FACING` and only the anchor requires a backing face.
+- NeoForge 21.1.72 exposes `RenderLevelStageEvent` with `AFTER_PARTICLES`, camera pose/rotation, `RenderType.lines()`,
+  `LevelRenderer.renderLineBox`, and `Font.drawInBatch`. The placement ghost uses these client-only APIs and only
+  checks chunks already reported loaded by the client level.
+- Client registry projection now includes definition dimensions, supported orientations, and supported mounts. It is
+  display-only and cannot authorize placement. Client-success previews are classified as unknown for server-only
+  protection until the server revalidates normal placement.
+- Brass and iron are both verified mount IDs through item state, render projection, placement plans, persistence, and
+  previews. M12 does not give mounts different footprint/support behavior and does not add a placed banner renderer.
+
 ## Milestone 11 placement and lifecycle integration facts
 
 - Registered structure content is `britannia_mod:banner` (authoritative anchor),

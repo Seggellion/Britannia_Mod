@@ -37,6 +37,10 @@ class BannerPlacementExecutorTest {
     @BeforeAll
     static void setup() {
         Milestone7RegisteredTestContent.ensureRegistered();
+        plan = createPlan(BannerOrientation.WALL_PARALLEL);
+    }
+
+    private static BannerPlacementPlan createPlan(BannerOrientation orientation) {
         BannerBlock anchor = new BannerBlock(BlockBehaviour.Properties.of());
         BannerPartBlock part = new BannerPartBlock(BlockBehaviour.Properties.of());
         BannerFootprint footprint = BannerFootprint.fromDimensions(new BannerDimensions(3, 2, true))
@@ -45,17 +49,18 @@ class BannerPlacementExecutorTest {
         List<BannerStructureCell> cells = footprint.offsets().stream().map(offset -> {
             var placed = offset.isAnchor()
                     ? anchor.defaultBlockState().setValue(BannerBlock.FACING, Direction.NORTH)
-                    : part.stateFor(Direction.NORTH, offset);
+                            .setValue(BannerBlock.ORIENTATION, orientation)
+                    : part.stateFor(Direction.NORTH, orientation, offset);
             return new BannerStructureCell(offset,
-                    BannerStructureTransform.worldPosition(anchorPos, Direction.NORTH, offset),
+                    BannerStructureTransform.worldPosition(anchorPos, Direction.NORTH, orientation, offset),
                     offset.isAnchor() ? BannerCellRole.ANCHOR : BannerCellRole.PART,
                     Blocks.SHORT_GRASS.defaultBlockState(), placed);
         }).toList();
-        plan = new BannerPlacementPlan(anchorPos, Direction.NORTH, BannerOrientation.WALL_PARALLEL,
+        return new BannerPlacementPlan(anchorPos, Direction.NORTH, orientation,
                 cells.getFirst().placedState(), CoreDataFixtures.dyedBannerState(),
-                BannerPlacedStructure.fromFootprint(footprint), cells,
-                cells.stream().filter(cell -> cell.offset().vertical() == 0)
-                        .map(cell -> cell.worldPosition().south()).toList());
+                BannerPlacedStructure.fromFootprint(orientation, footprint), cells,
+                BannerStructureTransform.requiredSupportPositions(
+                        anchorPos, Direction.NORTH, orientation, footprint.offsets()));
     }
 
     @Test
@@ -138,9 +143,41 @@ class BannerPlacementExecutorTest {
         assertEquals(0, mutation.drops);
     }
 
+    @Test
+    void rollbackContractCoversEveryStageForBothOrientations() {
+        for (BannerOrientation orientation : BannerOrientation.values()) {
+            BannerPlacementPlan orientedPlan = createPlan(orientation);
+            for (int failureIndex = 0; failureIndex < orientedPlan.cells().size(); failureIndex++) {
+                ItemStack stack = configuredStack(orientedPlan);
+                FakeMutation mutation = new FakeMutation(orientedPlan);
+                mutation.failPlacementIndex = failureIndex;
+                assertEquals(BannerPlacementFailure.BLOCK_SET_FAILURE,
+                        BannerPlacementExecutor.execute(orientedPlan, mutation, stack, false),
+                        orientation + " cell " + failureIndex);
+                assertRolledBack(stack, mutation);
+            }
+
+            for (int stage = 0; stage < 4; stage++) {
+                ItemStack stack = configuredStack(orientedPlan);
+                FakeMutation mutation = new FakeMutation(orientedPlan);
+                if (stage == 0) mutation.entityPresent = false;
+                if (stage == 1) mutation.assign = false;
+                if (stage == 2) mutation.failVerificationIndex = orientedPlan.cells().size() - 1;
+                if (stage == 3) mutation.synchronize = false;
+                assertTrue(BannerPlacementExecutor.execute(orientedPlan, mutation, stack, false)
+                        != BannerPlacementFailure.NONE, orientation + " stage " + stage);
+                assertRolledBack(stack, mutation);
+            }
+        }
+    }
+
     private static ItemStack configuredStack() {
+        return configuredStack(plan);
+    }
+
+    private static ItemStack configuredStack(BannerPlacementPlan configuredPlan) {
         ItemStack stack = new ItemStack(Milestone7RegisteredTestContent.banner());
-        stack.set(Milestone7RegisteredTestContent.component(), plan.bannerState());
+        stack.set(Milestone7RegisteredTestContent.component(), configuredPlan.bannerState());
         return stack;
     }
 
@@ -155,6 +192,7 @@ class BannerPlacementExecutorTest {
     }
 
     private static final class FakeMutation implements BannerPlacementMutation, BannerPlacementMutation.StateTarget {
+        final BannerPlacementPlan executionPlan;
         boolean entityPresent = true;
         boolean assign = true;
         boolean reportMismatch;
@@ -172,9 +210,17 @@ class BannerPlacementExecutorTest {
         Optional<BannerPlacedStructure> storedStructure = Optional.empty();
         List<Integer> placedIndexes = new ArrayList<>();
 
+        FakeMutation() {
+            this(plan);
+        }
+
+        FakeMutation(BannerPlacementPlan executionPlan) {
+            this.executionPlan = executionPlan;
+        }
+
         @Override
         public boolean placeCell(BannerPlacementPlan ignored, BannerStructureCell cell) {
-            int index = plan.cells().indexOf(cell);
+            int index = executionPlan.cells().indexOf(cell);
             if (index == failPlacementIndex) return false;
             placedIndexes.add(index);
             changedCells++;
@@ -202,7 +248,7 @@ class BannerPlacementExecutorTest {
         @Override public Optional<BannerPlacedStructure> currentStructure() { return storedStructure; }
         @Override public boolean synchronize() { syncs++; return synchronize; }
         @Override public boolean verifyCell(BannerPlacementPlan ignored, BannerStructureCell cell) {
-            return plan.cells().indexOf(cell) != failVerificationIndex;
+            return executionPlan.cells().indexOf(cell) != failVerificationIndex;
         }
 
         @Override

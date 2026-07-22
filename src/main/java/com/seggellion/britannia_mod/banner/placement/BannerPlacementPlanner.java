@@ -23,7 +23,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Ordered, mutation-free construction of a complete rectangular wall-parallel placement transaction. */
+/** Ordered, mutation-free construction of a complete rectangular orientation-aware placement transaction. */
 public final class BannerPlacementPlanner {
     private BannerPlacementPlanner() {
     }
@@ -33,6 +33,21 @@ public final class BannerPlacementPlanner {
             ItemStack stack,
             RegistrySnapshot snapshot,
             boolean registryAvailable,
+            BlockPos clickedPos,
+            Direction clickedFace,
+            BannerBlock bannerBlock,
+            BannerPartBlock partBlock,
+            BannerPlacementWorld world) {
+        return plan(item, stack, snapshot, registryAvailable, BannerOrientation.WALL_PARALLEL,
+                clickedPos, clickedFace, bannerBlock, partBlock, world);
+    }
+
+    public static BannerPlacementPlanningResult plan(
+            BannerItem item,
+            ItemStack stack,
+            RegistrySnapshot snapshot,
+            boolean registryAvailable,
+            BannerOrientation selectedOrientation,
             BlockPos clickedPos,
             Direction clickedFace,
             BannerBlock bannerBlock,
@@ -70,7 +85,7 @@ public final class BannerPlacementPlanner {
         if (!definition.supportedMounts().contains(state.mountId())) {
             return fail(BannerPlacementFailure.UNSUPPORTED_MOUNT);
         }
-        if (!definition.supportedOrientations().contains(BannerOrientation.WALL_PARALLEL)) {
+        if (!definition.supportedOrientations().contains(selectedOrientation)) {
             return fail(BannerPlacementFailure.UNSUPPORTED_ORIENTATION);
         }
 
@@ -92,36 +107,44 @@ public final class BannerPlacementPlanner {
         if (!clickedFace.getAxis().isHorizontal()) return fail(BannerPlacementFailure.INVALID_CLICKED_FACE);
 
         BlockPos anchorPos = clickedPos.relative(clickedFace).immutable();
-        BlockState anchorState = bannerBlock.defaultBlockState().setValue(BannerBlock.FACING, clickedFace);
-        BannerPlacedStructure placedStructure = BannerPlacedStructure.fromFootprint(footprint);
-        List<BannerStructureCell> cells = new ArrayList<>(footprint.offsets().size());
-        List<BlockPos> supports = new ArrayList<>(footprint.width());
+        BlockState anchorState = bannerBlock.defaultBlockState()
+                .setValue(BannerBlock.FACING, clickedFace)
+                .setValue(BannerBlock.ORIENTATION, selectedOrientation);
+        BannerPlacedStructure placedStructure = BannerPlacedStructure.fromFootprint(selectedOrientation, footprint);
+        List<CellProjection> projections = new ArrayList<>(footprint.offsets().size());
+        List<BlockPos> supports = BannerStructureTransform.requiredSupportPositions(
+                anchorPos, clickedFace, selectedOrientation, footprint.offsets());
 
         for (BannerLocalOffset offset : footprint.offsets()) {
-            BlockPos worldPos = BannerStructureTransform.worldPosition(anchorPos, clickedFace, offset);
+            BlockPos worldPos = BannerStructureTransform.worldPosition(
+                    anchorPos, clickedFace, selectedOrientation, offset);
             BlockState placedState;
             try {
-                placedState = offset.isAnchor() ? anchorState : partBlock.stateFor(clickedFace, offset);
+                placedState = offset.isAnchor() ? anchorState
+                        : partBlock.stateFor(clickedFace, selectedOrientation, offset);
             } catch (RuntimeException exception) {
                 return fail(BannerPlacementFailure.PART_STATE_ENCODING_FAILURE);
             }
-            cells.add(new BannerStructureCell(offset, worldPos,
-                    offset.isAnchor() ? BannerCellRole.ANCHOR : BannerCellRole.PART,
-                    world.blockState(worldPos), placedState));
-            if (offset.vertical() == 0) {
-                supports.add(worldPos.relative(clickedFace.getOpposite()).immutable());
-            }
+            projections.add(new CellProjection(offset, worldPos,
+                    offset.isAnchor() ? BannerCellRole.ANCHOR : BannerCellRole.PART, placedState));
         }
 
-        for (BannerStructureCell cell : cells) {
+        for (CellProjection cell : projections) {
             if (!world.inWorldBounds(cell.worldPosition())) return fail(BannerPlacementFailure.WORLD_BOUND_FAILURE);
         }
-        for (BannerStructureCell cell : cells) {
+        for (BlockPos support : supports) {
+            if (!world.inWorldBounds(support)) return fail(BannerPlacementFailure.WORLD_BOUND_FAILURE);
+        }
+        for (CellProjection cell : projections) {
             if (!world.chunkLoaded(cell.worldPosition())) return fail(BannerPlacementFailure.REQUIRED_CHUNK_UNLOADED);
         }
         for (BlockPos support : supports) {
             if (!world.chunkLoaded(support)) return fail(BannerPlacementFailure.REQUIRED_CHUNK_UNLOADED);
         }
+        List<BannerStructureCell> cells = projections.stream()
+                .map(cell -> new BannerStructureCell(cell.offset(), cell.worldPosition(), cell.role(),
+                        world.blockState(cell.worldPosition()), cell.placedState()))
+                .toList();
         for (BannerStructureCell cell : cells) {
             if (!world.targetReplaceable(cell.worldPosition())) return fail(BannerPlacementFailure.TARGET_OCCUPIED);
             if (world.unrelatedBannerCell(cell.worldPosition())) return fail(BannerPlacementFailure.UNRELATED_BANNER_CELL);
@@ -147,7 +170,7 @@ public final class BannerPlacementPlanner {
         if (!world.canAcceptState(state)) return fail(BannerPlacementFailure.STATE_TRANSFER_FAILURE);
 
         return BannerPlacementPlanningResult.success(new BannerPlacementPlan(
-                anchorPos, clickedFace, BannerOrientation.WALL_PARALLEL, anchorState,
+                anchorPos, clickedFace, selectedOrientation, anchorState,
                 state, placedStructure, cells, supports));
     }
 
@@ -160,5 +183,9 @@ public final class BannerPlacementPlanner {
             BannerPlacementFailure missing, BannerPlacementFailure disabled) {
         boolean isDisabled = registry.disabledEntries().stream().map(DefinitionEntry::id).anyMatch(id::equals);
         return isDisabled ? disabled : missing;
+    }
+
+    private record CellProjection(
+            BannerLocalOffset offset, BlockPos worldPosition, BannerCellRole role, BlockState placedState) {
     }
 }

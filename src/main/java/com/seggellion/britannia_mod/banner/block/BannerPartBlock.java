@@ -1,8 +1,7 @@
 package com.seggellion.britannia_mod.banner.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.placement.BannerBlockItemTransfer;
 import com.seggellion.britannia_mod.banner.structure.BannerLocalOffset;
 import com.seggellion.britannia_mod.banner.structure.BannerRemovalCause;
@@ -11,7 +10,6 @@ import com.seggellion.britannia_mod.banner.structure.BannerStructureLifecycle;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureTransform;
 import com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,6 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -39,18 +38,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class BannerPartBlock extends Block {
     public static final MapCodec<BannerPartBlock> CODEC = simpleCodec(BannerPartBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<BannerOrientation> ORIENTATION =
+            EnumProperty.create("orientation", BannerOrientation.class);
     public static final IntegerProperty HORIZONTAL_OFFSET = IntegerProperty.create("horizontal", 0, 2);
     public static final IntegerProperty VERTICAL_OFFSET = IntegerProperty.create("vertical", 0, 1);
-    private static final Map<Direction, VoxelShape> SHAPES = Maps.newEnumMap(ImmutableMap.of(
-            Direction.NORTH, Block.box(1.0, 0.0, 14.0, 15.0, 16.0, 16.0),
-            Direction.SOUTH, Block.box(1.0, 0.0, 0.0, 15.0, 16.0, 2.0),
-            Direction.WEST, Block.box(14.0, 0.0, 1.0, 16.0, 16.0, 15.0),
-            Direction.EAST, Block.box(0.0, 0.0, 1.0, 2.0, 16.0, 15.0)));
-
     public BannerPartBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
+                .setValue(ORIENTATION, BannerOrientation.WALL_PARALLEL)
                 .setValue(HORIZONTAL_OFFSET, 0)
                 .setValue(VERTICAL_OFFSET, 1));
     }
@@ -61,10 +57,16 @@ public final class BannerPartBlock extends Block {
     }
 
     public BlockState stateFor(Direction facing, BannerLocalOffset offset) {
+        return stateFor(facing, BannerOrientation.WALL_PARALLEL, offset);
+    }
+
+    public BlockState stateFor(
+            Direction facing, BannerOrientation orientation, BannerLocalOffset offset) {
         if (offset.isAnchor()) {
             throw new IllegalArgumentException("The anchor cannot be encoded as a banner part");
         }
         return defaultBlockState().setValue(FACING, facing)
+                .setValue(ORIENTATION, orientation)
                 .setValue(HORIZONTAL_OFFSET, offset.horizontal())
                 .setValue(VERTICAL_OFFSET, offset.vertical());
     }
@@ -75,7 +77,8 @@ public final class BannerPartBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES.get(state.getValue(FACING));
+        return BannerStructureTransform.cellShape(
+                state.getValue(ORIENTATION), state.getValue(FACING), false);
     }
 
     @Override
@@ -123,13 +126,16 @@ public final class BannerPartBlock extends Block {
     @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         Direction facing = state.getValue(FACING);
+        BannerOrientation orientation = state.getValue(ORIENTATION);
         BannerLocalOffset offset = localOffset(state);
-        BlockPos anchorPos = BannerStructureTransform.anchorPosition(pos, facing, offset);
+        BlockPos anchorPos = BannerStructureTransform.anchorPosition(pos, facing, orientation, offset);
         if (level.hasChunkAt(anchorPos)
                 && level.getBlockState(anchorPos).getBlock() instanceof BannerBlock
                 && level.getBlockState(anchorPos).getValue(BannerBlock.FACING) == facing
+                && level.getBlockState(anchorPos).getValue(BannerBlock.ORIENTATION) == orientation
                 && level.getBlockEntity(anchorPos) instanceof BannerBlockEntity anchor
-                && anchor.placedStructure().filter(structure -> structure.contains(offset)).isPresent()) {
+                && anchor.placedStructure().filter(structure -> structure.orientation() == orientation
+                        && structure.contains(offset)).isPresent()) {
             return BannerBlockItemTransfer.fromBlockEntity(anchor);
         }
         return BannerBlockItemTransfer.fromBlockEntity(null);
@@ -174,6 +180,6 @@ public final class BannerPartBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, HORIZONTAL_OFFSET, VERTICAL_OFFSET);
+        builder.add(FACING, ORIENTATION, HORIZONTAL_OFFSET, VERTICAL_OFFSET);
     }
 }
