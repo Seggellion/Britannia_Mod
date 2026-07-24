@@ -18,11 +18,9 @@ import net.minecraft.world.item.ItemStack;
 
 import com.seggellion.britannia_mod.structure.HouseStyle;
 
-
 public class CreativeTabRegistry {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(
             net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, "britannia_mod");
-
 
     // Tab 1: World & Building Blocks
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_WORLD_TAB = CREATIVE_TABS.register(
@@ -56,13 +54,15 @@ public class CreativeTabRegistry {
 
                 // Foundations, Walls, Floors
                 safeAccept(output, ItemRegistry.WOODEN_BOARD_FLOOR_ITEM.get());
-                 safeAccept(output, ItemRegistry.WOODEN_PLANK_FLOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_PLANK_FLOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_GATE_ITEM.get());
                 safeAccept(output, ItemRegistry.IRON_FENCE_GATE_ITEM.get());
                 safeAccept(output, ItemRegistry.LOCKABLE_WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.METAL_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.LOCKABLE_METAL_DOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SANDSTONE_ITEM.get());
+                safeAccept(output, ItemRegistry.BRICK_FOUNDATION_DARK_SANDSTONE_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_OAK_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SPRUCE_ITEM.get());
                 safeAccept(output, ItemRegistry.CUSTOM_STONE_STAIRS_ITEM.get());
@@ -74,27 +74,15 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.STONE_FLOOR_POLISHED_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FLOOR_ITEM.get());
 
-         // ============================================
-                // === NEW: WINERY SECTION (Added to end) ===
-                // ============================================
-                
-                // 1. Tools & Utility
+                // === WINERY SECTION ===
                 safeAccept(output, ItemRegistry.VINTNER_HOE.get());
                 safeAccept(output, ItemRegistry.SCISSORS.get());
-                
-                // 2. Farming Blocks
                 safeAccept(output, ItemRegistry.FARMING_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.TRELLIS_ITEM.get());
-                
-                // 3. Processing Blocks
                 safeAccept(output, ItemRegistry.JUICE_PRESS_ITEM.get());
                 safeAccept(output, ItemRegistry.WINE_BARREL_ITEM.get());
-                
-                // 4. Fertilizers
                 safeAccept(output, ItemRegistry.TURQUOISE_POWDER.get());
                 safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());
-
-                // 5. Glassware
                 safeAccept(output, ItemRegistry.PITCHER_EMPTY.get());
                 safeAccept(output, ItemRegistry.WINE_BOTTLE_GREEN.get());
                 safeAccept(output, ItemRegistry.WINE_BOTTLE_BROWN.get());
@@ -103,21 +91,13 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get());
                 safeAccept(output, ItemRegistry.PITCHER_RED_GRAPE_JUICE.get());
 
-                // 6. Dynamic Seeds & Grapes (The fix for the error)
-              // 6. Dynamic Seeds
                 for (com.seggellion.britannia_mod.winery.GrapeVariety variety : com.seggellion.britannia_mod.winery.GrapeVarietyManager.getAllVarieties()) {
-                    
-                    // Add Seed Packet
                     ItemStack seedStack = new ItemStack(ItemRegistry.GRAPE_SEEDS.get());
                     com.seggellion.britannia_mod.item.GrapeSeedsItem.setVariety(seedStack, variety.id());
-                    
-                    // Set Name
                     seedStack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, 
                         Component.literal(variety.displayName() + " Seeds"));
-                    
                     output.accept(seedStack);
                 }
-   
 
                 // Containers
                 safeAccept(output, ItemRegistry.CHEST_WOODEN_ITEM.get());
@@ -202,16 +182,13 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.LAMP_POST_REGULAR_ITEM.get());
             }).build());
 
-    // Additional tabs to follow (Decor, Items, Magic, Ores)
-
     // Tab 2: Decorative & Graveyard
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_DECOR_TAB = CREATIVE_TABS.register(
         "britannia_decor_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.britannia_decor_tab"))
             .icon(() -> ItemRegistry.GRAVESTONE_TYPE_1_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                // Decorative items
-            BlockRegistry.STALAGMITES.values().forEach(holder -> {
+                BlockRegistry.STALAGMITES.values().forEach(holder -> {
                     Item item = Item.BY_BLOCK.get(holder.get());
                     if (item != null) safeAccept(output, item);
                 });
@@ -302,13 +279,11 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GRAVESTONE_TYPE_16_ITEM.get());
                 safeAccept(output, ItemRegistry.BLANK_SIGN_HOLDER.get());
 
-                // signs
-                   safeAccept(output, ItemRegistry.HANGING_LANTERN_ITEM.get());
-
+                // Signs
+                safeAccept(output, ItemRegistry.HANGING_LANTERN_ITEM.get());
                 SignItemRegistry.STORE_SIGN_ITEMS.forEach((signType, holder) -> {
                     safeAccept(output, holder.get());
                 });
-
             }).build());
 
     // Tab 3: Items, Tools, and Entities
@@ -317,7 +292,6 @@ public class CreativeTabRegistry {
             .title(Component.translatable("itemGroup.britannia_items_tab"))
             .icon(() -> ItemRegistry.GARLIC.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                // Reagents and items
                 safeAccept(output, ItemRegistry.GARLIC.get());
                 safeAccept(output, ItemRegistry.NIGHTSHADE.get());
                 safeAccept(output, ItemRegistry.BLOOD_MOSS.get());
@@ -326,8 +300,6 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());
                 safeAccept(output, ItemRegistry.MANDRAKE_ROOT.get());
 
-                // General items
-                
                 safeAccept(output, ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_TOP_ITEM.get());
@@ -351,14 +323,15 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.BLACKSMITH_HAMMER.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
+
                 // Musical Instruments
                 safeAccept(output, ItemRegistry.LAP_HARP.get());
-//                safeAccept(output, ItemRegistry.STANDING_HARP.get());
                 safeAccept(output, ItemRegistry.LUTE.get());
                 safeAccept(output, ItemRegistry.DRUMS.get());
                 safeAccept(output, ItemRegistry.VIOLIN.get());
                 safeAccept(output, ItemRegistry.TAMBORINE.get());
                 safeAccept(output, ItemRegistry.TAMBORINE_RIBBON.get());
+
                 // House items
                 safeAccept(output, ItemRegistry.HOUSE_SIGN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.BLUE_TENT_DEED.get());
@@ -390,7 +363,6 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.HORSE_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.BLACKSMITH_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.ARCHITECT_SPAWN_BLOCK_ITEM.get());
-
             }).build());
 
     // Tab 4: Magic
@@ -430,6 +402,50 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GLACIAL_ROCK_ITEM.get());
             }).build());
 
+    // ======================================================
+    // === TAB 6: VILLA & ARCHITECTURAL BLOCKS (NEW) ===
+    // ======================================================
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_VILLA_TAB = CREATIVE_TABS.register(
+        "britannia_villa_tab", () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.britannia_villa_tab"))
+            .icon(() -> ItemRegistry.PLASTER_ORNATE_WALL_UPPER_ITEM.get().getDefaultInstance())
+            .displayItems((parameters, output) -> {
+                // Plaster Series
+                safeAccept(output, ItemRegistry.PLASTER_ORNATE_WALL_UPPER_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_ORNATE_WALL_1_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_ORNATE_WALL_2_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_SMALL_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.ORNATE_WALL_LARGE_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_LARGE_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_EAST_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_SUPPORT_OPEN_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_BLANK_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_AND_SUPPORT_BLANK_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_ARCHWAY_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_AND_STONE_WINDOW_ITEM.get());
+
+                // Sandstone Series
+                safeAccept(output, ItemRegistry.ORNATE_SANDSTONE_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.REGULAR_SANDSTONE_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_BLOCK_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.ORNATE_SANDSTONE_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_POST_ITEM.get());
+                safeAccept(output, ItemRegistry.ORNATE_SANDSTONE_POST_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_BATTLEMENT_ITEM.get());
+                safeAccept(output, ItemRegistry.SANDSTONE_COLUMN_ITEM.get());
+
+                // Interactive Brick
+                safeAccept(output, ItemRegistry.CUSTOM_SANDSTONE_BRICK_ITEM.get());
+
+                // Road Blocks
+                safeAccept(output, ItemRegistry.LIGHT_SANDSTONE_BRICK_ROAD_ITEM.get());
+                safeAccept(output, ItemRegistry.MEDIUM_SANDSTONE_BRICK_ROAD_ITEM.get());
+
+                safeAccept(output, ItemRegistry.DARK_SANDSTONE_BRICK_ROAD_ITEM.get());
+            }).build());
+
     // Utility method
     private static void safeAccept(CreativeModeTab.Output output, Item item) {
         if (item != null) {
@@ -438,7 +454,6 @@ public class CreativeTabRegistry {
             System.err.println("Warning: Attempted to add a null item to the creative tab.");
         }
     }
-
 
     public static void register(IEventBus modEventBus) {
         CREATIVE_TABS.register(modEventBus);

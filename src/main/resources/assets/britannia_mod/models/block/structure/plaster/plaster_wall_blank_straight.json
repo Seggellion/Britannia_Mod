@@ -1,0 +1,38 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "minecraft:block/block",
+	"textures": {
+		"1": "britannia_mod:block/structure/plaster/wood_support",
+		"particle": "britannia_mod:block/structure/plaster/dirty_plaster",
+		"wall": "britannia_mod:block/structure/plaster/dirty_plaster"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 31.9, 5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -5.5]},
+			"faces": {
+				"north": {"uv": [8.25, 8.25, 15.625, 16], "texture": "#wall"},
+				"east": {"uv": [8.25, 8.25, 15.625, 16], "texture": "#wall"},
+				"south": {"uv": [8.25, 8.25, 15.625, 16], "texture": "#wall"},
+				"west": {"uv": [8.25, 8.25, 15.625, 16], "texture": "#wall"},
+				"up": {"uv": [8.25, 8.25, 15.625, 16], "texture": "#wall"},
+				"down": {"uv": [8.25, 8.25, 15.625, 16], "texture": "#wall"}
+			}
+		},
+		{
+			"from": [0, 0, -1],
+			"to": [16, 1, 0],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.2, 0, -0.9]},
+			"faces": {
+				"north": {"uv": [6.375, 14.125, 16, 16], "texture": "#1"},
+				"east": {"uv": [6.375, 14.125, 16, 16], "texture": "#1"},
+				"south": {"uv": [6.375, 14.125, 16, 16], "texture": "#1"},
+				"west": {"uv": [6.375, 14.125, 16, 16], "texture": "#1"},
+				"up": {"uv": [3.125, 0, 12.75, 1.25], "texture": "#1"},
+				"down": {"uv": [6.375, 14.125, 16, 16], "texture": "#1"}
+			}
+		}
+	]
+}

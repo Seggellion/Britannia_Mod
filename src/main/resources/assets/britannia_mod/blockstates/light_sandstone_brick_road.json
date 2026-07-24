@@ -1,0 +1,68 @@
+{
+  "variants": {
+    "facing=north,texture_variant=0": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_0",
+      "y": 0
+    },
+    "facing=east,texture_variant=0": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_0",
+      "y": 90
+    },
+    "facing=south,texture_variant=0": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_0",
+      "y": 180
+    },
+    "facing=west,texture_variant=0": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_0",
+      "y": 270
+    },
+    "facing=north,texture_variant=1": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_1",
+      "y": 0
+    },
+    "facing=east,texture_variant=1": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_1",
+      "y": 90
+    },
+    "facing=south,texture_variant=1": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_1",
+      "y": 180
+    },
+    "facing=west,texture_variant=1": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_1",
+      "y": 270
+    },
+    "facing=north,texture_variant=2": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_2",
+      "y": 0
+    },
+    "facing=east,texture_variant=2": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_2",
+      "y": 90
+    },
+    "facing=south,texture_variant=2": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_2",
+      "y": 180
+    },
+    "facing=west,texture_variant=2": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_2",
+      "y": 270
+    },
+    "facing=north,texture_variant=3": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_3",
+      "y": 0
+    },
+    "facing=east,texture_variant=3": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_3",
+      "y": 90
+    },
+    "facing=south,texture_variant=3": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_3",
+      "y": 180
+    },
+    "facing=west,texture_variant=3": {
+      "model": "britannia_mod:block/roads/light_sandstone_brick_road_3",
+      "y": 270
+    }
+  }
+}

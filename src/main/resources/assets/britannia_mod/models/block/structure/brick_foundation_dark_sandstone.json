@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "britannia_mod:block/structure/brick_dark_foundation",
+    "up": "britannia_mod:block/roads/dark_sandstone_brick_road_0",
+    "north": "britannia_mod:block/structure/brick_dark_foundation",
+    "south": "britannia_mod:block/structure/brick_dark_foundation",
+    "west":  "britannia_mod:block/structure/brick_dark_foundation",
+    "east":  "britannia_mod:block/structure/brick_dark_foundation"
+  }
+}

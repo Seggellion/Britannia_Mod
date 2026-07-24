@@ -560,6 +560,13 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_1X3.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X2.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_2X3.get(), RenderType.cutout());
+
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.PLASTER_ORNATE_WALL_UPPER.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.PLASTER_ORNATE_WALL_1.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.PLASTER_ORNATE_WALL_2.get(), RenderType.cutout());
+
+
+
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_COBBLESTONE_1X2.get(), RenderType.cutout());
 
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WINDOW_CROSS_1X1.get(), RenderType.cutout());

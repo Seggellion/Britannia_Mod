@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "facing=north,shape=straight": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_straight",
+      "y": 0
+    },
+    "facing=east,shape=straight": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_straight",
+      "y": 90
+    },
+    "facing=south,shape=straight": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_straight",
+      "y": 180
+    },
+    "facing=west,shape=straight": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_straight",
+      "y": 270
+    },
+    "facing=north,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_corner",
+      "y": 0
+    },
+    "facing=east,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_corner",
+      "y": 90
+    },
+    "facing=south,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_corner",
+      "y": 180
+    },
+    "facing=west,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_corner",
+      "y": 270
+    },
+    "facing=north,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_t_junction",
+      "y": 0
+    },
+    "facing=east,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_t_junction",
+      "y": 90
+    },
+    "facing=south,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_t_junction",
+      "y": 180
+    },
+    "facing=west,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_1_t_junction",
+      "y": 270
+    }
+  }
+}

@@ -649,6 +649,15 @@ public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_OAK_ITEM =
         ITEMS.register("brick_foundation_oak",
             () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_OAK.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_SANDSTONE_ITEM =
+        ITEMS.register("brick_foundation_sandstone",
+            () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_SANDSTONE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_DARK_SANDSTONE_ITEM =
+        ITEMS.register("brick_foundation_dark_sandstone",
+            () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_DARK_SANDSTONE.get(), new Item.Properties()));
+
+
 public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_SPRUCE_ITEM =
         ITEMS.register("brick_foundation_spruce",
             () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_SPRUCE.get(), new Item.Properties()));
@@ -1592,6 +1601,35 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
 
             public static final DeferredHolder<Item, Item> CHESS_BOARD = ITEMS.register(
                 "chess_board", () -> new BlockItem(BlockRegistry.CHESS_BOARD.get(), new Item.Properties()));
+
+    // Villa DoubleWallBlock Items
+    public static final DeferredHolder<Item, Item> PLASTER_ORNATE_WALL_UPPER_ITEM = ITEMS.register("plaster_ornate_wall_upper", () -> new BlockItem(BlockRegistry.PLASTER_ORNATE_WALL_UPPER.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_ORNATE_WALL_1_ITEM = ITEMS.register("plaster_ornate_wall_1", () -> new BlockItem(BlockRegistry.PLASTER_ORNATE_WALL_1.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_ORNATE_WALL_2_ITEM = ITEMS.register("plaster_ornate_wall_2", () -> new BlockItem(BlockRegistry.PLASTER_ORNATE_WALL_2.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_SMALL_WINDOW_ITEM = ITEMS.register("plaster_small_window", () -> new BlockItem(BlockRegistry.PLASTER_SMALL_WINDOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> ORNATE_WALL_LARGE_WINDOW_ITEM = ITEMS.register("ornate_wall_large_window", () -> new BlockItem(BlockRegistry.ORNATE_WALL_LARGE_WINDOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_LARGE_WINDOW_ITEM = ITEMS.register("plaster_wall_large_window", () -> new BlockItem(BlockRegistry.PLASTER_WALL_LARGE_WINDOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_SUPPORT_DIAGONAL_EAST_ITEM = ITEMS.register("plaster_wall_support_diagonal_east", () -> new BlockItem(BlockRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_EAST.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_ITEM = ITEMS.register("plaster_wall_support_diagonal_south", () -> new BlockItem(BlockRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_SUPPORT_OPEN_ITEM = ITEMS.register("plaster_wall_support_open", () -> new BlockItem(BlockRegistry.PLASTER_WALL_SUPPORT_OPEN.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_BLANK_ITEM = ITEMS.register("plaster_wall_blank", () -> new BlockItem(BlockRegistry.PLASTER_WALL_BLANK.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_AND_SUPPORT_BLANK_ITEM = ITEMS.register("plaster_wall_and_support_blank", () -> new BlockItem(BlockRegistry.PLASTER_WALL_AND_SUPPORT_BLANK.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_ARCHWAY_ITEM = ITEMS.register("plaster_archway", () -> new BlockItem(BlockRegistry.PLASTER_ARCHWAY.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_AND_STONE_WINDOW_ITEM = ITEMS.register("plaster_and_stone_window", () -> new BlockItem(BlockRegistry.PLASTER_AND_STONE_WINDOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> ORNATE_SANDSTONE_WALL_ITEM = ITEMS.register("ornate_sandstone_wall", () -> new BlockItem(BlockRegistry.ORNATE_SANDSTONE_WALL.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> REGULAR_SANDSTONE_WALL_ITEM = ITEMS.register("regular_sandstone_wall", () -> new BlockItem(BlockRegistry.REGULAR_SANDSTONE_WALL.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SANDSTONE_BLOCK_WALL_ITEM = ITEMS.register("sandstone_block_wall", () -> new BlockItem(BlockRegistry.SANDSTONE_BLOCK_WALL.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> ORNATE_SANDSTONE_WINDOW_ITEM = ITEMS.register("ornate_sandstone_window", () -> new BlockItem(BlockRegistry.ORNATE_SANDSTONE_WINDOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SANDSTONE_WINDOW_ITEM = ITEMS.register("sandstone_window", () -> new BlockItem(BlockRegistry.SANDSTONE_WINDOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SANDSTONE_POST_ITEM = ITEMS.register("sandstone_post", () -> new BlockItem(BlockRegistry.SANDSTONE_POST.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> ORNATE_SANDSTONE_POST_ITEM = ITEMS.register("ornate_sandstone_post", () -> new BlockItem(BlockRegistry.ORNATE_SANDSTONE_POST.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SANDSTONE_BATTLEMENT_ITEM = ITEMS.register("sandstone_battlement", () -> new BlockItem(BlockRegistry.SANDSTONE_BATTLEMENT.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SANDSTONE_COLUMN_ITEM = ITEMS.register("sandstone_column", () -> new BlockItem(BlockRegistry.SANDSTONE_COLUMN.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CUSTOM_SANDSTONE_BRICK_ITEM = ITEMS.register("custom_sandstone_brick", () -> new BlockItem(BlockRegistry.CUSTOM_SANDSTONE_BRICK.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LIGHT_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("light_sandstone_brick_road", () -> new BlockItem(BlockRegistry.LIGHT_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MEDIUM_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("medium_sandstone_brick_road", () -> new BlockItem(BlockRegistry.MEDIUM_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> DARK_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("dark_sandstone_brick_road", () -> new BlockItem(BlockRegistry.DARK_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {
