@@ -578,6 +578,8 @@ public static final DeferredHolder<Block, Block> CORRAL_FENCE = BLOCKS.register(
 public static final DeferredHolder<Block, Block> CORRAL_PILLAR = BLOCKS.register("corral_pillar", () ->
     new HorizontalTallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
 
+public static final DeferredHolder<Block, Block> WALNUT_FLOOR = BLOCKS.register("walnut_floor", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
 
 public static final DeferredHolder<Block, Block> DEAD_GRAVE_FLOWER_VASE = BLOCKS.register("dead_grave_flower_vase", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
@@ -1363,6 +1365,11 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
 
     public static final DeferredHolder<Block, Block> DARK_STONE_STAIRS = BLOCKS.register(
         "dark_stone_stairs", CustomStoneStairsBlock::new
+    );
+
+
+    public static final DeferredHolder<Block, Block> WALNUT_STAIRS = BLOCKS.register(
+        "walnut_stairs", CustomStoneStairsBlock::new
     );
 
     public static final DeferredHolder<Block, Block> DUNGEON_STAIRS = BLOCKS.register(

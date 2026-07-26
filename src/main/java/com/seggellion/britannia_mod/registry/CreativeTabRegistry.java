@@ -73,6 +73,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_FOUNDATION_ITEM.get());                
                 safeAccept(output, ItemRegistry.STONE_FLOOR_POLISHED_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FLOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.WALNUT_FLOOR.get());
+                safeAccept(output, ItemRegistry.WALNUT_STAIRS_ITEM.get());
 
                 // === WINERY SECTION ===
                 safeAccept(output, ItemRegistry.VINTNER_HOE.get());

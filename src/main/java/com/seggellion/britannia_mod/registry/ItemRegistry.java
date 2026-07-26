@@ -672,6 +672,12 @@ public static final DeferredHolder<Item, Item> DARK_STONE_STAIRS_ITEM = ITEMS.re
     () -> new BlockItem(BlockRegistry.DARK_STONE_STAIRS.get(), new Item.Properties())
 );
 
+public static final DeferredHolder<Item, Item> WALNUT_STAIRS_ITEM = ITEMS.register(
+    "walnut_stairs",
+    () -> new BlockItem(BlockRegistry.WALNUT_STAIRS.get(), new Item.Properties())
+);
+
+
 public static final DeferredHolder<Item, BlockItem> STONE_FLOOR_POLISHED_ITEM =
     ITEMS.register("stone_floor_polished",
         () -> new BlockItem(BlockRegistry.STONE_FLOOR_POLISHED.get(), new Item.Properties()));
@@ -1120,6 +1126,9 @@ public static final DeferredHolder<Item, BlockItem> ANCHOR =
     ITEMS.register("anchor", () -> new BlockItem(BlockRegistry.ANCHOR.get(), new Item.Properties()));
 public static final DeferredHolder<Item, BlockItem> IRON_FENCE =
     ITEMS.register("iron_fence", () -> new BlockItem(BlockRegistry.IRON_FENCE.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, BlockItem> WALNUT_FLOOR =
+    ITEMS.register("walnut_floor", () -> new BlockItem(BlockRegistry.WALNUT_FLOOR.get(), new Item.Properties()));
 
 public static final DeferredHolder<Item, BlockItem> LYING_SKELETON =
     ITEMS.register("lying_skeleton", () -> new BlockItem(BlockRegistry.LYING_SKELETON.get(), new Item.Properties()));
