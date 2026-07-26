@@ -9,6 +9,10 @@ public record BannerLayerPlan(List<BannerRenderLayer> layers, int displayArgb) {
     }
 
     public static BannerLayerPlan from(BannerItemRenderState state) {
+        return from(state.appearance());
+    }
+
+    public static BannerLayerPlan from(BannerAppearanceState state) {
         if (state.fallback()) {
             return new BannerLayerPlan(List.of(), 0xFFFFFFFF);
         }
@@ -21,6 +25,6 @@ public record BannerLayerPlan(List<BannerRenderLayer> layers, int displayArgb) {
                         state.staticOverlay().orElseThrow(), 2, BannerRenderLayer.NO_TINT),
                 new BannerRenderLayer(BannerRenderLayer.Type.MOUNT,
                         state.mountTexture().orElseThrow(), 3, BannerRenderLayer.NO_TINT)),
-                0xFF000000 | state.displaySrgb());
+                state.displayArgb());
     }
 }

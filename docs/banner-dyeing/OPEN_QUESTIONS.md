@@ -1,8 +1,27 @@
 # Banner and Dyeing Open Questions
 
-Date: 2026-07-20
+Date: 2026-07-26
 
-Milestone: 12
+Milestone: 13
+
+## Milestone 13 Gate D provisional decisions
+
+- Placed rendering uses generated planar placeholder geometry for the five existing footprint families. The mesh is
+  deliberately two-sided, uses a finite 64-block view distance, and samples bounded loaded-cell light. These are
+  implementation defaults pending final visual and performance review, not final art direction.
+- Parallel and perpendicular transforms, persisted dimensions, support rules, anchor convention, allowed
+  orientations, and allowed mounts remain exactly the Milestone 12 Gate D defaults. A definition/footprint mismatch
+  renders the explicit missing-content fallback and never rewrites persisted occupancy.
+- The existing neutral fabric, grayscale dye mask, untinted static overlay, brass/iron mount resources, and
+  missing-content texture are reused. Server data packs still cannot distribute client models or textures.
+- Automated tests cover all five footprint families, both orientations, all four facings, brass and iron, tint
+  separation, dynamic bounds, cache generations, missing content, state update tags/packets, and dedicated-server
+  class isolation. Manual in-game visual verification remains unperformed because the repository still has no safe
+  configured-banner acquisition path and Milestone 13 does not add one.
+
+Still unresolved at Gate D: final heraldic artwork, final cloth and mount geometry, approved dimensions,
+per-definition orientations and mounts, view-distance/lighting tuning, multiplayer client resource-pack
+distribution, and a gameplay workflow for directly dyeing or swapping mounts on placed banners.
 
 ## Milestone 12 Gate D provisional decisions
 

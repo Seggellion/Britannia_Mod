@@ -51,7 +51,7 @@ public record BannerAssetAvailability(
         return BannerRenderFailure.NONE;
     }
 
-    private static ResourceLocation id(String path) {
+    static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, path);
     }
 }

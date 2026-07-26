@@ -1,5 +1,86 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-26 - Milestone 13: Placed Banner Rendering and Live State Sync
+
+### Preflight baseline
+
+- Verified branch `banners-dyetub`, HEAD `2ee72ccdf036a6e63a9d6fa55cabd1aa000fd29b`, merge base with `patch-18`
+  `62df1dc97c5113a86f9c0f258cb90538f31efe89`, divergence `0 13`, and the sole preserved untracked path
+  `.claude/`.
+- Previously preserved `ModConfig.java`, root specification, `logs/`, and `tmp/` paths were intentionally absent
+  before Milestone 13. They were not restored or recreated. `.claude/` remained untouched, uninspected, uncommitted,
+  and excluded from staging.
+
+### Shared appearance and placed rendering
+
+- Refactored item appearance extraction around immutable `BannerAppearanceState`/`BannerAppearanceKey` values shared
+  with placed rendering. The shared record contains only stable display inputs and resource/data generations; it
+  contains no world, player, position, block entity, item-stack, mutable registry, render-buffer, or time reference.
+- Registered exactly one client-only `BannerBlockEntityRenderer` for the authoritative anchor and zero child
+  renderers. Anchor and part block models are explicitly invisible while their established selection/collision
+  behavior is preserved.
+- Added generated, two-sided cutout meshes for large 3x2, medium-wall 2x2, medium 1x2, small 1x1, and x-small 1x1
+  families in both wall-parallel and wall-perpendicular orientations across all four facings. The renderer applies
+  resolved material colour only to the dye-mask pass; the base, static overlay, and brass/iron mount passes remain
+  untinted. Existing placeholder resources are reused and no final heraldic art was added.
+- Geometry keys include appearance, persisted orientation/facing/footprint, family, mount, reload generations, and
+  fallback state, but not anchor position or world identity. Persisted occupancy remains authoritative when current
+  definition dimensions disagree, and the renderer emits one safe missing-content diagnostic without mutating the
+  block entity or its children.
+
+### Bounds, lighting, cache lifetime, and live state
+
+- Dynamic render bounds are the persisted occupied-cell union plus a finite 0.125-block cloth/mount margin. The
+  renderer uses a finite 64-block distance from the full bounds and relies on those bounds for ordinary frustum
+  culling; malformed state falls back to a finite one-cell box.
+- Lighting takes the maximum block/sky values from the anchor and at most six occupied cells whose chunks are already
+  loaded. It never forces a chunk load and does not use full-bright lighting.
+- Shared appearance and placed-plan caches are each access-bounded to 256 entries; placed diagnostic de-duplication
+  is separately capped at 256. Display-data replacement and model/resource reloads invalidate item, appearance, and
+  placed caches. Diagnostics are generation-aware and de-duplicated, so missing content can recover after a later
+  data or resource reload without retaining stale plans.
+- Added a server-only banner-state replacement boundary that preserves the placed structure, marks the anchor dirty,
+  and calls `sendBlockUpdated`. Existing update-tag and update-packet paths synchronize initial tracking, late join,
+  and live refresh; rendering re-extracts current anchor state and naturally selects a new bounded key.
+
+### Tests, corrections, and verification boundary
+
+- Added deterministic placed-render tests for shared appearance/tint separation, five families, two orientations,
+  four facings, two mounts, anchor convention, bounds, fallback, cache bounds/invalidation, state changes, update
+  tags/packets, and dedicated-server client isolation.
+- The first focused run exposed a test-fixture error: it paired the production block-entity type with a custom test
+  block. A narrow test `BlockEntityType` was introduced after Minecraft test bootstrap; one missing import and one
+  premature static initializer were corrected. A production compile then exposed one reassigned facing captured by a
+  lambda; extraction now captures the normalized final facing. No production behavior was weakened to satisfy tests.
+- Focused `BannerPlaced*` validation passed 34 tests. The combined item/placed render selection passed, and the
+  banner-dyeing package passed 532 tests across 45 suites with zero failures, errors, or skips before the clean full
+  gate.
+- No GameTest/client integration source was added: the repository has no established GameTest source/bootstrap or
+  live client-render harness, and introducing one would be unrelated framework construction. The automated boundary
+  verifies serialized update tags/packets and renderer state changes; it does not claim a manually observed live
+  client session.
+- Manual in-game matrix testing was not performed because there is still no safe configured-banner acquisition path.
+  No recipe, creative entry, or command was added solely for QA.
+- `tools\scaffold_banners.bat --check` initially reported all 49 generated text artifacts changed because the
+  machine-wide Git checkout converted their tracked LF bytes to CRLF while the checker compares generated LF bytes
+  literally. Normalizing only those files to their existing tracked bytes produced no content diff; the exact rerun
+  passed with 33 manifest entries, 33 definitions, 33 active/0 disabled, 33 localization entries, 14 provisional
+  names, 33 provisional dimensions, and five asset families. Scaffold generation was not run.
+- The required banner package test passed 532 tests across 45 suites. From-clean full `gradlew.bat test --no-daemon
+  --stacktrace` also passed 532 tests across 45 suites with zero failures, errors, or skips. `gradlew.bat clean
+  --no-daemon`, `gradlew.bat build --no-daemon`, and `git diff --check` passed; the production build completed
+  `jar`, `jarJar`, `assemble`, `check`, and `build`.
+- `Britannia_Mod-0.1.7k-all.jar` contains one anchor renderer, zero part renderers, the shared appearance classes,
+  placed render state/key/cache/geometry classes, five family models, three fabric layers, both mount models and
+  textures, the missing-content resources, and the existing parallel/perpendicular block resources. Banner crafting,
+  recipe, command, and direct-world dye handler class checks each found zero entries.
+
+### Scope boundary and next milestone
+
+- No crafting, recipe, admin command, NPC integration, direct placed-banner dyeing, mount swapping, final artwork,
+  extra block entity, child renderer, or Milestone 14 work was added.
+- Stop after the Milestone 13 validation and commit. Do not begin Milestone 14.
+
 ## 2026-07-21 - Milestone 12: Orientation-Aware Placement and Mount Variants
 
 ### Orientation selection and authority

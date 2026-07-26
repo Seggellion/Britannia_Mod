@@ -53,6 +53,10 @@ public final class BannerBlockEntity extends BlockEntity {
         return migratedLegacyPlacement;
     }
 
+    public boolean structurallyInvalid() {
+        return structurallyInvalid;
+    }
+
     public boolean setBannerState(BannerInstanceState state) {
         if (state == null) {
             return false;
@@ -75,6 +79,21 @@ public final class BannerBlockEntity extends BlockEntity {
         structurallyInvalid = false;
         migratedLegacyPlacement = false;
         setChanged();
+        return true;
+    }
+
+    /**
+     * Future-facing authoritative live-state boundary. It changes only the banner instance record and preserves the
+     * persisted orientation, footprint, block, and children.
+     */
+    public boolean setBannerStateAndSynchronize(BannerInstanceState state) {
+        if (state == null || level == null || level.isClientSide) {
+            return false;
+        }
+        bannerState = Optional.of(state);
+        structurallyInvalid = false;
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         return true;
     }
 

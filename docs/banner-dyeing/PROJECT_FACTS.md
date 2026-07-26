@@ -1,10 +1,34 @@
 # Banner and Dyeing Project Facts
 
-Date: 2026-07-20
+Date: 2026-07-26
 
-Milestone: 0 — Repository Discovery and Implementation Facts
+Milestone: 13 — Placed Banner Rendering and Live State Sync
 
 Feature branch: `banners-dyetub`
+
+## Milestone 13 placed-rendering and synchronization facts
+
+- NeoForge 21.1.72 registers block-entity renderers through the client-only
+  `EntityRenderersEvent.RegisterRenderers` event. Britannia registers one renderer for the authoritative
+  `britannia_mod:banner` anchor block entity and no renderer for `banner_part`.
+- `IBlockEntityRendererExtension.getRenderBoundingBox` supplies the dynamic multi-cell frustum bounds. The renderer
+  uses a finite 64-block view distance and measures distance to the full placed bounds rather than only the anchor.
+- Placed cloth is generated client-side as bounded, two-sided cutout geometry for the five existing footprint
+  families and both persisted orientations. It uses the block atlas and the existing fabric, dye-mask, static-overlay,
+  brass, iron, and missing-content textures; no final heraldic artwork is implied.
+- Item and placed rendering share immutable appearance resolution and appearance keys. Only the dye-mask layer
+  receives the resolved material colour; fabric base, static overlay, and brass/iron mounts remain untinted.
+- Appearance and placed-plan caches are independently bounded at 256 entries, as is placed diagnostic de-duplication.
+  Client banner-data publication and resource/model reloads advance generation state and clear all banner render
+  caches, so removed or restored content is not retained indefinitely.
+- Placed light is the maximum block and sky light sampled from the anchor plus at most the six already-loaded
+  occupied cells. Rendering never requests or force-loads a chunk and does not use full-bright lighting.
+- The anchor block entity's update tag and `ClientboundBlockEntityDataPacket` carry the same banner and placed
+  structure state used for disk persistence. Server-side live replacement marks the anchor changed and emits a block
+  update; the client renderer extracts current block-entity state on each render and changes keys without replacing
+  blocks or child cells.
+- Anchor and part blocks explicitly use `RenderShape.INVISIBLE`. Their established selection/collision shapes remain
+  diagnostic and only the anchor renderer emits the complete visual.
 
 ## Milestone 12 orientation and preview integration facts
 

@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -73,6 +74,12 @@ public final class BannerPartBlock extends Block {
 
     public static BannerLocalOffset localOffset(BlockState state) {
         return new BannerLocalOffset(state.getValue(HORIZONTAL_OFFSET), state.getValue(VERTICAL_OFFSET));
+    }
+
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        // Parts retain selection/collision shapes but never emit cloth, mount, or fallback geometry.
+        return RenderShape.INVISIBLE;
     }
 
     @Override

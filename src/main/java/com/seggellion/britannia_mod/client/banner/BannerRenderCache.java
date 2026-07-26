@@ -20,13 +20,14 @@ public final class BannerRenderCache {
     static BannerItemRenderState extract(ItemStack stack) {
         return BannerRenderStateExtractor.extract(stack, BannerItemRegistry.BANNER.get(),
                 DataComponentRegistry.BANNER_INSTANCE_STATE.get(), ClientBannerRenderData.current(),
-                BannerModelRepository.availability());
+                BannerModelRepository.availability(), BannerModelRepository.generation());
     }
 
     static BakedModel resolve(ItemStack stack) {
         BannerItemRenderState state = extract(stack);
         BannerRenderKey key = state.key(BannerModelRepository.generation());
         return MODELS.getOrCreate(key, ignored -> {
+            BannerAppearanceCache.plan(state.appearance());
             BakedModel model = BannerModelRepository.compose(state);
             if (state.fallback() && LOGGED_MISSING.first(
                     state.failure(), state.diagnosticId(), state.dataGeneration(), BannerModelRepository.generation())) {
@@ -47,6 +48,8 @@ public final class BannerRenderCache {
 
     private static synchronized void clear() {
         MODELS.clear();
+        BannerAppearanceCache.clear();
+        BannerPlacedRenderCache.clear();
         LOGGED_MISSING.clear();
     }
 
