@@ -122,7 +122,6 @@ CraftableRegistry.init();
         ItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);
         BannerItemRegistry.register(modEventBus);
-        BannerRecipeRegistry.register(modEventBus);
 
         WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);

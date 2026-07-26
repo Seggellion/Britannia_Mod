@@ -54,7 +54,14 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Final per-definition orientations approved: no"));
         assertTrue(status.contains("Final per-definition mounts approved: no"));
         assertTrue(status.contains("Final placed artwork approved: no"));
+        assertTrue(status.contains("Banner crafting implemented: no"));
+        assertTrue(status.contains("Banner acquisition: deferred to approved admin/development tooling"));
+        assertFalse(status.contains("Recipe ID"));
+        assertFalse(status.contains("Recipe definitions complete"));
         assertEquals(33, status.lines().filter(line -> line.matches("\\| \\d{2} \\|.*")).count());
+        assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/recipe/banner")));
+        assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/tags/item/banner_fabric")));
+        assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/tags/item/banner_mount")));
     }
 
     @Test

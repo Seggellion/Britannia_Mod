@@ -2,29 +2,19 @@
 
 Date: 2026-07-26
 
-Milestone: 14
+Milestone: Corrective 14R
 
-## Milestone 14 provisional crafting decisions
+## Corrective Milestone 14R product decision
 
-- Fabric costs are footprint area: 1 for 1x1, 2 for 1x2, 4 for 2x2, and 6 for 3x2. They fit the normal 3x3 grid but
-  remain provisional content values.
-- Pattern tokens are reusable and return exactly once as the recipe remainder. This is a provisional economy policy;
-  whether patterns remain permanently reusable is still open.
-- Development acquisition is 33 configured variants of one shared pattern in the existing Britannia items tab.
-  Survival pattern acquisition is deferred and remains unapproved. No raw unconfigured pattern is exposed normally.
-- Provisional ingredient identities are cotton cloth (`britannia_mod:cotton_cloth`), white wool
-  (`minecraft:white_wool`), linen cloth (`britannia_mod:linen_cloth`), existing spiders silk
-  (`britannia_mod:spiders_silk`), a new brass banner mount (`britannia_mod:brass_banner_mount`), and the existing
-  blacksmith iron input (`minecraft:iron_ingot`). All are mediated through six item tags so a later approved identity
-  can change without recipe expansion.
-- The 33 dynamic recipes use the normal crafting recipe type but are marked special. They do not currently appear as
-  33 representative outputs in the recipe book. Final unlock criteria and recipe-book presentation remain open.
-- Automated coverage exercises deterministic repeated/bulk crafting and remainders. The repository has no established
-  crafting-menu integration harness, so actual shift-click transfer with nearly/full inventories remains a manual
-  boundary and was not claimed as live verification.
+Banner crafting is not currently part of the approved feature. Any future acquisition or crafting design requires a
+new product decision.
 
-Still unresolved: final fabric costs, final ingredient identities, final pattern acquisition, permanent pattern
-reuse, recipe unlocks, recipe-book presentation, and the complete survival crafting economy.
+The footprint-area fabric costs, reusable-pattern policy, pattern acquisition, cloth input identities, brass mount
+crafting input, recipe-book behavior, and crafting economy implemented by the rejected Milestone 14 are not accepted
+defaults. They have been removed rather than retained as disabled or provisional runtime behavior.
+
+Banner acquisition remains deferred to approved admin/development tooling. Corrective Milestone 14R adds no command,
+creative configured-banner entry, NPC hook, loot table, recipe, pattern, blueprint, or template alternative.
 
 ## Milestone 13 Gate D provisional decisions
 
@@ -218,7 +208,7 @@ These decisions affect player experience or content approval. The data model can
 2. Are dye tubs unlimited-use in the first release, or do they store a finite use count?
 3. Can a loaded tub be emptied or washed, and does that recover anything?
 4. Is direct dyeing of placed banners in the first release, or must players break, dye, and replace them?
-5. Is mount style fixed at crafting time, or can it be swapped later?
+5. Is mount style fixed when a banner is acquired, or can it be swapped later?
 6. Do all 33 designs support both brass and iron mounts, or does each definition have an approved subset?
 7. Do cotton, wool, linen, and silk use distinct fabric textures in release one, or palette differences only?
 8. Must every dye operation use a confirmation screen, or may repeat dyeing support an expedited interaction?

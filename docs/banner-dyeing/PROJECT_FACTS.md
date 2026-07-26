@@ -2,41 +2,24 @@
 
 Date: 2026-07-26
 
-Milestone: 14 — Crafting and Existing Material-System Integration
+Milestone: Corrective 14R — Banner Crafting Removal
 
 Feature branch: `banners-dyetub`
 
-## Milestone 14 crafting integration facts
+## Corrective Milestone 14R product boundary
 
-- NeoForge 21.1.72 crafting tables query the existing `minecraft:crafting` `RecipeType`; JSON recipe identity is
-  selected by a registered `RecipeSerializer`. Britannia therefore registers the one
-  `britannia_mod:banner_crafting` serializer and deliberately reuses `RecipeType.CRAFTING` rather than registering
-  an unused parallel type.
-- One data-driven shapeless `BannerCraftingRecipe` is instantiated for each canonical definition. Recipe data stores
-  schema version, stable definition ID, and provisional footprint-area fabric units only. Material and mount never
-  come from client state or representative output data.
-- The existing metal system remains metal-only. Its iron identity maps `minecraft:iron_ingot` through
-  `UOMetalToolMaterial.IRON`; the banner adapter exposes that same item through
-  `britannia_mod:banner_mount/iron`. No existing brass identity exists, so the smallest explicit addition is
-  `britannia_mod:brass_banner_mount` through `britannia_mod:banner_mount/brass`.
-- Fabric identity remains the existing `FabricMaterialId` domain. Item tags adapt
-  `britannia_mod:cotton_cloth`, `minecraft:white_wool`, `britannia_mod:linen_cloth`, and the existing
-  `britannia_mod:spiders_silk` to cotton, wool, linen, and silk respectively. Multi-tag inputs are ambiguous and
-  rejected; the metal enums were not extended.
-- One maximum-stack-one `britannia_mod:banner_pattern` item stores one synchronized/persistent
-  `britannia_mod:banner_pattern_definition` component using `BannerDefinitionId` codecs. The existing creative tab
-  exposes exactly 33 configured canonical variants and no raw unconfigured pattern.
-- Successful assembly delegates to `BannerItemFactory.craftedMaterialBanner`, producing the one shared banner item
-  with the current schema, selected definition, input-derived fabric, its authored natural colour, absent source
-  pigment, and input-derived mount.
-- Pattern reuse is implemented through `Recipe#getRemainingItems`: exactly one unchanged configured pattern is
-  returned, while the vanilla/NeoForge crafting-remainder path remains active for every other input.
-- The existing deterministic banner scaffold is the repository's recipe-data provider. It emits 33 files beneath
-  `data/britannia_mod/recipe/banner`, six item tags beneath `data/britannia_mod/tags/item`, and the expanded catalogue
-  status. Minecraft 1.21.1 uses singular registry element paths (`recipe`, `tags/item`).
-- These JSON-backed dynamic recipes are special recipes. They intentionally do not advertise a potentially
-  misleading representative result to the recipe book; ordinary server crafting synchronization and result
-  assembly remain authoritative.
+- Milestones 0 through 13 remain implemented.
+- Milestone 14 introduced a banner-pattern and banner-recipe system from the draft playbook in commit
+  `6803f5ee232800f780712dd2c6cdc8b34cd84988`. The product owner rejected that system before release.
+- Banner crafting is not implemented. There is no banner pattern item/component, banner recipe serializer, banner
+  recipe JSON, banner crafting tag, or standalone cloth/mount crafting-input item.
+- Banner acquisition is deferred to approved admin/development tooling and future product decisions. Corrective
+  Milestone 14R does not provide a replacement acquisition path and does not begin Milestone 15.
+- The authoritative feature registration boundary is nine items: one shared banner, one dye tub, and seven pigments.
+  The three feature-related registered data components remain unrelated wine data, dye-tub state, and banner-instance
+  state.
+- The 33 banner definitions, four fabrics, four palettes, seven pigments, two mounts, placement state, rendering,
+  dyeing, persistence, and `BannerItemFactory` remain authoritative and unchanged.
 
 ## Milestone 13 placed-rendering and synchronization facts
 
@@ -153,7 +136,7 @@ The authoritative specifications were read in full before the feature branch or 
 | Item rendering | NeoForge 21.1.72 `ModelEvent.RegisterAdditional` + `ModelEvent.ModifyBakingResult`, vanilla `ItemOverrides`, and `IBakedModelExtension.getRenderPasses` support a current dynamic baked-model path | The shared banner item installs one wrapper model at bake/reload time, resolves immutable stack appearance keys through overrides, and returns family/mount baked passes; do not copy deprecated `Item.initializeClient` |
 | Models/assets | `assets/britannia_mod/models`, `textures`, `geo`, blockstates, language JSON, GeckoLib geometry, and a custom geometry loader registered in `ClientModSetup` | Place banner assets under `src/main/resources/assets/britannia_mod/...`; keep dyeable fabric, dye mask, static overlay, and mount resources separate as required by the specifications |
 | Commands | Brigadier command classes with a static `register(CommandDispatcher<CommandSourceStack>)`, collected by `CommandRegistry` on `RegisterCommandsEvent` | Add later admin/debug commands as a focused command class registered by `CommandRegistry`, with permission predicates and registry-backed suggestions |
-| Recipes | One static vanilla recipe override at `src/main/resources/data/minecraft/recipes/diamond_pickaxe.json`; blacksmith crafting uses the in-code `CraftableRegistry`, `CraftableDef`, payload, and server-side `BlacksmithCrafting` service | Reuse the blacksmith server-validation flow and material-from-input concept, but banner recipes require a fabric-specific identity rather than the metal enum |
+| Recipes | One static vanilla recipe override at `src/main/resources/data/minecraft/recipes/diamond_pickaxe.json`; blacksmith crafting uses the in-code `CraftableRegistry`, `CraftableDef`, payload, and server-side `BlacksmithCrafting` service | Banner crafting is not an approved feature; any future acquisition or crafting design requires a new product decision |
 | Data generation | `runData` exists and `src/generated/resources` is configured, but there are no providers, `GatherDataEvent` listeners, or generated resources | The first banner data-generation milestone must establish the repository's first provider/check workflow; until then, authored JSON belongs under `src/main/resources/data/britannia_mod` |
 | Tests | Gradle `test` and NeoForge `runGameTestServer` tasks exist; there are no unit or GameTest sources and no explicit test dependencies in `build.gradle` | Add deterministic codec/colour tests under `src/test/java`; use `runGameTestServer` for placement/persistence tests once a GameTest source/configuration is established |
 
@@ -204,7 +187,9 @@ The dye preview/confirm flow should use this same pattern. The client will send 
 - Crafted weapon material is currently serialized as a lower-case string in `DataComponents.CUSTOM_DATA` by `QualitySwordItem`.
 - `MaterialQualityJewelryItem` defines a second, separate metal enum, confirming that the repository has no general-purpose material-ID abstraction shared across crafting systems.
 
-Decision: do not extend either metal enum with cotton, wool, linen, or silk. Later banner milestones should use namespaced fabric material IDs in their own data-driven registry while reusing the blacksmithing interaction principles: determine material from authoritative recipe inputs, validate on the server, and store the resolved identity as typed item state.
+Decision: do not extend either metal enum with cotton, wool, linen, or silk. The existing namespaced fabric-material
+registry remains authoritative for banner state, dyeing, validation, and rendering. It does not imply a crafting
+input mapping. Any future banner acquisition or crafting design requires a new product decision.
 
 ## Recipe and data facts
 

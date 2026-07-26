@@ -78,7 +78,6 @@ public final class BannerScaffoldTool {
     public record RunSummary(
             int manifestEntries,
             int generatedDefinitions,
-            int generatedRecipes,
             int activeDefinitions,
             int disabledDefinitions,
             int localizationEntries,
@@ -96,11 +95,10 @@ public final class BannerScaffoldTool {
             Options options = parseOptions(args);
             RunSummary summary = execute(Path.of(".").toAbsolutePath().normalize(), options, System.out);
             System.out.printf(Locale.ROOT,
-                    "Banner scaffold %s: manifest=%d definitions=%d recipes=%d active=%d disabled=%d localization=%d "
+                    "Banner scaffold %s: manifest=%d definitions=%d active=%d disabled=%d localization=%d "
                             + "provisional_names=%d provisional_dimensions=%d asset_families=%d%n",
                     options.check ? "check passed" : "generation completed",
-                    summary.manifestEntries, summary.generatedDefinitions, summary.generatedRecipes,
-                    summary.activeDefinitions,
+                    summary.manifestEntries, summary.generatedDefinitions, summary.activeDefinitions,
                     summary.disabledDefinitions, summary.localizationEntries, summary.provisionalNames,
                     summary.provisionalDimensions, summary.placeholderAssetFamilies);
         } catch (RuntimeException | IOException exception) {
@@ -300,8 +298,6 @@ public final class BannerScaffoldTool {
         for (ResolvedBanner banner : catalogue.banners) {
             output.put(DATA_ROOT + "banner_definitions/" + banner.id + ".json",
                     utf8(json(bannerDefinition(banner))));
-            output.put(DATA_ROOT + "recipe/banner/" + banner.id + ".json",
-                    utf8(json(bannerRecipe(banner))));
         }
         output.put(DATA_ROOT + "banner_mounts/brass.json", utf8(json(mount("brass", "Brass"))));
         output.put(DATA_ROOT + "banner_mounts/iron.json", utf8(json(mount("iron", "Iron"))));
@@ -315,18 +311,6 @@ public final class BannerScaffoldTool {
                 utf8(json(profile("small", 1, 1))));
         output.put(DATA_ROOT + "placement_profiles/placeholder_x_small.json",
                 utf8(json(profile("x_small", 1, 1))));
-        output.put(DATA_ROOT + "tags/item/banner_fabric/cotton.json",
-                utf8(json(itemTag(List.of("britannia_mod:cotton_cloth")))));
-        output.put(DATA_ROOT + "tags/item/banner_fabric/wool.json",
-                utf8(json(itemTag(List.of("minecraft:white_wool")))));
-        output.put(DATA_ROOT + "tags/item/banner_fabric/linen.json",
-                utf8(json(itemTag(List.of("britannia_mod:linen_cloth")))));
-        output.put(DATA_ROOT + "tags/item/banner_fabric/silk.json",
-                utf8(json(itemTag(List.of("britannia_mod:spiders_silk")))));
-        output.put(DATA_ROOT + "tags/item/banner_mount/brass.json",
-                utf8(json(itemTag(List.of("britannia_mod:brass_banner_mount")))));
-        output.put(DATA_ROOT + "tags/item/banner_mount/iron.json",
-                utf8(json(itemTag(List.of("minecraft:iron_ingot")))));
 
         output.put(ASSET_ROOT + "textures/banner/placeholder/fabric_base.png", png(PngKind.FABRIC_BASE));
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
@@ -345,22 +329,6 @@ public final class BannerScaffoldTool {
         output.put(ASSET_ROOT + "models/banner/mount/iron.json",
                 utf8(json(generatedItemModel("britannia_mod:banner/mount/iron"))));
         return output;
-    }
-
-    private static JsonObject bannerRecipe(ResolvedBanner banner) {
-        JsonObject root = new JsonObject();
-        root.addProperty("type", "britannia_mod:banner_crafting");
-        root.addProperty("schema_version", 1);
-        root.addProperty("banner_definition_id", "britannia_mod:" + banner.id);
-        root.addProperty("fabric_units", banner.widthBlocks * banner.heightBlocks);
-        return root;
-    }
-
-    private static JsonObject itemTag(List<String> values) {
-        JsonObject root = new JsonObject();
-        root.addProperty("replace", false);
-        root.add("values", strings(values));
-        return root;
     }
 
     private static JsonObject bannerDefinition(ResolvedBanner banner) {
@@ -806,16 +774,14 @@ public final class BannerScaffoldTool {
                 .append("- Catalogue target: exactly 33\n")
                 .append("- Total manifest entries: 33\n")
                 .append("- Total generated definitions: 33\n")
-                .append("- Recipe definitions complete: 33/33\n")
-                .append("- Final recipe costs approved: no\n")
-                .append("- Final pattern acquisition approved: no\n")
-                .append("- Final ingredient identities approved: no\n")
                 .append("- Total active registry entries: ").append(registry.snapshot().banners().activeCount())
                 .append("\n- Total disabled entries: ").append(registry.snapshot().banners().disabledCount())
                 .append("\n- Missing output files: none\n")
                 .append("- Duplicate IDs: none\n- Duplicate indices: none\n- Missing indices: none\n")
                 .append("- Definitions that failed validation: none\n")
                 .append("- Stable identity set approved at Gate B: yes\n")
+                .append("- Banner crafting implemented: no\n")
+                .append("- Banner acquisition: deferred to approved admin/development tooling\n")
                 .append("- Final display names approved: no\n")
                 .append("- Final dimensions approved: no\n")
                 .append("- Final per-definition orientations approved: no\n")
@@ -829,17 +795,14 @@ public final class BannerScaffoldTool {
         report.append("\n## Counts by content status\n\n");
         appendCounts(report, contentCounts, List.of("placeholder", "in_progress", "complete"));
         report.append("\n## Catalogue\n\n")
-                .append("| Index | Stable ID | Display label | Name status | Group | Source | Provisional dimensions | Recipe ID | Recipe present | Pattern present | Fabric units | Crafting materials | Crafting mounts | Natural colour validated | Development/manual craft | Supported orientations | Supported mounts | Default mount | Parallel automated | Perpendicular automated | Brass automated | Iron automated | Manual result | Content status | Placeholder assets |\n")
-                .append("|---:|---|---|---|---|---|---|---|---|---|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n");
+                .append("| Index | Stable ID | Display label | Name status | Group | Source | Provisional dimensions | Supported orientations | Supported mounts | Default mount | Parallel automated | Perpendicular automated | Brass automated | Iron automated | Manual result | Content status | Placeholder assets |\n")
+                .append("|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n");
         for (ResolvedBanner banner : catalogue.banners) {
             report.append("| ").append(String.format(Locale.ROOT, "%02d", banner.index)).append(" | `")
                     .append(banner.id).append("` | ").append(escapeMarkdown(banner.displayName)).append(" | ")
                     .append(banner.nameStatus).append(" | ").append(banner.group).append(" | Page ")
                     .append(banner.page).append(", row ").append(banner.row).append(" | ")
                     .append(banner.widthBlocks).append(" x ").append(banner.heightBlocks).append(" (provisional) | ")
-                    .append("`britannia_mod:banner/").append(banner.id).append("` | yes | yes | ")
-                    .append(banner.widthBlocks * banner.heightBlocks).append(" | ")
-                    .append("cotton, wool, linen, silk | brass, iron | pass | not performed | ")
                     .append(String.join(", ", banner.supportedOrientations)).append(" | ")
                     .append(String.join(", ", banner.supportedMounts)).append(" | ")
                     .append(banner.defaultMount).append(" | pass | pass | pass | pass | not performed | ")
@@ -879,7 +842,7 @@ public final class BannerScaffoldTool {
                 .filter(banner -> "provisional".equals(banner.nameStatus)).count();
         int provisionalDimensions = (int) catalogue.banners.stream()
                 .filter(banner -> banner.dimensionsProvisional).count();
-        return new RunSummary(catalogue.banners.size(), catalogue.banners.size(), catalogue.banners.size(),
+        return new RunSummary(catalogue.banners.size(), catalogue.banners.size(),
                 registry.snapshot().banners().activeCount(), registry.snapshot().banners().disabledCount(),
                 catalogue.banners.size(), provisional, provisionalDimensions, 5, customized);
     }
