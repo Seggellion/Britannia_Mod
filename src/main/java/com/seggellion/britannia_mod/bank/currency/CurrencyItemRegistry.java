@@ -70,4 +70,17 @@ public final class CurrencyItemRegistry {
     public static boolean isCurrencyStack(ItemStack stack) {
         return currencyKeyOf(stack).isPresent();
     }
+
+    /**
+     * The reverse of {@link #currencyKeyOf(Item)} -- Milestone 10 NeoForge Slice 2 (currency
+     * withdrawal): given the wire key a withdrawal request already carries, resolve which coin
+     * {@link Item} to actually construct and insert. Empty for any key not exactly {@code
+     * gold}/{@code silver}/{@code copper}.
+     */
+    public static Optional<Item> itemForKey(String currencyKey) {
+        if (GOLD_KEY.equals(currencyKey)) return Optional.of(ItemRegistry.GOLD_COIN.get());
+        if (SILVER_KEY.equals(currencyKey)) return Optional.of(ItemRegistry.SILVER_COIN.get());
+        if (COPPER_KEY.equals(currencyKey)) return Optional.of(ItemRegistry.COPPER_COIN.get());
+        return Optional.empty();
+    }
 }

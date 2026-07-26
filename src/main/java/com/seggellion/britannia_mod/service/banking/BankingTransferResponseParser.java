@@ -110,6 +110,31 @@ public final class BankingTransferResponseParser {
         }
     }
 
+    /**
+     * Milestone 10 Slice 2: {@code banking/currency/withdrawal/prepare}'s response carries only
+     * the {@code operation} object -- no {@code bank_item}, ever, exactly mirroring {@link
+     * #parseCurrencyDepositPrepare}'s own reasoning (the caller already knows the denomination
+     * and amount it requested; there is nothing else to echo back).
+     */
+    public static BankingCurrencyWithdrawalPrepareResult parseCurrencyWithdrawalPrepare(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingCurrencyWithdrawalPrepareResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome != BankingTransferOutcome.PREPARED) {
+            return new BankingCurrencyWithdrawalPrepareResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            UUID operationPublicId = requiredUuid(requiredObject(envelope.root, "operation"), "public_id");
+            return new BankingCurrencyWithdrawalPrepareResult.Success(operationPublicId);
+        } catch (ProtocolException malformed) {
+            return new BankingCurrencyWithdrawalPrepareResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
     public static BankingConfirmResult parseConfirm(int status, byte[] body) {
         final Envelope envelope;
         try {

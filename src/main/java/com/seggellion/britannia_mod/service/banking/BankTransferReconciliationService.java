@@ -37,8 +37,8 @@ import org.slf4j.Logger;
  * </ul>
  *
  * <h2>Shares the live path's dedup, not a second key space</h2>
- * A withdrawal resume (verification pass finding, not the original design) registers in {@link
- * BankingWithdrawalProxyService}'s own {@code IN_FLIGHT} set for the receipt's {@code
+ * An item withdrawal resume (verification pass finding, not the original design) registers in
+ * {@link BankingWithdrawalProxyService}'s own {@code IN_FLIGHT} set for the receipt's {@code
  * bankItemPublicId} -- the same set, the same key, {@link
  * BankingWithdrawalProxyService#triggerWithdrawal} already uses -- so a live player reconnecting
  * while their own resume is still in flight and re-triggering a withdrawal for that exact item
@@ -46,7 +46,10 @@ import org.slf4j.Logger;
  * anything: {@code IN_FLIGHT} there is keyed by {@code (playerId, slotIndex)}, and by the time a
  * deposit reaches confirm the item is already gone from every slot, so there is no slot a live
  * trigger could collide with -- a fresh deposit using that same slot index is a genuinely
- * independent operation on a different item, not a duplicate of the one being resumed.
+ * independent operation on a different item, not a duplicate of the one being resumed. A
+ * currency withdrawal resume (Milestone 10 Slice 2) likewise registers nothing, for the same
+ * reason as deposit's: currency has no per-unit identity for a live re-trigger to collide with --
+ * see {@link BankingCurrencyWithdrawalProxyService}'s own class docs.
  *
  * <h2>Never blocks server startup</h2>
  * {@link #runStartupReconciliation} itself only ever does one synchronous, already-in-memory
@@ -136,9 +139,21 @@ public final class BankTransferReconciliationService {
                     ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
                 }
             }
-            case WITHDRAWAL -> BankingWithdrawalProxyService.resumeConfirmWithdrawal(
-                    server, receipt.playerUuid(), receipt.operationId(), receipt.bankItemPublicId()
-            ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+            // Milestone 10 Slice 2: a WITHDRAWAL receipt is either an item withdrawal or a
+            // currency withdrawal, discriminated the same way DEPOSIT already is above --
+            // exactly one of itemPayload or currencyAmount is ever present. A currency
+            // withdrawal receipt carries no bankItemPublicId at all.
+            case WITHDRAWAL -> {
+                if (receipt.currencyAmount() != null) {
+                    BankingCurrencyWithdrawalProxyService.resumeConfirmCurrencyWithdrawal(
+                            server, receipt.playerUuid(), receipt.operationId()
+                    ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+                } else {
+                    BankingWithdrawalProxyService.resumeConfirmWithdrawal(
+                            server, receipt.playerUuid(), receipt.operationId(), receipt.bankItemPublicId()
+                    ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+                }
+            }
         }
     }
 

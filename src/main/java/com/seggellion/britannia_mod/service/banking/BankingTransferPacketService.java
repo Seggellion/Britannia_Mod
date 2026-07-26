@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.service.banking;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
@@ -156,6 +157,45 @@ public final class BankingTransferPacketService {
                     switch (result) {
                         case BankingWithdrawalResult.Confirmed ignored -> refreshAccount(player, teller);
                         case BankingWithdrawalResult.ReconciliationRequired ignored -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
+                        );
+                        default -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                    }
+                }));
+    }
+
+    /**
+     * Milestone 10 Slice 2: currency withdrawal's own production entry point, mirroring {@link
+     * #handleWithdrawal}'s shape exactly -- the same {@code Operation.WITHDRAWAL} result
+     * channel, the same {@code refreshAccount} on a clean confirm. Unlike deposit's routing
+     * (which decides currency-vs-item from the live slot's own contents), there is no ambiguity
+     * to resolve here: this packet only ever means a currency withdrawal (an item withdrawal
+     * always arrives via {@link BankWithdrawalRequestC2SPayload} instead), so there is no
+     * routing decision to make -- straight to {@link
+     * BankingCurrencyWithdrawalProxyService#triggerCurrencyWithdrawal}.
+     */
+    public static void handleCurrencyWithdrawal(ServerPlayer player, BankCurrencyWithdrawalRequestC2SPayload payload) {
+        ServiceNpcEntity teller = resolveTeller(player, payload.entityId());
+        if (teller == null) return;
+
+        MinecraftServer server = player.server;
+        BankingCurrencyWithdrawalProxyService.triggerCurrencyWithdrawal(player, teller, payload.currencyKey(), payload.amount())
+                .whenComplete((result, error) -> server.execute(() -> {
+                    if (error != null || result == null) {
+                        LOGGER.warn("banking currency withdrawal trigger for {} completed exceptionally", player.getStringUUID(), error);
+                        resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        return;
+                    }
+                    switch (result) {
+                        case BankingCurrencyWithdrawalResult.Confirmed ignored -> refreshAccount(player, teller);
+                        case BankingCurrencyWithdrawalResult.ReconciliationRequired ignored -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
                                 BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
                         );

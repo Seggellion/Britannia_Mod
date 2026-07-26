@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.dialogue.DialogueLayout;
 import com.seggellion.britannia_mod.dialogue.DialogueViewModel;
 import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
+import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
@@ -14,6 +15,7 @@ import com.seggellion.britannia_mod.service.banking.BankItemSummary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -66,6 +68,18 @@ public final class BankScreen extends Screen {
     private static final int MIN_PANEL_HEIGHT = 50;
     private static final long DOUBLE_CLICK_MS = 400;
     private static final int MAIN_INVENTORY_SLOTS = 36;
+    /**
+     * Milestone 10 Slice 2: reserved at the TOP of the withdraw panel's own rect for the
+     * currency amount box and the three denomination buttons -- the bank_items list itself
+     * starts below this, not at the panel's own top edge. The partial-stack-deposit scope
+     * decision does not mirror here: deposit reads its amount from a live inventory slot (no
+     * input needed), but withdrawal pulls from a balance with no slot to read a count from, so
+     * an explicit amount entry is a genuinely new requirement, not a copy of deposit's UI.
+     */
+    private static final int CURRENCY_CONTROLS_HEIGHT = 40;
+    private static final int CURRENCY_BOX_HEIGHT = 16;
+    private static final int CURRENCY_BUTTON_HEIGHT = 16;
+    private static final int CURRENCY_ROW_GAP = 4;
 
     private final BankAccountOpenedS2CPayload account;
     private final List<BankItemSummary> bankItems;
@@ -75,6 +89,11 @@ public final class BankScreen extends Screen {
 
     private Button depositButton;
     private Button withdrawButton;
+
+    private EditBox currencyAmountBox;
+    private Button withdrawGoldButton;
+    private Button withdrawSilverButton;
+    private Button withdrawCopperButton;
 
     private int panelsTop;
     private int panelHeight;
@@ -160,6 +179,27 @@ public final class BankScreen extends Screen {
         depositPanelX = CONTENT_MARGIN;
         withdrawPanelX = CONTENT_MARGIN + panelWidth + PANEL_GAP;
 
+        currencyAmountBox = new EditBox(font, withdrawPanelX, panelsTop, panelWidth, CURRENCY_BOX_HEIGHT, Component.literal("Amount"));
+        currencyAmountBox.setMaxLength(10);
+        currencyAmountBox.setValue("");
+        currencyAmountBox.setResponder(ignored -> refreshButtonStates());
+        addRenderableWidget(currencyAmountBox);
+
+        int currencyButtonY = panelsTop + CURRENCY_BOX_HEIGHT + CURRENCY_ROW_GAP;
+        int currencyButtonWidth = (panelWidth - CURRENCY_ROW_GAP * 2) / 3;
+        withdrawGoldButton = Button.builder(Component.literal("Gold"), ignored -> onWithdrawCurrencyPressed(CurrencyItemRegistry.GOLD_KEY))
+                .bounds(withdrawPanelX, currencyButtonY, currencyButtonWidth, CURRENCY_BUTTON_HEIGHT)
+                .build();
+        withdrawSilverButton = Button.builder(Component.literal("Silver"), ignored -> onWithdrawCurrencyPressed(CurrencyItemRegistry.SILVER_KEY))
+                .bounds(withdrawPanelX + currencyButtonWidth + CURRENCY_ROW_GAP, currencyButtonY, currencyButtonWidth, CURRENCY_BUTTON_HEIGHT)
+                .build();
+        withdrawCopperButton = Button.builder(Component.literal("Copper"), ignored -> onWithdrawCurrencyPressed(CurrencyItemRegistry.COPPER_KEY))
+                .bounds(withdrawPanelX + (currencyButtonWidth + CURRENCY_ROW_GAP) * 2, currencyButtonY, currencyButtonWidth, CURRENCY_BUTTON_HEIGHT)
+                .build();
+        addRenderableWidget(withdrawGoldButton);
+        addRenderableWidget(withdrawSilverButton);
+        addRenderableWidget(withdrawCopperButton);
+
         refreshButtonStates();
     }
 
@@ -169,6 +209,21 @@ public final class BankScreen extends Screen {
         withdrawButton.active = !anyPending && selectedWithdrawalItem != null;
         depositButton.setMessage(Component.literal(depositPending ? "Depositing..." : "Deposit"));
         withdrawButton.setMessage(Component.literal(withdrawalPending ? "Withdrawing..." : "Withdraw"));
+
+        boolean validAmount = parsePositiveAmount(currencyAmountBox.getValue()) > 0;
+        withdrawGoldButton.active = !anyPending && validAmount;
+        withdrawSilverButton.active = !anyPending && validAmount;
+        withdrawCopperButton.active = !anyPending && validAmount;
+    }
+
+    /** {@code 0} for anything not a genuine positive integer -- never throws on malformed input. */
+    private static int parsePositiveAmount(String value) {
+        try {
+            int amount = Integer.parseInt(value.trim());
+            return Math.max(amount, 0);
+        } catch (NumberFormatException malformed) {
+            return 0;
+        }
     }
 
     private boolean isSelectedDepositSlotEligible() {
@@ -223,6 +278,22 @@ public final class BankScreen extends Screen {
         statusMessage = null;
         refreshButtonStates();
         ClientNetworkHandler.sendToServer(new BankWithdrawalRequestC2SPayload(account.entityId(), selectedWithdrawalItem));
+    }
+
+    /**
+     * Milestone 10 Slice 2: the currency counterpart to {@link #onWithdrawPressed}. Shares the
+     * same {@code withdrawalPending} flag and the same {@code acceptTransferResult} handling --
+     * both kinds of withdrawal report through the identical {@code Operation.WITHDRAWAL} result
+     * channel, so no separate pending/result state is needed here.
+     */
+    private void onWithdrawCurrencyPressed(String currencyKey) {
+        if (depositPending || withdrawalPending) return;
+        int amount = parsePositiveAmount(currencyAmountBox.getValue());
+        if (amount <= 0) return;
+        withdrawalPending = true;
+        statusMessage = null;
+        refreshButtonStates();
+        ClientNetworkHandler.sendToServer(new BankCurrencyWithdrawalRequestC2SPayload(account.entityId(), currencyKey, amount));
     }
 
     /** Invoked by {@code ClientNetworkHandler} on a clean-rejection or reconciliation-required result. */
@@ -322,24 +393,37 @@ public final class BankScreen extends Screen {
 
     // ---------- Withdraw panel: the account's real bank_items list ----------
 
+    private int withdrawListTop() {
+        return panelsTop + CURRENCY_CONTROLS_HEIGHT;
+    }
+
+    private int withdrawListHeight() {
+        return Math.max(0, panelHeight - CURRENCY_CONTROLS_HEIGHT);
+    }
+
     private void renderWithdrawPanel(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, DialoguePresentation.text("Withdraw from vault:"), withdrawPanelX, panelsTop - font.lineHeight - 2,
                 DialoguePresentation.TEXT_COLOR, false);
-        graphics.fill(withdrawPanelX, panelsTop, withdrawPanelX + panelWidth, panelsTop + panelHeight, 0x33000000);
+        // The currency controls (amount box, denomination buttons) render themselves via
+        // addRenderableWidget -- this fill deliberately starts BELOW them (at withdrawListTop(),
+        // not panelsTop) so it never draws over top of already-rendered widgets.
+        int listTop = withdrawListTop();
+        int listHeight = withdrawListHeight();
+        graphics.fill(withdrawPanelX, listTop, withdrawPanelX + panelWidth, listTop + listHeight, 0x33000000);
 
         if (bankItems.isEmpty()) {
             Component empty = DialoguePresentation.text("The vault is empty.");
-            graphics.drawString(font, empty, withdrawPanelX + 4, panelsTop + 4, DialoguePresentation.TEXT_COLOR, false);
+            graphics.drawString(font, empty, withdrawPanelX + 4, listTop + 4, DialoguePresentation.TEXT_COLOR, false);
             return;
         }
 
-        int maxScroll = Math.max(0, bankItems.size() * ROW_H - panelHeight);
+        int maxScroll = Math.max(0, bankItems.size() * ROW_H - listHeight);
         withdrawScrollOffset = Mth.clamp(withdrawScrollOffset, 0, maxScroll);
 
-        enableScissor(withdrawPanelX, panelsTop, withdrawPanelX + panelWidth, panelsTop + panelHeight);
-        int rowY = panelsTop - (int) withdrawScrollOffset;
+        enableScissor(withdrawPanelX, listTop, withdrawPanelX + panelWidth, listTop + listHeight);
+        int rowY = listTop - (int) withdrawScrollOffset;
         for (BankItemSummary item : bankItems) {
-            if (rowY + ROW_H > panelsTop && rowY < panelsTop + panelHeight) {
+            if (rowY + ROW_H > listTop && rowY < listTop + listHeight) {
                 boolean selected = item.publicId().equals(selectedWithdrawalItem);
                 int color = selected ? 0xFF55FF55 : DialoguePresentation.TEXT_COLOR;
                 if (selected) {
@@ -386,7 +470,12 @@ public final class BankScreen extends Screen {
                 handleDepositPanelClick(mouseX, mouseY);
                 return true;
             }
-            if (withinPanel(mouseX, mouseY, withdrawPanelX)) {
+            // Deliberately the list sub-region only (withdrawListTop()-based), not the full
+            // panel rect -- the currency amount box and denomination buttons live in the same
+            // panel's top CURRENCY_CONTROLS_HEIGHT, and must fall through to super.mouseClicked
+            // below so those real widgets receive their own click, rather than being swallowed
+            // here as a (currently empty) list-row click.
+            if (withinWithdrawList(mouseX, mouseY)) {
                 handleWithdrawPanelClick(mouseX, mouseY);
                 return true;
             }
@@ -397,6 +486,12 @@ public final class BankScreen extends Screen {
     private boolean withinPanel(double mouseX, double mouseY, int panelX) {
         return mouseX >= panelX && mouseX < panelX + panelWidth
                 && mouseY >= panelsTop && mouseY < panelsTop + panelHeight;
+    }
+
+    private boolean withinWithdrawList(double mouseX, double mouseY) {
+        int listTop = withdrawListTop();
+        return mouseX >= withdrawPanelX && mouseX < withdrawPanelX + panelWidth
+                && mouseY >= listTop && mouseY < listTop + withdrawListHeight();
     }
 
     private void handleDepositPanelClick(double mouseX, double mouseY) {
@@ -420,7 +515,7 @@ public final class BankScreen extends Screen {
 
     private void handleWithdrawPanelClick(double mouseX, double mouseY) {
         if (bankItems.isEmpty()) return;
-        double absoluteY = mouseY - panelsTop + withdrawScrollOffset;
+        double absoluteY = mouseY - withdrawListTop() + withdrawScrollOffset;
         int index = (int) (absoluteY / ROW_H);
         if (index < 0 || index >= bankItems.size()) return;
         UUID publicId = bankItems.get(index).publicId();

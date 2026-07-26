@@ -589,6 +589,17 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
+// Milestone 10 Slice 2: real currency withdrawal trigger from BankScreen
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleCurrencyWithdrawal(p, payload);
+        }
+    })
+);
+
 
     
 }

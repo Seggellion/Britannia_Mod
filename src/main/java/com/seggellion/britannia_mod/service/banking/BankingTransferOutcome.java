@@ -20,10 +20,10 @@ import javax.annotation.Nullable;
  *
  * <p>{@code UNSUPPORTED_CURRENCY_KEY} and {@code INVALID_AMOUNT} are currency-prepare-only
  * (Milestone 10, docs/banking_currency_transfer.md), added by that milestone's own NeoForge
- * deposit slice under the exact same when-a-real-caller-exists rule. Rails' third currency
- * outcome, {@code INSUFFICIENT_BALANCE}, is withdrawal-prepare-only and is deliberately NOT
- * here yet -- the currency withdrawal slice adds it when its caller exists, matching how
- * {@code ITEM_NOT_FOUND} waited for item withdrawal.
+ * deposit slice under the exact same when-a-real-caller-exists rule. {@code
+ * INSUFFICIENT_BALANCE} is currency-withdrawal-prepare-only, added by this milestone's own
+ * NeoForge withdrawal slice now that a real caller exists, matching how {@code ITEM_NOT_FOUND}
+ * waited for item withdrawal.
  */
 public enum BankingTransferOutcome {
     PREPARED,
@@ -58,6 +58,7 @@ public enum BankingTransferOutcome {
     INVALID_WEIGHT,
     UNSUPPORTED_CURRENCY_KEY,
     INVALID_AMOUNT,
+    INSUFFICIENT_BALANCE,
     SERVICE_UNAVAILABLE;
 
     @Nullable
@@ -82,7 +83,7 @@ public enum BankingTransferOutcome {
                  CAPACITY_EXCEEDED, UNSUPPORTED_SCHEMA_VERSION, PAYLOAD_TOO_LARGE, INVALID_WEIGHT,
                  OPERATION_NOT_FOUND, INVALID_TRANSITION, RECONCILIATION_REQUIRED,
                  ITEM_NOT_FOUND, ITEM_NOT_AVAILABLE,
-                 UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT -> 422;
+                 UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT, INSUFFICIENT_BALANCE -> 422;
             case SERVICE_UNAVAILABLE -> 503;
         };
     }
