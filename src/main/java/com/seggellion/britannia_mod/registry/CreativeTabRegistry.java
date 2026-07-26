@@ -335,6 +335,13 @@ public class CreativeTabRegistry {
                 safeAccept(output, DyeItemRegistry.SOOT_BLACK.get());
                 safeAccept(output, DyeItemRegistry.CHALK_WHITE.get());
                 safeAccept(output, DyeItemRegistry.ICE_BLUE.get());
+                safeAccept(output, BannerItemRegistry.COTTON_CLOTH.get());
+                safeAccept(output, BannerItemRegistry.LINEN_CLOTH.get());
+                safeAccept(output, BannerItemRegistry.BRASS_MOUNT.get());
+                com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue.CANONICAL_PATHS
+                        .forEach(path -> output.accept(BannerItemRegistry.BANNER_PATTERN.get().configured(
+                                com.seggellion.britannia_mod.banner.api.BannerDefinitionId.parse(
+                                        "britannia_mod:" + path))));
 
                 // General items
                 

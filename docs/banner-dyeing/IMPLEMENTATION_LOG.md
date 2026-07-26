@@ -1,5 +1,86 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-26 - Milestone 14: Crafting and Existing Material-System Integration
+
+### Preflight and platform inspection
+
+- Verified branch `banners-dyetub`, HEAD `b5f2ec8fa06e981125857a7e247b3a667df0c8b3`, merge base with `patch-18`
+  `62df1dc97c5113a86f9c0f258cb90538f31efe89`, divergence `0 14`, and the sole baseline untracked path `.claude/`.
+  `.claude/` remained untouched, uninspected, and excluded from every Git operation.
+- The two root specifications were intentionally absent as declared by the request and Milestone 13 baseline; they
+  were not recreated. Their prior full-read evidence remains in Milestone 0, and the attached Milestone 14 brief was
+  read in full.
+- Inspected NeoForge/Minecraft 21.1.72 sources for `Recipe`, `CraftingRecipe`, `CustomRecipe`, `RecipeSerializer`,
+  `RecipeType`, `CraftingInput`, `RecipeManager`, `CraftingMenu`, and `ResultSlot`. Normal crafting uses
+  `RecipeType.CRAFTING`; custom JSON selection uses a `MapCodec`/`RegistryFriendlyByteBuf` serializer; result-slot
+  handling asks the matched recipe for remainders on every completed craft.
+- Inspected `UOMetalToolMaterial`, `BlacksmithCrafting`, `CraftableRegistry`, ingredient definitions, item registration,
+  typed components, creative tabs, banner state/factory/validation, fabric/palette/mount registries, scaffold
+  generation, and the existing registered-stack tests. The repository has no generic material identity shared by
+  metals and fabrics and no existing brass item identity.
+
+### Pattern, material, mount, and recipe architecture
+
+- Added one shared maximum-stack-one `britannia_mod:banner_pattern` and one
+  `britannia_mod:banner_pattern_definition` typed component using the existing `BannerDefinitionId` persistent and
+  stream codecs. Reads are non-mutating; tooltips show the active definition, stable missing ID, and provisional
+  warning. The existing items tab emits exactly 33 configured canonical variants and no raw pattern.
+- Added tag-backed resolvers with typed unknown, ambiguous, missing, disabled, and unsupported failures plus exact tag
+  evidence. Fabric inputs are cotton cloth, vanilla white wool, linen cloth, and the existing spiders silk. Iron
+  reuses the same vanilla ingot identity recognized by `UOMetalToolMaterial.IRON`; brass uses the new minimal
+  banner-mount input because the repository has no brass metal identity.
+- Added one `britannia_mod:banner_crafting` serializer on the platform's existing `minecraft:crafting` recipe type.
+  Its strict persistent codec requires current schema, definition ID, and fabric units 1 through 6 and rejects
+  unknown or duplicate map fields; its network codec synchronizes the same three authoritative values.
+- Matching is shapeless and exact: one matching configured pattern, footprint-area fabric slots of one material, one
+  supported mount, no ambiguity, and no extra slot. Current definition/material/palette/natural-colour/mount data must
+  be active. Missing/reloaded data returns no match/output and mutates no input.
+- Assembly delegates to `BannerItemFactory.craftedMaterialBanner`. Output is always one fresh shared banner with the
+  current schema, recipe/pattern definition, input-derived fabric and mount, authored natural colour, and no source
+  pigment. `DyeResolver`, client render metadata, placement state, and custom C2S crafting packets are not used.
+- The pattern is provisionally reusable. Valid recipe remainders contain exactly one unchanged configured pattern and
+  preserve normal container/material/mount remainders. Invalid direct remainder evaluation returns no attempted-craft
+  remainder.
+
+### Generation, tests, and verification boundary
+
+- Extended the established banner scaffold instead of introducing a second data generator. It deterministically emits
+  33 `data/britannia_mod/recipe/banner/<definition>.json` files and six `tags/item/banner_*` files. There is no
+  material/mount expansion and no dye recipe. The status generator records recipe ID/presence, pattern presence,
+  fabric units, supported crafting materials/mounts, natural-colour validation, and manual status for every row.
+- Initial restricted Gradle/scaffold launches failed because the wrapper distribution was denied network access;
+  approved reruns used the configured Gradle/Java 21 toolchain. The first normal generator run hit the documented
+  CRLF-vs-LF metadata mismatch and preserved prior scaffold files; explicit scaffold `--force` refreshed only its
+  declared outputs, then generation reported 33 definitions and 33 recipes.
+- The first focused test compile found four test-source mistakes (one renamed render-data accessor, one local variable,
+  and a JSON/NBT type mismatch). The corrected run passed. An expanded run found one assertion expecting translated
+  tooltip text while the fixture intentionally had no published global registry; it now asserts the stable
+  diagnostic component representation. No production validation was weakened for these corrections.
+- Focused Milestone 14 validation passes 16 tests. It executes all 264 definition/material/mount crafts, persistent
+  state round trips, strict codec and network round trips, every current footprint cost, malformed-grid cases,
+  tag evidence and ambiguity, missing/disabled/reloaded data, standard plus pattern remainders, and a deterministic
+  repeated-crafting simulation.
+- The corrected banner/dyeing package and final full clean test run each passed all 548 tests across 47 suites with
+  zero failures, errors, or skips. Separate `clean` and `build` gates passed; the final scaffold check reported
+  33 manifest entries, 33 definitions, 33 recipes, 33 active definitions, zero disabled definitions, and 33
+  localization entries. The packaged JAR contains exactly 33 banner recipes and six crafting input tags, and contains
+  no dye recipes, banner commands, or NPC/banner hooks. Compilation retained only the two documented pre-existing
+  warnings for the mixin `@Overwrite` Javadoc and deprecated `OrderShieldItem.initializeClient`.
+- No GameTest or live client was added. The repository still has no crafting-menu integration test harness. Automated
+  bulk simulation covers per-craft consumption, mount limiting, one returned pattern, one fresh stack per output, and
+  state isolation; it does not claim a manually observed shift-click or full-inventory transfer.
+- Manual crafting, dyeing, placement, break/drop, and relog checks were not performed in this non-interactive run.
+  Existing automated dyeing, item/placed rendering, placement, persistence, and lifecycle suites remain the
+  regression boundary.
+
+### Scope and next milestone
+
+- Fabric costs, ingredient identities, reusable-pattern policy, survival acquisition, unlocks, recipe-book display,
+  and economy remain explicitly provisional. The special recipes provide no representative recipe-book output.
+- No pigment/dye/tub recipe, admin/debug command, NPC hook, direct placed-banner dyeing, mount swapping, placement or
+  rendering behavior, catalogue identity/dimension change, final artwork, or Milestone 15 code was added.
+- Stop after the Milestone 14 commit. Next milestone: Milestone 15 only.
+
 ## 2026-07-26 - Milestone 13: Placed Banner Rendering and Live State Sync
 
 ### Preflight baseline

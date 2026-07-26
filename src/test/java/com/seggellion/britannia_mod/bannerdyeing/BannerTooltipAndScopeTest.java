@@ -153,7 +153,10 @@ class BannerTooltipAndScopeTest {
                 DataComponentRegistry.BANNER_INSTANCE_STATE.getId().toString());
         assertTrue(DataComponentRegistry.createBannerInstanceStateType().codec() != null);
         assertTrue(DataComponentRegistry.createBannerInstanceStateType().streamCodec() != null);
-        assertEquals(1, BannerItemRegistry.ITEMS.getEntries().size());
+        assertEquals(1, BannerItemRegistry.ITEMS.getEntries().stream()
+                .filter(holder -> holder.getId().getPath().equals("banner")).count());
+        assertEquals(1, BannerItemRegistry.ITEMS.getEntries().stream()
+                .filter(holder -> holder.getId().getPath().equals("banner_pattern")).count());
     }
 
     @Test

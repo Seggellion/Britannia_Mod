@@ -2,7 +2,29 @@
 
 Date: 2026-07-26
 
-Milestone: 13
+Milestone: 14
+
+## Milestone 14 provisional crafting decisions
+
+- Fabric costs are footprint area: 1 for 1x1, 2 for 1x2, 4 for 2x2, and 6 for 3x2. They fit the normal 3x3 grid but
+  remain provisional content values.
+- Pattern tokens are reusable and return exactly once as the recipe remainder. This is a provisional economy policy;
+  whether patterns remain permanently reusable is still open.
+- Development acquisition is 33 configured variants of one shared pattern in the existing Britannia items tab.
+  Survival pattern acquisition is deferred and remains unapproved. No raw unconfigured pattern is exposed normally.
+- Provisional ingredient identities are cotton cloth (`britannia_mod:cotton_cloth`), white wool
+  (`minecraft:white_wool`), linen cloth (`britannia_mod:linen_cloth`), existing spiders silk
+  (`britannia_mod:spiders_silk`), a new brass banner mount (`britannia_mod:brass_banner_mount`), and the existing
+  blacksmith iron input (`minecraft:iron_ingot`). All are mediated through six item tags so a later approved identity
+  can change without recipe expansion.
+- The 33 dynamic recipes use the normal crafting recipe type but are marked special. They do not currently appear as
+  33 representative outputs in the recipe book. Final unlock criteria and recipe-book presentation remain open.
+- Automated coverage exercises deterministic repeated/bulk crafting and remainders. The repository has no established
+  crafting-menu integration harness, so actual shift-click transfer with nearly/full inventories remains a manual
+  boundary and was not claimed as live verification.
+
+Still unresolved: final fabric costs, final ingredient identities, final pattern acquisition, permanent pattern
+reuse, recipe unlocks, recipe-book presentation, and the complete survival crafting economy.
 
 ## Milestone 13 Gate D provisional decisions
 

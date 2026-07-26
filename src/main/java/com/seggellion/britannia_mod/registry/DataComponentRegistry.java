@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.component.WineData;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
+import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
 import com.seggellion.britannia_mod.dye.state.DyeTubState;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -28,6 +29,10 @@ public class DataComponentRegistry {
             BANNER_INSTANCE_STATE = DATA_COMPONENT_TYPES.register(
                     "banner_instance_state", DataComponentRegistry::createBannerInstanceStateType);
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<BannerDefinitionId>>
+            BANNER_PATTERN_DEFINITION = DATA_COMPONENT_TYPES.register(
+                    "banner_pattern_definition", DataComponentRegistry::createBannerPatternDefinitionType);
+
     public static DataComponentType<DyeTubState> createDyeTubStateType() {
         return DataComponentType.<DyeTubState>builder()
                 .persistent(DyeTubState.CODEC)
@@ -39,6 +44,13 @@ public class DataComponentRegistry {
         return DataComponentType.<BannerInstanceState>builder()
                 .persistent(BannerInstanceState.CODEC)
                 .networkSynchronized(BannerInstanceState.STREAM_CODEC)
+                .build();
+    }
+
+    public static DataComponentType<BannerDefinitionId> createBannerPatternDefinitionType() {
+        return DataComponentType.<BannerDefinitionId>builder()
+                .persistent(BannerDefinitionId.CODEC)
+                .networkSynchronized(BannerDefinitionId.STREAM_CODEC)
                 .build();
     }
 

@@ -811,5 +811,19 @@
   "message.britannia_mod.banner.structure.incomplete": "The banner structure is incomplete.",
   "message.britannia_mod.banner.structure.orphan_removed": "An orphan banner part was removed.",
   "message.britannia_mod.banner.structure.recovery_failed": "The banner could not be recovered safely.",
-  "block.britannia_mod.banner_part": "Banner Occupied Part"
+  "block.britannia_mod.banner_part": "Banner Occupied Part",
+  "item.britannia_mod.banner_pattern": "Banner Pattern",
+  "item.britannia_mod.banner_pattern.unconfigured": "Unconfigured Banner Pattern",
+  "item.britannia_mod.banner_pattern.configured": "Banner Pattern — %s",
+  "item.britannia_mod.banner_pattern.missing": "Banner Pattern — Missing %s",
+  "tooltip.britannia_mod.banner_pattern.unconfigured": "No banner definition is configured.",
+  "tooltip.britannia_mod.banner_pattern.definition": "Pattern: %s",
+  "tooltip.britannia_mod.banner_pattern.missing": "Missing banner definition: %s",
+  "tooltip.britannia_mod.banner_pattern.provisional": "Development pattern; content details remain provisional.",
+  "item.britannia_mod.cotton_cloth": "Cotton Cloth",
+  "item.britannia_mod.linen_cloth": "Linen Cloth",
+  "item.britannia_mod.brass_banner_mount": "Brass Banner Mount",
+  "recipe.britannia_mod.banner_crafting": "Banner Crafting",
+  "message.britannia_mod.banner.crafting.invalid_fabric": "Use matching banner fabrics.",
+  "message.britannia_mod.banner.crafting.invalid_mount": "This mount is not supported."
 }

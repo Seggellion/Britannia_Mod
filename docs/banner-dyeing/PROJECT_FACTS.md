@@ -2,9 +2,41 @@
 
 Date: 2026-07-26
 
-Milestone: 13 — Placed Banner Rendering and Live State Sync
+Milestone: 14 — Crafting and Existing Material-System Integration
 
 Feature branch: `banners-dyetub`
+
+## Milestone 14 crafting integration facts
+
+- NeoForge 21.1.72 crafting tables query the existing `minecraft:crafting` `RecipeType`; JSON recipe identity is
+  selected by a registered `RecipeSerializer`. Britannia therefore registers the one
+  `britannia_mod:banner_crafting` serializer and deliberately reuses `RecipeType.CRAFTING` rather than registering
+  an unused parallel type.
+- One data-driven shapeless `BannerCraftingRecipe` is instantiated for each canonical definition. Recipe data stores
+  schema version, stable definition ID, and provisional footprint-area fabric units only. Material and mount never
+  come from client state or representative output data.
+- The existing metal system remains metal-only. Its iron identity maps `minecraft:iron_ingot` through
+  `UOMetalToolMaterial.IRON`; the banner adapter exposes that same item through
+  `britannia_mod:banner_mount/iron`. No existing brass identity exists, so the smallest explicit addition is
+  `britannia_mod:brass_banner_mount` through `britannia_mod:banner_mount/brass`.
+- Fabric identity remains the existing `FabricMaterialId` domain. Item tags adapt
+  `britannia_mod:cotton_cloth`, `minecraft:white_wool`, `britannia_mod:linen_cloth`, and the existing
+  `britannia_mod:spiders_silk` to cotton, wool, linen, and silk respectively. Multi-tag inputs are ambiguous and
+  rejected; the metal enums were not extended.
+- One maximum-stack-one `britannia_mod:banner_pattern` item stores one synchronized/persistent
+  `britannia_mod:banner_pattern_definition` component using `BannerDefinitionId` codecs. The existing creative tab
+  exposes exactly 33 configured canonical variants and no raw unconfigured pattern.
+- Successful assembly delegates to `BannerItemFactory.craftedMaterialBanner`, producing the one shared banner item
+  with the current schema, selected definition, input-derived fabric, its authored natural colour, absent source
+  pigment, and input-derived mount.
+- Pattern reuse is implemented through `Recipe#getRemainingItems`: exactly one unchanged configured pattern is
+  returned, while the vanilla/NeoForge crafting-remainder path remains active for every other input.
+- The existing deterministic banner scaffold is the repository's recipe-data provider. It emits 33 files beneath
+  `data/britannia_mod/recipe/banner`, six item tags beneath `data/britannia_mod/tags/item`, and the expanded catalogue
+  status. Minecraft 1.21.1 uses singular registry element paths (`recipe`, `tags/item`).
+- These JSON-backed dynamic recipes are special recipes. They intentionally do not advertise a potentially
+  misleading representative result to the recipe book; ordinary server crafting synchronization and result
+  assembly remain authoritative.
 
 ## Milestone 13 placed-rendering and synchronization facts
 
