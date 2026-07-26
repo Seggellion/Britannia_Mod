@@ -55,7 +55,8 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Final per-definition mounts approved: no"));
         assertTrue(status.contains("Final placed artwork approved: no"));
         assertTrue(status.contains("Banner crafting implemented: no"));
-        assertTrue(status.contains("Banner acquisition: deferred to approved admin/development tooling"));
+        assertTrue(status.contains("Admin acquisition implemented: yes"));
+        assertTrue(status.contains("NPC/shop distribution implemented: no"));
         assertFalse(status.contains("Recipe ID"));
         assertFalse(status.contains("Recipe definitions complete"));
         assertEquals(33, status.lines().filter(line -> line.matches("\\| \\d{2} \\|.*")).count());

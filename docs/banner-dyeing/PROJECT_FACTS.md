@@ -2,9 +2,34 @@
 
 Date: 2026-07-26
 
-Milestone: Corrective 14R — Banner Crafting Removal
+Milestone: 15
 
 Feature branch: `banners-dyetub`
+
+## Milestone 15 command and service integration facts
+
+- `CommandRegistry` subscribes once to NeoForge's common/server `RegisterCommandsEvent`. Milestone 15 registers one
+  coherent `britannia` root from that existing event path; it does not register a client command or custom command
+  packet.
+- The established production administrator convention is `CommandSourceStack.hasPermission(2)`. The requirement is
+  placed on the `britannia` root before registry access, so every banner-give, dye-tub-give, validation, placeholder,
+  and dye-resolution branch inherits the same operator/game-master permission.
+- Existing repository commands are separate top-level literals and provide no shared mod administration root.
+  `britannia` is therefore the provisional root chosen from the mod identity. Registry suggestions are computed from
+  the current immutable `BannerDataRegistries` publication for every request and are never cached across reloads.
+- Existing item delivery convention is normal inventory insertion followed by `ServerPlayer.drop(stack, false)` for
+  a non-inserted remainder. Milestone 15 centralizes that policy behind `AdminItemDelivery`: each target receives an
+  independent stack, only a non-empty remainder is dropped, and one target's failure does not roll back another.
+- Command registration/permission/tree shape is exercised through the actual Brigadier dispatcher in plain JUnit.
+  Item construction, delivery, diagnostics, suggestions, and read-only projections use real production services and
+  registered production-shaped `ItemStack` fixtures. The repository still has no GameTest command-source bootstrap,
+  so no live dedicated-server command execution is claimed.
+- No existing NPC, merchant, shop, or service-provider registry offers a dependency-free pigment-source extension
+  point. `PigmentSourceService` is therefore exposed as a standalone common-side API with stable IDs, authoritative
+  registered-item resolution, typed failures, count validation, and immutable deterministic listing. No adapter
+  modifies an NPC or shop.
+- The public administration syntax is `/britannia banner ...` and `/britannia dye ...`. This is development/operator
+  acquisition only; it adds no survival distribution, crafting, loot, NPC inventory, shop, economy, or dialogue path.
 
 ## Corrective Milestone 14R product boundary
 

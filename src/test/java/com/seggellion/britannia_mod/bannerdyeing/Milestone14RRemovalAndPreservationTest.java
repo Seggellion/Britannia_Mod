@@ -99,7 +99,8 @@ class Milestone14RRemovalAndPreservationTest {
             assertFalse(status.contains(rejected), rejected);
         }
         assertTrue(status.contains("Banner crafting implemented: no"));
-        assertTrue(status.contains("Banner acquisition: deferred to approved admin/development tooling"));
+        assertTrue(status.contains("Admin acquisition implemented: yes"));
+        assertTrue(status.contains("Survival acquisition implemented: no"));
     }
 
     @Test

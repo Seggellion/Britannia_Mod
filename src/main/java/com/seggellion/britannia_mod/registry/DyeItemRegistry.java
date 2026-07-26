@@ -69,6 +69,20 @@ public final class DyeItemRegistry {
         return Optional.of(mapped);
     }
 
+    /** Resolves only the registered item whose immutable identity matches the requested stable pigment ID. */
+    public static Optional<PigmentItem> pigmentItem(PigmentId pigmentId) {
+        if (!ITEM_TO_PIGMENT.containsValue(pigmentId)) {
+            return Optional.empty();
+        }
+        Item item = BuiltInRegistries.ITEM.get(pigmentId.value());
+        if (!(item instanceof PigmentItem pigmentItem)
+                || !pigmentId.equals(pigmentItem.pigmentId())
+                || !pigmentId.equals(pigmentId(item).orElse(null))) {
+            return Optional.empty();
+        }
+        return Optional.of(pigmentItem);
+    }
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

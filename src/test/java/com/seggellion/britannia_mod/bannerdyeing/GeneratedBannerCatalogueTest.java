@@ -215,7 +215,9 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Catalogue target: exactly 33"));
         assertTrue(status.contains("Stable identity set approved at Gate B: yes"));
         assertTrue(status.contains("Banner crafting implemented: no"));
-        assertTrue(status.contains("Banner acquisition: deferred to approved admin/development tooling"));
+        assertTrue(status.contains("Admin acquisition implemented: yes"));
+        assertTrue(status.contains("Survival acquisition implemented: no"));
+        assertTrue(status.contains("NPC/shop distribution implemented: no"));
         assertTrue(status.contains("Final display names approved: no"));
         assertTrue(status.contains("Final dimensions approved: no"));
         assertTrue(status.contains("Final artwork complete: no"));

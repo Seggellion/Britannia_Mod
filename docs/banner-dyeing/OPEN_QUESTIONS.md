@@ -2,7 +2,26 @@
 
 Date: 2026-07-26
 
-Milestone: Corrective 14R
+Milestone: 15
+
+## Milestone 15 provisional administration decisions
+
+- The command root is provisionally `/britannia` because the repository has no coherent shared administrator root.
+  Decide before release whether this syntax should remain, be aliased, or move under another established operator
+  namespace.
+- Direct administrator selection of a resolved colour records no source pigment. This intentionally represents
+  administrative construction rather than a historical dye event; decide whether a future audit mode needs different
+  provenance without changing this default.
+- Empty and unlimited loaded dye tubs are available to operators. Finite-use tubs remain test-fixture-only; decide
+  whether a later administrator command needs an explicitly bounded-use form.
+- Future NPC/shop pigment pricing, stock, availability, unlock conditions, and refresh policy remain entirely
+  undefined. `PigmentSourceService` supplies validated stacks and immutable entries only.
+- Survival banner acquisition remains undefined. Banner crafting remains rejected and is not reopened by this
+  question.
+- Decide whether the `/britannia` administration/debug commands ship in production releases or are limited to
+  development/operator builds. They currently use the repository's normal level-2 operator permission.
+- Live in-game command, full-inventory drop, multiplayer target, and end-to-end obtain/dye/place/break matrices remain
+  unperformed in this non-interactive run. The real Brigadier tree and service boundaries have automated coverage.
 
 ## Corrective Milestone 14R product decision
 

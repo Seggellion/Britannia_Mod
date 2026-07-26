@@ -41,7 +41,7 @@ final class BannerDataReloadListener extends SimplePreparableReloadListener<Prep
             BannerFeature.CONTENT_VALIDATION_LOGGER.info(
                     "Production banner catalogue active=33 disabled=0 placeholders={}", placeholders);
         }
-        BannerDataRegistries.publisher().publish(result.snapshot());
+        BannerDataRegistries.publish(result.snapshot(), result.report().issues());
     }
 
     private static void log(RegistryLoadResult result) {

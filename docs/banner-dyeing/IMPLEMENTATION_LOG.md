@@ -1,5 +1,93 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-26 - Milestone 15: Admin Tools, NPC-Ready Dye Sources, and Debugging
+
+### Command architecture and authority
+
+- Added one common/server command tree under provisional root `/britannia`, registered once through the existing
+  `CommandRegistry` `RegisterCommandsEvent` listener. Every branch inherits the repository-standard
+  `hasPermission(2)` predicate before registry or inventory work. No client command, persistent command state, or
+  custom command packet was added.
+- Branches are `banner give <targets> <definition> [material] [colour] [mount]`, `banner validate`,
+  `banner placeholders [page]`, `dye tub give <targets> [pigment]`, and
+  `dye resolve <pigment> <material>`.
+- Suggestions read the latest immutable registry publication on every request: 33 active definition IDs, four
+  material IDs, only the selected material's active palette colours, only the definition's active supported mounts,
+  and seven active pigments that have an authoritative registered pigment item. Missing arguments or unavailable
+  registry data yield no unsafe contextual suggestions.
+
+### Banner and dye-tub administration
+
+- `BannerAdminService` validates active definition/material/palette/colour/mount references and delegates complete
+  state construction to `BannerItemFactory`. Definition-only acquisition uses `britannia_mod:cotton`, cotton's
+  authored natural colour, the definition default mount, current schema, and absent source pigment. A material-only
+  request uses that material's natural colour. Direct explicit colours must belong to the selected palette and still
+  record no source pigment; explicit mounts must be active and supported.
+- Multi-target behavior is partial success: each target receives a separately created stack, and one failed target
+  does not corrupt or roll back successful targets. Delivery follows existing normal insertion then safe
+  `drop(stack, false)` remainder behavior. A remainder is dropped at most once and is never silently deleted.
+- `DyeTubAdminService` creates only the registered stack-size-one dye tub. Empty output stores canonical
+  `DyeTubState.empty()`; loaded output stores the server-validated stable pigment ID with absent
+  `remaining_uses`, the sole unlimited representation. Administrative creation consumes no pigment, mutates no held
+  stack, and emits no loading effects.
+
+### Validation, catalogue, and dye debugging
+
+- `BannerCatalogueAdminService` is read-only. It reuses the existing `ProductionBannerCatalogue` and
+  `ProductionDyeContent` boundaries plus diagnostics retained from registry publication. Output reports 33 active/0
+  disabled banners, four materials, four palettes, seven pigments, two mounts, 33 incomplete placeholders, 14
+  provisional names, 33 provisional dimensions, zero errors, and zero warnings. Chat issue detail is capped at five
+  entries.
+- Placeholder output is stable-ID lexical order, eight entries per page, default page one, with out-of-range pages
+  clamped safely. It reports localized name, dimensions, content status, provisional-name marker, provisional-
+  dimension marker, total count, and page count. The count is derived from active registry data, not hard-coded.
+- `DyeResolutionDebugService` invokes the same `DyeResolver.explain` path as gameplay. The production explicit sample
+  `madder_red + cotton` resolves to `cotton_red` as `EXPLICIT_MAPPING` with distance approximately
+  `0.060252859817`. The nearest sample `woad_blue + cotton` resolves to `cotton_blue` as `NEAREST_COLOUR` with
+  distance approximately `0.018741671496`. Output also includes compatible/rejected counts and the resolver's final
+  tie-break classification; no registry, item, tub, or inventory state is mutated.
+
+### Pigment-source boundary and scope
+
+- Added `PigmentSourceService` and `RegistryPigmentSourceService`. A stable pigment ID is checked against snapshot
+  availability, active/disabled registry state, the immutable registered `PigmentItem` identity, positive count, and
+  stack maximum before a fresh stack is returned. Available entries are immutable, deterministic, and expose only
+  stable pigment ID, display translation key, registered item ID, existing rarity, and existing tags.
+- No NPC adapter was registered because the repository has no safe dependency-free NPC/shop service extension point.
+  No NPC entity, merchant inventory, price, currency, stock persistence, dialogue, economy hook, shop UI, loot,
+  crafting, or survival acquisition behavior was added.
+- Corrective Milestone 14R remains intact: no pattern item/component, banner recipe serializer, banner recipe JSON,
+  banner crafting tag, cloth/mount crafting-input item, configured creative pattern variant, or crafting test was
+  restored. No placement, rendering, direct placed-banner dyeing, final art, catalogue ID/dimension, or Milestone 16
+  content change was made.
+
+### Automated and manual verification
+
+- Initial restricted Gradle compilation could not access the wrapper distribution. The approved retry reached Java
+  compilation and found two `CommandSyntaxException` message-type errors; converting Brigadier `Message` values to
+  literal components corrected both. Production compile then passed with only the two existing warnings.
+- The first focused Milestone 15 run executed 31 tests with one scope-fixture failure because a Javadoc sentence
+  contained the literal word `price`; the sentence was made acquisition-neutral without changing behavior or
+  weakening the scope assertion. The identical focused command then passed 31/31.
+- `tools\scaffold_banners.bat --check` passed with manifest=33, definitions=33, active=33, disabled=0,
+  localization=33, provisional names=14, provisional dimensions=33, and five asset families.
+- The banner/dye regression command passed 567 tests across 47 suites with zero failures, zero errors, and zero
+  skips. `gradlew.bat clean --no-daemon` passed in 14 seconds; the from-clean full test passed the same 567 tests,
+  and final full test/build reruns passed. `gradlew.bat build --no-daemon` completed `check`, `jar`, `jarJar`,
+  `assemble`, and `build`.
+- The production all-JAR contains the command tree, 22 administrative projection classes, eight pigment-source
+  classes, 33 banner definitions, and the existing banner/dye runtime. It contains zero banner recipe resources,
+  banner crafting/pattern classes, or Milestone 15 NPC/shop classes. Both changed JSON files parse successfully, and
+  `git diff --check` passed.
+- No live Minecraft client/server was launched. All 32 manual command/end-to-end checks are explicitly unperformed;
+  no recipes or configured creative variants were added merely to make manual testing easier.
+- Commit subject: `feat(banners): add admin and dye debugging tools`. The full hash is recorded in the final handoff
+  because a commit cannot contain its own hash.
+
+### Next milestone
+
+Milestone 16 only. It has not started.
+
 ## 2026-07-26 - Corrective Milestone 14R: Remove the Unintended Banner Crafting System
 
 ### Reason and history
