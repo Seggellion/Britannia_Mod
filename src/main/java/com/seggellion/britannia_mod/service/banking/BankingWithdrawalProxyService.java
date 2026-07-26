@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.bank.item.BankItemCodec;
 import com.seggellion.britannia_mod.bank.item.BankItemDecodeResult;
 import com.seggellion.britannia_mod.bank.item.BankItemFingerprint;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
+import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipts;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
@@ -215,7 +216,7 @@ public final class BankingWithdrawalProxyService {
     public static CompletableFuture<BankingWithdrawalResult> confirmWithdrawalForTesting(
             ServerPlayer player, UUID operationPublicId, UUID bankItemPublicId
     ) {
-        return confirmWithdrawal(player.server, player.getUUID(), operationPublicId, bankItemPublicId);
+        return confirmWithdrawal(player.server, player.getUUID(), operationPublicId, bankItemPublicId, false);
     }
 
     /**
@@ -243,14 +244,18 @@ public final class BankingWithdrawalProxyService {
         if (!IN_FLIGHT.add(bankItemPublicId)) {
             return CompletableFuture.completedFuture(new BankingWithdrawalResult.LocalFailure("withdrawal_already_in_flight"));
         }
-        return confirmWithdrawal(server, playerUuid, operationPublicId, bankItemPublicId)
+        // No live ServerPlayer exists on a resume path -- forceSave has no meaning here, so this
+        // is never the "already durable per the flag" case; a resumed operation's own durability
+        // is whatever it already was when the receipt was written pre-restart.
+        return confirmWithdrawal(server, playerUuid, operationPublicId, bankItemPublicId, false)
                 .whenComplete((result, error) -> IN_FLIGHT.remove(bankItemPublicId));
     }
 
     private static CompletableFuture<BankingWithdrawalResult> continueToConfirm(ServerPlayer player, PrepareAndInsertOutcome outcome) {
         return switch (outcome) {
             case PrepareAndInsertOutcome.Inserted inserted ->
-                    confirmWithdrawal(player.server, player.getUUID(), inserted.operationPublicId(), inserted.bankItemPublicId());
+                    confirmWithdrawal(player.server, player.getUUID(), inserted.operationPublicId(), inserted.bankItemPublicId(),
+                            inserted.forceSaveFailed());
             case PrepareAndInsertOutcome.Aborted aborted ->
                     CompletableFuture.completedFuture(new BankingWithdrawalResult.Aborted(aborted.operationPublicId(), aborted.reason()));
             case PrepareAndInsertOutcome.Rejected rejected -> CompletableFuture.completedFuture(
@@ -379,7 +384,21 @@ public final class BankingWithdrawalProxyService {
         player.inventoryMenu.broadcastFullState();
 
         if (toInsert.isEmpty()) {
-            outcome.complete(new PrepareAndInsertOutcome.Inserted(success.operationPublicId(), success.bankItemPublicId()));
+            // Unlike deposit, the receipt here was already written BEFORE insertion (Section
+            // A.6's own withdrawal ordering) -- what this call closes is the insertion itself
+            // being durably reflected in the player's own file before Rails is ever told to
+            // confirm. See BankTransferPlayerDurability's own docs for the full reasoning and
+            // why this placement (after a real, successful insertion, before confirm is
+            // dispatched) is what turns the remaining crash window into, at worst, an
+            // ambiguous reconciliation-required Rails-side operation rather than a state where
+            // the item is durably gone from the player's own file while Rails already confirmed
+            // it withdrawn. A detected failure here cannot be cleanly aborted (the receipt
+            // already durably claims this insertion happened) -- it is instead carried through
+            // to confirm so Rails saying Confirmed doesn't silently erase the only local trace
+            // that doubt existed. See BankTransferPlayerDurability's own docs for the full
+            // policy reasoning.
+            boolean saved = BankTransferPlayerDurability.forceSave(player);
+            outcome.complete(new PrepareAndInsertOutcome.Inserted(success.operationPublicId(), success.bankItemPublicId(), !saved));
             return;
         }
 
@@ -501,7 +520,7 @@ public final class BankingWithdrawalProxyService {
     // ---- Steps 6-8: confirm, then resolve or (deliberately) escalate/leave unresolved ----
 
     private static CompletableFuture<BankingWithdrawalResult> confirmWithdrawal(
-            MinecraftServer server, UUID playerUuid, UUID operationPublicId, UUID bankItemPublicId
+            MinecraftServer server, UUID playerUuid, UUID operationPublicId, UUID bankItemPublicId, boolean forceSaveFailed
     ) {
         CompletableFuture<BankingWithdrawalResult> result = new CompletableFuture<>();
 
@@ -527,8 +546,29 @@ public final class BankingWithdrawalProxyService {
             ServerLevel level = server.overworld();
             switch (confirmResult) {
                 case BankingConfirmResult.Confirmed ignored -> {
-                    BankTransferReceipts.resolve(level, operationPublicId);
-                    result.complete(new BankingWithdrawalResult.Confirmed(operationPublicId, bankItemPublicId));
+                    if (forceSaveFailed) {
+                        // Rails says Confirmed, but this side already has real, detected doubt
+                        // about whether the insertion is durable on this player's own file (see
+                        // BankTransferPlayerDurability's own docs -- abort was not possible at
+                        // insertion time since the receipt already committed to this operation).
+                        // Escalate rather than resolve so a clean Rails confirm does not silently
+                        // delete the one durable trace that doubt existed, exactly reusing the
+                        // same mechanism Rails' own ReconciliationRequired response uses below.
+                        BankTransferReceiptStore.EscalateOutcome escalateOutcome =
+                                BankTransferReceipts.escalateToReconciliationRequired(level, operationPublicId);
+                        if (escalateOutcome == BankTransferReceiptStore.EscalateOutcome.READ_ONLY_SCHEMA) {
+                            LOGGER.error(
+                                    "banking withdrawal receipt for operation {} could not be escalated to "
+                                            + "reconciliation_required after a forced-save failure: receipt store is "
+                                            + "read-only (unsupported future schema)",
+                                    operationPublicId
+                            );
+                        }
+                        result.complete(new BankingWithdrawalResult.ReconciliationRequired(operationPublicId));
+                    } else {
+                        BankTransferReceipts.resolve(level, operationPublicId);
+                        result.complete(new BankingWithdrawalResult.Confirmed(operationPublicId, bankItemPublicId));
+                    }
                 }
                 case BankingConfirmResult.ReconciliationRequired ignored -> {
                     // Step 6/7: the item is already, physically, in the player's inventory --
@@ -572,8 +612,19 @@ public final class BankingWithdrawalProxyService {
             PrepareAndInsertOutcome.TransportFailure,
             PrepareAndInsertOutcome.LocalFailure {
 
-        /** The item was inserted and the durable receipt was written. Confirm was NOT attempted. */
-        record Inserted(UUID operationPublicId, UUID bankItemPublicId) implements PrepareAndInsertOutcome {
+        /**
+         * The item was inserted and the durable receipt was written. Confirm was NOT attempted.
+         *
+         * @param forceSaveFailed whether {@link BankTransferPlayerDurability#forceSave} detected
+         *                        a failure forcing this insertion to the player's own file. Since
+         *                        withdrawal cannot cleanly abort at this point (the receipt
+         *                        already durably claims the insertion happened -- see {@link
+         *                        BankTransferPlayerDurability}'s own docs), this flag is instead
+         *                        threaded through to confirm so a Rails-side {@code Confirmed}
+         *                        response does not silently resolve (delete) the one durable
+         *                        trace that local doubt existed.
+         */
+        record Inserted(UUID operationPublicId, UUID bankItemPublicId, boolean forceSaveFailed) implements PrepareAndInsertOutcome {
         }
 
         record Aborted(UUID operationPublicId, BankingWithdrawalAbortReason reason) implements PrepareAndInsertOutcome {

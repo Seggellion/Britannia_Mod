@@ -117,9 +117,25 @@ public final class BankTransferReconciliationService {
                 receipt.operationId(), receipt.playerUuid(), receipt.operationType()
         );
         switch (receipt.operationType()) {
-            case DEPOSIT -> BankingDepositProxyService.resumeConfirmDeposit(
-                    server, receipt.playerUuid(), receipt.operationId(), receipt.bankItemPublicId()
-            ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+            // Milestone 10: a DEPOSIT receipt is either an item deposit or a currency deposit,
+            // discriminated by the receipt's own schema invariant (exactly one of itemPayload
+            // or currencyAmount is ever present -- enforced in BankTransferReceipt's
+            // constructor since Milestone 9, precisely so this branch would not need a schema
+            // change when the currency path arrived). A currency receipt carries no
+            // bankItemPublicId at all, which the item resume's Confirmed result would reject
+            // by its own non-null contract -- routing on the discriminator, not a new field,
+            // keeps every already-written item receipt resuming exactly as before.
+            case DEPOSIT -> {
+                if (receipt.currencyAmount() != null) {
+                    BankingCurrencyDepositProxyService.resumeConfirmCurrencyDeposit(
+                            server, receipt.playerUuid(), receipt.operationId()
+                    ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+                } else {
+                    BankingDepositProxyService.resumeConfirmDeposit(
+                            server, receipt.playerUuid(), receipt.operationId(), receipt.bankItemPublicId()
+                    ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+                }
+            }
             case WITHDRAWAL -> BankingWithdrawalProxyService.resumeConfirmWithdrawal(
                     server, receipt.playerUuid(), receipt.operationId(), receipt.bankItemPublicId()
             ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));

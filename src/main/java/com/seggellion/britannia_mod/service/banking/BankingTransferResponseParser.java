@@ -83,6 +83,33 @@ public final class BankingTransferResponseParser {
         }
     }
 
+    /**
+     * Milestone 10: {@code banking/currency/deposit/prepare}'s response carries only the
+     * {@code operation} object -- no {@code bank_item}, ever (docs/banking_currency_transfer.md:
+     * a currency operation never has one), so only the operation's public id is extracted.
+     * The {@code currency_key}/{@code currency_amount} the operation JSON also carries are not
+     * parsed, matching this class's stated only-what-callers-need policy: the proxy already
+     * holds both from its own capture and never trusts an echo over its own observation.
+     */
+    public static BankingCurrencyDepositPrepareResult parseCurrencyDepositPrepare(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingCurrencyDepositPrepareResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome != BankingTransferOutcome.PREPARED) {
+            return new BankingCurrencyDepositPrepareResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            UUID operationPublicId = requiredUuid(requiredObject(envelope.root, "operation"), "public_id");
+            return new BankingCurrencyDepositPrepareResult.Success(operationPublicId);
+        } catch (ProtocolException malformed) {
+            return new BankingCurrencyDepositPrepareResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
     public static BankingConfirmResult parseConfirm(int status, byte[] body) {
         final Envelope envelope;
         try {

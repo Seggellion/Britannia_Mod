@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.bank.item.BankItemEligibility;
 import com.seggellion.britannia_mod.dialogue.DialogueLayout;
 import com.seggellion.britannia_mod.dialogue.DialogueViewModel;
@@ -173,11 +174,25 @@ public final class BankScreen extends Screen {
     private boolean isSelectedDepositSlotEligible() {
         if (selectedDepositSlot == null) return false;
         ItemStack stack = clientInventory().getItem(selectedDepositSlot);
-        return isEligible(stack);
+        return isDepositable(stack);
     }
 
-    private static boolean isEligible(ItemStack stack) {
+    /**
+     * Milestone 10: a slot is depositable if it passes item eligibility OR is a bare coin
+     * stack -- coins are no longer a dead end in this picker. {@link
+     * CurrencyItemRegistry#isCurrencyStack} is checked first, deliberately mirroring the
+     * server-side routing order in {@code BankingTransferPacketService#handleDeposit}: the same
+     * stack this displays as depositable is exactly the stack that router would send down the
+     * currency balance protocol. Still a UX nicety only, not a security boundary -- the server
+     * independently re-derives the routing and every validation from the live slot regardless
+     * of what this screen displayed (the same trust model as before, unchanged).
+     *
+     * <p>A container holding coins is NOT a coin stack (top-level item identity only) and
+     * remains ineligible/greyed, matching the server's own routing polarity exactly.
+     */
+    private static boolean isDepositable(ItemStack stack) {
         if (stack.isEmpty()) return false;
+        if (CurrencyItemRegistry.isCurrencyStack(stack)) return true;
         try {
             BankItemEligibility.checkEligible(stack);
             return true;
@@ -275,7 +290,7 @@ public final class BankScreen extends Screen {
         for (int slotIndex : slots) {
             if (rowY + ROW_H > panelsTop && rowY < panelsTop + panelHeight) {
                 ItemStack stack = clientInventory().getItem(slotIndex);
-                boolean eligible = isEligible(stack);
+                boolean eligible = isDepositable(stack);
                 boolean selected = selectedDepositSlot != null && selectedDepositSlot == slotIndex;
                 int color = !eligible ? 0xFF808080 : (selected ? 0xFF55FF55 : DialoguePresentation.TEXT_COLOR);
 

@@ -13,8 +13,14 @@ import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
+import com.seggellion.britannia_mod.quest.QuestRewardService;
+import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.service.banking.BankingCancelResult;
 import com.seggellion.britannia_mod.service.banking.BankingConfirmResult;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositClientPort;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositPrepareRequest;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositPrepareResult;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositProxyService;
 import com.seggellion.britannia_mod.service.banking.BankingDepositClientPort;
 import com.seggellion.britannia_mod.service.banking.BankingDepositPrepareRequest;
 import com.seggellion.britannia_mod.service.banking.BankingDepositPrepareResult;
@@ -191,12 +197,23 @@ public final class BankingTransferPacketServiceGameTests {
 
     // ---------- Ineligible item: server-side rejection fires regardless of client-side gating ----------
 
+    /**
+     * Milestone 10 re-fixture: this test originally used a gold coin as its ineligible item --
+     * valid when currency was a dead end, but that exact stack now legitimately routes to the
+     * currency balance protocol (its own tests below), so keeping the coin here would have let
+     * this test pass by coincidence (the un-substituted real currency client failing on
+     * credentials) while its assertions claimed a local eligibility rejection that never ran.
+     * A quest-bound item (ADR-013) is a genuinely ineligible fixture with no second protocol to
+     * escape into, so the test's actual claim -- server-side gating fires regardless of what a
+     * modified client sends -- stays honestly proven.
+     */
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
     public static void ineligibleSlotIsRejectedServerSideEvenIfAClientSendsItAnyway(GameTestHelper helper) {
         installBankRegistry();
         ServiceNpcEntity teller = spawnBankTeller(helper);
         ServerPlayer player = setUpPlayer(helper, teller);
-        player.getInventory().setItem(SLOT, new ItemStack(com.seggellion.britannia_mod.registry.ItemRegistry.GOLD_COIN.get(), 3));
+        grantRealQuestReward(player);
+        moveOnlyItemToSlot(player, SLOT);
 
         FakeDepositClient depositClient = new FakeDepositClient();
         BankingDepositProxyService.useClientForTesting(depositClient);
@@ -210,13 +227,113 @@ public final class BankingTransferPacketServiceGameTests {
 
             check(resultSender.calls.size() == 1, "expected exactly one clean-rejection result");
             check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.CLEAN_REJECTION,
-                    "an ineligible (currency) item must be cleanly rejected, not silently accepted");
+                    "an ineligible (quest-bound) item must be cleanly rejected, not silently accepted");
             check(depositClient.prepareRequests.isEmpty(), "prepare must never be called for an ineligible item -- rejected locally first");
-            check(player.getInventory().getItem(SLOT).getItem() == com.seggellion.britannia_mod.registry.ItemRegistry.GOLD_COIN.get(),
+            check(!player.getInventory().getItem(SLOT).isEmpty(),
                     "the ineligible item must remain untouched in the player's inventory");
 
             cleanUp();
             helper.succeed();
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    // ---------- Milestone 10: the deposit packet's currency/item routing ----------
+
+    /**
+     * A bare coin stack through the REAL packet path routes to the currency balance protocol:
+     * the currency client's prepare fires with the exact key/count, the coins leave the
+     * inventory, and a clean confirm triggers the same bank.open refresh item deposits use --
+     * so the freshly-mutated gold/silver/copper balances reach the client. The ITEM deposit
+     * client is deliberately left with its exploding default: if routing regressed to the item
+     * path, this test fails loudly rather than passing by coincidence.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void coinStackThroughRealPacketPathRoutesToCurrencyProtocolAndRefreshesTheAccount(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(com.seggellion.britannia_mod.registry.ItemRegistry.GOLD_COIN.get(), 37));
+
+        FakeDepositClient depositClient = new FakeDepositClient();
+        BankingDepositProxyService.useClientForTesting(depositClient);
+        FakeCurrencyDepositClient currencyClient = new FakeCurrencyDepositClient();
+        currencyClient.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingCurrencyDepositPrepareResult.Success(UUID.randomUUID()));
+        currencyClient.confirmBehavior = () -> CompletableFuture.completedFuture(new BankingConfirmResult.Confirmed());
+        BankingCurrencyDepositProxyService.useClientForTesting(currencyClient);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        wireOpenRefresh(new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 37, 0, 0, 2));
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            helper.succeedWhen(() -> {
+                check(currencyClient.prepareRequests.size() == 1,
+                        "the coin stack did not route to the currency protocol");
+                check(currencyClient.prepareRequests.get(0).currencyKey().equals("gold")
+                                && currencyClient.prepareRequests.get(0).amount() == 37,
+                        "wrong key/amount routed: " + currencyClient.prepareRequests);
+                check(depositClient.prepareRequests.isEmpty(),
+                        "a coin stack must never reach the item deposit prepare");
+                check(player.getInventory().getItem(SLOT).isEmpty(), "the deposited coins were not removed from the slot");
+                check(refreshed.get(), "a successful currency confirm did not trigger the bank.open refresh");
+                check(resultSender.calls.isEmpty(),
+                        "a clean currency confirm must never send a rejection/reconciliation result: " + resultSender.calls);
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    /**
+     * The routing's other polarity: an ordinary non-coin item through the same packet still
+     * takes the Milestone 9 item path, completely unaffected by the currency branch -- the
+     * currency client is left with its exploding default so any accidental currency routing
+     * fails loudly.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void nonCoinItemThroughRealPacketPathStillRoutesToTheItemProtocolUnaffected(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        UUID operationId = UUID.randomUUID();
+        FakeDepositClient depositClient = new FakeDepositClient();
+        depositClient.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingDepositPrepareResult.Success(operationId, UUID.randomUUID()));
+        depositClient.confirmBehavior = () -> CompletableFuture.completedFuture(new BankingConfirmResult.Confirmed());
+        BankingDepositProxyService.useClientForTesting(depositClient);
+        FakeCurrencyDepositClient currencyClient = new FakeCurrencyDepositClient();
+        BankingCurrencyDepositProxyService.useClientForTesting(currencyClient);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        wireOpenRefresh(new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 5.0, 0, 0, 0, 2));
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            helper.succeedWhen(() -> {
+                check(depositClient.prepareRequests.size() == 1,
+                        "the ordinary item did not route to the item deposit protocol");
+                check(currencyClient.prepareRequests.isEmpty(),
+                        "an ordinary item must never reach the currency deposit prepare");
+                check(player.getInventory().getItem(SLOT).isEmpty(), "the deposited item was not removed from the slot");
+                check(refreshed.get(), "a successful item confirm did not trigger the bank.open refresh");
+                cleanUp();
+            });
         } catch (RuntimeException | Error propagate) {
             cleanUp();
             throw propagate;
@@ -430,6 +547,8 @@ public final class BankingTransferPacketServiceGameTests {
     private static void cleanUp() {
         BankingDepositProxyService.resetClientForTesting();
         BankingDepositProxyService.resetInFlightTrackingForTesting();
+        BankingCurrencyDepositProxyService.resetClientForTesting();
+        BankingCurrencyDepositProxyService.resetInFlightTrackingForTesting();
         BankingWithdrawalProxyService.resetClientForTesting();
         BankingWithdrawalProxyService.resetInFlightTrackingForTesting();
         BankingProxyService.resetClientForTesting();
@@ -437,6 +556,35 @@ public final class BankingTransferPacketServiceGameTests {
         BankingProxyService.resetInFlightTrackingForTesting();
         BankingTransferPacketService.resetResultSenderForTesting();
         ServiceNpcRegistryCache.clear();
+    }
+
+    private static void grantRealQuestReward(ServerPlayer player) {
+        QuestModels.ItemData reward = new QuestModels.ItemData();
+        reward.id = "magic_ring"; // QuestRewardService's own special-cased id, guaranteed to resolve to a real item
+        reward.count = 1;
+
+        QuestModels.QuestResponse response = new QuestModels.QuestResponse();
+        response.success = true;
+        response.quest_id = 42L;
+        response.questStateId = "gametest-packet-quest-state";
+        response.granted_items = List.of(reward);
+
+        QuestRewardService.apply(player, response);
+    }
+
+    private static void moveOnlyItemToSlot(ServerPlayer player, int slot) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (!stack.isEmpty() && i != slot) {
+                player.getInventory().setItem(slot, stack.copy());
+                player.getInventory().setItem(i, ItemStack.EMPTY);
+                return;
+            }
+            if (!stack.isEmpty() && i == slot) {
+                return;
+            }
+        }
+        throw new IllegalStateException("no item found to relocate");
     }
 
     private static void installBankRegistry() {
@@ -481,6 +629,35 @@ public final class BankingTransferPacketServiceGameTests {
 
         @Override
         public CompletableFuture<BankingDepositPrepareResult> prepare(MinecraftServer server, BankingDepositPrepareRequest request) {
+            prepareRequests.add(request);
+            return prepareBehavior.get();
+        }
+
+        @Override
+        public CompletableFuture<BankingConfirmResult> confirm(MinecraftServer server, BankingOperationRequest request) {
+            return confirmBehavior.get();
+        }
+
+        @Override
+        public CompletableFuture<BankingCancelResult> cancel(MinecraftServer server, BankingOperationRequest request) {
+            return cancelBehavior.get();
+        }
+    }
+
+    private static final class FakeCurrencyDepositClient implements BankingCurrencyDepositClientPort {
+        java.util.function.Supplier<CompletableFuture<BankingCurrencyDepositPrepareResult>> prepareBehavior =
+                () -> { throw new IllegalStateException("prepareCurrencyDeposit() was not expected to be called in this test"); };
+        java.util.function.Supplier<CompletableFuture<BankingConfirmResult>> confirmBehavior =
+                () -> { throw new IllegalStateException("confirm() was not expected to be called in this test"); };
+        java.util.function.Supplier<CompletableFuture<BankingCancelResult>> cancelBehavior =
+                () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+
+        final List<BankingCurrencyDepositPrepareRequest> prepareRequests = new CopyOnWriteArrayList<>();
+
+        @Override
+        public CompletableFuture<BankingCurrencyDepositPrepareResult> prepareCurrencyDeposit(
+                MinecraftServer server, BankingCurrencyDepositPrepareRequest request
+        ) {
             prepareRequests.add(request);
             return prepareBehavior.get();
         }

@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.bank.item.BankItemFingerprint;
 import com.seggellion.britannia_mod.bank.item.BankItemSchemaVersion;
 import com.seggellion.britannia_mod.bank.item.BankItemWeight;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
+import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipts;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
@@ -315,6 +316,46 @@ public final class BankingDepositProxyService {
         live.shrink(count);
         player.inventoryMenu.broadcastChanges();
         player.inventoryMenu.broadcastFullState();
+
+        // Forces this player's own removal durably to disk before the receipt is written --
+        // see BankTransferPlayerDurability's own docs for why this ordering (not the reverse)
+        // is what keeps a crash in the remaining gap a non-duplicating loss, never a
+        // duplication.
+        if (!BankTransferPlayerDurability.forceSave(player)) {
+            // A detected failure here means the removal is still only in-memory -- nothing
+            // durable or Rails-facing exists yet, so this is the last point where undoing it is
+            // free. Restore the item and cancel the prepared operation exactly like the
+            // removal-revalidation-mismatch branch above, rather than proceed into the
+            // duplication window this whole fix exists to close. See BankTransferPlayerDurability
+            // for the full policy reasoning.
+            live.grow(count);
+            player.inventoryMenu.broadcastChanges();
+            player.inventoryMenu.broadcastFullState();
+
+            final CompletableFuture<BankingCancelResult> cancelFuture;
+            try {
+                cancelFuture = client.cancel(
+                        server, BankingOperationRequest.cancel(player.getUUID(), success.operationPublicId(), "player_save_failed")
+                );
+            } catch (RuntimeException synchronousFailure) {
+                LOGGER.warn("banking/cancel submission threw synchronously after a forced-save failure", synchronousFailure);
+                outcome.complete(new PrepareAndRemoveOutcome.RemovalFailed(success.operationPublicId()));
+                return;
+            }
+            cancelFuture.whenComplete((cancelResult, cancelError) -> {
+                if (cancelError != null || !(cancelResult instanceof BankingCancelResult.Cancelled)) {
+                    LOGGER.warn(
+                            "banking/cancel after a forced-save failure did not cleanly confirm: operation={} result={} error={}",
+                            success.operationPublicId(), cancelResult, cancelError
+                    );
+                }
+                // Reported regardless of whether Rails' own cleanup succeeded -- nothing
+                // physical happened here (the removal was restored above), and Cancel is
+                // Rails' own idempotent, retryable operation.
+                outcome.complete(new PrepareAndRemoveOutcome.RemovalFailed(success.operationPublicId()));
+            });
+            return;
+        }
 
         ServerLevel level = player.serverLevel();
         BankTransferReceiptStore.RecordOutcome recordOutcome = BankTransferReceipts.record(

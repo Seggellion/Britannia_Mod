@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.service.banking;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
@@ -55,9 +56,29 @@ public final class BankingTransferPacketService {
         resultSender = BankTransferResultS2CPayload::send;
     }
 
+    /**
+     * Milestone 10: one deposit packet, two protocols -- the routing decision is made HERE,
+     * server-side, from the live slot's own contents, never from anything the client claimed. A
+     * bare coin stack ({@link CurrencyItemRegistry#isCurrencyStack}: top-level item identity
+     * only -- a container holding coins is not a coin stack) routes to the currency balance
+     * protocol; everything else takes the Milestone 9 item path unchanged. The item path's own
+     * {@code CURRENCY} eligibility rejection is deliberately untouched underneath: if a coin
+     * stack ever reached it directly (it cannot through this router), it still rejects cleanly
+     * -- the redirect lives in this dispatch layer, not in a weakened eligibility rule.
+     *
+     * <p>The slot is read here purely to pick a protocol; whichever proxy service receives the
+     * dispatch re-reads and re-validates the slot from scratch as its own step 1, so a swap
+     * between this check and the proxy's capture resolves exactly like any other mid-flight
+     * slot mutation: a clean local rejection or revalidation cancel, never a misrouted removal.
+     */
     public static void handleDeposit(ServerPlayer player, BankDepositRequestC2SPayload payload) {
         ServiceNpcEntity teller = resolveTeller(player, payload.entityId());
         if (teller == null) return;
+
+        if (CurrencyItemRegistry.isCurrencyStack(player.getInventory().getItem(payload.slotIndex()))) {
+            handleCurrencyDeposit(player, teller, payload.slotIndex());
+            return;
+        }
 
         MinecraftServer server = player.server;
         BankingDepositProxyService.triggerDeposit(player, teller, payload.slotIndex())
@@ -73,6 +94,39 @@ public final class BankingTransferPacketService {
                     switch (result) {
                         case BankingDepositResult.Confirmed ignored -> refreshAccount(player, teller);
                         case BankingDepositResult.ReconciliationRequired ignored -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
+                        );
+                        default -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                    }
+                }));
+    }
+
+    /**
+     * The currency side of {@link #handleDeposit}'s routing, mapped to the client identically
+     * to an item deposit (same {@code Operation.DEPOSIT} result channel, same {@code
+     * refreshAccount} on a clean confirm -- which re-runs {@code bank.open}'s real fetch, so the
+     * freshly-mutated gold/silver/copper balances land on the client through the exact same
+     * path every balance display already uses).
+     */
+    private static void handleCurrencyDeposit(ServerPlayer player, ServiceNpcEntity teller, int slotIndex) {
+        MinecraftServer server = player.server;
+        BankingCurrencyDepositProxyService.triggerCurrencyDeposit(player, teller, slotIndex)
+                .whenComplete((result, error) -> server.execute(() -> {
+                    if (error != null || result == null) {
+                        LOGGER.warn("banking currency deposit trigger for {} completed exceptionally", player.getStringUUID(), error);
+                        resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        return;
+                    }
+                    switch (result) {
+                        case BankingCurrencyDepositResult.Confirmed ignored -> refreshAccount(player, teller);
+                        case BankingCurrencyDepositResult.ReconciliationRequired ignored -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.DEPOSIT,
                                 BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
                         );
