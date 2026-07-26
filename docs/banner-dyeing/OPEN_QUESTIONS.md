@@ -2,7 +2,29 @@
 
 Date: 2026-07-26
 
-Milestone: 15
+Milestone: 16 Preparation
+
+## Milestone 16 content-intake readiness
+
+Milestone 16 Batch 1 remains blocked because the repository contains no approved final owner assets or decisions for
+the seven extra-small definitions. The intake kit defines the evidence required to unblock integration without
+guessing.
+
+Owner input is still required per definition for final display name, dimensions, orientations, supported/default
+mounts, placement profile, geometry convention, localization, original layer assets, provenance, and distribution
+permission. A completed intake may authorize an `in_progress` integration; it does not authorize `complete`.
+
+The read-only validator is implemented at:
+
+```text
+.\tools\scaffold_banners.bat --check-final-intake <path>
+```
+
+It deliberately does not decide art direction, approve input, infer dimensions from pixels, copy assets, modify the
+catalogue, or perform live visual review. Whether future final assets need new pixel dimensions or definition-specific
+renderer registration must be decided from actual approved inputs rather than pre-emptive tooling changes.
+
+Banner crafting remains product-disabled, survival acquisition remains unresolved, and Milestone 17 has not started.
 
 ## Milestone 15 provisional administration decisions
 

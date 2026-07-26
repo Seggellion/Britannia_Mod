@@ -2,9 +2,32 @@
 
 Date: 2026-07-26
 
-Milestone: 15
+Milestone: 16 Preparation
 
 Feature branch: `banners-dyetub`
+
+## Milestone 16 preparation facts
+
+- Milestone 16 Batch 1 stopped without edits or a commit because none of the seven extra-small definitions had
+  approved final owner decisions, original final artwork, provenance, or manual verification evidence. Stable IDs
+  alone remain approved.
+- The owner-facing workflow is now documented in `FINAL_CONTENT_INTAKE.md` and
+  `FINAL_CONTENT_REVIEW_CHECKLIST.md`. Unapproved JSON-compatible YAML templates live under
+  `content/banner-final-intake/`, outside runtime resources.
+- `tools\scaffold_banners.bat --check-final-intake <path>` invokes a read-only validator from the existing scaffold
+  source set. It reads one intake, the live catalogue identity list, and referenced source files; it never writes,
+  copies, generates, stages, publishes, or changes content.
+- Validator statuses are `NOT_READY`, `READY_FOR_INTEGRATION`, and `INVALID`. Readiness requires explicit approval,
+  complete supported decisions, unambiguous non-placeholder asset mappings, existing source files with matching
+  SHA-256 values, 8-bit RGBA layer PNGs, original-art provenance, and distribution permission. Manual in-game
+  verification is deliberately not required to begin integration but remains mandatory before `complete`.
+- Normal scaffold generation and `--check` behavior are unchanged. Intake files are not under
+  `src/main/resources`, are not a registry domain, and cannot modify or augment the 33-definition runtime dataset.
+- No banner definition, catalogue value, content status, runtime asset, registry, renderer, placement rule, dyeing
+  behavior, persistence contract, command, or acquisition behavior changed. Milestone 16 remains pending actual
+  approved content, and Milestone 17 has not started.
+- Banner crafting remains rejected and product-disabled. Intake contains no recipe, pattern, crafting-input, price,
+  NPC/shop, arbitrary-NBT, runtime-component, source-pigment, or item-orientation fields.
 
 ## Milestone 15 command and service integration facts
 

@@ -42,7 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 
-/** Deterministic Milestone 4 catalogue generator and verifier. */
+/** Deterministic catalogue scaffold generator, verifier, and read-only intake entry point. */
 public final class BannerScaffoldTool {
     public static final String MANIFEST_PATH = "content/banner_catalogue.yml";
     public static final String STATUS_PATH = "content/banner_catalogue_status.md";
@@ -92,6 +92,23 @@ public final class BannerScaffoldTool {
 
     public static void main(String[] args) {
         try {
+            if (args.length > 0 && "--check-final-intake".equals(args[0])) {
+                if (args.length != 2 || args[1].isBlank()) {
+                    throw new ScaffoldException("--check-final-intake requires exactly one intake path");
+                }
+                Path root = Path.of(".").toAbsolutePath().normalize();
+                Path intake = Path.of(args[1]);
+                if (!intake.isAbsolute()) {
+                    intake = root.resolve(intake);
+                }
+                FinalContentIntakeValidator.Result result =
+                        FinalContentIntakeValidator.validate(root, intake.normalize());
+                FinalContentIntakeValidator.printReport(result, System.out);
+                if (result.status() == FinalContentIntakeValidator.Status.INVALID) {
+                    System.exit(1);
+                }
+                return;
+            }
             Options options = parseOptions(args);
             RunSummary summary = execute(Path.of(".").toAbsolutePath().normalize(), options, System.out);
             System.out.printf(Locale.ROOT,

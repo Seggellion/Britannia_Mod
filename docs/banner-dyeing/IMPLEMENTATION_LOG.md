@@ -1,5 +1,66 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-26 - Milestone 16 Preparation: Final Banner Content Intake Kit
+
+### Reason and scope
+
+- Milestone 16 Batch 1 correctly stopped without content edits or a commit: no extra-small definition had approved
+  final owner decisions, original final artwork, complete provenance, or manual verification evidence.
+- Added a documentation and validation-tooling intake kit only. No final art was generated, copied, inferred, or
+  integrated. Milestone 16 remains pending actual approved content, and Milestone 17 has not started.
+- The live catalogue remains exactly 33 stable definitions with all 33 at `placeholder`. No name, dimension,
+  orientation, mount, default mount, placement profile, asset resource, localization, definition JSON, registry
+  content, runtime behavior, or command changed.
+
+### Owner-facing intake files
+
+- Added `docs/banner-dyeing/FINAL_CONTENT_INTAKE.md`, defining stable identity, required decisions, fabric/mask/overlay
+  responsibilities, independent mounts, file and alpha rules, provenance, approval/content states, existing-world
+  consequences, the integration sequence, and the product-disabled crafting boundary.
+- Added `docs/banner-dyeing/FINAL_CONTENT_REVIEW_CHECKLIST.md`, covering identity, assets, automated checks, item
+  contexts, four materials and three representative colours, brass/iron, both orientations and all facings,
+  persistence/lifecycle, and final owner review.
+- Added `content/banner-final-intake/README.md`, `intake.example.yml`, and
+  `extra_small_batch.example.yml`. The templates use JSON-compatible YAML 1.2, are visibly `NOT_APPROVED`, live
+  outside runtime resources, and contain no recipe, pattern, crafting, price, NPC/shop, arbitrary-NBT, component,
+  source-pigment, or item-orientation fields.
+- The batch template names each of the seven stable extra-small IDs exactly once. All decision fields remain blank or
+  null; existing values appear only inside a clearly labelled `current_provisional_state`.
+
+### Read-only validator
+
+- Added `FinalContentIntakeValidator` to the existing non-runtime scaffold source set and a narrow
+  `--check-final-intake <path>` dispatch in `BannerScaffoldTool`. Normal generation, `--check`, and `--force`
+  execution paths are unchanged.
+- The validator reads one intake plus the live manifest identity set, validates schema and supported values, confirms
+  default-mount membership, resolves repository-relative source paths safely, checks file existence and SHA-256,
+  decodes the three PNG layers, requires matching dimensions and 8-bit true-colour RGBA, rejects ambiguous layer
+  resource IDs and approved placeholder IDs, and validates approval/provenance/permission fields.
+- Results are deterministic and typed as `NOT_READY`, `READY_FOR_INTEGRATION`, or `INVALID`. Manual verification is
+  checked for truthful attribution when claimed but is not required for integration readiness; it remains mandatory
+  before `content_status: complete`.
+- The validator performs no writes, asset copies, definition generation, catalogue mutation, status transition,
+  staging, or registry publication. Intake files are not a runtime registry folder and are not packaged as live data.
+
+### Tests and validation
+
+- Added focused documentation/template and validator tests for required files and clauses, forbidden fields, all
+  seven unapproved records, runtime isolation, catalogue preservation, valid readiness, `NOT_APPROVED`, missing and
+  unknown IDs, dimensions, orientations, mounts, default mount membership, asset existence, PNG validity and alpha,
+  provenance, distribution permission, copied-reference rejection, ambiguous mappings, manual-claim attribution,
+  deterministic output, and non-mutation.
+- The first focused compile found one local report-list variable that was captured by lambdas and then reassigned.
+  Separating the ordered immutable result fixed compilation without changing validation policy. The final focused
+  selection passed 17 tests across two suites with zero failures, errors, or skips.
+- `.\tools\scaffold_banners.bat --check` passed with the unchanged 33 definitions, 33 active, zero disabled,
+  14 provisional names, 33 provisional dimensions, and five placeholder families. The banner/dye regression passed,
+  then `.\gradlew.bat clean --no-daemon`, the from-clean full 584-test/49-suite run, and
+  `.\gradlew.bat build --no-daemon` all passed.
+- The production all-JAR contains 33 placeholder definitions, the unchanged six placeholder models and four
+  placeholder textures, zero intake templates/classes, zero banner recipes, zero pattern entries, and no duplicate
+  entry names. `git diff --check` and JSON-compatible YAML parsing passed.
+- Banner crafting remains absent and product-disabled.
+
 ## 2026-07-26 - Milestone 15: Admin Tools, NPC-Ready Dye Sources, and Debugging
 
 ### Command architecture and authority
