@@ -21,9 +21,11 @@ import javax.annotation.Nullable;
  * <p>{@code UNSUPPORTED_CURRENCY_KEY} and {@code INVALID_AMOUNT} are currency-prepare-only
  * (Milestone 10, docs/banking_currency_transfer.md), added by that milestone's own NeoForge
  * deposit slice under the exact same when-a-real-caller-exists rule. {@code
- * INSUFFICIENT_BALANCE} is currency-withdrawal-prepare-only, added by this milestone's own
+ * INSUFFICIENT_BALANCE} is currency-withdrawal-prepare-only, added by that milestone's own
  * NeoForge withdrawal slice now that a real caller exists, matching how {@code ITEM_NOT_FOUND}
- * waited for item withdrawal.
+ * waited for item withdrawal. {@code INVALID_CHEQUE_AMOUNT} is cheque-issuance-prepare-only
+ * (Milestone 11 Rails Slice 1, docs/banking_bank_cheque_issuance.md), added by this milestone's
+ * own NeoForge issuance slice under the same rule.
  */
 public enum BankingTransferOutcome {
     PREPARED,
@@ -59,6 +61,7 @@ public enum BankingTransferOutcome {
     UNSUPPORTED_CURRENCY_KEY,
     INVALID_AMOUNT,
     INSUFFICIENT_BALANCE,
+    INVALID_CHEQUE_AMOUNT,
     SERVICE_UNAVAILABLE;
 
     @Nullable
@@ -83,7 +86,7 @@ public enum BankingTransferOutcome {
                  CAPACITY_EXCEEDED, UNSUPPORTED_SCHEMA_VERSION, PAYLOAD_TOO_LARGE, INVALID_WEIGHT,
                  OPERATION_NOT_FOUND, INVALID_TRANSITION, RECONCILIATION_REQUIRED,
                  ITEM_NOT_FOUND, ITEM_NOT_AVAILABLE,
-                 UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT, INSUFFICIENT_BALANCE -> 422;
+                 UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT, INSUFFICIENT_BALANCE, INVALID_CHEQUE_AMOUNT -> 422;
             case SERVICE_UNAVAILABLE -> 503;
         };
     }

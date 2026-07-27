@@ -1,11 +1,15 @@
 package com.seggellion.britannia_mod.service.banking;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipt;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipts;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
 import org.slf4j.Logger;
 
 /**
@@ -70,6 +74,53 @@ public final class BankTransferReconciliationService {
         ServerLevel level = server.overworld();
         BankTransferReceiptStore.ScanResult scan = BankTransferReceipts.scanUnresolved(level);
         reconcile(server, scan);
+    }
+
+    /**
+     * Milestone 11 NeoForge Slice 1 fix: closes the "resume can't deliver to an offline player"
+     * gap the issuance slice's own completion notes flagged. {@link
+     * BankingChequeIssuanceProxyService#resumeConfirmChequeIssuance} already handles the
+     * player-not-online case gracefully at startup (reports {@code PendingDelivery}, leaves the
+     * receipt pending rather than losing it), but until this fix nothing ever re-drove delivery
+     * once that player actually came back online -- the receipt would simply sit pending
+     * forever, only ever retried by another server restart.
+     *
+     * <p>Registered via {@link #init()} on {@link PlayerLoggedInEvent} (the exact event {@code
+     * WorldBootstrapHandler} already uses for its own "do this when a player connects" work --
+     * not an invented convention). Re-runs the identical resume path {@link #resumePending}'s own
+     * {@code CHEQUE_ISSUANCE} branch already calls for this operation type, scoped to the
+     * joining player's own receipts -- not a second delivery mechanism. An already-resolved
+     * receipt simply will not appear in {@code scanUnresolved()} at all (it was removed from the
+     * store the moment it resolved), so no separate "is this already done" check is needed here:
+     * there is nothing left to find, and therefore nothing to (re)deliver.
+     */
+    public static void init() {
+        NeoForge.EVENT_BUS.addListener(BankTransferReconciliationService::onPlayerLoggedIn);
+    }
+
+    private static void onPlayerLoggedIn(PlayerLoggedInEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        deliverPendingChequesOnLogin(player);
+    }
+
+    /**
+     * Split out from {@link #onPlayerLoggedIn} so a GameTest can call it directly against a real
+     * {@code ServerPlayer} without needing to fire a genuine {@link PlayerLoggedInEvent}.
+     */
+    public static void deliverPendingChequesOnLogin(ServerPlayer player) {
+        BankTransferReceiptStore.ScanResult scan = BankTransferReceipts.scanUnresolved(player.serverLevel());
+        for (BankTransferReceipt receipt : scan.pending()) {
+            if (receipt.operationType() != BankTransferOperationType.CHEQUE_ISSUANCE) continue;
+            if (!receipt.playerUuid().equals(player.getUUID())) continue;
+
+            LOGGER.info(
+                    "Attempting to deliver a pending bank cheque now that the player has logged back in: "
+                            + "operation_id={} player_uuid={}", receipt.operationId(), player.getStringUUID()
+            );
+            BankingChequeIssuanceProxyService.resumeConfirmChequeIssuance(
+                    player.server, receipt.playerUuid(), receipt.operationId()
+            ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+        }
     }
 
     /**
@@ -154,6 +205,14 @@ public final class BankTransferReconciliationService {
                     ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
                 }
             }
+            // Milestone 11 NeoForge Slice 1: a cheque issuance receipt is written before confirm
+            // (see BankingChequeIssuanceProxyService's own docs for why its ordering differs from
+            // every prior flow), so resuming it may need to both settle confirm AND attempt
+            // delivery, not just resume a confirm whose physical action already happened -- see
+            // BankingChequeIssuanceProxyService#resumeConfirmChequeIssuance's own docs.
+            case CHEQUE_ISSUANCE -> BankingChequeIssuanceProxyService.resumeConfirmChequeIssuance(
+                    server, receipt.playerUuid(), receipt.operationId()
+            ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
         }
     }
 

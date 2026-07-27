@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.service.banking;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
@@ -201,6 +202,48 @@ public final class BankingTransferPacketService {
                         );
                         default -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                    }
+                }));
+    }
+
+    /**
+     * Milestone 11 NeoForge Slice 1: bank cheque issuance's own production entry point. Unlike
+     * every prior confirm/reject dichotomy, this flow has a real third outcome -- {@link
+     * BankingChequeIssuanceResult.PendingDelivery} -- reported as its own distinct {@link
+     * BankTransferResultS2CPayload.Kind#PENDING_DELIVERY}, never folded into {@code
+     * CLEAN_REJECTION} (nothing was actually rejected -- Rails already confirmed) or {@code
+     * RECONCILIATION_REQUIRED} (this state auto-resolves on retry; that one never does). See
+     * {@link BankingChequeIssuanceResult}'s own docs for the full reasoning.
+     */
+    public static void handleChequeIssuance(ServerPlayer player, BankChequeIssuanceRequestC2SPayload payload) {
+        ServiceNpcEntity teller = resolveTeller(player, payload.entityId());
+        if (teller == null) return;
+
+        MinecraftServer server = player.server;
+        BankingChequeIssuanceProxyService.triggerChequeIssuance(player, teller, payload.amount())
+                .whenComplete((result, error) -> server.execute(() -> {
+                    if (error != null || result == null) {
+                        LOGGER.warn("banking cheque issuance trigger for {} completed exceptionally", player.getStringUUID(), error);
+                        resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_ISSUANCE,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        return;
+                    }
+                    switch (result) {
+                        case BankingChequeIssuanceResult.Confirmed ignored -> refreshAccount(player, teller);
+                        case BankingChequeIssuanceResult.PendingDelivery ignored -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_ISSUANCE,
+                                BankTransferResultS2CPayload.Kind.PENDING_DELIVERY
+                        );
+                        case BankingChequeIssuanceResult.ReconciliationRequired ignored -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_ISSUANCE,
+                                BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
+                        );
+                        default -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_ISSUANCE,
                                 BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
                         );
                     }

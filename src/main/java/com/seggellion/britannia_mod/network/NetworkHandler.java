@@ -600,6 +600,17 @@ registrar.playToServer(
     })
 );
 
+// Milestone 11 NeoForge Slice 1: real cheque issuance trigger from BankChequeIssuanceScreen
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleChequeIssuance(p, payload);
+        }
+    })
+);
+
 
     
 }

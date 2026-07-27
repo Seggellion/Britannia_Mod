@@ -157,10 +157,11 @@ public final class BankScreen extends Screen {
         withdrawButton = Button.builder(Component.literal("Withdraw"), ignored -> onWithdrawPressed())
                 .bounds(CONTENT_MARGIN + buttonWidth + BUTTON_GAP, buttonY, buttonWidth, BUTTON_HEIGHT)
                 .build();
-        Button checksButton = Button.builder(Component.literal("Checks (not yet available)"), ignored -> {})
+        // Milestone 11 NeoForge Slice 1: real as of this slice (previously a permanently
+        // disabled placeholder) -- opens the teller check-creation screen.
+        Button checksButton = Button.builder(Component.literal("Checks"), ignored -> onChecksPressed())
                 .bounds(CONTENT_MARGIN + (buttonWidth + BUTTON_GAP) * 2, buttonY, buttonWidth, BUTTON_HEIGHT)
                 .build();
-        checksButton.active = false;
 
         addRenderableWidget(depositButton);
         addRenderableWidget(withdrawButton);
@@ -261,6 +262,13 @@ public final class BankScreen extends Screen {
         return player.getInventory();
     }
 
+    // ---------- Checks action ----------
+
+    private void onChecksPressed() {
+        if (depositPending || withdrawalPending) return;
+        Minecraft.getInstance().setScreen(new com.seggellion.britannia_mod.client.screen.BankChequeIssuanceScreen(account));
+    }
+
     // ---------- Deposit action ----------
 
     private void onDepositPressed() {
@@ -301,10 +309,17 @@ public final class BankScreen extends Screen {
         switch (payload.operation()) {
             case DEPOSIT -> depositPending = false;
             case WITHDRAWAL -> withdrawalPending = false;
+            // BankScreen itself never triggers a cheque issuance (BankChequeIssuanceScreen's
+            // own acceptTransferResult handles that operation) -- unreachable here in practice,
+            // kept only so this switch stays exhaustive as the shared Operation enum grows.
+            case CHEQUE_ISSUANCE -> { }
         }
         statusMessage = switch (payload.kind()) {
             case CLEAN_REJECTION -> CLEAN_REJECTION_MESSAGE;
             case RECONCILIATION_REQUIRED -> RECONCILIATION_REQUIRED_MESSAGE;
+            // Milestone 11: never actually sent for a DEPOSIT/WITHDRAWAL result (only cheque
+            // issuance reaches PendingDelivery) -- kept only for switch exhaustiveness.
+            case PENDING_DELIVERY -> CLEAN_REJECTION_MESSAGE;
         };
         refreshButtonStates();
     }

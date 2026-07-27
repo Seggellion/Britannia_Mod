@@ -135,6 +135,63 @@ public final class BankingTransferResponseParser {
         }
     }
 
+    /**
+     * Milestone 11 Rails Slice 1: {@code banking/cheque/issue/prepare}'s response carries only
+     * the {@code operation} object -- no {@code bank_item}, no {@code bank_cheque} (the cheque
+     * does not exist until confirm; see {@link #parseChequeIssuanceConfirm}) -- mirroring {@link
+     * #parseCurrencyWithdrawalPrepare}'s own reasoning.
+     */
+    public static BankingChequeIssuancePrepareResult parseChequeIssuancePrepare(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingChequeIssuancePrepareResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome != BankingTransferOutcome.PREPARED) {
+            return new BankingChequeIssuancePrepareResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            UUID operationPublicId = requiredUuid(requiredObject(envelope.root, "operation"), "public_id");
+            return new BankingChequeIssuancePrepareResult.Success(operationPublicId);
+        } catch (ProtocolException malformed) {
+            return new BankingChequeIssuancePrepareResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
+    /**
+     * Milestone 11 NeoForge Slice 1: unlike every other {@code parse*} method in this class,
+     * this one DOES deep-parse a nested object beyond {@code operation} itself -- {@code
+     * operation.bank_cheque.{public_id,amount}} -- because this is the one confirm response
+     * whose body genuinely carries information this caller cannot already know from prepare
+     * (see {@link BankingChequeIssuanceConfirmResult}'s own docs for why).
+     */
+    public static BankingChequeIssuanceConfirmResult parseChequeIssuanceConfirm(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingChequeIssuanceConfirmResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome == BankingTransferOutcome.RECONCILIATION_REQUIRED) {
+            return new BankingChequeIssuanceConfirmResult.ReconciliationRequired();
+        }
+        if (envelope.outcome != BankingTransferOutcome.CONFIRMED) {
+            return new BankingChequeIssuanceConfirmResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            JsonObject operation = requiredObject(envelope.root, "operation");
+            JsonObject bankCheque = requiredObject(operation, "bank_cheque");
+            UUID chequePublicId = requiredUuid(bankCheque, "public_id");
+            int amount = requiredInt(bankCheque, "amount");
+            return new BankingChequeIssuanceConfirmResult.Confirmed(chequePublicId, amount);
+        } catch (ProtocolException malformed) {
+            return new BankingChequeIssuanceConfirmResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
     public static BankingConfirmResult parseConfirm(int status, byte[] body) {
         final Envelope envelope;
         try {

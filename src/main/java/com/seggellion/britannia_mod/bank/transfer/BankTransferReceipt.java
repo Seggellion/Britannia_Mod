@@ -47,6 +47,26 @@ import java.util.UUID;
  * ownership protocol", so the schema should not have to change shape when that path is built.
  * {@code itemPayload} is treated as fully opaque here -- already-serialized {@link
  * com.seggellion.britannia_mod.bank.item.BankItemCodec} bytes, never re-decoded by this class.
+ *
+ * <h2>Milestone 11: cheque issuance needs no schema change here</h2>
+ * A {@link BankTransferOperationType#CHEQUE_ISSUANCE} receipt is currency-shaped
+ * ({@code currencyAmount} carries the cheque's own requested/authoritative copper value,
+ * {@code itemPayload}/{@code bankItemPublicId} both absent) -- deliberately NOT a third slot
+ * carrying the cheque's own public UUID, even though that identity is exactly what {@code
+ * bankItemPublicId} plays for an item transfer. The two are not analogous: {@code
+ * bankItemPublicId} exists because Rails' {@code BankItem} already exists at prepare time, so a
+ * resume can trust the receipt's own copy of it without re-asking Rails. A cheque's {@code
+ * BankCheque} row does not exist until confirm succeeds (Rails Milestone 11 Slice 1's own
+ * deliberate design -- see {@code docs/banking_bank_cheque_issuance.md}), and confirm is
+ * idempotent: calling it again on resume always returns the exact same already-created cheque,
+ * never a duplicate. A resume therefore never needs the cheque's identity persisted locally --
+ * it simply re-asks Rails, safely, every time. This is why cheque issuance fits the existing
+ * two-shape schema (item xor currency) rather than needing a genuinely new third shape the way
+ * {@code bank_transfer_operations.bank_cheque_id} did on the Rails side: unlike that column
+ * (which had to become a real, deferred-presence addition because {@code BankTransferOperation}
+ * itself is the durable, permanent record of the operation), this receipt is only ever a
+ * transient, pre-resolution crash-recovery aid -- it can always afford to re-derive information
+ * from Rails on resume rather than cache it, so it never needed the identity in the first place.
  */
 public record BankTransferReceipt(
     UUID operationId,

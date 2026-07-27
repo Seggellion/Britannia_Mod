@@ -32,12 +32,22 @@ import java.util.Objects;
 public record BankTransferResultS2CPayload(Operation operation, Kind kind) implements CustomPacketPayload {
     public enum Operation {
         DEPOSIT,
-        WITHDRAWAL
+        WITHDRAWAL,
+        /** Milestone 11 NeoForge Slice 1 -- kept distinct from WITHDRAWAL: cheque issuance's own outcome vocabulary genuinely differs (see {@link Kind#PENDING_DELIVERY}). */
+        CHEQUE_ISSUANCE
     }
 
     public enum Kind {
         CLEAN_REJECTION,
-        RECONCILIATION_REQUIRED
+        RECONCILIATION_REQUIRED,
+        /**
+         * Milestone 11 NeoForge Slice 1 only: Rails already confirmed (gold debited, the cheque
+         * is real), but the physical item was not delivered this attempt and a safe, automatic
+         * retry is still expected -- deliberately distinct from {@link #RECONCILIATION_REQUIRED},
+         * which means nothing may auto-resolve. See {@code BankingChequeIssuanceResult.PendingDelivery}'s
+         * own docs for why this is a genuinely different, non-alarming state.
+         */
+        PENDING_DELIVERY
     }
 
     public static final ResourceLocation TYPE_ID =

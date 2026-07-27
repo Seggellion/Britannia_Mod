@@ -106,8 +106,9 @@ public class BritanniaMod {
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
         OreVeinLoader.loadOreVeins();
-          BlessedItemSyncHandler.init(); 
-        WorldBootstrapHandler.init(); 
+          BlessedItemSyncHandler.init();
+        WorldBootstrapHandler.init();
+        com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.init();
         GrapeVarietyManager.init();
 CraftableRegistry.init();
         // Register mod components

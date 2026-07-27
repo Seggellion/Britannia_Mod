@@ -136,6 +136,12 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties().stacksTo(99)));
     public static final DeferredHolder<Item, Item> LOCKPICK_TOOLS = ITEMS.register("lockpick_tools",
             () -> new Item(new Item.Properties().stacksTo(64)));
+
+    // Milestone 11 NeoForge Slice 1: the physical bank cheque -- a single, non-stacking value
+    // instrument (each carries its own distinct Rails-issued UUID via BankChequeData, so two
+    // cheques can never legitimately share a stack).
+    public static final DeferredHolder<Item, Item> BANK_CHEQUE = ITEMS.register("bank_cheque",
+            () -> new com.seggellion.britannia_mod.item.BankChequeItem(new Item.Properties().stacksTo(1)));
     
     // Quality Jewlery
 
