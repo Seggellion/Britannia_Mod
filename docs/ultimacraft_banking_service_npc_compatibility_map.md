@@ -267,6 +267,82 @@ known, documented boundary of this ADR, not a silent gap: an item whose own
 registry key is vanilla or `britannia_mod` is accepted even if some
 component attached to it originates elsewhere.
 
+### ADR-015: Cheque redemption is bearer-based
+
+Date: 2026-07-26. Status: Human-approved (not Codex-inferred).
+
+Cheque redemption is bearer-based. Anyone holding the physical cheque item
+may redeem it — there is no issued-to-specific-player restriction. This is
+a deliberate acceptance of the same "lost/stolen is unrecoverable"
+tradeoff physical cash carries; it does not change anything about the
+cheque's own single-value-instrument model from ADR-012.
+
+### ADR-016: Cheque redemption interaction is double-click-in-inventory while the bank account is open
+
+Date: 2026-07-26. Status: Human-approved (not Codex-inferred).
+
+Cheque redemption interaction is double-click-in-inventory while the bank
+account is open. Redeeming a cheque does not construct or insert physical
+coin stacks — it credits the resolved value directly to the open bank
+account's balance. This makes redemption structurally closer to a
+currency deposit (remove an item, credit a balance) than a withdrawal
+(construct and insert stacks); implementation should reuse deposit-side
+patterns where applicable, not withdrawal-side ones.
+
+### ADR-017: Cheque redemption settles by debiting the issuing account directly
+
+Date: 2026-07-26. Status: Human-approved (not Codex-inferred).
+
+Cheque redemption settles by debiting the issuing account directly,
+regardless of where or by whom it's redeemed. No shard-level pooling
+exists; ADR-012's "reserves settle between the issuing account/city and
+the redeeming location as appropriate" is resolved as: always the issuing
+account, unconditionally.
+
+### ADR-018: Approved cheque amount range is 500 to 100,000 gold-equivalent value
+
+Date: 2026-07-26. Status: Human-approved (not Codex-inferred).
+
+Approved cheque amount range is 500 to 100,000 gold-equivalent value, per
+ADR-012's single-value model. The canonical unit this range is expressed
+in is whatever the coin-conversion centralization work (the prerequisite
+ADR-012 itself names, confirmed during Milestone 11 recon as still absent
+from the codebase as of this entry's date) establishes; this entry is a
+to-be-confirmed cross-reference for that unit definition until that slice
+lands, not for the numeric bounds themselves, which are final.
+
+### ADR-019: Cheque amount range's canonical unit is resolved: copper, per CoinConversion
+
+Date: 2026-07-27. Status: Human-approved (not Codex-inferred).
+
+ADR-018 left the canonical unit of the 500 to 100,000 gold-equivalent
+cheque amount range as a to-be-confirmed cross-reference, pending the
+coin-conversion centralization work ADR-012 itself required. That work
+has now landed (NeoForge, `CoinConversion`, commit `a8f603d`): the
+canonical smallest unit is copper (`CoinConversion.COPPER_PER_GOLD` =
+10,000). The approved cheque amount range is therefore 5,000,000 to
+1,000,000,000 copper, inclusive — the same 500 to 100,000 gold-equivalent
+value ADR-018 approved, now expressed in the concrete unit Rails'
+`bank_cheques` schema stores and validates against. ADR-018's numeric
+bounds remain final and unchanged; only the previously open unit
+cross-reference is resolved by this entry.
+
+### ADR-020: Cheque settlement debits the issuing account at issuance, not at redemption
+
+Date: 2026-07-27. Status: Human-approved (not Codex-inferred).
+
+ADR-017 resolved that cheque settlement always debits the issuing
+account, unconditionally. This entry clarifies the timing that
+resolution left implicit: the debit happens once, at issuance time — not
+at redemption. There is no live cross-account transfer, hold, or
+settlement step at redemption; redemption only credits whichever
+account/location the cheque is redeemed at (per ADR-016), from a value
+the issuing account already gave up when the cheque was created.
+Issuance and redemption are therefore temporally and structurally
+independent operations, connected only through the cheque's own durable
+identity (its stable UUID and authoritative value/state) — not through
+any operation that touches both accounts at once.
+
 ## 5. Authority and extension matrix
 
 | Domain | Current authority | Verified current representation | Extension rule |
