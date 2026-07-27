@@ -65,19 +65,28 @@ class BannerRenderStateAndKeyTest {
                 .filter(id -> !id.equals(material.naturalColourId())).findFirst().orElseThrow();
         BannerItemRenderState natural = extract(stack(firstBanner(), cotton(), material.naturalColourId(), brass()));
         BannerItemRenderState coloured = extract(stack(firstBanner(), cotton(), dyed, brass()));
-        assertTrue(natural.naturalColour());
-        assertFalse(coloured.naturalColour());
+        assertFalse(natural.recolourActive());
+        assertTrue(coloured.recolourActive());
         assertEquals(material.displaySrgbByColour().get(dyed).intValue(), coloured.displaySrgb());
         assertNotEquals(natural.key(2), coloured.key(2));
     }
 
     @Test
-    void cottonWoolLinenAndSilkExtract() {
+    void naturalCottonWoolLinenAndSilkUseTheSameUntintedBaseContract() {
+        net.minecraft.resources.ResourceLocation expectedBase = null;
         for (String path : java.util.List.of("cotton", "wool", "linen", "silk")) {
             FabricMaterialId material = FabricMaterialId.parse("britannia_mod:" + path);
             BannerItemRenderState state = extract(stack(firstBanner(), material, natural(material), brass()));
             assertFalse(state.fallback(), path);
+            assertFalse(state.recolourActive(), path);
             assertEquals(material, state.materialId().orElseThrow());
+            assertEquals(java.util.List.of(BannerRenderLayer.Type.BASE_TEXTURE, BannerRenderLayer.Type.MOUNT),
+                    BannerLayerPlan.from(state).layers().stream().map(BannerRenderLayer::type).toList(), path);
+            if (expectedBase == null) {
+                expectedBase = state.baseTexture().orElseThrow();
+            } else {
+                assertEquals(expectedBase, state.baseTexture().orElseThrow(), path);
+            }
         }
     }
 
@@ -88,21 +97,34 @@ class BannerRenderStateAndKeyTest {
         assertNotEquals(brassState.mountGeometry(), ironState.mountGeometry());
         assertNotEquals(brassState.mountTexture(), ironState.mountTexture());
         assertNotEquals(brassState.key(1), ironState.key(1));
-        assertEquals(BannerRenderLayer.NO_TINT, BannerLayerPlan.from(brassState).layers().get(3).tintIndex());
-        assertEquals(BannerRenderLayer.NO_TINT, BannerLayerPlan.from(ironState).layers().get(3).tintIndex());
+        assertEquals(BannerRenderLayer.NO_TINT,
+                BannerLayerPlan.from(brassState).layers().getLast().tintIndex());
+        assertEquals(BannerRenderLayer.NO_TINT,
+                BannerLayerPlan.from(ironState).layers().getLast().tintIndex());
     }
 
     @Test
     void layerOrderAndTintBoundaryAreExplicit() {
-        BannerItemRenderState state = extract(stack(firstBanner(), cotton(), natural(cotton()), brass()));
-        BannerLayerPlan plan = BannerLayerPlan.from(state);
+        BannerItemRenderState naturalState =
+                extract(stack(firstBanner(), cotton(), natural(cotton()), brass()));
+        BannerLayerPlan naturalPlan = BannerLayerPlan.from(naturalState);
+        assertEquals(java.util.List.of(BannerRenderLayer.Type.BASE_TEXTURE, BannerRenderLayer.Type.MOUNT),
+                naturalPlan.layers().stream().map(BannerRenderLayer::type).toList());
+        assertEquals(java.util.List.of(-1, -1),
+                naturalPlan.layers().stream().map(BannerRenderLayer::tintIndex).toList());
+
+        var material = renderData.materials().get(cotton());
+        ResolvedColourId dyed = material.displaySrgbByColour().keySet().stream()
+                .filter(id -> !id.equals(material.naturalColourId())).findFirst().orElseThrow();
+        BannerItemRenderState dyedState = extract(stack(firstBanner(), cotton(), dyed, brass()));
+        BannerLayerPlan dyedPlan = BannerLayerPlan.from(dyedState);
         assertEquals(java.util.List.of(
-                BannerRenderLayer.Type.FABRIC_BASE, BannerRenderLayer.Type.DYE_MASK,
-                BannerRenderLayer.Type.STATIC_OVERLAY, BannerRenderLayer.Type.MOUNT),
-                plan.layers().stream().map(BannerRenderLayer::type).toList());
-        assertEquals(java.util.List.of(-1, 1, -1, -1),
-                plan.layers().stream().map(BannerRenderLayer::tintIndex).toList());
-        assertEquals(0xFF000000 | state.displaySrgb(), plan.displayArgb());
+                        BannerRenderLayer.Type.BASE_TEXTURE, BannerRenderLayer.Type.DYE_MASK,
+                        BannerRenderLayer.Type.MOUNT),
+                dyedPlan.layers().stream().map(BannerRenderLayer::type).toList());
+        assertEquals(java.util.List.of(-1, 1, -1),
+                dyedPlan.layers().stream().map(BannerRenderLayer::tintIndex).toList());
+        assertEquals(0xFF000000 | dyedState.displaySrgb(), dyedPlan.displayArgb());
     }
 
     @Test
@@ -119,7 +141,7 @@ class BannerRenderStateAndKeyTest {
     }
 
     @Test
-    void sourcePigmentAndCustomNameDoNotAffectAppearanceKeyOrMutateState() {
+    void pigmentPresenceActivatesRecolourButPigmentIdentityAndCustomNameDoNotFragmentVisualKey() {
         ItemStack plain = stack(firstBanner(), cotton(), natural(cotton()), brass());
         BannerInstanceState original = plain.get(Milestone7RegisteredTestContent.component());
         ItemStack decorated = plain.copy();
@@ -128,8 +150,40 @@ class BannerRenderStateAndKeyTest {
                 original.resolvedColourId(), Optional.of(PigmentId.parse("britannia_mod:woad_blue")),
                 original.mountId()));
         decorated.set(DataComponents.CUSTOM_NAME, Component.literal("Named banner"));
-        assertEquals(extract(plain).key(8), extract(decorated).key(8));
+        ItemStack otherPigment = plain.copy();
+        otherPigment.set(Milestone7RegisteredTestContent.component(), new BannerInstanceState(
+                original.schemaVersion(), original.bannerDefinitionId(), original.materialId(),
+                original.resolvedColourId(), Optional.of(PigmentId.parse("britannia_mod:madder_red")),
+                original.mountId()));
+        assertFalse(extract(plain).recolourActive());
+        assertTrue(extract(decorated).recolourActive());
+        assertNotEquals(extract(plain).key(8), extract(decorated).key(8));
+        assertEquals(extract(decorated).key(8), extract(otherPigment).key(8));
         assertEquals(original, plain.get(Milestone7RegisteredTestContent.component()));
+    }
+
+    @Test
+    void derivedRuleCoversAdministrativeAndNaturalColourPigmentEdges() {
+        ItemStack natural = stack(firstBanner(), cotton(), natural(cotton()), brass());
+        BannerInstanceState naturalState = natural.get(Milestone7RegisteredTestContent.component());
+        ItemStack naturalPigment = natural.copy();
+        naturalPigment.set(Milestone7RegisteredTestContent.component(), new BannerInstanceState(
+                naturalState.schemaVersion(), naturalState.bannerDefinitionId(), naturalState.materialId(),
+                naturalState.resolvedColourId(), Optional.of(PigmentId.parse("britannia_mod:woad_blue")),
+                naturalState.mountId()));
+
+        ResolvedColourId nonNatural = renderData.materials().get(cotton()).displaySrgbByColour().keySet().stream()
+                .filter(id -> !id.equals(natural(cotton()))).findFirst().orElseThrow();
+        ItemStack administrative = stack(firstBanner(), cotton(), nonNatural, brass());
+
+        assertFalse(extract(natural).recolourActive(), "admin/default natural colour without pigment uses base");
+        assertTrue(extract(administrative).recolourActive(), "admin non-natural colour activates mask");
+        assertTrue(extract(naturalPigment).recolourActive(), "natural-colour pigment still activates mask");
+        assertEquals(java.util.List.of(
+                        BannerRenderLayer.Type.BASE_TEXTURE, BannerRenderLayer.Type.DYE_MASK,
+                        BannerRenderLayer.Type.MOUNT),
+                BannerLayerPlan.from(extract(naturalPigment)).layers().stream()
+                        .map(BannerRenderLayer::type).toList());
     }
 
     @Test
@@ -168,9 +222,8 @@ class BannerRenderStateAndKeyTest {
         BannerItemRenderState good = extract(valid);
         for (var missing : java.util.List.of(
                 new MissingAsset(good.geometry().orElseThrow(), true, BannerRenderFailure.MISSING_GEOMETRY),
-                new MissingAsset(good.fabricBase().orElseThrow(), false, BannerRenderFailure.MISSING_FABRIC_BASE),
+                new MissingAsset(good.baseTexture().orElseThrow(), false, BannerRenderFailure.MISSING_BASE_TEXTURE),
                 new MissingAsset(good.dyeMask().orElseThrow(), false, BannerRenderFailure.MISSING_DYE_MASK),
-                new MissingAsset(good.staticOverlay().orElseThrow(), false, BannerRenderFailure.MISSING_STATIC_OVERLAY),
                 new MissingAsset(good.mountGeometry().orElseThrow(), true, BannerRenderFailure.MISSING_MOUNT_GEOMETRY),
                 new MissingAsset(good.mountTexture().orElseThrow(), false, BannerRenderFailure.MISSING_MOUNT_TEXTURE))) {
             var models = new java.util.LinkedHashSet<>(allModels);

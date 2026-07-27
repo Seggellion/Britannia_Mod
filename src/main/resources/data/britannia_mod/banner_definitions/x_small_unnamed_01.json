@@ -25,9 +25,8 @@
   "default_material": "britannia_mod:cotton",
   "assets": {
     "geometry": "britannia_mod:banner/placeholder/x_small",
-    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
-    "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
-    "static_overlay": "britannia_mod:banner/placeholder/static_overlay"
+    "base_texture": "britannia_mod:banner/placeholder/base_texture",
+    "dye_mask": "britannia_mod:banner/placeholder/dye_mask"
   },
   "placement_profile": "britannia_mod:placeholder_x_small"
 }

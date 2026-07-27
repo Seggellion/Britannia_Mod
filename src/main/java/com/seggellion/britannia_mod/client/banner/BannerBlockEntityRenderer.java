@@ -41,9 +41,11 @@ public final class BannerBlockEntityRenderer implements BlockEntityRenderer<Bann
                 BannerModelRepository.generation());
         BannerPlacedRenderPlan plan = BannerPlacedRenderCache.resolve(state);
         int sampledLight = sampleLoadedLighting(entity, state.lightingSamplePositions(), packedLight);
-        VertexConsumer vertices = buffers.getBuffer(RenderType.cutout());
         PoseStack.Pose pose = poseStack.last();
         for (BannerPlacedRenderPass pass : plan.passes()) {
+            VertexConsumer vertices = buffers.getBuffer(
+                    pass.type() == BannerPlacedRenderPass.Type.DYE_MASK
+                            ? RenderType.translucent() : RenderType.cutout());
             TextureAtlasSprite sprite = Minecraft.getInstance()
                     .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(pass.texture());
             boolean mount = pass.type() == BannerPlacedRenderPass.Type.MOUNT;
@@ -117,29 +119,29 @@ public final class BannerBlockEntityRenderer implements BlockEntityRenderer<Bann
 
     private static void emitFront(
             PoseStack.Pose pose, VertexConsumer vertices, TextureAtlasSprite sprite,
-            int argb, int light, int overlay, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Direction normal) {
-        vertex(pose, vertices, a, sprite.getU0(), sprite.getV0(), argb, light, overlay, normal);
-        vertex(pose, vertices, b, sprite.getU0(), sprite.getV1(), argb, light, overlay, normal);
-        vertex(pose, vertices, c, sprite.getU1(), sprite.getV1(), argb, light, overlay, normal);
-        vertex(pose, vertices, d, sprite.getU1(), sprite.getV0(), argb, light, overlay, normal);
+            int argb, int light, int packedOverlay, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Direction normal) {
+        vertex(pose, vertices, a, sprite.getU0(), sprite.getV0(), argb, light, packedOverlay, normal);
+        vertex(pose, vertices, b, sprite.getU0(), sprite.getV1(), argb, light, packedOverlay, normal);
+        vertex(pose, vertices, c, sprite.getU1(), sprite.getV1(), argb, light, packedOverlay, normal);
+        vertex(pose, vertices, d, sprite.getU1(), sprite.getV0(), argb, light, packedOverlay, normal);
     }
 
     private static void emitBack(
             PoseStack.Pose pose, VertexConsumer vertices, TextureAtlasSprite sprite,
-            int argb, int light, int overlay, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Direction normal) {
-        vertex(pose, vertices, d, sprite.getU0(), sprite.getV0(), argb, light, overlay, normal);
-        vertex(pose, vertices, c, sprite.getU0(), sprite.getV1(), argb, light, overlay, normal);
-        vertex(pose, vertices, b, sprite.getU1(), sprite.getV1(), argb, light, overlay, normal);
-        vertex(pose, vertices, a, sprite.getU1(), sprite.getV0(), argb, light, overlay, normal);
+            int argb, int light, int packedOverlay, Vec3 a, Vec3 b, Vec3 c, Vec3 d, Direction normal) {
+        vertex(pose, vertices, d, sprite.getU0(), sprite.getV0(), argb, light, packedOverlay, normal);
+        vertex(pose, vertices, c, sprite.getU0(), sprite.getV1(), argb, light, packedOverlay, normal);
+        vertex(pose, vertices, b, sprite.getU1(), sprite.getV1(), argb, light, packedOverlay, normal);
+        vertex(pose, vertices, a, sprite.getU1(), sprite.getV0(), argb, light, packedOverlay, normal);
     }
 
     private static void vertex(
             PoseStack.Pose pose, VertexConsumer vertices, Vec3 point, float u, float v,
-            int argb, int light, int overlay, Direction normal) {
+            int argb, int light, int packedOverlay, Direction normal) {
         vertices.addVertex(pose, (float) point.x, (float) point.y, (float) point.z)
                 .setColor(argb)
                 .setUv(u, v)
-                .setOverlay(overlay)
+                .setOverlay(packedOverlay)
                 .setLight(light)
                 .setNormal(pose, normal.getStepX(), normal.getStepY(), normal.getStepZ());
     }

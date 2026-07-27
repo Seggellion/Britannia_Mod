@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 /** Logical layer proof used by the baked model and narrow tint-separation tests. */
 public record BannerRenderLayer(Type type, ResourceLocation assetId, int order, int tintIndex) {
     public static final int NO_TINT = -1;
-    public static final int FABRIC_TINT_INDEX = 1;
+    public static final int DYE_MASK_TINT_INDEX = 1;
 
     public BannerRenderLayer {
         Objects.requireNonNull(type, "type");
@@ -15,13 +15,12 @@ public record BannerRenderLayer(Type type, ResourceLocation assetId, int order, 
     }
 
     public boolean tintable() {
-        return tintIndex == FABRIC_TINT_INDEX;
+        return tintIndex == DYE_MASK_TINT_INDEX;
     }
 
     public enum Type {
-        FABRIC_BASE,
+        BASE_TEXTURE,
         DYE_MASK,
-        STATIC_OVERLAY,
         MOUNT
     }
 }

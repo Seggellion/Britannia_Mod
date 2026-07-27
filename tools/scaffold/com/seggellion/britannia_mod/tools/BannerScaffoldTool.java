@@ -219,9 +219,13 @@ public final class BannerScaffoldTool {
         require("placeholder".equals(defaults.contentStatus), "content_status must be placeholder");
         require(Boolean.TRUE.equals(defaults.dimensionsProvisional),
                 "all initial dimensions must be marked provisional");
-        validateResourceId(defaults.fabricBase, "fabric_base");
+        validateResourceId(defaults.baseTexture, "base_texture");
         validateResourceId(defaults.dyeMask, "dye_mask");
-        validateResourceId(defaults.staticOverlay, "static_overlay");
+        require(manifest.sharedPlaceholderAssets.equals(Map.of(
+                        "base_texture", "britannia_mod:banner/placeholder/base_texture",
+                        "dye_mask", "britannia_mod:banner/placeholder/dye_mask",
+                        "missing", "britannia_mod:banner/placeholder/missing")),
+                "shared_placeholder_assets must declare exactly base_texture, dye_mask, and missing");
 
         Set<Integer> indices = new LinkedHashSet<>();
         Set<String> ids = new LinkedHashSet<>();
@@ -302,9 +306,8 @@ public final class BannerScaffoldTool {
                     first(entry.defaultMount, manifest.defaults.defaultMount),
                     first(entry.defaultMaterial, manifest.defaults.defaultMaterial),
                     first(entry.geometry, group.geometry),
-                    first(entry.fabricBase, manifest.defaults.fabricBase),
+                    first(entry.baseTexture, manifest.defaults.baseTexture),
                     first(entry.dyeMask, manifest.defaults.dyeMask),
-                    first(entry.staticOverlay, manifest.defaults.staticOverlay),
                     first(entry.placementProfile, group.placementProfile), entry.notes));
         }
         return new ResolvedCatalogue(List.copyOf(banners));
@@ -329,9 +332,8 @@ public final class BannerScaffoldTool {
         output.put(DATA_ROOT + "placement_profiles/placeholder_x_small.json",
                 utf8(json(profile("x_small", 1, 1))));
 
-        output.put(ASSET_ROOT + "textures/banner/placeholder/fabric_base.png", png(PngKind.FABRIC_BASE));
+        output.put(ASSET_ROOT + "textures/banner/placeholder/base_texture.png", png(PngKind.BASE_TEXTURE));
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
-        output.put(ASSET_ROOT + "textures/banner/placeholder/static_overlay.png", png(PngKind.STATIC_OVERLAY));
         output.put(ASSET_ROOT + "textures/banner/placeholder/missing.png", png(PngKind.MISSING));
         output.put(ASSET_ROOT + "textures/banner/mount/brass.png", png(PngKind.BRASS_MOUNT));
         output.put(ASSET_ROOT + "textures/banner/mount/iron.png", png(PngKind.IRON_MOUNT));
@@ -373,9 +375,8 @@ public final class BannerScaffoldTool {
         root.addProperty("default_material", banner.defaultMaterial);
         JsonObject assets = new JsonObject();
         assets.addProperty("geometry", banner.geometry);
-        assets.addProperty("fabric_base", banner.fabricBase);
+        assets.addProperty("base_texture", banner.baseTexture);
         assets.addProperty("dye_mask", banner.dyeMask);
-        assets.addProperty("static_overlay", banner.staticOverlay);
         root.add("assets", assets);
         root.addProperty("placement_profile", banner.placementProfile);
         return root;
@@ -448,11 +449,11 @@ public final class BannerScaffoldTool {
         JsonObject root = new JsonObject();
         root.addProperty("credit", "Milestone 4 diagnostic placeholder for " + family + "; not final geometry");
         root.addProperty("parent", "minecraft:block/block");
+        root.addProperty("render_type", "minecraft:translucent");
         JsonObject textures = new JsonObject();
-        textures.addProperty("fabric_base", "britannia_mod:banner/placeholder/fabric_base");
+        textures.addProperty("base_texture", "britannia_mod:banner/placeholder/base_texture");
         textures.addProperty("dye_mask", "britannia_mod:banner/placeholder/dye_mask");
-        textures.addProperty("static_overlay", "britannia_mod:banner/placeholder/static_overlay");
-        textures.addProperty("particle", "britannia_mod:banner/placeholder/fabric_base");
+        textures.addProperty("particle", "britannia_mod:banner/placeholder/base_texture");
         root.add("textures", textures);
         double[] bounds = switch (family) {
             case "large" -> new double[] {0, 4, 16, 12};
@@ -463,9 +464,8 @@ public final class BannerScaffoldTool {
             default -> throw new ScaffoldException("Unknown placeholder family " + family);
         };
         JsonArray elements = new JsonArray();
-        elements.add(layerElement(bounds, "#fabric_base", 7.49, 7.51, null));
+        elements.add(layerElement(bounds, "#base_texture", 7.49, 7.51, null));
         elements.add(layerElement(bounds, "#dye_mask", 7.47, 7.53, 1));
-        elements.add(layerElement(bounds, "#static_overlay", 7.45, 7.55, null));
         root.add("elements", elements);
         return root;
     }
@@ -545,9 +545,8 @@ public final class BannerScaffoldTool {
         Set<String> textures = new LinkedHashSet<>();
         for (ResolvedBanner banner : catalogue.banners) {
             geometry.add(banner.geometry);
-            textures.add(banner.fabricBase);
+            textures.add(banner.baseTexture);
             textures.add(banner.dyeMask);
-            textures.add(banner.staticOverlay);
         }
         for (String id : geometry) {
             String physical = assetPath(id, "models", ".json");
@@ -834,9 +833,8 @@ public final class BannerScaffoldTool {
                         .append(", row ").append(banner.row).append("\n"));
         report.append("\n## Placeholder asset references\n\n")
                 .append("- Geometry families: `large`, `medium_wall`, `medium`, `small`, `x_small`\n")
-                .append("- Fabric base: `britannia_mod:banner/placeholder/fabric_base`\n")
+                .append("- Base texture: `britannia_mod:banner/placeholder/base_texture`\n")
                 .append("- Dye mask: `britannia_mod:banner/placeholder/dye_mask`\n")
-                .append("- Static overlay: `britannia_mod:banner/placeholder/static_overlay`\n")
                 .append("- Diagnostic fallback: `britannia_mod:banner/placeholder/missing`\n")
                 .append("- Brass mount: `britannia_mod:banner/mount/brass`\n")
                 .append("- Iron mount: `britannia_mod:banner/mount/iron`\n")
@@ -885,29 +883,13 @@ public final class BannerScaffoldTool {
         for (int y = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
                 int argb = switch (kind) {
-                    case FABRIC_BASE -> {
-                        int shade = ((x + y) & 1) == 0 ? 184 : 168;
-                        if (x == 0 || y == 0 || x == 15 || y == 15) {
-                            shade = 76;
-                        }
-                        yield new Color(shade, shade, shade, 255).getRGB();
-                    }
+                    case BASE_TEXTURE -> compositeDiagnosticBasePixel(x, y);
                     case DYE_MASK -> {
-                        if (x == 0 || y == 0 || x == 15 || y == 15) {
+                        if (isDiagnosticOverlayPixel(x, y)) {
                             yield 0x00000000;
                         }
                         int shade = ((x + y) & 1) == 0 ? 184 : 168;
                         yield new Color(shade, shade, shade, 255).getRGB();
-                    }
-                    case STATIC_OVERLAY -> {
-                        if (x == 0 || y == 0 || x == 15 || y == 15) {
-                            yield new Color(35, 35, 35, 255).getRGB();
-                        }
-                        if ((x >= 6 && x <= 9 && (y == 6 || y == 9))
-                                || (y >= 6 && y <= 9 && (x == 6 || x == 9))) {
-                            yield new Color(245, 245, 245, 255).getRGB();
-                        }
-                        yield 0x00000000;
                     }
                     case MISSING -> {
                         boolean diagnostic = ((x / 4) + (y / 4)) % 2 == 0;
@@ -938,6 +920,33 @@ public final class BannerScaffoldTool {
         } catch (IOException exception) {
             throw new ScaffoldException("Could not create placeholder PNG", exception);
         }
+    }
+
+    /**
+     * Deterministically composites the former diagnostic overlay over the former neutral fabric placeholder.
+     * Both historical sources used only fully transparent or fully opaque pixels, so source-over composition is
+     * exactly the overlay pixel when present and the fabric pixel otherwise.
+     */
+    private static int compositeDiagnosticBasePixel(int x, int y) {
+        int fabricShade = ((x + y) & 1) == 0 ? 184 : 168;
+        if (x == 0 || y == 0 || x == 15 || y == 15) {
+            fabricShade = 76;
+        }
+        int fabric = new Color(fabricShade, fabricShade, fabricShade, 255).getRGB();
+        if (x == 0 || y == 0 || x == 15 || y == 15) {
+            return new Color(35, 35, 35, 255).getRGB();
+        }
+        if ((x >= 6 && x <= 9 && (y == 6 || y == 9))
+                || (y >= 6 && y <= 9 && (x == 6 || x == 9))) {
+            return new Color(245, 245, 245, 255).getRGB();
+        }
+        return fabric;
+    }
+
+    private static boolean isDiagnosticOverlayPixel(int x, int y) {
+        return x == 0 || y == 0 || x == 15 || y == 15
+                || (x >= 6 && x <= 9 && (y == 6 || y == 9))
+                || (y >= 6 && y <= 9 && (x == 6 || x == 9));
     }
 
     private static void writeAtomic(Path path, byte[] bytes) throws IOException {
@@ -1115,9 +1124,8 @@ public final class BannerScaffoldTool {
             List<String> supportedOrientations,
             String contentStatus,
             Boolean dimensionsProvisional,
-            String fabricBase,
-            String dyeMask,
-            String staticOverlay) {
+            String baseTexture,
+            String dyeMask) {
     }
 
     public record Group(
@@ -1145,9 +1153,8 @@ public final class BannerScaffoldTool {
             String defaultMount,
             String defaultMaterial,
             String geometry,
-            String fabricBase,
+            String baseTexture,
             String dyeMask,
-            String staticOverlay,
             String placementProfile,
             String notes) {
     }
@@ -1173,9 +1180,8 @@ public final class BannerScaffoldTool {
             String defaultMount,
             String defaultMaterial,
             String geometry,
-            String fabricBase,
+            String baseTexture,
             String dyeMask,
-            String staticOverlay,
             String placementProfile,
             String notes) {
     }
@@ -1221,9 +1227,8 @@ public final class BannerScaffoldTool {
     }
 
     private enum PngKind {
-        FABRIC_BASE,
+        BASE_TEXTURE,
         DYE_MASK,
-        STATIC_OVERLAY,
         MISSING,
         BRASS_MOUNT,
         IRON_MOUNT

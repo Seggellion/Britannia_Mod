@@ -3,7 +3,7 @@ package com.seggellion.britannia_mod.client.banner;
 import java.util.Objects;
 import net.minecraft.resources.ResourceLocation;
 
-/** One generated-mesh pass; only DYE_MASK carries the resolved fabric colour. */
+/** One generated-mesh pass; only DYE_MASK carries the resolved recolour. */
 public record BannerPlacedRenderPass(
         Type type,
         ResourceLocation texture,
@@ -17,14 +17,13 @@ public record BannerPlacedRenderPass(
         }
     }
 
-    public boolean tintableFabric() {
+    public boolean tintableMask() {
         return type == Type.DYE_MASK;
     }
 
     public enum Type {
-        FABRIC_BASE,
+        BASE_TEXTURE,
         DYE_MASK,
-        STATIC_OVERLAY,
         MOUNT,
         FALLBACK
     }

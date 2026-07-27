@@ -53,7 +53,8 @@ public final class DyePreviewRuntime {
         BannerPreviewRenderState currentRender = BannerPreviewRenderState.from(session.bannerState());
         BannerPreviewRenderState proposedRender = new BannerPreviewRenderState(
                 session.bannerState().bannerDefinitionId(), session.bannerState().materialId(),
-                session.resolvedResult().resolvedColourId(), session.bannerState().mountId());
+                session.resolvedResult().resolvedColourId(), Optional.of(session.pigmentId()),
+                session.bannerState().mountId());
         player.connection.send(new ClientboundCustomPayloadPacket(new S2COpenDyePreviewPayload(
                 session.sessionId(), session.displayData(), currentRender, proposedRender,
                 SESSIONS.lifetimeMillis())));

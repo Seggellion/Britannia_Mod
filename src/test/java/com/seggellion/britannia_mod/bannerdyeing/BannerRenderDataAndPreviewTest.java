@@ -4,14 +4,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
 import com.seggellion.britannia_mod.banner.api.MountId;
+import com.seggellion.britannia_mod.banner.data.BannerAssets;
 import com.seggellion.britannia_mod.banner.renderdata.BannerPreviewRenderState;
 import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSnapshot;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
 import com.seggellion.britannia_mod.bannerdyeing.testsupport.DyeResolverFixtures;
 import com.seggellion.britannia_mod.bannerdyeing.testsupport.Milestone7RegisteredTestContent;
 import com.seggellion.britannia_mod.client.banner.BannerPreviewStacks;
+import com.seggellion.britannia_mod.client.banner.BannerAssetAvailability;
+import com.seggellion.britannia_mod.client.banner.BannerRenderStateExtractor;
+import com.seggellion.britannia_mod.client.banner.ClientBannerRenderPublication;
 import com.seggellion.britannia_mod.client.banner.ClientBannerRenderData;
 import com.seggellion.britannia_mod.dye.api.FabricMaterialId;
+import com.seggellion.britannia_mod.dye.api.PigmentId;
 import com.seggellion.britannia_mod.dye.api.ResolvedColourId;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewDisplayData;
 import com.seggellion.britannia_mod.dye.service.MatchType;
@@ -51,6 +56,22 @@ class BannerRenderDataAndPreviewTest {
     }
 
     @Test
+    void synchronizedDefinitionsExposeExactlyGeometryBaseAndMask() throws Exception {
+        assertArrayEquals(new String[] {"geometry", "baseTexture", "dyeMask"},
+                java.util.Arrays.stream(BannerAssets.class.getRecordComponents())
+                        .map(java.lang.reflect.RecordComponent::getName).toArray(String[]::new));
+        assertTrue(snapshot.banners().values().stream().allMatch(definition ->
+                definition.assets().baseTexture() != null && definition.assets().dyeMask() != null));
+        String payloadSource = Files.readString(Path.of(
+                "src/main/java/com/seggellion/britannia_mod/network/payload/banner/"
+                        + "S2CBannerRenderDataPayload.java"));
+        assertTrue(payloadSource.contains("assets.baseTexture()"));
+        assertTrue(payloadSource.contains("assets.dyeMask()"));
+        assertFalse(payloadSource.contains("fabricBase"));
+        assertFalse(payloadSource.contains("staticOverlay"));
+    }
+
+    @Test
     void clientPublicationReplacementIsAtomicAndGenerationInvalidated() {
         long before = ClientBannerRenderData.current().generation();
         ClientBannerRenderData.replace(snapshot);
@@ -67,7 +88,8 @@ class BannerRenderDataAndPreviewTest {
     void previewStacksAreDetachedAndDifferOnlyByServerSuppliedColour() {
         BannerPreviewRenderState current = current();
         BannerPreviewRenderState proposed = new BannerPreviewRenderState(
-                current.bannerDefinitionId(), current.materialId(), dyed(), current.mountId());
+                current.bannerDefinitionId(), current.materialId(), dyed(),
+                Optional.of(PigmentId.parse("britannia_mod:madder_red")), current.mountId());
         BannerPreviewStacks previews = BannerPreviewStacks.create(
                 Milestone7RegisteredTestContent.banner(), Milestone7RegisteredTestContent.component(),
                 current, proposed);
@@ -79,6 +101,14 @@ class BannerRenderDataAndPreviewTest {
         assertEquals(current.materialId(), proposedState.materialId());
         assertEquals(current.mountId(), proposedState.mountId());
         assertNotEquals(currentState.resolvedColourId(), proposedState.resolvedColourId());
+        assertTrue(proposedState.sourcePigmentId().isPresent());
+        var publication = new ClientBannerRenderPublication(snapshot, 1, true);
+        assertFalse(BannerRenderStateExtractor.extract(currentStack,
+                Milestone7RegisteredTestContent.banner(), Milestone7RegisteredTestContent.component(),
+                publication, BannerAssetAvailability.allExpected()).recolourActive());
+        assertTrue(BannerRenderStateExtractor.extract(proposedStack,
+                Milestone7RegisteredTestContent.banner(), Milestone7RegisteredTestContent.component(),
+                publication, BannerAssetAvailability.allExpected()).recolourActive());
         proposedStack.set(Milestone7RegisteredTestContent.component(), currentState);
         assertEquals(currentState, previews.current().get(Milestone7RegisteredTestContent.component()));
         assertEquals(dyed(), previews.proposed().get(Milestone7RegisteredTestContent.component()).resolvedColourId());
@@ -88,7 +118,8 @@ class BannerRenderDataAndPreviewTest {
     void previewPayloadCarriesOnlyDisplayDescriptorsAndConfirmationStaysUuidOnly() {
         BannerPreviewRenderState current = current();
         BannerPreviewRenderState proposed = new BannerPreviewRenderState(
-                current.bannerDefinitionId(), current.materialId(), dyed(), current.mountId());
+                current.bannerDefinitionId(), current.materialId(), dyed(),
+                Optional.of(PigmentId.parse("britannia_mod:madder_red")), current.mountId());
         S2COpenDyePreviewPayload payload = new S2COpenDyePreviewPayload(
                 UUID.randomUUID(), display(), current, proposed, 30_000);
         assertEquals(current, payload.currentRenderState());
@@ -123,7 +154,8 @@ class BannerRenderDataAndPreviewTest {
 
     private static BannerPreviewRenderState current() {
         return new BannerPreviewRenderState(
-                snapshot.banners().keySet().stream().findFirst().orElseThrow(), cotton(), natural(), brass());
+                snapshot.banners().keySet().stream().findFirst().orElseThrow(),
+                cotton(), natural(), Optional.empty(), brass());
     }
 
     private static DyePreviewDisplayData display() {

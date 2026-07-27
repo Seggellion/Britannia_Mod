@@ -73,7 +73,7 @@ public final class FinalContentIntakeValidator {
     private static final Set<String> MOUNTS =
             Set.of("britannia_mod:brass", "britannia_mod:iron");
     private static final List<String> PNG_LAYERS =
-            List.of("fabric_base", "dye_mask", "static_overlay");
+            List.of("base_texture", "dye_mask");
 
     private FinalContentIntakeValidator() {
     }
@@ -91,6 +91,8 @@ public final class FinalContentIntakeValidator {
         if (document == null) {
             return result(Status.INVALID, intake, "", invalid, missing, pngs);
         }
+        rejectRemovedAssetKey(document, "fabric_base", invalid);
+        rejectRemovedAssetKey(document, "static_overlay", invalid);
 
         Integer schemaVersion = integer(document, "schema_version", invalid);
         if (schemaVersion == null) {
@@ -197,14 +199,15 @@ public final class FinalContentIntakeValidator {
                     expectedWidth = metadata.width();
                     expectedHeight = metadata.height();
                 } else if (expectedWidth != metadata.width() || expectedHeight != metadata.height()) {
-                    invalid.add("fabric_base, dye_mask, and static_overlay PNG dimensions must match exactly");
+                    invalid.add("base_texture and dye_mask PNG dimensions must match exactly");
                 }
             }
         }
         if (layerResourceIds.size() == PNG_LAYERS.size()
                 && new LinkedHashSet<>(layerResourceIds).size() != PNG_LAYERS.size()) {
-            invalid.add("fabric_base, dye_mask, and static_overlay resource IDs must be distinct");
+            invalid.add("base_texture and dye_mask resource IDs must be distinct");
         }
+        validateMaskCoverage(root, document, invalid);
 
         Boolean sharedGeometry = bool(document, "assets.geometry.shared_geometry_approved", invalid);
         if (sharedGeometry == null) {
@@ -417,11 +420,100 @@ public final class FinalContentIntakeValidator {
             if (bitDepth != 8 || colourType != 6 || !alpha) {
                 invalid.add(layer + " source_file must be 8-bit true-colour RGBA PNG (colour type 6)");
             }
+            if ("dye_mask".equals(layer)) {
+                validateDyeMaskPixels(image, invalid);
+            }
             return new PngMetadata(layer, relative(root, source), image.getWidth(), image.getHeight(),
                     bitDepth, colourType, alpha);
         } catch (IOException exception) {
             invalid.add(layer + " source_file could not be read: " + exception.getMessage());
             return null;
+        }
+    }
+
+    private static void validateDyeMaskPixels(BufferedImage image, List<String> invalid) {
+        boolean transparent = false;
+        boolean active = false;
+        boolean grayscale = true;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int argb = image.getRGB(x, y);
+                int alpha = (argb >>> 24) & 0xFF;
+                if (alpha == 0) {
+                    transparent = true;
+                    continue;
+                }
+                active = true;
+                int red = (argb >>> 16) & 0xFF;
+                int green = (argb >>> 8) & 0xFF;
+                int blue = argb & 0xFF;
+                int maximum = Math.max(red, Math.max(green, blue));
+                int minimum = Math.min(red, Math.min(green, blue));
+                if (maximum - minimum > 1) {
+                    grayscale = false;
+                }
+            }
+        }
+        if (!transparent) {
+            invalid.add("dye_mask must contain at least one fully transparent pixel");
+        }
+        if (!active) {
+            invalid.add("dye_mask must contain at least one active pixel");
+        }
+        if (!grayscale) {
+            invalid.add("dye_mask active RGB must be grayscale within a maximum channel difference of 1");
+        }
+    }
+
+    /**
+     * Standard two-pass source-over rendering preserves the authored base alpha exactly when every active mask pixel
+     * covers an opaque base pixel. Transparent and partially transparent base pixels therefore remain fixed.
+     */
+    private static void validateMaskCoverage(
+            Path root, JsonObject document, List<String> invalid) {
+        String baseSource = text(document, "assets.base_texture.source_file", invalid);
+        String maskSource = text(document, "assets.dye_mask.source_file", invalid);
+        BufferedImage base = readValidatedImage(root, baseSource);
+        BufferedImage mask = readValidatedImage(root, maskSource);
+        if (base == null || mask == null
+                || base.getWidth() != mask.getWidth() || base.getHeight() != mask.getHeight()) {
+            return;
+        }
+        for (int y = 0; y < base.getHeight(); y++) {
+            for (int x = 0; x < base.getWidth(); x++) {
+                int baseAlpha = base.getRGB(x, y) >>> 24;
+                int maskAlpha = mask.getRGB(x, y) >>> 24;
+                if (maskAlpha != 0 && baseAlpha != 255) {
+                    invalid.add("dye_mask active pixels must align only with fully opaque base_texture pixels "
+                            + "so two-pass rendering preserves base alpha");
+                    return;
+                }
+            }
+        }
+    }
+
+    private static BufferedImage readValidatedImage(Path root, String sourceFile) {
+        if (sourceFile == null || sourceFile.isBlank()) {
+            return null;
+        }
+        try {
+            Path declared = Path.of(sourceFile);
+            Path source = root.resolve(declared).normalize();
+            if (declared.isAbsolute() || !source.startsWith(root) || !Files.isRegularFile(source)) {
+                return null;
+            }
+            return ImageIO.read(source.toFile());
+        } catch (IOException | RuntimeException exception) {
+            return null;
+        }
+    }
+
+    private static void rejectRemovedAssetKey(
+            JsonObject document, String key, List<String> invalid) {
+        JsonElement assets = at(document, "assets");
+        if (assets != null && assets.isJsonObject() && assets.getAsJsonObject().has(key)) {
+            invalid.add("assets." + key
+                    + " is removed; the project now uses exactly base_texture + dye_mask");
         }
     }
 

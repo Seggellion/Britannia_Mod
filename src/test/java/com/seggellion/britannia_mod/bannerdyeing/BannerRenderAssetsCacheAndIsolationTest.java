@@ -25,17 +25,17 @@ class BannerRenderAssetsCacheAndIsolationTest {
     private static final List<String> FAMILIES = List.of("large", "medium_wall", "medium", "small", "x_small");
 
     @Test
-    void allFiveLayeredModelsPackageAndTintOnlyTheirMaskQuads() throws Exception {
+    void allFiveTwoFileModelsPackageAndTintOnlyTheirMaskQuads() throws Exception {
         for (String family : FAMILIES) {
             Path path = ASSETS.resolve("models/banner/placeholder/" + family + ".json");
             assertTrue(Files.isRegularFile(path), family);
             JsonObject model = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
-            assertEquals("britannia_mod:banner/placeholder/fabric_base",
-                    model.getAsJsonObject("textures").get("fabric_base").getAsString());
+            assertEquals("britannia_mod:banner/placeholder/base_texture",
+                    model.getAsJsonObject("textures").get("base_texture").getAsString());
             assertEquals("britannia_mod:banner/placeholder/dye_mask",
                     model.getAsJsonObject("textures").get("dye_mask").getAsString());
-            assertEquals("britannia_mod:banner/placeholder/static_overlay",
-                    model.getAsJsonObject("textures").get("static_overlay").getAsString());
+            assertEquals("minecraft:translucent", model.get("render_type").getAsString());
+            assertEquals(2, model.getAsJsonArray("elements").size());
             int tintCount = count(model.getAsJsonArray("elements"), "tintindex");
             assertEquals(2, tintCount, family + " north/south dye-mask faces");
             assertEquals(2, countValue(model.getAsJsonArray("elements"), "tintindex", 1));
@@ -43,10 +43,12 @@ class BannerRenderAssetsCacheAndIsolationTest {
     }
 
     @Test
-    void fabricMaskOverlayMissingAndMountAssetsPackage() {
-        for (String texture : List.of("fabric_base", "dye_mask", "static_overlay", "missing")) {
+    void baseMaskMissingAndMountAssetsPackageWithoutRemovedTextures() {
+        for (String texture : List.of("base_texture", "dye_mask", "missing")) {
             assertTrue(Files.isRegularFile(ASSETS.resolve("textures/banner/placeholder/" + texture + ".png")), texture);
         }
+        assertFalse(Files.exists(ASSETS.resolve("textures/banner/placeholder/fabric_base.png")));
+        assertFalse(Files.exists(ASSETS.resolve("textures/banner/placeholder/static_overlay.png")));
         assertTrue(Files.isRegularFile(ASSETS.resolve("models/banner/placeholder/missing_item.json")));
         for (String mount : List.of("brass", "iron")) {
             assertTrue(Files.isRegularFile(ASSETS.resolve("models/banner/mount/" + mount + ".json")), mount);
@@ -55,14 +57,19 @@ class BannerRenderAssetsCacheAndIsolationTest {
     }
 
     @Test
-    void maskAndOverlayRetainCutoutSemanticsAndMountsVisiblyDiffer() throws Exception {
+    void compositeBasePreservesDiagnosticPixelsAndMaskRetainsSelectiveRecolourSemantics() throws Exception {
+        BufferedImage base = ImageIO.read(ASSETS.resolve(
+                "textures/banner/placeholder/base_texture.png").toFile());
         BufferedImage mask = ImageIO.read(ASSETS.resolve("textures/banner/placeholder/dye_mask.png").toFile());
-        BufferedImage overlay = ImageIO.read(ASSETS.resolve("textures/banner/placeholder/static_overlay.png").toFile());
+        assertEquals(0xFF232323, base.getRGB(0, 0));
+        assertEquals(0xFFF5F5F5, base.getRGB(6, 6));
+        assertEquals(0xFFB8B8B8, base.getRGB(4, 4));
+        assertEquals(base.getWidth(), mask.getWidth());
+        assertEquals(base.getHeight(), mask.getHeight());
         assertTrue(hasAlpha(mask, 0));
         assertTrue(hasAlpha(mask, 255));
         assertTrue(nonTransparentPixelsAreGreyscale(mask));
-        assertTrue(hasAlpha(overlay, 0));
-        assertTrue(hasAlpha(overlay, 255));
+        assertTrue(activeMaskPixelsCoverOnlyOpaqueBase(base, mask));
         byte[] brass = Files.readAllBytes(ASSETS.resolve("textures/banner/mount/brass.png"));
         byte[] iron = Files.readAllBytes(ASSETS.resolve("textures/banner/mount/iron.png"));
         assertFalse(java.util.Arrays.equals(brass, iron));
@@ -75,11 +82,15 @@ class BannerRenderAssetsCacheAndIsolationTest {
             assertTrue(metadata.contains("models/banner/placeholder/" + family + ".json"), family);
         }
         for (String expected : List.of(
-                "models/banner/placeholder/missing_item.json", "textures/banner/placeholder/dye_mask.png",
+                "models/banner/placeholder/missing_item.json",
+                "textures/banner/placeholder/base_texture.png",
+                "textures/banner/placeholder/dye_mask.png",
                 "models/banner/mount/brass.json", "models/banner/mount/iron.json",
                 "textures/banner/mount/brass.png", "textures/banner/mount/iron.png")) {
             assertTrue(metadata.contains(expected), expected);
         }
+        assertFalse(metadata.contains("fabric_base.png"));
+        assertFalse(metadata.contains("static_overlay.png"));
     }
 
     @Test
@@ -95,6 +106,21 @@ class BannerRenderAssetsCacheAndIsolationTest {
         cache.clear();
         assertEquals(0, cache.size());
         assertNotSame(reloaded, cache.getOrCreate(key("one", 2), ignored -> new Object()));
+    }
+
+    @Test
+    void appearanceKeysContainBaseAndMaskAndNoThirdBannerImageIdentity() {
+        var componentNames = java.util.Arrays.stream(BannerAppearanceKey.class.getRecordComponents())
+                .map(java.lang.reflect.RecordComponent::getName).collect(java.util.stream.Collectors.toSet());
+        assertTrue(componentNames.contains("baseTexture"));
+        assertTrue(componentNames.contains("dyeMask"));
+        assertFalse(componentNames.contains("fabricBase"));
+        assertFalse(componentNames.contains("staticOverlay"));
+        assertFalse(componentNames.contains("strategy"));
+
+        BannerRenderKey original = key("same", 2, "base_a", "mask_a");
+        assertNotEquals(original, key("same", 2, "base_b", "mask_a"));
+        assertNotEquals(original, key("same", 2, "base_a", "mask_b"));
     }
 
     @Test
@@ -138,15 +164,22 @@ class BannerRenderAssetsCacheAndIsolationTest {
     }
 
     private static BannerRenderKey key(String definition, long resourceGeneration) {
+        return key(definition, resourceGeneration, definition + "_base", definition + "_mask");
+    }
+
+    private static BannerRenderKey key(
+            String definition, long resourceGeneration, String baseTexture, String dyeMask) {
         ResourceLocation asset = ResourceLocation.parse("britannia_mod:" + definition);
         return new BannerRenderKey(
                 Optional.of(BannerDefinitionId.parse("britannia_mod:" + definition)),
                 Optional.of(FabricMaterialId.parse("britannia_mod:cotton")),
                 Optional.of(ResolvedColourId.parse("britannia_mod:cotton_natural")),
                 Optional.of(MountId.parse("britannia_mod:brass")),
-                Optional.of(asset), Optional.of(asset), Optional.of(asset), Optional.of(asset),
+                Optional.of(asset),
+                Optional.of(ResourceLocation.parse("britannia_mod:" + baseTexture)),
+                Optional.of(ResourceLocation.parse("britannia_mod:" + dyeMask)),
                 Optional.of(asset), Optional.of(asset), Optional.of(BannerContentStatus.PLACEHOLDER),
-                0xEEE4CC, true, BannerRenderFailure.NONE, 4, resourceGeneration);
+                0xEEE4CC, false, BannerRenderFailure.NONE, 4, resourceGeneration);
     }
 
     private static int count(JsonArray elements, String property) {
@@ -183,6 +216,13 @@ class BannerRenderAssetsCacheAndIsolationTest {
                 int red = pixel >> 16 & 255, green = pixel >> 8 & 255, blue = pixel & 255;
                 if (red != green || green != blue) return false;
             }
+        }
+        return true;
+    }
+
+    private static boolean activeMaskPixelsCoverOnlyOpaqueBase(BufferedImage base, BufferedImage mask) {
+        for (int y = 0; y < base.getHeight(); y++) for (int x = 0; x < base.getWidth(); x++) {
+            if ((mask.getRGB(x, y) >>> 24) != 0 && (base.getRGB(x, y) >>> 24) != 255) return false;
         }
         return true;
     }

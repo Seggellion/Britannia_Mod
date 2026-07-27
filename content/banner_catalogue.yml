@@ -7,9 +7,8 @@
     "supported_orientations": ["wall_parallel", "wall_perpendicular"],
     "content_status": "placeholder",
     "dimensions_provisional": true,
-    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
-    "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
-    "static_overlay": "britannia_mod:banner/placeholder/static_overlay"
+    "base_texture": "britannia_mod:banner/placeholder/base_texture",
+    "dye_mask": "britannia_mod:banner/placeholder/dye_mask"
   },
   "groups": {
     "large": {
@@ -44,9 +43,8 @@
     }
   },
   "shared_placeholder_assets": {
-    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
+    "base_texture": "britannia_mod:banner/placeholder/base_texture",
     "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
-    "static_overlay": "britannia_mod:banner/placeholder/static_overlay",
     "missing": "britannia_mod:banner/placeholder/missing"
   },
   "banners": [

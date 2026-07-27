@@ -1,8 +1,20 @@
 # Banner and Dyeing Open Questions
 
-Date: 2026-07-26
+Date: 2026-07-27
 
-Milestone: 16 Preparation
+Milestone: 16A
+
+## Milestone 16A remaining content and review questions
+
+- Supply and approve the final complete base texture and selective grayscale-alpha dye mask for every banner.
+- Approve the exact final pixel dimensions for each banner's two aligned images.
+- Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
+  examples.
+- Record whether a future design ever genuinely needs fixed foreground detail over a recoloured underlayer at the
+  exact same pixel. That is not an alternative in the current architecture; it would require product-owner approval
+  and a separate architecture milestone.
+- Perform the manual Road Guard proof of concept with approved two-file artwork before Milestone 16 Batch 1
+  integration proceeds.
 
 ## Milestone 16 content-intake readiness
 
@@ -11,8 +23,9 @@ the seven extra-small definitions. The intake kit defines the evidence required 
 guessing.
 
 Owner input is still required per definition for final display name, dimensions, orientations, supported/default
-mounts, placement profile, geometry convention, localization, original layer assets, provenance, and distribution
-permission. A completed intake may authorize an `in_progress` integration; it does not authorize `complete`.
+mounts, placement profile, geometry convention, localization, the complete base texture, the selective dye mask,
+provenance, and distribution permission. A completed intake may authorize an `in_progress` integration; it does not
+authorize `complete`.
 
 The read-only validator is implemented at:
 
@@ -65,8 +78,9 @@ creative configured-banner entry, NPC hook, loot table, recipe, pattern, bluepri
 - Parallel and perpendicular transforms, persisted dimensions, support rules, anchor convention, allowed
   orientations, and allowed mounts remain exactly the Milestone 12 Gate D defaults. A definition/footprint mismatch
   renders the explicit missing-content fallback and never rewrites persisted occupancy.
-- The existing neutral fabric, grayscale dye mask, untinted static overlay, brass/iron mount resources, and
-  missing-content texture are reused. Server data packs still cannot distribute client models or textures.
+- Milestone 13 originally reused a three-image diagnostic banner stack. Milestone 16A superseded that historical
+  decision with one complete base texture and one selective grayscale-alpha dye mask; brass/iron and missing-content
+  resources remain separate. Server data packs still cannot distribute client models or textures.
 - Automated tests cover all five footprint families, both orientations, all four facings, brass and iron, tint
   separation, dynamic bounds, cache generations, missing content, state update tags/packets, and dedicated-server
   class isolation. Manual in-game visual verification remains unperformed because the repository still has no safe
@@ -120,9 +134,9 @@ world-edit compatibility integration should expose an explicit structure-removal
 - Models and textures are client resource-pack content. A server data-pack can override display metadata and select
   an asset already packaged by the client, but it cannot distribute a new model or texture. Unknown or absent assets
   therefore render the explicit missing-content diagnostic rather than substituting another banner.
-- The current placeholder architecture uses one neutral base, one grayscale dye mask, one untinted overlay, and
-  palette-authored sRGB differences for all four materials. Final material-specific fabric textures remain an owner
-  decision.
+- Milestone 16A supersedes Milestone 9's original image split. The current placeholder uses one complete base and
+  one selective grayscale-alpha mask for every material; material-specific banner textures are intentionally not an
+  open option.
 - The full in-game rendering matrix remains unperformed until a safe configured-banner acquisition path exists; no
   recipes, commands, or creative catalogue entries were added solely for rendering QA.
 
@@ -192,10 +206,10 @@ Gate B approved the 33-definition identity set and closed the two scaffold-label
 Final display names, dimensions, orientations, mount support, recipes, geometry, and artwork remain unapproved.
 The current source page/row references remain authoritative catalogue references.
 
-Milestone 4 established deterministic scaffold paths. Milestone 9 selects vanilla JSON baked models and block-atlas
-PNG textures for the item renderer: extensionless geometry IDs map to `models/<path>.json`, and fabric/mask/overlay/
-mount texture IDs map to `textures/<path>.png`. This resolves the item-placeholder convention only; final artwork and
-future placed-banner rendering remain separate decisions.
+Milestone 4 established deterministic scaffold paths. Milestone 9 selected vanilla JSON baked models and block-atlas
+PNG textures for the item renderer; Milestone 16A retains that mapping while limiting banner image IDs to complete
+base plus selective mask and keeping mount textures independent. This resolves the placeholder convention only;
+final artwork remains a separate decision.
 
 ## Milestone 3 physical-asset validation boundary
 

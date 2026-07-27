@@ -117,11 +117,11 @@ class BannerCatalogueManifestTest {
 
     @Test
     void allRequiredInheritedFieldsAreAvailable() {
-        assertNotNull(manifest.defaults().fabricBase());
+        assertNotNull(manifest.defaults().baseTexture());
         assertNotNull(manifest.defaults().dyeMask());
-        assertNotNull(manifest.defaults().staticOverlay());
+        assertEquals(Set.of("base_texture", "dye_mask", "missing"),
+                manifest.sharedPlaceholderAssets().keySet());
         assertEquals(Set.of("large", "medium-wall", "medium", "small", "x-small"),
                 manifest.groups().keySet());
-        assertFalse(manifest.sharedPlaceholderAssets().isEmpty());
     }
 }

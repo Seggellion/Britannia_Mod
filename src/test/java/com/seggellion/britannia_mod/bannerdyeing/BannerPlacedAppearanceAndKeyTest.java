@@ -42,9 +42,8 @@ class BannerPlacedAppearanceAndKeyTest {
                         () -> assertEquals(item.materialId(), placed.materialId()),
                         () -> assertEquals(item.resolvedColourId(), placed.resolvedColourId()),
                         () -> assertEquals(item.displaySrgb(), placed.displaySrgb()),
-                        () -> assertEquals(item.fabricBase(), placed.fabricBase()),
+                        () -> assertEquals(item.baseTexture(), placed.baseTexture()),
                         () -> assertEquals(item.dyeMask(), placed.dyeMask()),
-                        () -> assertEquals(item.staticOverlay(), placed.staticOverlay()),
                         () -> assertEquals(item.mountId(), placed.mountId()),
                         () -> assertEquals(item.mountTexture(), placed.mountTexture()),
                         () -> assertEquals(item.failure(), placed.failure()));
@@ -61,8 +60,8 @@ class BannerPlacedAppearanceAndKeyTest {
                 definition, cotton, Milestone13RenderFixtures.natural(cotton), brass);
         BannerInstanceState dyed = Milestone13RenderFixtures.state(
                 definition, cotton, Milestone13RenderFixtures.dyed(cotton), brass);
-        assertTrue(itemAppearance(natural, 1, 2).naturalColour());
-        assertFalse(itemAppearance(dyed, 1, 2).naturalColour());
+        assertFalse(itemAppearance(natural, 1, 2).recolourActive());
+        assertTrue(itemAppearance(dyed, 1, 2).recolourActive());
         assertEquals(itemAppearance(natural, 1, 2), placedAppearance(
                 natural, Direction.SOUTH, BannerOrientation.WALL_PARALLEL, 1, 1, 1, 2));
         assertEquals(itemAppearance(dyed, 1, 2), placedAppearance(

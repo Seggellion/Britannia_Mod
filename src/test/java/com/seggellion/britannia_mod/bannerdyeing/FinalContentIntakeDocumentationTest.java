@@ -18,8 +18,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class FinalContentIntakeDocumentationTest {
-    private static final Path GUIDE =
-            Path.of("docs/banner-dyeing/FINAL_CONTENT_INTAKE.md");
+    private static final Path GUIDE = Path.of("docs/banner-dyeing/FINAL_CONTENT_INTAKE.md");
     private static final Path CHECKLIST =
             Path.of("docs/banner-dyeing/FINAL_CONTENT_REVIEW_CHECKLIST.md");
     private static final Path GENERIC =
@@ -45,45 +44,50 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
-    void guideDefinesRequiredContractWithoutTreatingRuntimeCapabilitiesAsApproval() throws Exception {
+    void guideDefinesTheSingleTwoFileSelectiveRecolourContract() throws Exception {
         String guide = Files.readString(GUIDE);
         for (String heading : List.of(
                 "## 1. Purpose", "## 2. Stable identity", "## 3. Required owner decisions",
-                "## 4. Required visual assets", "## 5. Fabric-base rules", "## 6. Dye-mask rules",
-                "## 7. Static-overlay rules", "## 8. Mount rules", "## 9. File requirements",
-                "## 10. Original-art provenance", "## 11. Approval states", "## 12. Content statuses",
+                "## 4. Required visual assets", "## 5. Base-texture rules", "## 6. Dye-mask rules",
+                "## 7. Fixed artwork and the two-file limitation", "## 8. Mount and material rules",
+                "## 9. File and composition requirements", "## 10. Original-art provenance",
+                "## 11. Approval states", "## 12. Content statuses and render state",
                 "## 13. Existing-world consequences", "## 14. Integration workflow",
                 "## 15. Crafting boundary")) {
             assertTrue(guide.contains(heading), heading);
         }
-        assertTrue(guide.contains("Codex must not invent"));
+        assertTrue(guide.contains("it may not invent"));
         assertTrue(guide.contains("x_small_unnamed_01"));
-        assertTrue(guide.contains("Current diagnostic placeholder textures happen to be 16×16"));
+        assertTrue(guide.contains("Current diagnostic placeholders are 16 × 16"));
         assertTrue(guide.contains("not automatic approval"));
+        assertTrue(guide.contains("source_pigment_id is present"));
+        assertTrue(guide.contains("output.rgb = B.rgb × (1 - a) + T.rgb × a"));
         assertTrue(guide.contains("Banner crafting: not approved"));
         assertTrue(guide.contains("Crafting requirements: not applicable"));
     }
 
     @Test
-    void checklistContainsEveryRequiredAutomatedAndManualBoundary() throws Exception {
+    void checklistCoversTwoFilesAutomatedBoundariesAndManualMatrices() throws Exception {
         String checklist = Files.readString(CHECKLIST);
         for (String required : List.of(
-                "Stable ID verified", "Final display name approved", "Fabric base supplied",
-                "Asset-to-ID mapping unambiguous", "Manifest validates", "Fabric tint test passes",
-                "Overlay remains untinted", "Brass remains untinted", "Iron remains untinted",
+                "Stable ID verified", "Final display name approved", "base_texture.png", "dye_mask.png",
+                "Asset-to-ID mapping is unambiguous", "Manifest validates", "Base remains untinted",
+                "Natural/default state omits the mask pass", "Brass remains untinted", "Iron remains untinted",
                 "Inventory", "First-person hand", "Third-person hand", "Dropped item", "Item frame",
-                "Dye-preview current", "Dye-preview proposed", "Cotton", "Wool", "Linen", "Silk",
-                "Wall parallel", "Wall perpendicular", "Save/reload", "Relog", "Late client tracking",
+                "Dye-preview current", "Dye-preview proposed", "cotton", "wool", "linen", "silk",
+                "North", "South", "East", "West", "Save/reload", "Relog", "Late client tracking",
                 "Resource reload", "Data reload", "Anchor break", "Child break, if applicable",
-                "Pick block", "Re-place recovered item", "Product owner reviewed final appearance",
-                "Crafting: not applicable — product-disabled")) {
+                "Pick block", "Re-place recovered item",
+                "Product owner reviewed final natural and recoloured appearance",
+                "Crafting requirements are not applicable")) {
             assertTrue(checklist.contains(required), required);
         }
     }
 
     @Test
-    void genericTemplateIsJsonCompatibleYamlAndObviouslyUnapproved() throws Exception {
-        JsonObject intake = JsonParser.parseString(Files.readString(GENERIC)).getAsJsonObject();
+    void genericTemplateIsJsonCompatibleYamlAndExactlyTwoFileUnapproved() throws Exception {
+        String raw = Files.readString(GENERIC);
+        JsonObject intake = JsonParser.parseString(raw).getAsJsonObject();
         assertEquals(1, intake.get("schema_version").getAsInt());
         assertEquals("NOT_APPROVED",
                 intake.getAsJsonObject("approval").get("status").getAsString());
@@ -91,12 +95,16 @@ class FinalContentIntakeDocumentationTest {
                 intake.getAsJsonObject("banner").get("stable_id").getAsString());
         assertEquals("placeholder", intake.get("requested_content_status").getAsString());
         assertFalse(intake.getAsJsonObject("provenance").get("original_art").getAsBoolean());
+        assertEquals(Set.of("base_texture", "dye_mask", "geometry"),
+                intake.getAsJsonObject("assets").keySet());
+        assertNoRemovedOrStrategyKeys(raw);
         assertNoForbiddenIntakeKeys(intake);
     }
 
     @Test
     void extraSmallTemplateContainsEveryStableIdExactlyOnceAndNoneApproved() throws Exception {
-        JsonObject batch = JsonParser.parseString(Files.readString(BATCH)).getAsJsonObject();
+        String raw = Files.readString(BATCH);
+        JsonObject batch = JsonParser.parseString(raw).getAsJsonObject();
         assertEquals("NOT_APPROVED", batch.get("template_status").getAsString());
         var records = batch.getAsJsonArray("records");
         assertEquals(7, records.size());
@@ -114,9 +122,11 @@ class FinalContentIntakeDocumentationTest {
                     record.getAsJsonObject("current_provisional_state")
                             .get("approval_meaning").getAsString());
             assertEquals("placeholder", record.get("requested_content_status").getAsString());
+            assertEquals(Set.of("base_texture", "dye_mask", "geometry"),
+                    record.getAsJsonObject("assets").keySet());
             assertNoForbiddenIntakeKeys(record);
         }
-        String raw = Files.readString(BATCH);
+        assertNoRemovedOrStrategyKeys(raw);
         EXTRA_SMALL_IDS.forEach(id -> assertEquals(1, occurrences(raw, "\"" + id + "\""), id));
     }
 
@@ -138,7 +148,7 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
-    void productionCatalogueAndDefinitionsRemainUnchangedPlaceholders() throws Exception {
+    void productionCatalogueAndDefinitionsRemainThirtyThreePlaceholders() throws Exception {
         BannerScaffoldTool.Manifest manifest =
                 BannerScaffoldTool.readAndValidateManifest(Path.of(BannerScaffoldTool.MANIFEST_PATH));
         assertEquals(33, manifest.banners().size());
@@ -149,6 +159,15 @@ class FinalContentIntakeDocumentationTest {
         assertEquals(33, production.banners().activeCount());
         assertTrue(production.banners().activeDefinitions().stream()
                 .allMatch(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER));
+    }
+
+    private static void assertNoRemovedOrStrategyKeys(String raw) {
+        assertFalse(raw.contains("\"fabric_base\""));
+        assertFalse(raw.contains("\"static_overlay\""));
+        assertFalse(raw.contains("\"strategy\""));
+        assertFalse(raw.contains("\"render_strategy\""));
+        assertFalse(raw.contains("\"optional_overlay\""));
+        assertFalse(raw.contains("\"legacy_overlay\""));
     }
 
     private static void assertNoForbiddenIntakeKeys(JsonElement element) {

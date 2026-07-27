@@ -7,20 +7,17 @@ import net.minecraft.resources.ResourceLocation;
 
 public record BannerAssets(
         ResourceLocation geometry,
-        ResourceLocation fabricBase,
-        ResourceLocation dyeMask,
-        ResourceLocation staticOverlay) {
+        ResourceLocation baseTexture,
+        ResourceLocation dyeMask) {
     public static final Codec<BannerAssets> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ResourceLocation.CODEC.fieldOf("geometry").forGetter(BannerAssets::geometry),
-            ResourceLocation.CODEC.fieldOf("fabric_base").forGetter(BannerAssets::fabricBase),
-            ResourceLocation.CODEC.fieldOf("dye_mask").forGetter(BannerAssets::dyeMask),
-            ResourceLocation.CODEC.fieldOf("static_overlay").forGetter(BannerAssets::staticOverlay)
+            ResourceLocation.CODEC.fieldOf("base_texture").forGetter(BannerAssets::baseTexture),
+            ResourceLocation.CODEC.fieldOf("dye_mask").forGetter(BannerAssets::dyeMask)
     ).apply(instance, BannerAssets::new));
 
     public BannerAssets {
         Objects.requireNonNull(geometry, "geometry");
-        Objects.requireNonNull(fabricBase, "fabricBase");
+        Objects.requireNonNull(baseTexture, "baseTexture");
         Objects.requireNonNull(dyeMask, "dyeMask");
-        Objects.requireNonNull(staticOverlay, "staticOverlay");
     }
 }

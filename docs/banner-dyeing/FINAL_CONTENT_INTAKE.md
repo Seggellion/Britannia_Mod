@@ -2,182 +2,198 @@
 
 ## 1. Purpose
 
-Final banner content requires explicit product-owner approval and original project artwork. Codex may validate,
-report on, and integrate approved inputs. Codex must not invent heraldry, names, dimensions, orientations, mount
-support, provenance, or approval.
+Final banner content requires explicit product-owner approval and original project artwork. Codex may validate and
+integrate approved inputs, but it may not invent artwork, names, dimensions, geometry, placement, orientations,
+mounts, localization, provenance, or approval.
 
-The files under `content/banner-final-intake/` are owner-facing templates only. They are not runtime data, are not
-approval records while marked `NOT_APPROVED`, and do not change the live catalogue.
+Every banner uses one architecture: a complete full-colour base texture plus a selective-recolour dye mask.
 
 ## 2. Stable identity
 
-- Stable banner IDs do not change during final-content intake.
-- A final display name may change without changing the stable ID.
-- Saved items and placed banners refer to the stable ID, not the display name.
-- `britannia_mod:x_small_unnamed_01` retains that stable ID after it receives a final name.
-- Asset filenames and display names must not be used to infer or replace stable identity.
+- Stable IDs never change when artwork or display names change.
+- Display names and localization may change after approval.
+- Saved items and placed structures identify banners by stable ID.
+- `britannia_mod:x_small_unnamed_01` keeps that ID after receiving a final name.
 
 ## 3. Required owner decisions
 
-One intake record must explicitly approve all of the following for one banner:
+Approve each value explicitly:
 
-- Final display name
-- Width in blocks
-- Height in blocks
-- Supported orientations
-- Supported mounts
+- Final display name and localization
+- Width in blocks (`1`–`3`)
+- Height in blocks (`1`–`2`)
+- Supported orientations (`wall_parallel`, `wall_perpendicular`)
+- Supported mounts (`britannia_mod:brass`, `britannia_mod:iron`)
 - Default mount
 - Placement profile
-- Geometry convention
-- Localization
-- Requested content-status target
+- Geometry convention and geometry resource
+- Target content status
+- Pixel dimensions for the two aligned images
 
-Current runtime capability is width `1–3`, height `1–2`, orientations `wall_parallel` and
-`wall_perpendicular`, and mounts `britannia_mod:brass` and `britannia_mod:iron`. These are supported technical
-values, not automatic approval for any definition. Image proportions, catalogue groups, and provisional defaults
-must not be used to infer decisions.
-
-An intake ready to begin integration requests `in_progress`. `complete` is not an intake target: it is reached only
-after integration, automated validation, manual verification, and product-owner review.
+These ranges and identifiers are supported runtime capabilities, not automatic approval of any banner decision.
 
 ## 4. Required visual assets
 
-Each final design requires:
+Supply exactly two aligned images:
 
-- A neutral fabric-base PNG
-- A dye-mask PNG
-- An untinted static-overlay PNG
-- A geometry/model asset unless a named shared geometry is explicitly approved
-- An optional reference to the authoring/source project file
-- An optional preview image for human review
+- `base_texture.png`: complete authored full-colour default banner artwork
+- `dye_mask.png`: grayscale RGBA selective-recolour layer
 
-The three PNG layers must map unambiguously to one stable ID, use distinct namespaced resource IDs, share exact pixel
-dimensions, and align pixel-for-pixel. A preview or authoring file is supporting evidence, not runtime art.
+Supply geometry/model artwork when shared geometry is not explicitly approved. An editable authoring file and preview
+image are optional references, not runtime image layers.
 
-## 5. Fabric-base rules
+There is no optional overlay, legacy rendering strategy, per-banner strategy, or third runtime image.
 
-The fabric base must:
+## 5. Base-texture rules
 
-- Be neutral or grayscale
-- Contain cloth texture and shading
-- Contain no heraldry
-- Contain no brass or iron
-- Contain no pre-baked dye colour
-- Support every material palette colour
-- Preserve transparency where needed
+The base texture must:
+
+- Be the complete original default appearance
+- Contain native colours, cloth texture, highlights, shadows, heraldry, borders, and fixed-colour details
+- Contain the complete silhouette and required transparency
+- Contain every pixel that must remain unchanged during dyeing
+- Exclude brass and iron mount hardware
+- Align exactly with the dye mask
+
+It may be full-colour and must not be forced to grayscale. Cotton, wool, linen, and silk do not select different
+banner textures; all materials use this same authored default artwork.
 
 ## 6. Dye-mask rules
 
 The dye mask must:
 
-- Include only fabric pixels intended to receive dye
-- Exclude heraldry
+- Be an 8-bit true-colour RGBA PNG whose active RGB is grayscale
+- Use transparent pixels where the base must remain unchanged
+- Use grayscale brightness to preserve highlights, midtones, shadows, texture, and local contrast
+- Use alpha to control replacement or blend strength
+- Contain at least one transparent pixel and at least one active pixel
+- Use active alpha only where the aligned base pixel is fully opaque
+- Align exactly with the base texture
 - Exclude mount hardware
-- Preserve cutouts
-- Align exactly with the fabric base and static overlay
-- Use the established renderer mask convention: only the mask layer receives the fabric tint
 
-## 7. Static-overlay rules
+For validation, active RGB channels may differ by at most 1. A bright mask pixel produces a brighter dyed result; a
+dark mask pixel produces a darker result. A flat white mask is valid only when deliberately approved as flat output.
 
-The static overlay must:
+## 7. Fixed artwork and the two-file limitation
 
-- Contain heraldry and details that remain unchanged when dyed
-- Remain untinted
-- Exclude generic fabric background
-- Exclude mount hardware
-- Be original project artwork
-- Align exactly with the fabric base and dye mask
+Fixed artwork remains in the base texture. To prevent a pixel from changing, make the corresponding dye-mask pixel
+transparent.
 
-## 8. Mount rules
+> A fixed-colour foreground detail cannot independently sit over a recoloured underlayer at the exact same pixel
+> using the two-file architecture.
 
-Brass and iron mounts are separate shared renderer layers. Banner-specific fabric or overlay assets must not contain
-mount hardware. Mount pixels remain untinted regardless of material or dye colour.
+For current pixel-art banners, each pixel must be classified as fixed or recolourable. A future overlapping-detail
+exception requires product-owner approval and a new architecture milestone.
 
-## 9. File requirements
+## 8. Mount and material rules
 
-- Runtime texture input must be a readable PNG.
-- Final layer PNGs must be 8-bit true-colour RGBA with an alpha channel. Indexed-colour conversion is not accepted
-  when it changes or damages alpha.
-- Repository resource paths are case-sensitive even when a developer filesystem is not.
-- Resource IDs use the `namespace:path` convention, normally under `britannia_mod`.
-- Source-file paths in intake YAML are repository-relative, must not escape the repository, and must exist before
-  an intake is ready.
-- Supply a SHA-256 digest for every required source asset.
-- Pixel-art assets must remain compatible with nearest-neighbour filtering; do not introduce resampling blur.
-- Do not include external scene lighting, a mockup background, or an environmental background.
-- A source-sheet crop is a reference, not acceptable final runtime art.
-- Current diagnostic placeholder textures happen to be 16×16. That is not a final-size policy.
-- Final pixel dimensions require explicit approval or a verified existing renderer convention. Do not infer block
-  dimensions from PNG proportions.
+Brass and iron mounts remain separate shared renderer layers. Banner image files must not include hardware, and
+mounts are never tinted by banner dye.
 
-The repository uses YAML 1.2 in JSON-compatible syntax for intake files, matching `content/banner_catalogue.yml`.
-This keeps validation deterministic without adding another parser.
+Fabric material remains persisted data identity:
+
+- `britannia_mod:cotton`
+- `britannia_mod:wool`
+- `britannia_mod:linen`
+- `britannia_mod:silk`
+
+Material controls natural colour, palette membership, dye resolution, tooltip state, administrative validation, and
+future gameplay rules. It does not select a material-specific image or model.
+
+## 9. File and composition requirements
+
+- Use lower-case `.png` names and case-sensitive namespaced resource IDs.
+- Use 8-bit true-colour RGBA PNGs with preserved alpha.
+- Both images must have exactly equal pixel dimensions and pixel-for-pixel alignment.
+- Keep the mask transparent wherever the aligned base alpha is below `255`, so two-pass blending preserves base alpha.
+- Use nearest-neighbour/pixel filtering appropriate to authored pixel art.
+- Avoid indexed-colour conversion when it damages alpha.
+- Include no environmental background, external scene lighting, mockup, or source-sheet crop.
+- Record repository-relative source paths and SHA-256 hashes after final edits.
+
+Current diagnostic placeholders are 16 × 16. That is not final-art policy; final pixel dimensions require explicit
+approval or a verified renderer convention.
+
+Composition uses base pixel `B`, mask pixel `M`, resolved dye colour `D`, and normalized mask alpha `a`:
+
+```text
+T.rgb      = M.rgb × D.rgb
+output.rgb = B.rgb × (1 - a) + T.rgb × a
+output.a   = B.a
+```
+
+The default state renders the base unchanged. A recoloured state renders the tinted mask over the base.
 
 ## 10. Original-art provenance
 
-Each intake must record a concise provenance statement containing:
+Record:
 
 - Artist or owner
 - Creation method
-- Source-file location or project reference
-- Confirmation that the work is original project artwork
+- Editable source-project file location
+- Confirmation that the artwork is original to the project
 - Confirmation that the project may distribute it
-- Confirmation that it was not copied from source-reference art
+- Confirmation that it was not copied from reference artwork
 
-No additional legal boilerplate is required.
+A concise, truthful provenance statement is sufficient.
 
 ## 11. Approval states
 
-- `MISSING`: no value or evidence was supplied.
-- `AMBIGUOUS`: a value or asset exists but its meaning, mapping, or approval cannot be established.
-- `PROVISIONAL`: usable for development, but not approved as final content.
-- `APPROVED`: explicitly approved by the product owner with attribution and date.
+- `MISSING`: required input is absent.
+- `AMBIGUOUS`: input exists but mapping or meaning is unclear.
+- `PROVISIONAL`: useful current information that is not approved.
+- `APPROVED`: the product owner has approved the exact value or asset.
 
-Only `APPROVED` values may replace live catalogue values. The intake field `approval.status` remains
-`NOT_APPROVED` until every required owner decision and provenance field is complete.
+Only `APPROVED` values may replace live catalogue values.
 
-## 12. Content statuses
+## 12. Content statuses and render state
 
-- `placeholder`: shared diagnostic content; not final.
-- `in_progress`: at least one approved input is being integrated, but verification is incomplete.
-- `complete`: every applicable automated and manual requirement passed and the final appearance was reviewed.
-- `disabled`: excluded by production validation.
+- `placeholder`: shared diagnostic content
+- `in_progress`: approved inputs are partly integrated; verification remains incomplete
+- `complete`: automated and manual requirements passed and the owner approved the result
+- `disabled`: excluded by production validation
 
-Manual verification is mandatory before `complete`. Automated tests cannot substitute for observing item, dye,
-mount, placed, reload, and persistence behavior.
+Manual verification is mandatory before `complete`.
+
+Recolouring is derived from existing state:
+
+```text
+apply_recolour =
+    source_pigment_id is present
+    OR resolved_colour_id differs from the selected material's natural_colour_id
+```
+
+A natural banner renders base plus mount. A pigment-dyed banner renders base, tinted mask, and mount—even when that
+pigment resolves to the material’s natural colour. An administrative non-natural colour also renders the mask without
+inventing pigment history.
 
 ## 13. Existing-world consequences
 
 - Stable IDs preserve saved identity.
-- Existing placed structures preserve their persisted footprint.
-- A changed definition dimension affects new placement only.
-- Existing structures are not automatically resized or migrated.
-- Removing an orientation or mount from supported lists affects new placement and validation only.
-- Existing items and structures retain their stored state, including their saved mount and placed orientation.
-- Administrators may need to break and replace an old structure to adopt newly approved dimensions.
+- Existing placed structures retain their persisted footprint and orientation.
+- Changed definition dimensions affect new placement only.
+- Existing structures are not automatically resized.
+- Removed orientation or mount support affects new placement and validation only.
+- Existing items and structures retain stored material, colour, pigment, mount, and structure state.
+- Breaking and replacing may be necessary to adopt changed dimensions.
+
+This two-file migration changes display metadata and rendering resources only. `BannerInstanceState` and placed
+structure schemas remain unchanged.
 
 ## 14. Integration workflow
 
-1. The owner copies and fills one intake YAML.
-2. The owner supplies the referenced original assets.
-3. Run `.\tools\scaffold_banners.bat --check-final-intake <path>`.
-4. Codex audits approval, provenance, hashes, and stable-ID mappings.
-5. Codex updates the editable manifest, never a generated definition as the source of truth.
-6. The definition becomes `in_progress`.
-7. Declared generated outputs are refreshed without overwriting owner content.
-8. Focused and regression tests run.
-9. Item, dye, mount, placed, reload, and persistence behavior are reviewed live.
-10. The definition becomes `complete` only after every check passes and the product owner approves the result.
+1. Owner fills one intake YAML.
+2. Owner supplies `base_texture.png` and `dye_mask.png`.
+3. Intake validation runs.
+4. Codex audits provenance, mappings, mask semantics, and hashes.
+5. Manifest is updated.
+6. Definition becomes `in_progress`.
+7. Generated outputs are refreshed.
+8. Automated tests run.
+9. Natural, recoloured, item, preview, placed, mount, reload, and persistence behaviour is reviewed.
+10. Definition becomes `complete` only after product-owner approval.
 
-Validator results are:
-
-- `NOT_READY`: structurally understandable, but approval or required information is incomplete.
-- `READY_FOR_INTEGRATION`: explicit approval, decisions, asset mappings, provenance, permission, and source files
-  are complete and valid.
-- `INVALID`: malformed, contradictory, unsafe, unknown, or unreadable input was supplied.
-
-`READY_FOR_INTEGRATION` does not claim that manual in-game verification has occurred. That verification happens after
-integration and remains mandatory before `complete`.
+`READY_FOR_INTEGRATION` authorizes integration work; it does not authorize `content_status: complete`.
 
 ## 15. Crafting boundary
 
@@ -188,4 +204,4 @@ Admin acquisition: implemented
 Survival acquisition: unresolved
 ```
 
-Recipes, patterns, crafting inputs, prices, NPC data, and shop data are not part of final-content intake.
+Recipe completion is not a final-content criterion.

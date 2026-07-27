@@ -115,9 +115,8 @@ class GeneratedBannerCatalogueTest {
     void everyEmittedAssetIdentifierMapsToDeclaredPlaceholderFile() {
         result.snapshot().banners().activeDefinitions().forEach(definition -> {
             assertTrue(Files.isRegularFile(modelPath(definition.assets().geometry())));
-            assertTrue(Files.isRegularFile(texturePath(definition.assets().fabricBase())));
+            assertTrue(Files.isRegularFile(texturePath(definition.assets().baseTexture())));
             assertTrue(Files.isRegularFile(texturePath(definition.assets().dyeMask())));
-            assertTrue(Files.isRegularFile(texturePath(definition.assets().staticOverlay())));
         });
     }
 
@@ -230,7 +229,7 @@ class GeneratedBannerCatalogueTest {
         Path folder = Path.of("src/main/resources/assets/britannia_mod/textures/banner/placeholder");
         try (var paths = Files.list(folder)) {
             List<Path> pngs = paths.filter(path -> path.toString().endsWith(".png")).sorted().toList();
-            assertEquals(4, pngs.size());
+            assertEquals(3, pngs.size());
             for (Path png : pngs) {
                 BufferedImage image = ImageIO.read(png.toFile());
                 assertEquals(16, image.getWidth(), png.toString());

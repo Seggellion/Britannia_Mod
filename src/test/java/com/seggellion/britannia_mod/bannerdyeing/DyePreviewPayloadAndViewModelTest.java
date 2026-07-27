@@ -123,7 +123,7 @@ class DyePreviewPayloadAndViewModelTest {
                 "src/main/java/com/seggellion/britannia_mod/client/screen/DyePreviewScreen.java"));
         assertTrue(screen.contains("renderItem"));
         assertTrue(screen.contains("graphics.fill"));
-        assertFalse(screen.matches("(?is).*(GeoItemRenderer|BlockEntityWithoutLevelRenderer|dye_mask|static_overlay).*"));
+        assertFalse(screen.matches("(?is).*(GeoItemRenderer|BlockEntityWithoutLevelRenderer).*"));
         String network = Files.readString(Path.of(
                 "src/main/java/com/seggellion/britannia_mod/network/NetworkHandler.java"));
         assertTrue(network.contains("C2SConfirmDyeApplicationPayload"));
@@ -144,6 +144,7 @@ class DyePreviewPayloadAndViewModelTest {
                 com.seggellion.britannia_mod.banner.api.BannerDefinitionId.parse("britannia_mod:ward_of_serpents"),
                 com.seggellion.britannia_mod.dye.api.FabricMaterialId.parse("britannia_mod:cotton"),
                 com.seggellion.britannia_mod.dye.api.ResolvedColourId.parse("britannia_mod:cotton_natural"),
+                Optional.empty(),
                 com.seggellion.britannia_mod.banner.api.MountId.parse("britannia_mod:brass"));
     }
 
@@ -151,6 +152,7 @@ class DyePreviewPayloadAndViewModelTest {
         BannerPreviewRenderState current = currentRender();
         return new BannerPreviewRenderState(current.bannerDefinitionId(), current.materialId(),
                 com.seggellion.britannia_mod.dye.api.ResolvedColourId.parse("britannia_mod:cotton_red"),
+                Optional.of(com.seggellion.britannia_mod.dye.api.PigmentId.parse("britannia_mod:madder_red")),
                 current.mountId());
     }
 

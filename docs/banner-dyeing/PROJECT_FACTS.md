@@ -1,10 +1,32 @@
 # Banner and Dyeing Project Facts
 
-Date: 2026-07-26
+Date: 2026-07-27
 
-Milestone: 16 Preparation
+Milestone: 16A
 
 Feature branch: `banners-dyetub`
+
+## Milestone 16A two-file asset facts
+
+- Every banner has one complete, full-colour `base_texture` and one grayscale-alpha `dye_mask`. There is one
+  rendering strategy and no separate fixed-art layer.
+- The base texture is the banner's complete default appearance: silhouette, transparency, native colours, cloth
+  texture, heraldry, borders, fixed details, highlights, and shadows. It is never tinted by the resolved dye colour.
+- A transparent mask pixel preserves the corresponding base pixel. An active mask pixel supplies grayscale
+  brightness and texture, is multiplied by the resolved dye colour, and blends over the base according to mask
+  alpha. Fixed artwork therefore remains in the base and has a transparent corresponding mask pixel.
+- The unchanged natural/default state renders base plus mount. A source pigment, or an administratively selected
+  resolved colour different from the material's natural colour, activates the tinted mask pass. A pigment resolving
+  to the natural colour still activates the mask because a pigment source is present.
+- Cotton, wool, linen, and silk remain persisted data identities rather than texture identities. They control natural
+  colour, palette membership, dye resolution, tooltips, validation, and metadata; all use the same authored banner
+  base by design.
+- `BannerInstanceState`, placed-structure state, stable IDs, catalogue dimensions, orientations, mounts, placement
+  profiles, and save semantics are unchanged. Definition schema version remains `1`; the existing display payload
+  type has no independent numeric schema field and now projects only base and mask resource identities.
+- All 33 controlled definitions use `base_texture` plus `dye_mask` and remain `placeholder`. Final Road Guard art and
+  all other final art remain absent. Milestone 16 Batch 1 still requires approved two-file assets, and Milestone 17
+  has not started.
 
 ## Milestone 16 preparation facts
 
@@ -76,11 +98,11 @@ Feature branch: `banners-dyetub`
   `britannia_mod:banner` anchor block entity and no renderer for `banner_part`.
 - `IBlockEntityRendererExtension.getRenderBoundingBox` supplies the dynamic multi-cell frustum bounds. The renderer
   uses a finite 64-block view distance and measures distance to the full placed bounds rather than only the anchor.
-- Placed cloth is generated client-side as bounded, two-sided cutout geometry for the five existing footprint
-  families and both persisted orientations. It uses the block atlas and the existing fabric, dye-mask, static-overlay,
-  brass, iron, and missing-content textures; no final heraldic artwork is implied.
-- Item and placed rendering share immutable appearance resolution and appearance keys. Only the dye-mask layer
-  receives the resolved material colour; fabric base, static overlay, and brass/iron mounts remain untinted.
+- Placed cloth is generated client-side as bounded, two-sided geometry for the five existing footprint families and
+  both persisted orientations. Milestone 16A supersedes Milestone 13's former three-image placeholder contract with
+  a complete base texture, selective dye mask, brass/iron mounts, and the missing-content texture.
+- Item and placed rendering share immutable appearance resolution and appearance keys. Only an active dye-mask pass
+  receives the resolved material colour; the complete base and brass/iron mounts remain untinted.
 - Appearance and placed-plan caches are independently bounded at 256 entries, as is placed diagnostic de-duplication.
   Client banner-data publication and resource/model reloads advance generation state and clear all banner render
   caches, so removed or restored content is not retained indefinitely.
@@ -182,7 +204,7 @@ The authoritative specifications were read in full before the feature branch or 
 | Client-only separation | One Java source set, client packages, `@EventBusSubscriber(... value = Dist.CLIENT)`, `@OnlyIn(Dist.CLIENT)`, and `FMLLoader.getDist().isClient()` guards | Put screens/models/renderers under `com.seggellion.britannia_mod.client`; register them from the `Dist.CLIENT` subscriber; common state, codecs, registries, and packet definitions must not import `net.minecraft.client` |
 | Placed rendering | `EntityRenderersEvent.RegisterRenderers` and `registerBlockEntityRenderer` in `ClientModSetup` | Register the anchor renderer through `ClientModSetup`; only the anchor renders the complete multi-block banner |
 | Item rendering | NeoForge 21.1.72 `ModelEvent.RegisterAdditional` + `ModelEvent.ModifyBakingResult`, vanilla `ItemOverrides`, and `IBakedModelExtension.getRenderPasses` support a current dynamic baked-model path | The shared banner item installs one wrapper model at bake/reload time, resolves immutable stack appearance keys through overrides, and returns family/mount baked passes; do not copy deprecated `Item.initializeClient` |
-| Models/assets | `assets/britannia_mod/models`, `textures`, `geo`, blockstates, language JSON, GeckoLib geometry, and a custom geometry loader registered in `ClientModSetup` | Place banner assets under `src/main/resources/assets/britannia_mod/...`; keep dyeable fabric, dye mask, static overlay, and mount resources separate as required by the specifications |
+| Models/assets | `assets/britannia_mod/models`, `textures`, `geo`, blockstates, language JSON, GeckoLib geometry, and a custom geometry loader registered in `ClientModSetup` | Place banner assets under `src/main/resources/assets/britannia_mod/...`; each banner uses one complete base texture and one selective grayscale-alpha dye mask, while mount resources remain separate |
 | Commands | Brigadier command classes with a static `register(CommandDispatcher<CommandSourceStack>)`, collected by `CommandRegistry` on `RegisterCommandsEvent` | Add later admin/debug commands as a focused command class registered by `CommandRegistry`, with permission predicates and registry-backed suggestions |
 | Recipes | One static vanilla recipe override at `src/main/resources/data/minecraft/recipes/diamond_pickaxe.json`; blacksmith crafting uses the in-code `CraftableRegistry`, `CraftableDef`, payload, and server-side `BlacksmithCrafting` service | Banner crafting is not an approved feature; any future acquisition or crafting design requires a new product decision |
 | Data generation | `runData` exists and `src/generated/resources` is configured, but there are no providers, `GatherDataEvent` listeners, or generated resources | The first banner data-generation milestone must establish the repository's first provider/check workflow; until then, authored JSON belongs under `src/main/resources/data/britannia_mod` |

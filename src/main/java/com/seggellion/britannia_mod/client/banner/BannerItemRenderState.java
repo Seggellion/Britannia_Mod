@@ -29,15 +29,14 @@ public record BannerItemRenderState(BannerAppearanceState appearance) {
     public Optional<ResolvedColourId> resolvedColourId() { return appearance.resolvedColourId(); }
     public Optional<MountId> mountId() { return appearance.mountId(); }
     public Optional<ResourceLocation> geometry() { return appearance.geometry(); }
-    public Optional<ResourceLocation> fabricBase() { return appearance.fabricBase(); }
+    public Optional<ResourceLocation> baseTexture() { return appearance.baseTexture(); }
     public Optional<ResourceLocation> dyeMask() { return appearance.dyeMask(); }
-    public Optional<ResourceLocation> staticOverlay() { return appearance.staticOverlay(); }
     public Optional<ResourceLocation> mountGeometry() { return appearance.mountGeometry(); }
     public Optional<ResourceLocation> mountTexture() { return appearance.mountTexture(); }
     public Optional<BannerContentStatus> contentStatus() { return appearance.contentStatus(); }
     public Optional<BannerDimensions> definitionDimensions() { return appearance.definitionDimensions(); }
     public int displaySrgb() { return appearance.displaySrgb(); }
-    public boolean naturalColour() { return appearance.naturalColour(); }
+    public boolean recolourActive() { return appearance.recolourActive(); }
     public BannerRenderFailure failure() { return appearance.failure(); }
     public String diagnosticId() { return appearance.diagnosticId(); }
     public long dataGeneration() { return appearance.dataGeneration(); }

@@ -13,8 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 /**
  * Display-only appearance shared by item and placed forms.
  *
- * <p>It deliberately retains no stack, entity, level, player, position, source pigment, custom name,
- * registry map, buffer, or timestamp.</p>
+ * <p>It deliberately retains no stack, entity, level, player, position, source-pigment identity, custom name,
+ * registry map, buffer, or timestamp. Pigment presence is reduced to the visual-only recolour flag.</p>
  */
 public record BannerAppearanceState(
         Optional<BannerDefinitionId> definitionId,
@@ -22,15 +22,14 @@ public record BannerAppearanceState(
         Optional<ResolvedColourId> resolvedColourId,
         Optional<MountId> mountId,
         Optional<ResourceLocation> geometry,
-        Optional<ResourceLocation> fabricBase,
+        Optional<ResourceLocation> baseTexture,
         Optional<ResourceLocation> dyeMask,
-        Optional<ResourceLocation> staticOverlay,
         Optional<ResourceLocation> mountGeometry,
         Optional<ResourceLocation> mountTexture,
         Optional<BannerContentStatus> contentStatus,
         Optional<BannerDimensions> definitionDimensions,
         int displaySrgb,
-        boolean naturalColour,
+        boolean recolourActive,
         BannerRenderFailure failure,
         String diagnosticId,
         long dataGeneration,
@@ -41,9 +40,8 @@ public record BannerAppearanceState(
         resolvedColourId = Objects.requireNonNull(resolvedColourId, "resolvedColourId");
         mountId = Objects.requireNonNull(mountId, "mountId");
         geometry = Objects.requireNonNull(geometry, "geometry");
-        fabricBase = Objects.requireNonNull(fabricBase, "fabricBase");
+        baseTexture = Objects.requireNonNull(baseTexture, "baseTexture");
         dyeMask = Objects.requireNonNull(dyeMask, "dyeMask");
-        staticOverlay = Objects.requireNonNull(staticOverlay, "staticOverlay");
         mountGeometry = Objects.requireNonNull(mountGeometry, "mountGeometry");
         mountTexture = Objects.requireNonNull(mountTexture, "mountTexture");
         contentStatus = Objects.requireNonNull(contentStatus, "contentStatus");
@@ -66,15 +64,15 @@ public record BannerAppearanceState(
 
     public BannerAppearanceState withResourceGeneration(long generation) {
         return new BannerAppearanceState(definitionId, materialId, resolvedColourId, mountId,
-                geometry, fabricBase, dyeMask, staticOverlay, mountGeometry, mountTexture,
-                contentStatus, definitionDimensions, displaySrgb, naturalColour, failure,
+                geometry, baseTexture, dyeMask, mountGeometry, mountTexture,
+                contentStatus, definitionDimensions, displaySrgb, recolourActive, failure,
                 diagnosticId, dataGeneration, generation);
     }
 
     public BannerAppearanceKey key() {
         return new BannerAppearanceKey(definitionId, materialId, resolvedColourId, mountId,
-                geometry, fabricBase, dyeMask, staticOverlay, mountGeometry, mountTexture,
-                contentStatus, definitionDimensions, displaySrgb, naturalColour, failure,
+                geometry, baseTexture, dyeMask, mountGeometry, mountTexture,
+                contentStatus, definitionDimensions, displaySrgb, recolourActive, failure,
                 diagnosticId, dataGeneration, resourceGeneration);
     }
 }

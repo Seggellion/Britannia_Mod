@@ -1,5 +1,87 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-27 - Milestone 16A: Two-File Selective-Recolour Assets
+
+### Corrective architecture decision
+
+- The product owner rejected the former split of a neutral cloth image, dye mask, and fixed-art image. The runtime,
+  synchronized display projection, tooling, generated content, intake kit, and tests now have one architecture only:
+  `base_texture` plus `dye_mask`. There is no optional fixed-art layer, rendering strategy selector, or legacy
+  production schema.
+- `base_texture` is the complete authored, full-colour default banner, including silhouette, native colour
+  relationships, cloth texture, heraldry, borders, fixed details, highlights, shadows, and transparency.
+- `dye_mask` is aligned grayscale RGBA. Its RGB retains brightness, shading, texture, and local contrast; its alpha
+  controls replacement strength. Fixed pixels stay in the base and use a transparent corresponding mask pixel.
+- With base pixel `B`, mask pixel `M`, resolved dye colour `D`, and normalized mask alpha `a`, the rendered mask colour
+  is `T.rgb = M.rgb * D.rgb`; normal source-over composition produces
+  `output.rgb = B.rgb * (1 - a) + T.rgb * a` and preserves `output.a = B.a`.
+- Natural/default state renders the base unchanged plus the mount. Recolouring activates when a source pigment is
+  present or the resolved colour differs from the selected material's natural colour, adding one tinted mask pass
+  between base and mount. A pigment resolving to the natural colour still activates the mask.
+- Cotton, wool, linen, and silk remain unchanged persisted data identities controlling natural colour, palette,
+  resolution, validation, tooltips, and metadata. They never select different banner images and do not tint the
+  complete default base merely because the selected material differs.
+
+### Runtime, data, and placeholder migration
+
+- Replaced the `BannerAssets` fields and definition/network codecs with `base_texture` and `dye_mask`. All 33
+  controlled definitions were regenerated with the new pair and remain `placeholder`; stable IDs, catalogue
+  indexes, dimensions, orientations, supported/default mounts, placement profiles, and schema version `1` are
+  unchanged. The display payload retains its existing packet type and has no separate numeric schema field.
+- Item and placed appearance state, availability, keys, plans, diagnostics, and caches no longer carry a fixed-art
+  identity. Natural item/placed plans contain base plus mount; recoloured plans contain base, tinted mask, plus
+  untinted mount. The preview continues to build real current/proposed stacks and now preserves pigment presence so
+  it applies the same derived rule.
+- The shared baked-model path remains generic. It filters the two texture groups from each shared footprint model,
+  delegates the model's translucent render type for partial mask alpha, and creates no banner/material/colour/mount
+  combination models. The anchor remains the only placed renderer; parts, bounds, lighting, orientations, facings,
+  footprint transforms, placement, and persistence are unchanged.
+- Deterministic scaffold generation created `base_texture.png` by drawing the former diagnostic fixed pixels
+  (opaque charcoal border and bright ring) over the former grayscale cloth placeholder while preserving the old
+  silhouette and alpha. It regenerated the mask so those fixed diagnostic pixels are transparent and retained
+  grayscale active cloth pixels. The former two source textures were removed from runtime resources.
+- The scaffold owns the new base and mask, generates five two-group translucent footprint models and all 33
+  definitions, and reports two banner image assets in the catalogue status. No recipe, status transition, or final
+  content was generated.
+
+### Intake and validation
+
+- The guide, review checklist, README, example, and seven-record extra-small template now require exactly one
+  full-colour base and one grayscale-alpha mask. They explain transparent, active, and partial mask pixels, fixed
+  artwork, material identity, default/recoloured appearance, and the two-file overlapping-detail limitation.
+- The read-only validator requires the two files, distinct resource IDs, source files and hashes, matching dimensions,
+  8-bit RGBA PNGs, transparent and active mask pixels, and grayscale mask RGB with maximum channel difference `1`.
+  The base is permitted to be full-colour. Removed intake keys are explicitly invalid and explain the current
+  `base_texture + dye_mask` contract.
+
+### Corrections and verification
+
+- The first migrated test compile reported 29 stale three-field constructors/accessors in test fixtures. Updating
+  those fixtures to the single two-file contract corrected compilation. The first synthetic pixel expectations then
+  exposed the deliberately rounded integer reference values; correcting those expected values aligned the fixture
+  with the implemented multiply/source-over formula.
+- Focused architecture/validator/render/preview/pixel selections passed. Normal scaffold generation and `--check`
+  both passed with manifest/definitions/active `33/33/33`, zero disabled entries, 33 localization entries, 14
+  provisional names, 33 provisional dimensions, and five geometry families.
+- The required banner/dye regression passed 591 tests across 50 suites with zero failures, errors, or skips.
+  `gradlew.bat clean --no-daemon`, the from-clean full 591-test/50-suite run, and
+  `gradlew.bat build --no-daemon` all passed. The unchanged compile warning baseline remains the missing
+  `PlayerSleepMixin` `@Overwrite` Javadoc and deprecated-for-removal `OrderShieldItem.initializeClient`.
+- All 42 changed JSON/JSON-compatible YAML files parsed. Both new 16 x 16 images are 8-bit true-colour RGBA PNGs;
+  the mask has 72 transparent and 184 active grayscale pixels, all aligned over opaque base pixels.
+- The production all-JAR has 4,963 unique entries and zero duplicate names. It contains 33 definitions using base
+  plus mask, the two required placeholder images, no removed placeholder image, no removed runtime class term, and
+  no banner recipe.
+- No live client was launched. Every requested visual/manual check remains explicitly unperformed; no visual
+  equivalence or final-art claim is made.
+- Commit subject: `refactor(banners): adopt two-file selective recolour assets`. Its full hash is recorded in the
+  final handoff because a commit cannot contain its own hash.
+
+### Next milestone
+
+Return to Milestone 16 Batch 1 only after approved two-file final assets and decisions exist. Milestone 17 has not
+started.
+
 ## 2026-07-26 - Milestone 16 Preparation: Final Banner Content Intake Kit
 
 ### Reason and scope
@@ -14,9 +96,10 @@
 
 ### Owner-facing intake files
 
-- Added `docs/banner-dyeing/FINAL_CONTENT_INTAKE.md`, defining stable identity, required decisions, fabric/mask/overlay
+- Added `docs/banner-dyeing/FINAL_CONTENT_INTAKE.md`, defining stable identity, required decisions, image
   responsibilities, independent mounts, file and alpha rules, provenance, approval/content states, existing-world
-  consequences, the integration sequence, and the product-disabled crafting boundary.
+  consequences, the integration sequence, and the product-disabled crafting boundary. Milestone 16A subsequently
+  replaced its original three-image intake contract with the authoritative two-image contract.
 - Added `docs/banner-dyeing/FINAL_CONTENT_REVIEW_CHECKLIST.md`, covering identity, assets, automated checks, item
   contexts, four materials and three representative colours, brass/iron, both orientations and all facings,
   persistence/lifecycle, and final owner review.
@@ -34,8 +117,9 @@
   execution paths are unchanged.
 - The validator reads one intake plus the live manifest identity set, validates schema and supported values, confirms
   default-mount membership, resolves repository-relative source paths safely, checks file existence and SHA-256,
-  decodes the three PNG layers, requires matching dimensions and 8-bit true-colour RGBA, rejects ambiguous layer
-  resource IDs and approved placeholder IDs, and validates approval/provenance/permission fields.
+  decodes the required PNG images, requires matching dimensions and 8-bit true-colour RGBA, rejects ambiguous asset
+  resource IDs and approved placeholder IDs, and validates approval/provenance/permission fields. Milestone 16A
+  subsequently changed the required image set to exactly base plus mask.
 - Results are deterministic and typed as `NOT_READY`, `READY_FOR_INTEGRATION`, or `INVALID`. Manual verification is
   checked for truthful attribution when claimed but is not required for integration readiness; it remains mandatory
   before `content_status: complete`.
@@ -226,9 +310,9 @@ Milestone 16 only. It has not started.
   renderers. Anchor and part block models are explicitly invisible while their established selection/collision
   behavior is preserved.
 - Added generated, two-sided cutout meshes for large 3x2, medium-wall 2x2, medium 1x2, small 1x1, and x-small 1x1
-  families in both wall-parallel and wall-perpendicular orientations across all four facings. The renderer applies
-  resolved material colour only to the dye-mask pass; the base, static overlay, and brass/iron mount passes remain
-  untinted. Existing placeholder resources are reused and no final heraldic art was added.
+  families in both wall-parallel and wall-perpendicular orientations across all four facings. At Milestone 13 the
+  renderer used the then-current three-image contract; Milestone 16A superseded its image fields and pass list while
+  retaining the geometry, facings, and untinted mounts. No final heraldic art was added.
 - Geometry keys include appearance, persisted orientation/facing/footprint, family, mount, reload generations, and
   fallback state, but not anchor position or world identity. Persisted occupancy remains authoritative when current
   definition dimensions disagree, and the renderer emits one safe missing-content diagnostic without mutating the
@@ -579,28 +663,30 @@ The unchanged compiler warnings are missing `@Overwrite` Javadoc on `PlayerSleep
 
 ### Render state, layers, cache, and fallback
 
-- The typed immutable state contains definition/material/colour/mount IDs, canonical display sRGB, geometry, neutral
-  fabric base, grayscale dye mask, untinted static overlay, mount geometry/texture, placeholder status, natural flag,
-  typed fallback reason/stable diagnostic ID, and client-data generation. Extraction reads but never validates,
-  repairs, substitutes, or mutates `ItemStack` state.
+- The Milestone 9 typed immutable state contained definition/material/colour/mount IDs, canonical display sRGB,
+  geometry, the then-current three-image asset identities, mount geometry/texture, placeholder status, natural flag,
+  typed fallback reason/stable diagnostic ID, and client-data generation. Milestone 16A later replaced those image
+  identities and the natural flag with base, mask, and derived recolour-active state. Extraction reads but never
+  validates, repairs, substitutes, or mutates `ItemStack` state.
 - The render key contains every appearance field plus client-data and baked-resource generations. It intentionally
   excludes `ItemStack`, source pigment, custom name, player, level, screen, registry maps, and timestamps.
-- Layer order is neutral fabric base, tint-index-1 dye mask, untinted static overlay, and untinted brass/iron mount.
-  The item-colour handler returns canonical palette ARGB only for tint index 1. Authored mask alpha/quads control tint
-  participation; overlay and mount faces have no tint index.
+- Milestone 9 used the then-current three-image layer order and tint-index-1 mask. Milestone 16A later reduced it to
+  untinted complete base, an optional active tint-index-1 mask, and untinted brass/iron mount while preserving the
+  shared-model design.
 - A synchronized access-ordered client cache stores at most 256 immutable-key-to-baked-model entries. Model bake or
   resource reload and client render-data replacement clear entries and missing-log identities. Diagnostics are
   de-duplicated by reason, stable ID, data generation, and resource generation, preventing per-frame log spam while
   allowing a later successful reload.
-- Missing component, registry, definition, material, colour, mount, geometry, base, mask, overlay, mount model, or
-  mount texture returns the one missing-item model. Original components and stable IDs remain untouched.
+- At Milestone 9, any missing component, registry entry, asset, or mount resource returned the one missing-item model.
+  Milestone 16A narrowed banner image failures to the complete base and selective mask. Original components and
+  stable IDs remain untouched.
 
 ### Assets and preview integration
 
-- Updated the scaffold templates before regenerating scaffold-owned files. The item boundary now packages five
-  visibly distinct family JSON models, one neutral base texture, one grayscale/cutout dye mask, one untinted overlay,
-  one missing texture/model, and visibly different brass and iron mount models/textures. This is diagnostic
-  placeholder presentation, not final heraldic art.
+- Updated the scaffold templates before regenerating scaffold-owned files. Milestone 9 packaged five visibly
+  distinct family JSON models and its then-current three-image diagnostic placeholder. Milestone 16A later migrated
+  that package to one complete base, one selective mask, one missing texture/model, and the unchanged visibly
+  different brass and iron mount models/textures. This is diagnostic presentation, not final heraldic art.
 - Mount definitions now reference `banner/mount/brass` and `banner/mount/iron`. The scaffold metadata owns the new
   outputs and `--check` remains deterministic. Catalogue identities, names, dimensions, and all 33 definition IDs are
   unchanged.
@@ -1193,9 +1279,10 @@ Milestone 6 - Dye Items and Stateful Dye Tub - only. It has not started.
 - Generated minimal supporting definitions: one placeholder cotton material, one single-natural-colour cotton
   palette, brass and iron mounts, and five size-family placement profiles. No pigment is required for the natural
   scaffold state.
-- Generated four 16 x 16 diagnostic PNGs and five shared vanilla-model JSON placeholders under
-  `assets/britannia_mod/.../banner/placeholder`. The images are neutral grayscale fabric/mask/overlay assets plus a
-  conventional high-contrast missing texture; they contain no final heraldry.
+- Milestone 3 generated four 16 x 16 diagnostic PNGs and five shared vanilla-model JSON placeholders under
+  `assets/britannia_mod/.../banner/placeholder`. Milestone 16A later replaced the former three banner images with a
+  complete diagnostic base and selective mask while retaining the conventional high-contrast missing texture; none
+  contains final heraldry.
 - Structurally merged exactly 33 banner translation keys into the existing `en_us.json` while retaining unrelated
   keys and the file's existing layout.
 - Generated `content/banner_catalogue_status.md` and the sidecar

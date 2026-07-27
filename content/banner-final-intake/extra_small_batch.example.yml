@@ -39,9 +39,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},
@@ -92,9 +91,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},
@@ -145,9 +143,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},
@@ -198,9 +195,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},
@@ -251,9 +247,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},
@@ -304,9 +299,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},
@@ -357,9 +351,8 @@
         "value": ""
       },
       "assets": {
-        "fabric_base": {"resource_id": null, "source_file": null, "sha256": null},
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
         "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
-        "static_overlay": {"resource_id": null, "source_file": null, "sha256": null},
         "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
       },
       "references": {"authoring_source_file": null, "preview_image_file": null},

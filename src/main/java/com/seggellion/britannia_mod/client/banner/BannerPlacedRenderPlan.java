@@ -26,20 +26,14 @@ public record BannerPlacedRenderPlan(
                             BannerAssetAvailability.MISSING_TEXTURE, 0xFFFFFFFF, 0.001)), true);
         }
         BannerLayerPlan appearance = BannerAppearanceCache.plan(state.appearance());
-        return new BannerPlacedRenderPlan(geometry, List.of(
-                pass(appearance, 0, BannerPlacedRenderPass.Type.FABRIC_BASE, 0xFFFFFFFF, 0.0005),
-                pass(appearance, 1, BannerPlacedRenderPass.Type.DYE_MASK, appearance.displayArgb(), 0.0015),
-                pass(appearance, 2, BannerPlacedRenderPass.Type.STATIC_OVERLAY, 0xFFFFFFFF, 0.0025),
-                pass(appearance, 3, BannerPlacedRenderPass.Type.MOUNT, 0xFFFFFFFF, 0.0040)), false);
-    }
-
-    private static BannerPlacedRenderPass pass(
-            BannerLayerPlan appearance,
-            int index,
-            BannerPlacedRenderPass.Type type,
-            int argb,
-            double depth) {
-        BannerRenderLayer layer = appearance.layers().get(index);
-        return new BannerPlacedRenderPass(type, layer.assetId(), argb, depth);
+        List<BannerPlacedRenderPass> passes = appearance.layers().stream().map(layer -> switch (layer.type()) {
+            case BASE_TEXTURE -> new BannerPlacedRenderPass(
+                    BannerPlacedRenderPass.Type.BASE_TEXTURE, layer.assetId(), 0xFFFFFFFF, 0.0005);
+            case DYE_MASK -> new BannerPlacedRenderPass(
+                    BannerPlacedRenderPass.Type.DYE_MASK, layer.assetId(), appearance.displayArgb(), 0.0015);
+            case MOUNT -> new BannerPlacedRenderPass(
+                    BannerPlacedRenderPass.Type.MOUNT, layer.assetId(), 0xFFFFFFFF, 0.0040);
+        }).toList();
+        return new BannerPlacedRenderPlan(geometry, passes, false);
     }
 }

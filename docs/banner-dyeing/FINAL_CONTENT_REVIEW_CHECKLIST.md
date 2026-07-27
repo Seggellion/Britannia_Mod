@@ -1,30 +1,38 @@
 # Final Banner Content Review Checklist
 
-Copy this checklist for each definition. Record evidence and actual results; do not check a box based only on intent.
-
-Stable ID: `________________________`
+Use one copy per stable banner definition.
 
 ## Identity and decisions
 
 - [ ] Stable ID verified
 - [ ] Final display name approved
+- [ ] Localization approved
 - [ ] Width approved
 - [ ] Height approved
 - [ ] Supported orientations approved
 - [ ] Supported mounts approved
 - [ ] Default mount approved
 - [ ] Placement profile approved
+- [ ] Geometry convention approved
+- [ ] Pixel dimensions approved
 
 ## Asset intake
 
-- [ ] Fabric base supplied
-- [ ] Dye mask supplied
-- [ ] Static overlay supplied
+- [ ] Complete full-colour `base_texture.png` supplied
+- [ ] Grayscale RGBA `dye_mask.png` supplied
 - [ ] Geometry supplied or shared geometry explicitly approved
-- [ ] Asset-to-ID mapping unambiguous
+- [ ] Base and mask dimensions match
+- [ ] Base and mask align pixel-for-pixel
+- [ ] Fixed artwork remains in the base texture
+- [ ] Mask is transparent over fixed pixels
+- [ ] Mask is transparent wherever aligned base alpha is below `255`
+- [ ] Mask contains transparent and active pixels
+- [ ] Mask active RGB is grayscale within channel tolerance 1
+- [ ] Asset-to-ID mapping is unambiguous
 - [ ] Provenance recorded
 - [ ] Distribution permission recorded
 - [ ] No placeholder markings remain
+- [ ] Exactly two runtime banner images are declared
 
 ## Automated validation
 
@@ -32,10 +40,15 @@ Stable ID: `________________________`
 - [ ] Definition JSON validates
 - [ ] Localization exists
 - [ ] Every referenced asset exists
+- [ ] SHA-256 hashes match
 - [ ] PNG metadata validates
-- [ ] Alpha validates
-- [ ] Fabric tint test passes
-- [ ] Overlay remains untinted
+- [ ] RGBA and alpha validate
+- [ ] Base remains untinted
+- [ ] Natural/default state omits the mask pass
+- [ ] Recoloured state tints only the mask
+- [ ] Transparent mask pixels preserve base pixels
+- [ ] Partial mask alpha blends deterministically
+- [ ] Mask brightness ordering survives tinting
 - [ ] Brass remains untinted
 - [ ] Iron remains untinted
 - [ ] Item renderer extracts state
@@ -45,6 +58,7 @@ Stable ID: `________________________`
 - [ ] Full tests pass
 - [ ] Build passes
 - [ ] JAR contains intended resources
+- [ ] Removed image fields and files are absent
 - [ ] Crafting remains absent
 
 ## Manual item matrix
@@ -59,29 +73,12 @@ Stable ID: `________________________`
 
 ## Manual material matrix
 
-### Cotton
+For cotton, wool, linen, and silk:
 
-- [ ] Natural colour
-- [ ] Representative light colour
-- [ ] Representative dark colour
-
-### Wool
-
-- [ ] Natural colour
-- [ ] Representative light colour
-- [ ] Representative dark colour
-
-### Linen
-
-- [ ] Natural colour
-- [ ] Representative light colour
-- [ ] Representative dark colour
-
-### Silk
-
-- [ ] Natural colour
-- [ ] Representative light colour
-- [ ] Representative dark colour
+- [ ] Natural colour uses the authored base unchanged
+- [ ] Representative light recolour
+- [ ] Representative dark recolour
+- [ ] Material metadata remains distinct
 
 ## Manual mount matrix
 
@@ -90,16 +87,7 @@ Stable ID: `________________________`
 
 ## Manual placement matrix
 
-Test only approved orientations.
-
-### Wall parallel
-
-- [ ] North
-- [ ] South
-- [ ] East
-- [ ] West
-
-### Wall perpendicular
+For each approved orientation:
 
 - [ ] North
 - [ ] South
@@ -120,7 +108,8 @@ Test only approved orientations.
 
 ## Completion
 
-- [ ] Product owner reviewed final appearance
+- [ ] Product owner reviewed final natural and recoloured appearance
+- [ ] Manual verification is recorded
 - [ ] `content_status` may be changed to `complete`
 
-Crafting: not applicable — product-disabled.
+Crafting requirements are not applicable. Banner crafting is not approved.

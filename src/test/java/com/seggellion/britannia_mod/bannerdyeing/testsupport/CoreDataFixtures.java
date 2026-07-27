@@ -53,9 +53,8 @@ public final class CoreDataFixtures {
     public static BannerAssets assets() {
         return new BannerAssets(
                 ResourceLocation.parse("britannia_mod:banner/test/geometry"),
-                ResourceLocation.parse("britannia_mod:banner/test/fabric_base"),
-                ResourceLocation.parse("britannia_mod:banner/test/dye_mask"),
-                ResourceLocation.parse("britannia_mod:banner/test/static_overlay"));
+                ResourceLocation.parse("britannia_mod:banner/test/base_texture"),
+                ResourceLocation.parse("britannia_mod:banner/test/dye_mask"));
     }
 
     public static BannerSourceReference sourceReference() {

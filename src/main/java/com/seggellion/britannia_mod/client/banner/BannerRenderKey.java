@@ -21,20 +21,19 @@ public record BannerRenderKey(BannerAppearanceKey appearanceKey) {
             Optional<ResolvedColourId> resolvedColourId,
             Optional<MountId> mountId,
             Optional<ResourceLocation> geometry,
-            Optional<ResourceLocation> fabricBase,
+            Optional<ResourceLocation> baseTexture,
             Optional<ResourceLocation> dyeMask,
-            Optional<ResourceLocation> staticOverlay,
             Optional<ResourceLocation> mountGeometry,
             Optional<ResourceLocation> mountTexture,
             Optional<BannerContentStatus> contentStatus,
             int displaySrgb,
-            boolean naturalColour,
+            boolean recolourActive,
             BannerRenderFailure failure,
             long dataGeneration,
             long resourceGeneration) {
         this(new BannerAppearanceKey(definitionId, materialId, resolvedColourId, mountId,
-                geometry, fabricBase, dyeMask, staticOverlay, mountGeometry, mountTexture,
-                contentStatus, Optional.empty(), displaySrgb, naturalColour, failure, "",
+                geometry, baseTexture, dyeMask, mountGeometry, mountTexture,
+                contentStatus, Optional.empty(), displaySrgb, recolourActive, failure, "",
                 dataGeneration, resourceGeneration));
     }
 }

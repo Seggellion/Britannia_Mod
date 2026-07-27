@@ -3,7 +3,6 @@ package com.seggellion.britannia_mod.client.banner;
 import com.seggellion.britannia_mod.banner.renderdata.BannerPreviewRenderState;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
 import com.seggellion.britannia_mod.bannerdyeing.BannerDyeingConstants;
-import java.util.Optional;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +31,7 @@ public record BannerPreviewStacks(ItemStack current, ItemStack proposed) {
         stack.set(componentType, new BannerInstanceState(
                 BannerDyeingConstants.CURRENT_SCHEMA_VERSION,
                 state.bannerDefinitionId(), state.materialId(), state.resolvedColourId(),
-                Optional.empty(), state.mountId()));
+                state.sourcePigmentId(), state.mountId()));
         return stack;
     }
 

@@ -43,7 +43,14 @@ public final class BannerModelRepository {
         if (geometry == null || mount == null) {
             return models.fallbackModel();
         }
-        return new BannerLayeredBakedModel(models.transformModel, java.util.List.of(geometry, mount));
+        BakedModel base = new BannerFilteredBakedModel(
+                geometry, BannerFilteredBakedModel.Selection.BASE_TEXTURE);
+        if (!state.recolourActive()) {
+            return new BannerLayeredBakedModel(models.transformModel, java.util.List.of(base, mount));
+        }
+        BakedModel mask = new BannerFilteredBakedModel(
+                geometry, BannerFilteredBakedModel.Selection.DYE_MASK);
+        return new BannerLayeredBakedModel(models.transformModel, java.util.List.of(base, mask, mount));
     }
 
     private record Models(

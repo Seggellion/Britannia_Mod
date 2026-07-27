@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.banner.renderdata.BannerPreviewRenderState;
 import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
 import com.seggellion.britannia_mod.banner.api.MountId;
 import com.seggellion.britannia_mod.dye.api.FabricMaterialId;
+import com.seggellion.britannia_mod.dye.api.PigmentId;
 import com.seggellion.britannia_mod.dye.api.ResolvedColourId;
 import com.seggellion.britannia_mod.dye.service.MatchType;
 import java.util.Optional;
@@ -88,6 +89,8 @@ public record S2COpenDyePreviewPayload(
         buffer.writeResourceLocation(state.bannerDefinitionId().value());
         buffer.writeResourceLocation(state.materialId().value());
         buffer.writeResourceLocation(state.resolvedColourId().value());
+        buffer.writeBoolean(state.sourcePigmentId().isPresent());
+        state.sourcePigmentId().ifPresent(id -> buffer.writeResourceLocation(id.value()));
         buffer.writeResourceLocation(state.mountId().value());
     }
 
@@ -96,6 +99,9 @@ public record S2COpenDyePreviewPayload(
                 new BannerDefinitionId(buffer.readResourceLocation()),
                 new FabricMaterialId(buffer.readResourceLocation()),
                 new ResolvedColourId(buffer.readResourceLocation()),
+                buffer.readBoolean()
+                        ? Optional.of(new PigmentId(buffer.readResourceLocation()))
+                        : Optional.empty(),
                 new MountId(buffer.readResourceLocation()));
     }
 

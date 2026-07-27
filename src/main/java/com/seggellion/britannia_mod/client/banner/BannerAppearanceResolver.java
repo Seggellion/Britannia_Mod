@@ -67,7 +67,7 @@ public final class BannerAppearanceResolver {
                 optional(state, BannerInstanceState::resolvedColourId),
                 optional(state, BannerInstanceState::mountId),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty(), Optional.<BannerContentStatus>empty(), Optional.empty(),
+                Optional.empty(), Optional.<BannerContentStatus>empty(), Optional.empty(),
                 0xFF00FF, false, failure, diagnosticId, dataGeneration, resourceGeneration);
     }
 
@@ -84,11 +84,13 @@ public final class BannerAppearanceResolver {
         return new BannerAppearanceState(
                 Optional.of(state.bannerDefinitionId()), Optional.of(state.materialId()),
                 Optional.of(state.resolvedColourId()), Optional.of(state.mountId()),
-                Optional.of(definition.assets().geometry()), Optional.of(definition.assets().fabricBase()),
-                Optional.of(definition.assets().dyeMask()), Optional.of(definition.assets().staticOverlay()),
+                Optional.of(definition.assets().geometry()), Optional.of(definition.assets().baseTexture()),
+                Optional.of(definition.assets().dyeMask()),
                 Optional.of(mount.geometry()), Optional.of(mount.texture()),
                 Optional.of(definition.contentStatus()), Optional.of(definition.dimensions()), displaySrgb,
-                state.resolvedColourId().equals(material.naturalColourId()), failure, diagnosticId,
+                state.sourcePigmentId().isPresent()
+                        || !state.resolvedColourId().equals(material.naturalColourId()),
+                failure, diagnosticId,
                 dataGeneration, resourceGeneration);
     }
 
@@ -101,9 +103,8 @@ public final class BannerAppearanceResolver {
             BannerRenderFailure failure, BannerRenderDefinition definition, BannerRenderMount mount) {
         ResourceLocation id = switch (failure) {
             case MISSING_GEOMETRY -> definition.assets().geometry();
-            case MISSING_FABRIC_BASE -> definition.assets().fabricBase();
+            case MISSING_BASE_TEXTURE -> definition.assets().baseTexture();
             case MISSING_DYE_MASK -> definition.assets().dyeMask();
-            case MISSING_STATIC_OVERLAY -> definition.assets().staticOverlay();
             case MISSING_MOUNT_GEOMETRY -> mount.geometry();
             case MISSING_MOUNT_TEXTURE -> mount.texture();
             default -> BannerAssetAvailability.MISSING_TEXTURE;

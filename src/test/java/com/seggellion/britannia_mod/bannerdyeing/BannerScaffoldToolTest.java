@@ -39,7 +39,7 @@ class BannerScaffoldToolTest {
         assertEquals(33, countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
         assertEquals(7, countSupportingJson(root));
         assertEquals(6, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/placeholder")));
-        assertEquals(4, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
+        assertEquals(3, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
         assertEquals(2, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/mount")));
         assertEquals(2, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/mount")));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.STATUS_PATH)));

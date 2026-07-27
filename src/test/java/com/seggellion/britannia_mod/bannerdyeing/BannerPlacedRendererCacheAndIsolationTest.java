@@ -29,25 +29,36 @@ class BannerPlacedRendererCacheAndIsolationTest {
     }
 
     @Test
-    void validPlanHasFourOrderedCutoutPassesAndTintsOnlyTheMask() {
-        BannerPlacedRenderPlan plan = BannerPlacedRenderPlan.from(valid("cotton", "brass"));
-        assertFalse(plan.fallback());
+    void naturalAndDyedPlansUseTwoAndThreeOrderedPassesAndTintOnlyTheMask() {
+        BannerPlacedRenderPlan natural = BannerPlacedRenderPlan.from(valid("cotton", "brass"));
+        assertFalse(natural.fallback());
         assertEquals(List.of(
-                        BannerPlacedRenderPass.Type.FABRIC_BASE,
-                        BannerPlacedRenderPass.Type.DYE_MASK,
-                        BannerPlacedRenderPass.Type.STATIC_OVERLAY,
+                        BannerPlacedRenderPass.Type.BASE_TEXTURE,
                         BannerPlacedRenderPass.Type.MOUNT),
-                plan.passes().stream().map(BannerPlacedRenderPass::type).toList());
-        assertEquals(List.of(false, true, false, false),
-                plan.passes().stream().map(BannerPlacedRenderPass::tintableFabric).toList());
-        assertEquals(0xFFFFFFFF, plan.passes().get(0).argb());
-        assertEquals(valid("cotton", "brass").appearance().displayArgb(),
-                plan.passes().get(1).argb());
-        assertEquals(0xFFFFFFFF, plan.passes().get(2).argb());
-        assertEquals(0xFFFFFFFF, plan.passes().get(3).argb());
-        assertTrue(plan.passes().get(0).depthOffset() < plan.passes().get(1).depthOffset());
-        assertTrue(plan.passes().get(1).depthOffset() < plan.passes().get(2).depthOffset());
-        assertTrue(plan.passes().get(2).depthOffset() < plan.passes().get(3).depthOffset());
+                natural.passes().stream().map(BannerPlacedRenderPass::type).toList());
+        assertEquals(List.of(false, false),
+                natural.passes().stream().map(BannerPlacedRenderPass::tintableMask).toList());
+
+        var definition = Milestone13RenderFixtures.definitionForGeometry("large");
+        var cotton = Milestone13RenderFixtures.material("cotton");
+        var dyedInstance = Milestone13RenderFixtures.state(definition, cotton,
+                Milestone13RenderFixtures.dyed(cotton), Milestone13RenderFixtures.mount("brass"));
+        BannerPlacedRenderState dyedState = Milestone13RenderFixtures.placed(
+                Milestone13RenderFixtures.entity(BlockPos.ZERO, Direction.NORTH,
+                        BannerOrientation.WALL_PARALLEL, 3, 2, dyedInstance), 4, 5);
+        BannerPlacedRenderPlan dyed = BannerPlacedRenderPlan.from(dyedState);
+        assertEquals(List.of(
+                        BannerPlacedRenderPass.Type.BASE_TEXTURE,
+                        BannerPlacedRenderPass.Type.DYE_MASK,
+                        BannerPlacedRenderPass.Type.MOUNT),
+                dyed.passes().stream().map(BannerPlacedRenderPass::type).toList());
+        assertEquals(List.of(false, true, false),
+                dyed.passes().stream().map(BannerPlacedRenderPass::tintableMask).toList());
+        assertEquals(0xFFFFFFFF, dyed.passes().get(0).argb());
+        assertEquals(dyedState.appearance().displayArgb(), dyed.passes().get(1).argb());
+        assertEquals(0xFFFFFFFF, dyed.passes().get(2).argb());
+        assertTrue(dyed.passes().get(0).depthOffset() < dyed.passes().get(1).depthOffset());
+        assertTrue(dyed.passes().get(1).depthOffset() < dyed.passes().get(2).depthOffset());
     }
 
     @Test
@@ -62,21 +73,17 @@ class BannerPlacedRendererCacheAndIsolationTest {
                         BannerOrientation.WALL_PARALLEL, 3, 2, dyedInstance), 4, 5);
         BannerPlacedRenderPlan naturalPlan = BannerPlacedRenderPlan.from(natural);
         BannerPlacedRenderPlan dyedPlan = BannerPlacedRenderPlan.from(dyed);
-        for (int index = 0; index < 4; index++) {
-            assertEquals(naturalPlan.passes().get(index).texture(), dyedPlan.passes().get(index).texture());
-            if (index == 1) {
-                assertNotEquals(naturalPlan.passes().get(index).argb(), dyedPlan.passes().get(index).argb());
-            } else {
-                assertEquals(naturalPlan.passes().get(index).argb(), dyedPlan.passes().get(index).argb());
-            }
-        }
+        assertEquals(2, naturalPlan.passes().size());
+        assertEquals(3, dyedPlan.passes().size());
+        assertEquals(naturalPlan.passes().getFirst(), dyedPlan.passes().getFirst());
+        assertEquals(BannerPlacedRenderPass.Type.DYE_MASK, dyedPlan.passes().get(1).type());
+        assertEquals(dyed.appearance().displayArgb(), dyedPlan.passes().get(1).argb());
+        assertEquals(naturalPlan.passes().getLast(), dyedPlan.passes().getLast());
 
         BannerPlacedRenderPlan iron = BannerPlacedRenderPlan.from(valid("cotton", "iron"));
-        for (int index = 0; index < 3; index++) {
-            assertEquals(naturalPlan.passes().get(index), iron.passes().get(index));
-        }
-        assertNotEquals(naturalPlan.passes().get(3).texture(), iron.passes().get(3).texture());
-        assertEquals(0xFFFFFFFF, iron.passes().get(3).argb());
+        assertEquals(naturalPlan.passes().getFirst(), iron.passes().getFirst());
+        assertNotEquals(naturalPlan.passes().getLast().texture(), iron.passes().getLast().texture());
+        assertEquals(0xFFFFFFFF, iron.passes().getLast().argb());
     }
 
     @Test
@@ -84,9 +91,8 @@ class BannerPlacedRendererCacheAndIsolationTest {
         BannerPlacedRenderState base = valid("cotton", "brass");
         for (BannerRenderFailure appearanceFailure : List.of(
                 BannerRenderFailure.MISSING_GEOMETRY,
-                BannerRenderFailure.MISSING_FABRIC_BASE,
+                BannerRenderFailure.MISSING_BASE_TEXTURE,
                 BannerRenderFailure.MISSING_DYE_MASK,
-                BannerRenderFailure.MISSING_STATIC_OVERLAY,
                 BannerRenderFailure.MISSING_MOUNT_GEOMETRY,
                 BannerRenderFailure.MISSING_MOUNT_TEXTURE)) {
             BannerAppearanceState appearance = BannerAppearanceResolver.fallback(null, 90, 91,
@@ -189,6 +195,7 @@ class BannerPlacedRendererCacheAndIsolationTest {
         assertTrue(renderer.contains("getRenderBoundingBox"));
         assertTrue(renderer.contains("getViewDistance"));
         assertTrue(renderer.contains("RenderType.cutout()"));
+        assertTrue(renderer.contains("RenderType.translucent()"));
         assertFalse(renderer.contains("FULL_BRIGHT"));
         assertFalse(renderer.contains("getChunk("));
         assertTrue(renderer.contains("hasChunkAt"));

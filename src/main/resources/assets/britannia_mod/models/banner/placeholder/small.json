@@ -1,11 +1,11 @@
 {
   "credit": "Milestone 4 diagnostic placeholder for small; not final geometry",
   "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
   "textures": {
-    "fabric_base": "britannia_mod:banner/placeholder/fabric_base",
+    "base_texture": "britannia_mod:banner/placeholder/base_texture",
     "dye_mask": "britannia_mod:banner/placeholder/dye_mask",
-    "static_overlay": "britannia_mod:banner/placeholder/static_overlay",
-    "particle": "britannia_mod:banner/placeholder/fabric_base"
+    "particle": "britannia_mod:banner/placeholder/base_texture"
   },
   "elements": [
     {
@@ -21,10 +21,10 @@
       ],
       "faces": {
         "north": {
-          "texture": "#fabric_base"
+          "texture": "#base_texture"
         },
         "south": {
-          "texture": "#fabric_base"
+          "texture": "#base_texture"
         }
       }
     },
@@ -47,26 +47,6 @@
         "south": {
           "texture": "#dye_mask",
           "tintindex": 1
-        }
-      }
-    },
-    {
-      "from": [
-        3.0,
-        3.0,
-        7.45
-      ],
-      "to": [
-        13.0,
-        13.0,
-        7.55
-      ],
-      "faces": {
-        "north": {
-          "texture": "#static_overlay"
-        },
-        "south": {
-          "texture": "#static_overlay"
         }
       }
     }

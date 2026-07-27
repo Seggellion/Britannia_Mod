@@ -28,12 +28,12 @@ class FinalContentIntakeValidatorTest {
     Path temporaryDirectory;
 
     @Test
-    void validApprovedIntakeIsReadyAndReportsPngMetadata() throws Exception {
+    void validApprovedTwoFileIntakeIsReadyAndAllowsFullColourBase() throws Exception {
         Fixture fixture = seed();
         var result = validate(fixture);
         assertEquals(Status.READY_FOR_INTEGRATION, result.status(), result.issues().toString());
         assertEquals("britannia_mod:road_guard", result.stableId());
-        assertEquals(3, result.pngMetadata().size());
+        assertEquals(2, result.pngMetadata().size());
         assertTrue(result.pngMetadata().stream().allMatch(metadata ->
                 metadata.width() == 8 && metadata.height() == 8
                         && metadata.bitDepth() == 8 && metadata.colourType() == 6
@@ -64,7 +64,7 @@ class FinalContentIntakeValidatorTest {
     }
 
     @Test
-    void invalidDimensionsOrientationAndMountAreRejected() throws Exception {
+    void invalidDimensionsOrientationMountAndDefaultMountAreRejected() throws Exception {
         Fixture dimensions = seed();
         dimensions.document().getAsJsonObject("banner").addProperty("width_blocks", 4);
         assertEquals(Status.INVALID, validate(dimensions).status());
@@ -78,46 +78,59 @@ class FinalContentIntakeValidatorTest {
         mount.document().getAsJsonObject("banner")
                 .getAsJsonArray("supported_mounts").add("britannia_mod:gold");
         assertEquals(Status.INVALID, validate(mount).status());
-    }
 
-    @Test
-    void defaultMountMustBeAllowedAndSupported() throws Exception {
-        Fixture fixture = seed();
-        fixture.document().getAsJsonObject("banner")
+        Fixture defaultMount = seed();
+        defaultMount.document().getAsJsonObject("banner")
                 .getAsJsonArray("supported_mounts").remove(1);
-        fixture.document().getAsJsonObject("banner")
+        defaultMount.document().getAsJsonObject("banner")
                 .addProperty("default_mount", "britannia_mod:iron");
-        var result = validate(fixture);
-        assertEquals(Status.INVALID, result.status());
-        assertIssue(result, "default_mount must be included");
+        assertIssue(validate(defaultMount), "default_mount must be included");
     }
 
     @Test
     void missingAssetInvalidPngAndMissingAlphaAreRejected() throws Exception {
         Fixture missing = seed();
-        missing.document().getAsJsonObject("assets").getAsJsonObject("fabric_base")
+        missing.document().getAsJsonObject("assets").getAsJsonObject("base_texture")
                 .addProperty("source_file", "owner/missing.png");
         assertEquals(Status.INVALID, validate(missing).status());
 
         Fixture invalidPng = seed();
-        Path invalidPath = invalidPng.root().resolve("owner/fabric.png");
+        Path invalidPath = invalidPng.root().resolve("owner/base.png");
         Files.writeString(invalidPath, "not png", StandardCharsets.UTF_8);
-        invalidPng.document().getAsJsonObject("assets").getAsJsonObject("fabric_base")
+        invalidPng.document().getAsJsonObject("assets").getAsJsonObject("base_texture")
                 .addProperty("sha256", sha256(invalidPath));
         assertEquals(Status.INVALID, validate(invalidPng).status());
 
         Fixture missingAlpha = seed();
-        Path rgb = missingAlpha.root().resolve("owner/fabric.png");
-        writePng(rgb, BufferedImage.TYPE_INT_RGB);
-        missingAlpha.document().getAsJsonObject("assets").getAsJsonObject("fabric_base")
+        Path rgb = missingAlpha.root().resolve("owner/base.png");
+        writeSolidPng(rgb, BufferedImage.TYPE_INT_RGB, 0xFF336699);
+        missingAlpha.document().getAsJsonObject("assets").getAsJsonObject("base_texture")
                 .addProperty("sha256", sha256(rgb));
-        var result = validate(missingAlpha);
-        assertEquals(Status.INVALID, result.status());
-        assertIssue(result, "true-colour RGBA");
+        assertIssue(validate(missingAlpha), "true-colour RGBA");
     }
 
     @Test
-    void incompleteProvenanceAndPermissionRemainNotReady() throws Exception {
+    void dyeMaskRequiresTransparentActiveAndStrictGrayscalePixels() throws Exception {
+        Fixture opaque = seed();
+        replaceMask(opaque, (x, y) -> 0xFF808080);
+        assertIssue(validate(opaque), "at least one fully transparent pixel");
+
+        Fixture transparent = seed();
+        replaceMask(transparent, (x, y) -> 0x00000000);
+        assertIssue(validate(transparent), "at least one active pixel");
+
+        Fixture coloured = seed();
+        replaceMask(coloured, (x, y) -> x == 0 ? 0x00000000 : 0xFF806080);
+        assertIssue(validate(coloured), "active RGB must be grayscale");
+
+        Fixture outsideOpaqueBase = seed();
+        replaceMask(outsideOpaqueBase, (x, y) ->
+                x == 0 && y == 0 ? 0x80808080 : x == 1 ? 0x00000000 : 0xFF808080);
+        assertIssue(validate(outsideOpaqueBase), "only with fully opaque base_texture pixels");
+    }
+
+    @Test
+    void incompleteProvenancePermissionAndFalseManualClaimAreNotReady() throws Exception {
         Fixture original = seed();
         original.document().getAsJsonObject("provenance").addProperty("original_art", false);
         assertEquals(Status.NOT_READY, validate(original).status());
@@ -126,10 +139,19 @@ class FinalContentIntakeValidatorTest {
         permission.document().getAsJsonObject("provenance")
                 .addProperty("distribution_permission_confirmed", false);
         assertEquals(Status.NOT_READY, validate(permission).status());
+
+        Fixture manual = seed();
+        manual.document().getAsJsonObject("manual_verification").addProperty("performed", true);
+        manual.document().getAsJsonObject("manual_verification").addProperty("tester", "");
+        manual.document().getAsJsonObject("manual_verification").addProperty("date", "");
+        var result = validate(manual);
+        assertEquals(Status.NOT_READY, result.status());
+        assertIssue(result, "manual_verification.tester is required");
+        assertIssue(result, "manual_verification.date is required");
     }
 
     @Test
-    void copiedReferenceArtAndAmbiguousLayerMappingAreInvalid() throws Exception {
+    void copiedReferenceArtAndAmbiguousTwoFileMappingAreInvalid() throws Exception {
         Fixture copied = seed();
         copied.document().getAsJsonObject("provenance")
                 .addProperty("copied_from_reference_art", true);
@@ -137,23 +159,21 @@ class FinalContentIntakeValidatorTest {
 
         Fixture mapping = seed();
         JsonObject assets = mapping.document().getAsJsonObject("assets");
-        String fabric = assets.getAsJsonObject("fabric_base").get("resource_id").getAsString();
-        assets.getAsJsonObject("dye_mask").addProperty("resource_id", fabric);
-        var result = validate(mapping);
-        assertEquals(Status.INVALID, result.status());
-        assertIssue(result, "resource IDs must be distinct");
+        String base = assets.getAsJsonObject("base_texture").get("resource_id").getAsString();
+        assets.getAsJsonObject("dye_mask").addProperty("resource_id", base);
+        assertIssue(validate(mapping), "resource IDs must be distinct");
     }
 
     @Test
-    void manualVerificationCannotBeClaimedWithoutTesterAndDate() throws Exception {
-        Fixture fixture = seed();
-        fixture.document().getAsJsonObject("manual_verification").addProperty("performed", true);
-        fixture.document().getAsJsonObject("manual_verification").addProperty("tester", "");
-        fixture.document().getAsJsonObject("manual_verification").addProperty("date", "");
-        var result = validate(fixture);
-        assertEquals(Status.NOT_READY, result.status());
-        assertIssue(result, "manual_verification.tester is required");
-        assertIssue(result, "manual_verification.date is required");
+    void removedAssetKeysAreRejectedWithTwoFileMigrationMessage() throws Exception {
+        for (String removed : java.util.List.of("fabric_base", "static_overlay")) {
+            Fixture fixture = seed();
+            fixture.document().getAsJsonObject("assets").add(removed, new JsonObject());
+            var result = validate(fixture);
+            assertEquals(Status.INVALID, result.status());
+            assertIssue(result, "assets." + removed + " is removed");
+            assertIssue(result, "base_texture + dye_mask");
+        }
     }
 
     @Test
@@ -192,12 +212,10 @@ class FinalContentIntakeValidatorTest {
 
         Path owner = root.resolve("owner");
         Files.createDirectories(owner);
-        Path fabric = owner.resolve("fabric.png");
+        Path base = owner.resolve("base.png");
         Path mask = owner.resolve("mask.png");
-        Path overlay = owner.resolve("overlay.png");
-        writePng(fabric, BufferedImage.TYPE_INT_ARGB);
-        writePng(mask, BufferedImage.TYPE_INT_ARGB);
-        writePng(overlay, BufferedImage.TYPE_INT_ARGB);
+        writeBasePng(base);
+        writeMaskPng(mask);
         Path geometry = owner.resolve("geometry.json");
         Files.writeString(geometry, "{\"parent\":\"minecraft:block/block\"}\n", StandardCharsets.UTF_8);
 
@@ -207,7 +225,7 @@ class FinalContentIntakeValidatorTest {
                   "approval": {
                     "status": "APPROVED",
                     "approved_by": "Product Owner",
-                    "approved_date": "2026-07-26",
+                    "approved_date": "2026-07-27",
                     "notes": "Approved test fixture"
                   },
                   "banner": {
@@ -227,19 +245,14 @@ class FinalContentIntakeValidatorTest {
                     "value": "Approved Test Banner"
                   },
                   "assets": {
-                    "fabric_base": {
-                      "resource_id": "britannia_mod:banner/final/test_fabric",
-                      "source_file": "owner/fabric.png",
+                    "base_texture": {
+                      "resource_id": "britannia_mod:banner/final/test_base",
+                      "source_file": "owner/base.png",
                       "sha256": ""
                     },
                     "dye_mask": {
                       "resource_id": "britannia_mod:banner/final/test_mask",
                       "source_file": "owner/mask.png",
-                      "sha256": ""
-                    },
-                    "static_overlay": {
-                      "resource_id": "britannia_mod:banner/final/test_overlay",
-                      "source_file": "owner/overlay.png",
                       "sha256": ""
                     },
                     "geometry": {
@@ -270,9 +283,8 @@ class FinalContentIntakeValidatorTest {
                 }
                 """).getAsJsonObject();
         JsonObject assets = document.getAsJsonObject("assets");
-        assets.getAsJsonObject("fabric_base").addProperty("sha256", sha256(fabric));
+        assets.getAsJsonObject("base_texture").addProperty("sha256", sha256(base));
         assets.getAsJsonObject("dye_mask").addProperty("sha256", sha256(mask));
-        assets.getAsJsonObject("static_overlay").addProperty("sha256", sha256(overlay));
         assets.getAsJsonObject("geometry").addProperty("sha256", sha256(geometry));
         return new Fixture(root, root.resolve("content/intake.yml"), document);
     }
@@ -283,12 +295,47 @@ class FinalContentIntakeValidatorTest {
         return FinalContentIntakeValidator.validate(fixture.root(), fixture.path());
     }
 
-    private static void writePng(Path path, int type) throws Exception {
+    private static void writeBasePng(Path path) throws Exception {
+        BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int alpha = x == 0 || y == 0 ? 0 : 255;
+                image.setRGB(x, y, alpha << 24 | ((40 + x * 12) << 16) | ((70 + y * 8) << 8) | 190);
+            }
+        }
+        assertTrue(ImageIO.write(image, "png", path.toFile()));
+    }
+
+    private static void writeMaskPng(Path path) throws Exception {
+        writePixels(path, (x, y) -> {
+            int alpha = x == 0 || y == 0 ? 0 : x == 1 ? 128 : 255;
+            int shade = 48 + (x + y) * 8;
+            return alpha << 24 | shade << 16 | shade << 8 | shade;
+        });
+    }
+
+    private static void writeSolidPng(Path path, int type, int pixel) throws Exception {
         BufferedImage image = new BufferedImage(8, 8, type);
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
-                int alpha = type == BufferedImage.TYPE_INT_ARGB && (x == 0 || y == 0) ? 0 : 255;
-                image.setRGB(x, y, alpha << 24 | 0x00A0A0A0);
+                image.setRGB(x, y, pixel);
+            }
+        }
+        assertTrue(ImageIO.write(image, "png", path.toFile()));
+    }
+
+    private static void replaceMask(Fixture fixture, Pixel pixel) throws Exception {
+        Path mask = fixture.root().resolve("owner/mask.png");
+        writePixels(mask, pixel);
+        fixture.document().getAsJsonObject("assets").getAsJsonObject("dye_mask")
+                .addProperty("sha256", sha256(mask));
+    }
+
+    private static void writePixels(Path path, Pixel pixel) throws Exception {
+        BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                image.setRGB(x, y, pixel.argb(x, y));
             }
         }
         assertTrue(ImageIO.write(image, "png", path.toFile()));
@@ -302,6 +349,11 @@ class FinalContentIntakeValidatorTest {
     private static void assertIssue(FinalContentIntakeValidator.Result result, String text) {
         assertTrue(result.issues().stream().anyMatch(issue -> issue.contains(text)),
                 result.issues().toString());
+    }
+
+    @FunctionalInterface
+    private interface Pixel {
+        int argb(int x, int y);
     }
 
     private record Fixture(Path root, Path path, JsonObject document) {

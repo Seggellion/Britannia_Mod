@@ -127,14 +127,13 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
 
     private static void writeAssets(FriendlyByteBuf buffer, BannerAssets assets) {
         buffer.writeResourceLocation(assets.geometry());
-        buffer.writeResourceLocation(assets.fabricBase());
+        buffer.writeResourceLocation(assets.baseTexture());
         buffer.writeResourceLocation(assets.dyeMask());
-        buffer.writeResourceLocation(assets.staticOverlay());
     }
 
     private static BannerAssets readAssets(FriendlyByteBuf buffer) {
         return new BannerAssets(buffer.readResourceLocation(), buffer.readResourceLocation(),
-                buffer.readResourceLocation(), buffer.readResourceLocation());
+                buffer.readResourceLocation());
     }
 
     private static int readBoundedCount(FriendlyByteBuf buffer, int maximum, String label) {

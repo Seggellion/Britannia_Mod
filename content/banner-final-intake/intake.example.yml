@@ -23,17 +23,12 @@
     "value": ""
   },
   "assets": {
-    "fabric_base": {
+    "base_texture": {
       "resource_id": null,
       "source_file": null,
       "sha256": null
     },
     "dye_mask": {
-      "resource_id": null,
-      "source_file": null,
-      "sha256": null
-    },
-    "static_overlay": {
       "resource_id": null,
       "source_file": null,
       "sha256": null

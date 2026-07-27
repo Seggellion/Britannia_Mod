@@ -65,11 +65,11 @@ public final class BannerClientEvents {
     @SubscribeEvent
     public static void registerItemColours(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tintIndex) -> {
-            if (tintIndex != BannerRenderLayer.FABRIC_TINT_INDEX) {
+            if (tintIndex != BannerRenderLayer.DYE_MASK_TINT_INDEX) {
                 return -1;
             }
             BannerItemRenderState state = BannerRenderCache.extract(stack);
-            return state.fallback() ? -1 : 0xFF000000 | state.displaySrgb();
+            return state.fallback() || !state.recolourActive() ? -1 : 0xFF000000 | state.displaySrgb();
         }, BannerItemRegistry.BANNER.get());
     }
 }
