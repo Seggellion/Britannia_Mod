@@ -367,12 +367,20 @@ public final class MerchantEconomyService {
         return CoinReservation.success(totalCopper);
     }
 
-    private static int countCoins(ServerPlayer player) {
+    /**
+     * Milestone 11 prerequisite: sums a player's real coin stacks into a total expressed in
+     * copper, using {@link CoinConversion}'s centralized ratio rather than inline literals.
+     * Made {@code public} (was {@code private}) so a real {@code ServerPlayer} GameTest can
+     * prove this refactor is behavior-preserving directly, matching this codebase's existing
+     * precedent for exposing a service's internal logic for test access (e.g.
+     * {@code BankItemEligibility}'s public static checks).
+     */
+    public static int countCoins(ServerPlayer player) {
         int total = 0;
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
-            if (stack.getItem() == ItemRegistry.GOLD_COIN.get()) total += stack.getCount() * 10000;
-            else if (stack.getItem() == ItemRegistry.SILVER_COIN.get()) total += stack.getCount() * 100;
+            if (stack.getItem() == ItemRegistry.GOLD_COIN.get()) total += stack.getCount() * CoinConversion.COPPER_PER_GOLD;
+            else if (stack.getItem() == ItemRegistry.SILVER_COIN.get()) total += stack.getCount() * CoinConversion.COPPER_PER_SILVER;
             else if (stack.getItem() == ItemRegistry.COPPER_COIN.get()) total += stack.getCount();
         }
         return total;
@@ -390,12 +398,19 @@ public final class MerchantEconomyService {
         }
     }
 
-    private static void giveChange(ServerPlayer player, int copper) {
-        giveCoin(player, ItemRegistry.GOLD_COIN.get(), copper / 10000);
-        copper %= 10000;
-        giveCoin(player, ItemRegistry.SILVER_COIN.get(), copper / 100);
-        copper %= 100;
-        giveCoin(player, ItemRegistry.COPPER_COIN.get(), copper);
+    /**
+     * Milestone 11 prerequisite: delegates the actual gold/silver/copper split to
+     * {@link CoinConversion#toCoins}, which implements the exact same greedy
+     * largest-denomination-first arithmetic this method's own inline division/remainder chain
+     * used before this refactor -- a behavior-preserving call-through, not a reimplementation.
+     * Made {@code public} (was {@code private}) for the same test-access reason as
+     * {@link #countCoins}.
+     */
+    public static void giveChange(ServerPlayer player, int copper) {
+        CoinConversion.CoinCounts coins = CoinConversion.toCoins(copper);
+        giveCoin(player, ItemRegistry.GOLD_COIN.get(), coins.gold());
+        giveCoin(player, ItemRegistry.SILVER_COIN.get(), coins.silver());
+        giveCoin(player, ItemRegistry.COPPER_COIN.get(), coins.copper());
     }
 
     private static void giveCoin(ServerPlayer player, Item coin, int amount) {
