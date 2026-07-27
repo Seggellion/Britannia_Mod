@@ -60,6 +60,7 @@ public final class BannerScaffoldTool {
             .disableHtmlEscaping()
             .create();
     private static final Pattern SAFE_ID = Pattern.compile("[a-z0-9_]+");
+    private static final Pattern SHA256 = Pattern.compile("[0-9a-f]{64}");
     private static final String PROVISIONAL_SUFFIX = " (Name Required)";
 
     private static final List<CanonicalEntry> CANONICAL = canonicalEntries();
@@ -134,7 +135,7 @@ public final class BannerScaffoldTool {
         LinkedHashMap<String, byte[]> expected = buildExpectedFiles(catalogue);
         RegistryLoadResult registry = validateRegistry(expected);
         expected.put(STATUS_PATH, utf8(statusReport(catalogue, registry)));
-        validateAssetMappings(catalogue, expected.keySet());
+        validateAssetMappings(root, catalogue, expected.keySet());
 
         if (options.check) {
             checkOutputs(root, catalogue, expected);
@@ -254,10 +255,15 @@ public final class BannerScaffoldTool {
                 require(notBlank(entry.sourceLabel), "Source-named entry needs source_label: " + entry.id);
             }
             String contentStatus = first(entry.contentStatus, defaults.contentStatus);
-            require(!"complete".equals(contentStatus), "Initial entry cannot be complete: " + entry.id);
-            require("placeholder".equals(contentStatus), "Initial content_status must be placeholder: " + entry.id);
-            require(Boolean.TRUE.equals(first(entry.dimensionsProvisional, defaults.dimensionsProvisional)),
-                    "Initial dimensions must remain provisional: " + entry.id);
+            require(Set.of("placeholder", "in_progress", "complete").contains(contentStatus),
+                    "Unknown content_status for " + entry.id + ": " + contentStatus);
+            boolean provisional = first(entry.dimensionsProvisional, defaults.dimensionsProvisional);
+            if ("placeholder".equals(contentStatus)) {
+                require(provisional, "Placeholder dimensions must remain provisional: " + entry.id);
+            } else {
+                require(!provisional, "Integrated dimensions must be approved: " + entry.id);
+                validateIntegratedEntry(entry, defaults, manifest.groups.get(entry.group));
+            }
         }
         require(indices.equals(range(1, TARGET_COUNT)),
                 "Indices must be continuous from 1 through 33; found " + indices);
@@ -278,6 +284,36 @@ public final class BannerScaffoldTool {
         validateGroup(manifest.groups.get("medium"), 1, 2, "placeholder_medium", "medium");
         validateGroup(manifest.groups.get("small"), 1, 1, "placeholder_small", "small");
         validateGroup(manifest.groups.get("x-small"), 1, 1, "placeholder_x_small", "x_small");
+    }
+
+    private static void validateIntegratedEntry(BannerEntry entry, Defaults defaults, Group group) {
+        int width = first(entry.widthBlocks, group.widthBlocks);
+        int height = first(entry.heightBlocks, group.heightBlocks);
+        require(width >= 1 && width <= 3, "Integrated width must be from 1 through 3: " + entry.id);
+        require(height >= 1 && height <= 16, "Integrated height must be from 1 through 16: " + entry.id);
+        List<String> orientations = first(entry.supportedOrientations, defaults.supportedOrientations);
+        require(!orientations.isEmpty()
+                        && Set.of("wall_parallel", "wall_perpendicular").containsAll(orientations),
+                "Integrated orientations are invalid: " + entry.id);
+        List<String> mounts = first(entry.supportedMounts, defaults.supportedMounts);
+        require(!mounts.isEmpty()
+                        && Set.of("britannia_mod:brass", "britannia_mod:iron").containsAll(mounts),
+                "Integrated mounts are invalid: " + entry.id);
+        require(mounts.contains(first(entry.defaultMount, defaults.defaultMount)),
+                "Integrated default mount must be supported: " + entry.id);
+        validateResourceId(first(entry.geometry, group.geometry), "geometry");
+        validateResourceId(first(entry.baseTexture, defaults.baseTexture), "base_texture");
+        validateResourceId(first(entry.dyeMask, defaults.dyeMask), "dye_mask");
+        validateResourceId(first(entry.placementProfile, group.placementProfile), "placement_profile");
+        require(SHA256.matcher(nullToEmpty(entry.geometrySha256)).matches(),
+                "Integrated geometry_sha256 must be lower-case SHA-256: " + entry.id);
+        require(SHA256.matcher(nullToEmpty(entry.baseTextureSha256)).matches(),
+                "Integrated base_texture_sha256 must be lower-case SHA-256: " + entry.id);
+        require(SHA256.matcher(nullToEmpty(entry.dyeMaskSha256)).matches(),
+                "Integrated dye_mask_sha256 must be lower-case SHA-256: " + entry.id);
+        require(notBlank(entry.intakePath), "Integrated intake_path is required: " + entry.id);
+        require("READY_FOR_INTEGRATION".equals(entry.intakeValidation),
+                "Integrated intake_validation must be READY_FOR_INTEGRATION: " + entry.id);
     }
 
     private static void validateGroup(Group group, int width, int height, String profile, String geometry) {
@@ -308,7 +344,9 @@ public final class BannerScaffoldTool {
                     first(entry.geometry, group.geometry),
                     first(entry.baseTexture, manifest.defaults.baseTexture),
                     first(entry.dyeMask, manifest.defaults.dyeMask),
-                    first(entry.placementProfile, group.placementProfile), entry.notes));
+                    first(entry.placementProfile, group.placementProfile),
+                    entry.geometrySha256, entry.baseTextureSha256, entry.dyeMaskSha256,
+                    entry.intakePath, entry.intakeValidation, entry.notes));
         }
         return new ResolvedCatalogue(List.copyOf(banners));
     }
@@ -540,23 +578,15 @@ public final class BannerScaffoldTool {
         return null;
     }
 
-    private static void validateAssetMappings(ResolvedCatalogue catalogue, Set<String> outputs) {
-        Set<String> geometry = new LinkedHashSet<>();
-        Set<String> textures = new LinkedHashSet<>();
+    private static void validateAssetMappings(Path root, ResolvedCatalogue catalogue, Set<String> outputs)
+            throws IOException {
         for (ResolvedBanner banner : catalogue.banners) {
-            geometry.add(banner.geometry);
-            textures.add(banner.baseTexture);
-            textures.add(banner.dyeMask);
-        }
-        for (String id : geometry) {
-            String physical = assetPath(id, "models", ".json");
-            require(outputs.contains(physical), "Geometry ID has no declared placeholder file: " + id
-                    + " -> " + physical);
-        }
-        for (String id : textures) {
-            String physical = assetPath(id, "textures", ".png");
-            require(outputs.contains(physical), "Texture ID has no declared placeholder file: " + id
-                    + " -> " + physical);
+            validateAsset(root, outputs, banner.id, "geometry", banner.geometry,
+                    "models", ".json", banner.geometrySha256);
+            validateAsset(root, outputs, banner.id, "base texture", banner.baseTexture,
+                    "textures", ".png", banner.baseTextureSha256);
+            validateAsset(root, outputs, banner.id, "dye mask", banner.dyeMask,
+                    "textures", ".png", banner.dyeMaskSha256);
         }
         for (String id : List.of("britannia_mod:banner/mount/brass", "britannia_mod:banner/mount/iron")) {
             require(outputs.contains(assetPath(id, "models", ".json")),
@@ -746,6 +776,11 @@ public final class BannerScaffoldTool {
                 hashes.put(entry.getKey(), sha256(entry.getValue()));
             }
         }
+        for (ResolvedBanner banner : catalogue.banners) {
+            addApprovedAssetHash(hashes, banner.geometry, "models", ".json", banner.geometrySha256);
+            addApprovedAssetHash(hashes, banner.baseTexture, "textures", ".png", banner.baseTextureSha256);
+            addApprovedAssetHash(hashes, banner.dyeMask, "textures", ".png", banner.dyeMaskSha256);
+        }
         LinkedHashMap<String, String> localized = new LinkedHashMap<>(previous.localizationValues);
         JsonObject actual = parseJsonObject(
                 Files.readString(root.resolve(LOCALIZATION_PATH), StandardCharsets.UTF_8), LOCALIZATION_PATH);
@@ -758,6 +793,13 @@ public final class BannerScaffoldTool {
             }
         }
         return new Metadata(hashes, localized);
+    }
+
+    private static void addApprovedAssetHash(
+            Map<String, String> hashes, String resourceId, String kind, String extension, String hash) {
+        if (SHA256.matcher(nullToEmpty(hash)).matches()) {
+            hashes.put(assetPath(resourceId, kind, extension), hash);
+        }
     }
 
     private static Metadata readMetadata(Path path) throws IOException {
@@ -784,6 +826,9 @@ public final class BannerScaffoldTool {
         Map<String, Long> groupCounts = counts(catalogue.banners, banner -> banner.group);
         Map<String, Long> nameCounts = counts(catalogue.banners, banner -> banner.nameStatus);
         Map<String, Long> contentCounts = counts(catalogue.banners, banner -> banner.contentStatus);
+        long integratedCount = catalogue.banners.stream()
+                .filter(banner -> !"placeholder".equals(banner.contentStatus)).count();
+        long completeCount = contentCounts.getOrDefault("complete", 0L);
         StringBuilder report = new StringBuilder();
         report.append("# Banner Catalogue Status\n\n")
                 .append("Generated by `tools/scaffold_banners.bat`; do not infer content approval from generation.\n\n")
@@ -800,31 +845,36 @@ public final class BannerScaffoldTool {
                 .append("- Admin acquisition implemented: yes\n")
                 .append("- Survival acquisition implemented: no\n")
                 .append("- NPC/shop distribution implemented: no\n")
-                .append("- Final display names approved: no\n")
-                .append("- Final dimensions approved: no\n")
-                .append("- Final per-definition orientations approved: no\n")
-                .append("- Final per-definition mounts approved: no\n")
-                .append("- Final placed artwork approved: no\n")
-                .append("- Final artwork complete: no\n\n")
+                .append("- Final display names approved: ").append(integratedCount).append(" of 33\n")
+                .append("- Final dimensions approved: ").append(integratedCount).append(" of 33\n")
+                .append("- Final per-definition orientations approved: ").append(integratedCount)
+                .append(" of 33\n")
+                .append("- Final per-definition mounts approved: ").append(integratedCount).append(" of 33\n")
+                .append("- Final placed artwork intake approved: ").append(integratedCount).append(" of 33\n")
+                .append("- Final artwork complete: ").append(completeCount).append(" of 33\n\n")
                 .append("## Counts by catalogue group\n\n");
         appendCounts(report, groupCounts, List.of("large", "medium-wall", "medium", "small", "x-small"));
         report.append("\n## Counts by name status\n\n");
         appendCounts(report, nameCounts, List.of("provisional", "source-named"));
         report.append("\n## Counts by content status\n\n");
-        appendCounts(report, contentCounts, List.of("placeholder", "in_progress", "complete"));
+        appendCounts(report, contentCounts, List.of("placeholder", "in_progress", "complete", "disabled"));
         report.append("\n## Catalogue\n\n")
-                .append("| Index | Stable ID | Display label | Name status | Group | Source | Provisional dimensions | Supported orientations | Supported mounts | Default mount | Parallel automated | Perpendicular automated | Brass automated | Iron automated | Manual result | Content status | Placeholder assets |\n")
+                .append("| Index | Stable ID | Display label | Name status | Group | Source | Dimensions | Supported orientations | Supported mounts | Default mount | Parallel automated | Perpendicular automated | Brass automated | Iron automated | Manual result | Content status | Assets |\n")
                 .append("|---:|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n");
         for (ResolvedBanner banner : catalogue.banners) {
             report.append("| ").append(String.format(Locale.ROOT, "%02d", banner.index)).append(" | `")
                     .append(banner.id).append("` | ").append(escapeMarkdown(banner.displayName)).append(" | ")
                     .append(banner.nameStatus).append(" | ").append(banner.group).append(" | Page ")
                     .append(banner.page).append(", row ").append(banner.row).append(" | ")
-                    .append(banner.widthBlocks).append(" x ").append(banner.heightBlocks).append(" (provisional) | ")
+                    .append(banner.widthBlocks).append(" x ").append(banner.heightBlocks).append(" (")
+                    .append(banner.dimensionsProvisional ? "provisional" : "approved").append(") | ")
                     .append(String.join(", ", banner.supportedOrientations)).append(" | ")
                     .append(String.join(", ", banner.supportedMounts)).append(" | ")
-                    .append(banner.defaultMount).append(" | pass | pass | pass | pass | not performed | ")
-                    .append(banner.contentStatus).append(" | `").append(banner.geometry).append("`; common tint layers |\n");
+                    .append(banner.defaultMount).append(" | pass | pass | pass | pass | ")
+                    .append("placeholder".equals(banner.contentStatus) ? "not performed" : "pending")
+                    .append(" | ").append(banner.contentStatus).append(" | `")
+                    .append(banner.geometry).append("`; base `").append(banner.baseTexture)
+                    .append("`; mask `").append(banner.dyeMask).append("` |\n");
         }
         report.append("\n## Provisional entries\n\n");
         catalogue.banners.stream().filter(banner -> "provisional".equals(banner.nameStatus))
@@ -839,6 +889,21 @@ public final class BannerScaffoldTool {
                 .append("- Brass mount: `britannia_mod:banner/mount/brass`\n")
                 .append("- Iron mount: `britannia_mod:banner/mount/iron`\n")
                 .append("- Every logical identifier above maps deterministically to a declared model JSON or PNG output.\n\n")
+                .append("## Road Guard proof of concept\n\n")
+                .append("- Stable ID: `britannia_mod:road_guard`\n")
+                .append("- Approved display name: Road Guard\n")
+                .append("- Dimensions: 1 x 1 (approved)\n")
+                .append("- Orientations: `wall_parallel`, `wall_perpendicular` (approved)\n")
+                .append("- Mounts: `britannia_mod:brass`, `britannia_mod:iron` (approved); default `britannia_mod:brass`\n")
+                .append("- Geometry: `britannia_mod:banner/road_guard/geometry`\n")
+                .append("- Placement profile: `britannia_mod:placeholder_x_small` (reuse approved)\n")
+                .append("- Base texture: `britannia_mod:banner/road_guard/base_texture`\n")
+                .append("- Dye mask: `britannia_mod:banner/road_guard/dye_mask`\n")
+                .append("- Intake validation: `READY_FOR_INTEGRATION`\n")
+                .append("- Automated validation: pass\n")
+                .append("- Manual review: pending\n")
+                .append("- `content_status`: `in_progress`\n")
+                .append("- Crafting: not applicable; product-disabled\n\n")
                 .append("## Gate D automated placement baseline\n\n")
                 .append("All 33 active definitions pass the automated parallel, perpendicular, brass, and iron ")
                 .append("coverage matrix. These results validate data flow, transforms, planning, persistence, ")
@@ -848,8 +913,10 @@ public final class BannerScaffoldTool {
                 .append("Gate B approved exactly 33 stable IDs, retained all 14 unnamed banners under visibly ")
                 .append("provisional `Name Required` labels, and retained `Tournament Medium` and ")
                 .append("`Pennon of Silver` as the canonical scaffold labels. Source page and row references remain ")
-                .append("authoritative. Final display names, dimensions, orientations, mounts, recipes, geometry, ")
-                .append("and artwork remain unapproved. Stable IDs do not change merely because labels change.\n");
+                .append("authoritative. Road Guard is the sole approved in-progress proof of concept; final display ")
+                .append("names, dimensions, orientations, mounts, geometry, and artwork for the other 32 banners ")
+                .append("remain unapproved. Recipes remain product-disabled. Stable IDs do not change merely because ")
+                .append("labels change.\n");
         return report.toString();
     }
 
@@ -866,9 +933,7 @@ public final class BannerScaffoldTool {
 
     private static void appendCounts(StringBuilder target, Map<String, Long> counts, List<String> order) {
         for (String key : order) {
-            if (counts.containsKey(key) || !Set.of("in_progress", "complete").contains(key)) {
-                target.append("- ").append(key).append(": ").append(counts.getOrDefault(key, 0L)).append('\n');
-            }
+            target.append("- ").append(key).append(": ").append(counts.getOrDefault(key, 0L)).append('\n');
         }
     }
 
@@ -920,6 +985,30 @@ public final class BannerScaffoldTool {
         } catch (IOException exception) {
             throw new ScaffoldException("Could not create placeholder PNG", exception);
         }
+    }
+
+    private static void validateAsset(
+            Path root,
+            Set<String> outputs,
+            String bannerId,
+            String label,
+            String resourceId,
+            String kind,
+            String extension,
+            String expectedHash) throws IOException {
+        String physical = assetPath(resourceId, kind, extension);
+        if (outputs.contains(physical)) {
+            return;
+        }
+        require(SHA256.matcher(nullToEmpty(expectedHash)).matches(),
+                "Approved " + label + " hash is missing for " + bannerId + ": " + resourceId);
+        Path path = root.resolve(physical);
+        require(Files.isRegularFile(path),
+                "Approved " + label + " file is missing for " + bannerId + ": " + physical);
+        String actualHash = sha256(Files.readAllBytes(path));
+        require(expectedHash.equals(actualHash),
+                "Approved " + label + " hash mismatch for " + bannerId + ": expected "
+                        + expectedHash + ", found " + actualHash);
     }
 
     /**
@@ -1062,6 +1151,10 @@ public final class BannerScaffoldTool {
         return value == null ? fallback : value;
     }
 
+    private static String nullToEmpty(String value) {
+        return value == null ? "" : value;
+    }
+
     private static int first(Integer value, int fallback) {
         return value == null ? fallback : value;
     }
@@ -1156,6 +1249,11 @@ public final class BannerScaffoldTool {
             String baseTexture,
             String dyeMask,
             String placementProfile,
+            String geometrySha256,
+            String baseTextureSha256,
+            String dyeMaskSha256,
+            String intakePath,
+            String intakeValidation,
             String notes) {
     }
 
@@ -1183,6 +1281,11 @@ public final class BannerScaffoldTool {
             String baseTexture,
             String dyeMask,
             String placementProfile,
+            String geometrySha256,
+            String baseTextureSha256,
+            String dyeMaskSha256,
+            String intakePath,
+            String intakeValidation,
             String notes) {
     }
 

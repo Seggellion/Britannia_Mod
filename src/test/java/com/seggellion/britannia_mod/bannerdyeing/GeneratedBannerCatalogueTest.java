@@ -112,7 +112,7 @@ class GeneratedBannerCatalogueTest {
     }
 
     @Test
-    void everyEmittedAssetIdentifierMapsToDeclaredPlaceholderFile() {
+    void everyEmittedAssetIdentifierMapsToADeclaredRuntimeFile() {
         result.snapshot().banners().activeDefinitions().forEach(definition -> {
             assertTrue(Files.isRegularFile(modelPath(definition.assets().geometry())));
             assertTrue(Files.isRegularFile(texturePath(definition.assets().baseTexture())));
@@ -194,11 +194,20 @@ class GeneratedBannerCatalogueTest {
     }
 
     @Test
-    void everyDefinitionRemainsPlaceholderWithProvisionalDimensions() {
-        assertTrue(result.snapshot().banners().activeDefinitions().stream()
-                .allMatch(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER));
-        assertTrue(result.snapshot().banners().activeDefinitions().stream()
-                .allMatch(definition -> definition.dimensions().provisional()));
+    void roadGuardIsTheSoleInProgressDefinition() {
+        List<BannerDefinition> inProgress = result.snapshot().banners().activeDefinitions().stream()
+                .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).toList();
+        assertEquals(1, inProgress.size());
+        BannerDefinition roadGuard = inProgress.getFirst();
+        assertEquals("britannia_mod:road_guard", roadGuard.id().toString());
+        assertFalse(roadGuard.dimensions().provisional());
+        assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
+        assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
+        assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
+        assertEquals(32, result.snapshot().banners().activeDefinitions().stream()
+                .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
+        assertEquals(32, result.snapshot().banners().activeDefinitions().stream()
+                .filter(definition -> definition.dimensions().provisional()).count());
     }
 
     @Test
@@ -217,9 +226,16 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("Survival acquisition implemented: no"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
-        assertTrue(status.contains("Final display names approved: no"));
-        assertTrue(status.contains("Final dimensions approved: no"));
-        assertTrue(status.contains("Final artwork complete: no"));
+        assertTrue(status.contains("Final display names approved: 1 of 33"));
+        assertTrue(status.contains("Final dimensions approved: 1 of 33"));
+        assertTrue(status.contains("Final artwork complete: 0 of 33"));
+        assertTrue(status.contains("- placeholder: 32"));
+        assertTrue(status.contains("- in_progress: 1"));
+        assertTrue(status.contains("- complete: 0"));
+        assertTrue(status.contains("- disabled: 0"));
+        assertTrue(status.contains("## Road Guard proof of concept"));
+        assertTrue(status.contains("Intake validation: `READY_FOR_INTEGRATION`"));
+        assertTrue(status.contains("Manual review: pending"));
         assertTrue(status.contains("retained `Tournament Medium`"));
         assertTrue(status.contains("`Pennon of Silver` as the canonical scaffold labels"));
     }

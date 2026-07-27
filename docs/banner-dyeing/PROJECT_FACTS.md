@@ -2,9 +2,34 @@
 
 Date: 2026-07-27
 
-Milestone: 16A
+Milestone: 16 Batch 1A
 
 Feature branch: `banners-dyetub`
+
+## Milestone 16 Batch 1A Road Guard facts
+
+- `britannia_mod:road_guard` is the sole integrated final-content proof of concept. Its stable catalogue index remains
+  `27`, its approved display name is `Road Guard`, its approved dimensions are 1 x 1, and it supports both
+  `wall_parallel` and `wall_perpendicular` with brass and iron mounts (brass default).
+- The approved intake is
+  `content/banner-final-intake/submissions/road_guard/road_guard.yml`; it was approved by `Product Owner` on
+  `2026-07-27` and validates as `READY_FOR_INTEGRATION`.
+- Runtime assets are `britannia_mod:banner/road_guard/base_texture` and
+  `britannia_mod:banner/road_guard/dye_mask`, both 64 x 64 RGBA. Their approved SHA-256 values are
+  `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240` and
+  `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669`.
+- The product owner pre-positioned the runtime PNGs. Integration validates their hashes and metadata but scaffold
+  generation never recreates or rewrites their bytes. Scaffold metadata records their approved hashes.
+- Road Guard uses custom planar item geometry `britannia_mod:banner/road_guard/geometry`, adapted from the approved
+  Blockbench source with the legacy mount group omitted. Placed rendering resolves custom geometry through the
+  approved synchronized 1 x 1 footprint, without a banner-specific rendering branch.
+- The approved placement profile reuses `britannia_mod:placeholder_x_small`. This is an approved profile convention,
+  not a claim that the Road Guard artwork is placeholder content.
+- Road Guard is `in_progress`; the other 32 definitions remain `placeholder`. No definition is `complete` or
+  disabled. Manual item, preview, placed, persistence, reload, and visual-colour review remains unperformed, so Gate E
+  is not ready.
+- `BannerInstanceState`, its persistent/stream codecs, block-entity state, placed structure, stable IDs, and save
+  semantics are unchanged.
 
 ## Milestone 16A two-file asset facts
 
@@ -24,9 +49,8 @@ Feature branch: `banners-dyetub`
 - `BannerInstanceState`, placed-structure state, stable IDs, catalogue dimensions, orientations, mounts, placement
   profiles, and save semantics are unchanged. Definition schema version remains `1`; the existing display payload
   type has no independent numeric schema field and now projects only base and mask resource identities.
-- All 33 controlled definitions use `base_texture` plus `dye_mask` and remain `placeholder`. Final Road Guard art and
-  all other final art remain absent. Milestone 16 Batch 1 still requires approved two-file assets, and Milestone 17
-  has not started.
+- All 33 controlled definitions use `base_texture` plus `dye_mask`. Road Guard is the sole approved
+  `in_progress` entry; the other 32 remain `placeholder`. Milestone 17 has not started.
 
 ## Milestone 16 preparation facts
 

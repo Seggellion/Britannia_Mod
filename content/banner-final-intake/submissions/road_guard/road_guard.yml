@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Product Owner",
+    "approved_date": "2026-07-27",
+    "notes": "Approved for Road Guard intake regeneration under the current two-file selective-recolour contract. Manual in-game verification remains pending; do not mark content complete."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:road_guard",
+    "final_display_name": "Road Guard",
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "supported_orientations": [
+      "wall_parallel",
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:placeholder_x_small",
+    "geometry_id": "britannia_mod:banner/road_guard/geometry",
+    "geometry_convention": "Use the supplied source model's planar banner group only; omit its legacy mount group because runtime brass and iron mounts remain separate and untinted."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Road Guard"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/road_guard/base_texture",
+      "source_file": "content/banner-final-intake/submissions/road_guard/base_texture.png",
+      "sha256": "a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/road_guard/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/road_guard/dye_mask.png",
+      "sha256": "89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/road_guard/source/banner.bbmodel",
+      "sha256": "a9ef76d74e46ed4add1e44ebfd76c8447c8c07d2397b29d0134cf1ad498f4de7"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": null
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Britannia Mod project artist",
+    "creation_method": "Original vector artwork authored in Adobe Illustrator 30.6; base texture deterministically rasterized at 64 x 64 with legacy mount pixels removed, and the approved yellow recolour region converted to HSV-value grayscale for the dye mask.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/tabbard.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed during intake regeneration."
+  },
+  "requested_content_status": "in_progress"
+}

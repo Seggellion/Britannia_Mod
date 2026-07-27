@@ -1,5 +1,87 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-27 - Milestone 16 Batch 1A: Road Guard Recolour Proof of Concept
+
+### Approved intake and content decision
+
+- Integrated only `britannia_mod:road_guard` from
+  `content/banner-final-intake/submissions/road_guard/road_guard.yml`. The read-only intake validator returned
+  `READY_FOR_INTEGRATION`; approval is by `Product Owner`, dated `2026-07-27`.
+- Applied only the approved name `Road Guard`, 1 x 1 dimensions, parallel/perpendicular orientations, brass/iron
+  mounts with brass default, custom geometry ID, approved reuse of `britannia_mod:placeholder_x_small`, and the two
+  Road Guard resource IDs. Stable ID and catalogue index `27` are unchanged.
+- Road Guard is the sole `in_progress` definition. The other 32 remain `placeholder`; none is `complete` or disabled.
+  Crafting remains product-disabled and Milestone 17 has not started.
+
+### Runtime assets, geometry, and scaffold ownership
+
+- The product owner manually pre-positioned
+  `src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png` and `dye_mask.png`.
+  Their bytes were not copied, re-encoded, optimized, or otherwise modified during integration.
+- Both files are 64 x 64, 8-bit true-colour RGBA. Base SHA-256 is
+  `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240`; mask SHA-256 is
+  `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669`. The mask contains 354
+  active and 3,742 transparent pixels, no partial-alpha pixels, and no active pixel over transparent base.
+- Added `models/banner/road_guard/geometry.json` as a two-pass planar model adapted from the approved Blockbench
+  source. It maps the authored 64-pixel-tall, 22-pixel-wide atlas region onto a centered 1 x 1 presentation plane,
+  duplicates the same UV/shape for the mask pass, and omits all legacy mount geometry. Runtime mounts remain
+  independent and untinted.
+- Integrated asset hashes are declared with the Road Guard catalogue entry. The scaffold validates external model
+  and texture existence/hash before generation or `--check`, records the approved hashes in ownership metadata, and
+  never generates or overwrites those files, including under `--force`.
+- Normal scaffold generation changed the Road Guard definition, shared status report, and ownership metadata;
+  localization remained `Road Guard`. The generated definition has exactly `geometry`, `base_texture`, and
+  `dye_mask`. No static overlay, rendering strategy, recipe, pattern, or material-specific texture was introduced.
+
+### Rendering, placement, and state
+
+- Existing shared appearance resolution selects the Road Guard base and mask. Natural cotton, wool, linen, and silk
+  use the unchanged full-colour base plus the selected mount. Pigment presence or an administratively selected
+  non-natural resolved colour inserts the resolved-colour-tinted mask; pigment identity itself is not a render key.
+- Custom item geometry is registered through the existing resource/model reload sets. Placed extraction now
+  generically derives a custom geometry's existing footprint family from synchronized approved dimensions when its
+  resource ID is not one of the placeholder-family IDs. This fixes custom-content fallback without a Road
+  Guard-specific Java branch.
+- Automated coverage verifies both mounts, both approved orientations, all four horizontal facings, natural and dyed
+  item/preview/placed pass ordering, untinted base and mount, typed missing-model/base/mask fallbacks, data-unavailable
+  fallback, non-mutation, and later recovery.
+- `BannerInstanceState`, its codecs, item-to-block state, block-entity persistence, placed structure, lifecycle, and
+  saved-data schema remain unchanged.
+
+### Pixel and automated evidence
+
+- Deterministic semantic coordinates are highlight `(16,18)`, shadow `(10,24)`, fixed charcoal `(6,20)`, and
+  transparent background `(0,0)`. Tests cover red, blue, green, light, and dark resolved colours. Highlight remains
+  brighter than shadow after each tint; charcoal and transparent pixels remain byte-equivalent to the base output.
+- The approved mask contains no partial-alpha pixel, so no such content assertion was invented; the architecture's
+  synthetic partial-alpha formula remains covered by Milestone 16A tests.
+- The first focused run passed compilation but reported three assertion/fixture issues: zero-valued `complete` status
+  was omitted from the report, a model assertion matched the explanatory credit word `mount`, and the re-dye test
+  accidentally compared blue with blue. The status generator and two focused assertions were corrected. The repeated
+  focused selection passed 54 tests with zero failures, errors, or skips.
+- The first restricted intake-validator attempt could not access the Gradle distribution; the approved retry used the
+  existing build cache and returned `READY_FOR_INTEGRATION`. This was an environment permission failure, not an intake
+  or code failure.
+- Normal scaffold generation and final `--check` passed with manifest/definitions/active `33/33/33`, zero disabled,
+  33 localizations, 14 provisional names, 32 provisional dimensions, and five placeholder families.
+- The banner/dye regression passed 598 tests across 51 suites with zero failures, errors, or skips. The required
+  `clean`, from-clean full 598-test run, and `build` all passed. Compilation retained only the existing missing
+  `PlayerSleepMixin` `@Overwrite` Javadoc and deprecated-for-removal `OrderShieldItem.initializeClient` warnings.
+- The first JAR-inspection script used unavailable PowerShell/.NET `Convert.ToHexString`; replacing only that display
+  conversion with `BitConverter` completed the same read-only inspection. The production all-JAR contains 4,968
+  unique entries and no duplicates, 33 definitions with status totals 32/1/0, all Road Guard runtime resources, and
+  the exact approved PNG hashes. It contains no intake package, Road Guard third texture, removed schema term, or
+  missing required resource.
+- Final commit evidence is recorded in the milestone handoff because a commit cannot contain its own hash.
+
+### Manual status and next action
+
+- No live client was used. Every natural/recoloured material, mount, item context, preview, placed orientation/facing,
+  persistence, relog, resource reload, data reload, break/recovery, pick-block, and re-placement visual check remains
+  unperformed.
+- Road Guard remains `in_progress`; Gate E is `NOT READY`. Stop after this integration for Road Guard visual review.
+  Do not integrate another banner or begin Milestone 17.
+
 ## 2026-07-27 - Milestone 16A: Two-File Selective-Recolour Assets
 
 ### Corrective architecture decision

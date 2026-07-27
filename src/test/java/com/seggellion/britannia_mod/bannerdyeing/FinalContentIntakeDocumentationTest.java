@@ -148,17 +148,20 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
-    void productionCatalogueAndDefinitionsRemainThirtyThreePlaceholders() throws Exception {
+    void productionCatalogueKeepsThirtyThreeEntriesWithOnlyRoadGuardInProgress() throws Exception {
         BannerScaffoldTool.Manifest manifest =
                 BannerScaffoldTool.readAndValidateManifest(Path.of(BannerScaffoldTool.MANIFEST_PATH));
         assertEquals(33, manifest.banners().size());
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertTrue(manifest.banners().stream().allMatch(
-                banner -> banner.contentStatus() == null || "placeholder".equals(banner.contentStatus())));
+        assertEquals(List.of("road_guard"), manifest.banners().stream()
+                .filter(banner -> "in_progress".equals(banner.contentStatus()))
+                .map(BannerScaffoldTool.BannerEntry::id).toList());
         var production = DyeResolverFixtures.productionSnapshot();
         assertEquals(33, production.banners().activeCount());
-        assertTrue(production.banners().activeDefinitions().stream()
-                .allMatch(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER));
+        assertEquals(32, production.banners().activeDefinitions().stream()
+                .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
+        assertEquals(1, production.banners().activeDefinitions().stream()
+                .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
     }
 
     private static void assertNoRemovedOrStrategyKeys(String raw) {

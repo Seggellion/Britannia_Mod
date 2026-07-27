@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.client.banner;
 
+import com.seggellion.britannia_mod.banner.data.BannerDimensions;
 import java.util.Arrays;
 import java.util.Optional;
 import net.minecraft.resources.ResourceLocation;
@@ -57,5 +58,20 @@ public enum BannerPlacedGeometryFamily {
 
     public static Optional<BannerPlacedGeometryFamily> from(ResourceLocation geometryId) {
         return Arrays.stream(values()).filter(value -> value.geometryId.equals(geometryId)).findFirst();
+    }
+
+    /**
+     * Custom item geometry does not change the placed footprint. When it has no shared-family ID,
+     * use the synchronized approved dimensions and the most compact matching placed convention.
+     */
+    public static Optional<BannerPlacedGeometryFamily> from(
+            ResourceLocation geometryId, BannerDimensions dimensions) {
+        Optional<BannerPlacedGeometryFamily> exact = from(geometryId);
+        if (exact.isPresent() || dimensions == null) {
+            return exact;
+        }
+        return Arrays.stream(values())
+                .filter(value -> value.supports(dimensions.widthBlocks(), dimensions.heightBlocks()))
+                .reduce((first, second) -> second);
     }
 }

@@ -85,25 +85,31 @@ class BannerCatalogueManifestTest {
     }
 
     @Test
-    void sourceNamedEntriesRetainSourceLabelsWithoutFinalApprovalClaim() {
+    void sourceNamedEntriesRetainSourceLabelsAndOnlyRoadGuardIsApproved() {
         List<BannerScaffoldTool.BannerEntry> named = manifest.banners().stream()
                 .filter(entry -> "source-named".equals(entry.nameStatus())).toList();
         assertEquals(19, named.size());
         assertTrue(named.stream().allMatch(entry -> entry.sourceLabel() != null));
-        assertTrue(named.stream().noneMatch(entry -> entry.notes().toLowerCase().contains("approved")));
+        assertEquals(List.of("road_guard"), named.stream()
+                .filter(entry -> entry.notes().toLowerCase().contains("approved"))
+                .map(BannerScaffoldTool.BannerEntry::id).toList());
     }
 
     @Test
-    void everyInitialDimensionIsProvisionalThroughDefaults() {
+    void onlyRoadGuardHasApprovedDimensions() {
         assertEquals(Boolean.TRUE, manifest.defaults().dimensionsProvisional());
-        assertTrue(manifest.banners().stream().allMatch(entry -> entry.dimensionsProvisional() == null
-                || entry.dimensionsProvisional()));
+        assertEquals(List.of("road_guard"), manifest.banners().stream()
+                .filter(entry -> Boolean.FALSE.equals(entry.dimensionsProvisional()))
+                .map(BannerScaffoldTool.BannerEntry::id).toList());
     }
 
     @Test
     void noEntryIsComplete() {
         assertEquals("placeholder", manifest.defaults().contentStatus());
         assertTrue(manifest.banners().stream().noneMatch(entry -> "complete".equals(entry.contentStatus())));
+        assertEquals(List.of("road_guard"), manifest.banners().stream()
+                .filter(entry -> "in_progress".equals(entry.contentStatus()))
+                .map(BannerScaffoldTool.BannerEntry::id).toList());
     }
 
     @Test

@@ -37,7 +37,9 @@ public final class BannerPlacedRenderStateExtractor {
         BannerPlacedRenderFailure failure = BannerPlacedRenderFailure.NONE;
         String diagnosticId = "";
         BannerPlacedGeometryFamily family = appearance.geometry()
-                .flatMap(BannerPlacedGeometryFamily::from).orElse(BannerPlacedGeometryFamily.SMALL);
+                .flatMap(geometry -> BannerPlacedGeometryFamily.from(
+                        geometry, appearance.definitionDimensions().orElse(null)))
+                .orElse(BannerPlacedGeometryFamily.SMALL);
         if (entity.structurallyInvalid()) {
             failure = BannerPlacedRenderFailure.STRUCTURALLY_INVALID_STATE;
             diagnosticId = "structurally_invalid";
@@ -53,7 +55,8 @@ public final class BannerPlacedRenderStateExtractor {
         } else if (appearance.fallback()) {
             failure = BannerPlacedRenderFailure.APPEARANCE_FALLBACK;
             diagnosticId = appearance.failure() + ":" + appearance.diagnosticId();
-        } else if (appearance.geometry().flatMap(BannerPlacedGeometryFamily::from).isEmpty()) {
+        } else if (appearance.geometry().flatMap(geometry -> BannerPlacedGeometryFamily.from(
+                geometry, appearance.definitionDimensions().orElse(null))).isEmpty()) {
             failure = BannerPlacedRenderFailure.UNSUPPORTED_GEOMETRY_FAMILY;
             diagnosticId = appearance.geometry().map(Object::toString).orElse("missing");
         } else if (appearance.definitionDimensions().isEmpty()

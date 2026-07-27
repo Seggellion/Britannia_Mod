@@ -51,9 +51,9 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Brass automated"));
         assertTrue(status.contains("Iron automated"));
         assertTrue(status.contains("Manual result"));
-        assertTrue(status.contains("Final per-definition orientations approved: no"));
-        assertTrue(status.contains("Final per-definition mounts approved: no"));
-        assertTrue(status.contains("Final placed artwork approved: no"));
+        assertTrue(status.contains("Final per-definition orientations approved: 1 of 33"));
+        assertTrue(status.contains("Final per-definition mounts approved: 1 of 33"));
+        assertTrue(status.contains("Final placed artwork intake approved: 1 of 33"));
         assertTrue(status.contains("Banner crafting implemented: no"));
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
@@ -63,6 +63,47 @@ class BannerScaffoldToolTest {
         assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/recipe/banner")));
         assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/tags/item/banner_fabric")));
         assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/tags/item/banner_mount")));
+    }
+
+    @Test
+    void normalAndForceRunsPreserveApprovedRoadGuardAssets() throws Exception {
+        Path root = seed();
+        Path base = root.resolve(
+                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png");
+        Path mask = root.resolve(
+                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/dye_mask.png");
+        Path geometry = root.resolve(
+                "src/main/resources/assets/britannia_mod/models/banner/road_guard/geometry.json");
+        byte[] baseBefore = Files.readAllBytes(base);
+        byte[] maskBefore = Files.readAllBytes(mask);
+        byte[] geometryBefore = Files.readAllBytes(geometry);
+
+        run(root, false, false);
+        run(root, false, true);
+
+        assertArrayEquals(baseBefore, Files.readAllBytes(base));
+        assertArrayEquals(maskBefore, Files.readAllBytes(mask));
+        assertArrayEquals(geometryBefore, Files.readAllBytes(geometry));
+        JsonObject metadata = JsonParser.parseString(
+                Files.readString(root.resolve(BannerScaffoldTool.METADATA_PATH))).getAsJsonObject();
+        JsonObject files = metadata.getAsJsonObject("files");
+        assertTrue(files.has(root.relativize(base).toString().replace('\\', '/')));
+        assertTrue(files.has(root.relativize(mask).toString().replace('\\', '/')));
+        assertTrue(files.has(root.relativize(geometry).toString().replace('\\', '/')));
+    }
+
+    @Test
+    void checkRejectsChangedApprovedRoadGuardAsset() throws Exception {
+        Path root = seed();
+        Path base = root.resolve(
+                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png");
+        byte[] changed = Files.readAllBytes(base);
+        changed[changed.length - 1] ^= 1;
+        Files.write(base, changed);
+
+        BannerScaffoldTool.ScaffoldException exception = assertThrows(
+                BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
+        assertTrue(exception.getMessage().contains("base texture hash mismatch"), exception.getMessage());
     }
 
     @Test
@@ -235,7 +276,19 @@ class BannerScaffoldToolTest {
         Path language = root.resolve(BannerScaffoldTool.LOCALIZATION_PATH);
         Files.createDirectories(language.getParent());
         Files.writeString(language, "{\n  \"unrelated.key\": \"Keep Me\"\n}\n", StandardCharsets.UTF_8);
+        copyApprovedAsset(root,
+                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png");
+        copyApprovedAsset(root,
+                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/dye_mask.png");
+        copyApprovedAsset(root,
+                "src/main/resources/assets/britannia_mod/models/banner/road_guard/geometry.json");
         return root;
+    }
+
+    private static void copyApprovedAsset(Path root, String relative) throws Exception {
+        Path destination = root.resolve(relative);
+        Files.createDirectories(destination.getParent());
+        Files.copy(Path.of(relative), destination);
     }
 
     private Invocation run(Path root, boolean check, boolean force) throws Exception {
