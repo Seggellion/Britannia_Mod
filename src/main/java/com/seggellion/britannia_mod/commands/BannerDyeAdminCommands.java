@@ -34,11 +34,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -51,6 +55,15 @@ public final class BannerDyeAdminCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        register(dispatcher, new BannerGiveDependencies(
+                BannerDataRegistries::current,
+                BannerDataRegistries::isAvailable,
+                () -> BannerItemRegistry.BANNER.get(),
+                BannerDyeAdminCommands::playerRecipients));
+    }
+
+    static void register(
+            CommandDispatcher<CommandSourceStack> dispatcher, BannerGiveDependencies bannerDependencies) {
         var pigmentSource = new RegistryPigmentSourceService();
         var suggestions = new BannerAdminSuggestions(pigmentSource);
         var catalogue = new BannerCatalogueAdminService();
@@ -59,7 +72,7 @@ public final class BannerDyeAdminCommands {
         dispatcher.register(Commands.literal(ROOT)
                 .requires(source -> source.hasPermission(REQUIRED_PERMISSION_LEVEL))
                 .then(Commands.literal("banner")
-                        .then(bannerGive(suggestions))
+                        .then(bannerGive(suggestions, bannerDependencies))
                         .then(Commands.literal("validate")
                                 .executes(context -> validate(context, catalogue)))
                         .then(Commands.literal("placeholders")
@@ -85,34 +98,34 @@ public final class BannerDyeAdminCommands {
     }
 
     private static com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> bannerGive(
-            BannerAdminSuggestions suggestions) {
-        return Commands.literal("give")
-                .then(Commands.argument("targets", EntityArgument.players())
-                        .then(Commands.argument("definition", StringArgumentType.word())
-                                .suggests((context, builder) -> suggest(suggestions.definitions(
-                                        BannerDataRegistries.current(), BannerDataRegistries.isAvailable()), builder))
-                                .executes(context -> giveBanner(context, Optional.empty(), Optional.empty(),
-                                        Optional.empty()))
-                                .then(Commands.argument("material", StringArgumentType.word())
-                                        .suggests((context, builder) -> suggest(suggestions.materials(
-                                                BannerDataRegistries.current(),
-                                                BannerDataRegistries.isAvailable()), builder))
-                                        .executes(context -> giveBanner(context, argumentMaterial(context),
-                                                Optional.empty(), Optional.empty()))
-                                        .then(Commands.argument("colour", StringArgumentType.word())
-                                                .suggests((context, builder) -> suggest(suggestions.colours(
-                                                        argumentMaterial(context), BannerDataRegistries.current(),
-                                                        BannerDataRegistries.isAvailable()), builder))
-                                                .executes(context -> giveBanner(context, argumentMaterial(context),
-                                                        argumentColour(context), Optional.empty()))
-                                                .then(Commands.argument("mount", StringArgumentType.word())
-                                                        .suggests((context, builder) -> suggest(suggestions.mounts(
-                                                                argumentDefinition(context),
-                                                                BannerDataRegistries.current(),
-                                                                BannerDataRegistries.isAvailable()), builder))
-                                                        .executes(context -> giveBanner(context,
-                                                                argumentMaterial(context), argumentColour(context),
-                                                                argumentMount(context))))))));
+            BannerAdminSuggestions suggestions, BannerGiveDependencies dependencies) {
+        var mount = Commands.argument("mount", ResourceLocationArgument.id())
+                .suggests((context, builder) -> suggest(suggestions.mounts(
+                        argumentDefinition(context), dependencies.snapshot(), dependencies.registryAvailable()),
+                        builder))
+                .executes(context -> giveBanner(context, argumentMaterial(context), argumentColour(context),
+                        argumentMount(context), dependencies));
+        var colour = Commands.argument("colour", ResourceLocationArgument.id())
+                .suggests((context, builder) -> suggest(suggestions.colours(
+                        argumentMaterial(context), dependencies.snapshot(), dependencies.registryAvailable()),
+                        builder))
+                .executes(context -> giveBanner(context, argumentMaterial(context), argumentColour(context),
+                        Optional.empty(), dependencies))
+                .then(mount);
+        var material = Commands.argument("material", ResourceLocationArgument.id())
+                .suggests((context, builder) -> suggest(suggestions.materials(
+                        dependencies.snapshot(), dependencies.registryAvailable()), builder))
+                .executes(context -> giveBanner(context, argumentMaterial(context), Optional.empty(),
+                        Optional.empty(), dependencies))
+                .then(colour);
+        var definition = Commands.argument("definition", ResourceLocationArgument.id())
+                .suggests((context, builder) -> suggest(suggestions.definitions(
+                        dependencies.snapshot(), dependencies.registryAvailable()), builder))
+                .executes(context -> giveBanner(context, Optional.empty(), Optional.empty(), Optional.empty(),
+                        dependencies))
+                .then(material);
+        var targets = Commands.argument("targets", EntityArgument.players()).then(definition);
+        return Commands.literal("give").then(targets);
     }
 
     private static com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> dyeTubGive(
@@ -130,7 +143,8 @@ public final class BannerDyeAdminCommands {
             CommandContext<CommandSourceStack> context,
             Optional<FabricMaterialId> material,
             Optional<ResolvedColourId> colour,
-            Optional<MountId> mount) {
+            Optional<MountId> mount,
+            BannerGiveDependencies dependencies) {
         Optional<BannerDefinitionId> definition = argumentDefinition(context);
         if (definition.isEmpty() || (hasArgument(context, "material") && material.isEmpty())
                 || (hasArgument(context, "colour") && colour.isEmpty())
@@ -138,26 +152,25 @@ public final class BannerDyeAdminCommands {
             context.getSource().sendFailure(Component.translatable("command.britannia_mod.admin.invalid_id"));
             return 0;
         }
-        RegistrySnapshot snapshot = BannerDataRegistries.current();
-        BannerItem item = BannerItemRegistry.BANNER.get();
+        RegistrySnapshot snapshot = dependencies.snapshot();
+        BannerItem item = dependencies.bannerItem();
         BannerAdminService service = new BannerAdminService(
                 new BannerItemFactory(item, item.stateAccess()), item.stateAccess());
         BannerAdminResult initial = service.create(definition.orElseThrow(), material, colour, mount,
-                snapshot, BannerDataRegistries.isAvailable());
+                snapshot, dependencies.registryAvailable());
         if (!initial.successful()) {
             context.getSource().sendFailure(Component.translatable(
                     "command.britannia_mod.admin.banner.failure." + initial.failure().name().toLowerCase(),
                     initial.diagnosticId()));
             return 0;
         }
-        Collection<ServerPlayer> players;
+        List<? extends AdminItemRecipient> recipients;
         try {
-            players = EntityArgument.getPlayers(context, "targets");
+            recipients = dependencies.targets().resolve(context);
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException exception) {
             context.getSource().sendFailure(Component.literal(exception.getRawMessage().getString()));
             return 0;
         }
-        List<PlayerRecipient> recipients = players.stream().map(PlayerRecipient::new).toList();
         var delivery = AdminItemDelivery.deliverFresh(recipients, () -> service.create(
                 definition.orElseThrow(), material, colour, mount, snapshot, true).stack().orElseThrow());
         var state = initial.state().orElseThrow();
@@ -317,7 +330,9 @@ public final class BannerDyeAdminCommands {
     private static <T> Optional<T> parse(
             CommandContext<?> context, String argument, java.util.function.Function<String, T> parser) {
         try {
-            return Optional.of(parser.apply(context.getArgument(argument, String.class)));
+            Object value = context.getArgument(argument, Object.class);
+            String serialized = value instanceof ResourceLocation id ? id.toString() : (String) value;
+            return Optional.of(parser.apply(serialized));
         } catch (IllegalArgumentException exception) {
             return Optional.empty();
         }
@@ -325,10 +340,48 @@ public final class BannerDyeAdminCommands {
 
     private static boolean hasArgument(CommandContext<?> context, String argument) {
         try {
-            context.getArgument(argument, String.class);
+            context.getArgument(argument, Object.class);
             return true;
         } catch (IllegalArgumentException exception) {
             return false;
+        }
+    }
+
+    private static List<PlayerRecipient> playerRecipients(
+            CommandContext<CommandSourceStack> context)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(context, "targets");
+        return players.stream().map(PlayerRecipient::new).toList();
+    }
+
+    @FunctionalInterface
+    interface AdminTargetResolver {
+        List<? extends AdminItemRecipient> resolve(CommandContext<CommandSourceStack> context)
+                throws com.mojang.brigadier.exceptions.CommandSyntaxException;
+    }
+
+    record BannerGiveDependencies(
+            Supplier<RegistrySnapshot> snapshots,
+            BooleanSupplier availability,
+            Supplier<BannerItem> bannerItems,
+            AdminTargetResolver targets) {
+        BannerGiveDependencies {
+            java.util.Objects.requireNonNull(snapshots, "snapshots");
+            java.util.Objects.requireNonNull(availability, "availability");
+            java.util.Objects.requireNonNull(bannerItems, "bannerItems");
+            java.util.Objects.requireNonNull(targets, "targets");
+        }
+
+        RegistrySnapshot snapshot() {
+            return java.util.Objects.requireNonNull(snapshots.get(), "snapshot");
+        }
+
+        boolean registryAvailable() {
+            return availability.getAsBoolean();
+        }
+
+        BannerItem bannerItem() {
+            return java.util.Objects.requireNonNull(bannerItems.get(), "bannerItem");
         }
     }
 
