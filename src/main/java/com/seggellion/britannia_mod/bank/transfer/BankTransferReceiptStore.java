@@ -108,13 +108,22 @@ public final class BankTransferReceiptStore extends SavedData {
 
     public static final String DATA_NAME = "britannia_bank_transfer_receipts";
     /**
-     * 2 (Milestone 9 NeoForge Slice 3b): {@link BankTransferReceipt} gained a required {@code
+     * 3 (Milestone 11 NeoForge Slice 2): {@link BankTransferReceipt} gained a required {@code
+     * worldNpcPublicId} field for a {@code CHEQUE_REDEMPTION} receipt -- a real, three-way shape
+     * change, not a currency-slot reuse -- see that class's own docs for the full reasoning. A
+     * schema-2 store (every server that shipped between Milestone 9 Slice 3b and this slice)
+     * correctly falls back to the unsupported-schema path below rather than being silently
+     * misread as schema 3: no schema-2 receipt has a redemption shape to migrate (this program
+     * shipped no redemption code before this slice), so there is nothing to preserve beyond the
+     * existing quarantine/best-effort-enumeration behavior that path already provides.
+     *
+     * <p>2 (Milestone 9 NeoForge Slice 3b): {@link BankTransferReceipt} gained a required {@code
      * playerUuid} field so startup reconciliation can resume a confirm without a live {@code
      * ServerPlayer} -- see that class's own docs. A schema-1 store (this program's own
      * pre-Slice-3b testing only; never a real shipped server) correctly falls back to the
      * unsupported-schema path below rather than being silently misread as schema 2.
      */
-    public static final int SCHEMA_VERSION = 2;
+    public static final int SCHEMA_VERSION = 3;
     static final int MAX_COLLECTION_ENTRIES = 16_384;
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -248,7 +257,8 @@ public final class BankTransferReceiptStore extends SavedData {
 
         BankTransferReceipt escalated = new BankTransferReceipt(
             existing.operationId(), existing.playerUuid(), existing.operationType(), existing.itemPayload(), existing.currencyAmount(),
-            existing.bankItemPublicId(), BankTransferReceiptStatus.RECONCILIATION_REQUIRED, existing.createdAtEpochMillis()
+            existing.bankItemPublicId(), existing.worldNpcPublicId(),
+            BankTransferReceiptStatus.RECONCILIATION_REQUIRED, existing.createdAtEpochMillis()
         );
         receipts.put(operationId, escalated);
         setDirty();

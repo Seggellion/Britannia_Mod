@@ -39,8 +39,8 @@ import java.util.UUID;
  * its existing unsupported-schema path (every entry surfaces as {@link
  * BankTransferReceiptStore.UnreadableEntry}) rather than being silently misread.
  *
- * Exactly one of {@code itemPayload} or {@code currencyAmount} is present, never both, never
- * neither -- mirroring the same nullable-forward-compat shape Rails' own {@code BankTransaction}
+ * Exactly one of {@code itemPayload}, {@code currencyAmount}, or {@code worldNpcPublicId} is
+ * present, mirroring the same nullable-forward-compat shape Rails' own {@code BankTransaction}
  * already uses for {@code bank_item_id}. Only the item path is exercised by this slice (no
  * currency-transfer protocol exists yet on the Rails side, confirmed in Milestone 8 Rails
  * Slice 2); the currency field exists because Section A.6 states currency uses "the same
@@ -48,7 +48,7 @@ import java.util.UUID;
  * {@code itemPayload} is treated as fully opaque here -- already-serialized {@link
  * com.seggellion.britannia_mod.bank.item.BankItemCodec} bytes, never re-decoded by this class.
  *
- * <h2>Milestone 11: cheque issuance needs no schema change here</h2>
+ * <h2>Milestone 11 Slice 1: cheque issuance needs no schema change here</h2>
  * A {@link BankTransferOperationType#CHEQUE_ISSUANCE} receipt is currency-shaped
  * ({@code currencyAmount} carries the cheque's own requested/authoritative copper value,
  * {@code itemPayload}/{@code bankItemPublicId} both absent) -- deliberately NOT a third slot
@@ -67,6 +67,27 @@ import java.util.UUID;
  * itself is the durable, permanent record of the operation), this receipt is only ever a
  * transient, pre-resolution crash-recovery aid -- it can always afford to re-derive information
  * from Rails on resume rather than cache it, so it never needed the identity in the first place.
+ *
+ * <h2>Milestone 11 Slice 2: cheque redemption IS a genuine, real schema change</h2>
+ * A {@link BankTransferOperationType#CHEQUE_REDEMPTION} receipt fits neither existing shape:
+ * unlike every other action, {@code POST /api/banking/cheque/redeem} is a single call with no
+ * separate {@code prepare}, so there is no already-resolved {@code world_npc_public_id} an
+ * eventual {@code confirm} could skip re-supplying the way every other flow's own confirm does
+ * (see {@code docs/banking_bank_cheque_redemption.md}'s own request shape -- redemption needs
+ * {@code player_uuid}, {@code world_npc_public_id}, AND {@code cheque_public_id} together,
+ * every time, not just an already-known operation id). {@code operationId} on a redemption
+ * receipt therefore carries the CHEQUE's own {@code public_id} (this class "does not know or
+ * care where the UUID came from" -- see this record's own header docs), not a Rails {@code
+ * BankTransferOperation} UUID (there is no client-visible one; redemption's response carries no
+ * {@code operation} object at all). {@code worldNpcPublicId} is the one genuinely new field this
+ * required -- present if and only if {@code operationType == CHEQUE_REDEMPTION}, with both
+ * {@code itemPayload} and {@code currencyAmount} absent for that type: the redeemed value is
+ * never cached here (the display amount is deliberately non-authoritative, and the real amount
+ * is Rails-determined and never even sent in the redeem request -- see
+ * {@code BankingChequeRedemptionProxyService}'s own docs), so there is nothing to store beyond
+ * the identity needed to safely re-issue the exact same idempotent request on resume. This is
+ * why {@link BankTransferReceiptStore#SCHEMA_VERSION} moves to 3 alongside it -- a real,
+ * deliberate three-way shape now, not a currency-slot reuse the way issuance's own addition was.
  */
 public record BankTransferReceipt(
     UUID operationId,
@@ -75,6 +96,7 @@ public record BankTransferReceipt(
     byte[] itemPayload,
     Long currencyAmount,
     @Nullable UUID bankItemPublicId,
+    @Nullable UUID worldNpcPublicId,
     BankTransferReceiptStatus status,
     long createdAtEpochMillis
 ) {
@@ -84,6 +106,7 @@ public record BankTransferReceipt(
     private static final String KEY_ITEM_PAYLOAD = "ItemPayload";
     private static final String KEY_CURRENCY_AMOUNT = "CurrencyAmount";
     private static final String KEY_BANK_ITEM_PUBLIC_ID = "BankItemPublicId";
+    private static final String KEY_WORLD_NPC_PUBLIC_ID = "WorldNpcPublicId";
     private static final String KEY_STATUS = "Status";
     private static final String KEY_CREATED_AT = "CreatedAtEpochMillis";
 
@@ -97,16 +120,22 @@ public record BankTransferReceipt(
         }
         boolean hasItem = itemPayload != null && itemPayload.length > 0;
         boolean hasCurrency = currencyAmount != null;
-        if (hasItem == hasCurrency) {
+        boolean hasWorldNpc = worldNpcPublicId != null;
+        int shapeCount = (hasItem ? 1 : 0) + (hasCurrency ? 1 : 0) + (hasWorldNpc ? 1 : 0);
+        if (shapeCount != 1) {
             throw new IllegalArgumentException(
-                "exactly one of itemPayload or currencyAmount is required, not " + (hasItem ? "both" : "neither"));
+                "exactly one of itemPayload, currencyAmount, or worldNpcPublicId is required, not " + shapeCount);
         }
         if (hasCurrency && currencyAmount < 0L) {
             throw new IllegalArgumentException("currencyAmount must not be negative");
         }
         if (hasItem == (bankItemPublicId == null)) {
             throw new IllegalArgumentException(
-                "bankItemPublicId must be present for an item transfer and absent for a currency transfer");
+                "bankItemPublicId must be present for an item transfer and absent otherwise");
+        }
+        if (hasWorldNpc != (operationType == BankTransferOperationType.CHEQUE_REDEMPTION)) {
+            throw new IllegalArgumentException(
+                "worldNpcPublicId must be present if and only if operationType is CHEQUE_REDEMPTION");
         }
         // Defensive copy: the caller's array must never be mutated out from under a stored
         // receipt after construction.
@@ -131,8 +160,10 @@ public record BankTransferReceipt(
         if (itemPayload != null) {
             tag.put(KEY_ITEM_PAYLOAD, new ByteArrayTag(itemPayload));
             tag.putUUID(KEY_BANK_ITEM_PUBLIC_ID, bankItemPublicId);
-        } else {
+        } else if (currencyAmount != null) {
             tag.putLong(KEY_CURRENCY_AMOUNT, currencyAmount);
+        } else {
+            tag.putUUID(KEY_WORLD_NPC_PUBLIC_ID, worldNpcPublicId);
         }
         tag.putString(KEY_STATUS, status.name());
         tag.putLong(KEY_CREATED_AT, createdAtEpochMillis);
@@ -149,8 +180,11 @@ public record BankTransferReceipt(
         }
         boolean hasItem = tag.contains(KEY_ITEM_PAYLOAD, Tag.TAG_BYTE_ARRAY);
         boolean hasCurrency = tag.contains(KEY_CURRENCY_AMOUNT, Tag.TAG_LONG);
-        if (hasItem == hasCurrency) {
-            throw new IllegalArgumentException("receipt must carry exactly one of ItemPayload or CurrencyAmount");
+        boolean hasWorldNpc = tag.hasUUID(KEY_WORLD_NPC_PUBLIC_ID);
+        int shapeCount = (hasItem ? 1 : 0) + (hasCurrency ? 1 : 0) + (hasWorldNpc ? 1 : 0);
+        if (shapeCount != 1) {
+            throw new IllegalArgumentException(
+                "receipt must carry exactly one of ItemPayload, CurrencyAmount, or WorldNpcPublicId");
         }
         if (hasItem && !tag.hasUUID(KEY_BANK_ITEM_PUBLIC_ID)) {
             throw new IllegalArgumentException("item-transfer receipt missing BankItemPublicId");
@@ -162,6 +196,7 @@ public record BankTransferReceipt(
             hasItem ? tag.getByteArray(KEY_ITEM_PAYLOAD) : null,
             hasCurrency ? tag.getLong(KEY_CURRENCY_AMOUNT) : null,
             hasItem ? tag.getUUID(KEY_BANK_ITEM_PUBLIC_ID) : null,
+            hasWorldNpc ? tag.getUUID(KEY_WORLD_NPC_PUBLIC_ID) : null,
             BankTransferReceiptStatus.valueOf(tag.getString(KEY_STATUS)),
             tag.getLong(KEY_CREATED_AT)
         );
@@ -178,12 +213,14 @@ public record BankTransferReceipt(
             && java.util.Arrays.equals(itemPayload, that.itemPayload)
             && Objects.equals(currencyAmount, that.currencyAmount)
             && Objects.equals(bankItemPublicId, that.bankItemPublicId)
+            && Objects.equals(worldNpcPublicId, that.worldNpcPublicId)
             && status == that.status;
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(operationId, playerUuid, operationType, currencyAmount, bankItemPublicId, status, createdAtEpochMillis);
+        int result = Objects.hash(
+            operationId, playerUuid, operationType, currencyAmount, bankItemPublicId, worldNpcPublicId, status, createdAtEpochMillis);
         return 31 * result + java.util.Arrays.hashCode(itemPayload);
     }
 }

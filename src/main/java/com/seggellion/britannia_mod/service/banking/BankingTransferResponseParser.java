@@ -192,6 +192,34 @@ public final class BankingTransferResponseParser {
         }
     }
 
+    /**
+     * Milestone 11 Rails Slice 2: {@code banking/cheque/redeem}'s response. Unlike every other
+     * {@code parse*} method here, this endpoint has exactly one success outcome ({@code
+     * CHEQUE_REDEEMED}) and no {@code PREPARED}/{@code CONFIRMED}/{@code
+     * RECONCILIATION_REQUIRED} of its own (see {@link BankingChequeRedemptionResult}'s own docs
+     * for why) -- every other outcome, cheque-specific or shared teller/account, falls straight
+     * through to {@link BankingChequeRedemptionResult.Rejected} uniformly, exactly like {@link
+     * #parseConfirm}'s own {@code default} branch already does for its own endpoint.
+     */
+    public static BankingChequeRedemptionResult parseChequeRedeem(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingChequeRedemptionResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome != BankingTransferOutcome.CHEQUE_REDEEMED) {
+            return new BankingChequeRedemptionResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            UUID chequePublicId = requiredUuid(requiredObject(envelope.root, "bank_cheque"), "public_id");
+            return new BankingChequeRedemptionResult.Confirmed(chequePublicId);
+        } catch (ProtocolException malformed) {
+            return new BankingChequeRedemptionResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
     public static BankingConfirmResult parseConfirm(int status, byte[] body) {
         final Envelope envelope;
         try {
@@ -242,7 +270,8 @@ public final class BankingTransferResponseParser {
             if (status != outcome.expectedHttpStatus()) fail("inconsistent_protocol_envelope");
             boolean expectedSuccess = outcome == BankingTransferOutcome.PREPARED
                     || outcome == BankingTransferOutcome.CONFIRMED
-                    || outcome == BankingTransferOutcome.CANCELLED;
+                    || outcome == BankingTransferOutcome.CANCELLED
+                    || outcome == BankingTransferOutcome.CHEQUE_REDEEMED;
             if (success != expectedSuccess) fail("inconsistent_protocol_envelope");
             if (retryable != outcome.expectedRetryable()) fail("inconsistent_protocol_envelope");
 

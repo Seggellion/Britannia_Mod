@@ -136,6 +136,11 @@ public final class BankChequeIssuanceScreen extends Screen {
             case CLEAN_REJECTION -> CLEAN_REJECTION_MESSAGE;
             case RECONCILIATION_REQUIRED -> RECONCILIATION_REQUIRED_MESSAGE;
             case PENDING_DELIVERY -> PENDING_DELIVERY_MESSAGE;
+            // Milestone 11 Slice 2: never actually sent for a CHEQUE_ISSUANCE result (only
+            // Operation.CHEQUE_REDEMPTION reaches these four) -- kept only for switch
+            // exhaustiveness, mirroring how PENDING_DELIVERY was already handled on BankScreen's
+            // own side before this slice.
+            case CHEQUE_NOT_FOUND, CHEQUE_ALREADY_REDEEMED, CHEQUE_CANCELLED, CHEQUE_VOIDED -> CLEAN_REJECTION_MESSAGE;
         };
         refreshButtonStates();
     }

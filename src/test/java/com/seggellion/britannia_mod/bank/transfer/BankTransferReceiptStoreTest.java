@@ -15,10 +15,10 @@ class BankTransferReceiptStoreTest {
     void constructorRejectsNeitherOrBothOfItemPayloadAndCurrencyAmount() {
         UUID id = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
-            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, null, null, null,
+            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, null, null, null, null,
                 BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 1L));
         assertThrows(IllegalArgumentException.class, () ->
-            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{1, 2, 3}, 5L, UUID.randomUUID(),
+            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{1, 2, 3}, 5L, UUID.randomUUID(), null,
                 BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 1L));
     }
 
@@ -26,11 +26,41 @@ class BankTransferReceiptStoreTest {
     void constructorRejectsANegativeCurrencyAmountOrTimestamp() {
         UUID id = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
-            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.WITHDRAWAL, null, -1L, null,
+            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.WITHDRAWAL, null, -1L, null, null,
                 BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 1L));
         assertThrows(IllegalArgumentException.class, () ->
-            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.WITHDRAWAL, null, 5L, null,
+            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.WITHDRAWAL, null, 5L, null, null,
                 BankTransferReceiptStatus.PENDING_LOCAL_ACTION, -1L));
+    }
+
+    @Test
+    void constructorRejectsWorldNpcPublicIdPresenceThatDoesNotMatchOperationType() {
+        UUID id = UUID.randomUUID();
+        // CHEQUE_REDEMPTION without worldNpcPublicId.
+        assertThrows(IllegalArgumentException.class, () ->
+            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.CHEQUE_REDEMPTION, null, null, null, null,
+                BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 1L));
+        // A non-redemption type carrying worldNpcPublicId.
+        assertThrows(IllegalArgumentException.class, () ->
+            new BankTransferReceipt(id, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, null, null, null, UUID.randomUUID(),
+                BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 1L));
+    }
+
+    @Test
+    void aValidRedemptionShapedReceiptSavesAndRoundTripsThroughNbt() {
+        BankTransferReceiptStore store = new BankTransferReceiptStore();
+        UUID chequePublicId = UUID.randomUUID();
+        BankTransferReceipt receipt = new BankTransferReceipt(
+            chequePublicId, UUID.randomUUID(), BankTransferOperationType.CHEQUE_REDEMPTION, null, null, null, UUID.randomUUID(),
+            BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 1L
+        );
+
+        assertEquals(BankTransferReceiptStore.RecordOutcome.CREATED, store.record(receipt));
+
+        CompoundTag saved = store.save(new CompoundTag(), null);
+        BankTransferReceiptStore reloaded = BankTransferReceiptStore.load(saved, null);
+        assertEquals(receipt, reloaded.find(chequePublicId));
+        assertFalse(reloaded.isReadOnlyFutureSchema());
     }
 
     @Test
@@ -98,7 +128,7 @@ class BankTransferReceiptStoreTest {
         UUID currencyOpId = UUID.randomUUID();
         BankTransferReceipt itemReceipt = itemReceipt(itemOpId, new byte[]{5, 6, 7, 8}, 123L);
         BankTransferReceipt currencyReceipt = new BankTransferReceipt(
-            currencyOpId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, null, 500L, null,
+            currencyOpId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, null, 500L, null, null,
             BankTransferReceiptStatus.PENDING_LOCAL_ACTION, 456L
         );
         store.record(itemReceipt);
@@ -283,7 +313,7 @@ class BankTransferReceiptStoreTest {
         ListTag list = new ListTag();
         list.add(itemReceipt(pendingId, new byte[]{1}, 10L).toNbt());
         BankTransferReceipt reconciliationRequiredReceipt = new BankTransferReceipt(
-            reconciliationRequiredId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{2}, null, UUID.randomUUID(),
+            reconciliationRequiredId, UUID.randomUUID(), BankTransferOperationType.DEPOSIT, new byte[]{2}, null, UUID.randomUUID(), null,
             BankTransferReceiptStatus.RECONCILIATION_REQUIRED, 20L
         );
         list.add(reconciliationRequiredReceipt.toNbt());
@@ -315,7 +345,7 @@ class BankTransferReceiptStoreTest {
             BankTransferOperationType type, UUID operationId, byte[] payload, long createdAt
     ) {
         return new BankTransferReceipt(
-            operationId, UUID.randomUUID(), type, payload, null, UUID.randomUUID(),
+            operationId, UUID.randomUUID(), type, payload, null, UUID.randomUUID(), null,
             BankTransferReceiptStatus.PENDING_LOCAL_ACTION, createdAt
         );
     }

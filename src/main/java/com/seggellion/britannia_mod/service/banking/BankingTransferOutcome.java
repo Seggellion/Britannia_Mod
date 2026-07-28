@@ -26,11 +26,22 @@ import javax.annotation.Nullable;
  * waited for item withdrawal. {@code INVALID_CHEQUE_AMOUNT} is cheque-issuance-prepare-only
  * (Milestone 11 Rails Slice 1, docs/banking_bank_cheque_issuance.md), added by this milestone's
  * own NeoForge issuance slice under the same rule.
+ *
+ * <p>{@code CHEQUE_REDEEMED} and {@code CHEQUE_NOT_FOUND}/{@code CHEQUE_ALREADY_REDEEMED}/
+ * {@code CHEQUE_CANCELLED}/{@code CHEQUE_VOIDED} are {@code banking/cheque/redeem}-only
+ * (Milestone 11 Rails Slice 2, docs/banking_bank_cheque_redemption.md), added by this
+ * milestone's own NeoForge redemption slice under the same rule. {@code CHEQUE_REDEEMED} is
+ * this endpoint's one success outcome -- there is no {@code PREPARED} for redemption (see
+ * {@link BankingChequeRedemptionResult}'s own docs for why this endpoint is a single call, not
+ * a prepare/confirm pair) -- so {@link #parse} treating it as an ordinary wire name and {@link
+ * BankingTransferResponseParser}'s envelope success-check both had to be extended for it
+ * explicitly, the same way {@code CONFIRMED}/{@code CANCELLED} already are.
  */
 public enum BankingTransferOutcome {
     PREPARED,
     CONFIRMED,
     CANCELLED,
+    CHEQUE_REDEEMED,
     RECONCILIATION_REQUIRED,
     INVALID_TRANSITION,
     CAPACITY_EXCEEDED,
@@ -62,6 +73,10 @@ public enum BankingTransferOutcome {
     INVALID_AMOUNT,
     INSUFFICIENT_BALANCE,
     INVALID_CHEQUE_AMOUNT,
+    CHEQUE_NOT_FOUND,
+    CHEQUE_ALREADY_REDEEMED,
+    CHEQUE_CANCELLED,
+    CHEQUE_VOIDED,
     SERVICE_UNAVAILABLE;
 
     @Nullable
@@ -76,7 +91,7 @@ public enum BankingTransferOutcome {
     /** The Rails-defined HTTP status this outcome is always paired with (docs/banking_item_transfer.md). */
     public int expectedHttpStatus() {
         return switch (this) {
-            case PREPARED, CONFIRMED, CANCELLED -> 200;
+            case PREPARED, CONFIRMED, CANCELLED, CHEQUE_REDEEMED -> 200;
             case UNAUTHORIZED -> 401;
             case SERVER_NOT_AUTHORIZED -> 403;
             case MALFORMED_REQUEST, UNEXPECTED_FIELD, MISSING_FIELD, MALFORMED_PAYLOAD, MALFORMED_FINGERPRINT -> 400;
@@ -86,7 +101,8 @@ public enum BankingTransferOutcome {
                  CAPACITY_EXCEEDED, UNSUPPORTED_SCHEMA_VERSION, PAYLOAD_TOO_LARGE, INVALID_WEIGHT,
                  OPERATION_NOT_FOUND, INVALID_TRANSITION, RECONCILIATION_REQUIRED,
                  ITEM_NOT_FOUND, ITEM_NOT_AVAILABLE,
-                 UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT, INSUFFICIENT_BALANCE, INVALID_CHEQUE_AMOUNT -> 422;
+                 UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT, INSUFFICIENT_BALANCE, INVALID_CHEQUE_AMOUNT,
+                 CHEQUE_NOT_FOUND, CHEQUE_ALREADY_REDEEMED, CHEQUE_CANCELLED, CHEQUE_VOIDED -> 422;
             case SERVICE_UNAVAILABLE -> 503;
         };
     }

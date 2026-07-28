@@ -213,6 +213,17 @@ public final class BankTransferReconciliationService {
             case CHEQUE_ISSUANCE -> BankingChequeIssuanceProxyService.resumeConfirmChequeIssuance(
                     server, receipt.playerUuid(), receipt.operationId()
             ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
+            // Milestone 11 NeoForge Slice 2: a cheque redemption receipt's own physical action
+            // (removal) already happened before its one Rails call, exactly like DEPOSIT above --
+            // resuming it is a plain re-dispatch, needing no live ServerPlayer and no on-login
+            // hook (see BankingChequeRedemptionProxyService's own "Crash recovery needs no
+            // on-login hook" docs). The receipt's operationId carries the cheque's own public_id
+            // (not a Rails BankTransferOperation UUID -- this endpoint has none), and
+            // worldNpcPublicId is this receipt type's own genuinely new field, required to
+            // re-issue the identical redeem request.
+            case CHEQUE_REDEMPTION -> BankingChequeRedemptionProxyService.resumeRedeemCheque(
+                    server, receipt.playerUuid(), receipt.operationId(), receipt.worldNpcPublicId()
+            ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
         }
     }
 

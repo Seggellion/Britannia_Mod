@@ -3,14 +3,18 @@ package com.seggellion.britannia_mod.client.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.bank.item.BankItemEligibility;
+import com.seggellion.britannia_mod.component.BankChequeData;
 import com.seggellion.britannia_mod.dialogue.DialogueLayout;
 import com.seggellion.britannia_mod.dialogue.DialogueViewModel;
+import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
+import com.seggellion.britannia_mod.registry.DataComponentRegistry;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.service.banking.BankItemSummary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -128,6 +132,18 @@ public final class BankScreen extends Screen {
             "Something has gone wrong with this transaction that requires staff attention. "
                     + "Please contact a server admin -- do not attempt this again until it is resolved."
     );
+    private static final Component CHEQUE_NOT_FOUND_MESSAGE = Component.literal(
+            "The teller inspects the cheque and frowns: \"I don't recognize this instrument at all.\""
+    );
+    private static final Component CHEQUE_ALREADY_REDEEMED_MESSAGE = Component.literal(
+            "The teller checks the ledger: \"This cheque has already been redeemed.\""
+    );
+    private static final Component CHEQUE_CANCELLED_MESSAGE = Component.literal(
+            "The teller checks the ledger: \"This cheque was cancelled and can no longer be redeemed.\""
+    );
+    private static final Component CHEQUE_VOIDED_MESSAGE = Component.literal(
+            "The teller checks the ledger: \"This cheque was voided and can no longer be redeemed.\""
+    );
 
     public BankScreen(BankAccountOpenedS2CPayload account) {
         super(Component.literal("Bank Account"));
@@ -234,14 +250,16 @@ public final class BankScreen extends Screen {
     }
 
     /**
-     * Milestone 10: a slot is depositable if it passes item eligibility OR is a bare coin
-     * stack -- coins are no longer a dead end in this picker. {@link
-     * CurrencyItemRegistry#isCurrencyStack} is checked first, deliberately mirroring the
-     * server-side routing order in {@code BankingTransferPacketService#handleDeposit}: the same
-     * stack this displays as depositable is exactly the stack that router would send down the
-     * currency balance protocol. Still a UX nicety only, not a security boundary -- the server
-     * independently re-derives the routing and every validation from the live slot regardless
-     * of what this screen displayed (the same trust model as before, unchanged).
+     * Milestone 11 Slice 2: a slot is depositable if it passes item eligibility, is a bare coin
+     * stack, OR is a bank cheque -- ADR-016's own "double-click-in-inventory" redemption gesture
+     * reuses this exact picker/selection mechanism rather than inventing a separate one.
+     * {@link CurrencyItemRegistry#isCurrencyStack}/{@link ItemRegistry#BANK_CHEQUE} are checked
+     * first, deliberately mirroring the server-side routing order in {@code
+     * BankingTransferPacketService#handleDeposit}: the same stack this displays as depositable
+     * is exactly the stack that router would send down the currency/redemption protocol. Still
+     * a UX nicety only, not a security boundary -- the server independently re-derives the
+     * routing and every validation from the live slot regardless of what this screen displayed
+     * (the same trust model as before, unchanged).
      *
      * <p>A container holding coins is NOT a coin stack (top-level item identity only) and
      * remains ineligible/greyed, matching the server's own routing polarity exactly.
@@ -249,6 +267,7 @@ public final class BankScreen extends Screen {
     private static boolean isDepositable(ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (CurrencyItemRegistry.isCurrencyStack(stack)) return true;
+        if (stack.getItem() == ItemRegistry.BANK_CHEQUE.get()) return true;
         try {
             BankItemEligibility.checkEligible(stack);
             return true;
@@ -307,7 +326,7 @@ public final class BankScreen extends Screen {
     /** Invoked by {@code ClientNetworkHandler} on a clean-rejection or reconciliation-required result. */
     public void acceptTransferResult(BankTransferResultS2CPayload payload) {
         switch (payload.operation()) {
-            case DEPOSIT -> depositPending = false;
+            case DEPOSIT, CHEQUE_REDEMPTION -> depositPending = false;
             case WITHDRAWAL -> withdrawalPending = false;
             // BankScreen itself never triggers a cheque issuance (BankChequeIssuanceScreen's
             // own acceptTransferResult handles that operation) -- unreachable here in practice,
@@ -317,9 +336,20 @@ public final class BankScreen extends Screen {
         statusMessage = switch (payload.kind()) {
             case CLEAN_REJECTION -> CLEAN_REJECTION_MESSAGE;
             case RECONCILIATION_REQUIRED -> RECONCILIATION_REQUIRED_MESSAGE;
-            // Milestone 11: never actually sent for a DEPOSIT/WITHDRAWAL result (only cheque
-            // issuance reaches PendingDelivery) -- kept only for switch exhaustiveness.
+            // Milestone 11 Slice 1: never actually sent for a DEPOSIT/WITHDRAWAL result (only
+            // cheque issuance reaches PendingDelivery) -- kept only for switch exhaustiveness.
             case PENDING_DELIVERY -> CLEAN_REJECTION_MESSAGE;
+            // Milestone 11 Slice 2 (Operation.CHEQUE_REDEMPTION only): each rendered as its own
+            // clear, diegetic message per Codex Prompt 11's own requirement, never folded into
+            // the generic CLEAN_REJECTION line -- these are the outcomes this endpoint actually
+            // returns in ordinary play (an already-redeemed or invalid cheque), not rare edge
+            // cases. Never modifies any value locally; the physical cheque item is already gone
+            // by the time any of these arrive (see BankingChequeRedemptionProxyService's own
+            // "Item disposition on a Rails rejection" docs).
+            case CHEQUE_NOT_FOUND -> CHEQUE_NOT_FOUND_MESSAGE;
+            case CHEQUE_ALREADY_REDEEMED -> CHEQUE_ALREADY_REDEEMED_MESSAGE;
+            case CHEQUE_CANCELLED -> CHEQUE_CANCELLED_MESSAGE;
+            case CHEQUE_VOIDED -> CHEQUE_VOIDED_MESSAGE;
         };
         refreshButtonStates();
     }
@@ -519,13 +549,37 @@ public final class BankScreen extends Screen {
         long now = System.currentTimeMillis();
         if (lastClickedDepositSlot == slotIndex && now - lastDepositClickTimeMs < DOUBLE_CLICK_MS) {
             selectedDepositSlot = slotIndex;
-            statusMessage = null;
+            statusMessage = chequeSelectionConfirmationMessage(clientInventory().getItem(slotIndex));
             refreshButtonStates();
             lastClickedDepositSlot = -1;
         } else {
             lastClickedDepositSlot = slotIndex;
             lastDepositClickTimeMs = now;
         }
+    }
+
+    /**
+     * Milestone 11 Slice 2: the "confirmation prompt" text Codex Prompt 11 calls for when a
+     * bank cheque is selected via double-click -- the ONLY thing {@link
+     * BankChequeData#displayAmount()} is ever read for on this side. This value is never sent
+     * anywhere: it is read purely to render this status line, and clicking "Deposit" afterward
+     * sends only the slot index, exactly like every other deposit-panel selection (the server
+     * independently re-derives the real, authoritative amount from Rails -- see {@code
+     * BankingChequeRedemptionProxyService}'s own docs). {@code null} for any non-cheque
+     * selection, leaving the existing plain-selection behavior (no status message) unchanged.
+     */
+    @Nullable
+    private static Component chequeSelectionConfirmationMessage(ItemStack selected) {
+        if (selected.isEmpty() || selected.getItem() != ItemRegistry.BANK_CHEQUE.get()) return null;
+        BankChequeData data = selected.get(DataComponentRegistry.BANK_CHEQUE_DATA.get());
+        if (data == null) return null;
+
+        CoinConversion.CoinCounts coins = CoinConversion.toCoins((int) data.displayAmount());
+        StringBuilder amount = new StringBuilder();
+        if (coins.gold() > 0) amount.append(coins.gold()).append(" gold ");
+        if (coins.silver() > 0) amount.append(coins.silver()).append(" silver ");
+        if (coins.copper() > 0 || amount.isEmpty()) amount.append(coins.copper()).append(" copper");
+        return Component.literal("Selected a cheque worth " + amount.toString().trim() + ". Click Deposit to redeem it.");
     }
 
     private void handleWithdrawPanelClick(double mouseX, double mouseY) {

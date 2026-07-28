@@ -53,9 +53,29 @@ public final class BankTransferReceipts {
             @javax.annotation.Nullable UUID bankItemPublicId,
             long nowEpochMillis
     ) {
+        return record(level, operationId, playerUuid, operationType, itemPayload, currencyAmount, bankItemPublicId, null, nowEpochMillis);
+    }
+
+    /**
+     * Milestone 11 NeoForge Slice 2: the {@code worldNpcPublicId}-carrying overload a {@code
+     * CHEQUE_REDEMPTION} receipt needs (see {@link BankTransferReceipt}'s own docs for why).
+     * Every other caller keeps using the five-argument-plus-timestamp overload above, which
+     * simply threads {@code null} through here unchanged.
+     */
+    public static BankTransferReceiptStore.RecordOutcome record(
+            ServerLevel level,
+            UUID operationId,
+            UUID playerUuid,
+            BankTransferOperationType operationType,
+            byte[] itemPayload,
+            Long currencyAmount,
+            @javax.annotation.Nullable UUID bankItemPublicId,
+            @javax.annotation.Nullable UUID worldNpcPublicId,
+            long nowEpochMillis
+    ) {
         BankTransferReceiptStore store = BankTransferReceiptStore.get(level);
         BankTransferReceipt receipt = new BankTransferReceipt(
-            operationId, playerUuid, operationType, itemPayload, currencyAmount, bankItemPublicId,
+            operationId, playerUuid, operationType, itemPayload, currencyAmount, bankItemPublicId, worldNpcPublicId,
             BankTransferReceiptStatus.PENDING_LOCAL_ACTION, nowEpochMillis
         );
         BankTransferReceiptStore.RecordOutcome outcome = store.record(receipt);

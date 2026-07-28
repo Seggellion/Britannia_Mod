@@ -34,7 +34,9 @@ public record BankTransferResultS2CPayload(Operation operation, Kind kind) imple
         DEPOSIT,
         WITHDRAWAL,
         /** Milestone 11 NeoForge Slice 1 -- kept distinct from WITHDRAWAL: cheque issuance's own outcome vocabulary genuinely differs (see {@link Kind#PENDING_DELIVERY}). */
-        CHEQUE_ISSUANCE
+        CHEQUE_ISSUANCE,
+        /** Milestone 11 NeoForge Slice 2 -- kept distinct from DEPOSIT (which routes it here): redemption's own rejection vocabulary genuinely differs (see the four {@code CHEQUE_*} {@link Kind} values). */
+        CHEQUE_REDEMPTION
     }
 
     public enum Kind {
@@ -47,7 +49,20 @@ public record BankTransferResultS2CPayload(Operation operation, Kind kind) imple
          * which means nothing may auto-resolve. See {@code BankingChequeIssuanceResult.PendingDelivery}'s
          * own docs for why this is a genuinely different, non-alarming state.
          */
-        PENDING_DELIVERY
+        PENDING_DELIVERY,
+        /**
+         * Milestone 11 NeoForge Slice 2 (Operation.CHEQUE_REDEMPTION only): the presented cheque
+         * UUID does not correspond to any real Rails-side {@code BankCheque}. Rendered as its
+         * own distinct message per Codex Prompt 11's own "clearly render invalid/redeemed/
+         * cancelled outcomes" requirement, not folded into {@link #CLEAN_REJECTION}.
+         */
+        CHEQUE_NOT_FOUND,
+        /** Milestone 11 NeoForge Slice 2 (Operation.CHEQUE_REDEMPTION only): the cheque was already redeemed -- by this account or a different one. */
+        CHEQUE_ALREADY_REDEEMED,
+        /** Milestone 11 NeoForge Slice 2 (Operation.CHEQUE_REDEMPTION only): the cheque was cancelled. */
+        CHEQUE_CANCELLED,
+        /** Milestone 11 NeoForge Slice 2 (Operation.CHEQUE_REDEMPTION only): the cheque was voided. */
+        CHEQUE_VOIDED
     }
 
     public static final ResourceLocation TYPE_ID =
