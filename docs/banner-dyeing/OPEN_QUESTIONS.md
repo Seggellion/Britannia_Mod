@@ -13,22 +13,13 @@ Milestone: 16 Batch 1A
 - Record whether a future design ever genuinely needs fixed foreground detail over a recoloured underlayer at the
   exact same pixel. That is not an alternative in the current architecture; it would require product-owner approval
   and a separate architecture milestone.
-- Complete the unverified Road Guard Gate E matrix: brass versus iron; natural cotton, wool, linen, and silk;
-  inventory, hand, dropped, item-frame, and preview contexts; parallel versus perpendicular; all four facings;
-  save/reload; relog; F3+T resource reload; `/reload`; break/drop; pick block; re-placement; support loss; exact
-  fixed-charcoal inspection; and all seven pigments.
-- Obtain explicit visual approval that the remaining contexts agree, only mask-active yellow regions recolour,
-  charcoal and transparency remain fixed, highlights and shadows remain readable, and mounts remain untinted.
-  Product-owner evidence already confirms placed rendering, absence of the purple fallback, approved Road Guard
-  model/art visibility, and basic visible dye application; Road Guard cannot become `complete` and Gate E cannot pass
-  until the remaining evidence exists.
 
 ## Milestone 16 content-intake readiness
 
-Road Guard has an approved intake and is integrated as the sole `in_progress` proof of concept. Its partial live
-visual review has passed, while the remaining Gate E matrix is pending. The other six extra-small definitions, and
-the remaining 26 catalogue definitions, still have no approved final owner assets or decision packages. The intake
-kit defines the evidence required to integrate each without guessing.
+Road Guard is the first completed final-content banner under the two-file architecture. Its full Gate E manual review
+passed and is no longer an open question. The other six extra-small definitions, and the remaining 26 catalogue
+definitions, still have no approved final owner assets or decision packages. The intake kit defines the evidence
+required to integrate each without guessing.
 
 Owner input is still required per definition for final display name, dimensions, orientations, supported/default
 mounts, placement profile, geometry convention, localization, the complete base texture, the selective dye mask,

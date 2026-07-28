@@ -104,12 +104,12 @@ class BannerCatalogueManifestTest {
     }
 
     @Test
-    void noEntryIsComplete() {
+    void onlyRoadGuardIsComplete() {
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertTrue(manifest.banners().stream().noneMatch(entry -> "complete".equals(entry.contentStatus())));
         assertEquals(List.of("road_guard"), manifest.banners().stream()
-                .filter(entry -> "in_progress".equals(entry.contentStatus()))
+                .filter(entry -> "complete".equals(entry.contentStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id).toList());
+        assertTrue(manifest.banners().stream().noneMatch(entry -> "in_progress".equals(entry.contentStatus())));
     }
 
     @Test

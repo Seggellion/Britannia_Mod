@@ -194,16 +194,18 @@ class GeneratedBannerCatalogueTest {
     }
 
     @Test
-    void roadGuardIsTheSoleInProgressDefinition() {
-        List<BannerDefinition> inProgress = result.snapshot().banners().activeDefinitions().stream()
-                .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).toList();
-        assertEquals(1, inProgress.size());
-        BannerDefinition roadGuard = inProgress.getFirst();
+    void roadGuardIsTheSoleCompleteDefinition() {
+        List<BannerDefinition> complete = result.snapshot().banners().activeDefinitions().stream()
+                .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).toList();
+        assertEquals(1, complete.size());
+        BannerDefinition roadGuard = complete.getFirst();
         assertEquals("britannia_mod:road_guard", roadGuard.id().toString());
         assertFalse(roadGuard.dimensions().provisional());
         assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
         assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
         assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
+        assertTrue(result.snapshot().banners().activeDefinitions().stream()
+                .noneMatch(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS));
         assertEquals(32, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
         assertEquals(32, result.snapshot().banners().activeDefinitions().stream()
@@ -228,14 +230,14 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
         assertTrue(status.contains("Final display names approved: 1 of 33"));
         assertTrue(status.contains("Final dimensions approved: 1 of 33"));
-        assertTrue(status.contains("Final artwork complete: 0 of 33"));
+        assertTrue(status.contains("Final artwork complete: 1 of 33"));
         assertTrue(status.contains("- placeholder: 32"));
-        assertTrue(status.contains("- in_progress: 1"));
-        assertTrue(status.contains("- complete: 0"));
+        assertTrue(status.contains("- in_progress: 0"));
+        assertTrue(status.contains("- complete: 1"));
         assertTrue(status.contains("- disabled: 0"));
-        assertTrue(status.contains("## Road Guard proof of concept"));
+        assertTrue(status.contains("## Road Guard completed final content"));
         assertTrue(status.contains("Intake validation: `READY_FOR_INTEGRATION`"));
-        assertTrue(status.contains("Manual review: pending"));
+        assertTrue(status.contains("Manual review: pass; product-owner Gate E approval recorded 2026-07-27"));
         assertTrue(status.contains("retained `Tournament Medium`"));
         assertTrue(status.contains("`Pennon of Silver` as the canonical scaffold labels"));
     }

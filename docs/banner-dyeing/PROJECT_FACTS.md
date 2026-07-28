@@ -30,7 +30,9 @@ Feature branch: `banners-dyetub`
 
 ## Milestone 16 Batch 1A Road Guard facts
 
-- `britannia_mod:road_guard` is the sole integrated final-content proof of concept. Its stable catalogue index remains
+- Road Guard is the first completed final-content banner using the two-file `base_texture` plus `dye_mask`
+  architecture.
+- `britannia_mod:road_guard` is the sole completed final-content banner. Its stable catalogue index remains
   `27`, its approved display name is `Road Guard`, its approved dimensions are 1 x 1, and it supports both
   `wall_parallel` and `wall_perpendicular` with brass and iron mounts (brass default).
 - The approved intake is
@@ -47,10 +49,11 @@ Feature branch: `banners-dyetub`
   approved synchronized 1 x 1 footprint, without a banner-specific rendering branch.
 - The approved placement profile reuses `britannia_mod:placeholder_x_small`. This is an approved profile convention,
   not a claim that the Road Guard artwork is placeholder content.
-- Road Guard is `in_progress`; the other 32 definitions remain `placeholder`. No definition is `complete` or
-  disabled. Product-owner live review confirms placed rendering, absence of the purple fallback, visibility of the
-  approved Road Guard model/art, and visible dye application. The mount/material/item-context/orientation/facing,
-  persistence, reload, lifecycle, fixed-pixel, and full-pigment checks remain unperformed, so Gate E is `NOT READY`.
+- Road Guard is `complete`; the other 32 definitions remain `placeholder`, none remains `in_progress`, and none is
+  disabled. The Product Owner completed and approved the full appearance, material, mount, item/preview, seven
+  pigment, orientation/facing, persistence/reload, break/drop, support-loss, pick-block, and re-placement matrix on
+  2026-07-27 after commit `d03fe2985baf6886cbb109765e68aac9f0a36ac7`. The evidence is recorded in
+  `content/banner-final-intake/submissions/road_guard/GATE_E_REVIEW.md`; Gate E passed.
 - `BannerInstanceState`, its persistent/stream codecs, block-entity state, placed structure, stable IDs, and save
   semantics are unchanged.
 
@@ -72,8 +75,8 @@ Feature branch: `banners-dyetub`
 - `BannerInstanceState`, placed-structure state, stable IDs, catalogue dimensions, orientations, mounts, placement
   profiles, and save semantics are unchanged. Definition schema version remains `1`; the existing display payload
   type has no independent numeric schema field and now projects only base and mask resource identities.
-- All 33 controlled definitions use `base_texture` plus `dye_mask`. Road Guard is the sole approved
-  `in_progress` entry; the other 32 remain `placeholder`. Milestone 17 has not started.
+- All 33 controlled definitions use `base_texture` plus `dye_mask`. Road Guard is the sole `complete` entry; the
+  other 32 remain `placeholder`. Milestone 17 has not started.
 
 ## Milestone 16 preparation facts
 

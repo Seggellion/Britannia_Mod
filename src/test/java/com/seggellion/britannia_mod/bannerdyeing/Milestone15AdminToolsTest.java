@@ -57,6 +57,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 class Milestone15AdminToolsTest {
     private static final BannerDefinitionId WARD =
             BannerDefinitionId.parse("britannia_mod:ward_of_serpents");
+    private static final BannerDefinitionId ROAD_GUARD =
+            BannerDefinitionId.parse("britannia_mod:road_guard");
     private static final FabricMaterialId COTTON = FabricMaterialId.parse("britannia_mod:cotton");
     private static final PigmentId MADDER = PigmentId.parse("britannia_mod:madder_red");
     private static final MountId BRASS = MountId.parse("britannia_mod:brass");
@@ -302,17 +304,19 @@ class Milestone15AdminToolsTest {
         assertEquals(4, validation.palettes());
         assertEquals(7, validation.pigments());
         assertEquals(2, validation.mounts());
-        assertEquals(33, validation.placeholders());
+        assertEquals(32, validation.placeholders());
         assertEquals(14, validation.provisionalNames());
         assertEquals(32, validation.provisionalDimensions());
         var first = service.placeholders(production, 1);
-        assertEquals(33, first.totalCount());
+        assertEquals(32, first.totalCount());
         assertEquals(8, first.entries().size());
-        assertEquals(5, first.pageCount());
+        assertEquals(4, first.pageCount());
+        assertTrue(first.entries().stream()
+                .noneMatch(entry -> entry.definitionId().equals(ROAD_GUARD)));
         assertEquals(first.entries().stream()
                 .map(entry -> entry.definitionId().toString()).sorted().toList(),
                 first.entries().stream().map(entry -> entry.definitionId().toString()).toList());
-        assertEquals(5, service.placeholders(production, 999).page());
+        assertEquals(4, service.placeholders(production, 999).page());
         assertEquals(1, service.placeholders(production, -10).page());
         assertEquals(0, service.placeholders(RegistrySnapshot.empty(), 1).totalCount());
     }

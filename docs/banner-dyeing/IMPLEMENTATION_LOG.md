@@ -1,5 +1,52 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-27 - Road Guard Gate E product-owner approval and closeout
+
+### Manual review evidence
+
+- The self-identified Product Owner completed the manual review on 2026-07-27 using Minecraft 1.21.1 and NeoForge
+  21.1.72 after commit `d03fe2985baf6886cbb109765e68aac9f0a36ac7`. Resource-pack and shader details were not
+  specified, no screenshots were supplied, and no general observation was supplied.
+- Appearance passed: natural base; fixed charcoal/non-dyeable regions; intended yellow dye regions; preserved
+  highlights, shadows, texture, and local contrast; and absence of purple, black, missing-texture, or diagnostic
+  fallback.
+- Materials passed: natural cotton, wool, linen, and silk, including their distinct metadata and palettes while
+  sharing the approved native artwork. Brass and iron mounts both rendered correctly and remained untinted.
+- Item and preview passed: inventory; first- and third-person hand; dropped item; item frame; current and proposed dye
+  previews; cancel; apply; re-dye replacement; and unlimited dye-tub behaviour.
+- All seven pigments passed: Madder Red, Woad Blue, Verdigris, Weld Gold, Soot Black, Chalk White, and Ice Blue.
+- Placement passed: parallel, perpendicular, north, south, east, and west; correct artwork rotation; geometry/mount
+  alignment; and item/preview/placed consistency.
+- Persistence and lifecycle passed: save/reload; relog/tracking; F3+T; `/reload`; break/drop; support loss; pick block
+  with complete configured state; and re-placement.
+- The Product Owner explicitly marked the overall Road Guard visual result `APPROVED`. The complete evidence is
+  recorded in `content/banner-final-intake/submissions/road_guard/GATE_E_REVIEW.md`; it contains no failed or
+  unresolved required review item.
+
+### Completion decision
+
+- Gate E passed. Road Guard transitioned from `in_progress` to `complete`; it is the sole completed definition. The
+  other 32 definitions remain `placeholder`, no definition remains `in_progress`, and none is disabled.
+- Stable ID/index, display name, dimensions, orientations, mounts, default mount, placement profile, geometry,
+  two-file asset identities, provenance, state schemas, placement, persistence, dyeing, and command behaviour are
+  unchanged. Crafting remains product-disabled, no other banner was integrated, and Milestone 17 has not started.
+- Scaffold generation is deterministic and owns the derived Road Guard definition, catalogue status, and metadata.
+  The client asset index, block-atlas definition, other 32 definitions, Road Guard geometry, and approved PNG bytes
+  remained unchanged across repeated generation and `--check`.
+- Five focused completion/content suites passed 63 tests with zero failures, errors, or skips. The first banner-wide
+  run correctly exposed one stale administrator projection assertion that still expected 33 non-complete entries.
+  The assertion was updated to the approved 32 placeholders, four pages, and explicit exclusion of completed Road
+  Guard; its 31-test suite then passed. The final banner/dye selection passed 604 tests across 52 suites with zero
+  skips. A clean passed, the unrestricted suite passed 609 tests across 53 suites with zero skips, and the production
+  build passed. No new compiler warning was introduced.
+- The rebuilt `build/libs/Britannia_Mod-0.1.7k-all.jar` contains 4,975 entries and zero duplicates. It contains 33
+  definitions with 32 placeholder, zero in-progress, and one complete (`britannia_mod:road_guard`), plus Road Guard
+  geometry/base/mask, the client asset index, and the block-atlas definition. It contains no `fabric_base`,
+  `static_overlay`, banner recipe, or pattern content. Embedded Road Guard hashes remain
+  `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240` and
+  `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669`.
+- The containing closeout commit cannot record its own hash; the full hash is recorded in the final closeout handoff.
+
 ## 2026-07-27 - Road Guard placed-render resource-resolution correction
 
 ### Symptom and evidence

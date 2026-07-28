@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "files": {
-    "content/banner_catalogue_status.md": "a34a4fb2ac533969789544c3b48e9008098fa885b46cf450a0ce2389c1061d44",
+    "content/banner_catalogue_status.md": "ae21eea983e05a92c5d128af5a0a5fe062ec0f3069d17c7d85e73a492866278e",
     "src/main/resources/assets/britannia_mod/banner_client_assets.json": "1ea6f05da88f19b0c88768c798f1412cb888bbdb0348f711f09e13be3a44b08e",
     "src/main/resources/assets/britannia_mod/models/banner/mount/brass.json": "c50654f2cbc55c3a6f95ea6a4a80b19e7aedeffd766ad53c75a9248467e10101",
     "src/main/resources/assets/britannia_mod/models/banner/mount/iron.json": "71dd4b7d116f7a609773e16257b400eab17814962b8da0af3966d62daf920de8",
@@ -45,7 +45,7 @@
     "src/main/resources/data/britannia_mod/banner_definitions/pale_road_guard.json": "8fa7dfc4cbf4979669a8642903f9ec76918811ab9906007a89de735ccc4f64e0",
     "src/main/resources/data/britannia_mod/banner_definitions/pennon_of_silver.json": "b44bc622646f40747f7fd6b559899c246ebc7d113e0ecf5543711f29f95daadd",
     "src/main/resources/data/britannia_mod/banner_definitions/red_crosslets.json": "40846acbe8c2be1142acf25b0e62fe8c01d3635446cefd695ecd837279e374e1",
-    "src/main/resources/data/britannia_mod/banner_definitions/road_guard.json": "c76ac2a6981f6c393df6eed307cb77c0732983ff54be58ec62abbd1a9d6e8dca",
+    "src/main/resources/data/britannia_mod/banner_definitions/road_guard.json": "3ba2897e8481e5ab300d07e592f6264142506a5ca83b5c3eed7d7e2a328c3b00",
     "src/main/resources/data/britannia_mod/banner_definitions/scarlet_court.json": "f42212ab79e7197085f6450d5b448df6a7ac8af187ab0217d6bcd14d5a0feb2c",
     "src/main/resources/data/britannia_mod/banner_definitions/serpent_guard.json": "c72e98200b3f2d30d50db0c8fcb8f397ec0040fa21dfc01305b71a8d12b7083f",
     "src/main/resources/data/britannia_mod/banner_definitions/silver_and_gold_pennon.json": "b23a45a02c130a944fab46974133257f2e81d9a2e47905456afb58e8cb2b7af7",

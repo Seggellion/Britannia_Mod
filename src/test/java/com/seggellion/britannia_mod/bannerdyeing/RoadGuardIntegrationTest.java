@@ -59,6 +59,8 @@ class RoadGuardIntegrationTest {
             ResourceLocation.parse("britannia_mod:banner/road_guard/dye_mask");
     private static final Path INTAKE =
             Path.of("content/banner-final-intake/submissions/road_guard/road_guard.yml");
+    private static final Path GATE_E_REVIEW =
+            Path.of("content/banner-final-intake/submissions/road_guard/GATE_E_REVIEW.md");
     private static final Path BASE_PATH = Path.of(
             "src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png");
     private static final Path MASK_PATH = Path.of(
@@ -97,7 +99,7 @@ class RoadGuardIntegrationTest {
         BannerScaffoldTool.BannerEntry roadGuard = matching.getFirst();
         assertEquals(27, roadGuard.index());
         assertEquals("Road Guard", roadGuard.displayName());
-        assertEquals("in_progress", roadGuard.contentStatus());
+        assertEquals("complete", roadGuard.contentStatus());
         assertEquals(1, roadGuard.widthBlocks());
         assertEquals(1, roadGuard.heightBlocks());
         assertEquals(Boolean.FALSE, roadGuard.dimensionsProvisional());
@@ -125,15 +127,46 @@ class RoadGuardIntegrationTest {
 
         assertEquals(32, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(1, renderData.banners().values().stream()
-                .filter(value -> value.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
         assertEquals(0, renderData.banners().values().stream()
+                .filter(value -> value.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
+        assertEquals(1, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.COMPLETE).count());
         assertTrue(renderData.banners().values().stream()
                 .filter(value -> !value.id().equals(ROAD_GUARD))
                 .allMatch(value -> value.dimensions().provisional()
                         && value.assets().baseTexture().equals(BannerAssetAvailability.BASE_TEXTURE)
                         && value.assets().dyeMask().equals(BannerAssetAvailability.DYE_MASK)));
+    }
+
+    @Test
+    void completedRoadGuardHasApprovedProvenanceAndManualGateEEvidence() throws Exception {
+        JsonObject intake = JsonParser.parseString(Files.readString(INTAKE)).getAsJsonObject();
+        JsonObject provenance = intake.getAsJsonObject("provenance");
+        assertTrue(provenance.get("original_art").getAsBoolean());
+        assertTrue(provenance.get("distribution_permission_confirmed").getAsBoolean());
+        assertFalse(provenance.get("copied_from_reference_art").getAsBoolean());
+        assertFalse(provenance.get("creator").getAsString().isBlank());
+        assertFalse(provenance.get("creation_method").getAsString().isBlank());
+
+        String review = Files.readString(GATE_E_REVIEW);
+        assertEquals(47, review.lines().filter(line -> line.endsWith(": PASS")).count());
+        assertTrue(review.contains("Commit tested: `d03fe2985baf6886cbb109765e68aac9f0a36ac7`"));
+        assertTrue(review.contains("Overall Road Guard visual approval: APPROVED"));
+        assertTrue(review.contains("Gate E result: PASS"));
+        assertTrue(review.contains("Natural Road Guard base appearance: PASS"));
+        assertTrue(review.contains("Fixed charcoal and other non-dyeable regions remain unchanged: PASS"));
+        assertTrue(review.contains("Brass mount renders correctly and remains untinted: PASS"));
+        assertTrue(review.contains("Iron mount renders correctly and remains untinted: PASS"));
+        assertTrue(review.contains("Item, preview, and placed appearances agree: PASS"));
+        assertTrue(review.contains("Save and reload preserve the configured state and appearance: PASS"));
+        assertTrue(review.contains("Breaking the banner drops exactly one configured item: PASS"));
+        assertTrue(review.contains(
+                "Pick block preserves definition, material, colour, pigment provenance, and mount: PASS"));
+        assertFalse(review.contains(": FAIL"));
+        assertFalse(review.contains(": NOT PERFORMED"));
+        assertFalse(review.contains("[ENTER"));
+        assertFalse(review.contains("[YYYY"));
+        assertTrue(review.contains("Crafting: not applicable; product-disabled"));
     }
 
     @Test
