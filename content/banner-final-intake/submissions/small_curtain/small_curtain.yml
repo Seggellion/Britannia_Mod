@@ -1,0 +1,65 @@
+{
+    "schema_version":  1,
+    "approval":  {
+                     "status":  "NOT_APPROVED",
+                     "approved_by":  "",
+                     "approved_date":  "",
+                     "notes":  "Draft extraction only. Stable ID and display name are product-owner approved. Pixel audit found all 6,862 active pixels non-grayscale across 666 RGB values, all over non-opaque base pixels (6,739 partial-alpha and 123 fully transparent); product-owner mask correction and remaining administrative approvals are required."
+                 },
+    "banner":  {
+                   "stable_id":  "britannia_mod:small_curtain",
+                   "final_display_name":  "Small Curtain",
+                   "width_blocks":  null,
+                   "height_blocks":  null,
+                   "supported_orientations":  [
+
+                                              ],
+                   "supported_mounts":  [
+
+                                        ],
+                   "default_mount":  null,
+                   "placement_profile_id":  null,
+                   "geometry_id":  null,
+                   "geometry_convention":  ""
+               },
+    "localization":  {
+                         "language":  "en_us",
+                         "value":  "Small Curtain"
+                     },
+    "assets":  {
+                   "base_texture":  {
+                                        "resource_id":  "britannia_mod:banner/small_curtain/base_texture",
+                                        "source_file":  "content/banner-final-intake/submissions/small_curtain/base_texture.png",
+                                        "sha256":  "eaa19b25fe71b854d9d1529c0b04cb88ef0652670068dabd3e5c5cbd0aad7665"
+                                    },
+                   "dye_mask":  {
+                                    "resource_id":  "britannia_mod:banner/small_curtain/dye_mask",
+                                    "source_file":  "content/banner-final-intake/submissions/small_curtain/dye_mask.png",
+                                    "sha256":  "3e866709969547f6b70561975828df3780342c3cad408af6ae1a7e33ea928cec"
+                                },
+                   "geometry":  {
+                                    "shared_geometry_approved":  false,
+                                    "source_file":  null,
+                                    "sha256":  null
+                                }
+               },
+    "references":  {
+                       "authoring_source_file":  null,
+                       "preview_image_file":  "content/banner-final-intake/submissions/small_curtain/review/review_sheet.png"
+                   },
+    "provenance":  {
+                       "original_art":  false,
+                       "creator":  "",
+                       "creation_method":  "",
+                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+                       "distribution_permission_confirmed":  false,
+                       "copied_from_reference_art":  null
+                   },
+    "manual_verification":  {
+                                "performed":  false,
+                                "tester":  "",
+                                "date":  "",
+                                "notes":  "Not performed; diagnostic review images only."
+                            },
+    "requested_content_status":  "placeholder"
+}

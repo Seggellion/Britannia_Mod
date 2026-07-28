@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "id": "britannia_mod:x_small_unnamed_01",
-  "display_name_key": "banner.britannia_mod.x_small_unnamed_01",
+  "id": "britannia_mod:small_curtain",
+  "display_name_key": "banner.britannia_mod.small_curtain",
   "content_status": "placeholder",
   "source_reference": {
     "page": 4,
-    "row": 2
+    "row": 2,
+    "source_label": "Small Curtain"
   },
   "catalogue_group": "x-small",
   "dimensions": {

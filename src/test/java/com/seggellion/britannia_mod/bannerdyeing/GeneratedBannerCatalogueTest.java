@@ -213,6 +213,35 @@ class GeneratedBannerCatalogueTest {
     }
 
     @Test
+    void smallCurtainReplacesTheUnnamedDefinitionAtCatalogueIndexThirtyThree() throws Exception {
+        Path definitions = DATA_ROOT.resolve("banner_definitions");
+        assertTrue(Files.isRegularFile(definitions.resolve("small_curtain.json")));
+        assertFalse(Files.exists(definitions.resolve("x_small_unnamed_01.json")));
+
+        BannerDefinition smallCurtain = result.snapshot().banners().activeDefinitions().stream()
+                .filter(definition -> definition.id().toString().equals("britannia_mod:small_curtain"))
+                .findFirst().orElseThrow();
+        assertEquals("banner.britannia_mod.small_curtain", smallCurtain.displayNameKey());
+        assertEquals(BannerContentStatus.PLACEHOLDER, smallCurtain.contentStatus());
+
+        JsonObject catalogue = JsonParser.parseString(Files.readString(Path.of(
+                "content/banner_catalogue.yml"))).getAsJsonObject();
+        JsonObject indexThirtyThree = null;
+        for (var element : catalogue.getAsJsonArray("banners")) {
+            JsonObject entry = element.getAsJsonObject();
+            if (entry.get("index").getAsInt() == 33) {
+                indexThirtyThree = entry;
+            }
+        }
+        assertEquals("small_curtain", indexThirtyThree.get("id").getAsString());
+
+        JsonObject language = JsonParser.parseString(Files.readString(Path.of(
+                BannerScaffoldTool.LOCALIZATION_PATH))).getAsJsonObject();
+        assertEquals("Small Curtain", language.get("banner.britannia_mod.small_curtain").getAsString());
+        assertFalse(language.has("banner.britannia_mod.x_small_unnamed_01"));
+    }
+
+    @Test
     void statusReportListsEveryProvisionalEntryAndGateBFacts() throws Exception {
         String status = Files.readString(Path.of(BannerScaffoldTool.STATUS_PATH));
         BannerScaffoldTool.Manifest manifest = BannerScaffoldTool.readAndValidateManifest(
@@ -220,7 +249,7 @@ class GeneratedBannerCatalogueTest {
         List<String> provisional = manifest.banners().stream()
                 .filter(entry -> "provisional".equals(entry.nameStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id).toList();
-        assertEquals(14, provisional.size());
+        assertEquals(13, provisional.size());
         provisional.forEach(id -> assertTrue(status.contains("`" + id + "`"), id));
         assertTrue(status.contains("Catalogue target: exactly 33"));
         assertTrue(status.contains("Stable identity set approved at Gate B: yes"));
@@ -228,7 +257,7 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("Survival acquisition implemented: no"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
-        assertTrue(status.contains("Final display names approved: 1 of 33"));
+        assertTrue(status.contains("Final display names approved: 2 of 33"));
         assertTrue(status.contains("Final dimensions approved: 1 of 33"));
         assertTrue(status.contains("Final artwork complete: 1 of 33"));
         assertTrue(status.contains("- placeholder: 32"));

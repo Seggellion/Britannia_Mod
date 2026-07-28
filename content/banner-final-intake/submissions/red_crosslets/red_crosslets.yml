@@ -1,0 +1,65 @@
+{
+    "schema_version":  1,
+    "approval":  {
+                     "status":  "NOT_APPROVED",
+                     "approved_by":  "",
+                     "approved_date":  "",
+                     "notes":  "Draft extraction only. Pixel audit found 176 active mask pixels over non-opaque base pixels (167 partial-alpha and 9 fully transparent); product-owner mask correction and all administrative approvals remain required."
+                 },
+    "banner":  {
+                   "stable_id":  "britannia_mod:red_crosslets",
+                   "final_display_name":  "Red Crosslets",
+                   "width_blocks":  null,
+                   "height_blocks":  null,
+                   "supported_orientations":  [
+
+                                              ],
+                   "supported_mounts":  [
+
+                                        ],
+                   "default_mount":  null,
+                   "placement_profile_id":  null,
+                   "geometry_id":  null,
+                   "geometry_convention":  ""
+               },
+    "localization":  {
+                         "language":  "en_us",
+                         "value":  "Red Crosslets"
+                     },
+    "assets":  {
+                   "base_texture":  {
+                                        "resource_id":  "britannia_mod:banner/red_crosslets/base_texture",
+                                        "source_file":  "content/banner-final-intake/submissions/red_crosslets/base_texture.png",
+                                        "sha256":  "2b414ea707890516f4a7a4bc1b527f62d01a3fa97bed14c9cb0bd46690e11d8d"
+                                    },
+                   "dye_mask":  {
+                                    "resource_id":  "britannia_mod:banner/red_crosslets/dye_mask",
+                                    "source_file":  "content/banner-final-intake/submissions/red_crosslets/dye_mask.png",
+                                    "sha256":  "14e37978314795e7044331681120a050b5e53faccfea8380f0af487d40e5220d"
+                                },
+                   "geometry":  {
+                                    "shared_geometry_approved":  false,
+                                    "source_file":  null,
+                                    "sha256":  null
+                                }
+               },
+    "references":  {
+                       "authoring_source_file":  null,
+                       "preview_image_file":  "content/banner-final-intake/submissions/red_crosslets/review/review_sheet.png"
+                   },
+    "provenance":  {
+                       "original_art":  false,
+                       "creator":  "",
+                       "creation_method":  "",
+                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+                       "distribution_permission_confirmed":  false,
+                       "copied_from_reference_art":  null
+                   },
+    "manual_verification":  {
+                                "performed":  false,
+                                "tester":  "",
+                                "date":  "",
+                                "notes":  "Not performed; diagnostic review images only."
+                            },
+    "requested_content_status":  "placeholder"
+}

@@ -1,0 +1,65 @@
+{
+    "schema_version":  1,
+    "approval":  {
+                     "status":  "NOT_APPROVED",
+                     "approved_by":  "",
+                     "approved_date":  "",
+                     "notes":  "Draft extraction only. Pixel audit found 140 active mask pixels over non-opaque base pixels (137 partial-alpha and 3 fully transparent); product-owner mask correction and all administrative approvals remain required."
+                 },
+    "banner":  {
+                   "stable_id":  "britannia_mod:captains_red_crosslets",
+                   "final_display_name":  "Captain\u0027s Red Crosslets",
+                   "width_blocks":  null,
+                   "height_blocks":  null,
+                   "supported_orientations":  [
+
+                                              ],
+                   "supported_mounts":  [
+
+                                        ],
+                   "default_mount":  null,
+                   "placement_profile_id":  null,
+                   "geometry_id":  null,
+                   "geometry_convention":  ""
+               },
+    "localization":  {
+                         "language":  "en_us",
+                         "value":  "Captain\u0027s Red Crosslets"
+                     },
+    "assets":  {
+                   "base_texture":  {
+                                        "resource_id":  "britannia_mod:banner/captains_red_crosslets/base_texture",
+                                        "source_file":  "content/banner-final-intake/submissions/captains_red_crosslets/base_texture.png",
+                                        "sha256":  "fdffffb2faf4ccfd343fa88345080e56bd2e963375800b49381784a862e7fc0a"
+                                    },
+                   "dye_mask":  {
+                                    "resource_id":  "britannia_mod:banner/captains_red_crosslets/dye_mask",
+                                    "source_file":  "content/banner-final-intake/submissions/captains_red_crosslets/dye_mask.png",
+                                    "sha256":  "cf33bd0b6e2153674ad14990d2a00d62dfa94a8ebd409ca8991bdfafaf90876f"
+                                },
+                   "geometry":  {
+                                    "shared_geometry_approved":  false,
+                                    "source_file":  null,
+                                    "sha256":  null
+                                }
+               },
+    "references":  {
+                       "authoring_source_file":  null,
+                       "preview_image_file":  "content/banner-final-intake/submissions/captains_red_crosslets/review/review_sheet.png"
+                   },
+    "provenance":  {
+                       "original_art":  false,
+                       "creator":  "",
+                       "creation_method":  "",
+                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+                       "distribution_permission_confirmed":  false,
+                       "copied_from_reference_art":  null
+                   },
+    "manual_verification":  {
+                                "performed":  false,
+                                "tester":  "",
+                                "date":  "",
+                                "notes":  "Not performed; diagnostic review images only."
+                            },
+    "requested_content_status":  "placeholder"
+}

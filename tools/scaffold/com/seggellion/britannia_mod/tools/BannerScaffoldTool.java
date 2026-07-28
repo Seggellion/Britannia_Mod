@@ -258,6 +258,9 @@ public final class BannerScaffoldTool {
             } else {
                 require(notBlank(entry.sourceLabel), "Source-named entry needs source_label: " + entry.id);
             }
+            if (Boolean.TRUE.equals(entry.displayNameApproved)) {
+                require("source-named".equals(entry.nameStatus), "Approved display name must not be provisional: " + entry.id);
+            }
             String contentStatus = first(entry.contentStatus, defaults.contentStatus);
             require(Set.of("placeholder", "in_progress", "complete").contains(contentStatus),
                     "Unknown content_status for " + entry.id + ": " + contentStatus);
@@ -336,7 +339,7 @@ public final class BannerScaffoldTool {
             Group group = manifest.groups.get(entry.group);
             banners.add(new ResolvedBanner(
                     entry.index, entry.id, entry.group, entry.page, entry.row, entry.sourceLabel,
-                    entry.displayName, entry.nameStatus,
+                    entry.displayName, entry.nameStatus, first(entry.displayNameApproved, false),
                     first(entry.contentStatus, manifest.defaults.contentStatus),
                     first(entry.widthBlocks, group.widthBlocks),
                     first(entry.heightBlocks, group.heightBlocks),
@@ -861,6 +864,8 @@ public final class BannerScaffoldTool {
         Map<String, Long> contentCounts = counts(catalogue.banners, banner -> banner.contentStatus);
         long integratedCount = catalogue.banners.stream()
                 .filter(banner -> !"placeholder".equals(banner.contentStatus)).count();
+        long nameApprovedCount = catalogue.banners.stream()
+                .filter(banner -> banner.displayNameApproved).count();
         long completeCount = contentCounts.getOrDefault("complete", 0L);
         StringBuilder report = new StringBuilder();
         report.append("# Banner Catalogue Status\n\n")
@@ -878,7 +883,7 @@ public final class BannerScaffoldTool {
                 .append("- Admin acquisition implemented: yes\n")
                 .append("- Survival acquisition implemented: no\n")
                 .append("- NPC/shop distribution implemented: no\n")
-                .append("- Final display names approved: ").append(integratedCount).append(" of 33\n")
+                .append("- Final display names approved: ").append(nameApprovedCount).append(" of 33\n")
                 .append("- Final dimensions approved: ").append(integratedCount).append(" of 33\n")
                 .append("- Final per-definition orientations approved: ").append(integratedCount)
                 .append(" of 33\n")
@@ -1228,7 +1233,7 @@ public final class BannerScaffoldTool {
                 30|captains_red_crosslets|x-small|3|11|Captain's Red Crosslets|source-named
                 31|scarlet_court|x-small|3|12|Scarlet Court|source-named
                 32|verdant_court|x-small|4|1|Verdant Court|source-named
-                33|x_small_unnamed_01|x-small|4|2|Extra-Small Banner 01|provisional
+                33|small_curtain|x-small|4|2|Small Curtain|source-named
                 """;
         return table.lines().filter(line -> !line.isBlank()).map(line -> {
             String[] columns = line.strip().split("\\|", -1);
@@ -1272,6 +1277,7 @@ public final class BannerScaffoldTool {
             String sourceLabel,
             String displayName,
             String nameStatus,
+            Boolean displayNameApproved,
             String contentStatus,
             Integer widthBlocks,
             Integer heightBlocks,
@@ -1304,6 +1310,7 @@ public final class BannerScaffoldTool {
             String sourceLabel,
             String displayName,
             String nameStatus,
+            boolean displayNameApproved,
             String contentStatus,
             int widthBlocks,
             int heightBlocks,

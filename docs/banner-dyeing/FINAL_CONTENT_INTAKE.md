@@ -10,10 +10,12 @@ Every banner uses one architecture: a complete full-colour base texture plus a s
 
 ## 2. Stable identity
 
-- Stable IDs never change when artwork or display names change.
+- Stable IDs do not normally change when artwork or display names change.
 - Display names and localization may change after approval.
 - Saved items and placed structures identify banners by stable ID.
-- `britannia_mod:x_small_unnamed_01` keeps that ID after receiving a final name.
+- Milestone 16 Batch 1B is the explicit exception: `britannia_mod:x_small_unnamed_01` migrated to the canonical
+  `britannia_mod:small_curtain`, and the legacy ID is decoded as the new ID for saved-item and placed-state
+  compatibility.
 
 ## 3. Required owner decisions
 

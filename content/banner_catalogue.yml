@@ -83,6 +83,7 @@
       "source_label": "Road Guard",
       "display_name": "Road Guard",
       "name_status": "source-named",
+      "display_name_approved": true,
       "content_status": "complete",
       "width_blocks": 1,
       "height_blocks": 1,
@@ -106,6 +107,6 @@
     {"index": 30, "id": "captains_red_crosslets", "group": "x-small", "page": 3, "row": 11, "source_label": "Captain's Red Crosslets", "display_name": "Captain's Red Crosslets", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
     {"index": 31, "id": "scarlet_court", "group": "x-small", "page": 3, "row": 12, "source_label": "Scarlet Court", "display_name": "Scarlet Court", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
     {"index": 32, "id": "verdant_court", "group": "x-small", "page": 4, "row": 1, "source_label": "Verdant Court", "display_name": "Verdant Court", "name_status": "source-named", "notes": "Source name preserved; owner approval remains pending."},
-    {"index": 33, "id": "x_small_unnamed_01", "group": "x-small", "page": 4, "row": 2, "source_label": null, "display_name": "Extra-Small Banner 01", "name_status": "provisional", "notes": "Name Required; canonical provisional catalogue label."}
+    {"index": 33, "id": "small_curtain", "group": "x-small", "page": 4, "row": 2, "source_label": "Small Curtain", "display_name": "Small Curtain", "name_status": "source-named", "display_name_approved": true, "notes": "Product-owner-approved stable-ID replacement for x_small_unnamed_01; catalogue position preserved."}
   ]
 }

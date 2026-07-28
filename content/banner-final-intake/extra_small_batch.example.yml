@@ -323,8 +323,8 @@
         "notes": ""
       },
       "banner": {
-        "stable_id": "britannia_mod:x_small_unnamed_01",
-        "final_display_name": "",
+        "stable_id": "britannia_mod:small_curtain",
+        "final_display_name": "Small Curtain",
         "width_blocks": null,
         "height_blocks": null,
         "supported_orientations": [],
@@ -335,7 +335,7 @@
         "geometry_convention": ""
       },
       "current_provisional_state": {
-        "display_label": "Extra-Small Banner 01 (Name Required)",
+        "display_label": "Small Curtain",
         "width_blocks": 1,
         "height_blocks": 1,
         "supported_orientations": ["wall_parallel", "wall_perpendicular"],

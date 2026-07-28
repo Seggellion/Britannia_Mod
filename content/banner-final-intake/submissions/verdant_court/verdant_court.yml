@@ -1,0 +1,65 @@
+{
+    "schema_version":  1,
+    "approval":  {
+                     "status":  "NOT_APPROVED",
+                     "approved_by":  "",
+                     "approved_date":  "",
+                     "notes":  "Draft extraction only. Pixel audit found 1,390 non-white active pixels across 99 grayscale values and 321 active mask pixels over non-opaque base pixels (301 partial-alpha and 20 fully transparent); product-owner correction and all administrative approvals remain required."
+                 },
+    "banner":  {
+                   "stable_id":  "britannia_mod:verdant_court",
+                   "final_display_name":  "Verdant Court",
+                   "width_blocks":  null,
+                   "height_blocks":  null,
+                   "supported_orientations":  [
+
+                                              ],
+                   "supported_mounts":  [
+
+                                        ],
+                   "default_mount":  null,
+                   "placement_profile_id":  null,
+                   "geometry_id":  null,
+                   "geometry_convention":  ""
+               },
+    "localization":  {
+                         "language":  "en_us",
+                         "value":  "Verdant Court"
+                     },
+    "assets":  {
+                   "base_texture":  {
+                                        "resource_id":  "britannia_mod:banner/verdant_court/base_texture",
+                                        "source_file":  "content/banner-final-intake/submissions/verdant_court/base_texture.png",
+                                        "sha256":  "c7dff8df2228768b1ee48642123859dc853198a9862d26dc66ff0a38e27dfada"
+                                    },
+                   "dye_mask":  {
+                                    "resource_id":  "britannia_mod:banner/verdant_court/dye_mask",
+                                    "source_file":  "content/banner-final-intake/submissions/verdant_court/dye_mask.png",
+                                    "sha256":  "92a0565fd98166759fe9862b4ea588711e5c1196f4306fb2754c24349b35dcd8"
+                                },
+                   "geometry":  {
+                                    "shared_geometry_approved":  false,
+                                    "source_file":  null,
+                                    "sha256":  null
+                                }
+               },
+    "references":  {
+                       "authoring_source_file":  null,
+                       "preview_image_file":  "content/banner-final-intake/submissions/verdant_court/review/review_sheet.png"
+                   },
+    "provenance":  {
+                       "original_art":  false,
+                       "creator":  "",
+                       "creation_method":  "",
+                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+                       "distribution_permission_confirmed":  false,
+                       "copied_from_reference_art":  null
+                   },
+    "manual_verification":  {
+                                "performed":  false,
+                                "tester":  "",
+                                "date":  "",
+                                "notes":  "Not performed; diagnostic review images only."
+                            },
+    "requested_content_status":  "placeholder"
+}

@@ -32,7 +32,7 @@ class FinalContentIntakeDocumentationTest {
             "britannia_mod:captains_red_crosslets",
             "britannia_mod:scarlet_court",
             "britannia_mod:verdant_court",
-            "britannia_mod:x_small_unnamed_01");
+            "britannia_mod:small_curtain");
 
     @Test
     void intakeGuideChecklistReadmeAndTemplatesExist() {
@@ -58,6 +58,7 @@ class FinalContentIntakeDocumentationTest {
         }
         assertTrue(guide.contains("it may not invent"));
         assertTrue(guide.contains("x_small_unnamed_01"));
+        assertTrue(guide.contains("small_curtain"));
         assertTrue(guide.contains("Current diagnostic placeholders are 16 × 16"));
         assertTrue(guide.contains("not automatic approval"));
         assertTrue(guide.contains("source_pigment_id is present"));

@@ -1,0 +1,65 @@
+{
+    "schema_version":  1,
+    "approval":  {
+                     "status":  "NOT_APPROVED",
+                     "approved_by":  "",
+                     "approved_date":  "",
+                     "notes":  "Draft extraction only. Pixel audit found 212 active mask pixels over non-opaque base pixels (206 partial-alpha and 6 fully transparent); product-owner mask correction and all administrative approvals remain required."
+                 },
+    "banner":  {
+                   "stable_id":  "britannia_mod:pale_road_guard",
+                   "final_display_name":  "Pale Road Guard",
+                   "width_blocks":  null,
+                   "height_blocks":  null,
+                   "supported_orientations":  [
+
+                                              ],
+                   "supported_mounts":  [
+
+                                        ],
+                   "default_mount":  null,
+                   "placement_profile_id":  null,
+                   "geometry_id":  null,
+                   "geometry_convention":  ""
+               },
+    "localization":  {
+                         "language":  "en_us",
+                         "value":  "Pale Road Guard"
+                     },
+    "assets":  {
+                   "base_texture":  {
+                                        "resource_id":  "britannia_mod:banner/pale_road_guard/base_texture",
+                                        "source_file":  "content/banner-final-intake/submissions/pale_road_guard/base_texture.png",
+                                        "sha256":  "62fd898335a9ac4d2a7ec79694f5b2dc25793359de09e9f40eb0c89d55b6a433"
+                                    },
+                   "dye_mask":  {
+                                    "resource_id":  "britannia_mod:banner/pale_road_guard/dye_mask",
+                                    "source_file":  "content/banner-final-intake/submissions/pale_road_guard/dye_mask.png",
+                                    "sha256":  "c0fc8eecfaa738ddbab302e730c0b74395f550cfc01dcfa03dc125db0cb74fad"
+                                },
+                   "geometry":  {
+                                    "shared_geometry_approved":  false,
+                                    "source_file":  null,
+                                    "sha256":  null
+                                }
+               },
+    "references":  {
+                       "authoring_source_file":  null,
+                       "preview_image_file":  "content/banner-final-intake/submissions/pale_road_guard/review/review_sheet.png"
+                   },
+    "provenance":  {
+                       "original_art":  false,
+                       "creator":  "",
+                       "creation_method":  "",
+                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+                       "distribution_permission_confirmed":  false,
+                       "copied_from_reference_art":  null
+                   },
+    "manual_verification":  {
+                                "performed":  false,
+                                "tester":  "",
+                                "date":  "",
+                                "notes":  "Not performed; diagnostic review images only."
+                            },
+    "requested_content_status":  "placeholder"
+}

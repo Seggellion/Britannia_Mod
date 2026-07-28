@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "files": {
-    "content/banner_catalogue_status.md": "ae21eea983e05a92c5d128af5a0a5fe062ec0f3069d17c7d85e73a492866278e",
+    "content/banner_catalogue_status.md": "4b6b543eba4fc257fe7fd105de16b332337a30670be88c674eae40bafde0f96e",
     "src/main/resources/assets/britannia_mod/banner_client_assets.json": "1ea6f05da88f19b0c88768c798f1412cb888bbdb0348f711f09e13be3a44b08e",
     "src/main/resources/assets/britannia_mod/models/banner/mount/brass.json": "c50654f2cbc55c3a6f95ea6a4a80b19e7aedeffd766ad53c75a9248467e10101",
     "src/main/resources/assets/britannia_mod/models/banner/mount/iron.json": "71dd4b7d116f7a609773e16257b400eab17814962b8da0af3966d62daf920de8",
@@ -49,10 +49,10 @@
     "src/main/resources/data/britannia_mod/banner_definitions/scarlet_court.json": "f42212ab79e7197085f6450d5b448df6a7ac8af187ab0217d6bcd14d5a0feb2c",
     "src/main/resources/data/britannia_mod/banner_definitions/serpent_guard.json": "c72e98200b3f2d30d50db0c8fcb8f397ec0040fa21dfc01305b71a8d12b7083f",
     "src/main/resources/data/britannia_mod/banner_definitions/silver_and_gold_pennon.json": "b23a45a02c130a944fab46974133257f2e81d9a2e47905456afb58e8cb2b7af7",
+    "src/main/resources/data/britannia_mod/banner_definitions/small_curtain.json": "40d99f4818af160cc0be2288bc0073739c90c6856cfaca518b14640ce03da765",
     "src/main/resources/data/britannia_mod/banner_definitions/tournament_medium.json": "dcb8af8821f4eb7a4c85f2442397ad550e67e388f90535d2cff76b20617e323a",
     "src/main/resources/data/britannia_mod/banner_definitions/verdant_court.json": "d0f6416a2a4454177860ccccd645e50bb698a0d8ea5a2e97f3f643d102d28e73",
     "src/main/resources/data/britannia_mod/banner_definitions/ward_of_serpents.json": "96b7bfbe37fa34fdff553880586a75b2d7e86c11b7ed1257226105e5618facba",
-    "src/main/resources/data/britannia_mod/banner_definitions/x_small_unnamed_01.json": "5854d90a2b0112c2efa84210a9686d36f7cdd970447cbf3eb6cf6a8d7cd77f81",
     "src/main/resources/data/britannia_mod/banner_mounts/brass.json": "c3a23563aa2058e3206a86b66e0d886b79937e2a951d894da00e176235fded98",
     "src/main/resources/data/britannia_mod/banner_mounts/iron.json": "2aaa25ae30f7fa07f1d675ac2a76fa7550658a5cd7b3f7757b1a8602dbf7df3b",
     "src/main/resources/data/britannia_mod/placement_profiles/placeholder_large.json": "c58a9f7b775748f09e5ffb57d2039797be9b1c57c9eb04ee2f154f744a2c3375",
@@ -91,9 +91,9 @@
     "banner.britannia_mod.scarlet_court": "Scarlet Court",
     "banner.britannia_mod.serpent_guard": "Serpent Guard",
     "banner.britannia_mod.silver_and_gold_pennon": "Silver and Gold Pennon",
+    "banner.britannia_mod.small_curtain": "Small Curtain",
     "banner.britannia_mod.tournament_medium": "Tournament Medium",
     "banner.britannia_mod.verdant_court": "Verdant Court",
-    "banner.britannia_mod.ward_of_serpents": "Ward of Serpents",
-    "banner.britannia_mod.x_small_unnamed_01": "Extra-Small Banner 01 (Name Required)"
+    "banner.britannia_mod.ward_of_serpents": "Ward of Serpents"
   }
 }

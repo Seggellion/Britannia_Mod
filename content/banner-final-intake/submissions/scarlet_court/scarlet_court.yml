@@ -1,0 +1,65 @@
+{
+    "schema_version":  1,
+    "approval":  {
+                     "status":  "NOT_APPROVED",
+                     "approved_by":  "",
+                     "approved_date":  "",
+                     "notes":  "Draft extraction passed the pixel contract. Administrative approval, provenance, dimensions, mounts, geometry, and placement decisions remain required."
+                 },
+    "banner":  {
+                   "stable_id":  "britannia_mod:scarlet_court",
+                   "final_display_name":  "Scarlet Court",
+                   "width_blocks":  null,
+                   "height_blocks":  null,
+                   "supported_orientations":  [
+
+                                              ],
+                   "supported_mounts":  [
+
+                                        ],
+                   "default_mount":  null,
+                   "placement_profile_id":  null,
+                   "geometry_id":  null,
+                   "geometry_convention":  ""
+               },
+    "localization":  {
+                         "language":  "en_us",
+                         "value":  "Scarlet Court"
+                     },
+    "assets":  {
+                   "base_texture":  {
+                                        "resource_id":  "britannia_mod:banner/scarlet_court/base_texture",
+                                        "source_file":  "content/banner-final-intake/submissions/scarlet_court/base_texture.png",
+                                        "sha256":  "4f618124264ed464accbb0a2926c206c028d745a78aa14718b5f8d41b219c2c1"
+                                    },
+                   "dye_mask":  {
+                                    "resource_id":  "britannia_mod:banner/scarlet_court/dye_mask",
+                                    "source_file":  "content/banner-final-intake/submissions/scarlet_court/dye_mask.png",
+                                    "sha256":  "21fca5f7a7be97c2016ec11cac6ed3f8c45dd6091487b5638adfdec20f4f1e1d"
+                                },
+                   "geometry":  {
+                                    "shared_geometry_approved":  false,
+                                    "source_file":  null,
+                                    "sha256":  null
+                                }
+               },
+    "references":  {
+                       "authoring_source_file":  null,
+                       "preview_image_file":  "content/banner-final-intake/submissions/scarlet_court/review/review_sheet.png"
+                   },
+    "provenance":  {
+                       "original_art":  false,
+                       "creator":  "",
+                       "creation_method":  "",
+                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+                       "distribution_permission_confirmed":  false,
+                       "copied_from_reference_art":  null
+                   },
+    "manual_verification":  {
+                                "performed":  false,
+                                "tester":  "",
+                                "date":  "",
+                                "notes":  "Not performed; diagnostic review images only."
+                            },
+    "requested_content_status":  "placeholder"
+}

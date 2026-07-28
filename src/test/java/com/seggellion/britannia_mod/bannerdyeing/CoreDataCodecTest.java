@@ -12,6 +12,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
 import com.seggellion.britannia_mod.banner.data.BannerAssets;
 import com.seggellion.britannia_mod.banner.data.BannerContentStatus;
 import com.seggellion.britannia_mod.banner.data.BannerDefinition;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -187,6 +189,25 @@ class CoreDataCodecTest {
         assertEquals(CoreDataFixtures.PIGMENT_ID, dyed.sourcePigmentId().orElseThrow());
         assertStreamRoundTrip(BannerInstanceState.STREAM_CODEC, natural);
         assertStreamRoundTrip(BannerInstanceState.STREAM_CODEC, dyed);
+    }
+
+    @Test
+    void legacyUnnamedExtraSmallIdDecodesToCanonicalSmallCurtain() {
+        BannerDefinitionId canonical = BannerDefinitionId.parse("britannia_mod:small_curtain");
+        BannerDefinitionId legacy = BannerDefinitionId.CODEC.parse(
+                JsonOps.INSTANCE, new JsonPrimitive("britannia_mod:x_small_unnamed_01")).getOrThrow();
+        assertEquals(canonical, legacy);
+        assertEquals("britannia_mod:small_curtain",
+                BannerDefinitionId.CODEC.encodeStart(JsonOps.INSTANCE, legacy).getOrThrow().getAsString());
+
+        ByteBuf buffer = Unpooled.buffer();
+        try {
+            ResourceLocation.STREAM_CODEC.encode(
+                    buffer, ResourceLocation.parse("britannia_mod:x_small_unnamed_01"));
+            assertEquals(canonical, BannerDefinitionId.STREAM_CODEC.decode(buffer));
+        } finally {
+            buffer.release();
+        }
     }
 
     @Test

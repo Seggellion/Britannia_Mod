@@ -649,7 +649,6 @@
   "banner.britannia_mod.captains_red_crosslets": "Captain's Red Crosslets",
   "banner.britannia_mod.scarlet_court": "Scarlet Court",
   "banner.britannia_mod.verdant_court": "Verdant Court",
-  "banner.britannia_mod.x_small_unnamed_01": "Extra-Small Banner 01 (Name Required)",
   "material.britannia_mod.cotton": "Cotton",
   "material.britannia_mod.wool": "Wool",
   "material.britannia_mod.linen": "Linen",
@@ -851,5 +850,7 @@
   "command.britannia_mod.admin.resolve.failure.material_disabled": "Fabric material is disabled: %s",
   "command.britannia_mod.admin.resolve.failure.palette_missing": "Material palette is missing: %s",
   "command.britannia_mod.admin.resolve.failure.no_compatible_colour": "No compatible colour is available: %s",
-  "command.britannia_mod.admin.resolve.failure.resolver_validation_failure": "Dye resolution failed validation: %s"
+  "command.britannia_mod.admin.resolve.failure.resolver_validation_failure": "Dye resolution failed validation: %s",
+
+  "banner.britannia_mod.small_curtain": "Small Curtain"
 }
