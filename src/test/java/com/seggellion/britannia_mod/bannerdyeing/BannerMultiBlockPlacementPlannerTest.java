@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -66,7 +68,7 @@ class BannerMultiBlockPlacementPlannerTest {
             assertEquals(0, world.mutations);
             planned++;
         }
-        assertEquals(33, planned);
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, planned);
     }
 
     @Test

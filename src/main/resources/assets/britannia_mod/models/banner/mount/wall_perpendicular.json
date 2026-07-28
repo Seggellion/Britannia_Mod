@@ -1,0 +1,74 @@
+{
+  "credit": "Shared extra-small wall_perpendicular physical wall-mount geometry; runtime material texture remains independently selected",
+  "parent": "minecraft:block/block",
+  "textures": {
+    "mount": "britannia_mod:banner/mount/brass",
+    "particle": "britannia_mod:banner/mount/brass"
+  },
+  "elements": [
+    {
+      "from": [
+        7.35,
+        10.4,
+        0.0
+      ],
+      "to": [
+        7.65,
+        11.0,
+        9.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mount"
+        },
+        "east": {
+          "texture": "#mount"
+        },
+        "south": {
+          "texture": "#mount"
+        },
+        "west": {
+          "texture": "#mount"
+        },
+        "up": {
+          "texture": "#mount"
+        },
+        "down": {
+          "texture": "#mount"
+        }
+      }
+    },
+    {
+      "from": [
+        7.1,
+        9.6,
+        14.5
+      ],
+      "to": [
+        7.9,
+        11.2,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mount"
+        },
+        "east": {
+          "texture": "#mount"
+        },
+        "south": {
+          "texture": "#mount"
+        },
+        "west": {
+          "texture": "#mount"
+        },
+        "up": {
+          "texture": "#mount"
+        },
+        "down": {
+          "texture": "#mount"
+        }
+      }
+    }
+  ]
+}

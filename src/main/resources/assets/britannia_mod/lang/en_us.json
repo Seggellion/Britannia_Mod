@@ -852,5 +852,8 @@
   "command.britannia_mod.admin.resolve.failure.no_compatible_colour": "No compatible colour is available: %s",
   "command.britannia_mod.admin.resolve.failure.resolver_validation_failure": "Dye resolution failed validation: %s",
 
-  "banner.britannia_mod.small_curtain": "Small Curtain"
+  "banner.britannia_mod.small_curtain": "Small Curtain",
+
+  "banner.britannia_mod.prosperity_standard": "Prosperity Standard",
+  "banner.britannia_mod.guardian_standard": "Guardian Standard"
 }

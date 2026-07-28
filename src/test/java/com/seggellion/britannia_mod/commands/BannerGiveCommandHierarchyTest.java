@@ -154,6 +154,20 @@ class BannerGiveCommandHierarchyTest {
     }
 
     @Test
+    void dyeTubAndResolveCommandsConsumeNamespacedIdsUsedByTheLiveReviewRunbook() {
+        CommandDispatcher<CommandSourceStack> dispatcher =
+                dispatcher(() -> production, () -> true, new RecordingRecipient());
+        for (String command : List.of(
+                "/britannia dye tub give @s britannia_mod:woad_blue",
+                "/britannia dye resolve britannia_mod:woad_blue britannia_mod:cotton")) {
+            ParseResults<CommandSourceStack> parsed = dispatcher.parse(withoutSlash(command), source(2));
+            assertFalse(parsed.getReader().canRead(), command);
+            assertTrue(parsed.getExceptions().isEmpty(), parsed.getExceptions().toString());
+            assertNotNull(parsed.getContext().getCommand(), command);
+        }
+    }
+
+    @Test
     void completionsAreContextualPermissionSafeAndReadTheCurrentSnapshot() throws Exception {
         AtomicReference<RegistrySnapshot> snapshot = new AtomicReference<>(production);
         RecordingRecipient recipient = new RecordingRecipient();

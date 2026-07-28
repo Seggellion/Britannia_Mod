@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.banner.structure.BannerLocalOffset;
 import com.seggellion.britannia_mod.banner.structure.BannerPlacedStructure;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureTransform;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,6 +25,10 @@ public final class BannerPlacedRenderStateExtractor {
         var state = entity.bannerState().orElse(null);
         BannerAppearanceState appearance = BannerAppearanceResolver.resolve(
                 state, publication, assets, resourceGeneration);
+        Optional<net.minecraft.resources.ResourceLocation> orientationMountGeometry =
+                state == null ? Optional.empty() : Optional.ofNullable(publication.snapshot().banners()
+                        .get(state.bannerDefinitionId()))
+                        .map(definition -> definition.orientationMountGeometry().get(orientationOf(entity)));
         boolean validAnchorFacing = hasValidAnchorFacing(entity);
         Direction facing = anchorFacing(entity);
         BannerPlacedStructure structure = entity.placedStructure().orElse(null);
@@ -76,7 +81,12 @@ public final class BannerPlacedRenderStateExtractor {
                 BannerStructureTransform.spanAxis(facing, orientation),
                 BannerStructureTransform.verticalAxis(), BannerAnchorConvention.TOP_LEFT_OR_TOP_INNER,
                 BannerPlacedRenderBounds.from(entity.getBlockPos(), facing, entity.placedStructure()),
-                lightPositions, family, failure, diagnosticId, resourceGeneration);
+                lightPositions, orientationMountGeometry, family, failure, diagnosticId, resourceGeneration);
+    }
+
+    private static BannerOrientation orientationOf(BannerBlockEntity entity) {
+        return entity.placedStructure().map(BannerPlacedStructure::orientation)
+                .orElse(BannerOrientation.WALL_PARALLEL);
     }
 
     static Direction anchorFacing(BannerBlockEntity entity) {

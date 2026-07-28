@@ -88,3 +88,13 @@
 
 Road Guard was reviewed after the generic banner-atlas correction commit
 `d03fe2985baf6886cbb109765e68aac9f0a36ac7`. No failed or unresolved required review item was reported.
+
+## Historical applicability
+
+This Gate E record is preserved as historical evidence for the superseded runtime assets only:
+
+- Base SHA-256: `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240`
+- Dye-mask SHA-256: `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669`
+
+The current authoritative `banner.ai` export has different hashes. This record does not approve those
+replacement bytes; Road Guard returned to `in_progress` pending renewed live review.

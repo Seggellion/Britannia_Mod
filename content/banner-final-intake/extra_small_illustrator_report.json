@@ -1,0 +1,303 @@
+﻿{
+    "schema_version":  1,
+    "source_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+    "source_sha256_before":  "e0f63c8a2e6a39621f2adea296541d62cf0a5933ed22e2e4c68cbfbe8513879e",
+    "document":  {
+                     "name":  "banner.ai",
+                     "colour_space":  "1",
+                     "raster_effects_resolution":  72,
+                     "artboard_name":  "Artboard 1",
+                     "artboard_bounds":  [
+                                             -32,
+                                             32,
+                                             96,
+                                             -96
+                                         ],
+                     "width":  128,
+                     "height":  128,
+                     "placed_items":  0,
+                     "raster_items":  12
+                 },
+    "exports":  [
+                    {
+                        "stable_id":  "britannia_mod:road_guard",
+                        "layer":  "road_guard",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -36.852375754361674,
+                                                   35.49726380940956,
+                                                   8.7113192686319962,
+                                                   -101.19382125957054
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -30.30316162109375,
+                                                   31.10107421875,
+                                                   1.31915283203125,
+                                                   -95.5850830078125
+                                               ],
+                        "union_bounds_before":  [
+                                                    -36.852375754361674,
+                                                    35.49726380940956,
+                                                    8.7113192686319962,
+                                                    -101.19382125957054
+                                                ],
+                        "shared_scale":  0.90715499066690675,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/road_guard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/road_guard/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:pale_road_guard",
+                        "layer":  "pale_road_guard",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -36.895716431759865,
+                                                   35.647465581977485,
+                                                   8.999183443082984,
+                                                   -102.03723404255106
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -30.30316162109375,
+                                                   31.10107421875,
+                                                   1.31915283203125,
+                                                   -95.5850830078125
+                                               ],
+                        "union_bounds_before":  [
+                                                    -36.895716431759865,
+                                                    35.647465581977485,
+                                                    8.999183443082984,
+                                                    -102.03723404255106
+                                                ],
+                        "shared_scale":  0.9006084215468585,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/pale_road_guard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/pale_road_guard/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:red_crosslets",
+                        "layer":  "red_crosslets",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -45.852375754361674,
+                                                   33.626983382032449,
+                                                   21.021276595743984,
+                                                   -96.000000000001819
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -11.933681523118139,
+                                                   -5.3297872340399408,
+                                                   4.8829787234089963,
+                                                   -95.77127659573307
+                                               ],
+                        "union_bounds_before":  [
+                                                    -45.852375754361674,
+                                                    33.626983382032449,
+                                                    21.021276595743984,
+                                                    -96.000000000001819
+                                                ],
+                        "shared_scale":  0.9565909563331384,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/red_crosslets/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/red_crosslets/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:captains_red_crosslets",
+                        "layer":  "captains_red_crosslets",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -41.405567243724363,
+                                                   33.626983382032449,
+                                                   18.655225474082727,
+                                                   -97.808510638311418
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -11.279426203969706,
+                                                   -8.8670212765928227,
+                                                   6.4574468085129411,
+                                                   -95.228723404241464
+                                               ],
+                        "union_bounds_before":  [
+                                                    -41.405567243724363,
+                                                    33.626983382032449,
+                                                    18.655225474082727,
+                                                    -97.808510638311418
+                                                ],
+                        "shared_scale":  0.94342856870007286,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/captains_red_crosslets/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/captains_red_crosslets/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:scarlet_court",
+                        "layer":  "scarlet_court",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -36.234050344914067,
+                                                   38.574480850255895,
+                                                   13.893633267840414,
+                                                   -101.22872340425602
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -24.450698406605625,
+                                                   19.598393730789212,
+                                                   2.1102813295310625,
+                                                   -90.349897194044388
+                                               ],
+                        "union_bounds_before":  [
+                                                    -36.234050344914067,
+                                                    38.574480850255895,
+                                                    13.893633267840414,
+                                                    -101.22872340425602
+                                                ],
+                        "shared_scale":  0.8869610726107382,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/scarlet_court/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/scarlet_court/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:verdant_court",
+                        "layer":  "verdant_court",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -41.405567243724363,
+                                                   33.12763304942564,
+                                                   18.655225474082727,
+                                                   -96.744707376105
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -30.207940185739062,
+                                                   32.000000000000909,
+                                                   7.2397269012726611,
+                                                   -96
+                                               ],
+                        "union_bounds_before":  [
+                                                    -41.405567243724363,
+                                                    33.12763304942564,
+                                                    18.655225474082727,
+                                                    -96.744707376105
+                                                ],
+                        "shared_scale":  0.9547837483617394,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/verdant_court/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/verdant_court/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:small_curtain",
+                        "layer":  "small_curtain",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -42.256631073511016,
+                                                   37.286173914741084,
+                                                   49.281686950176663,
+                                                   -100.02130312079134
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -42.256631073511016,
+                                                   37.286173914741084,
+                                                   49.281686950176663,
+                                                   -100.02130312079134
+                                               ],
+                        "union_bounds_before":  [
+                                                    -42.256631073511016,
+                                                    37.286173914741084,
+                                                    49.281686950176663,
+                                                    -100.02130312079134
+                                                ],
+                        "shared_scale":  0.90308264835360186,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/small_curtain/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/small_curtain/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:prosperity_standard",
+                        "layer":  "prosperity_standard",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -47.893617021269165,
+                                                   33.781939567401423,
+                                                   25.63829787234863,
+                                                   -99.553191489367236
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -24.540572600889391,
+                                                   14.515574204289805,
+                                                   2.1061807936166588,
+                                                   -91.553191489356323
+                                               ],
+                        "union_bounds_before":  [
+                                                    -47.893617021269165,
+                                                    33.781939567401423,
+                                                    25.63829787234863,
+                                                    -99.553191489367236
+                                                ],
+                        "shared_scale":  0.92998746104810037,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/prosperity_standard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/prosperity_standard/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:guardian_standard",
+                        "layer":  "guardian_standard",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -45.236486638431415,
+                                                   33.781939567401423,
+                                                   24.446808510644587,
+                                                   -98.021276595747622
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -27.486971989531412,
+                                                   31.33692265699392,
+                                                   6.6972938617464024,
+                                                   -95.5762596853383
+                                               ],
+                        "union_bounds_before":  [
+                                                    -45.236486638431415,
+                                                    33.781939567401423,
+                                                    24.446808510644587,
+                                                    -98.021276595747622
+                                                ],
+                        "shared_scale":  0.94079646619935253,
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/guardian_standard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/guardian_standard/dye_mask.png"
+                    }
+                ],
+    "source_sha256_after":  "e0f63c8a2e6a39621f2adea296541d62cf0a5933ed22e2e4c68cbfbe8513879e"
+}

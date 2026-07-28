@@ -1,0 +1,42 @@
+{
+  "credit": "Definition-specific Small Curtain planar geometry for its wider flat-bottomed 128 x 128 silhouette",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/small_curtain/base_texture",
+    "dye_mask": "britannia_mod:banner/small_curtain/dye_mask",
+    "particle": "britannia_mod:banner/small_curtain/base_texture"
+  },
+  "elements": [
+    {
+      "from": [6.38261, 5.0, 7.49],
+      "to": [9.61739, 11.0, 7.51],
+      "faces": {
+        "north": {
+          "uv": [4.125, 0.875, 11.875, 15.25],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [4.125, 0.875, 11.875, 15.25],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [6.38261, 5.0, 7.47],
+      "to": [9.61739, 11.0, 7.53],
+      "faces": {
+        "north": {
+          "uv": [4.125, 0.875, 11.875, 15.25],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [4.125, 0.875, 11.875, 15.25],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

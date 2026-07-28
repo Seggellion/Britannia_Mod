@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
@@ -39,7 +41,7 @@ class BannerRenderStateAndKeyTest {
     @Test
     void productionProjectionContainsAllDisplayMetadata() {
         assertAll(
-                () -> assertEquals(33, renderData.banners().size()),
+                () -> assertEquals(ProductionBannerCatalogue.TARGET_COUNT, renderData.banners().size()),
                 () -> assertEquals(4, renderData.materials().size()),
                 () -> assertEquals(2, renderData.mounts().size()),
                 () -> assertTrue(renderData.materials().values().stream()
@@ -47,7 +49,7 @@ class BannerRenderStateAndKeyTest {
     }
 
     @Test
-    void allDefinitionsAndFiveSizeFamiliesExtractWithoutFallback() {
+    void allDefinitionsAndSixArtworkGeometryFamiliesExtractWithoutFallback() {
         var geometries = new java.util.LinkedHashSet<>();
         renderData.banners().values().forEach(definition -> {
             geometries.add(definition.assets().geometry());
@@ -55,7 +57,12 @@ class BannerRenderStateAndKeyTest {
             assertFalse(state.fallback(), definition.id().toString());
             assertEquals(definition.id(), state.definitionId().orElseThrow());
         });
-        assertEquals(BannerAssetAvailability.GEOMETRY_MODELS, geometries);
+        assertTrue(BannerAssetAvailability.GEOMETRY_MODELS.containsAll(geometries));
+        assertEquals(6, geometries.size());
+        assertTrue(BannerAssetAvailability.GEOMETRY_MODELS.contains(
+                net.minecraft.resources.ResourceLocation.parse("britannia_mod:banner/mount/wall_parallel")));
+        assertTrue(BannerAssetAvailability.GEOMETRY_MODELS.contains(
+                net.minecraft.resources.ResourceLocation.parse("britannia_mod:banner/mount/wall_perpendicular")));
     }
 
     @Test

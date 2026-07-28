@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -59,7 +61,8 @@ class Milestone6ResourcesAndScopeTest {
                 "message.britannia_mod.dye_tub.missing_pigment")) {
             assertTrue(lang.has(key), key);
         }
-        assertEquals(33, lang.keySet().stream().filter(key -> key.startsWith("banner.britannia_mod.")).count());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                lang.keySet().stream().filter(key -> key.startsWith("banner.britannia_mod.")).count());
     }
 
     @Test

@@ -25,10 +25,15 @@ final class BannerFilteredBakedModel implements BakedModel {
 
     private final BakedModel original;
     private final Selection selection;
+    private final TextureAtlasSprite targetSprite;
 
-    BannerFilteredBakedModel(BakedModel original, Selection selection) {
+    BannerFilteredBakedModel(
+            BakedModel original,
+            Selection selection,
+            TextureAtlasSprite targetSprite) {
         this.original = java.util.Objects.requireNonNull(original, "original");
         this.selection = java.util.Objects.requireNonNull(selection, "selection");
+        this.targetSprite = java.util.Objects.requireNonNull(targetSprite, "targetSprite");
     }
 
     @Override
@@ -57,7 +62,30 @@ final class BannerFilteredBakedModel implements BakedModel {
                 .filter(quad -> selection == Selection.DYE_MASK
                         ? quad.getTintIndex() == BannerRenderLayer.DYE_MASK_TINT_INDEX
                         : quad.getTintIndex() != BannerRenderLayer.DYE_MASK_TINT_INDEX)
+                .map(this::retexture)
                 .toList();
+    }
+
+    private BakedQuad retexture(BakedQuad quad) {
+        TextureAtlasSprite source = quad.getSprite();
+        if (source.contents().name().equals(targetSprite.contents().name())) {
+            return quad;
+        }
+        int[] vertices = quad.getVertices().clone();
+        int stride = vertices.length / 4;
+        for (int vertex = 0; vertex < 4; vertex++) {
+            int offset = vertex * stride;
+            float sourceU = Float.intBitsToFloat(vertices[offset + 4]);
+            float sourceV = Float.intBitsToFloat(vertices[offset + 5]);
+            float relativeU = (sourceU - source.getU0()) / (source.getU1() - source.getU0());
+            float relativeV = (sourceV - source.getV0()) / (source.getV1() - source.getV0());
+            float targetU = targetSprite.getU0() + relativeU * (targetSprite.getU1() - targetSprite.getU0());
+            float targetV = targetSprite.getV0() + relativeV * (targetSprite.getV1() - targetSprite.getV0());
+            vertices[offset + 4] = Float.floatToRawIntBits(targetU);
+            vertices[offset + 5] = Float.floatToRawIntBits(targetV);
+        }
+        return new BakedQuad(vertices, quad.getTintIndex(), quad.getDirection(),
+                targetSprite, quad.isShade());
     }
 
     @Override

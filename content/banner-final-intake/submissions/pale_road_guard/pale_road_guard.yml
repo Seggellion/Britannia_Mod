@@ -1,65 +1,70 @@
 {
-    "schema_version":  1,
-    "approval":  {
-                     "status":  "NOT_APPROVED",
-                     "approved_by":  "",
-                     "approved_date":  "",
-                     "notes":  "Draft extraction only. Pixel audit found 212 active mask pixels over non-opaque base pixels (206 partial-alpha and 6 fully transparent); product-owner mask correction and all administrative approvals remain required."
-                 },
-    "banner":  {
-                   "stable_id":  "britannia_mod:pale_road_guard",
-                   "final_display_name":  "Pale Road Guard",
-                   "width_blocks":  null,
-                   "height_blocks":  null,
-                   "supported_orientations":  [
-
-                                              ],
-                   "supported_mounts":  [
-
-                                        ],
-                   "default_mount":  null,
-                   "placement_profile_id":  null,
-                   "geometry_id":  null,
-                   "geometry_convention":  ""
-               },
-    "localization":  {
-                         "language":  "en_us",
-                         "value":  "Pale Road Guard"
-                     },
-    "assets":  {
-                   "base_texture":  {
-                                        "resource_id":  "britannia_mod:banner/pale_road_guard/base_texture",
-                                        "source_file":  "content/banner-final-intake/submissions/pale_road_guard/base_texture.png",
-                                        "sha256":  "62fd898335a9ac4d2a7ec79694f5b2dc25793359de09e9f40eb0c89d55b6a433"
-                                    },
-                   "dye_mask":  {
-                                    "resource_id":  "britannia_mod:banner/pale_road_guard/dye_mask",
-                                    "source_file":  "content/banner-final-intake/submissions/pale_road_guard/dye_mask.png",
-                                    "sha256":  "c0fc8eecfaa738ddbab302e730c0b74395f550cfc01dcfa03dc125db0cb74fad"
-                                },
-                   "geometry":  {
-                                    "shared_geometry_approved":  false,
-                                    "source_file":  null,
-                                    "sha256":  null
-                                }
-               },
-    "references":  {
-                       "authoring_source_file":  null,
-                       "preview_image_file":  "content/banner-final-intake/submissions/pale_road_guard/review/review_sheet.png"
-                   },
-    "provenance":  {
-                       "original_art":  false,
-                       "creator":  "",
-                       "creation_method":  "",
-                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
-                       "distribution_permission_confirmed":  false,
-                       "copied_from_reference_art":  null
-                   },
-    "manual_verification":  {
-                                "performed":  false,
-                                "tester":  "",
-                                "date":  "",
-                                "notes":  "Not performed; diagnostic review images only."
-                            },
-    "requested_content_status":  "placeholder"
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Product Owner",
+    "approved_date": "2026-07-28",
+    "notes": "Approved for integration under the authoritative nine-definition extra-small family decision. Automated asset checks passed; live review remains pending."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:pale_road_guard",
+    "final_display_name": "Pale Road Guard",
+    "catalogue_index": 28,
+    "family": "x-small",
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "supported_orientations": [
+      "wall_parallel",
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:extra_small",
+    "geometry_id": "britannia_mod:banner/road_guard/geometry",
+    "geometry_convention": "Shared Road Guard-style 128 x 128 planar geometry; mount geometry remains separate and orientation-selected by the extra-small placement profile."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Pale Road Guard"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/pale_road_guard/base_texture",
+      "source_file": "content/banner-final-intake/submissions/pale_road_guard/base_texture.png",
+      "sha256": "d3a95ac9ea835943ee57f12fc8ff68048bcba65fbaa4a90c8761b6a0e22fb9bb"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/pale_road_guard/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/pale_road_guard/dye_mask.png",
+      "sha256": "2f4c56225adfea15a0bf9f07a58f228555774c189a464af6de7722fe5a9c2da0"
+    },
+    "geometry": {
+      "shared_geometry_approved": true,
+      "source_file": null,
+      "sha256": null,
+      "runtime_sha256": "9cbe83118813091c2314b44ea90bdbc86f3e896ebc4cca3a5b21f7d989593de2"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/pale_road_guard/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Britannia Mod project artist",
+    "creation_method": "Named base_texture and dye_mask objects exported from the authoritative Adobe Illustrator document to one aligned 128 x 128 RGBA canvas; active mask RGB normalized to white and alpha constrained to base alpha.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed; renewed live review is required for this asset hash."
+  },
+  "requested_content_status": "in_progress"
 }

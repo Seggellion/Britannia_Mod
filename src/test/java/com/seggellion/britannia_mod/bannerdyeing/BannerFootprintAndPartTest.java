@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +17,7 @@ import com.seggellion.britannia_mod.banner.structure.BannerPlacedStructure;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureTransform;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import com.seggellion.britannia_mod.bannerdyeing.testsupport.DyeResolverFixtures;
+import com.seggellion.britannia_mod.bannerdyeing.testsupport.Milestone6RegisteredTestContent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -31,16 +34,18 @@ class BannerFootprintAndPartTest {
 
     @BeforeAll
     static void setup() throws Exception {
+        Milestone6RegisteredTestContent.ensureRegistered();
         production = DyeResolverFixtures.productionSnapshot();
     }
 
     @Test
-    void canonicalCatalogueDerivesThirteenEightSixAndSixRectanglesFromDimensions() {
+    void canonicalCatalogueDerivesFifteenEightSixAndSixRectanglesFromDimensions() {
         Map<String, Long> counts = production.banners().activeDefinitions().stream().collect(Collectors.groupingBy(
                 definition -> definition.dimensions().widthBlocks() + "x" + definition.dimensions().heightBlocks(),
                 Collectors.counting()));
-        assertEquals(Map.of("1x1", 13L, "1x2", 8L, "2x2", 6L, "3x2", 6L), counts);
-        assertEquals(33, production.banners().activeDefinitions().size());
+        assertEquals(Map.of("1x1", 15L, "1x2", 8L, "2x2", 6L, "3x2", 6L), counts);
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                production.banners().activeDefinitions().size());
         for (var definition : production.banners().activeDefinitions()) {
             BannerFootprint.Result result = BannerFootprint.fromDimensions(definition.dimensions());
             assertTrue(result.successful(), definition.id().toString());

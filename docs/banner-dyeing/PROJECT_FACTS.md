@@ -1,10 +1,45 @@
 # Banner and Dyeing Project Facts
 
-Date: 2026-07-27
+Date: 2026-07-28
 
-Milestone: 16 Batch 1A
+Milestone: 16 complete extra-small family integration
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-28 authoritative extra-small family facts
+
+This section supersedes the historical Road Guard/33-definition facts retained later in this document.
+
+- The authoritative extra-small family is exactly `road_guard`, `pale_road_guard`, `red_crosslets`,
+  `captains_red_crosslets`, `scarlet_court`, `verdant_court`, `small_curtain`, `prosperity_standard`, and
+  `guardian_standard`. `x_small_unnamed_01` is not active; its deliberate stable-ID migration target is
+  `small_curtain`. Prosperity Standard and Guardian Standard had no existing or unmistakable provisional
+  predecessors, so they were appended at indices 34 and 35 without renumbering the first 33 definitions.
+- The production total is data-derived and is now 35: 26 `placeholder`, 9 `in_progress`, 0 `complete`, and 0
+  disabled. All nine extra-small definitions are approved 1 x 1 entries supporting `wall_parallel` and
+  `wall_perpendicular`, brass and iron mount materials, and brass by default. Renewed live review is still required.
+- The exact authoring source is `C:/projects/britannia/raw fiels/tabbard/banner.ai`, SHA-256
+  `e0f63c8a2e6a39621f2adea296541d62cf0a5933ed22e2e4c68cbfbe8513879e`. It remained byte-identical after
+  read-only Illustrator automation. Every integrated base/mask pair is aligned, transparent 128 x 128 RGBA.
+  Active mask RGB is white and mask alpha is constrained to the corresponding base alpha.
+- Eight definitions use `britannia_mod:banner/road_guard/geometry`. Small Curtain alone uses
+  `britannia_mod:banner/small_curtain/geometry`, preserving its wide flat-bottomed curtain proportions.
+- Placement profile `britannia_mod:extra_small` selects
+  `britannia_mod:banner/mount/wall_parallel` for wall-parallel placement and
+  `britannia_mod:banner/mount/wall_perpendicular` for perpendicular placement. These are physical geometry
+  resources, not player-facing mount materials. Brass and iron remain the only selectable materials and the mount
+  pass remains untinted.
+- Item rendering reuses shared baked geometry while remapping authored UVs to each definition's base/mask sprites.
+  Client registration is catalogue-derived and de-duplicates the two artwork geometries and two orientation mount
+  geometries. No per-banner Java switch, third artwork texture, static overlay, recipe, or pattern content exists.
+- Intake hashes and pixel metrics are authoritative in
+  `content/banner-final-intake/extra_small_asset_report.json`; Illustrator inspection evidence is in
+  `content/banner-final-intake/extra_small_illustrator_report.json`. The reusable unperformed live matrix is
+  `docs/banner-dyeing/EXTRA_SMALL_LIVE_REVIEW.md`.
+- Road Guard's former 64 x 64 hashes
+  `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240` and
+  `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669` are superseded by current
+  Illustrator exports. The old Gate E record is historical evidence only; Road Guard is `in_progress`.
 
 ## Banner client resource-registration facts
 

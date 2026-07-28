@@ -38,6 +38,9 @@ public record BannerAssetAvailability(
 
     public BannerRenderFailure failureFor(BannerRenderDefinition definition, BannerRenderMount mount) {
         if (!models.contains(definition.assets().geometry())) return BannerRenderFailure.MISSING_GEOMETRY;
+        if (!models.containsAll(definition.orientationMountGeometry().values())) {
+            return BannerRenderFailure.MISSING_MOUNT_GEOMETRY;
+        }
         if (!textures.contains(definition.assets().baseTexture())) return BannerRenderFailure.MISSING_BASE_TEXTURE;
         if (!textures.contains(definition.assets().dyeMask())) return BannerRenderFailure.MISSING_DYE_MASK;
         if (!models.contains(mount.geometry())) return BannerRenderFailure.MISSING_MOUNT_GEOMETRY;

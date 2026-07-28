@@ -50,6 +50,14 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
             definition.supportedOrientations().forEach(buffer::writeEnum);
             buffer.writeVarInt(definition.supportedMounts().size());
             definition.supportedMounts().forEach(id -> buffer.writeResourceLocation(id.value()));
+            buffer.writeVarInt(definition.orientationMountGeometry().size());
+            definition.orientationMountGeometry().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey(
+                            java.util.Comparator.comparingInt(BannerOrientation::ordinal)))
+                    .forEach(entry -> {
+                        buffer.writeEnum(entry.getKey());
+                        buffer.writeResourceLocation(entry.getValue());
+                    });
         });
 
         buffer.writeVarInt(snapshot.materials().size());
@@ -91,8 +99,17 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
             for (int mountIndex = 0; mountIndex < supportedMountCount; mountIndex++) {
                 supportedMounts.add(new MountId(buffer.readResourceLocation()));
             }
+            int orientationMountCount = readBoundedCount(buffer, 2, "orientation mount geometry");
+            Map<BannerOrientation, ResourceLocation> orientationMountGeometry = new LinkedHashMap<>();
+            for (int mountIndex = 0; mountIndex < orientationMountCount; mountIndex++) {
+                BannerOrientation orientation = buffer.readEnum(BannerOrientation.class);
+                ResourceLocation previous = orientationMountGeometry.put(
+                        orientation, buffer.readResourceLocation());
+                requireUnique(previous, orientation);
+            }
             BannerRenderDefinition previous = banners.put(id,
-                    new BannerRenderDefinition(id, assets, status, dimensions, orientations, supportedMounts));
+                    new BannerRenderDefinition(id, assets, status, dimensions, orientations,
+                            supportedMounts, orientationMountGeometry));
             requireUnique(previous, id);
         }
 

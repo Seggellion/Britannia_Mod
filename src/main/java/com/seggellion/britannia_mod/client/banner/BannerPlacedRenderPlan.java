@@ -19,7 +19,7 @@ public record BannerPlacedRenderPlan(
     public static BannerPlacedRenderPlan from(BannerPlacedRenderState state) {
         BannerPlacedGeometryPlan geometry = BannerPlacedGeometryPlan.create(
                 state.orientation(), state.facing(), state.persistedWidth(), state.persistedHeight(),
-                state.geometryFamily(), state.fallback());
+                state.geometryFamily(), state.fallback(), state.orientationMountGeometry());
         if (state.fallback()) {
             return new BannerPlacedRenderPlan(geometry, List.of(
                     new BannerPlacedRenderPass(BannerPlacedRenderPass.Type.FALLBACK,

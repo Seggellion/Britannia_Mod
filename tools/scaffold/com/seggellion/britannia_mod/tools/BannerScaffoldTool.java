@@ -49,7 +49,8 @@ public final class BannerScaffoldTool {
     public static final String METADATA_PATH = "content/.banner_scaffold_metadata.json";
     public static final String LOCALIZATION_PATH =
             "src/main/resources/assets/britannia_mod/lang/en_us.json";
-    public static final int TARGET_COUNT = 33;
+    private static final List<CanonicalEntry> CANONICAL = canonicalEntries();
+    public static final int TARGET_COUNT = CANONICAL.size();
 
     private static final String DATA_ROOT = "src/main/resources/data/britannia_mod/";
     private static final String ASSET_ROOT = "src/main/resources/assets/britannia_mod/";
@@ -66,8 +67,6 @@ public final class BannerScaffoldTool {
     private static final Pattern SAFE_ID = Pattern.compile("[a-z0-9_]+");
     private static final Pattern SHA256 = Pattern.compile("[0-9a-f]{64}");
     private static final String PROVISIONAL_SUFFIX = " (Name Required)";
-
-    private static final List<CanonicalEntry> CANONICAL = canonicalEntries();
 
     private BannerScaffoldTool() {
     }
@@ -208,7 +207,7 @@ public final class BannerScaffoldTool {
         require(manifest.sharedPlaceholderAssets != null, "shared_placeholder_assets are required");
         require(manifest.banners != null, "banners are required");
         require(manifest.banners.size() == TARGET_COUNT,
-                "Manifest must contain exactly 33 entries; found " + manifest.banners.size());
+                "Manifest must contain exactly " + TARGET_COUNT + " entries; found " + manifest.banners.size());
         require(manifest.groups.keySet().equals(GROUPS),
                 "groups must be exactly " + GROUPS + "; found " + manifest.groups.keySet());
 
@@ -273,7 +272,7 @@ public final class BannerScaffoldTool {
             }
         }
         require(indices.equals(range(1, TARGET_COUNT)),
-                "Indices must be continuous from 1 through 33; found " + indices);
+                "Indices must be continuous from 1 through " + TARGET_COUNT + "; found " + indices);
 
         for (int i = 0; i < CANONICAL.size(); i++) {
             CanonicalEntry expected = CANONICAL.get(i);
@@ -283,7 +282,7 @@ public final class BannerScaffoldTool {
         }
         Map<String, Long> groupCounts = counts(manifest.banners, entry -> entry.group);
         require(groupCounts.equals(Map.of("large", 6L, "medium-wall", 6L, "medium", 8L,
-                        "small", 6L, "x-small", 7L)),
+                        "small", 6L, "x-small", 9L)),
                 "Canonical group counts do not match: " + groupCounts);
 
         validateGroup(manifest.groups.get("large"), 3, 2, "placeholder_large", "large");
@@ -378,6 +377,8 @@ public final class BannerScaffoldTool {
                 utf8(json(profile("small", 1, 1))));
         output.put(DATA_ROOT + "placement_profiles/placeholder_x_small.json",
                 utf8(json(profile("x_small", 1, 1))));
+        output.put(DATA_ROOT + "placement_profiles/extra_small.json",
+                utf8(json(extraSmallProfile())));
 
         output.put(ASSET_ROOT + "textures/banner/placeholder/base_texture.png", png(PngKind.BASE_TEXTURE));
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
@@ -394,6 +395,10 @@ public final class BannerScaffoldTool {
                 utf8(json(generatedItemModel("britannia_mod:banner/mount/brass"))));
         output.put(ASSET_ROOT + "models/banner/mount/iron.json",
                 utf8(json(generatedItemModel("britannia_mod:banner/mount/iron"))));
+        output.put(ASSET_ROOT + "models/banner/mount/wall_parallel.json",
+                utf8(json(wallMountModel("wall_parallel"))));
+        output.put(ASSET_ROOT + "models/banner/mount/wall_perpendicular.json",
+                utf8(json(wallMountModel("wall_perpendicular"))));
         return output;
     }
 
@@ -404,6 +409,10 @@ public final class BannerScaffoldTool {
             geometries.add(banner.geometry);
             textures.add(banner.baseTexture);
             textures.add(banner.dyeMask);
+            if ("britannia_mod:extra_small".equals(banner.placementProfile)) {
+                geometries.add("britannia_mod:banner/mount/wall_parallel");
+                geometries.add("britannia_mod:banner/mount/wall_perpendicular");
+            }
         }
         JsonObject root = new JsonObject();
         root.addProperty("schema_version", 1);
@@ -519,6 +528,61 @@ public final class BannerScaffoldTool {
         return root;
     }
 
+    private static JsonObject extraSmallProfile() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:extra_small");
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", 1);
+        dimensions.addProperty("height_blocks", 1);
+        dimensions.addProperty("provisional", false);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        JsonObject mounts = new JsonObject();
+        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
+        mounts.addProperty("wall_perpendicular", "britannia_mod:banner/mount/wall_perpendicular");
+        root.add("orientation_mount_geometry", mounts);
+        return root;
+    }
+
+    private static JsonObject wallMountModel(String orientation) {
+        JsonObject root = new JsonObject();
+        root.addProperty("credit", "Shared extra-small " + orientation
+                + " physical wall-mount geometry; runtime material texture remains independently selected");
+        root.addProperty("parent", "minecraft:block/block");
+        JsonObject textures = new JsonObject();
+        textures.addProperty("mount", "britannia_mod:banner/mount/brass");
+        textures.addProperty("particle", "britannia_mod:banner/mount/brass");
+        root.add("textures", textures);
+        JsonArray elements = new JsonArray();
+        if ("wall_parallel".equals(orientation)) {
+            elements.add(cuboid(new double[] {4.5, 10.4, 7.35, 11.5, 11.0, 7.65}, "#mount"));
+            elements.add(cuboid(new double[] {4.5, 9.8, 7.3, 5.1, 10.7, 8.0}, "#mount"));
+            elements.add(cuboid(new double[] {10.9, 9.8, 7.3, 11.5, 10.7, 8.0}, "#mount"));
+        } else if ("wall_perpendicular".equals(orientation)) {
+            elements.add(cuboid(new double[] {7.35, 10.4, 0.0, 7.65, 11.0, 9.0}, "#mount"));
+            elements.add(cuboid(new double[] {7.1, 9.6, 14.5, 7.9, 11.2, 16.0}, "#mount"));
+        } else {
+            throw new ScaffoldException("Unknown orientation mount geometry " + orientation);
+        }
+        root.add("elements", elements);
+        return root;
+    }
+
+    private static JsonObject cuboid(double[] bounds, String texture) {
+        JsonObject element = new JsonObject();
+        element.add("from", numbers(bounds[0], bounds[1], bounds[2]));
+        element.add("to", numbers(bounds[3], bounds[4], bounds[5]));
+        JsonObject faces = new JsonObject();
+        for (String face : List.of("north", "east", "south", "west", "up", "down")) {
+            JsonObject value = new JsonObject();
+            value.addProperty("texture", texture);
+            faces.add(face, value);
+        }
+        element.add("faces", faces);
+        return element;
+    }
+
     private static JsonObject placeholderModel(String family) {
         JsonObject root = new JsonObject();
         root.addProperty("credit", "Milestone 4 diagnostic placeholder for " + family + "; not final geometry");
@@ -599,8 +663,8 @@ public final class BannerScaffoldTool {
         require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
         require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
         require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
-        require(result.snapshot().placementProfiles().activeCount() == 5,
-                "Five placement profiles did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 6,
+                "Six placement profiles did not become active");
         require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
         return result;
     }
@@ -629,6 +693,11 @@ public final class BannerScaffoldTool {
                     "Mount geometry has no declared placeholder file: " + id);
             require(outputs.contains(assetPath(id, "textures", ".png")),
                     "Mount texture has no declared placeholder file: " + id);
+        }
+        for (String id : List.of("britannia_mod:banner/mount/wall_parallel",
+                "britannia_mod:banner/mount/wall_perpendicular")) {
+            require(outputs.contains(assetPath(id, "models", ".json")),
+                    "Orientation mount geometry has no declared model file: " + id);
         }
     }
 
@@ -681,7 +750,8 @@ public final class BannerScaffoldTool {
             }
         }
         if (found != TARGET_COUNT) {
-            failures.add("expected exactly 33 valid generated localization entries; found " + found);
+            failures.add("expected exactly " + TARGET_COUNT
+                    + " valid generated localization entries; found " + found);
         }
     }
 
@@ -867,12 +937,13 @@ public final class BannerScaffoldTool {
         long nameApprovedCount = catalogue.banners.stream()
                 .filter(banner -> banner.displayNameApproved).count();
         long completeCount = contentCounts.getOrDefault("complete", 0L);
+        int total = catalogue.banners.size();
         StringBuilder report = new StringBuilder();
         report.append("# Banner Catalogue Status\n\n")
                 .append("Generated by `tools/scaffold_banners.bat`; do not infer content approval from generation.\n\n")
-                .append("- Catalogue target: exactly 33\n")
-                .append("- Total manifest entries: 33\n")
-                .append("- Total generated definitions: 33\n")
+                .append("- Catalogue target: data-derived from the canonical manifest\n")
+                .append("- Total manifest entries: ").append(total).append('\n')
+                .append("- Total generated definitions: ").append(total).append('\n')
                 .append("- Total active registry entries: ").append(registry.snapshot().banners().activeCount())
                 .append("\n- Total disabled entries: ").append(registry.snapshot().banners().disabledCount())
                 .append("\n- Missing output files: none\n")
@@ -883,13 +954,13 @@ public final class BannerScaffoldTool {
                 .append("- Admin acquisition implemented: yes\n")
                 .append("- Survival acquisition implemented: no\n")
                 .append("- NPC/shop distribution implemented: no\n")
-                .append("- Final display names approved: ").append(nameApprovedCount).append(" of 33\n")
-                .append("- Final dimensions approved: ").append(integratedCount).append(" of 33\n")
+                .append("- Final display names approved: ").append(nameApprovedCount).append(" of ").append(total).append('\n')
+                .append("- Final dimensions approved: ").append(integratedCount).append(" of ").append(total).append('\n')
                 .append("- Final per-definition orientations approved: ").append(integratedCount)
-                .append(" of 33\n")
-                .append("- Final per-definition mounts approved: ").append(integratedCount).append(" of 33\n")
-                .append("- Final placed artwork intake approved: ").append(integratedCount).append(" of 33\n")
-                .append("- Final artwork complete: ").append(completeCount).append(" of 33\n\n")
+                .append(" of ").append(total).append('\n')
+                .append("- Final per-definition mounts approved: ").append(integratedCount).append(" of ").append(total).append('\n')
+                .append("- Final placed artwork intake approved: ").append(integratedCount).append(" of ").append(total).append('\n')
+                .append("- Final artwork complete: ").append(completeCount).append(" of ").append(total).append("\n\n")
                 .append("## Counts by catalogue group\n\n");
         appendCounts(report, groupCounts, List.of("large", "medium-wall", "medium", "small", "x-small"));
         report.append("\n## Counts by name status\n\n");
@@ -929,34 +1000,33 @@ public final class BannerScaffoldTool {
                 .append("- Brass mount: `britannia_mod:banner/mount/brass`\n")
                 .append("- Iron mount: `britannia_mod:banner/mount/iron`\n")
                 .append("- Every logical identifier above maps deterministically to a declared model JSON or PNG output.\n\n")
-                .append("## Road Guard completed final content\n\n")
-                .append("- Stable ID: `britannia_mod:road_guard`\n")
-                .append("- Approved display name: Road Guard\n")
-                .append("- Dimensions: 1 x 1 (approved)\n")
+                .append("## Extra-small family integration\n\n")
+                .append("- Authoritative family members: 9\n")
+                .append("- Dimensions: 1 x 1 (approved; independent of 128 x 128 texture resolution)\n")
                 .append("- Orientations: `wall_parallel`, `wall_perpendicular` (approved)\n")
                 .append("- Mounts: `britannia_mod:brass`, `britannia_mod:iron` (approved); default `britannia_mod:brass`\n")
-                .append("- Geometry: `britannia_mod:banner/road_guard/geometry`\n")
-                .append("- Placement profile: `britannia_mod:placeholder_x_small` (reuse approved)\n")
-                .append("- Base texture: `britannia_mod:banner/road_guard/base_texture`\n")
-                .append("- Dye mask: `britannia_mod:banner/road_guard/dye_mask`\n")
+                .append("- Eight Road Guard-style definitions share `britannia_mod:banner/road_guard/geometry`\n")
+                .append("- Small Curtain uses `britannia_mod:banner/small_curtain/geometry`\n")
+                .append("- Placement profile: `britannia_mod:extra_small`\n")
+                .append("- Parallel mount geometry: `britannia_mod:banner/mount/wall_parallel`\n")
+                .append("- Perpendicular mount geometry: `britannia_mod:banner/mount/wall_perpendicular`\n")
+                .append("- Every base texture and dye mask is 128 x 128 RGBA\n")
                 .append("- Intake validation: `READY_FOR_INTEGRATION`\n")
                 .append("- Automated validation: pass\n")
-                .append("- Manual review: pass; product-owner Gate E approval recorded 2026-07-27\n")
-                .append("- `content_status`: `complete`\n")
+                .append("- Manual review: pending for all updated hashes; prior Road Guard evidence is historical only\n")
+                .append("- `content_status`: `in_progress`\n")
                 .append("- Crafting: not applicable; product-disabled\n\n")
                 .append("## Gate D automated placement baseline\n\n")
-                .append("All 33 active definitions pass the automated parallel, perpendicular, brass, and iron ")
+                .append("All ").append(total)
+                .append(" active definitions pass the automated parallel, perpendicular, brass, and iron ")
                 .append("coverage matrix. These results validate data flow, transforms, planning, persistence, ")
                 .append("rollback, and preview classification; they do not constitute in-game visual approval. ")
                 .append("Manual in-game validation was not performed in this non-interactive run.\n\n")
                 .append("## Gate B decisions\n\n")
-                .append("Gate B approved exactly 33 stable IDs, retained all 14 unnamed banners under visibly ")
-                .append("provisional `Name Required` labels, and retained `Tournament Medium` and ")
-                .append("`Pennon of Silver` as the canonical scaffold labels. Source page and row references remain ")
-                .append("authoritative. Road Guard is the first completed final-content banner; final display ")
-                .append("names, dimensions, orientations, mounts, geometry, and artwork for the other 32 banners ")
-                .append("remain unapproved. Recipes remain product-disabled. Stable IDs do not change merely because ")
-                .append("labels change.\n");
+                .append("The original Gate B identity set remains stable. The product owner subsequently added ")
+                .append("Prosperity Standard and Guardian Standard as authoritative extra-small definitions without ")
+                .append("renumbering earlier entries. The 13 unnamed banners retain visibly provisional ")
+                .append("`Name Required` labels. Recipes remain product-disabled.\n");
         return report.toString();
     }
 
@@ -1234,6 +1304,8 @@ public final class BannerScaffoldTool {
                 31|scarlet_court|x-small|3|12|Scarlet Court|source-named
                 32|verdant_court|x-small|4|1|Verdant Court|source-named
                 33|small_curtain|x-small|4|2|Small Curtain|source-named
+                34|prosperity_standard|x-small|4|3|Prosperity Standard|source-named
+                35|guardian_standard|x-small|4|4|Guardian Standard|source-named
                 """;
         return table.lines().filter(line -> !line.isBlank()).map(line -> {
             String[] columns = line.strip().split("\\|", -1);

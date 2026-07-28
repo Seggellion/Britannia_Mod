@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -106,7 +108,7 @@ class Milestone14RRemovalAndPreservationTest {
     @Test
     void milestoneThirteenFeatureBoundaryRemainsActive() throws Exception {
         RegistrySnapshot production = DyeResolverFixtures.productionSnapshot();
-        assertEquals(33, production.banners().activeCount());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
         assertEquals(4, production.fabricMaterials().activeCount());
         assertEquals(4, production.materialPalettes().activeCount());
         assertEquals(7, production.pigments().activeCount());

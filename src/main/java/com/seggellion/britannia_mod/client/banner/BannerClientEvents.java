@@ -49,15 +49,18 @@ public final class BannerClientEvents {
             }
         }
         Set<ResourceLocation> availableTextures = new LinkedHashSet<>();
+        Map<ResourceLocation, net.minecraft.client.renderer.texture.TextureAtlasSprite> textures =
+                new LinkedHashMap<>();
         for (ResourceLocation id : BannerAssetAvailability.EXPECTED_TEXTURES) {
-            ResourceLocation stitched = event.getTextureGetter()
-                    .apply(new Material(TextureAtlas.LOCATION_BLOCKS, id)).contents().name();
+            var sprite = event.getTextureGetter().apply(new Material(TextureAtlas.LOCATION_BLOCKS, id));
+            ResourceLocation stitched = sprite.contents().name();
             if (!stitched.equals(MissingTextureAtlasSprite.getLocation())) {
                 availableTextures.add(id);
+                textures.put(id, sprite);
             }
         }
         BakedModel fallback = baked.getOrDefault(BannerAssetAvailability.MISSING_MODEL, original);
-        BannerModelRepository.install(original, baked, fallback,
+        BannerModelRepository.install(original, baked, textures, fallback,
                 new BannerAssetAvailability(availableModels, availableTextures));
         event.getModels().put(itemId, new BannerItemBakedModel(original));
     }

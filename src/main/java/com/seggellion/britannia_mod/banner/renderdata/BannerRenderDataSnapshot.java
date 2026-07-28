@@ -30,9 +30,15 @@ public record BannerRenderDataSnapshot(
     public static BannerRenderDataSnapshot fromRegistry(RegistrySnapshot snapshot) {
         Objects.requireNonNull(snapshot, "snapshot");
         LinkedHashMap<BannerDefinitionId, BannerRenderDefinition> banners = new LinkedHashMap<>();
-        snapshot.banners().activeDefinitions().forEach(definition -> banners.put(definition.id(),
-                new BannerRenderDefinition(definition.id(), definition.assets(), definition.contentStatus(),
-                        definition.dimensions(), definition.supportedOrientations(), definition.supportedMounts())));
+        snapshot.banners().activeDefinitions().forEach(definition -> {
+            var profile = snapshot.placementProfiles().find(definition.placementProfile())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Active banner has no active placement profile: " + definition.id()));
+            banners.put(definition.id(),
+                    new BannerRenderDefinition(definition.id(), definition.assets(), definition.contentStatus(),
+                            definition.dimensions(), definition.supportedOrientations(),
+                            definition.supportedMounts(), profile.orientationMountGeometry()));
+        });
 
         LinkedHashMap<FabricMaterialId, BannerRenderMaterial> materials = new LinkedHashMap<>();
         snapshot.fabricMaterials().activeDefinitions().forEach(material -> {

@@ -26,25 +26,28 @@ class BannerCatalogueManifestTest {
     }
 
     @Test
-    void containsExactlyThirtyThreeEntries() {
-        assertEquals(33, manifest.banners().size());
+    void containsEveryCanonicalEntry() {
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, manifest.banners().size());
     }
 
     @Test
-    void containsExactlyThirtyThreeUniqueStableIds() {
-        assertEquals(33, manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::id)
+    void containsOnlyUniqueStableIds() {
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::id)
                 .collect(Collectors.toSet()).size());
     }
 
     @Test
-    void containsExactlyThirtyThreeUniqueIndices() {
-        assertEquals(33, manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::index)
+    void containsOnlyUniqueIndices() {
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::index)
                 .collect(Collectors.toSet()).size());
     }
 
     @Test
-    void indicesAreContinuousFromOneThroughThirtyThree() {
-        assertEquals(java.util.stream.IntStream.rangeClosed(1, 33).boxed().collect(Collectors.toSet()),
+    void indicesAreContinuousFromOneThroughTheDataDerivedTotal() {
+        assertEquals(java.util.stream.IntStream.rangeClosed(
+                        1, ProductionBannerCatalogue.TARGET_COUNT).boxed().collect(Collectors.toSet()),
                 manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::index).collect(Collectors.toSet()));
     }
 
@@ -58,7 +61,8 @@ class BannerCatalogueManifestTest {
     void manifestOrderMatchesCanonicalIndicesAndIds() {
         assertEquals(ProductionBannerCatalogue.CANONICAL_PATHS,
                 manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertEquals(java.util.stream.IntStream.rangeClosed(1, 33).boxed().toList(),
+        assertEquals(java.util.stream.IntStream.rangeClosed(
+                        1, ProductionBannerCatalogue.TARGET_COUNT).boxed().toList(),
                 manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::index).toList());
     }
 
@@ -67,7 +71,7 @@ class BannerCatalogueManifestTest {
         Map<String, Long> counts = manifest.banners().stream().collect(Collectors.groupingBy(
                 BannerScaffoldTool.BannerEntry::group, Collectors.counting()));
         assertEquals(Map.of("large", 6L, "medium-wall", 6L, "medium", 8L,
-                "small", 6L, "x-small", 7L), counts);
+                "small", 6L, "x-small", 9L), counts);
     }
 
     @Test
@@ -88,37 +92,45 @@ class BannerCatalogueManifestTest {
     void sourceNamedEntriesRetainSourceLabelsAndApprovedNamesAreExplicit() {
         List<BannerScaffoldTool.BannerEntry> named = manifest.banners().stream()
                 .filter(entry -> "source-named".equals(entry.nameStatus())).toList();
-        assertEquals(20, named.size());
+        assertEquals(22, named.size());
         assertTrue(named.stream().allMatch(entry -> entry.sourceLabel() != null));
-        assertEquals(List.of("road_guard", "small_curtain"), named.stream()
+        assertEquals(Set.of("road_guard", "pale_road_guard", "red_crosslets",
+                        "captains_red_crosslets", "scarlet_court", "verdant_court",
+                        "small_curtain", "prosperity_standard", "guardian_standard"),
+                named.stream()
                 .filter(entry -> Boolean.TRUE.equals(entry.displayNameApproved()))
-                .map(BannerScaffoldTool.BannerEntry::id).toList());
+                .map(BannerScaffoldTool.BannerEntry::id).collect(Collectors.toSet()));
     }
 
     @Test
-    void onlyRoadGuardHasApprovedDimensions() {
+    void authoritativeExtraSmallFamilyHasApprovedDimensions() {
         assertEquals(Boolean.TRUE, manifest.defaults().dimensionsProvisional());
-        assertEquals(List.of("road_guard"), manifest.banners().stream()
+        assertEquals(Set.of("road_guard", "pale_road_guard", "red_crosslets",
+                        "captains_red_crosslets", "scarlet_court", "verdant_court",
+                        "small_curtain", "prosperity_standard", "guardian_standard"),
+                manifest.banners().stream()
                 .filter(entry -> Boolean.FALSE.equals(entry.dimensionsProvisional()))
-                .map(BannerScaffoldTool.BannerEntry::id).toList());
+                .map(BannerScaffoldTool.BannerEntry::id).collect(Collectors.toSet()));
     }
 
     @Test
-    void onlyRoadGuardIsComplete() {
+    void extraSmallFamilyAwaitsLiveReview() {
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertEquals(List.of("road_guard"), manifest.banners().stream()
+        assertTrue(manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus()))
-                .map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertTrue(manifest.banners().stream().noneMatch(entry -> "in_progress".equals(entry.contentStatus())));
+                .findAny().isEmpty());
+        assertEquals(9, manifest.banners().stream()
+                .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
     }
 
     @Test
     void defaultsDoNotMultiplyDesignsByRuntimeCombinations() {
-        assertEquals(33, manifest.banners().size());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, manifest.banners().size());
         assertEquals(2, manifest.defaults().supportedMounts().size());
         assertEquals(2, manifest.defaults().supportedOrientations().size());
         assertEquals("britannia_mod:cotton", manifest.defaults().defaultMaterial());
-        assertTrue(manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::id).distinct().count() == 33);
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                manifest.banners().stream().map(BannerScaffoldTool.BannerEntry::id).distinct().count());
     }
 
     @Test

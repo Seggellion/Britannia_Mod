@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -112,7 +114,8 @@ class Milestone15AdminToolsTest {
     @Test
     void suggestionsAreRegistryBackedContextualDeterministicAndItemBacked() {
         BannerAdminSuggestions suggestions = new BannerAdminSuggestions(pigmentSource);
-        assertEquals(33, suggestions.definitions(production, true).size());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                suggestions.definitions(production, true).size());
         assertEquals(4, suggestions.materials(production, true).size());
         assertEquals(7, suggestions.pigments(production, true).size());
         List<String> cotton = suggestions.colours(Optional.of(COTTON), production, true);
@@ -131,7 +134,8 @@ class Milestone15AdminToolsTest {
     void suggestionsReflectSnapshotReplacementAndOmitDisabledContent() {
         BannerAdminSuggestions suggestions = new BannerAdminSuggestions(pigmentSource);
         RegistrySnapshot disabled = RegistrySnapshotTestFactory.withDisabledBanner(production, WARD);
-        assertEquals(32, suggestions.definitions(disabled, true).size());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT - 1,
+                suggestions.definitions(disabled, true).size());
         assertFalse(suggestions.definitions(disabled, true).contains(WARD.toString()));
         RegistrySnapshot disabledPigment = RegistrySnapshotTestFactory.withDisabledPigment(production, MADDER);
         assertEquals(6, suggestions.pigments(disabledPigment, true).size());
@@ -298,25 +302,23 @@ class Milestone15AdminToolsTest {
         BannerCatalogueAdminService service = new BannerCatalogueAdminService();
         var validation = service.validate(production, true, List.of());
         assertEquals(CatalogueValidationStatus.VALID, validation.status());
-        assertEquals(33, validation.activeBanners());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, validation.activeBanners());
         assertEquals(0, validation.disabledBanners());
         assertEquals(4, validation.materials());
         assertEquals(4, validation.palettes());
         assertEquals(7, validation.pigments());
         assertEquals(2, validation.mounts());
-        assertEquals(32, validation.placeholders());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, validation.placeholders());
         assertEquals(13, validation.provisionalNames());
-        assertEquals(32, validation.provisionalDimensions());
+        assertEquals(26, validation.provisionalDimensions());
         var first = service.placeholders(production, 1);
-        assertEquals(32, first.totalCount());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, first.totalCount());
         assertEquals(8, first.entries().size());
-        assertEquals(4, first.pageCount());
-        assertTrue(first.entries().stream()
-                .noneMatch(entry -> entry.definitionId().equals(ROAD_GUARD)));
+        assertEquals(5, first.pageCount());
         assertEquals(first.entries().stream()
                 .map(entry -> entry.definitionId().toString()).sorted().toList(),
                 first.entries().stream().map(entry -> entry.definitionId().toString()).toList());
-        assertEquals(4, service.placeholders(production, 999).page());
+        assertEquals(5, service.placeholders(production, 999).page());
         assertEquals(1, service.placeholders(production, -10).page());
         assertEquals(0, service.placeholders(RegistrySnapshot.empty(), 1).totalCount());
     }
@@ -329,7 +331,7 @@ class Milestone15AdminToolsTest {
         assertEquals(CatalogueValidationStatus.INVALID, service.validate(invalid, true, List.of()).status());
         assertEquals(CatalogueValidationStatus.REGISTRY_UNAVAILABLE,
                 service.validate(RegistrySnapshot.empty(), false, List.of()).status());
-        assertEquals(33, production.banners().activeCount());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
     }
 
     @Test

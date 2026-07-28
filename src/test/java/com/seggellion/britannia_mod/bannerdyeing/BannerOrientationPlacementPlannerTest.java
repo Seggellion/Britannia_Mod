@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -84,7 +86,7 @@ class BannerOrientationPlacementPlannerTest {
                 }
             }
         }
-        assertEquals(33 * 2 * 2 * 4, plans);
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT * 2 * 2 * 4, plans);
     }
 
     @Test

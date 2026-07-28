@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
 import com.seggellion.britannia_mod.tools.BannerScaffoldTool;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -35,12 +36,13 @@ class BannerScaffoldToolTest {
         Path root = seed();
         BannerScaffoldTool.RunSummary summary = run(root, false, false).summary;
 
-        assertEquals(33, summary.generatedDefinitions());
-        assertEquals(33, countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
-        assertEquals(7, countSupportingJson(root));
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, summary.generatedDefinitions());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
+        assertEquals(8, countSupportingJson(root));
         assertEquals(6, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/placeholder")));
         assertEquals(3, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
-        assertEquals(2, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/mount")));
+        assertEquals(4, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/mount")));
         assertEquals(2, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/mount")));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.STATUS_PATH)));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.METADATA_PATH)));
@@ -55,15 +57,19 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Brass automated"));
         assertTrue(status.contains("Iron automated"));
         assertTrue(status.contains("Manual result"));
-        assertTrue(status.contains("Final per-definition orientations approved: 1 of 33"));
-        assertTrue(status.contains("Final per-definition mounts approved: 1 of 33"));
-        assertTrue(status.contains("Final placed artwork intake approved: 1 of 33"));
+        assertTrue(status.contains("Final per-definition orientations approved: 9 of "
+                + ProductionBannerCatalogue.TARGET_COUNT));
+        assertTrue(status.contains("Final per-definition mounts approved: 9 of "
+                + ProductionBannerCatalogue.TARGET_COUNT));
+        assertTrue(status.contains("Final placed artwork intake approved: 9 of "
+                + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Banner crafting implemented: no"));
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
         assertFalse(status.contains("Recipe ID"));
         assertFalse(status.contains("Recipe definitions complete"));
-        assertEquals(33, status.lines().filter(line -> line.matches("\\| \\d{2} \\|.*")).count());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                status.lines().filter(line -> line.matches("\\| \\d{2} \\|.*")).count());
         assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/recipe/banner")));
         assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/tags/item/banner_fabric")));
         assertFalse(Files.exists(root.resolve("src/main/resources/data/britannia_mod/tags/item/banner_mount")));
@@ -126,7 +132,7 @@ class BannerScaffoldToolTest {
         Path root = seed();
         run(root, false, false);
         BannerScaffoldTool.RunSummary summary = run(root, true, false).summary;
-        assertEquals(33, summary.activeDefinitions());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, summary.activeDefinitions());
         assertEquals(0, summary.disabledDefinitions());
     }
 
@@ -212,15 +218,16 @@ class BannerScaffoldToolTest {
     @Test
     void missingIndexIsRejected() throws Exception {
         Path root = seed();
-        mutate(root, object -> banners(object).get(32).getAsJsonObject().addProperty("index", 34));
+        mutate(root, object -> banners(object).get(ProductionBannerCatalogue.TARGET_COUNT - 1)
+                .getAsJsonObject().addProperty("index", ProductionBannerCatalogue.TARGET_COUNT + 1));
         assertInvalid(root, "continuous");
     }
 
     @Test
-    void entryCountOtherThanThirtyThreeIsRejected() throws Exception {
+    void entryCountOtherThanCanonicalTotalIsRejected() throws Exception {
         Path root = seed();
-        mutate(root, object -> banners(object).remove(32));
-        assertInvalid(root, "exactly 33");
+        mutate(root, object -> banners(object).remove(ProductionBannerCatalogue.TARGET_COUNT - 1));
+        assertInvalid(root, "exactly " + ProductionBannerCatalogue.TARGET_COUNT);
     }
 
     @Test
@@ -263,7 +270,8 @@ class BannerScaffoldToolTest {
         JsonObject language = JsonParser.parseString(Files.readString(root.resolve(BannerScaffoldTool.LOCALIZATION_PATH)))
                 .getAsJsonObject();
         assertEquals("Keep Me", language.get("unrelated.key").getAsString());
-        assertEquals(33, language.entrySet().stream().filter(entry -> entry.getKey().startsWith("banner.britannia_mod."))
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                language.entrySet().stream().filter(entry -> entry.getKey().startsWith("banner.britannia_mod."))
                 .count());
     }
 
@@ -293,12 +301,17 @@ class BannerScaffoldToolTest {
         Path language = root.resolve(BannerScaffoldTool.LOCALIZATION_PATH);
         Files.createDirectories(language.getParent());
         Files.writeString(language, "{\n  \"unrelated.key\": \"Keep Me\"\n}\n", StandardCharsets.UTF_8);
-        copyApprovedAsset(root,
-                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png");
-        copyApprovedAsset(root,
-                "src/main/resources/assets/britannia_mod/textures/banner/road_guard/dye_mask.png");
+        for (String banner : ProductionBannerCatalogue.CANONICAL_PATHS.subList(
+                ProductionBannerCatalogue.TARGET_COUNT - 9, ProductionBannerCatalogue.TARGET_COUNT)) {
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/base_texture.png");
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/dye_mask.png");
+        }
         copyApprovedAsset(root,
                 "src/main/resources/assets/britannia_mod/models/banner/road_guard/geometry.json");
+        copyApprovedAsset(root,
+                "src/main/resources/assets/britannia_mod/models/banner/small_curtain/geometry.json");
         return root;
     }
 

@@ -1,0 +1,106 @@
+{
+  "credit": "Shared extra-small wall_parallel physical wall-mount geometry; runtime material texture remains independently selected",
+  "parent": "minecraft:block/block",
+  "textures": {
+    "mount": "britannia_mod:banner/mount/brass",
+    "particle": "britannia_mod:banner/mount/brass"
+  },
+  "elements": [
+    {
+      "from": [
+        4.5,
+        10.4,
+        7.35
+      ],
+      "to": [
+        11.5,
+        11.0,
+        7.65
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mount"
+        },
+        "east": {
+          "texture": "#mount"
+        },
+        "south": {
+          "texture": "#mount"
+        },
+        "west": {
+          "texture": "#mount"
+        },
+        "up": {
+          "texture": "#mount"
+        },
+        "down": {
+          "texture": "#mount"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        9.8,
+        7.3
+      ],
+      "to": [
+        5.1,
+        10.7,
+        8.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mount"
+        },
+        "east": {
+          "texture": "#mount"
+        },
+        "south": {
+          "texture": "#mount"
+        },
+        "west": {
+          "texture": "#mount"
+        },
+        "up": {
+          "texture": "#mount"
+        },
+        "down": {
+          "texture": "#mount"
+        }
+      }
+    },
+    {
+      "from": [
+        10.9,
+        9.8,
+        7.3
+      ],
+      "to": [
+        11.5,
+        10.7,
+        8.0
+      ],
+      "faces": {
+        "north": {
+          "texture": "#mount"
+        },
+        "east": {
+          "texture": "#mount"
+        },
+        "south": {
+          "texture": "#mount"
+        },
+        "west": {
+          "texture": "#mount"
+        },
+        "up": {
+          "texture": "#mount"
+        },
+        "down": {
+          "texture": "#mount"
+        }
+      }
+    }
+  ]
+}

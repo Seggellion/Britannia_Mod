@@ -465,10 +465,7 @@ public final class FinalContentIntakeValidator {
         }
     }
 
-    /**
-     * Standard two-pass source-over rendering preserves the authored base alpha exactly when every active mask pixel
-     * covers an opaque base pixel. Transparent and partially transparent base pixels therefore remain fixed.
-     */
+    /** The dye pass may follow a partially transparent edge but must never exceed the base silhouette alpha. */
     private static void validateMaskCoverage(
             Path root, JsonObject document, List<String> invalid) {
         String baseSource = text(document, "assets.base_texture.source_file", invalid);
@@ -483,9 +480,8 @@ public final class FinalContentIntakeValidator {
             for (int x = 0; x < base.getWidth(); x++) {
                 int baseAlpha = base.getRGB(x, y) >>> 24;
                 int maskAlpha = mask.getRGB(x, y) >>> 24;
-                if (maskAlpha != 0 && baseAlpha != 255) {
-                    invalid.add("dye_mask active pixels must align only with fully opaque base_texture pixels "
-                            + "so two-pass rendering preserves base alpha");
+                if (maskAlpha > baseAlpha) {
+                    invalid.add("dye_mask alpha must not exceed base_texture alpha at any pixel");
                     return;
                 }
             }

@@ -126,7 +126,21 @@ class FinalContentIntakeValidatorTest {
         Fixture outsideOpaqueBase = seed();
         replaceMask(outsideOpaqueBase, (x, y) ->
                 x == 0 && y == 0 ? 0x80808080 : x == 1 ? 0x00000000 : 0xFF808080);
-        assertIssue(validate(outsideOpaqueBase), "only with fully opaque base_texture pixels");
+        assertIssue(validate(outsideOpaqueBase), "must not exceed base_texture alpha");
+    }
+
+    @Test
+    void maskMayFollowPartiallyTransparentBaseEdgesWithoutExceedingThem() throws Exception {
+        Fixture partialEdge = seed();
+        replaceBase(partialEdge, (x, y) -> {
+            int alpha = x == 0 || y == 0 ? 0 : x == 1 ? 128 : 255;
+            return alpha << 24 | 0x806040;
+        });
+        replaceMask(partialEdge, (x, y) -> {
+            int alpha = x == 0 || y == 0 ? 0 : x == 1 ? 128 : 255;
+            return alpha << 24 | 0xFFFFFF;
+        });
+        assertEquals(Status.READY_FOR_INTEGRATION, validate(partialEdge).status());
     }
 
     @Test
@@ -329,6 +343,13 @@ class FinalContentIntakeValidatorTest {
         writePixels(mask, pixel);
         fixture.document().getAsJsonObject("assets").getAsJsonObject("dye_mask")
                 .addProperty("sha256", sha256(mask));
+    }
+
+    private static void replaceBase(Fixture fixture, Pixel pixel) throws Exception {
+        Path base = fixture.root().resolve("owner/base.png");
+        writePixels(base, pixel);
+        fixture.document().getAsJsonObject("assets").getAsJsonObject("base_texture")
+                .addProperty("sha256", sha256(base));
     }
 
     private static void writePixels(Path path, Pixel pixel) throws Exception {

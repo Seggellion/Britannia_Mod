@@ -1,65 +1,70 @@
 {
-    "schema_version":  1,
-    "approval":  {
-                     "status":  "NOT_APPROVED",
-                     "approved_by":  "",
-                     "approved_date":  "",
-                     "notes":  "Draft extraction only. Pixel audit found 140 active mask pixels over non-opaque base pixels (137 partial-alpha and 3 fully transparent); product-owner mask correction and all administrative approvals remain required."
-                 },
-    "banner":  {
-                   "stable_id":  "britannia_mod:captains_red_crosslets",
-                   "final_display_name":  "Captain\u0027s Red Crosslets",
-                   "width_blocks":  null,
-                   "height_blocks":  null,
-                   "supported_orientations":  [
-
-                                              ],
-                   "supported_mounts":  [
-
-                                        ],
-                   "default_mount":  null,
-                   "placement_profile_id":  null,
-                   "geometry_id":  null,
-                   "geometry_convention":  ""
-               },
-    "localization":  {
-                         "language":  "en_us",
-                         "value":  "Captain\u0027s Red Crosslets"
-                     },
-    "assets":  {
-                   "base_texture":  {
-                                        "resource_id":  "britannia_mod:banner/captains_red_crosslets/base_texture",
-                                        "source_file":  "content/banner-final-intake/submissions/captains_red_crosslets/base_texture.png",
-                                        "sha256":  "fdffffb2faf4ccfd343fa88345080e56bd2e963375800b49381784a862e7fc0a"
-                                    },
-                   "dye_mask":  {
-                                    "resource_id":  "britannia_mod:banner/captains_red_crosslets/dye_mask",
-                                    "source_file":  "content/banner-final-intake/submissions/captains_red_crosslets/dye_mask.png",
-                                    "sha256":  "cf33bd0b6e2153674ad14990d2a00d62dfa94a8ebd409ca8991bdfafaf90876f"
-                                },
-                   "geometry":  {
-                                    "shared_geometry_approved":  false,
-                                    "source_file":  null,
-                                    "sha256":  null
-                                }
-               },
-    "references":  {
-                       "authoring_source_file":  null,
-                       "preview_image_file":  "content/banner-final-intake/submissions/captains_red_crosslets/review/review_sheet.png"
-                   },
-    "provenance":  {
-                       "original_art":  false,
-                       "creator":  "",
-                       "creation_method":  "",
-                       "source_project_file":  "C:/projects/britannia/raw fiels/tabbard/banner.ai",
-                       "distribution_permission_confirmed":  false,
-                       "copied_from_reference_art":  null
-                   },
-    "manual_verification":  {
-                                "performed":  false,
-                                "tester":  "",
-                                "date":  "",
-                                "notes":  "Not performed; diagnostic review images only."
-                            },
-    "requested_content_status":  "placeholder"
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Product Owner",
+    "approved_date": "2026-07-28",
+    "notes": "Approved for integration under the authoritative nine-definition extra-small family decision. Automated asset checks passed; live review remains pending."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:captains_red_crosslets",
+    "final_display_name": "Captain's Red Crosslets",
+    "catalogue_index": 30,
+    "family": "x-small",
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "supported_orientations": [
+      "wall_parallel",
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:extra_small",
+    "geometry_id": "britannia_mod:banner/road_guard/geometry",
+    "geometry_convention": "Shared Road Guard-style 128 x 128 planar geometry; mount geometry remains separate and orientation-selected by the extra-small placement profile."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Captain's Red Crosslets"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/captains_red_crosslets/base_texture",
+      "source_file": "content/banner-final-intake/submissions/captains_red_crosslets/base_texture.png",
+      "sha256": "2eb1cf8b6aa5b1f863dc673b010281875723ab3c0c315328e92a7e56d9e2da68"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/captains_red_crosslets/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/captains_red_crosslets/dye_mask.png",
+      "sha256": "48431385c961644d65cf2bf60f322efb132070a30636da3f5acc94747c463b89"
+    },
+    "geometry": {
+      "shared_geometry_approved": true,
+      "source_file": null,
+      "sha256": null,
+      "runtime_sha256": "9cbe83118813091c2314b44ea90bdbc86f3e896ebc4cca3a5b21f7d989593de2"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/captains_red_crosslets/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Britannia Mod project artist",
+    "creation_method": "Named base_texture and dye_mask objects exported from the authoritative Adobe Illustrator document to one aligned 128 x 128 RGBA canvas; active mask RGB normalized to white and alpha constrained to base alpha.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed; renewed live review is required for this asset hash."
+  },
+  "requested_content_status": "in_progress"
 }

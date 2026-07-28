@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 class BannerClientAssetIndexContractTest {
     private static final Path DEFINITIONS =
             Path.of("src/main/resources/data/britannia_mod/banner_definitions");
+    private static final Path PLACEMENT_PROFILES =
+            Path.of("src/main/resources/data/britannia_mod/placement_profiles");
     private static final Path INDEX =
             Path.of("src/main/resources/assets/britannia_mod/banner_client_assets.json");
     private static final Path BLOCK_ATLAS =
@@ -36,12 +38,23 @@ class BannerClientAssetIndexContractTest {
                 textures.add(ResourceLocation.parse(assets.get("dye_mask").getAsString()));
             }
         }
+        try (var paths = Files.list(PLACEMENT_PROFILES)) {
+            for (Path path : paths.filter(value -> value.toString().endsWith(".json")).sorted().toList()) {
+                JsonObject profile = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+                if (!profile.has("orientation_mount_geometry")) {
+                    continue;
+                }
+                JsonObject orientationModels = profile.getAsJsonObject("orientation_mount_geometry");
+                geometries.add(ResourceLocation.parse(orientationModels.get("wall_parallel").getAsString()));
+                geometries.add(ResourceLocation.parse(orientationModels.get("wall_perpendicular").getAsString()));
+            }
+        }
 
-        assertEquals(6, geometries.size(), "shared geometry IDs must be de-duplicated");
-        assertEquals(4, textures.size(), "shared texture IDs must be de-duplicated");
+        assertEquals(8, geometries.size(), "shared geometry IDs must be de-duplicated");
+        assertEquals(20, textures.size(), "shared texture IDs must be de-duplicated");
         assertEquals(geometries, BannerClientAssetIndex.geometryModels());
         assertEquals(textures, BannerClientAssetIndex.textures());
-        assertTrue(geometries.contains(id("banner/placeholder/x_small")));
+        assertFalse(geometries.contains(id("banner/placeholder/x_small")));
         assertTrue(geometries.contains(id("banner/road_guard/geometry")));
         assertTrue(textures.contains(id("banner/road_guard/base_texture")));
         assertTrue(textures.contains(id("banner/road_guard/dye_mask")));

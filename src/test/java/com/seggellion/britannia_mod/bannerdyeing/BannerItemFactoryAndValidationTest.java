@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -166,7 +168,7 @@ class BannerItemFactoryAndValidationTest {
 
     @Test
     void allThirtyThreeDefinitionsUseSameSharedItemAndValidate() {
-        assertEquals(33, production.banners().activeCount());
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
         for (BannerDefinition definition : production.banners().activeDefinitions()) {
             BannerItemFactoryResult result = factory.naturalCottonAdminBanner(definition.id(), production, true);
             assertTrue(result.successful(), definition.id().toString());

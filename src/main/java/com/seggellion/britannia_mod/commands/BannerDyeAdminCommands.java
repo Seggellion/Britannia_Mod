@@ -2,7 +2,6 @@ package com.seggellion.britannia_mod.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -84,12 +83,12 @@ public final class BannerDyeAdminCommands {
                         .then(Commands.literal("tub")
                                 .then(dyeTubGive(suggestions)))
                         .then(Commands.literal("resolve")
-                                .then(Commands.argument("pigment", StringArgumentType.word())
+                                .then(Commands.argument("pigment", ResourceLocationArgument.id())
                                         .suggests((context, builder) -> suggest(
                                                 suggestions.pigments(
                                                         BannerDataRegistries.current(),
                                                         BannerDataRegistries.isAvailable()), builder))
-                                        .then(Commands.argument("material", StringArgumentType.word())
+                                        .then(Commands.argument("material", ResourceLocationArgument.id())
                                                 .suggests((context, builder) -> suggest(
                                                         suggestions.materials(
                                                                 BannerDataRegistries.current(),
@@ -133,7 +132,7 @@ public final class BannerDyeAdminCommands {
         return Commands.literal("give")
                 .then(Commands.argument("targets", EntityArgument.players())
                         .executes(context -> giveTub(context, Optional.empty()))
-                        .then(Commands.argument("pigment", StringArgumentType.word())
+                        .then(Commands.argument("pigment", ResourceLocationArgument.id())
                                 .suggests((context, builder) -> suggest(suggestions.pigments(
                                         BannerDataRegistries.current(), BannerDataRegistries.isAvailable()), builder))
                                 .executes(context -> giveTub(context, argumentPigment(context)))));

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "britannia_mod:road_guard",
   "display_name_key": "banner.britannia_mod.road_guard",
-  "content_status": "complete",
+  "content_status": "in_progress",
   "source_reference": {
     "page": 3,
     "row": 8,
@@ -29,5 +29,5 @@
     "base_texture": "britannia_mod:banner/road_guard/base_texture",
     "dye_mask": "britannia_mod:banner/road_guard/dye_mask"
   },
-  "placement_profile": "britannia_mod:placeholder_x_small"
+  "placement_profile": "britannia_mod:extra_small"
 }

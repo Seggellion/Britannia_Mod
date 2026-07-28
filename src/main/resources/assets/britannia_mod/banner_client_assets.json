@@ -6,12 +6,30 @@
     "britannia_mod:banner/placeholder/medium",
     "britannia_mod:banner/placeholder/small",
     "britannia_mod:banner/road_guard/geometry",
-    "britannia_mod:banner/placeholder/x_small"
+    "britannia_mod:banner/mount/wall_parallel",
+    "britannia_mod:banner/mount/wall_perpendicular",
+    "britannia_mod:banner/small_curtain/geometry"
   ],
   "textures": [
     "britannia_mod:banner/placeholder/base_texture",
     "britannia_mod:banner/placeholder/dye_mask",
     "britannia_mod:banner/road_guard/base_texture",
-    "britannia_mod:banner/road_guard/dye_mask"
+    "britannia_mod:banner/road_guard/dye_mask",
+    "britannia_mod:banner/pale_road_guard/base_texture",
+    "britannia_mod:banner/pale_road_guard/dye_mask",
+    "britannia_mod:banner/red_crosslets/base_texture",
+    "britannia_mod:banner/red_crosslets/dye_mask",
+    "britannia_mod:banner/captains_red_crosslets/base_texture",
+    "britannia_mod:banner/captains_red_crosslets/dye_mask",
+    "britannia_mod:banner/scarlet_court/base_texture",
+    "britannia_mod:banner/scarlet_court/dye_mask",
+    "britannia_mod:banner/verdant_court/base_texture",
+    "britannia_mod:banner/verdant_court/dye_mask",
+    "britannia_mod:banner/small_curtain/base_texture",
+    "britannia_mod:banner/small_curtain/dye_mask",
+    "britannia_mod:banner/prosperity_standard/base_texture",
+    "britannia_mod:banner/prosperity_standard/dye_mask",
+    "britannia_mod:banner/guardian_standard/base_texture",
+    "britannia_mod:banner/guardian_standard/dye_mask"
   ]
 }

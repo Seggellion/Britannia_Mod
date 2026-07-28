@@ -4,8 +4,10 @@ import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.structure.BannerLocalOffset;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 
 /** Immutable anchor snapshot prepared from synchronized block-entity and display state. */
@@ -21,6 +23,7 @@ public record BannerPlacedRenderState(
         BannerAnchorConvention anchorConvention,
         AABB renderBounds,
         List<BlockPos> lightingSamplePositions,
+        Optional<ResourceLocation> orientationMountGeometry,
         BannerPlacedGeometryFamily geometryFamily,
         BannerPlacedRenderFailure failure,
         String diagnosticId,
@@ -36,6 +39,8 @@ public record BannerPlacedRenderState(
         Objects.requireNonNull(renderBounds, "renderBounds");
         lightingSamplePositions = List.copyOf(Objects.requireNonNull(
                 lightingSamplePositions, "lightingSamplePositions"));
+        orientationMountGeometry = Objects.requireNonNull(
+                orientationMountGeometry, "orientationMountGeometry");
         Objects.requireNonNull(geometryFamily, "geometryFamily");
         Objects.requireNonNull(failure, "failure");
         diagnosticId = Objects.requireNonNull(diagnosticId, "diagnosticId");

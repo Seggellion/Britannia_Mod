@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +31,8 @@ class ProductionBannerCatalogueTest {
 
     @Test
     void canonicalIdSetContainsExactlyThirtyThreeIds() {
-        assertTrue(ProductionBannerCatalogue.canonicalIds().size() == 33);
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
+                ProductionBannerCatalogue.canonicalIds().size());
     }
 
     @Test

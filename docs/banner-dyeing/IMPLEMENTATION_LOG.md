@@ -1,5 +1,81 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-28 - Complete extra-small banner family integration
+
+### Scope and authoring evidence
+
+- Integrated exactly nine x-small definitions: Road Guard (27), Pale Road Guard (28), Red Crosslets (29), Captain's
+  Red Crosslets (30), Scarlet Court (31), Verdant Court (32), Small Curtain (33), Prosperity Standard (34), and
+  Guardian Standard (35). The first 33 indices were preserved. The last two were genuinely absent and were appended;
+  no predecessor or duplicate was found. `x_small_unnamed_01` remains inactive after its earlier migration to
+  `small_curtain`.
+- Automated Adobe Illustrator export used only
+  `C:/projects/britannia/raw fiels/tabbard/banner.ai`. Its pre/post SHA-256 was
+  `e0f63c8a2e6a39621f2adea296541d62cf0a5933ed22e2e4c68cbfbe8513879e`; automation closed without saving.
+  All nine named top-level layers supplied identifiable `base_texture` and `dye_mask` artwork.
+- One proportional placement per pair produced aligned 128 x 128 RGBA canvases with transparent margins. The
+  deterministic preparation step makes active mask RGB white and applies
+  `output alpha = min(authored mask alpha, base alpha)` without expanding or redesigning authored selections.
+  Small Curtain's real clipped mask group was isolated instead of exporting its coloured base.
+- Review artifacts and machine reports are under `content/banner-final-intake/review/`,
+  `content/banner-final-intake/extra_small_illustrator_report.json`, and
+  `content/banner-final-intake/extra_small_asset_report.json`.
+
+### Runtime hashes
+
+| Definition | Base SHA-256 | Dye-mask SHA-256 |
+|---|---|---|
+| `road_guard` | `46ce83a31b9954cea1b3934249eab919ca9408658772b96b0e2752c6aaa48b2d` | `8efeff71ca5c8689fef725c7fc3172b783687ffcb3c9dd0bf978874cad048f77` |
+| `pale_road_guard` | `d3a95ac9ea835943ee57f12fc8ff68048bcba65fbaa4a90c8761b6a0e22fb9bb` | `2f4c56225adfea15a0bf9f07a58f228555774c189a464af6de7722fe5a9c2da0` |
+| `red_crosslets` | `222f27705b9543662db1788bde63fb81ba5efb510a738c811115fbcfa4fe1950` | `31162c610a4b49a049e4589e13d68e54e025771fa86ad13454eac58efdcf4b51` |
+| `captains_red_crosslets` | `2eb1cf8b6aa5b1f863dc673b010281875723ab3c0c315328e92a7e56d9e2da68` | `48431385c961644d65cf2bf60f322efb132070a30636da3f5acc94747c463b89` |
+| `scarlet_court` | `1d243ac0cff95dd4b3bc5c6e8c3c5117c31c0b747b1b8c7be1f66122ab7e2d2e` | `3e63c73a6abf07eabdbd71d2fb1311a2f7b4b2f3de39c3544e36310d6b1f1814` |
+| `verdant_court` | `d7b79fc3d313a2082b16193fabc9a47ffa226a7956cfe0b1ed00355d585c65dd` | `44aa39f534353d60027fbf4ca780a92700ad23dfd57b86ba3cd2d541bab0adb2` |
+| `small_curtain` | `e5ead84ea05f73ad61281a0160e2c2875955a195af917494c1bc83849e96b355` | `39d7f7fdc5efc3e11139acbb69ed88ad30abc685d402ab6765a38dc3e8ba4651` |
+| `prosperity_standard` | `c40be2bbc878fb3102fd1fada88f150e507612635abe9b81132daaba9f5e4acf` | `187fa08bdd798125328e04b850dc761f4131c0caf8cfc7b0aacf252fd457a043` |
+| `guardian_standard` | `d4a4245760608e8ec6048292827672e8d61836497431c173459218b29f9c6e2a` | `5b74d9f79a5f5130e9790aa23a30fe9b543a202dccae686205c84451d22d0b1e` |
+
+Runtime files use
+`assets/britannia_mod/textures/banner/<stable_path>/{base_texture,dye_mask}.png`, and every runtime hash matches its
+approved intake file.
+
+### Geometry, placement, and rendering
+
+- Road Guard is the physical fabric authority for eight definitions, all of which reference the single
+  `britannia_mod:banner/road_guard/geometry` model. Small Curtain references the distinct
+  `britannia_mod:banner/small_curtain/geometry` model and its flat-bottomed silhouette. Both models map the authored
+  128-pixel canvas without stretching.
+- The new `britannia_mod:extra_small` placement profile data-selects distinct
+  `britannia_mod:banner/mount/wall_parallel` and
+  `britannia_mod:banner/mount/wall_perpendicular` models. The placed extractor selects the model from actual
+  orientation, while existing facing transforms handle north, south, east, and west. Brass and iron remain
+  independent material IDs/textures and the mount render pass remains untinted.
+- Shared baked geometry now remaps its UVs to each definition's registered base/mask sprites. This keeps registration
+  catalogue-derived and removes any need for a per-banner Java switch.
+- Natural item/preview/placed rendering uses base plus mount; dyed rendering adds only the colour-tinted mask pass.
+  Existing state schema, stable IDs, material, resolved colour, pigment provenance, mount, orientation, save/load,
+  item/block transfer, break/drop, pick block, re-placement, reload, and client tracking contracts remain intact.
+
+### Catalogue and approval status
+
+- The target is derived from the 35 canonical IDs. Generated status is 26 `placeholder`, 9 `in_progress`, 0
+  `complete`, and 0 disabled. The client index contains the shared artwork geometry once, Small Curtain geometry
+  once, both orientation mount models once, and all 18 definition-specific textures once. Directory atlas stitching
+  covers the entire banner texture tree.
+- Road Guard's former base/mask hashes
+  `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240` and
+  `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669` belonged to 64 x 64 assets.
+  `GATE_E_REVIEW.md` is retained but explicitly historical for those superseded bytes. Road Guard and all eight
+  peers remain `in_progress`.
+- Final verification passed scaffold idempotency, 616 banner/dyeing tests across 53 suites, the clean boundary, 622
+  unrestricted tests across 54 suites, and the production build, with zero failures, errors, or skips. The generated
+  all-JAR contains 5,006 unique entries and zero duplicates: 35 definition JSON files; all nine exact family IDs;
+  all 18 current 128 x 128 PNGs with intake-matching hashes; both artwork models; both orientation mount models;
+  client index; block atlas; brass/iron and still-required placeholder resources. It has no active legacy Small
+  Curtain ID, `fabric_base`, `static_overlay`, banner recipe, or banner pattern content.
+- No crafting, recipes, patterns, fabric-base/static-overlay architecture, unrelated-family art change, or
+  Milestone 17 work was introduced. The live matrix in `EXTRA_SMALL_LIVE_REVIEW.md` is intentionally unperformed.
+
 ## 2026-07-27 - Road Guard Gate E product-owner approval and closeout
 
 ### Manual review evidence

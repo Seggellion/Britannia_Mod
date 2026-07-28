@@ -39,7 +39,8 @@ final class BannerDataReloadListener extends SimplePreparableReloadListener<Prep
                             == com.seggellion.britannia_mod.banner.data.BannerContentStatus.PLACEHOLDER)
                     .count();
             BannerFeature.CONTENT_VALIDATION_LOGGER.info(
-                    "Production banner catalogue active=33 disabled=0 placeholders={}", placeholders);
+                    "Production banner catalogue active={} disabled=0 placeholders={}",
+                    ProductionBannerCatalogue.TARGET_COUNT, placeholders);
         }
         BannerDataRegistries.publish(result.snapshot(), result.report().issues());
     }

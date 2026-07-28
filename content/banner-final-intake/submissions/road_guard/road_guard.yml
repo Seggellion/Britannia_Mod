@@ -3,12 +3,14 @@
   "approval": {
     "status": "APPROVED",
     "approved_by": "Product Owner",
-    "approved_date": "2026-07-27",
-    "notes": "Approved for Road Guard intake regeneration under the current two-file selective-recolour contract. Manual in-game verification remains pending; do not mark content complete."
+    "approved_date": "2026-07-28",
+    "notes": "Approved for integration under the authoritative nine-definition extra-small family decision. Automated asset checks passed; live review remains pending."
   },
   "banner": {
     "stable_id": "britannia_mod:road_guard",
     "final_display_name": "Road Guard",
+    "catalogue_index": 27,
+    "family": "x-small",
     "width_blocks": 1,
     "height_blocks": 1,
     "supported_orientations": [
@@ -20,9 +22,9 @@
       "britannia_mod:iron"
     ],
     "default_mount": "britannia_mod:brass",
-    "placement_profile_id": "britannia_mod:placeholder_x_small",
+    "placement_profile_id": "britannia_mod:extra_small",
     "geometry_id": "britannia_mod:banner/road_guard/geometry",
-    "geometry_convention": "Use the supplied source model's planar banner group only; omit its legacy mount group because runtime brass and iron mounts remain separate and untinted."
+    "geometry_convention": "Shared Road Guard-style 128 x 128 planar geometry; mount geometry remains separate and orientation-selected by the extra-small placement profile."
   },
   "localization": {
     "language": "en_us",
@@ -32,28 +34,29 @@
     "base_texture": {
       "resource_id": "britannia_mod:banner/road_guard/base_texture",
       "source_file": "content/banner-final-intake/submissions/road_guard/base_texture.png",
-      "sha256": "a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240"
+      "sha256": "46ce83a31b9954cea1b3934249eab919ca9408658772b96b0e2752c6aaa48b2d"
     },
     "dye_mask": {
       "resource_id": "britannia_mod:banner/road_guard/dye_mask",
       "source_file": "content/banner-final-intake/submissions/road_guard/dye_mask.png",
-      "sha256": "89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669"
+      "sha256": "8efeff71ca5c8689fef725c7fc3172b783687ffcb3c9dd0bf978874cad048f77"
     },
     "geometry": {
-      "shared_geometry_approved": false,
-      "source_file": "content/banner-final-intake/submissions/road_guard/source/banner.bbmodel",
-      "sha256": "a9ef76d74e46ed4add1e44ebfd76c8447c8c07d2397b29d0134cf1ad498f4de7"
+      "shared_geometry_approved": true,
+      "source_file": null,
+      "sha256": null,
+      "runtime_sha256": "9cbe83118813091c2314b44ea90bdbc86f3e896ebc4cca3a5b21f7d989593de2"
     }
   },
   "references": {
     "authoring_source_file": null,
-    "preview_image_file": null
+    "preview_image_file": "content/banner-final-intake/submissions/road_guard/review/review_sheet.png"
   },
   "provenance": {
     "original_art": true,
     "creator": "Britannia Mod project artist",
-    "creation_method": "Original vector artwork authored in Adobe Illustrator 30.6; base texture deterministically rasterized at 64 x 64 with legacy mount pixels removed, and the approved yellow recolour region converted to HSV-value grayscale for the dye mask.",
-    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/tabbard.ai",
+    "creation_method": "Named base_texture and dye_mask objects exported from the authoritative Adobe Illustrator document to one aligned 128 x 128 RGBA canvas; active mask RGB normalized to white and alpha constrained to base alpha.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner.ai",
     "distribution_permission_confirmed": true,
     "copied_from_reference_art": false
   },
@@ -61,7 +64,7 @@
     "performed": false,
     "tester": "",
     "date": "",
-    "notes": "Not performed during intake regeneration."
+    "notes": "Not performed; renewed live review is required for this asset hash."
   },
   "requested_content_status": "in_progress"
 }

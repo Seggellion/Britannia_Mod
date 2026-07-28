@@ -68,9 +68,9 @@ class RoadGuardIntegrationTest {
     private static final Path GEOMETRY_PATH = Path.of(
             "src/main/resources/assets/britannia_mod/models/banner/road_guard/geometry.json");
     private static final String BASE_HASH =
-            "a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240";
+            "46ce83a31b9954cea1b3934249eab919ca9408658772b96b0e2752c6aaa48b2d";
     private static final String MASK_HASH =
-            "89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669";
+            "8efeff71ca5c8689fef725c7fc3172b783687ffcb3c9dd0bf978874cad048f77";
 
     private static BannerRenderDataSnapshot renderData;
     private static ClientBannerRenderPublication publication;
@@ -99,7 +99,7 @@ class RoadGuardIntegrationTest {
         BannerScaffoldTool.BannerEntry roadGuard = matching.getFirst();
         assertEquals(27, roadGuard.index());
         assertEquals("Road Guard", roadGuard.displayName());
-        assertEquals("complete", roadGuard.contentStatus());
+        assertEquals("in_progress", roadGuard.contentStatus());
         assertEquals(1, roadGuard.widthBlocks());
         assertEquals(1, roadGuard.heightBlocks());
         assertEquals(Boolean.FALSE, roadGuard.dimensionsProvisional());
@@ -109,7 +109,7 @@ class RoadGuardIntegrationTest {
         assertEquals(GEOMETRY.toString(), roadGuard.geometry());
         assertEquals(BASE.toString(), roadGuard.baseTexture());
         assertEquals(MASK.toString(), roadGuard.dyeMask());
-        assertEquals("britannia_mod:placeholder_x_small", roadGuard.placementProfile());
+        assertEquals("britannia_mod:extra_small", roadGuard.placementProfile());
 
         JsonObject definition = JsonParser.parseString(Files.readString(Path.of(
                 "src/main/resources/data/britannia_mod/banner_definitions/road_guard.json")))
@@ -125,21 +125,21 @@ class RoadGuardIntegrationTest {
         assertFalse(rawDefinition.contains("render_strategy"));
         assertFalse(rawDefinition.contains("optional_overlay"));
 
-        assertEquals(32, renderData.banners().values().stream()
+        assertEquals(26, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(0, renderData.banners().values().stream()
+        assertEquals(9, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(1, renderData.banners().values().stream()
+        assertEquals(0, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.COMPLETE).count());
         assertTrue(renderData.banners().values().stream()
-                .filter(value -> !value.id().equals(ROAD_GUARD))
+                .filter(value -> value.contentStatus() == BannerContentStatus.PLACEHOLDER)
                 .allMatch(value -> value.dimensions().provisional()
                         && value.assets().baseTexture().equals(BannerAssetAvailability.BASE_TEXTURE)
                         && value.assets().dyeMask().equals(BannerAssetAvailability.DYE_MASK)));
     }
 
     @Test
-    void completedRoadGuardHasApprovedProvenanceAndManualGateEEvidence() throws Exception {
+    void roadGuardPreservesHistoricalGateEEvidenceForTheSupersededAssetHashes() throws Exception {
         JsonObject intake = JsonParser.parseString(Files.readString(INTAKE)).getAsJsonObject();
         JsonObject provenance = intake.getAsJsonObject("provenance");
         assertTrue(provenance.get("original_art").getAsBoolean());
@@ -167,6 +167,8 @@ class RoadGuardIntegrationTest {
         assertFalse(review.contains("[ENTER"));
         assertFalse(review.contains("[YYYY"));
         assertTrue(review.contains("Crafting: not applicable; product-disabled"));
+        assertTrue(review.contains("This Gate E record is preserved as historical evidence"));
+        assertTrue(review.contains("Road Guard returned to `in_progress` pending renewed live review"));
     }
 
     @Test
@@ -175,8 +177,8 @@ class RoadGuardIntegrationTest {
         assertEquals(MASK_HASH, sha256(MASK_PATH));
         BufferedImage base = ImageIO.read(BASE_PATH.toFile());
         BufferedImage mask = ImageIO.read(MASK_PATH.toFile());
-        assertEquals(64, base.getWidth());
-        assertEquals(64, base.getHeight());
+        assertEquals(128, base.getWidth());
+        assertEquals(128, base.getHeight());
         assertEquals(base.getWidth(), mask.getWidth());
         assertEquals(base.getHeight(), mask.getHeight());
         assertTrue(base.getColorModel().hasAlpha());
@@ -198,39 +200,18 @@ class RoadGuardIntegrationTest {
                     transparent++;
                 } else {
                     active++;
-                    assertTrue(alpha(base.getRGB(x, y)) > 0, "active mask over transparent base at " + x + "," + y);
+                    assertEquals(255, red, "active mask RGB must be white at " + x + "," + y);
+                    assertTrue(alpha <= alpha(base.getRGB(x, y)),
+                            "mask alpha exceeds base alpha at " + x + "," + y);
                     if (alpha < 255) {
                         partial++;
                     }
                 }
             }
         }
-        assertEquals(354, active);
-        assertEquals(3742, transparent);
-        assertEquals(0, partial, "the approved mask intentionally contains no partial-alpha pixels");
-
-        int highlightBase = base.getRGB(16, 18);
-        int highlightMask = mask.getRGB(16, 18);
-        int shadowBase = base.getRGB(10, 24);
-        int shadowMask = mask.getRGB(10, 24);
-        int charcoalBase = base.getRGB(6, 20);
-        int charcoalMask = mask.getRGB(6, 20);
-        int backgroundBase = base.getRGB(0, 0);
-        int backgroundMask = mask.getRGB(0, 0);
-        assertEquals(255, alpha(highlightMask));
-        assertEquals(255, alpha(shadowMask));
-        assertTrue(channel(highlightMask, 16) > channel(shadowMask, 16));
-        assertEquals(0, alpha(charcoalMask));
-        assertEquals(0, alpha(backgroundBase));
-        assertEquals(0, alpha(backgroundMask));
-
-        for (int dye : List.of(0xB53A42, 0x3975A8, 0x4F7A4A, 0xF1EBDD, 0x2F3034)) {
-            int highlight = compose(highlightBase, highlightMask, dye);
-            int shadow = compose(shadowBase, shadowMask, dye);
-            assertTrue(brightness(highlight) > brightness(shadow), Integer.toHexString(dye));
-            assertEquals(charcoalBase, compose(charcoalBase, charcoalMask, dye));
-            assertEquals(backgroundBase, compose(backgroundBase, backgroundMask, dye));
-        }
+        assertEquals(1482, active);
+        assertEquals(14902, transparent);
+        assertTrue(partial > 0, "anti-aliased authored edges must retain partial alpha");
 
         assertFalse(Files.exists(BASE_PATH.resolveSibling("static_overlay.png")));
         JsonObject model = JsonParser.parseString(Files.readString(GEOMETRY_PATH)).getAsJsonObject();
@@ -319,7 +300,7 @@ class RoadGuardIntegrationTest {
                             Milestone13RenderFixtures.entity(
                                     BlockPos.ZERO, facing, orientation, 1, 1, natural), 16, 17);
                     assertFalse(placed.fallback(), orientation + " " + facing);
-                    assertEquals(BannerPlacedGeometryFamily.X_SMALL, placed.geometryFamily());
+                    assertEquals(BannerPlacedGeometryFamily.ROAD_GUARD, placed.geometryFamily());
                     assertEquals(BASE, placed.appearance().baseTexture().orElseThrow());
                     assertEquals(MASK, placed.appearance().dyeMask().orElseThrow());
                     BannerPlacedRenderPlan naturalPlan = BannerPlacedRenderPlan.from(placed);

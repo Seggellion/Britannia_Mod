@@ -101,7 +101,8 @@ class BannerPlacedRendererCacheAndIsolationTest {
                     appearance, base.orientation(), base.facing(), base.persistedWidth(),
                     base.persistedHeight(), base.occupiedOffsets(), base.spanAxis(), base.verticalAxis(),
                     base.anchorConvention(), base.renderBounds(), base.lightingSamplePositions(),
-                    base.geometryFamily(), BannerPlacedRenderFailure.APPEARANCE_FALLBACK,
+                    base.orientationMountGeometry(), base.geometryFamily(),
+                    BannerPlacedRenderFailure.APPEARANCE_FALLBACK,
                     appearanceFailure.name(), 91);
             BannerPlacedRenderPlan plan = BannerPlacedRenderPlan.from(fallback);
             assertTrue(plan.fallback());
@@ -140,7 +141,8 @@ class BannerPlacedRendererCacheAndIsolationTest {
                     appearance, base.orientation(), base.facing(), base.persistedWidth(),
                     base.persistedHeight(), base.occupiedOffsets(), base.spanAxis(), base.verticalAxis(),
                     base.anchorConvention(), base.renderBounds(), base.lightingSamplePositions(),
-                    base.geometryFamily(), BannerPlacedRenderFailure.APPEARANCE_FALLBACK,
+                    base.orientationMountGeometry(), base.geometryFamily(),
+                    BannerPlacedRenderFailure.APPEARANCE_FALLBACK,
                     appearance.diagnosticId(), 101);
             assertTrue((boolean) tracker.invoke(null, fallback));
         }
@@ -268,7 +270,8 @@ class BannerPlacedRendererCacheAndIsolationTest {
                 state.persistedWidth(), state.persistedHeight(), state.occupiedOffsets(),
                 BannerStructureTransform.spanAxis(facing, state.orientation()), state.verticalAxis(),
                 state.anchorConvention(), state.renderBounds(), state.lightingSamplePositions(),
-                state.geometryFamily(), state.failure(), state.diagnosticId(), state.resourceGeneration());
+                state.orientationMountGeometry(), state.geometryFamily(), state.failure(),
+                state.diagnosticId(), state.resourceGeneration());
     }
 
     private static long count(String input, String regex) {

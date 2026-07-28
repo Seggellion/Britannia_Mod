@@ -1,8 +1,25 @@
 # Banner and Dyeing Open Questions
 
-Date: 2026-07-27
+Date: 2026-07-28
 
-Milestone: 16 Batch 1A
+Milestone: 16 complete extra-small family integration
+
+## Extra-small live review pending
+
+The nine-definition extra-small family is integrated and passes automated catalogue, intake, asset, geometry,
+orientation, rendering, and lifecycle contracts. There are no missing Illustrator layers, artwork mappings, stable
+IDs, or integration decisions in this batch.
+
+The remaining product-owner action is live review using
+`docs/banner-dyeing/EXTRA_SMALL_LIVE_REVIEW.md`. Every definition must be checked in natural and dyed states with
+brass and iron, both wall orientations, all four horizontal facings, item/preview/placed agreement, reload/tracking,
+and lifecycle behavior. Road Guard must be reviewed again because its current 128 x 128 bytes differ from the
+historically approved 64 x 64 hashes. No extra-small definition may move from `in_progress` to `complete` until its
+new exact hashes pass that review.
+
+The old placeholder-art questions below apply only to the remaining 26 definitions. They do not reopen the
+authoritative extra-small family, 128 x 128 canvas, shared Road Guard geometry, Small Curtain geometry, or
+orientation-specific mount decisions.
 
 ## Milestone 16A remaining content and review questions
 

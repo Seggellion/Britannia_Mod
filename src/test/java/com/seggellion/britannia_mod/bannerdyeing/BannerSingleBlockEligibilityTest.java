@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.bannerdyeing;
 
+import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalogue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,7 +23,8 @@ class BannerSingleBlockEligibilityTest {
     private static final Set<String> EXPECTED = Set.of(
             "silver_and_gold_pennon", "end_01", "end_02", "pennon_of_silver", "iron_ward",
             "iron_ward_auxiliary", "road_guard", "pale_road_guard", "red_crosslets",
-            "captains_red_crosslets", "scarlet_court", "verdant_court", "small_curtain");
+            "captains_red_crosslets", "scarlet_court", "verdant_court", "small_curtain",
+            "prosperity_standard", "guardian_standard");
     private static RegistrySnapshot production;
 
     @BeforeAll
@@ -30,11 +33,11 @@ class BannerSingleBlockEligibilityTest {
     }
 
     @Test
-    void canonicalCatalogueHasExactlyThirteenEligibleAndTwentyDeferred() {
+    void canonicalCatalogueHasExactlyFifteenEligibleAndTwentyDeferred() {
         List<BannerDefinition> definitions = production.banners().activeDefinitions();
         long eligible = definitions.stream().filter(BannerSingleBlockEligibility::isEligible).count();
-        assertEquals(33, definitions.size());
-        assertEquals(13, eligible);
+        assertEquals(ProductionBannerCatalogue.TARGET_COUNT, definitions.size());
+        assertEquals(15, eligible);
         assertEquals(20, definitions.size() - eligible);
         assertEquals(EXPECTED, definitions.stream().filter(BannerSingleBlockEligibility::isEligible)
                 .map(definition -> definition.id().value().getPath()).collect(Collectors.toSet()));
