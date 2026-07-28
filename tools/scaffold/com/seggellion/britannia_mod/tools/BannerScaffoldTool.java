@@ -53,6 +53,10 @@ public final class BannerScaffoldTool {
 
     private static final String DATA_ROOT = "src/main/resources/data/britannia_mod/";
     private static final String ASSET_ROOT = "src/main/resources/assets/britannia_mod/";
+    private static final String CLIENT_ASSET_INDEX_PATH =
+            ASSET_ROOT + "banner_client_assets.json";
+    private static final String BLOCK_ATLAS_PATH =
+            "src/main/resources/assets/minecraft/atlases/blocks.json";
     private static final Set<String> GROUPS = Set.of("large", "medium-wall", "medium", "small", "x-small");
     private static final Gson GSON = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
@@ -353,6 +357,8 @@ public final class BannerScaffoldTool {
 
     private static LinkedHashMap<String, byte[]> buildExpectedFiles(ResolvedCatalogue catalogue) {
         LinkedHashMap<String, byte[]> output = new LinkedHashMap<>();
+        output.put(CLIENT_ASSET_INDEX_PATH, utf8(json(clientAssetIndex(catalogue))));
+        output.put(BLOCK_ATLAS_PATH, utf8(json(blockAtlas())));
         for (ResolvedBanner banner : catalogue.banners) {
             output.put(DATA_ROOT + "banner_definitions/" + banner.id + ".json",
                     utf8(json(bannerDefinition(banner))));
@@ -386,6 +392,33 @@ public final class BannerScaffoldTool {
         output.put(ASSET_ROOT + "models/banner/mount/iron.json",
                 utf8(json(generatedItemModel("britannia_mod:banner/mount/iron"))));
         return output;
+    }
+
+    private static JsonObject clientAssetIndex(ResolvedCatalogue catalogue) {
+        LinkedHashSet<String> geometries = new LinkedHashSet<>();
+        LinkedHashSet<String> textures = new LinkedHashSet<>();
+        for (ResolvedBanner banner : catalogue.banners) {
+            geometries.add(banner.geometry);
+            textures.add(banner.baseTexture);
+            textures.add(banner.dyeMask);
+        }
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.add("geometry_models", strings(List.copyOf(geometries)));
+        root.add("textures", strings(List.copyOf(textures)));
+        return root;
+    }
+
+    private static JsonObject blockAtlas() {
+        JsonObject directory = new JsonObject();
+        directory.addProperty("type", "directory");
+        directory.addProperty("source", "banner");
+        directory.addProperty("prefix", "banner/");
+        JsonArray sources = new JsonArray();
+        sources.add(directory);
+        JsonObject root = new JsonObject();
+        root.add("sources", sources);
+        return root;
     }
 
     private static JsonObject bannerDefinition(ResolvedBanner banner) {

@@ -44,6 +44,10 @@ class BannerScaffoldToolTest {
         assertEquals(2, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/mount")));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.STATUS_PATH)));
         assertTrue(Files.isRegularFile(root.resolve(BannerScaffoldTool.METADATA_PATH)));
+        assertTrue(Files.isRegularFile(root.resolve(
+                "src/main/resources/assets/britannia_mod/banner_client_assets.json")));
+        assertTrue(Files.isRegularFile(root.resolve(
+                "src/main/resources/assets/minecraft/atlases/blocks.json")));
         String status = Files.readString(root.resolve(BannerScaffoldTool.STATUS_PATH));
         assertTrue(status.contains("Supported orientations"));
         assertTrue(status.contains("Parallel automated"));
@@ -133,6 +137,19 @@ class BannerScaffoldToolTest {
         Path definition = root.resolve("src/main/resources/data/britannia_mod/banner_definitions/large_01.json");
         Files.writeString(definition, Files.readString(definition) + " ", StandardCharsets.UTF_8);
         assertThrows(BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
+    }
+
+    @Test
+    void checkFailsWhenGeneratedClientAssetIndexIsMissing() throws Exception {
+        Path root = seed();
+        run(root, false, false);
+        Files.delete(root.resolve("src/main/resources/assets/britannia_mod/banner_client_assets.json"));
+
+        BannerScaffoldTool.ScaffoldException exception = assertThrows(
+                BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
+        assertTrue(exception.getMessage().contains("missing "
+                + "src/main/resources/assets/britannia_mod/banner_client_assets.json"),
+                exception.getMessage());
     }
 
     @Test

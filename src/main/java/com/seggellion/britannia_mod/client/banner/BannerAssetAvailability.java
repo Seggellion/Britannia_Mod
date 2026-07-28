@@ -20,16 +20,12 @@ public record BannerAssetAvailability(
     public static final ResourceLocation IRON_MOUNT_MODEL = id("banner/mount/iron");
     public static final ResourceLocation BRASS_MOUNT_TEXTURE = id("banner/mount/brass");
     public static final ResourceLocation IRON_MOUNT_TEXTURE = id("banner/mount/iron");
-    public static final Set<ResourceLocation> GEOMETRY_MODELS = Set.of(
-            id("banner/placeholder/large"), id("banner/placeholder/medium_wall"),
-            id("banner/placeholder/medium"), id("banner/placeholder/small"),
-            id("banner/placeholder/x_small"), id("banner/road_guard/geometry"));
+    public static final Set<ResourceLocation> GEOMETRY_MODELS = BannerClientAssetIndex.geometryModels();
     public static final Set<ResourceLocation> EXPECTED_MODELS = union(
             GEOMETRY_MODELS, Set.of(MISSING_MODEL, BRASS_MOUNT_MODEL, IRON_MOUNT_MODEL));
-    public static final Set<ResourceLocation> EXPECTED_TEXTURES = Set.of(
-            BASE_TEXTURE, DYE_MASK, MISSING_TEXTURE,
-            BRASS_MOUNT_TEXTURE, IRON_MOUNT_TEXTURE,
-            id("banner/road_guard/base_texture"), id("banner/road_guard/dye_mask"));
+    public static final Set<ResourceLocation> EXPECTED_TEXTURES = union(
+            BannerClientAssetIndex.textures(),
+            Set.of(MISSING_TEXTURE, BRASS_MOUNT_TEXTURE, IRON_MOUNT_TEXTURE));
 
     public BannerAssetAvailability {
         models = Set.copyOf(Objects.requireNonNull(models, "models"));

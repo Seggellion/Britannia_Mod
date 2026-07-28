@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "geometry_models": [
+    "britannia_mod:banner/placeholder/large",
+    "britannia_mod:banner/placeholder/medium_wall",
+    "britannia_mod:banner/placeholder/medium",
+    "britannia_mod:banner/placeholder/small",
+    "britannia_mod:banner/road_guard/geometry",
+    "britannia_mod:banner/placeholder/x_small"
+  ],
+  "textures": [
+    "britannia_mod:banner/placeholder/base_texture",
+    "britannia_mod:banner/placeholder/dye_mask",
+    "britannia_mod:banner/road_guard/base_texture",
+    "britannia_mod:banner/road_guard/dye_mask"
+  ]
+}

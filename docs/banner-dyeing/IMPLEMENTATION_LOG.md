@@ -1,5 +1,87 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-27 - Road Guard placed-render resource-resolution correction
+
+### Symptom and evidence
+
+- A natural Road Guard with valid persisted state (`road_guard`, cotton, `cotton_natural`, no source pigment, brass,
+  wall-parallel, 1 x 1) rendered as a purple/black block-like rectangle. The state, synchronized definition,
+  definition resource IDs, custom geometry file, and placed footprint were all correct and were not changed.
+- The live client log proved that `britannia_mod:banner/road_guard/geometry#standalone` was registered and reached
+  model bake, disproving the suspected unregistered-geometry cause. It then reported both Road Guard textures missing
+  from `minecraft:textures/atlas/blocks.png`, followed by Britannia item and placed fallback diagnostics with
+  `MISSING_BASE_TEXTURE`.
+- This was a missing-texture-atlas failure that deliberately selected Britannia's fallback plan. Because
+  `banner/placeholder/missing` was absent from the same atlas, that fallback sprite itself resolved to Minecraft's
+  purple/black missing sprite. It was not the vanilla missing baked geometry model and was not an unintended full
+  block: both banner blocks still return `RenderShape.INVISIBLE`, and only the anchor block-entity renderer emits
+  placed banner quads.
+
+### Generic correction and lifecycle
+
+- Added the banner texture directory to the Minecraft block atlas through
+  `assets/minecraft/atlases/blocks.json`. Its `banner` directory source emits `banner/` sprite IDs across resource
+  namespaces, covering base, mask, mount, diagnostic, and future final banner textures without per-banner entries.
+- Replaced Java's per-content geometry/texture allowlist with scaffold-owned
+  `assets/britannia_mod/banner_client_assets.json`. It deterministically de-duplicates every geometry, base, and mask
+  ID declared by the authoritative catalogue. `ModelEvent.RegisterAdditional` consumes the indexed geometry IDs
+  before bake; bake completion validates those models and indexed textures and atomically publishes a new resource
+  generation, clearing item, appearance, and placed caches.
+- The scaffold generates and owns both client registration resources, and `--check` rejects either missing or changed
+  output. Infrastructure-only missing and mount assets remain explicit because they are not definition fields.
+  No Road Guard-specific renderer branch or gameplay authority was introduced.
+
+### Validation status
+
+- Focused index/scaffold/Road Guard/placed tests initially passed 45 tests with zero failures, errors, or skips.
+  Tests cover all declared geometry and texture IDs, shared-ID de-duplication, standalone
+  `ModelResourceLocation` conversion, Road Guard and placeholder registration, missing-index detection, natural and
+  recoloured item/preview/placed plans, typed missing resources, both mounts/orientations, all facings, and cache
+  recovery.
+- The first live correction encoded the atlas directory source as `britannia_mod:banner`. Minecraft 1.21.1's
+  `DirectoryLister` accepts a path string rather than a resource ID, and the live log rejected the colon as an
+  invalid path segment. The source was corrected to `banner`, which scans that texture subdirectory across resource
+  namespaces and preserves the namespace in emitted sprite IDs. A stale processed-resource copy was then identified
+  before the next verification and explicitly refreshed; no stale build output is accepted as proof.
+- A quick-play launch attempt replaced NeoForge's required generated client arguments and failed before resource
+  loading. Normal `runClient` was used for the actual live model-bake verification; the launch-argument failure was
+  unrelated to banner code or content.
+- The corrected client then completed real model bake with no missing banner model/texture or failed-atlas lookup
+  diagnostics. A direct sandbox-world run published all 33 definitions with zero content errors, joined the existing
+  world, and produced no item or placed banner fallback diagnostic. This proves resource availability and cache
+  recovery at runtime, including the already persisted Road Guard state.
+- Product-owner live verification confirms that the placed banner renders correctly, the purple missing-texture
+  fallback is absent, the approved Road Guard model/art is visible, and dye application visibly affects the banner.
+  This is valid partial Gate E evidence, but it does not approve the remaining mount, material, item-context,
+  orientation/facing, persistence, reload, lifecycle, fixed-pixel, or full-pigment matrix.
+- Scaffold generation completed twice with 33 definitions, 33 active, zero disabled, 32 placeholder, and one
+  `in_progress`. The generated index, atlas, metadata, catalogue status, and Road Guard PNG SHA-256 values were
+  identical before, between, and after both runs. `--check` passed, and no banner/dye recipe was generated.
+- The generated client index contains six de-duplicated geometry IDs:
+  `banner/placeholder/large`, `banner/placeholder/medium_wall`, `banner/placeholder/medium`,
+  `banner/placeholder/small`, `banner/road_guard/geometry`, and `banner/placeholder/x_small`. It contains four
+  de-duplicated definition textures: placeholder and Road Guard `base_texture`/`dye_mask` pairs. The generated
+  `assets/minecraft/atlases/blocks.json` adds the `banner` directory with prefix `banner/`; this also stitches
+  placeholder `missing` and brass/iron mount textures without excluding or removing unrelated atlas sources.
+- The final focused selection passed 89 tests across ten suites with zero failures, errors, or skips. The full
+  `com.seggellion.britannia_mod.bannerdyeing.*` selection passed 603 tests across 52 suites with zero skips. A clean
+  passed, the unrestricted suite passed 608 tests across 53 suites with zero skips, and the production build passed.
+  The existing compiler-warning baseline remains the missing `@Overwrite` Javadoc on `PlayerSleepMixin` and the
+  deprecated-for-removal `OrderShieldItem.initializeClient` override; no new warning was introduced.
+- The newly built `build/libs/Britannia_Mod-0.1.7k-all.jar` contains 4,975 entries and zero duplicates. It contains
+  all 33 definitions, all required Road Guard and placeholder geometry/textures, both mount textures,
+  `assets/britannia_mod/banner_client_assets.json`, `assets/minecraft/atlases/blocks.json`,
+  `BannerClientAssetIndex.class`, and `BannerAssetAvailability.class`. It contains no `fabric_base`,
+  `static_overlay`, banner recipe, or pattern content. Its embedded Road Guard PNG hashes remain
+  `a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240` and
+  `89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669`.
+- The approved Road Guard PNG bytes and hashes remain unchanged. Definition, item state, block-entity state,
+  placement structure, dimensions, orientations, mounts, content status, dye rules, and crafting absence are
+  unchanged.
+- The containing corrective commit cannot record its own hash; the full hash is recorded in the final corrective
+  handoff.
+- Road Guard remains `in_progress`, and Gate E remains `NOT READY` until the full manual visual matrix is completed.
+
 ## 2026-07-27 - Milestone 16 Batch 1A: Road Guard Recolour Proof of Concept
 
 ### Approved intake and content decision

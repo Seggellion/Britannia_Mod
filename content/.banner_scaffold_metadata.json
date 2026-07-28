@@ -2,6 +2,7 @@
   "schema_version": 1,
   "files": {
     "content/banner_catalogue_status.md": "a34a4fb2ac533969789544c3b48e9008098fa885b46cf450a0ce2389c1061d44",
+    "src/main/resources/assets/britannia_mod/banner_client_assets.json": "1ea6f05da88f19b0c88768c798f1412cb888bbdb0348f711f09e13be3a44b08e",
     "src/main/resources/assets/britannia_mod/models/banner/mount/brass.json": "c50654f2cbc55c3a6f95ea6a4a80b19e7aedeffd766ad53c75a9248467e10101",
     "src/main/resources/assets/britannia_mod/models/banner/mount/iron.json": "71dd4b7d116f7a609773e16257b400eab17814962b8da0af3966d62daf920de8",
     "src/main/resources/assets/britannia_mod/models/banner/placeholder/large.json": "8bf3d4bd9fbad25910ec63e653445d5bba074035d8bce01fe3e41c1864c492d0",
@@ -18,6 +19,7 @@
     "src/main/resources/assets/britannia_mod/textures/banner/placeholder/missing.png": "46db49efd67db68b7729acebdf3463ff493fa9a296ae56c49e08d80e7b05ca09",
     "src/main/resources/assets/britannia_mod/textures/banner/road_guard/base_texture.png": "a75880a969570e47fdff0b15eb812eb9e94564f345c424c00af92fe3d4cb1240",
     "src/main/resources/assets/britannia_mod/textures/banner/road_guard/dye_mask.png": "89495bc3e8b9b8a4e98424d539536b57853f08bf20771cf3456151014120b669",
+    "src/main/resources/assets/minecraft/atlases/blocks.json": "a9fdd18fb2cb37b6f65b6e86f9eb00b0f8aa96b7174f799a2e196cc9a5af1406",
     "src/main/resources/data/britannia_mod/banner_definitions/argent_shield.json": "b92fb44883b5e5b1633d9e9646bdadf7f5827b07661b5485c77a8fabb4afbd58",
     "src/main/resources/data/britannia_mod/banner_definitions/captains_red_crosslets.json": "640a1ec084bad07c3d75e2bf7a07edac5faab08ac88d143db5cf2462f8d29048",
     "src/main/resources/data/britannia_mod/banner_definitions/ceremonial_tournament.json": "27d64e40d61f3e648f1630e93d0f1c460289e859f3f0532988c10d960e7b407e",

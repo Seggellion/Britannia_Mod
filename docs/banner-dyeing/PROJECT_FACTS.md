@@ -6,6 +6,28 @@ Milestone: 16 Batch 1A
 
 Feature branch: `banners-dyetub`
 
+## Banner client resource-registration facts
+
+- All banner geometry used by the standalone item/placed renderers is declared through the scaffold-generated client
+  asset index, and banner textures are stitched into the Minecraft block atlas through the generated atlas source.
+- Placed banners are rendered only by the anchor block entity as procedural quads. `BannerBlock` and
+  `BannerPartBlock` return `RenderShape.INVISIBLE`; no normal full-block model is emitted.
+- Every texture below `assets/britannia_mod/textures/banner/` is included in Minecraft's block atlas by the
+  `banner` directory source in `assets/minecraft/atlases/blocks.json`, which retains each texture's namespace and
+  prefixes its sprite ID with `banner/`. A packaged PNG outside an atlas is not renderable merely because a model
+  references its resource ID.
+- The scaffold deterministically generates `assets/britannia_mod/banner_client_assets.json` from all 33 authoritative
+  catalogue definitions. It contains each shared or definition-specific geometry model once and every declared base
+  and mask texture once. Client model registration consumes this index before baking; it is display-only and grants
+  no gameplay authority.
+- Model bake validates indexed geometry and stitched textures, publishes one immutable availability generation, and
+  invalidates item, appearance, and placed caches. Resource reload therefore replaces an earlier missing-content
+  generation instead of retaining a stale fallback.
+- The 2026-07-27 Road Guard purple symptom was `MISSING_BASE_TEXTURE`: its standalone geometry was registered, but
+  the banner texture directory was absent from the block atlas. Britannia selected its intentional fallback plan,
+  whose own unstitched diagnostic texture then displayed as Minecraft's purple/black missing sprite. Persisted state,
+  synchronized metadata, geometry registration, placement, and dye resolution were not at fault.
+
 ## Milestone 16 Batch 1A Road Guard facts
 
 - `britannia_mod:road_guard` is the sole integrated final-content proof of concept. Its stable catalogue index remains
@@ -26,8 +48,9 @@ Feature branch: `banners-dyetub`
 - The approved placement profile reuses `britannia_mod:placeholder_x_small`. This is an approved profile convention,
   not a claim that the Road Guard artwork is placeholder content.
 - Road Guard is `in_progress`; the other 32 definitions remain `placeholder`. No definition is `complete` or
-  disabled. Manual item, preview, placed, persistence, reload, and visual-colour review remains unperformed, so Gate E
-  is not ready.
+  disabled. Product-owner live review confirms placed rendering, absence of the purple fallback, visibility of the
+  approved Road Guard model/art, and visible dye application. The mount/material/item-context/orientation/facing,
+  persistence, reload, lifecycle, fixed-pixel, and full-pigment checks remain unperformed, so Gate E is `NOT READY`.
 - `BannerInstanceState`, its persistent/stream codecs, block-entity state, placed structure, stable IDs, and save
   semantics are unchanged.
 
