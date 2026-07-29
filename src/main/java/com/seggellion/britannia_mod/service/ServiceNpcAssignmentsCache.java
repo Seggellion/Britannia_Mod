@@ -93,6 +93,25 @@ public final class ServiceNpcAssignmentsCache extends SavedData {
     }
 
     /**
+     * Milestone 13 NeoForge Slice 3: the full-bootstrap-fallback commit path, distinct from
+     * {@link #replace} -- a player-login bootstrap (Milestone 6's own established path) has no
+     * world-state version in its response to record (that field does not exist on the bootstrap
+     * wire payload; confirmed by reading it directly), so {@link #replace} correctly leaves
+     * {@link #lastAppliedWorldStateVersion} untouched. A poller-triggered full bootstrap fallback
+     * is different: it exists specifically to recover from a {@code full_bootstrap_required} poll
+     * response, and that response's own {@code current_version} is exactly the version this fresh
+     * snapshot corresponds to. Snapshot and version are set together here for the same reason
+     * {@link #applyWorldStateChanges} does it -- one {@link #setDirty()}, so a caller that forces a
+     * synchronous flush afterward commits both to the same on-disk write, never one without the
+     * other.
+     */
+    public void replaceFromFullBootstrapFallback(ServiceNpcAssignmentsSnapshot snapshot, long newVersion) {
+        this.snapshot = snapshot == null ? ServiceNpcAssignmentsSnapshot.empty() : snapshot;
+        this.lastAppliedWorldStateVersion = newVersion;
+        setDirty();
+    }
+
+    /**
      * Case 2/3's actual implementation: builds a candidate via {@link
      * ServiceNpcAssignmentsCandidateApply#apply} from the current {@link #snapshot}, and only on
      * {@link ServiceNpcAssignmentsCandidateApply.Applied} does this instance's live state change

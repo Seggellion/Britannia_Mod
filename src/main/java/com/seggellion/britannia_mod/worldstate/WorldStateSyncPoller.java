@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
@@ -36,6 +37,14 @@ import java.util.function.LongSupplier;
  * durable value {@link #responseApplier} just committed, so there is exactly one authoritative
  * source for "how far has this server actually applied" -- this class never keeps its own copy
  * that could drift from it.
+ *
+ * SLICE 3 SCOPE (Milestone 13 NeoForge Slice 3)
+ *
+ * A validated response reporting {@code full_bootstrap_required} is dispatched to {@link
+ * #fullBootstrapApplier} instead of {@link #responseApplier} -- its {@code changes} array is
+ * guaranteed empty per the real Rails contract, so there is nothing to incrementally apply; see
+ * {@link WorldStateFullBootstrapFallback} for the real fallback mechanism this reuses. This is
+ * the last piece of Milestone 13's NeoForge side.
  *
  * CADENCE AND JITTER
  *
@@ -67,12 +76,18 @@ public final class WorldStateSyncPoller {
         ServiceNpcAssignmentsCandidateApply.Result apply(MinecraftServer server, WorldStateChangesResponse response);
     }
 
+    @FunctionalInterface
+    public interface FullBootstrapApplier {
+        CompletableFuture<WorldStateFullBootstrapFallback.Result> apply(MinecraftServer server, long targetVersion);
+    }
+
     private final MinecraftServer server;
     private final WorldStateChangesClient client;
     private final IntSupplier jitterSource;
     private final Consumer<Runnable> tickThreadScheduler;
     private final LongSupplier lastKnownVersionSource;
     private final ResponseApplier responseApplier;
+    private final FullBootstrapApplier fullBootstrapApplier;
     private boolean stopped;
     private boolean pollInFlight;
     private int ticksUntilNextPoll;
@@ -81,7 +96,8 @@ public final class WorldStateSyncPoller {
 
     private WorldStateSyncPoller(
             MinecraftServer server, WorldStateChangesClient client, IntSupplier jitterSource,
-            Consumer<Runnable> tickThreadScheduler, LongSupplier lastKnownVersionSource, ResponseApplier responseApplier
+            Consumer<Runnable> tickThreadScheduler, LongSupplier lastKnownVersionSource, ResponseApplier responseApplier,
+            FullBootstrapApplier fullBootstrapApplier
     ) {
         this.server = server;
         this.client = Objects.requireNonNull(client, "client");
@@ -89,6 +105,7 @@ public final class WorldStateSyncPoller {
         this.tickThreadScheduler = Objects.requireNonNull(tickThreadScheduler, "tickThreadScheduler");
         this.lastKnownVersionSource = Objects.requireNonNull(lastKnownVersionSource, "lastKnownVersionSource");
         this.responseApplier = Objects.requireNonNull(responseApplier, "responseApplier");
+        this.fullBootstrapApplier = Objects.requireNonNull(fullBootstrapApplier, "fullBootstrapApplier");
         this.ticksUntilNextPoll = BASE_CADENCE_TICKS + boundedJitter();
     }
 
@@ -97,7 +114,7 @@ public final class WorldStateSyncPoller {
             WorldStateSyncPoller poller = new WorldStateSyncPoller(
                     key, new WorldStateChangesClient(), WorldStateSyncPoller::rollJitter, key::execute,
                     () -> ServiceNpcAssignmentsCache.get(key.overworld()).lastAppliedWorldStateVersion(),
-                    WorldStateSyncApply::applyAndCommit
+                    WorldStateSyncApply::applyAndCommit, WorldStateFullBootstrapFallback::triggerAndApply
             );
             LOGGER.info("World state sync poller started next_poll_in_ticks={}", poller.ticksUntilNextPoll);
             return poller;
@@ -131,9 +148,11 @@ public final class WorldStateSyncPoller {
      */
     public static WorldStateSyncPoller newForTest(
             WorldStateChangesClient client, IntSupplier jitterSource, Consumer<Runnable> tickThreadScheduler,
-            LongSupplier lastKnownVersionSource, ResponseApplier responseApplier
+            LongSupplier lastKnownVersionSource, ResponseApplier responseApplier, FullBootstrapApplier fullBootstrapApplier
     ) {
-        return new WorldStateSyncPoller(null, client, jitterSource, tickThreadScheduler, lastKnownVersionSource, responseApplier);
+        return new WorldStateSyncPoller(
+                null, client, jitterSource, tickThreadScheduler, lastKnownVersionSource, responseApplier, fullBootstrapApplier
+        );
     }
 
     public void onTick() {
@@ -153,15 +172,19 @@ public final class WorldStateSyncPoller {
     }
 
     private void complete(long requestedFromVersion, WorldStateChangesClient.Result result, Throwable failure) {
-        pollInFlight = false;
-        if (stopped) return;
+        if (stopped) {
+            pollInFlight = false;
+            return;
+        }
 
         if (failure != null || result == null) {
+            pollInFlight = false;
             lastOutcome = WorldStateSyncOutcome.transportFailure("unexpected_error");
             LOGGER.warn("World state sync poll failed code=unexpected_error from_version={}", requestedFromVersion, failure);
             return;
         }
         if (result instanceof WorldStateChangesClient.Failure failureResult) {
+            pollInFlight = false;
             lastOutcome = WorldStateSyncOutcome.transportFailure(failureResult.safeCode());
             LOGGER.warn("World state sync poll failed code={} from_version={}", failureResult.safeCode(), requestedFromVersion);
             return;
@@ -171,6 +194,7 @@ public final class WorldStateSyncPoller {
         WorldStateSyncValidator.Result validation =
                 WorldStateSyncValidator.validate(response, requestedFromVersion, pinnedShardPublicId);
         if (validation instanceof WorldStateSyncValidator.Rejected rejected) {
+            pollInFlight = false;
             lastOutcome = WorldStateSyncOutcome.rejected(rejected.reason());
             LOGGER.warn("World state sync poll rejected reason={} from_version={} schema_version={}",
                     rejected.reason(), requestedFromVersion, response.schemaVersion());
@@ -184,6 +208,18 @@ public final class WorldStateSyncPoller {
                 response.changes().size(), response.fullBootstrapRequired()
         );
 
+        if (response.fullBootstrapRequired()) {
+            // The changes array is guaranteed empty for this response per the real Rails
+            // contract (see WorldStateChanges::ChangesSince), so there is nothing for
+            // responseApplier to meaningfully apply -- the only correct recovery is a full
+            // fetch. This stays async (a second network round trip), so pollInFlight is
+            // deliberately left true until completeFullBootstrap runs, not reset here.
+            fullBootstrapApplier.apply(server, response.currentVersion()).whenComplete((fullBootstrapResult, fullBootstrapFailure) ->
+                    tickThreadScheduler.accept(() -> completeFullBootstrap(fullBootstrapResult, fullBootstrapFailure)));
+            return;
+        }
+
+        pollInFlight = false;
         ServiceNpcAssignmentsCandidateApply.Result applyResult = responseApplier.apply(server, response);
         if (applyResult instanceof ServiceNpcAssignmentsCandidateApply.Rejected rejected) {
             lastOutcome = WorldStateSyncOutcome.applyRejected(rejected.reason());
@@ -194,9 +230,27 @@ public final class WorldStateSyncPoller {
 
         lastOutcome = WorldStateSyncOutcome.accepted(response);
         LOGGER.info("World state sync poll applied and committed to_version={}", response.toVersion());
-        // Slice 3's own job starts here: response.fullBootstrapRequired() is validated and
-        // logged but never acted on -- falling back to a full bootstrap fetch when it is true is
-        // explicitly out of this slice's scope.
+    }
+
+    private void completeFullBootstrap(WorldStateFullBootstrapFallback.Result result, Throwable failure) {
+        pollInFlight = false;
+        if (stopped) return;
+
+        if (failure != null || result == null) {
+            lastOutcome = WorldStateSyncOutcome.fullBootstrapDeferred("unexpected_error");
+            LOGGER.warn("World state full bootstrap fallback failed code=unexpected_error", failure);
+            return;
+        }
+        if (result instanceof WorldStateFullBootstrapFallback.Applied applied) {
+            lastOutcome = WorldStateSyncOutcome.fullBootstrapApplied(applied.version());
+            LOGGER.info("World state full bootstrap fallback applied version={}", applied.version());
+        } else if (result instanceof WorldStateFullBootstrapFallback.NoPlayerOnline) {
+            lastOutcome = WorldStateSyncOutcome.fullBootstrapDeferred("no_player_online");
+            LOGGER.warn("World state full bootstrap fallback deferred reason=no_player_online");
+        } else if (result instanceof WorldStateFullBootstrapFallback.Failed failedResult) {
+            lastOutcome = WorldStateSyncOutcome.fullBootstrapDeferred(failedResult.safeCode());
+            LOGGER.warn("World state full bootstrap fallback deferred reason={}", failedResult.safeCode());
+        }
     }
 
     private void close() {

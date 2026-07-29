@@ -20,10 +20,21 @@ package com.seggellion.britannia_mod.worldstate;
  * partially applied, and never discarded to empty -- that discard-to-empty policy is reserved
  * for a genuinely unreadable on-disk file at load time, a different, older, and unchanged
  * situation (see {@code ServiceNpcAssignmentsCache}'s own docs for all three).
+ *
+ * Milestone 13 NeoForge Slice 3 adds {@link FullBootstrapApplied} and {@link
+ * FullBootstrapDeferred}, reached instead of {@link Accepted}/{@link ApplyRejected} whenever a
+ * validated response reports {@code full_bootstrap_required} -- see {@link
+ * WorldStateFullBootstrapFallback} for the mechanism. {@link FullBootstrapDeferred} covers both
+ * ways that recovery can fail to complete this cycle (no player currently online to authenticate
+ * the fetch with, or the fetch itself failing) with a reason string, matching this type's own
+ * established convention elsewhere -- either way, nothing durable changes and the next scheduled
+ * poll simply reports {@code full_bootstrap_required} again and retries, exactly like any other
+ * failed poll.
  */
 public sealed interface WorldStateSyncOutcome
         permits WorldStateSyncOutcome.NeverPolled, WorldStateSyncOutcome.Accepted,
-        WorldStateSyncOutcome.Rejected, WorldStateSyncOutcome.ApplyRejected, WorldStateSyncOutcome.TransportFailure {
+        WorldStateSyncOutcome.Rejected, WorldStateSyncOutcome.ApplyRejected, WorldStateSyncOutcome.TransportFailure,
+        WorldStateSyncOutcome.FullBootstrapApplied, WorldStateSyncOutcome.FullBootstrapDeferred {
 
     record NeverPolled() implements WorldStateSyncOutcome {}
 
@@ -34,6 +45,10 @@ public sealed interface WorldStateSyncOutcome
     record ApplyRejected(String reason) implements WorldStateSyncOutcome {}
 
     record TransportFailure(String safeCode) implements WorldStateSyncOutcome {}
+
+    record FullBootstrapApplied(long version) implements WorldStateSyncOutcome {}
+
+    record FullBootstrapDeferred(String reason) implements WorldStateSyncOutcome {}
 
     static WorldStateSyncOutcome neverPolled() {
         return new NeverPolled();
@@ -53,5 +68,13 @@ public sealed interface WorldStateSyncOutcome
 
     static WorldStateSyncOutcome transportFailure(String safeCode) {
         return new TransportFailure(safeCode);
+    }
+
+    static WorldStateSyncOutcome fullBootstrapApplied(long version) {
+        return new FullBootstrapApplied(version);
+    }
+
+    static WorldStateSyncOutcome fullBootstrapDeferred(String reason) {
+        return new FullBootstrapDeferred(reason);
     }
 }

@@ -36,6 +36,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * ServiceNpcAssignmentsCandidateApply} itself and the real {@code
  * ServiceNpcAssignmentsCache#applyWorldStateChanges} wiring are covered separately by {@code
  * ServiceNpcAssignmentsCandidateApplyTest} and {@code WorldStateSyncGameTests}.
+ *
+ * Milestone 13 NeoForge Slice 3: {@link WorldStateSyncPoller.FullBootstrapApplier} is the same
+ * kind of seam for the {@code full_bootstrap_required} dispatch path -- the real production
+ * implementation ({@code WorldStateFullBootstrapFallback}) needs a live {@link
+ * net.minecraft.server.MinecraftServer} and online players to test end-to-end, which is covered
+ * separately by GameTest; this file proves the poller's own dispatch/outcome-recording logic
+ * around it.
  */
 class WorldStateSyncPollerTest {
     private static final String SHARD = "11111111-1111-4111-8111-111111111111";
@@ -77,7 +84,7 @@ class WorldStateSyncPollerTest {
         AtomicInteger jitterCalls = new AtomicInteger();
         WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
                 acceptingClient(requestedVersions), () -> jitterCalls.incrementAndGet() == 1 ? 0 : 777,
-                Runnable::run, () -> 0L, appliedApplier()
+                Runnable::run, () -> 0L, appliedApplier(), neverCalledFullBootstrapApplier()
         );
 
         int firstCadence = WorldStateSyncPoller.BASE_CADENCE_TICKS;
@@ -102,7 +109,9 @@ class WorldStateSyncPollerTest {
                     return new com.seggellion.britannia_mod.server.http.CancellableHttpRequest(uri, maxBytes);
                 }
         );
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run, () -> 42L, appliedApplier());
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 42L, appliedApplier(), neverCalledFullBootstrapApplier()
+        );
 
         fireOnce(poller);
 
@@ -132,7 +141,9 @@ class WorldStateSyncPollerTest {
             appliedWith.add(appliedResponse);
             return new ServiceNpcAssignmentsCandidateApply.Applied(ServiceNpcAssignmentsSnapshot.empty());
         };
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run, () -> 0L, applier);
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, applier, neverCalledFullBootstrapApplier()
+        );
 
         fireOnce(poller);
 
@@ -148,7 +159,9 @@ class WorldStateSyncPollerTest {
         WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
         WorldStateSyncPoller.ResponseApplier applier =
                 (server, appliedResponse) -> new ServiceNpcAssignmentsCandidateApply.Rejected("malformed_change: x must be an integer");
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run, () -> 0L, applier);
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, applier, neverCalledFullBootstrapApplier()
+        );
 
         fireOnce(poller);
 
@@ -164,7 +177,7 @@ class WorldStateSyncPollerTest {
         );
         WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
         WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
-                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier()
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), neverCalledFullBootstrapApplier()
         );
 
         fireOnce(poller);
@@ -178,7 +191,7 @@ class WorldStateSyncPollerTest {
     void aTransportFailureIsLoggedAsATypedOutcomeAndDoesNotThrow() {
         WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Failure("http_status_failure"));
         WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
-                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier()
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), neverCalledFullBootstrapApplier()
         );
 
         fireOnce(poller);
@@ -201,7 +214,7 @@ class WorldStateSyncPollerTest {
                 com.seggellion.britannia_mod.server.http.CancellableHttpRequest::new
         );
         WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
-                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier()
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), neverCalledFullBootstrapApplier()
         );
 
         fireOnce(poller);
@@ -219,6 +232,88 @@ class WorldStateSyncPollerTest {
         assertInstanceOf(WorldStateSyncOutcome.NeverPolled.class, poller.lastOutcomeForTest());
     }
 
+    // --- Milestone 13 NeoForge Slice 3: full_bootstrap_required dispatch ---
+
+    @Test
+    void aFullBootstrapRequiredResponseDispatchesToTheFullBootstrapApplierNotTheOrdinaryResponseApplier() {
+        WorldStateChangesResponse response = fullBootstrapRequiredResponse(SHARD, 0, 40);
+        WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
+        List<Long> targetVersions = new ArrayList<>();
+        WorldStateSyncPoller.FullBootstrapApplier fullBootstrapApplier = (server, targetVersion) -> {
+            targetVersions.add(targetVersion);
+            return CompletableFuture.completedFuture(new WorldStateFullBootstrapFallback.Applied(targetVersion));
+        };
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), fullBootstrapApplier
+        );
+
+        fireOnce(poller);
+
+        assertEquals(List.of(40L), targetVersions,
+                "full_bootstrap_required did not dispatch to fullBootstrapApplier with the response's own current_version");
+        WorldStateSyncOutcome.FullBootstrapApplied applied =
+                assertInstanceOf(WorldStateSyncOutcome.FullBootstrapApplied.class, poller.lastOutcomeForTest());
+        assertEquals(40L, applied.version());
+    }
+
+    @Test
+    void aSuccessfulFullBootstrapDoesNotLeavePollInFlightStuck() {
+        WorldStateChangesResponse response = fullBootstrapRequiredResponse(SHARD, 0, 40);
+        WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
+        WorldStateSyncPoller.FullBootstrapApplier fullBootstrapApplier =
+                (server, targetVersion) -> CompletableFuture.completedFuture(new WorldStateFullBootstrapFallback.Applied(targetVersion));
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), fullBootstrapApplier
+        );
+
+        fireOnce(poller);
+        assertInstanceOf(WorldStateSyncOutcome.FullBootstrapApplied.class, poller.lastOutcomeForTest());
+
+        // A second full cadence must be able to fire normally -- pollInFlight must not have been
+        // left permanently true by the async full-bootstrap dispatch.
+        for (int tick = 0; tick < WorldStateSyncPoller.BASE_CADENCE_TICKS; tick++) {
+            poller.onTick();
+        }
+        assertInstanceOf(WorldStateSyncOutcome.FullBootstrapApplied.class, poller.lastOutcomeForTest(),
+                "poller appears stuck: a second scheduled poll never actually re-fired");
+    }
+
+    @Test
+    void aFullBootstrapWithNoPlayerOnlineIsDeferredWithoutCorruptingAnythingAndRetriesNormally() {
+        WorldStateChangesResponse response = fullBootstrapRequiredResponse(SHARD, 0, 40);
+        WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
+        WorldStateSyncPoller.FullBootstrapApplier fullBootstrapApplier =
+                (server, targetVersion) -> CompletableFuture.completedFuture(new WorldStateFullBootstrapFallback.NoPlayerOnline());
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), fullBootstrapApplier
+        );
+
+        fireOnce(poller);
+
+        WorldStateSyncOutcome.FullBootstrapDeferred deferred =
+                assertInstanceOf(WorldStateSyncOutcome.FullBootstrapDeferred.class, poller.lastOutcomeForTest());
+        assertEquals("no_player_online", deferred.reason());
+        assertFalse(poller.isStopped());
+    }
+
+    @Test
+    void aFailedFullBootstrapFetchIsDeferredWithoutCorruptingAnythingAndRetriesNormally() {
+        WorldStateChangesResponse response = fullBootstrapRequiredResponse(SHARD, 0, 40);
+        WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
+        WorldStateSyncPoller.FullBootstrapApplier fullBootstrapApplier =
+                (server, targetVersion) -> CompletableFuture.completedFuture(new WorldStateFullBootstrapFallback.Failed("route_failure"));
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier(), fullBootstrapApplier
+        );
+
+        fireOnce(poller);
+
+        WorldStateSyncOutcome.FullBootstrapDeferred deferred =
+                assertInstanceOf(WorldStateSyncOutcome.FullBootstrapDeferred.class, poller.lastOutcomeForTest());
+        assertEquals("route_failure", deferred.reason());
+        assertFalse(poller.isStopped());
+    }
+
     private static void fireOnce(WorldStateSyncPoller poller) {
         int total = WorldStateSyncPoller.BASE_CADENCE_TICKS;
         for (int tick = 0; tick < total; tick++) {
@@ -227,7 +322,9 @@ class WorldStateSyncPollerTest {
     }
 
     private static WorldStateSyncPoller poller(java.util.function.IntSupplier jitter, List<Long> requestedVersions) {
-        return WorldStateSyncPoller.newForTest(acceptingClient(requestedVersions), jitter, Runnable::run, () -> 0L, appliedApplier());
+        return WorldStateSyncPoller.newForTest(
+                acceptingClient(requestedVersions), jitter, Runnable::run, () -> 0L, appliedApplier(), neverCalledFullBootstrapApplier()
+        );
     }
 
     private static java.util.function.IntSupplier fixedJitter(int value) {
@@ -245,6 +342,12 @@ class WorldStateSyncPollerTest {
     private static WorldStateSyncPoller.ResponseApplier neverCalledApplier() {
         return (server, response) -> {
             throw new AssertionError("responseApplier must not be invoked for a response that never reached acceptance");
+        };
+    }
+
+    private static WorldStateSyncPoller.FullBootstrapApplier neverCalledFullBootstrapApplier() {
+        return (server, targetVersion) -> {
+            throw new AssertionError("fullBootstrapApplier must not be invoked for a response with full_bootstrap_required=false");
         };
     }
 
@@ -279,6 +382,14 @@ class WorldStateSyncPollerTest {
         return new WorldStateChangesResponse(
                 WorldStateSyncValidator.SUPPORTED_SCHEMA_VERSION, shardPublicId, fromVersion, toVersion,
                 currentVersion, false, changes
+        );
+    }
+
+    /** Mirrors the real Rails contract exactly: changes is always empty when full_bootstrap_required is true. */
+    private static WorldStateChangesResponse fullBootstrapRequiredResponse(String shardPublicId, long fromVersion, long currentVersion) {
+        return new WorldStateChangesResponse(
+                WorldStateSyncValidator.SUPPORTED_SCHEMA_VERSION, shardPublicId, fromVersion, currentVersion,
+                currentVersion, true, List.of()
         );
     }
 }
