@@ -1,0 +1,565 @@
+﻿{
+    "schema_version":  1,
+    "source_file":  "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
+    "source_size_bytes":  31508332,
+    "source_sha256_before":  "fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb",
+    "pdf_compatible":  true,
+    "export_canvas_rule":  "Use the single authoritative 128 x 128 artboard. When the authored base/mask union extends outside it, apply one proportional downscale (never upscale) and one shared translation that centers the complete union within a two-pixel transparent margin. Export both objects with artboard clipping from that unchanged shared coordinate system.",
+    "document":  {
+                     "name":  "banner_small.ai",
+                     "colour_space":  "CMYK",
+                     "colour_space_com_value":  1,
+                     "raster_effects_resolution":  72,
+                     "artboard_name":  "Artboard 1",
+                     "artboard_bounds":  [
+                                             -32,
+                                             32,
+                                             96,
+                                             -96
+                                         ],
+                     "width":  128,
+                     "height":  128,
+                     "top_level_layers":  [
+                                              "end_01",
+                                              "end_02",
+                                              "iron_ward_auxiliary",
+                                              "iron_ward",
+                                              "silver_and_gold_pennon",
+                                              "pennon_of_silver"
+                                          ],
+                     "placed_items":  0,
+                     "raster_items":  6,
+                     "clipping_mask_observation":  "No named page item reported Clipped=true. The end_01 dye mask is one unnamed group inside the explicitly named dye_mask child layer.",
+                     "opacity_mask_observation":  "Illustrator COM does not expose opacity-mask membership as a page-item property. Isolated base and dye-mask exports, hierarchy, alpha, and pixel-contract results are the available non-destructive evidence.",
+                     "hierarchy":  [
+                                       {
+                                           "name":  "end_01",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  1,
+                                           "group_item_count":  0,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "named_items":  [
+                                                               {
+                                                                   "name":  "base_texture",
+                                                                   "geometric_bounds":  [
+                                                                                            -41.531914893617795,
+                                                                                            32.978723404256016,
+                                                                                            55.202127659573307,
+                                                                                            -96
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               }
+                                                           ],
+                                           "child_layers":  [
+                                                                {
+                                                                    "name":  "dye_mask",
+                                                                    "visible":  true,
+                                                                    "locked":  false,
+                                                                    "page_item_count":  1,
+                                                                    "group_item_count":  1,
+                                                                    "path_item_count":  0,
+                                                                    "compound_path_count":  0,
+                                                                    "placed_item_count":  0,
+                                                                    "raster_item_count":  0,
+                                                                    "named_items":  [
+
+                                                                                    ],
+                                                                    "child_layers":  [
+
+                                                                                     ]
+                                                                }
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "end_02",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "named_items":  [
+                                                               {
+                                                                   "name":  "dye_mask",
+                                                                   "geometric_bounds":  [
+                                                                                            -25.389799749669692,
+                                                                                            31.283041301616322,
+                                                                                            28.003817271596745,
+                                                                                            -93.041426783489442
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               },
+                                                               {
+                                                                   "name":  "base_texture",
+                                                                   "geometric_bounds":  [
+                                                                                            -36.478726388322684,
+                                                                                            34.446808510631854,
+                                                                                            39.001192077867017,
+                                                                                            -97.978724398941267
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               }
+                                                           ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "iron_ward_auxiliary",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "named_items":  [
+                                                               {
+                                                                   "name":  "dye_mask",
+                                                                   "geometric_bounds":  [
+                                                                                            -27.497715078316105,
+                                                                                            30.72421777344789,
+                                                                                            35.843343469718093,
+                                                                                            -89.947829442457078
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               },
+                                                               {
+                                                                   "name":  "base_texture",
+                                                                   "geometric_bounds":  [
+                                                                                            -30.801663161012584,
+                                                                                            32.978723404256016,
+                                                                                            39.297872340423055,
+                                                                                            -91.765444228163688
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               }
+                                                           ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "iron_ward",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "named_items":  [
+                                                               {
+                                                                   "name":  "dye_mask",
+                                                                   "geometric_bounds":  [
+                                                                                            -27.410737253861043,
+                                                                                            27.296381266306526,
+                                                                                            35.694339624824352,
+                                                                                            -89.947829442457078
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               },
+                                                               {
+                                                                   "name":  "base_texture",
+                                                                   "geometric_bounds":  [
+                                                                                            -29.926292223013661,
+                                                                                            32.595231462209995,
+                                                                                            38.030847337589876,
+                                                                                            -93.607866730719252
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               }
+                                                           ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "silver_and_gold_pennon",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  0,
+                                           "path_item_count":  1,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "named_items":  [
+                                                               {
+                                                                   "name":  "dye_mask",
+                                                                   "geometric_bounds":  [
+                                                                                            4.1663329161592628,
+                                                                                            11.8328222778473,
+                                                                                            35.058573216520017,
+                                                                                            -95.990488110108345
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               },
+                                                               {
+                                                                   "name":  "base_texture",
+                                                                   "geometric_bounds":  [
+                                                                                            -35.0437622383115,
+                                                                                            32.978723404256016,
+                                                                                            43.944975227692339,
+                                                                                            -98.723404255331843
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               }
+                                                           ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "pennon_of_silver",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  0,
+                                           "path_item_count":  1,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "named_items":  [
+                                                               {
+                                                                   "name":  "dye_mask",
+                                                                   "geometric_bounds":  [
+                                                                                            -26.7059326171875,
+                                                                                            31.53228759765625,
+                                                                                            34.90423583984375,
+                                                                                            -95.733642578125
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               },
+                                                               {
+                                                                   "name":  "base_texture",
+                                                                   "geometric_bounds":  [
+                                                                                            -35.0437622383115,
+                                                                                            33.404255319149343,
+                                                                                            44.200189242123088,
+                                                                                            -98.723404255333662
+                                                                                        ],
+                                                                   "hidden":  false,
+                                                                   "locked":  false,
+                                                                   "opacity":  100,
+                                                                   "clipped":  false
+                                                               }
+                                                           ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       }
+                                   ]
+                 },
+    "exports":  [
+                    {
+                        "stable_id":  "britannia_mod:silver_and_gold_pennon",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "silver_and_gold_pennon",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -35.0437622383115,
+                                                   32.978723404256016,
+                                                   43.944975227692339,
+                                                   -98.723404255331843
+                                               ],
+                        "mask_bounds_before":  [
+                                                   4.1663329161592628,
+                                                   11.8328222778473,
+                                                   35.058573216520017,
+                                                   -95.990488110108345
+                                               ],
+                        "union_bounds_before":  [
+                                                    -35.0437622383115,
+                                                    32.978723404256016,
+                                                    43.944975227692339,
+                                                    -98.723404255331843
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.94151857835208519,
+                        "base_bounds_after":  [
+                                                  -5.1846819024085562,
+                                                  30,
+                                                  69.184681902408556,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  31.732351144478343,
+                                                  10.090741233490007,
+                                                  60.817969314182847,
+                                                  -91.426908676194216
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/silver_and_gold_pennon/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/silver_and_gold_pennon/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:end_01",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "end_01",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -41.531914893617795,
+                                                   32.978723404256016,
+                                                   55.202127659573307,
+                                                   -96
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -28.967075751836092,
+                                                   9.5719097489172782,
+                                                   42.617027244730707,
+                                                   -95.000566660981349
+                                               ],
+                        "union_bounds_before":  [
+                                                    -41.531914893617795,
+                                                    32.978723404256016,
+                                                    55.202127659573307,
+                                                    -96
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.96139887825799542,
+                        "base_bounds_after":  [
+                                                  -14.5,
+                                                  30,
+                                                  78.5,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -2.4201777435982876,
+                                                  7.4967156081629582,
+                                                  66.400698578405354,
+                                                  -93.0391459089733
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/end_01/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/end_01/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:end_02",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "end_02",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -36.478726388322684,
+                                                   34.446808510631854,
+                                                   39.001192077867017,
+                                                   -97.978724398941267
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -25.389799749669692,
+                                                   31.283041301616322,
+                                                   28.003817271596745,
+                                                   -93.041426783489442
+                                               ],
+                        "union_bounds_before":  [
+                                                    -36.478726388322684,
+                                                    34.446808510631854,
+                                                    39.001192077867017,
+                                                    -97.978724398941267
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.93637531430342436,
+                        "base_bounds_after":  [
+                                                  -3.3387661886872593,
+                                                  30,
+                                                  67.338766188688169,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  7.0446309778690193,
+                                                  27.037526485275521,
+                                                  57.04109589795371,
+                                                  -89.376836393521444
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/end_02/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/end_02/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:pennon_of_silver",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "pennon_of_silver",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -35.0437622383115,
+                                                   33.404255319149343,
+                                                   44.200189242123088,
+                                                   -98.723404255333662
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -26.7059326171875,
+                                                   31.53228759765625,
+                                                   34.90423583984375,
+                                                   -95.733642578125
+                                               ],
+                        "union_bounds_before":  [
+                                                    -35.0437622383115,
+                                                    33.404255319149343,
+                                                    44.200189242123088,
+                                                    -98.723404255333662
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.93848631239925,
+                        "base_bounds_after":  [
+                                                  -5.1846819024094657,
+                                                  30,
+                                                  69.184681902408556,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  2.6402570721329539,
+                                                  28.243183916125417,
+                                                  60.4605568736697,
+                                                  -91.194149588602158
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/pennon_of_silver/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/pennon_of_silver/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:iron_ward",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "iron_ward",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -29.926292223013661,
+                                                   32.595231462209995,
+                                                   38.030847337589876,
+                                                   -93.607866730719252
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -27.410737253861043,
+                                                   27.296381266306526,
+                                                   35.694339624824352,
+                                                   -89.947829442457078
+                                               ],
+                        "union_bounds_before":  [
+                                                    -29.926292223013661,
+                                                    32.595231462209995,
+                                                    38.030847337589876,
+                                                    -93.607866730719252
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.982543232103848,
+                        "base_bounds_after":  [
+                                                  -1.3854137742036983,
+                                                  30,
+                                                  65.3854137742037,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  1.0862277357218773,
+                                                  24.793650602083289,
+                                                  63.089693934267416,
+                                                  -90.403855133170509
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/iron_ward/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/iron_ward/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:iron_ward_auxiliary",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "iron_ward_auxiliary",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -30.801663161012584,
+                                                   32.978723404256016,
+                                                   39.297872340423055,
+                                                   -91.765444228163688
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -27.497715078316105,
+                                                   30.72421777344789,
+                                                   35.843343469718093,
+                                                   -89.947829442457078
+                                               ],
+                        "union_bounds_before":  [
+                                                    -30.801663161012584,
+                                                    32.978723404256016,
+                                                    39.297872340423055,
+                                                    -91.765444228163688
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.99403444949336206,
+                        "base_bounds_after":  [
+                                                  -2.8406765909548994,
+                                                  30,
+                                                  66.8406765909549,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  0.44356162258281984,
+                                                  27.758943736400397,
+                                                  63.406755886706378,
+                                                  -92.193228287098464
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/iron_ward_auxiliary/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/iron_ward_auxiliary/dye_mask.png"
+                    }
+                ],
+    "source_sha256_after":  "fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb"
+}

@@ -2,9 +2,41 @@
 
 Date: 2026-07-28
 
-Milestone: 16 complete extra-small family integration
+Milestone: 16 complete extra-small family integration; small-family final assets prepared, integration blocked
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-28 small-family preparation facts
+
+- The small family is exactly `silver_and_gold_pennon`, `end_01`, `end_02`, `pennon_of_silver`, `iron_ward`, and
+  `iron_ward_auxiliary`, preserving catalogue indices 21 through 26.
+- The sole authoritative source used was
+  `C:/projects/britannia/raw fiels/tabbard/banner_small.ai`, size 31,508,332 bytes and SHA-256
+  `fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb`. Read-only/no-save Illustrator automation
+  left that hash unchanged.
+- Its single PDF-compatible 128 x 128 artboard has CMYK document colour space, 72 ppi raster effects, six matching
+  top-level banner layers, six embedded raster bases, explicit dye masks, and no linked resources.
+- All six aligned base/mask pairs are 128 x 128, 8-bit RGBA. Active mask RGB is white; authored mask alpha is
+  constrained to the base alpha; transparent and protected fixed regions remain present. Authoritative hashes and
+  pixel metrics are in `content/banner-final-intake/small_asset_report.json`; Illustrator structure and transform
+  evidence are in `content/banner-final-intake/small_illustrator_report.json`.
+- Proposed geometry has five groups: one shared paired-pennon model for `silver_and_gold_pennon` and
+  `pennon_of_silver`, plus distinct models for `end_01`, `end_02`, `iron_ward`, and `iron_ward_auxiliary`. The
+  proposals preserve the established 10-unit small-family presentation height, planar two-pass thickness, and
+  full-canvas UV basis.
+- Proposed 1 x 1 placement profile `britannia_mod:small` supports `wall_parallel` and `wall_perpendicular`, reuses
+  the established orientation-specific wall-mount geometry, and keeps brass/iron as independent selectable
+  materials.
+- Every intake is accurately `NOT_APPROVED`; the actual validator reports `NOT_READY`, never `INVALID`. Approval
+  identity/date, original-art/creator/copying provenance, and distribution permission are missing for all six.
+  `end_01` and `end_02` also need final display names.
+- No draft is integrated. Production remains 35 definitions: 26 `placeholder`, 0 `in_progress`, 9 `complete`, and
+  0 disabled. Runtime files, client index entries, and placement data remain unchanged for the small family until an
+  intake becomes `READY_FOR_INTEGRATION`.
+- Five review diagnostics per definition and a combined sheet are prepared. Live review remains explicitly
+  unperformed in `docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md`.
+- The nine completed extra-small definitions and all their runtime/intake hashes remain unchanged.
+  `small_curtain` remains canonical and `x_small_unnamed_01` remains inactive.
 
 ## 2026-07-28 authoritative extra-small family facts
 

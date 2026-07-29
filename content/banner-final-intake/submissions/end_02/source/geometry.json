@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/end_02/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/end_02/base_texture",
+    "dye_mask": "britannia_mod:banner/end_02/dye_mask",
+    "particle": "britannia_mod:banner/end_02/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        5.58333,
+        3.0,
+        7.49
+      ],
+      "to": [
+        10.41667,
+        13.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.375,
+            0.5,
+            11.625,
+            15.5
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            4.375,
+            0.5,
+            11.625,
+            15.5
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        5.58333,
+        3.0,
+        7.47
+      ],
+      "to": [
+        10.41667,
+        13.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.375,
+            0.5,
+            11.625,
+            15.5
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            4.375,
+            0.5,
+            11.625,
+            15.5
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

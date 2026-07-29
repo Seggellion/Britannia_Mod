@@ -1,5 +1,61 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-28 - Small-family final-asset preparation
+
+- Audited exactly the six canonical small definitions at indices 21 through 26:
+  `silver_and_gold_pennon`, `end_01`, `end_02`, `pennon_of_silver`, `iron_ward`, and
+  `iron_ward_auxiliary`. All six remain runtime `placeholder` definitions because no approved intake was available.
+- Read-only/no-save Adobe Illustrator automation used only
+  `C:/projects/britannia/raw fiels/tabbard/banner_small.ai`, size 31,508,332 bytes and SHA-256
+  `fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb`. The hash was identical before export,
+  after export, and after all automation. The PDF-compatible Illustrator document contains one 128 x 128 artboard,
+  CMYK document colour space (COM value 1), 72 ppi raster effects, six matching top-level layers, six embedded
+  raster bases, no linked items, and explicit dye-mask artwork. `end_01` expresses its mask as a named child layer;
+  the other five use named page items.
+- Every authored base/mask union extended beyond the artboard. One deterministic proportional downscale (never an
+  upscale) and one shared translation centered each complete union inside a two-pixel transparent margin. Base and
+  mask were then exported separately with artboard clipping from that shared coordinate system. No artwork was
+  trimmed independently, stretched, redesigned, or saved back to Illustrator.
+- All six packages now contain 128 x 128, 8-bit RGBA `base_texture.png` and `dye_mask.png`. Preparation changed only
+  active mask RGB to white and applied `output mask alpha = min(authored mask alpha, base alpha)`. Every mask has
+  active pixels, transparent pixels, protected fixed base pixels, zero non-white active pixels, and zero pixels
+  whose alpha exceeds the base.
+
+| Definition | Base SHA-256 | Dye-mask SHA-256 |
+|---|---|---|
+| `silver_and_gold_pennon` | `81ea9cdaa1fe5a52f75ae04beb821f80151634d570006976f2405edd750fec4a` | `f7c1b8a5ca8d64c71b93bf66bf82c2d42c8a6cead623d936136ce9617726f819` |
+| `end_01` | `3f6fa75c4f30de2d8db72a32f27e68fae44d9cd05ac7bcd7d9168d9e4e9fcc3b` | `0e192ef62e902345edd7b8b2f78794efbcce66597b4583e87b97c1d9ba349fad` |
+| `end_02` | `47aff2d8480318c4001eb8e410b95a01fc51fcb25618209c6a16a7f95c80be2e` | `fd6c3f5637b5d4b888753aeaa9b1121770c5a8873f88fc2558cbf43f7860e91d` |
+| `pennon_of_silver` | `ca4326f83307df453862a3617d72252189e495915a5a7ccbc4e18d78e40aca9b` | `51a077bfe3d7c3c13cedc8bd96b3913e6c26b2b80802c49be18685024ac97b06` |
+| `iron_ward` | `61dc3a84e5bf5b2bee06df71d3fc1ccd1d638e522056e8d4bb48f25cf1b12cbe` | `16bcb9fb950b47723c363b27f0562e0b95ae023fa9362effcdb47ad695dc0c9f` |
+| `iron_ward_auxiliary` | `a38f29c4325250dcb50d3b1af1ba8ce20772d9ecfb4eb17d3cc0247231da380a` | `856ced21d8cdf2baa9f2662b7d9028facb9dbbfd715dfe3ad2f10e52370838d4` |
+
+- Proposed source geometry preserves the established 10-unit small-family height, two-pass thickness, and
+  128-pixel UV basis. Silver and Gold Pennon and Pennon of Silver share the one paired-pennon geometry proposal;
+  `end_01`, `end_02`, `iron_ward`, and `iron_ward_auxiliary` each have distinct proportions and source models.
+  Proposed placement profile `britannia_mod:small` reuses the established parallel/perpendicular mount geometry;
+  brass and iron remain independent untinted materials. These proposals are intake evidence only and were not
+  registered as runtime resources.
+- The actual intake validator classified all six drafts `NOT_READY` with no `INVALID` findings. Common blockers are
+  product-owner identity/date and approval, original-art/creator/copying provenance, and distribution permission.
+  `end_01` and `end_02` additionally require final display names. Manual visual/live review is not performed.
+- Five diagnostic views per definition and a combined family sheet are tracked under
+  `content/banner-final-intake/submissions/<stable_path>/review/` and
+  `content/banner-final-intake/review/small_family_review.png`. The reusable live procedure and unperformed
+  definition matrix are in `docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md`.
+- Focused preparation validation passed 6 tests. The full banner/dyeing selection passed 630 tests across 55 suites;
+  after `clean`, the unrestricted suite passed 636 tests across 56 suites. Both had zero failures, errors, or skips.
+  The production build passed. Scaffold generation was idempotent with digest
+  `0596cee06b0de4e99664b08d868d0f0433418fec0bab747e9208b6413ae7c8fc`, and `--check` passed.
+- Both production JARs contain 35 definitions (26 placeholder, 0 in progress, 9 complete), all nine completed
+  extra-small definitions and their 18 textures, the client index, directory atlas, distinct orientation mounts,
+  brass/iron resources, and still-required placeholders. Neither JAR contains draft small runtime assets, intake or
+  review content, three-file/static-overlay fields, banner recipes, or duplicate ZIP entries. The normal JAR has
+  5,002 entries and the all-JAR has 5,006.
+- No small definition was marked `complete` or `in_progress`; no runtime small asset was adopted. The completed
+  extra-small family, `small_curtain`, state schema, crafting-disabled policy, later size families, and Milestone 17
+  remain unchanged.
+
 ## 2026-07-28 - Nine-banner extra-small Gate E closeout
 
 - Direct product-owner evidence records the complete live review against commit

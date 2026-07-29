@@ -2,7 +2,26 @@
 
 Date: 2026-07-28
 
-Milestone: 16 complete extra-small family integration
+Milestone: 16 complete extra-small family integration; small-family intake decisions pending
+
+## Small-family integration blockers
+
+The six small-family artwork pairs and geometry proposals are prepared from the authoritative 128 x 128 Illustrator
+source, but every intake is `NOT_READY` and no runtime integration occurred.
+
+- Supply product-owner approval identity and date for each exact base/mask hash.
+- Confirm original-art status, creator identity, whether the art was copied from reference art, and distribution
+  permission.
+- Approve or replace the proposed final names for the four source-named definitions.
+- Supply final player-facing names for `end_01` and `end_02`; their catalogue labels remain provisional and are not
+  copied into the final-name intake fields.
+- Approve 1 x 1 logical dimensions, both wall orientations, brass/iron mounts with brass default, the proposed
+  `britannia_mod:small` placement profile, and the five geometry groups.
+- Perform every case in `docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md` after approved packages are integrated as
+  `in_progress`. Automated review images and tests do not mark any live check as performed.
+
+The exact draft metadata and blockers are recorded per package and in
+`content/banner-final-intake/small_asset_report.json`.
 
 ## Extra-small Gate E resolved
 
