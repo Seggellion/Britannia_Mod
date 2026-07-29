@@ -234,6 +234,7 @@ public void onServerStopping(ServerStoppingEvent event) {
     // === NEW: Monster cleanup ===
     MinecraftServer server = event.getServer();
     ServiceNpcSpawnDeliveryProcessor.stop(server);
+    com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.stop(server);
     WorldBootstrapHandler.onServerStopping(server);
     ServerAuthRegistry.clear(server);
     for (ServerLevel level : server.getAllLevels()) {
@@ -265,11 +266,13 @@ public void onServerStopping(ServerStoppingEvent event) {
 
 public void onServerStarted(ServerStartedEvent event) {
     ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
+    com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.start(event.getServer());
     com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.runStartupReconciliation(event.getServer());
 }
 
 public void onServerTick(ServerTickEvent.Post event) {
     ServiceNpcSpawnDeliveryProcessor.tick(event.getServer());
+    com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.tick(event.getServer());
 }
 
 public void onServerStarting(ServerStartingEvent event) {
