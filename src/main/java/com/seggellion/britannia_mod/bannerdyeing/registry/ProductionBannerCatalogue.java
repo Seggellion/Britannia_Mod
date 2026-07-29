@@ -12,7 +12,7 @@ public final class ProductionBannerCatalogue {
             "medium_wall_01", "medium_wall_02", "medium_wall_03", "medium_wall_04", "medium_wall_05",
             "joined_wards", "tournament_medium", "ceremonial_tournament", "iron_quarter", "outer_ward",
             "ward_of_serpents", "serpent_guard", "crossroad_guard", "argent_shield",
-            "silver_and_gold_pennon", "end_01", "end_02", "pennon_of_silver", "iron_ward",
+            "silver_and_gold_pennon", "star_standard", "ship_standard", "pennon_of_silver", "iron_ward",
             "iron_ward_auxiliary", "road_guard", "pale_road_guard", "red_crosslets",
             "captains_red_crosslets", "scarlet_court", "verdant_court", "small_curtain",
             "prosperity_standard", "guardian_standard");

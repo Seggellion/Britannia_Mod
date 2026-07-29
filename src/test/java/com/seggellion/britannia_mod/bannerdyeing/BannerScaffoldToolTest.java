@@ -39,7 +39,7 @@ class BannerScaffoldToolTest {
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, summary.generatedDefinitions());
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
                 countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
-        assertEquals(8, countSupportingJson(root));
+        assertEquals(9, countSupportingJson(root));
         assertEquals(6, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/placeholder")));
         assertEquals(3, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
         assertEquals(4, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/mount")));
@@ -57,11 +57,11 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Brass automated"));
         assertTrue(status.contains("Iron automated"));
         assertTrue(status.contains("Manual result"));
-        assertTrue(status.contains("Final per-definition orientations approved: 9 of "
+        assertTrue(status.contains("Final per-definition orientations approved: 15 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final per-definition mounts approved: 9 of "
+        assertTrue(status.contains("Final per-definition mounts approved: 15 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final placed artwork intake approved: 9 of "
+        assertTrue(status.contains("Final placed artwork intake approved: 15 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Banner crafting implemented: no"));
         assertTrue(status.contains("Admin acquisition implemented: yes"));
@@ -302,7 +302,7 @@ class BannerScaffoldToolTest {
         Files.createDirectories(language.getParent());
         Files.writeString(language, "{\n  \"unrelated.key\": \"Keep Me\"\n}\n", StandardCharsets.UTF_8);
         for (String banner : ProductionBannerCatalogue.CANONICAL_PATHS.subList(
-                ProductionBannerCatalogue.TARGET_COUNT - 9, ProductionBannerCatalogue.TARGET_COUNT)) {
+                ProductionBannerCatalogue.TARGET_COUNT - 15, ProductionBannerCatalogue.TARGET_COUNT)) {
             copyApprovedAsset(root,
                     "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/base_texture.png");
             copyApprovedAsset(root,
@@ -312,6 +312,13 @@ class BannerScaffoldToolTest {
                 "src/main/resources/assets/britannia_mod/models/banner/road_guard/geometry.json");
         copyApprovedAsset(root,
                 "src/main/resources/assets/britannia_mod/models/banner/small_curtain/geometry.json");
+        for (String geometry : java.util.List.of(
+                "pennon_pair", "star_standard", "ship_standard",
+                "iron_ward", "iron_ward_auxiliary")) {
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/models/banner/small/"
+                            + geometry + "/geometry.json");
+        }
         return root;
     }
 

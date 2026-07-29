@@ -81,7 +81,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, decodeFolder("material_palettes", MaterialPalette.CODEC));
         assertEquals(7, decodeFolder("pigments", PigmentDefinition.CODEC));
         assertEquals(2, decodeFolder("banner_mounts", MountDefinition.CODEC));
-        assertEquals(6, decodeFolder("placement_profiles", PlacementProfile.CODEC));
+        assertEquals(7, decodeFolder("placement_profiles", PlacementProfile.CODEC));
     }
 
     @Test
@@ -125,7 +125,7 @@ class GeneratedBannerCatalogueTest {
         Set<String> profiles = result.snapshot().banners().activeDefinitions().stream()
                 .map(definition -> definition.placementProfile().toString()).collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of("britannia_mod:placeholder_large", "britannia_mod:placeholder_medium_wall",
-                "britannia_mod:placeholder_medium", "britannia_mod:placeholder_small",
+                "britannia_mod:placeholder_medium", "britannia_mod:small",
                 "britannia_mod:extra_small"), profiles);
     }
 
@@ -135,7 +135,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, result.snapshot().materialPalettes().activeCount());
         assertEquals(7, result.snapshot().pigments().activeCount());
         assertEquals(2, result.snapshot().mounts().activeCount());
-        assertEquals(6, result.snapshot().placementProfiles().activeCount());
+        assertEquals(7, result.snapshot().placementProfiles().activeCount());
         assertTrue(result.snapshot().fabricMaterials().activeEntries().keySet().stream()
                 .anyMatch(id -> id.toString().equals("britannia_mod:cotton")));
         assertEquals(Set.of("britannia_mod:brass", "britannia_mod:iron"),
@@ -194,7 +194,7 @@ class GeneratedBannerCatalogueTest {
     }
 
     @Test
-    void authoritativeExtraSmallFamilyAloneIsComplete() {
+    void authoritativeExtraSmallFamilyIsCompleteWhileSmallIsInProgress() {
         List<BannerDefinition> complete = result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).toList();
         assertEquals(Set.of("britannia_mod:road_guard", "britannia_mod:pale_road_guard",
@@ -211,11 +211,11 @@ class GeneratedBannerCatalogueTest {
         assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
         assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
         assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
-        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(6, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(26, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(20, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(26, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(20, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.dimensions().provisional()).count());
     }
 
@@ -256,7 +256,7 @@ class GeneratedBannerCatalogueTest {
         List<String> provisional = manifest.banners().stream()
                 .filter(entry -> "provisional".equals(entry.nameStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id).toList();
-        assertEquals(13, provisional.size());
+        assertEquals(11, provisional.size());
         provisional.forEach(id -> assertTrue(status.contains("`" + id + "`"), id));
         assertTrue(status.contains("Catalogue target: data-derived from the canonical manifest"));
         assertTrue(status.contains("Stable identity set approved at Gate B: yes"));
@@ -264,14 +264,14 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("Survival acquisition implemented: no"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
-        assertTrue(status.contains("Final display names approved: 9 of "
+        assertTrue(status.contains("Final display names approved: 15 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final dimensions approved: 9 of "
+        assertTrue(status.contains("Final dimensions approved: 15 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Final artwork complete: 9 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("- placeholder: 26"));
-        assertTrue(status.contains("- in_progress: 0"));
+        assertTrue(status.contains("- placeholder: 20"));
+        assertTrue(status.contains("- in_progress: 6"));
         assertTrue(status.contains("- complete: 9"));
         assertTrue(status.contains("- disabled: 0"));
         assertTrue(status.contains("## Extra-small family integration"));

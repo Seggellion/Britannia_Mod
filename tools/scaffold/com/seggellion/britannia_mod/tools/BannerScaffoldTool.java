@@ -162,7 +162,7 @@ public final class BannerScaffoldTool {
         }
 
         LocalizationResult localization = mergeLocalization(root, catalogue, metadata, options.force, output);
-        Metadata refreshed = refreshMetadata(root, expected, metadata, catalogue, localization);
+        Metadata refreshed = refreshMetadata(root, expected, catalogue, localization);
         writeAtomic(root.resolve(METADATA_PATH), utf8(json(refreshed.toJson())));
 
         if (customized.isEmpty() && localization.customizedKeys.isEmpty()) {
@@ -379,6 +379,8 @@ public final class BannerScaffoldTool {
                 utf8(json(profile("x_small", 1, 1))));
         output.put(DATA_ROOT + "placement_profiles/extra_small.json",
                 utf8(json(extraSmallProfile())));
+        output.put(DATA_ROOT + "placement_profiles/small.json",
+                utf8(json(smallProfile())));
 
         output.put(ASSET_ROOT + "textures/banner/placeholder/base_texture.png", png(PngKind.BASE_TEXTURE));
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
@@ -409,7 +411,8 @@ public final class BannerScaffoldTool {
             geometries.add(banner.geometry);
             textures.add(banner.baseTexture);
             textures.add(banner.dyeMask);
-            if ("britannia_mod:extra_small".equals(banner.placementProfile)) {
+            if (Set.of("britannia_mod:extra_small", "britannia_mod:small")
+                    .contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_parallel");
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
             }
@@ -545,9 +548,26 @@ public final class BannerScaffoldTool {
         return root;
     }
 
+    private static JsonObject smallProfile() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:small");
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", 1);
+        dimensions.addProperty("height_blocks", 1);
+        dimensions.addProperty("provisional", false);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        JsonObject mounts = new JsonObject();
+        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
+        mounts.addProperty("wall_perpendicular", "britannia_mod:banner/mount/wall_perpendicular");
+        root.add("orientation_mount_geometry", mounts);
+        return root;
+    }
+
     private static JsonObject wallMountModel(String orientation) {
         JsonObject root = new JsonObject();
-        root.addProperty("credit", "Shared extra-small " + orientation
+        root.addProperty("credit", "Shared small-family " + orientation
                 + " physical wall-mount geometry; runtime material texture remains independently selected");
         root.addProperty("parent", "minecraft:block/block");
         JsonObject textures = new JsonObject();
@@ -663,8 +683,8 @@ public final class BannerScaffoldTool {
         require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
         require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
         require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
-        require(result.snapshot().placementProfiles().activeCount() == 6,
-                "Six placement profiles did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 7,
+                "Seven placement profiles did not become active");
         require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
         return result;
     }
@@ -872,7 +892,6 @@ public final class BannerScaffoldTool {
     private static Metadata refreshMetadata(
             Path root,
             Map<String, byte[]> expected,
-            Metadata previous,
             ResolvedCatalogue catalogue,
             LocalizationResult localization) throws IOException {
         LinkedHashMap<String, String> hashes = new LinkedHashMap<>();
@@ -887,7 +906,7 @@ public final class BannerScaffoldTool {
             addApprovedAssetHash(hashes, banner.baseTexture, "textures", ".png", banner.baseTextureSha256);
             addApprovedAssetHash(hashes, banner.dyeMask, "textures", ".png", banner.dyeMaskSha256);
         }
-        LinkedHashMap<String, String> localized = new LinkedHashMap<>(previous.localizationValues);
+        LinkedHashMap<String, String> localized = new LinkedHashMap<>();
         JsonObject actual = parseJsonObject(
                 Files.readString(root.resolve(LOCALIZATION_PATH), StandardCharsets.UTF_8), LOCALIZATION_PATH);
         Set<String> customized = Set.copyOf(localization.customizedKeys);
@@ -1016,24 +1035,22 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all nine authoritative hashes\n")
                 .append("- `content_status`: `complete`\n")
                 .append("- Crafting: not applicable; product-disabled\n\n")
-                .append("## Small-family final-asset preparation\n\n")
-                .append("- Authoritative family members: `silver_and_gold_pennon`, `end_01`, `end_02`, ")
+                .append("## Small-family integration\n\n")
+                .append("- Authoritative family members: `silver_and_gold_pennon`, `star_standard`, `ship_standard`, ")
                 .append("`pennon_of_silver`, `iron_ward`, and `iron_ward_auxiliary`\n")
-                .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_small.ai`; ")
-                .append("SHA-256 `fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb`\n")
-                .append("- Six aligned 128 x 128 RGBA base/mask pairs and diagnostic review sheets are prepared ")
-                .append("under `content/banner-final-intake/submissions/`\n")
-                .append("- Proposed geometry groups: one shared paired-pennon model plus distinct `end_01`, ")
-                .append("`end_02`, `iron_ward`, and `iron_ward_auxiliary` models\n")
-                .append("- Proposed placement profile: `britannia_mod:small`, reusing the established parallel ")
-                .append("and perpendicular wall-mount geometry with brass/iron remaining material choices\n")
-                .append("- Intake validation: `NOT_READY` for all six; no intake is invalid\n")
-                .append("- Exact blockers: missing product-owner approval/provenance/distribution permission; ")
-                .append("`end_01` and `end_02` also require final display names\n")
-                .append("- Runtime catalogue state remains `placeholder`; no draft texture, geometry, or profile ")
-                .append("has been adopted into runtime resources\n")
-                .append("- Manual review: NOT PERFORMED; see ")
-                .append("`docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md`\n\n")
+                .append("- Catalogue indices: 21 through 26; all six retain 1 x 1 logical dimensions\n")
+                .append("- Product-owner approval: Seggellion, 2026-07-29\n")
+                .append("- Original artwork and distribution permission: confirmed\n")
+                .append("- Manual asset review: performed by Seggellion on 2026-07-29\n")
+                .append("- Six aligned 128 x 128 RGBA base/mask pairs: `READY_FOR_INTEGRATION`\n")
+                .append("- Geometry groups: one shared paired-pennon model plus distinct `star_standard`, ")
+                .append("`ship_standard`, `iron_ward`, and `iron_ward_auxiliary` models\n")
+                .append("- Placement profile: `britannia_mod:small`, with shared parallel and perpendicular ")
+                .append("wall-mount geometry and independently selected brass/iron materials\n")
+                .append("- `star_standard` replaces provisional `end_01` at index 22; `ship_standard` replaces ")
+                .append("provisional `end_02` at index 23\n")
+                .append("- Runtime `content_status`: `in_progress`; no small banner is marked complete\n")
+                .append("- Post-integration live runtime review remains documented separately\n\n")
                 .append("## Gate D automated placement baseline\n\n")
                 .append("All ").append(total)
                 .append(" active definitions pass the automated parallel, perpendicular, brass, and iron ")
@@ -1310,8 +1327,8 @@ public final class BannerScaffoldTool {
                 19|crossroad_guard|medium|2|11|Crossroad Guard|source-named
                 20|argent_shield|medium|3|1|Argent Shield|source-named
                 21|silver_and_gold_pennon|small|3|2|Silver and Gold Pennon|source-named
-                22|end_01|small|3|3|End Banner 01|provisional
-                23|end_02|small|3|4|End Banner 02|provisional
+                22|star_standard|small|3|3|Star Standard|source-named
+                23|ship_standard|small|3|4|Ship Standard|source-named
                 24|pennon_of_silver|small|3|5|Pennon of Silver|source-named
                 25|iron_ward|small|3|6|Iron Ward|source-named
                 26|iron_ward_auxiliary|small|3|7|Iron Ward Auxiliary|source-named

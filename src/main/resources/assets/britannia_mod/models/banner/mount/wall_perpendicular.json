@@ -1,5 +1,5 @@
 {
-  "credit": "Shared extra-small wall_perpendicular physical wall-mount geometry; runtime material texture remains independently selected",
+  "credit": "Shared small-family wall_perpendicular physical wall-mount geometry; runtime material texture remains independently selected",
   "parent": "minecraft:block/block",
   "textures": {
     "mount": "britannia_mod:banner/mount/brass",

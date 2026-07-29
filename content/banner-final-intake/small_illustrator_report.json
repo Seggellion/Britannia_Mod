@@ -1,4 +1,4 @@
-﻿{
+{
     "schema_version":  1,
     "source_file":  "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
     "source_size_bytes":  31508332,
@@ -336,7 +336,7 @@
                         "mask_output":  "content/banner-final-intake/submissions/silver_and_gold_pennon/dye_mask.png"
                     },
                     {
-                        "stable_id":  "britannia_mod:end_01",
+                        "stable_id":  "britannia_mod:star_standard",
                         "classification":  "READY_FOR_EXPORT",
                         "layer":  "end_01",
                         "base_object":  "base_texture",
@@ -377,11 +377,11 @@
                                               128,
                                               128
                                           ],
-                        "base_output":  "content/banner-final-intake/submissions/end_01/base_texture.png",
-                        "mask_output":  "content/banner-final-intake/submissions/end_01/dye_mask.png"
+                        "base_output":  "content/banner-final-intake/submissions/star_standard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/star_standard/dye_mask.png"
                     },
                     {
-                        "stable_id":  "britannia_mod:end_02",
+                        "stable_id":  "britannia_mod:ship_standard",
                         "classification":  "READY_FOR_EXPORT",
                         "layer":  "end_02",
                         "base_object":  "base_texture",
@@ -422,8 +422,8 @@
                                               128,
                                               128
                                           ],
-                        "base_output":  "content/banner-final-intake/submissions/end_02/base_texture.png",
-                        "mask_output":  "content/banner-final-intake/submissions/end_02/dye_mask.png"
+                        "base_output":  "content/banner-final-intake/submissions/ship_standard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/ship_standard/dye_mask.png"
                     },
                     {
                         "stable_id":  "britannia_mod:pennon_of_silver",

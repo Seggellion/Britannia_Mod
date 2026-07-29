@@ -1,27 +1,19 @@
 # Banner and Dyeing Open Questions
 
-Date: 2026-07-28
+Date: 2026-07-29
 
-Milestone: 16 complete extra-small family integration; small-family intake decisions pending
+Milestone: 16 Batch 2A small-family integrated as in_progress
 
-## Small-family integration blockers
+## Small-family post-integration review
 
-The six small-family artwork pairs and geometry proposals are prepared from the authoritative 128 x 128 Illustrator
-source, but every intake is `NOT_READY` and no runtime integration occurred.
+The intake blockers are resolved. All six definitions are approved, validated, and integrated as `in_progress`.
+Seggellion is the approving product owner, creator, distribution-rights confirmer, and reported asset tester on
+2026-07-29. Star Standard and Ship Standard are now the active identities at indices 22 and 23.
 
-- Supply product-owner approval identity and date for each exact base/mask hash.
-- Confirm original-art status, creator identity, whether the art was copied from reference art, and distribution
-  permission.
-- Approve or replace the proposed final names for the four source-named definitions.
-- Supply final player-facing names for `end_01` and `end_02`; their catalogue labels remain provisional and are not
-  copied into the final-name intake fields.
-- Approve 1 x 1 logical dimensions, both wall orientations, brass/iron mounts with brass default, the proposed
-  `britannia_mod:small` placement profile, and the five geometry groups.
-- Perform every case in `docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md` after approved packages are integrated as
-  `in_progress`. Automated review images and tests do not mark any live check as performed.
-
-The exact draft metadata and blockers are recorded per package and in
-`content/banner-final-intake/small_asset_report.json`.
+The remaining small-family question is whether a separately recorded post-integration live-runtime evidence pass is
+needed before a future Gate E closeout. If performed, use `docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md` to record
+the item, preview, placed rendering, orientation/facing, mounts, reload, and lifecycle cells against the integrated
+runtime hashes. Do not mark the six definitions complete as part of Batch 2A.
 
 ## Extra-small Gate E resolved
 
@@ -31,14 +23,14 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns the other 26 placeholder definitions and future size-family reviews. It
+The remaining open content work concerns the other 20 placeholder definitions and future size-family reviews. It
 does not reopen the 128 x 128 extra-small assets, the two reviewed geometry groups, Small Curtain, Prosperity
 Standard, Guardian Standard, mounts, orientations, or the canonical `small_curtain` identity.
 
 ## Milestone 16A remaining content and review questions
 
 - Supply and approve the final complete base texture and selective grayscale-alpha dye mask for each of the remaining
-  26 placeholder definitions.
+  20 placeholder definitions.
 - Approve exact final pixel dimensions and per-definition presentation contracts for future size families.
 - Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
   examples.

@@ -1,364 +1,324 @@
 {
-  "schema_version": 1,
-  "source_file": "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
-  "source_sha256": "fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb",
-  "canvas": [
-    128,
-    128
-  ],
-  "placement_profile_proposal": {
-    "id": "britannia_mod:small",
-    "dimensions": {
-      "width_blocks": 1,
-      "height_blocks": 1
-    },
-    "orientations": [
-      "wall_parallel",
-      "wall_perpendicular"
-    ],
-    "orientation_mount_geometry": {
-      "wall_parallel": "britannia_mod:banner/mount/wall_parallel",
-      "wall_perpendicular": "britannia_mod:banner/mount/wall_perpendicular"
-    },
-    "mount_materials": [
-      "britannia_mod:brass",
-      "britannia_mod:iron"
-    ],
-    "runtime_integration": "BLOCKED_PENDING_READY_INTAKE"
-  },
-  "geometry_groups": [
-    {
-      "key": "pennon_pair",
-      "resource_id": "britannia_mod:banner/small/pennon_pair/geometry",
-      "members": [
-        "silver_and_gold_pennon",
-        "pennon_of_silver"
-      ],
-      "classification": "REUSE_SHARED_SMALL_GEOMETRY",
-      "shape_evidence": "Matching 74 x 121 alpha bounds, paired vertical cloth strips, two pointed tails, one top attachment edge, and the same full-canvas layout.",
-      "source_file": "content/banner-final-intake/submissions/silver_and_gold_pennon/source/geometry.json",
-      "sha256": "bf3df041e20b581077e635f594b3800469e681d8c604337398f60aefcc402d17",
-      "alpha_bounds": [
-        27,
-        3,
-        101,
-        124
-      ]
-    },
-    {
-      "key": "end_01",
-      "resource_id": "britannia_mod:banner/small/end_01/geometry",
-      "members": [
-        "end_01"
-      ],
-      "classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "shape_evidence": "Single 70 x 120 hanging field with a scalloped crown and rounded bottom.",
-      "source_file": "content/banner-final-intake/submissions/end_01/source/geometry.json",
-      "sha256": "4a24fca2f6388e3e18839a9d563b896a11b96328cde1d7d4300991cbd614b146",
-      "alpha_bounds": [
-        29,
-        5,
-        99,
-        125
-      ]
-    },
-    {
-      "key": "end_02",
-      "resource_id": "britannia_mod:banner/small/end_02/geometry",
-      "members": [
-        "end_02"
-      ],
-      "classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "shape_evidence": "Single narrow 58 x 120 rectangular hanging field with a distinct attachment edge.",
-      "source_file": "content/banner-final-intake/submissions/end_02/source/geometry.json",
-      "sha256": "1483560a46e9c47f2ebe42e8f4c59e6fbcb5d585ecaea070b84b056a1774b317",
-      "alpha_bounds": [
-        35,
-        4,
-        93,
-        124
-      ]
-    },
-    {
-      "key": "iron_ward",
-      "resource_id": "britannia_mod:banner/small/iron_ward/geometry",
-      "members": [
-        "iron_ward"
-      ],
-      "classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "shape_evidence": "Three-tail 61 x 119 ward silhouette; its proportions differ from the auxiliary.",
-      "source_file": "content/banner-final-intake/submissions/iron_ward/source/geometry.json",
-      "sha256": "d4ab6a8ea57ccf955728a7ebe50d076ea880284c029215437350e1f745491fc3",
-      "alpha_bounds": [
-        33,
-        4,
-        94,
-        123
-      ]
-    },
-    {
-      "key": "iron_ward_auxiliary",
-      "resource_id": "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
-      "members": [
-        "iron_ward_auxiliary"
-      ],
-      "classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "shape_evidence": "Three-tail 64 x 121 auxiliary silhouette with a wider and taller authored extent.",
-      "source_file": "content/banner-final-intake/submissions/iron_ward_auxiliary/source/geometry.json",
-      "sha256": "88e657797bd7631ff2abbee2a46aa7b7f3db5e6ad40dead400668ab776c01ef4",
-      "alpha_bounds": [
-        32,
-        4,
-        96,
-        125
-      ]
-    }
-  ],
-  "assets": [
-    {
-      "stable_id": "britannia_mod:silver_and_gold_pennon",
-      "catalogue_index": 21,
-      "current_display_label": "Silver and Gold Pennon",
-      "export_classification": "READY_FOR_EXPORT",
-      "integration_readiness": "NOT_READY",
-      "base_path": "content/banner-final-intake/submissions/silver_and_gold_pennon/base_texture.png",
-      "base_sha256": "81ea9cdaa1fe5a52f75ae04beb821f80151634d570006976f2405edd750fec4a",
-      "mask_path": "content/banner-final-intake/submissions/silver_and_gold_pennon/dye_mask.png",
-      "mask_sha256": "f7c1b8a5ca8d64c71b93bf66bf82c2d42c8a6cead623d936136ce9617726f819",
-      "dimensions": [
-        128,
-        128
-      ],
-      "mode": "RGBA",
-      "base_alpha_bounds": [
-        27,
-        3,
-        101,
-        124
-      ],
-      "mask_active_pixels": 2843,
-      "mask_transparent_pixels": 13541,
-      "fixed_base_pixels": 3805,
-      "mask_alpha_exceeds_base": 0,
-      "active_mask_nonwhite_pixels": 0,
-      "review_sheet": "content/banner-final-intake/submissions/silver_and_gold_pennon/review/review_sheet.png",
-      "geometry_id": "britannia_mod:banner/small/pennon_pair/geometry",
-      "geometry_classification": "REUSE_SHARED_SMALL_GEOMETRY",
-      "intake_path": "content/banner-final-intake/submissions/silver_and_gold_pennon/silver_and_gold_pennon.yml",
-      "missing_fields": [
-        "approval.approved_by",
-        "approval.approved_date",
-        "provenance.original_art confirmation",
-        "provenance.creator",
-        "provenance.distribution_permission_confirmed",
-        "provenance.copied_from_reference_art",
-        "manual product-owner review"
-      ]
-    },
-    {
-      "stable_id": "britannia_mod:end_01",
-      "catalogue_index": 22,
-      "current_display_label": "End Banner 01",
-      "export_classification": "READY_FOR_EXPORT",
-      "integration_readiness": "NOT_READY",
-      "base_path": "content/banner-final-intake/submissions/end_01/base_texture.png",
-      "base_sha256": "3f6fa75c4f30de2d8db72a32f27e68fae44d9cd05ac7bcd7d9168d9e4e9fcc3b",
-      "mask_path": "content/banner-final-intake/submissions/end_01/dye_mask.png",
-      "mask_sha256": "0e192ef62e902345edd7b8b2f78794efbcce66597b4583e87b97c1d9ba349fad",
-      "dimensions": [
-        128,
-        128
-      ],
-      "mode": "RGBA",
-      "base_alpha_bounds": [
-        29,
-        5,
-        99,
-        125
-      ],
-      "mask_active_pixels": 6219,
-      "mask_transparent_pixels": 10165,
-      "fixed_base_pixels": 1562,
-      "mask_alpha_exceeds_base": 0,
-      "active_mask_nonwhite_pixels": 0,
-      "review_sheet": "content/banner-final-intake/submissions/end_01/review/review_sheet.png",
-      "geometry_id": "britannia_mod:banner/small/end_01/geometry",
-      "geometry_classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "intake_path": "content/banner-final-intake/submissions/end_01/end_01.yml",
-      "missing_fields": [
-        "approval.approved_by",
-        "approval.approved_date",
-        "provenance.original_art confirmation",
-        "provenance.creator",
-        "provenance.distribution_permission_confirmed",
-        "provenance.copied_from_reference_art",
-        "manual product-owner review",
-        "banner.final_display_name",
-        "localization.value"
-      ]
-    },
-    {
-      "stable_id": "britannia_mod:end_02",
-      "catalogue_index": 23,
-      "current_display_label": "End Banner 02",
-      "export_classification": "READY_FOR_EXPORT",
-      "integration_readiness": "NOT_READY",
-      "base_path": "content/banner-final-intake/submissions/end_02/base_texture.png",
-      "base_sha256": "47aff2d8480318c4001eb8e410b95a01fc51fcb25618209c6a16a7f95c80be2e",
-      "mask_path": "content/banner-final-intake/submissions/end_02/dye_mask.png",
-      "mask_sha256": "fd6c3f5637b5d4b888753aeaa9b1121770c5a8873f88fc2558cbf43f7860e91d",
-      "dimensions": [
-        128,
-        128
-      ],
-      "mode": "RGBA",
-      "base_alpha_bounds": [
-        35,
-        4,
-        93,
-        124
-      ],
-      "mask_active_pixels": 5100,
-      "mask_transparent_pixels": 11284,
-      "fixed_base_pixels": 1630,
-      "mask_alpha_exceeds_base": 0,
-      "active_mask_nonwhite_pixels": 0,
-      "review_sheet": "content/banner-final-intake/submissions/end_02/review/review_sheet.png",
-      "geometry_id": "britannia_mod:banner/small/end_02/geometry",
-      "geometry_classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "intake_path": "content/banner-final-intake/submissions/end_02/end_02.yml",
-      "missing_fields": [
-        "approval.approved_by",
-        "approval.approved_date",
-        "provenance.original_art confirmation",
-        "provenance.creator",
-        "provenance.distribution_permission_confirmed",
-        "provenance.copied_from_reference_art",
-        "manual product-owner review",
-        "banner.final_display_name",
-        "localization.value"
-      ]
-    },
-    {
-      "stable_id": "britannia_mod:pennon_of_silver",
-      "catalogue_index": 24,
-      "current_display_label": "Pennon of Silver",
-      "export_classification": "READY_FOR_EXPORT",
-      "integration_readiness": "NOT_READY",
-      "base_path": "content/banner-final-intake/submissions/pennon_of_silver/base_texture.png",
-      "base_sha256": "ca4326f83307df453862a3617d72252189e495915a5a7ccbc4e18d78e40aca9b",
-      "mask_path": "content/banner-final-intake/submissions/pennon_of_silver/dye_mask.png",
-      "mask_sha256": "51a077bfe3d7c3c13cedc8bd96b3913e6c26b2b80802c49be18685024ac97b06",
-      "dimensions": [
-        128,
-        128
-      ],
-      "mode": "RGBA",
-      "base_alpha_bounds": [
-        27,
-        3,
-        101,
-        124
-      ],
-      "mask_active_pixels": 3680,
-      "mask_transparent_pixels": 12704,
-      "fixed_base_pixels": 2949,
-      "mask_alpha_exceeds_base": 0,
-      "active_mask_nonwhite_pixels": 0,
-      "review_sheet": "content/banner-final-intake/submissions/pennon_of_silver/review/review_sheet.png",
-      "geometry_id": "britannia_mod:banner/small/pennon_pair/geometry",
-      "geometry_classification": "REUSE_SHARED_SMALL_GEOMETRY",
-      "intake_path": "content/banner-final-intake/submissions/pennon_of_silver/pennon_of_silver.yml",
-      "missing_fields": [
-        "approval.approved_by",
-        "approval.approved_date",
-        "provenance.original_art confirmation",
-        "provenance.creator",
-        "provenance.distribution_permission_confirmed",
-        "provenance.copied_from_reference_art",
-        "manual product-owner review"
-      ]
-    },
-    {
-      "stable_id": "britannia_mod:iron_ward",
-      "catalogue_index": 25,
-      "current_display_label": "Iron Ward",
-      "export_classification": "READY_FOR_EXPORT",
-      "integration_readiness": "NOT_READY",
-      "base_path": "content/banner-final-intake/submissions/iron_ward/base_texture.png",
-      "base_sha256": "61dc3a84e5bf5b2bee06df71d3fc1ccd1d638e522056e8d4bb48f25cf1b12cbe",
-      "mask_path": "content/banner-final-intake/submissions/iron_ward/dye_mask.png",
-      "mask_sha256": "16bcb9fb950b47723c363b27f0562e0b95ae023fa9362effcdb47ad695dc0c9f",
-      "dimensions": [
-        128,
-        128
-      ],
-      "mode": "RGBA",
-      "base_alpha_bounds": [
-        33,
-        4,
-        94,
-        123
-      ],
-      "mask_active_pixels": 3857,
-      "mask_transparent_pixels": 12527,
-      "fixed_base_pixels": 3274,
-      "mask_alpha_exceeds_base": 0,
-      "active_mask_nonwhite_pixels": 0,
-      "review_sheet": "content/banner-final-intake/submissions/iron_ward/review/review_sheet.png",
-      "geometry_id": "britannia_mod:banner/small/iron_ward/geometry",
-      "geometry_classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "intake_path": "content/banner-final-intake/submissions/iron_ward/iron_ward.yml",
-      "missing_fields": [
-        "approval.approved_by",
-        "approval.approved_date",
-        "provenance.original_art confirmation",
-        "provenance.creator",
-        "provenance.distribution_permission_confirmed",
-        "provenance.copied_from_reference_art",
-        "manual product-owner review"
-      ]
-    },
-    {
-      "stable_id": "britannia_mod:iron_ward_auxiliary",
-      "catalogue_index": 26,
-      "current_display_label": "Iron Ward Auxiliary",
-      "export_classification": "READY_FOR_EXPORT",
-      "integration_readiness": "NOT_READY",
-      "base_path": "content/banner-final-intake/submissions/iron_ward_auxiliary/base_texture.png",
-      "base_sha256": "a38f29c4325250dcb50d3b1af1ba8ce20772d9ecfb4eb17d3cc0247231da380a",
-      "mask_path": "content/banner-final-intake/submissions/iron_ward_auxiliary/dye_mask.png",
-      "mask_sha256": "856ced21d8cdf2baa9f2662b7d9028facb9dbbfd715dfe3ad2f10e52370838d4",
-      "dimensions": [
-        128,
-        128
-      ],
-      "mode": "RGBA",
-      "base_alpha_bounds": [
-        32,
-        4,
-        96,
-        125
-      ],
-      "mask_active_pixels": 5437,
-      "mask_transparent_pixels": 10947,
-      "fixed_base_pixels": 2077,
-      "mask_alpha_exceeds_base": 0,
-      "active_mask_nonwhite_pixels": 0,
-      "review_sheet": "content/banner-final-intake/submissions/iron_ward_auxiliary/review/review_sheet.png",
-      "geometry_id": "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
-      "geometry_classification": "CUSTOM_GEOMETRY_REQUIRED",
-      "intake_path": "content/banner-final-intake/submissions/iron_ward_auxiliary/iron_ward_auxiliary.yml",
-      "missing_fields": [
-        "approval.approved_by",
-        "approval.approved_date",
-        "provenance.original_art confirmation",
-        "provenance.creator",
-        "provenance.distribution_permission_confirmed",
-        "provenance.copied_from_reference_art",
-        "manual product-owner review"
-      ]
-    }
-  ],
-  "family_review_sheet": "content/banner-final-intake/review/small_family_review.png"
+    "schema_version":  1,
+    "source_file":  "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
+    "source_sha256":  "fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb",
+    "canvas":  [
+                   128,
+                   128
+               ],
+    "placement_profile_proposal":  {
+                                       "id":  "britannia_mod:small",
+                                       "dimensions":  {
+                                                          "width_blocks":  1,
+                                                          "height_blocks":  1
+                                                      },
+                                       "orientations":  [
+                                                            "wall_parallel",
+                                                            "wall_perpendicular"
+                                                        ],
+                                       "orientation_mount_geometry":  {
+                                                                          "wall_parallel":  "britannia_mod:banner/mount/wall_parallel",
+                                                                          "wall_perpendicular":  "britannia_mod:banner/mount/wall_perpendicular"
+                                                                      },
+                                       "mount_materials":  [
+                                                               "britannia_mod:brass",
+                                                               "britannia_mod:iron"
+                                                           ],
+                                       "runtime_integration":  "IN_PROGRESS"
+                                   },
+    "geometry_groups":  [
+                            {
+                                "key":  "pennon_pair",
+                                "resource_id":  "britannia_mod:banner/small/pennon_pair/geometry",
+                                "members":  [
+                                                "silver_and_gold_pennon",
+                                                "pennon_of_silver"
+                                            ],
+                                "classification":  "APPROVED_SHARED_SMALL_GEOMETRY",
+                                "shape_evidence":  "Matching 74 x 121 alpha bounds, paired vertical cloth strips, two pointed tails, one top attachment edge, and the same full-canvas layout.",
+                                "source_file":  "content/banner-final-intake/submissions/silver_and_gold_pennon/source/geometry.json",
+                                "sha256":  "bf3df041e20b581077e635f594b3800469e681d8c604337398f60aefcc402d17",
+                                "alpha_bounds":  [
+                                                     27,
+                                                     3,
+                                                     101,
+                                                     124
+                                                 ]
+                            },
+                            {
+                                "key":  "star_standard",
+                                "resource_id":  "britannia_mod:banner/small/star_standard/geometry",
+                                "members":  [
+                                                "star_standard"
+                                            ],
+                                "classification":  "APPROVED_CUSTOM_GEOMETRY",
+                                "shape_evidence":  "Single 70 x 120 hanging field with a scalloped crown and rounded bottom.",
+                                "source_file":  "content/banner-final-intake/submissions/star_standard/source/geometry.json",
+                                "sha256":  "4eb3cf3614e85d3c642f5de4f6ae0effe2b745c9ad0a4ca7c13700cb6babd58b",
+                                "alpha_bounds":  [
+                                                     29,
+                                                     5,
+                                                     99,
+                                                     125
+                                                 ]
+                            },
+                            {
+                                "key":  "ship_standard",
+                                "resource_id":  "britannia_mod:banner/small/ship_standard/geometry",
+                                "members":  [
+                                                "ship_standard"
+                                            ],
+                                "classification":  "APPROVED_CUSTOM_GEOMETRY",
+                                "shape_evidence":  "Single narrow 58 x 120 rectangular hanging field with a distinct attachment edge.",
+                                "source_file":  "content/banner-final-intake/submissions/ship_standard/source/geometry.json",
+                                "sha256":  "9b6f39337d63b19cb0ed2daabe153d3a07d4f3e81679ef21e9bf7b06ce79c614",
+                                "alpha_bounds":  [
+                                                     35,
+                                                     4,
+                                                     93,
+                                                     124
+                                                 ]
+                            },
+                            {
+                                "key":  "iron_ward",
+                                "resource_id":  "britannia_mod:banner/small/iron_ward/geometry",
+                                "members":  [
+                                                "iron_ward"
+                                            ],
+                                "classification":  "APPROVED_CUSTOM_GEOMETRY",
+                                "shape_evidence":  "Three-tail 61 x 119 ward silhouette; its proportions differ from the auxiliary.",
+                                "source_file":  "content/banner-final-intake/submissions/iron_ward/source/geometry.json",
+                                "sha256":  "d4ab6a8ea57ccf955728a7ebe50d076ea880284c029215437350e1f745491fc3",
+                                "alpha_bounds":  [
+                                                     33,
+                                                     4,
+                                                     94,
+                                                     123
+                                                 ]
+                            },
+                            {
+                                "key":  "iron_ward_auxiliary",
+                                "resource_id":  "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
+                                "members":  [
+                                                "iron_ward_auxiliary"
+                                            ],
+                                "classification":  "APPROVED_CUSTOM_GEOMETRY",
+                                "shape_evidence":  "Three-tail 64 x 121 auxiliary silhouette with a wider and taller authored extent.",
+                                "source_file":  "content/banner-final-intake/submissions/iron_ward_auxiliary/source/geometry.json",
+                                "sha256":  "88e657797bd7631ff2abbee2a46aa7b7f3db5e6ad40dead400668ab776c01ef4",
+                                "alpha_bounds":  [
+                                                     32,
+                                                     4,
+                                                     96,
+                                                     125
+                                                 ]
+                            }
+                        ],
+    "assets":  [
+                   {
+                       "stable_id":  "britannia_mod:silver_and_gold_pennon",
+                       "catalogue_index":  21,
+                       "current_display_label":  "Silver and Gold Pennon",
+                       "export_classification":  "READY_FOR_EXPORT",
+                       "integration_readiness":  "READY_FOR_INTEGRATION",
+                       "base_path":  "content/banner-final-intake/submissions/silver_and_gold_pennon/base_texture.png",
+                       "base_sha256":  "81ea9cdaa1fe5a52f75ae04beb821f80151634d570006976f2405edd750fec4a",
+                       "mask_path":  "content/banner-final-intake/submissions/silver_and_gold_pennon/dye_mask.png",
+                       "mask_sha256":  "f7c1b8a5ca8d64c71b93bf66bf82c2d42c8a6cead623d936136ce9617726f819",
+                       "dimensions":  [
+                                          128,
+                                          128
+                                      ],
+                       "mode":  "RGBA",
+                       "base_alpha_bounds":  [
+                                                 27,
+                                                 3,
+                                                 101,
+                                                 124
+                                             ],
+                       "mask_active_pixels":  2843,
+                       "mask_transparent_pixels":  13541,
+                       "fixed_base_pixels":  3805,
+                       "mask_alpha_exceeds_base":  0,
+                       "active_mask_nonwhite_pixels":  0,
+                       "review_sheet":  "content/banner-final-intake/submissions/silver_and_gold_pennon/review/review_sheet.png",
+                       "geometry_id":  "britannia_mod:banner/small/pennon_pair/geometry",
+                       "geometry_classification":  "APPROVED_SHARED_SMALL_GEOMETRY",
+                       "intake_path":  "content/banner-final-intake/submissions/silver_and_gold_pennon/silver_and_gold_pennon.yml",
+                       "missing_fields":  [
+
+                                          ]
+                   },
+                   {
+                       "stable_id":  "britannia_mod:star_standard",
+                       "catalogue_index":  22,
+                       "current_display_label":  "Star Standard",
+                       "export_classification":  "READY_FOR_EXPORT",
+                       "integration_readiness":  "READY_FOR_INTEGRATION",
+                       "base_path":  "content/banner-final-intake/submissions/star_standard/base_texture.png",
+                       "base_sha256":  "3f6fa75c4f30de2d8db72a32f27e68fae44d9cd05ac7bcd7d9168d9e4e9fcc3b",
+                       "mask_path":  "content/banner-final-intake/submissions/star_standard/dye_mask.png",
+                       "mask_sha256":  "0e192ef62e902345edd7b8b2f78794efbcce66597b4583e87b97c1d9ba349fad",
+                       "dimensions":  [
+                                          128,
+                                          128
+                                      ],
+                       "mode":  "RGBA",
+                       "base_alpha_bounds":  [
+                                                 29,
+                                                 5,
+                                                 99,
+                                                 125
+                                             ],
+                       "mask_active_pixels":  6219,
+                       "mask_transparent_pixels":  10165,
+                       "fixed_base_pixels":  1562,
+                       "mask_alpha_exceeds_base":  0,
+                       "active_mask_nonwhite_pixels":  0,
+                       "review_sheet":  "content/banner-final-intake/submissions/star_standard/review/review_sheet.png",
+                       "geometry_id":  "britannia_mod:banner/small/star_standard/geometry",
+                       "geometry_classification":  "APPROVED_CUSTOM_GEOMETRY",
+                       "intake_path":  "content/banner-final-intake/submissions/star_standard/star_standard.yml",
+                       "missing_fields":  [
+
+                                          ]
+                   },
+                   {
+                       "stable_id":  "britannia_mod:ship_standard",
+                       "catalogue_index":  23,
+                       "current_display_label":  "Ship Standard",
+                       "export_classification":  "READY_FOR_EXPORT",
+                       "integration_readiness":  "READY_FOR_INTEGRATION",
+                       "base_path":  "content/banner-final-intake/submissions/ship_standard/base_texture.png",
+                       "base_sha256":  "47aff2d8480318c4001eb8e410b95a01fc51fcb25618209c6a16a7f95c80be2e",
+                       "mask_path":  "content/banner-final-intake/submissions/ship_standard/dye_mask.png",
+                       "mask_sha256":  "fd6c3f5637b5d4b888753aeaa9b1121770c5a8873f88fc2558cbf43f7860e91d",
+                       "dimensions":  [
+                                          128,
+                                          128
+                                      ],
+                       "mode":  "RGBA",
+                       "base_alpha_bounds":  [
+                                                 35,
+                                                 4,
+                                                 93,
+                                                 124
+                                             ],
+                       "mask_active_pixels":  5100,
+                       "mask_transparent_pixels":  11284,
+                       "fixed_base_pixels":  1630,
+                       "mask_alpha_exceeds_base":  0,
+                       "active_mask_nonwhite_pixels":  0,
+                       "review_sheet":  "content/banner-final-intake/submissions/ship_standard/review/review_sheet.png",
+                       "geometry_id":  "britannia_mod:banner/small/ship_standard/geometry",
+                       "geometry_classification":  "APPROVED_CUSTOM_GEOMETRY",
+                       "intake_path":  "content/banner-final-intake/submissions/ship_standard/ship_standard.yml",
+                       "missing_fields":  [
+
+                                          ]
+                   },
+                   {
+                       "stable_id":  "britannia_mod:pennon_of_silver",
+                       "catalogue_index":  24,
+                       "current_display_label":  "Pennon of Silver",
+                       "export_classification":  "READY_FOR_EXPORT",
+                       "integration_readiness":  "READY_FOR_INTEGRATION",
+                       "base_path":  "content/banner-final-intake/submissions/pennon_of_silver/base_texture.png",
+                       "base_sha256":  "ca4326f83307df453862a3617d72252189e495915a5a7ccbc4e18d78e40aca9b",
+                       "mask_path":  "content/banner-final-intake/submissions/pennon_of_silver/dye_mask.png",
+                       "mask_sha256":  "51a077bfe3d7c3c13cedc8bd96b3913e6c26b2b80802c49be18685024ac97b06",
+                       "dimensions":  [
+                                          128,
+                                          128
+                                      ],
+                       "mode":  "RGBA",
+                       "base_alpha_bounds":  [
+                                                 27,
+                                                 3,
+                                                 101,
+                                                 124
+                                             ],
+                       "mask_active_pixels":  3680,
+                       "mask_transparent_pixels":  12704,
+                       "fixed_base_pixels":  2949,
+                       "mask_alpha_exceeds_base":  0,
+                       "active_mask_nonwhite_pixels":  0,
+                       "review_sheet":  "content/banner-final-intake/submissions/pennon_of_silver/review/review_sheet.png",
+                       "geometry_id":  "britannia_mod:banner/small/pennon_pair/geometry",
+                       "geometry_classification":  "APPROVED_SHARED_SMALL_GEOMETRY",
+                       "intake_path":  "content/banner-final-intake/submissions/pennon_of_silver/pennon_of_silver.yml",
+                       "missing_fields":  [
+
+                                          ]
+                   },
+                   {
+                       "stable_id":  "britannia_mod:iron_ward",
+                       "catalogue_index":  25,
+                       "current_display_label":  "Iron Ward",
+                       "export_classification":  "READY_FOR_EXPORT",
+                       "integration_readiness":  "READY_FOR_INTEGRATION",
+                       "base_path":  "content/banner-final-intake/submissions/iron_ward/base_texture.png",
+                       "base_sha256":  "61dc3a84e5bf5b2bee06df71d3fc1ccd1d638e522056e8d4bb48f25cf1b12cbe",
+                       "mask_path":  "content/banner-final-intake/submissions/iron_ward/dye_mask.png",
+                       "mask_sha256":  "16bcb9fb950b47723c363b27f0562e0b95ae023fa9362effcdb47ad695dc0c9f",
+                       "dimensions":  [
+                                          128,
+                                          128
+                                      ],
+                       "mode":  "RGBA",
+                       "base_alpha_bounds":  [
+                                                 33,
+                                                 4,
+                                                 94,
+                                                 123
+                                             ],
+                       "mask_active_pixels":  3857,
+                       "mask_transparent_pixels":  12527,
+                       "fixed_base_pixels":  3274,
+                       "mask_alpha_exceeds_base":  0,
+                       "active_mask_nonwhite_pixels":  0,
+                       "review_sheet":  "content/banner-final-intake/submissions/iron_ward/review/review_sheet.png",
+                       "geometry_id":  "britannia_mod:banner/small/iron_ward/geometry",
+                       "geometry_classification":  "APPROVED_CUSTOM_GEOMETRY",
+                       "intake_path":  "content/banner-final-intake/submissions/iron_ward/iron_ward.yml",
+                       "missing_fields":  [
+
+                                          ]
+                   },
+                   {
+                       "stable_id":  "britannia_mod:iron_ward_auxiliary",
+                       "catalogue_index":  26,
+                       "current_display_label":  "Iron Ward Auxiliary",
+                       "export_classification":  "READY_FOR_EXPORT",
+                       "integration_readiness":  "READY_FOR_INTEGRATION",
+                       "base_path":  "content/banner-final-intake/submissions/iron_ward_auxiliary/base_texture.png",
+                       "base_sha256":  "a38f29c4325250dcb50d3b1af1ba8ce20772d9ecfb4eb17d3cc0247231da380a",
+                       "mask_path":  "content/banner-final-intake/submissions/iron_ward_auxiliary/dye_mask.png",
+                       "mask_sha256":  "856ced21d8cdf2baa9f2662b7d9028facb9dbbfd715dfe3ad2f10e52370838d4",
+                       "dimensions":  [
+                                          128,
+                                          128
+                                      ],
+                       "mode":  "RGBA",
+                       "base_alpha_bounds":  [
+                                                 32,
+                                                 4,
+                                                 96,
+                                                 125
+                                             ],
+                       "mask_active_pixels":  5437,
+                       "mask_transparent_pixels":  10947,
+                       "fixed_base_pixels":  2077,
+                       "mask_alpha_exceeds_base":  0,
+                       "active_mask_nonwhite_pixels":  0,
+                       "review_sheet":  "content/banner-final-intake/submissions/iron_ward_auxiliary/review/review_sheet.png",
+                       "geometry_id":  "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
+                       "geometry_classification":  "APPROVED_CUSTOM_GEOMETRY",
+                       "intake_path":  "content/banner-final-intake/submissions/iron_ward_auxiliary/iron_ward_auxiliary.yml",
+                       "missing_fields":  [
+
+                                          ]
+                   }
+               ],
+    "family_review_sheet":  "content/banner-final-intake/review/small_family_review.png"
 }

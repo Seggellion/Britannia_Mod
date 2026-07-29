@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "approval": {
-    "status": "NOT_APPROVED",
-    "approved_by": "",
-    "approved_date": "",
-    "notes": "Draft prepared from the authoritative Illustrator source. Product-owner identity, approval date, final provenance, and distribution permission have not been supplied."
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-29",
+    "notes": "Approved by the product owner on 2026-07-29; original artwork and distribution permission confirmed; manual review performed by Seggellion."
   },
   "banner": {
     "stable_id": "britannia_mod:iron_ward_auxiliary",
@@ -24,7 +24,7 @@
     "default_mount": "britannia_mod:brass",
     "placement_profile_id": "britannia_mod:small",
     "geometry_id": "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
-    "geometry_convention": "Proposed 10-unit-tall small-family planar geometry derived from the complete authored alpha bounds; full-canvas UVs, established two-pass thickness, and separate orientation mount geometry are preserved. Product-owner approval remains pending."
+    "geometry_convention": "Approved 10-unit-tall small-family planar geometry derived from the complete authored alpha bounds; full-canvas UVs, established two-pass thickness, and separate orientation mount geometry are preserved."
   },
   "localization": {
     "language": "en_us",
@@ -52,18 +52,18 @@
     "preview_image_file": "content/banner-final-intake/submissions/iron_ward_auxiliary/review/review_sheet.png"
   },
   "provenance": {
-    "original_art": false,
-    "creator": "",
+    "original_art": true,
+    "creator": "Seggellion",
     "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_small.ai to one aligned 128 x 128 RGBA artboard. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding the selection.",
     "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
-    "distribution_permission_confirmed": false,
-    "copied_from_reference_art": null
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
   },
   "manual_verification": {
-    "performed": false,
-    "tester": "",
-    "date": "",
-    "notes": "Not performed; use the generated review sheet and the reusable small-family live-review procedure."
+    "performed": true,
+    "tester": "Seggellion",
+    "date": "2026-07-29",
+    "notes": "Product owner reports the approved banner artwork was tested."
   },
   "requested_content_status": "in_progress"
 }

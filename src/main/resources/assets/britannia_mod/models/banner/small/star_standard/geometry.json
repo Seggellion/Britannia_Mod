@@ -1,0 +1,78 @@
+{
+  "credit": "Approved small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/star_standard/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/star_standard/base_texture",
+    "dye_mask": "britannia_mod:banner/star_standard/dye_mask",
+    "particle": "britannia_mod:banner/star_standard/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        5.08333,
+        3.0,
+        7.49
+      ],
+      "to": [
+        10.91667,
+        13.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.625,
+            0.625,
+            12.375,
+            15.625
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            3.625,
+            0.625,
+            12.375,
+            15.625
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        5.08333,
+        3.0,
+        7.47
+      ],
+      "to": [
+        10.91667,
+        13.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.625,
+            0.625,
+            12.375,
+            15.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            3.625,
+            0.625,
+            12.375,
+            15.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

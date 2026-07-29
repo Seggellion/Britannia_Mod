@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "britannia_mod:iron_ward_auxiliary",
   "display_name_key": "banner.britannia_mod.iron_ward_auxiliary",
-  "content_status": "placeholder",
+  "content_status": "in_progress",
   "source_reference": {
     "page": 3,
     "row": 7,
@@ -12,7 +12,7 @@
   "dimensions": {
     "width_blocks": 1,
     "height_blocks": 1,
-    "provisional": true
+    "provisional": false
   },
   "supported_orientations": [
     "wall_parallel",
@@ -25,9 +25,9 @@
   "default_mount": "britannia_mod:brass",
   "default_material": "britannia_mod:cotton",
   "assets": {
-    "geometry": "britannia_mod:banner/placeholder/small",
-    "base_texture": "britannia_mod:banner/placeholder/base_texture",
-    "dye_mask": "britannia_mod:banner/placeholder/dye_mask"
+    "geometry": "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
+    "base_texture": "britannia_mod:banner/iron_ward_auxiliary/base_texture",
+    "dye_mask": "britannia_mod:banner/iron_ward_auxiliary/dye_mask"
   },
-  "placement_profile": "britannia_mod:placeholder_small"
+  "placement_profile": "britannia_mod:small"
 }

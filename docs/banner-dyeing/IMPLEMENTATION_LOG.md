@@ -1,16 +1,48 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-29 - Small-family intake approval and integration
+
+- Product-owner approval was supplied for all six canonical small-family definitions by Seggellion on 2026-07-29.
+  Seggellion is the artwork creator; the artwork is original, distribution permission is confirmed, and manual asset
+  verification is recorded as performed by Seggellion on the same date.
+- The provisional stable IDs `end_01` and `end_02` were replaced at their existing catalogue indices 22 and 23 by
+  `star_standard` (Star Standard) and `ship_standard` (Ship Standard). Illustrator provenance continues to identify
+  the unchanged historical source-layer names without exposing them as active runtime IDs.
+- All six intake manifests return `READY_FOR_INTEGRATION`. The exact approved 128 x 128 RGBA PNG bytes were copied
+  to definition-specific runtime paths; source, runtime, catalogue, and intake SHA-256 values agree.
+- Five approved geometry models are integrated: one shared paired-pennon model plus distinct Star Standard, Ship
+  Standard, Iron Ward, and Iron Ward Auxiliary models. The approved `britannia_mod:small` 1 x 1 placement profile
+  supports both wall orientations and reuses the untinted brass/iron orientation mount geometry.
+- Scaffold generation is idempotent and `--check` passes. Production remains 35 active definitions: 20
+  `placeholder`, 6 `in_progress`, 9 `complete`, and 0 disabled. No small definition is marked complete.
+- The first full banner selection ran 630 tests and exposed 31 stale test/fixture expectations: catalogue and client
+  index counts, placeholder-only small-geometry selectors, scaffold seed assets, and pre-integration status totals.
+  Corrections kept the production behavior intact while updating those fixtures for 20 `placeholder`, 6
+  `in_progress`, 9 `complete`, 12 unique client geometry IDs, 32 unique texture IDs, and the approved small geometry.
+  A focused 113-test rerun then exposed two remaining semantic counts: the admin placeholder queue intentionally
+  includes all 26 non-complete entries, while scaffold support JSON increased from eight to nine. Both were corrected.
+- The final banner selection passed 630 tests across 55 suites. After `clean`, the unrestricted suite passed 636
+  tests across 56 suites with zero failures, errors, or skips; `build` passed. Both production JARs contain all 35
+  definitions, the 12 approved small textures, five approved small geometry models, and the small placement profile;
+  neither contains `end_01`/`end_02` definitions or duplicate ZIP entries. The normal JAR has 5,032 entries and the
+  all-JAR has 5,036.
+- Existing compiler warnings remain unchanged: missing Javadoc on a Mixin `@Overwrite`, deprecated
+  `initializeClient`, and standard deprecation/unchecked notices. No new warning class was introduced.
+- Product-owner asset testing is recorded in each intake. The reusable live-runtime matrix remains available for a
+  distinct post-integration evidence pass; no granular runtime result was inferred from the owner statement.
+
+
 ## 2026-07-28 - Small-family final-asset preparation
 
 - Audited exactly the six canonical small definitions at indices 21 through 26:
-  `silver_and_gold_pennon`, `end_01`, `end_02`, `pennon_of_silver`, `iron_ward`, and
+  `silver_and_gold_pennon`, `star_standard`, `ship_standard`, `pennon_of_silver`, `iron_ward`, and
   `iron_ward_auxiliary`. All six remain runtime `placeholder` definitions because no approved intake was available.
 - Read-only/no-save Adobe Illustrator automation used only
   `C:/projects/britannia/raw fiels/tabbard/banner_small.ai`, size 31,508,332 bytes and SHA-256
   `fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb`. The hash was identical before export,
   after export, and after all automation. The PDF-compatible Illustrator document contains one 128 x 128 artboard,
   CMYK document colour space (COM value 1), 72 ppi raster effects, six matching top-level layers, six embedded
-  raster bases, no linked items, and explicit dye-mask artwork. `end_01` expresses its mask as a named child layer;
+  raster bases, no linked items, and explicit dye-mask artwork. `star_standard` expresses its mask as a named child layer;
   the other five use named page items.
 - Every authored base/mask union extended beyond the artboard. One deterministic proportional downscale (never an
   upscale) and one shared translation centered each complete union inside a two-pixel transparent margin. Base and
@@ -24,21 +56,21 @@
 | Definition | Base SHA-256 | Dye-mask SHA-256 |
 |---|---|---|
 | `silver_and_gold_pennon` | `81ea9cdaa1fe5a52f75ae04beb821f80151634d570006976f2405edd750fec4a` | `f7c1b8a5ca8d64c71b93bf66bf82c2d42c8a6cead623d936136ce9617726f819` |
-| `end_01` | `3f6fa75c4f30de2d8db72a32f27e68fae44d9cd05ac7bcd7d9168d9e4e9fcc3b` | `0e192ef62e902345edd7b8b2f78794efbcce66597b4583e87b97c1d9ba349fad` |
-| `end_02` | `47aff2d8480318c4001eb8e410b95a01fc51fcb25618209c6a16a7f95c80be2e` | `fd6c3f5637b5d4b888753aeaa9b1121770c5a8873f88fc2558cbf43f7860e91d` |
+| `star_standard` | `3f6fa75c4f30de2d8db72a32f27e68fae44d9cd05ac7bcd7d9168d9e4e9fcc3b` | `0e192ef62e902345edd7b8b2f78794efbcce66597b4583e87b97c1d9ba349fad` |
+| `ship_standard` | `47aff2d8480318c4001eb8e410b95a01fc51fcb25618209c6a16a7f95c80be2e` | `fd6c3f5637b5d4b888753aeaa9b1121770c5a8873f88fc2558cbf43f7860e91d` |
 | `pennon_of_silver` | `ca4326f83307df453862a3617d72252189e495915a5a7ccbc4e18d78e40aca9b` | `51a077bfe3d7c3c13cedc8bd96b3913e6c26b2b80802c49be18685024ac97b06` |
 | `iron_ward` | `61dc3a84e5bf5b2bee06df71d3fc1ccd1d638e522056e8d4bb48f25cf1b12cbe` | `16bcb9fb950b47723c363b27f0562e0b95ae023fa9362effcdb47ad695dc0c9f` |
 | `iron_ward_auxiliary` | `a38f29c4325250dcb50d3b1af1ba8ce20772d9ecfb4eb17d3cc0247231da380a` | `856ced21d8cdf2baa9f2662b7d9028facb9dbbfd715dfe3ad2f10e52370838d4` |
 
 - Proposed source geometry preserves the established 10-unit small-family height, two-pass thickness, and
   128-pixel UV basis. Silver and Gold Pennon and Pennon of Silver share the one paired-pennon geometry proposal;
-  `end_01`, `end_02`, `iron_ward`, and `iron_ward_auxiliary` each have distinct proportions and source models.
+  `star_standard`, `ship_standard`, `iron_ward`, and `iron_ward_auxiliary` each have distinct proportions and source models.
   Proposed placement profile `britannia_mod:small` reuses the established parallel/perpendicular mount geometry;
   brass and iron remain independent untinted materials. These proposals are intake evidence only and were not
   registered as runtime resources.
 - The actual intake validator classified all six drafts `NOT_READY` with no `INVALID` findings. Common blockers are
   product-owner identity/date and approval, original-art/creator/copying provenance, and distribution permission.
-  `end_01` and `end_02` additionally require final display names. Manual visual/live review is not performed.
+  `star_standard` and `ship_standard` additionally require final display names. Manual visual/live review is not performed.
 - Five diagnostic views per definition and a combined family sheet are tracked under
   `content/banner-final-intake/submissions/<stable_path>/review/` and
   `content/banner-final-intake/review/small_family_review.png`. The reusable live procedure and unperformed

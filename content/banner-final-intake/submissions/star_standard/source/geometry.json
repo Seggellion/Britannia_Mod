@@ -1,11 +1,11 @@
 {
-  "credit": "Proposed small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/end_01/geometry",
+  "credit": "Approved small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/star_standard/geometry",
   "parent": "minecraft:block/block",
   "render_type": "minecraft:translucent",
   "textures": {
-    "base_texture": "britannia_mod:banner/end_01/base_texture",
-    "dye_mask": "britannia_mod:banner/end_01/dye_mask",
-    "particle": "britannia_mod:banner/end_01/base_texture"
+    "base_texture": "britannia_mod:banner/star_standard/base_texture",
+    "dye_mask": "britannia_mod:banner/star_standard/dye_mask",
+    "particle": "britannia_mod:banner/star_standard/base_texture"
   },
   "elements": [
     {

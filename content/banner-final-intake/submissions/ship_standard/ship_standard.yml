@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-29",
+    "notes": "Approved by the product owner on 2026-07-29; original artwork and distribution permission confirmed; manual review performed by Seggellion."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:ship_standard",
+    "final_display_name": "Ship Standard",
+    "catalogue_index": 23,
+    "family": "small",
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "supported_orientations": [
+      "wall_parallel",
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:small",
+    "geometry_id": "britannia_mod:banner/small/ship_standard/geometry",
+    "geometry_convention": "Approved 10-unit-tall small-family planar geometry derived from the complete authored alpha bounds; full-canvas UVs, established two-pass thickness, and separate orientation mount geometry are preserved."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Ship Standard"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/ship_standard/base_texture",
+      "source_file": "content/banner-final-intake/submissions/ship_standard/base_texture.png",
+      "sha256": "47aff2d8480318c4001eb8e410b95a01fc51fcb25618209c6a16a7f95c80be2e"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/ship_standard/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/ship_standard/dye_mask.png",
+      "sha256": "fd6c3f5637b5d4b888753aeaa9b1121770c5a8873f88fc2558cbf43f7860e91d"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/ship_standard/source/geometry.json",
+      "sha256": "9b6f39337d63b19cb0ed2daabe153d3a07d4f3e81679ef21e9bf7b06ce79c614"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/ship_standard/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_small.ai to one aligned 128 x 128 RGBA artboard. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": true,
+    "tester": "Seggellion",
+    "date": "2026-07-29",
+    "notes": "Product owner reports the approved banner artwork was tested."
+  },
+  "requested_content_status": "in_progress"
+}

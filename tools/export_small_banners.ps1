@@ -5,13 +5,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$bannerIds = @(
-    'silver_and_gold_pennon',
-    'end_01',
-    'end_02',
-    'pennon_of_silver',
-    'iron_ward',
-    'iron_ward_auxiliary'
+$bannerSpecs = @(
+    @{ StableId = 'silver_and_gold_pennon'; Layer = 'silver_and_gold_pennon' },
+    @{ StableId = 'star_standard'; Layer = 'end_01' },
+    @{ StableId = 'ship_standard'; Layer = 'end_02' },
+    @{ StableId = 'pennon_of_silver'; Layer = 'pennon_of_silver' },
+    @{ StableId = 'iron_ward'; Layer = 'iron_ward' },
+    @{ StableId = 'iron_ward_auxiliary'; Layer = 'iron_ward_auxiliary' }
 )
 
 function Find-NamedPageItem {
@@ -172,16 +172,18 @@ try {
         $layer.Visible = $false
     }
 
-    foreach ($bannerId in $bannerIds) {
+    foreach ($bannerSpec in $bannerSpecs) {
+        $bannerId = $bannerSpec.StableId
+        $sourceLayerName = $bannerSpec.Layer
         $layer = $null
         foreach ($candidate in @($document.Layers)) {
-            if ($candidate.Name -eq $bannerId) {
+            if ($candidate.Name -eq $sourceLayerName) {
                 $layer = $candidate
                 break
             }
         }
         if ($null -eq $layer) {
-            throw "Missing authoritative Illustrator layer: $bannerId"
+            throw "Missing authoritative Illustrator layer: $sourceLayerName for $bannerId"
         }
 
         $layer.Visible = $true
@@ -249,7 +251,7 @@ try {
         $report.exports += [ordered]@{
             stable_id = "britannia_mod:$bannerId"
             classification = 'READY_FOR_EXPORT'
-            layer = $bannerId
+            layer = $sourceLayerName
             base_object = 'base_texture'
             mask_object = 'dye_mask'
             base_bounds_before = @($baseBounds | ForEach-Object { [double]$_ })
@@ -287,5 +289,5 @@ if ($sourceAfter -ne $sourceBefore) {
 
 $reportPath = Join-Path $RepositoryRoot 'content\banner-final-intake\small_illustrator_report.json'
 $report | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $reportPath -Encoding utf8
-Write-Output "Exported $($bannerIds.Count) aligned base/mask pairs from $IllustratorSource"
+Write-Output "Exported $($bannerSpecs.Count) aligned base/mask pairs from $IllustratorSource"
 Write-Output "Source SHA-256: $sourceAfter"

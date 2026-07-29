@@ -64,6 +64,13 @@ public final class Milestone13RenderFixtures {
     }
 
     public static BannerDefinitionId definitionForGeometry(String path) {
+        if ("small".equals(path)) {
+            BannerDefinitionId approvedSmall =
+                    BannerDefinitionId.parse("britannia_mod:silver_and_gold_pennon");
+            if (renderData().banners().containsKey(approvedSmall)) {
+                return approvedSmall;
+            }
+        }
         return renderData().banners().values().stream()
                 .filter(definition -> definition.assets().geometry().getPath().equals(
                         "banner/placeholder/" + path))

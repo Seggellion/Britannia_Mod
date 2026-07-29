@@ -1,39 +1,39 @@
 {
-  "credit": "Proposed small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/end_02/geometry",
+  "credit": "Proposed small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/pennon_pair/geometry",
   "parent": "minecraft:block/block",
   "render_type": "minecraft:translucent",
   "textures": {
-    "base_texture": "britannia_mod:banner/end_02/base_texture",
-    "dye_mask": "britannia_mod:banner/end_02/dye_mask",
-    "particle": "britannia_mod:banner/end_02/base_texture"
+    "base_texture": "britannia_mod:banner/silver_and_gold_pennon/base_texture",
+    "dye_mask": "britannia_mod:banner/silver_and_gold_pennon/dye_mask",
+    "particle": "britannia_mod:banner/silver_and_gold_pennon/base_texture"
   },
   "elements": [
     {
       "from": [
-        5.58333,
+        4.94215,
         3.0,
         7.49
       ],
       "to": [
-        10.41667,
+        11.05785,
         13.0,
         7.51
       ],
       "faces": {
         "north": {
           "uv": [
-            4.375,
-            0.5,
-            11.625,
+            3.375,
+            0.375,
+            12.625,
             15.5
           ],
           "texture": "#base_texture"
         },
         "south": {
           "uv": [
-            4.375,
-            0.5,
-            11.625,
+            3.375,
+            0.375,
+            12.625,
             15.5
           ],
           "texture": "#base_texture"
@@ -42,21 +42,21 @@
     },
     {
       "from": [
-        5.58333,
+        4.94215,
         3.0,
         7.47
       ],
       "to": [
-        10.41667,
+        11.05785,
         13.0,
         7.53
       ],
       "faces": {
         "north": {
           "uv": [
-            4.375,
-            0.5,
-            11.625,
+            3.375,
+            0.375,
+            12.625,
             15.5
           ],
           "texture": "#dye_mask",
@@ -64,9 +64,9 @@
         },
         "south": {
           "uv": [
-            4.375,
-            0.5,
-            11.625,
+            3.375,
+            0.375,
+            12.625,
             15.5
           ],
           "texture": "#dye_mask",

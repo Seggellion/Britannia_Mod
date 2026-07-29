@@ -42,8 +42,8 @@ class FinalContentIntakeDocumentationTest {
             "britannia_mod:guardian_standard");
     private static final List<String> SMALL_IDS = List.of(
             "britannia_mod:silver_and_gold_pennon",
-            "britannia_mod:end_01",
-            "britannia_mod:end_02",
+            "britannia_mod:star_standard",
+            "britannia_mod:ship_standard",
             "britannia_mod:pennon_of_silver",
             "britannia_mod:iron_ward",
             "britannia_mod:iron_ward_auxiliary");
@@ -231,7 +231,7 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
-    void productionCatalogueCompletesOnlyTheGateEApprovedExtraSmallFamily() throws Exception {
+    void productionCatalogueKeepsExtraSmallCompleteAndSmallInProgress() throws Exception {
         BannerScaffoldTool.Manifest manifest =
                 BannerScaffoldTool.readAndValidateManifest(Path.of(BannerScaffoldTool.MANIFEST_PATH));
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, manifest.banners().size());
@@ -241,13 +241,13 @@ class FinalContentIntakeDocumentationTest {
                 manifest.banners().stream()
                         .filter(banner -> "complete".equals(banner.contentStatus()))
                         .map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(banner -> "in_progress".equals(banner.contentStatus())).count());
         var production = DyeResolverFixtures.productionSnapshot();
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
-        assertEquals(26, production.banners().activeDefinitions().stream()
+        assertEquals(20, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(0, production.banners().activeDefinitions().stream()
+        assertEquals(6, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
         assertEquals(9, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).count());

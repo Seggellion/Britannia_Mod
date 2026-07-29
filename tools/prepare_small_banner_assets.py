@@ -13,8 +13,8 @@ from PIL import Image, ImageChops, ImageDraw
 
 BANNERS = (
     "silver_and_gold_pennon",
-    "end_01",
-    "end_02",
+    "star_standard",
+    "ship_standard",
     "pennon_of_silver",
     "iron_ward",
     "iron_ward_auxiliary",
@@ -25,16 +25,16 @@ SOURCE = "C:/projects/britannia/raw fiels/tabbard/banner_small.ai"
 SOURCE_SHA256 = "fc2ec331b6569387e2dc7ceb3902305a8b9f79adae7087ee10379baa308c53fb"
 DISPLAY_NAMES = {
     "silver_and_gold_pennon": "Silver and Gold Pennon",
-    "end_01": "",
-    "end_02": "",
+    "star_standard": "Star Standard",
+    "ship_standard": "Ship Standard",
     "pennon_of_silver": "Pennon of Silver",
     "iron_ward": "Iron Ward",
     "iron_ward_auxiliary": "Iron Ward Auxiliary",
 }
 CURRENT_LABELS = {
     "silver_and_gold_pennon": "Silver and Gold Pennon",
-    "end_01": "End Banner 01",
-    "end_02": "End Banner 02",
+    "star_standard": "Star Standard",
+    "ship_standard": "Ship Standard",
     "pennon_of_silver": "Pennon of Silver",
     "iron_ward": "Iron Ward",
     "iron_ward_auxiliary": "Iron Ward Auxiliary",
@@ -61,17 +61,17 @@ GEOMETRY_GROUPS = (
         "one top attachment edge, and the same full-canvas layout.",
     ),
     GeometryGroup(
-        "end_01",
-        "britannia_mod:banner/small/end_01/geometry",
-        "end_01",
-        ("end_01",),
+        "star_standard",
+        "britannia_mod:banner/small/star_standard/geometry",
+        "star_standard",
+        ("star_standard",),
         "Single 70 x 120 hanging field with a scalloped crown and rounded bottom.",
     ),
     GeometryGroup(
-        "end_02",
-        "britannia_mod:banner/small/end_02/geometry",
-        "end_02",
-        ("end_02",),
+        "ship_standard",
+        "britannia_mod:banner/small/ship_standard/geometry",
+        "ship_standard",
+        ("ship_standard",),
         "Single narrow 58 x 120 rectangular hanging field with a distinct attachment edge.",
     ),
     GeometryGroup(

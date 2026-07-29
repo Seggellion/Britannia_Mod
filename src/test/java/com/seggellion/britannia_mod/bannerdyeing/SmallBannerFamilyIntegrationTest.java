@@ -29,11 +29,11 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class SmallBannerAssetPreparationTest {
+class SmallBannerFamilyIntegrationTest {
     private static final List<String> FAMILY = List.of(
             "silver_and_gold_pennon",
-            "end_01",
-            "end_02",
+            "star_standard",
+            "ship_standard",
             "pennon_of_silver",
             "iron_ward",
             "iron_ward_auxiliary");
@@ -58,7 +58,7 @@ class SmallBannerAssetPreparationTest {
     }
 
     @Test
-    void familyIdentityAndRuntimeStateRemainSafelyUnintegrated() {
+    void familyIdentityAndRuntimeStateAreIntegrated() {
         List<BannerScaffoldTool.BannerEntry> small = manifest.banners().stream()
                 .filter(entry -> "small".equals(entry.group()))
                 .toList();
@@ -67,9 +67,10 @@ class SmallBannerAssetPreparationTest {
                 small.stream().map(BannerScaffoldTool.BannerEntry::index).toList());
         assertEquals(6, new HashSet<>(FAMILY).size());
         small.forEach(entry -> {
-            assertTrue(entry.contentStatus() == null
-                    || "placeholder".equals(entry.contentStatus()), entry.id());
+            assertEquals("in_progress", entry.contentStatus(), entry.id());
             assertEquals("small", entry.group(), entry.id());
+            assertTrue(Boolean.TRUE.equals(entry.displayNameApproved()), entry.id());
+            assertEquals("britannia_mod:small", entry.placementProfile(), entry.id());
         });
 
         Set<String> complete = manifest.banners().stream()
@@ -78,47 +79,53 @@ class SmallBannerAssetPreparationTest {
                 .collect(Collectors.toSet());
         assertEquals(EXTRA_SMALL, complete);
         assertTrue(complete.contains("small_curtain"));
-        assertFalse(manifest.banners().stream()
-                .anyMatch(entry -> "x_small_unnamed_01".equals(entry.id())));
-        assertEquals(26, manifest.banners().stream()
+        assertFalse(manifest.banners().stream().anyMatch(entry -> Set.of(
+                "x_small_unnamed_01", "end_01", "end_02").contains(entry.id())));
+        assertEquals(20, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus()))
                 .count());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus()))
                 .count());
         assertEquals(35, manifest.banners().size());
     }
 
     @Test
-    void everyDraftUsesTheActualValidatorAndIsNotReadyRatherThanInvalid() {
+    void everyApprovedIntakeIsReadyForIntegration() {
         for (String id : FAMILY) {
             Path intake = intake(id);
             FinalContentIntakeValidator.Result result =
                     FinalContentIntakeValidator.validate(Path.of("."), intake);
-            assertEquals(FinalContentIntakeValidator.Status.NOT_READY,
+            assertEquals(FinalContentIntakeValidator.Status.READY_FOR_INTEGRATION,
                     result.status(), id + ": " + result.issues());
-            assertTrue(result.issues().stream().noneMatch(
-                    issue -> issue.startsWith("INVALID:")), id + ": " + result.issues());
-            assertTrue(result.issues().contains(
-                    "MISSING: approval.status is NOT_APPROVED"), id);
-            assertTrue(result.issues().contains(
-                    "MISSING: provenance.distribution_permission_confirmed must be true"), id);
+            assertTrue(result.issues().isEmpty(), id + ": " + result.issues());
             assertEquals(2, result.pngMetadata().size(), id);
 
             JsonObject document = json(intake);
-            assertEquals("NOT_APPROVED",
+            assertEquals("APPROVED",
                     document.getAsJsonObject("approval").get("status").getAsString(), id);
+            assertEquals("Seggellion",
+                    document.getAsJsonObject("approval").get("approved_by").getAsString(), id);
+            assertEquals("2026-07-29",
+                    document.getAsJsonObject("approval").get("approved_date").getAsString(), id);
+            assertTrue(document.getAsJsonObject("provenance").get("original_art").getAsBoolean(), id);
+            assertEquals("Seggellion",
+                    document.getAsJsonObject("provenance").get("creator").getAsString(), id);
+            assertTrue(document.getAsJsonObject("provenance")
+                    .get("distribution_permission_confirmed").getAsBoolean(), id);
+            assertTrue(document.getAsJsonObject("manual_verification")
+                    .get("performed").getAsBoolean(), id);
+            assertEquals("Seggellion", document.getAsJsonObject("manual_verification")
+                    .get("tester").getAsString(), id);
             assertEquals("in_progress",
                     document.get("requested_content_status").getAsString(), id);
-            assertEquals("small",
-                    document.getAsJsonObject("banner").get("family").getAsString(), id);
             assertNoRemovedArchitectureKeys(document, id);
         }
     }
 
     @Test
-    void everyExportSatisfiesTheAlignedRgbaMaskContract() throws Exception {
+    void everyApprovedAssetSatisfiesTheAlignedRgbaMaskContract() throws Exception {
         for (String id : FAMILY) {
             JsonObject assets = json(intake(id)).getAsJsonObject("assets");
             Path basePath = Path.of(assets.getAsJsonObject("base_texture")
@@ -173,7 +180,7 @@ class SmallBannerAssetPreparationTest {
     }
 
     @Test
-    void proposedGeometryGroupsMatchTheAuthoredSilhouetteEvidence() throws Exception {
+    void approvedGeometryGroupsMatchTheAuthoredSilhouetteEvidence() throws Exception {
         Map<String, String> geometryIds = FAMILY.stream().collect(Collectors.toMap(
                 id -> id,
                 id -> json(intake(id)).getAsJsonObject("banner")
@@ -205,7 +212,7 @@ class SmallBannerAssetPreparationTest {
     }
 
     @Test
-    void proposedSmallPlacementReusesOrientationMountsAndAllFourFacings() throws Exception {
+    void approvedSmallPlacementReusesOrientationMountsAndAllFourFacings() throws Exception {
         ResourceLocation parallelId =
                 ResourceLocation.parse("britannia_mod:banner/mount/wall_parallel");
         ResourceLocation perpendicularId =
@@ -238,20 +245,34 @@ class SmallBannerAssetPreparationTest {
     }
 
     @Test
-    void noDraftAssetWasAdoptedIntoRuntimeBeforeApproval() {
+    void approvedAssetsDefinitionsAndGeometryAreAdoptedIntoRuntime() throws Exception {
         for (String id : FAMILY) {
+            JsonObject intake = json(intake(id));
+            JsonObject approvedAssets = intake.getAsJsonObject("assets");
             Path runtime = Path.of(
                     "src/main/resources/assets/britannia_mod/textures/banner", id);
-            assertFalse(Files.exists(runtime), id);
+            assertTrue(Files.isDirectory(runtime), id);
+            assertEquals(approvedAssets.getAsJsonObject("base_texture").get("sha256").getAsString(),
+                    sha256(runtime.resolve("base_texture.png")), id);
+            assertEquals(approvedAssets.getAsJsonObject("dye_mask").get("sha256").getAsString(),
+                    sha256(runtime.resolve("dye_mask.png")), id);
+
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("placeholder", definition.get("content_status").getAsString(), id);
+            assertEquals("in_progress", definition.get("content_status").getAsString(), id);
             JsonObject assets = definition.getAsJsonObject("assets");
-            assertTrue(assets.get("base_texture").getAsString().contains("/placeholder/"), id);
-            assertTrue(assets.get("dye_mask").getAsString().contains("/placeholder/"), id);
+            assertEquals(approvedAssets.getAsJsonObject("base_texture")
+                    .get("resource_id").getAsString(), assets.get("base_texture").getAsString(), id);
+            assertEquals(approvedAssets.getAsJsonObject("dye_mask")
+                    .get("resource_id").getAsString(), assets.get("dye_mask").getAsString(), id);
             assertEquals(Set.of("geometry", "base_texture", "dye_mask"),
                     assets.keySet(), id);
+            assertFalse(assets.toString().contains("/placeholder/"), id);
         }
+        assertFalse(Files.exists(Path.of(
+                "src/main/resources/data/britannia_mod/banner_definitions/end_01.json")));
+        assertFalse(Files.exists(Path.of(
+                "src/main/resources/data/britannia_mod/banner_definitions/end_02.json")));
     }
 
     private static void assertRgba128(BufferedImage image, String label) {
