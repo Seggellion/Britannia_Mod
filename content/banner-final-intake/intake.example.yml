@@ -4,7 +4,7 @@
     "status": "NOT_APPROVED",
     "approved_by": "",
     "approved_date": "",
-    "notes": ""
+    "notes": "Approved final-content base_texture.png and dye_mask.png must each be exactly 128 x 128 RGBA; this template remains NOT_APPROVED."
   },
   "banner": {
     "stable_id": "britannia_mod:example_banner",

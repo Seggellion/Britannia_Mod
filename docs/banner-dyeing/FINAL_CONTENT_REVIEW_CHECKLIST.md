@@ -14,18 +14,20 @@ Use one copy per stable banner definition.
 - [ ] Default mount approved
 - [ ] Placement profile approved
 - [ ] Geometry convention approved
-- [ ] Pixel dimensions approved
+- [ ] Final 128 x 128 pixel dimensions approved
 
 ## Asset intake
 
 - [ ] Complete full-colour `base_texture.png` supplied
 - [ ] Grayscale RGBA `dye_mask.png` supplied
 - [ ] Geometry supplied or shared geometry explicitly approved
+- [ ] Base and mask are each exactly 128 x 128 RGBA
 - [ ] Base and mask dimensions match
 - [ ] Base and mask align pixel-for-pixel
 - [ ] Fixed artwork remains in the base texture
 - [ ] Mask is transparent over fixed pixels
-- [ ] Mask is transparent wherever aligned base alpha is below `255`
+- [ ] Mask is transparent wherever aligned base alpha is zero
+- [ ] Mask alpha never exceeds aligned base alpha; partial-alpha recolouring is reviewed deliberately
 - [ ] Mask contains transparent and active pixels
 - [ ] Mask active RGB is grayscale within channel tolerance 1
 - [ ] Asset-to-ID mapping is unambiguous

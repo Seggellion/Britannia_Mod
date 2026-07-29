@@ -31,9 +31,12 @@ orientation-specific mount decisions.
   exact same pixel. That is not an alternative in the current architecture; it would require product-owner approval
   and a separate architecture milestone.
 
-## Milestone 16 content-intake readiness
+## Historical Milestone 16 content-intake baseline (superseded)
 
-Road Guard is the first completed final-content banner under the two-file architecture. Its full Gate E manual review
+This subsection records the pre-integration baseline only; the authoritative 2026-07-28 nine-definition section above
+supersedes its counts and readiness statements.
+
+Road Guard was the first completed final-content banner under the two-file architecture. Its full Gate E manual review
 passed and is no longer an open question. The other six extra-small definitions, and the remaining 26 catalogue
 definitions, still have no approved final owner assets or decision packages. The intake kit defines the evidence
 required to integrate each without guessing.

@@ -14,7 +14,8 @@ Both files use YAML 1.2 expressed in JSON-compatible syntax, matching the reposi
 1. Copy one record to a new owner-supplied intake file.
 2. Keep the real stable ID unchanged.
 3. Fill every blank or `null` decision without inferring it from placeholders or image proportions.
-4. Supply exactly `base_texture.png` and `dye_mask.png` at repository-relative paths.
+4. Supply exactly `base_texture.png` and `dye_mask.png` at repository-relative paths; approved final-content files
+   must each be exactly 128 x 128 pixels in 8-bit RGBA.
 5. Calculate and record SHA-256 for required assets.
 6. Record original-art provenance and distribution permission.
 7. Change `approval.status` to `APPROVED`, then provide `approved_by` and `approved_date`, only after the owner has
@@ -33,9 +34,10 @@ unknown, or unreadable input. `READY_FOR_INTEGRATION` authorizes Codex to begin 
 The base texture is the complete original full-colour default banner, including fixed artwork, native colour,
 shading, cloth texture, silhouette, and transparency. The grayscale RGBA dye mask is transparent wherever the base
 must remain unchanged; its RGB preserves brightness and texture while its alpha controls recolour strength. Both
-images must have identical dimensions and alignment. An active mask pixel must align with a fully opaque base pixel;
-transparent or partially transparent base pixels must have transparent mask pixels so normal two-pass blending
-preserves base alpha. Active mask RGB channels may differ by at most 1.
+images must each be exactly 128 x 128 pixels and have identical alignment. An active mask pixel must align with a
+visible base pixel, and mask alpha must never exceed the aligned base alpha. Partial mask alpha is valid and controls
+recolour strength. Active mask RGB channels may differ by at most 1. Existing 16 x 16 diagnostic placeholders remain
+a non-final exception and are not upscaled; runtime rendering remains independent of texture resolution.
 
 There is no separate overlay and no alternate rendering strategy. A fixed-colour foreground detail cannot
 independently overlap a recoloured underlayer at the exact same pixel. For current banners, each pixel must be

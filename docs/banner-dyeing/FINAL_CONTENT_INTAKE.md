@@ -69,7 +69,7 @@ The dye mask must:
 - Use grayscale brightness to preserve highlights, midtones, shadows, texture, and local contrast
 - Use alpha to control replacement or blend strength
 - Contain at least one transparent pixel and at least one active pixel
-- Use active alpha only where the aligned base pixel is fully opaque
+- Use active alpha only where the aligned base alpha is nonzero, and never let mask alpha exceed base alpha
 - Align exactly with the base texture
 - Exclude mount hardware
 
@@ -106,15 +106,17 @@ future gameplay rules. It does not select a material-specific image or model.
 
 - Use lower-case `.png` names and case-sensitive namespaced resource IDs.
 - Use 8-bit true-colour RGBA PNGs with preserved alpha.
+- Final banner `base_texture.png` and `dye_mask.png` files must each be exactly 128 x 128 pixels.
 - Both images must have exactly equal pixel dimensions and pixel-for-pixel alignment.
-- Keep the mask transparent wherever the aligned base alpha is below `255`, so two-pass blending preserves base alpha.
+- Keep the mask transparent wherever the aligned base alpha is zero, and never let mask alpha exceed base alpha.
 - Use nearest-neighbour/pixel filtering appropriate to authored pixel art.
 - Avoid indexed-colour conversion when it damages alpha.
 - Include no environmental background, external scene lighting, mockup, or source-sheet crop.
 - Record repository-relative source paths and SHA-256 hashes after final edits.
 
-Current diagnostic placeholders are 16 × 16. That is not final-art policy; final pixel dimensions require explicit
-approval or a verified renderer convention.
+Final-content assets are required to be 128 x 128 RGBA PNGs. Existing 16 x 16 diagnostic placeholders are an
+explicit non-final exception and must not be upscaled by scaffold generation. Rendering remains resolution-independent:
+texture resolution does not change block dimensions, geometry, placement, collision, support, or render bounds.
 
 Composition uses base pixel `B`, mask pixel `M`, resolved dye colour `D`, and normalized mask alpha `a`:
 

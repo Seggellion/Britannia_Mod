@@ -51,7 +51,7 @@ This section supersedes the historical Road Guard/33-definition facts retained l
   `banner` directory source in `assets/minecraft/atlases/blocks.json`, which retains each texture's namespace and
   prefixes its sprite ID with `banner/`. A packaged PNG outside an atlas is not renderable merely because a model
   references its resource ID.
-- The scaffold deterministically generates `assets/britannia_mod/banner_client_assets.json` from all 33 authoritative
+- The scaffold deterministically generates `assets/britannia_mod/banner_client_assets.json` from all 35 authoritative
   catalogue definitions. It contains each shared or definition-specific geometry model once and every declared base
   and mask texture once. Client model registration consumes this index before baking; it is display-only and grants
   no gameplay authority.

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class FinalContentIntakeValidatorTest {
+    private static final int FINAL_TEXTURE_SIZE = 128;
     private static final Gson GSON =
             new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
@@ -35,9 +36,22 @@ class FinalContentIntakeValidatorTest {
         assertEquals("britannia_mod:road_guard", result.stableId());
         assertEquals(2, result.pngMetadata().size());
         assertTrue(result.pngMetadata().stream().allMatch(metadata ->
-                metadata.width() == 8 && metadata.height() == 8
+                metadata.width() == FINAL_TEXTURE_SIZE && metadata.height() == FINAL_TEXTURE_SIZE
                         && metadata.bitDepth() == 8 && metadata.colourType() == 6
                         && metadata.alphaChannel()));
+    }
+
+    @Test
+    void approvedFinalTexturesMustBeExactly128By128() throws Exception {
+        Fixture baseWrongSize = seed();
+        replaceBase(baseWrongSize, 64, 128, (x, y) ->
+                (x == 0 || y == 0 ? 0 : 255) << 24 | 0x806040);
+        assertIssue(validate(baseWrongSize), "final base texture must be exactly 128x128 RGBA");
+
+        Fixture maskWrongSize = seed();
+        replaceMask(maskWrongSize, 128, 64, (x, y) ->
+                (x == 0 || y == 0 ? 0 : 255) << 24 | 0x808080);
+        assertIssue(validate(maskWrongSize), "final dye mask must be exactly 128x128 RGBA");
     }
 
     @Test
@@ -310,11 +324,13 @@ class FinalContentIntakeValidatorTest {
     }
 
     private static void writeBasePng(Path path) throws Exception {
-        BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(
+                FINAL_TEXTURE_SIZE, FINAL_TEXTURE_SIZE, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int alpha = x == 0 || y == 0 ? 0 : 255;
-                image.setRGB(x, y, alpha << 24 | ((40 + x * 12) << 16) | ((70 + y * 8) << 8) | 190);
+                image.setRGB(x, y, alpha << 24 | ((40 + x % 16 * 12) << 16)
+                        | ((70 + y % 16 * 8) << 8) | 190);
             }
         }
         assertTrue(ImageIO.write(image, "png", path.toFile()));
@@ -323,13 +339,13 @@ class FinalContentIntakeValidatorTest {
     private static void writeMaskPng(Path path) throws Exception {
         writePixels(path, (x, y) -> {
             int alpha = x == 0 || y == 0 ? 0 : x == 1 ? 128 : 255;
-            int shade = 48 + (x + y) * 8;
+            int shade = 48 + (x + y) % 20 * 8;
             return alpha << 24 | shade << 16 | shade << 8 | shade;
         });
     }
 
     private static void writeSolidPng(Path path, int type, int pixel) throws Exception {
-        BufferedImage image = new BufferedImage(8, 8, type);
+        BufferedImage image = new BufferedImage(FINAL_TEXTURE_SIZE, FINAL_TEXTURE_SIZE, type);
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 image.setRGB(x, y, pixel);
@@ -339,21 +355,33 @@ class FinalContentIntakeValidatorTest {
     }
 
     private static void replaceMask(Fixture fixture, Pixel pixel) throws Exception {
+        replaceMask(fixture, FINAL_TEXTURE_SIZE, FINAL_TEXTURE_SIZE, pixel);
+    }
+
+    private static void replaceMask(Fixture fixture, int width, int height, Pixel pixel) throws Exception {
         Path mask = fixture.root().resolve("owner/mask.png");
-        writePixels(mask, pixel);
+        writePixels(mask, width, height, pixel);
         fixture.document().getAsJsonObject("assets").getAsJsonObject("dye_mask")
                 .addProperty("sha256", sha256(mask));
     }
 
     private static void replaceBase(Fixture fixture, Pixel pixel) throws Exception {
+        replaceBase(fixture, FINAL_TEXTURE_SIZE, FINAL_TEXTURE_SIZE, pixel);
+    }
+
+    private static void replaceBase(Fixture fixture, int width, int height, Pixel pixel) throws Exception {
         Path base = fixture.root().resolve("owner/base.png");
-        writePixels(base, pixel);
+        writePixels(base, width, height, pixel);
         fixture.document().getAsJsonObject("assets").getAsJsonObject("base_texture")
                 .addProperty("sha256", sha256(base));
     }
 
     private static void writePixels(Path path, Pixel pixel) throws Exception {
-        BufferedImage image = new BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB);
+        writePixels(path, FINAL_TEXTURE_SIZE, FINAL_TEXTURE_SIZE, pixel);
+    }
+
+    private static void writePixels(Path path, int width, int height, Pixel pixel) throws Exception {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 image.setRGB(x, y, pixel.argb(x, y));

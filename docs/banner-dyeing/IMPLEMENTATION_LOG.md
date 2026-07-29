@@ -1,5 +1,28 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-28 - Authoritative-baseline intake audit correction
+
+- Audited `29109dff0ec7bddf45221b535aeee27c110add23` in place as the product-owner-authorized baseline. Commits
+  `8f166187ad362718cf294edfe5680ec8086aab46` and `29109dff0ec7bddf45221b535aeee27c110add23`
+  remain intact; the correction is additive.
+- Closed the only substantive contract gap: an `APPROVED` final-content intake now requires both
+  `base_texture.png` and `dye_mask.png` to be exactly 128 x 128, while non-final 16 x 16 diagnostic placeholders
+  remain unchanged and runtime rendering stays resolution-independent.
+- Corrected the intake guide, checklist, README, generic template, and extra-small batch template. The batch template
+  now covers all nine authoritative IDs, uses `small_curtain`, includes Prosperity Standard and Guardian Standard,
+  and labels current `in_progress` catalogue data as informational rather than intake approval. Mask guidance now
+  matches validation: active alpha requires visible base alpha and may not exceed it; deliberate partial-alpha
+  recolouring remains valid.
+- Revalidated all nine approved intake packages as `READY_FOR_INTEGRATION`; source, runtime, and packaged hashes
+  match for all 18 PNGs. Scaffold generation was idempotent and `--check` passed with 35 definitions.
+- The focused audit passed 56 tests. The full banner/dyeing selection passed 619 tests across 53 suites, and the
+  post-clean unrestricted suite passed 625 tests across 54 suites, all with zero failures, errors, or skips. The
+  production build passed. Both JARs contain 35 definitions (26 placeholder, 9 in progress), all 18 exact 128 x 128
+  family assets, required geometry/index/atlas/profile resources, no duplicate entries, no active legacy ID or old
+  asset fields, and no banner recipe/pattern content.
+- No runtime, persistence, catalogue identity, dimensions, orientations, mounts, final approval status, or artwork
+  bytes required correction. The live nine-banner review remains unperformed.
+
 ## 2026-07-28 - Complete extra-small banner family integration
 
 ### Scope and authoring evidence

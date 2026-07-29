@@ -23,6 +23,7 @@ class FinalContentIntakeDocumentationTest {
     private static final Path GUIDE = Path.of("docs/banner-dyeing/FINAL_CONTENT_INTAKE.md");
     private static final Path CHECKLIST =
             Path.of("docs/banner-dyeing/FINAL_CONTENT_REVIEW_CHECKLIST.md");
+    private static final Path README = Path.of("content/banner-final-intake/README.md");
     private static final Path GENERIC =
             Path.of("content/banner-final-intake/intake.example.yml");
     private static final Path BATCH =
@@ -34,13 +35,15 @@ class FinalContentIntakeDocumentationTest {
             "britannia_mod:captains_red_crosslets",
             "britannia_mod:scarlet_court",
             "britannia_mod:verdant_court",
-            "britannia_mod:small_curtain");
+            "britannia_mod:small_curtain",
+            "britannia_mod:prosperity_standard",
+            "britannia_mod:guardian_standard");
 
     @Test
     void intakeGuideChecklistReadmeAndTemplatesExist() {
         assertTrue(Files.isRegularFile(GUIDE));
         assertTrue(Files.isRegularFile(CHECKLIST));
-        assertTrue(Files.isRegularFile(Path.of("content/banner-final-intake/README.md")));
+        assertTrue(Files.isRegularFile(README));
         assertTrue(Files.isRegularFile(GENERIC));
         assertTrue(Files.isRegularFile(BATCH));
     }
@@ -61,7 +64,10 @@ class FinalContentIntakeDocumentationTest {
         assertTrue(guide.contains("it may not invent"));
         assertTrue(guide.contains("x_small_unnamed_01"));
         assertTrue(guide.contains("small_curtain"));
-        assertTrue(guide.contains("Current diagnostic placeholders are 16 × 16"));
+        assertTrue(guide.contains("Existing 16 x 16 diagnostic placeholders"));
+        assertTrue(guide.contains("exactly 128 x 128 pixels"));
+        assertTrue(guide.contains("mask alpha exceed base alpha"));
+        assertTrue(guide.contains("Rendering remains resolution-independent"));
         assertTrue(guide.contains("not automatic approval"));
         assertTrue(guide.contains("source_pigment_id is present"));
         assertTrue(guide.contains("output.rgb = B.rgb × (1 - a) + T.rgb × a"));
@@ -74,6 +80,7 @@ class FinalContentIntakeDocumentationTest {
         String checklist = Files.readString(CHECKLIST);
         for (String required : List.of(
                 "Stable ID verified", "Final display name approved", "base_texture.png", "dye_mask.png",
+                "exactly 128 x 128 RGBA", "Mask alpha never exceeds aligned base alpha",
                 "Asset-to-ID mapping is unambiguous", "Manifest validates", "Base remains untinted",
                 "Natural/default state omits the mask pass", "Brass remains untinted", "Iron remains untinted",
                 "Inventory", "First-person hand", "Third-person hand", "Dropped item", "Item frame",
@@ -85,6 +92,18 @@ class FinalContentIntakeDocumentationTest {
                 "Crafting requirements are not applicable")) {
             assertTrue(checklist.contains(required), required);
         }
+    }
+
+    @Test
+    void readmeAndTemplatesStateTheApproved128PixelStandard() throws Exception {
+        String readme = Files.readString(README);
+        String generic = Files.readString(GENERIC);
+        String batch = Files.readString(BATCH);
+        for (String text : List.of(readme, generic, batch)) {
+            assertTrue(text.contains("128 x 128"));
+        }
+        assertTrue(readme.contains("Existing 16 x 16 diagnostic placeholders"));
+        assertTrue(readme.contains("runtime rendering remains independent of texture resolution"));
     }
 
     @Test
@@ -110,20 +129,23 @@ class FinalContentIntakeDocumentationTest {
         JsonObject batch = JsonParser.parseString(raw).getAsJsonObject();
         assertEquals("NOT_APPROVED", batch.get("template_status").getAsString());
         var records = batch.getAsJsonArray("records");
-        assertEquals(7, records.size());
+        assertEquals(9, records.size());
         List<String> ids = records.asList().stream()
                 .map(JsonElement::getAsJsonObject)
                 .map(record -> record.getAsJsonObject("banner").get("stable_id").getAsString())
                 .toList();
         assertEquals(EXTRA_SMALL_IDS, ids);
-        assertEquals(7, ids.stream().distinct().count());
+        assertEquals(9, ids.stream().distinct().count());
         for (JsonElement element : records) {
             JsonObject record = element.getAsJsonObject();
             assertEquals("NOT_APPROVED",
                     record.getAsJsonObject("approval").get("status").getAsString());
-            assertEquals("PROVISIONAL",
-                    record.getAsJsonObject("current_provisional_state")
+            assertEquals("INFORMATIONAL_NOT_INTAKE_APPROVAL",
+                    record.getAsJsonObject("current_catalogue_state")
                             .get("approval_meaning").getAsString());
+            assertEquals("in_progress",
+                    record.getAsJsonObject("current_catalogue_state")
+                            .get("content_status").getAsString());
             assertEquals("placeholder", record.get("requested_content_status").getAsString());
             assertEquals(Set.of("base_texture", "dye_mask", "geometry"),
                     record.getAsJsonObject("assets").keySet());

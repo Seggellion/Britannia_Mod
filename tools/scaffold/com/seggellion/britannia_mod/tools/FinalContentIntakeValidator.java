@@ -74,6 +74,8 @@ public final class FinalContentIntakeValidator {
             Set.of("britannia_mod:brass", "britannia_mod:iron");
     private static final List<String> PNG_LAYERS =
             List.of("base_texture", "dye_mask");
+    private static final int FINAL_TEXTURE_WIDTH = 128;
+    private static final int FINAL_TEXTURE_HEIGHT = 128;
 
     private FinalContentIntakeValidator() {
     }
@@ -195,6 +197,12 @@ public final class FinalContentIntakeValidator {
             PngMetadata metadata = validatePng(root, layer, sourceFile, expectedSha, invalid);
             if (metadata != null) {
                 pngs.add(metadata);
+                if (explicitlyApproved
+                        && (metadata.width() != FINAL_TEXTURE_WIDTH
+                        || metadata.height() != FINAL_TEXTURE_HEIGHT)) {
+                    invalid.add("final " + ("base_texture".equals(layer) ? "base texture" : "dye mask")
+                            + " must be exactly 128x128 RGBA");
+                }
                 if (expectedWidth == null) {
                     expectedWidth = metadata.width();
                     expectedHeight = metadata.height();

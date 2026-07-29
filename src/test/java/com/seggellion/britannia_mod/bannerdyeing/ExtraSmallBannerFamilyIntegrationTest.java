@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.bannerdyeing.registry.ProductionBannerCatalo
 import com.seggellion.britannia_mod.client.banner.BannerPlacedGeometryFamily;
 import com.seggellion.britannia_mod.client.banner.BannerPlacedGeometryPlan;
 import com.seggellion.britannia_mod.tools.BannerScaffoldTool;
+import com.seggellion.britannia_mod.tools.FinalContentIntakeValidator;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -104,6 +105,16 @@ class ExtraSmallBannerFamilyIntegrationTest {
         assertEquals("britannia_mod:banner/small_curtain/geometry", curtain.geometry());
         assertNotEquals(Files.readString(model("road_guard/geometry")),
                 Files.readString(model("small_curtain/geometry")));
+    }
+
+    @Test
+    void everyApprovedFamilyIntakeIsReadyForIntegration() {
+        for (String id : FAMILY) {
+            Path path = Path.of("content/banner-final-intake/submissions", id, id + ".yml");
+            var result = FinalContentIntakeValidator.validate(Path.of("."), path);
+            assertEquals(FinalContentIntakeValidator.Status.READY_FOR_INTEGRATION,
+                    result.status(), id + ": " + result.issues());
+        }
     }
 
     @Test
