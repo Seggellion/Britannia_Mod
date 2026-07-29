@@ -343,6 +343,81 @@ independent operations, connected only through the cheque's own durable
 identity (its stable UUID and authoritative value/state) — not through
 any operation that touches both accounts at once.
 
+### ADR-021: World-state change retention window is a fixed 72 hours, not admin-configurable
+
+Date: 2026-07-28. Status: Human-approved (not Codex-inferred).
+
+The Milestone 13 recon found that Milestone 1's own decision log never
+actually resolved a retention window for world-state change deltas,
+despite Milestone 13's own prompt asserting it had — this entry is the
+real, first resolution. Retained world-state changes are pruned after 72
+hours (3 days), implemented as a fixed application constant rather than
+an admin-configurable setting. This is deliberately not tunable per-shard
+or at runtime: the incremental-sync design already has a safe, cheap
+backstop for any client that falls outside the retention window (the
+`full_bootstrap_required` fallback), so the retention window only needs
+to be long enough to comfortably cover routine maintenance and outage
+windows without unbounded change-log table growth, not tuned per
+deployment. 72 hours was chosen as that comfortable margin. A future
+milestone may revisit this as configurable if real operational needs
+emerge; nothing in this entry blocks that.
+
+### ADR-022: World-state versioning and partitioning is scoped by shard only, no dimension-level partitioning for v1
+
+Date: 2026-07-28. Status: Human-approved (not Codex-inferred).
+
+The Milestone 13 recon also found no ADR resolving item 10 from the
+Milestone 1 risk list ("region or dimension partitioning strategy for
+large bootstrap payloads") as it applies to the world-state version/change
+log specifically. This entry resolves it for v1: the monotonic world-state
+version counter and its change log are scoped per shard, with no further
+partitioning by dimension, world, or region. This matches every other
+versioned/authenticated concept already established in this program —
+shard-server authentication (`Api::ShardServerAuthentication`), the
+existing world bootstrap endpoint (`Api::WorldBootstrapController`, keyed
+by shard), and spawn-point registration (shard-scoped uniqueness) all
+partition by shard and nothing finer. Introducing a finer partitioning
+axis only for this one new primitive would be a speculative, unrequested
+divergence from that pattern. Finer partitioning may be revisited later if
+a single shard's change volume proves large enough to need it, but that is
+not assumed or designed for now.
+
+### ADR-023: World-state change retention pruning must run on a real recurring schedule, not an admin-triggered action
+
+Date: 2026-07-28. Status: Human-approved (not Codex-inferred).
+
+Every existing Rails-side "cadence" in this program (`CommodityConsumptionJob`,
+`AutoMintQueueJob`, and Milestone 12's `CityStaffingReconciliationJob`) is,
+per the Milestone 13 recon's fresh re-verification, `perform_later`-only
+from an admin-controller action — genuinely not scheduled anywhere, with
+no Procfile clock process, no scheduler gem, and no cron/whenever
+configuration present in this application at all. Every one of those cases
+was an acceptable deferral: a human forgetting to trigger commodity
+consumption or staffing reconciliation degrades gracefully (the prior
+state simply persists a little longer). Retention pruning for world-state
+changes is different in kind: the failure mode of "nobody remembers to
+prune" is unbounded change-log table growth, not a stale-but-safe
+snapshot. This is therefore the first case in the program where a genuine,
+real recurring schedule (not an admin button) is a hard requirement, not a
+convenience. This entry approves that requirement; it does not select the
+scheduling mechanism itself — that investigation and decision belongs to
+the pruning job's own implementation slice, informed by Milestone 13 Rails
+Slice 1's own scheduling-mechanism investigation (see that slice's
+completion report).
+
+### ADR-024: ServiceNpcType/ServiceDialogueSet publication to the world-state change log is deferred
+
+Date: 2026-07-30. Status: Human-approved (not Codex-inferred).
+
+ServiceNpcType/ServiceDialogueSet publication to the world-state change
+log is deferred. Neither model has a shard association, and neither has
+any real mutation call site in application code today (seed-data only) —
+matching WorldNpc#retire!'s identical situation in the same slice. The
+global-vs-shard-scoped broadcast design question is real but has no
+design pressure to resolve until a future milestone gives these models
+an actual mutation path; that path will inform the right answer rather
+than this being guessed in advance.
+
 ## 5. Authority and extension matrix
 
 | Domain | Current authority | Verified current representation | Extension rule |
