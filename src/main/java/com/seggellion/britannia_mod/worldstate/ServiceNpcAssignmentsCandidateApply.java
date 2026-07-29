@@ -9,25 +9,42 @@ import com.seggellion.britannia_mod.service.ServiceNpcAssignmentWorldNpcDefiniti
 import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsSnapshot;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * Milestone 13 NeoForge Slice 2: a pure transformation from a base {@link
  * ServiceNpcAssignmentsSnapshot} plus a validated batch of {@link WorldStateChangeRecord}s (Slice
  * 1's own output) to a new candidate snapshot -- {@code base} is never mutated, and nothing here
- * touches any live cache. Handles exactly the resource types Rails Milestone 13 Slice 3 actually
- * publishes: {@code service_npc_spawn_point} (created/updated upsert, closed removes), {@code
- * npc_spawn_assignment} (created/closed both upsert -- Rails keeps a closed assignment's record
- * with an updated status, it does not delete it), and {@code world_npc} (created only; no update
- * or retire path is wired on the Rails side yet).
+ * touches any live cache. Handles exactly the resource types Rails Milestone 13 actually publishes
+ * on the delta channel today: {@code service_npc_spawn_point} (created/updated upsert, closed
+ * removes) and {@code npc_spawn_assignment} (created/closed both upsert -- Rails keeps a closed
+ * assignment's record with an updated status, it does not delete it).
  *
  * A spawn point's {@code minecraftServerPublicId} is read directly from the payload's own {@code
  * minecraft_server_public_id} field (Rails commit 608b978), the same key name {@code
  * ServiceNpcAssignmentsSerializer} already uses for the same concept in the bootstrap payload --
  * no fallback or substitution is needed, since Rails now always includes it.
+ *
+ * <h2>World NPC identity travels inline on the assignment change (Rails commit 777ad27)</h2>
+ * There is no standalone {@code world_npc} resource type on the wire anymore, and no {@code
+ * applyWorldNpcChange} here. Rails' own {@code WorldNpcs::Create} used to publish a standalone
+ * "world_npc created" change unconditionally, regardless of whether an assignment existed yet --
+ * a real, reachable unassigned-NPC dump through the delta channel, the same invariant Gate 13
+ * already required the bootstrap serializer to respect. Rails removed that publish entirely; a
+ * {@code npc_spawn_assignment} "created" change's own payload now carries the assigned World
+ * NPC's {@code world_npc_name}/{@code world_npc_gender_key}/{@code world_npc_profession_key}/
+ * {@code world_npc_service_npc_type_key}/{@code world_npc_definition_revision} fields inline, and
+ * {@link #applyAssignmentChange} upserts {@code worldNpcs} from those fields in the same step as
+ * the assignment itself -- exactly mirroring the bootstrap payload's own "derived from
+ * assignments, never independently listed" shape. A {@code npc_spawn_assignment} "closed" change
+ * carries no identity fields (Rails never re-sends them on close) and does not touch {@code
+ * worldNpcs} at all; a client only ever learns a World NPC's identity from the "created" change
+ * that first introduced its assignment.
  *
  * <h2>The three-policy distinction (Slice 2 Step 1)</h2>
  * This program now has three genuinely different "something is wrong with stored/incoming
@@ -48,8 +65,11 @@ import java.util.UUID;
  *       discarded -- the caller keeps using its existing base snapshot untouched.</li>
  *   <li><b>Every individual change applies cleanly, but the resulting candidate itself fails a
  *       post-apply sanity check</b> -- today, that a live batch never leaves a dangling
- *       assignment referencing a spawn point or World NPC that is not (or is no longer) present in
- *       the candidate. Same treatment as case 2: {@link Rejected}, base untouched.</li>
+ *       assignment referencing a spawn point that never existed in base or this batch at all, or a
+ *       World NPC that is not present in the candidate. A spawn point this exact batch legitimately
+ *       closed is the one exception -- its now-dangling assignment is cleaned up by the cascade
+ *       that runs after this check, not treated as a failure (see {@link #checkReferentialIntegrity}).
+ *       Same treatment as case 2: {@link Rejected}, base untouched.</li>
  * </ol>
  * Cases 2 and 3 are new in this slice; case 1 is untouched. Both new cases share one guarantee
  * this milestone's own invariant requires: the caller's prior state survives completely intact.
@@ -74,13 +94,13 @@ public final class ServiceNpcAssignmentsCandidateApply {
         Map<UUID, ServiceNpcAssignmentSpawnPointDefinition> spawnPoints = new LinkedHashMap<>(base.spawnPoints());
         Map<UUID, ServiceNpcAssignmentDefinition> assignments = new LinkedHashMap<>(base.assignments());
         Map<UUID, ServiceNpcAssignmentWorldNpcDefinition> worldNpcs = new LinkedHashMap<>(base.worldNpcs());
+        Set<UUID> spawnPointsClosedThisBatch = new LinkedHashSet<>();
 
         try {
             for (WorldStateChangeRecord change : changes) {
                 switch (change.resourceType()) {
-                    case "service_npc_spawn_point" -> applySpawnPointChange(change, spawnPoints);
-                    case "npc_spawn_assignment" -> applyAssignmentChange(change, assignments);
-                    case "world_npc" -> applyWorldNpcChange(change, worldNpcs);
+                    case "service_npc_spawn_point" -> applySpawnPointChange(change, spawnPoints, spawnPointsClosedThisBatch);
+                    case "npc_spawn_assignment" -> applyAssignmentChange(change, assignments, worldNpcs);
                     default -> {
                         // Forward-compatible: a resource type this build does not know about yet
                         // is skipped, not an error -- matching this program's established
@@ -92,24 +112,40 @@ public final class ServiceNpcAssignmentsCandidateApply {
             return new Rejected("malformed_change: " + malformed.getMessage());
         }
 
+        // checkReferentialIntegrity runs first, against this batch's real, un-cascaded state --
+        // an assignment referencing a spawn point that never existed in base or this batch (not
+        // even via a "closed" change) is a genuinely malformed batch and must be caught here, not
+        // silently pruned away before anything ever looked at it. spawnPointsClosedThisBatch is
+        // passed through so the check can still tell that apart from the one case that is not
+        // malformed: a spawn point this exact batch legitimately closed, whose now-dangling
+        // assignment reference is expected and handled by the cascade below, not an error.
+        ServiceNpcAssignmentsSnapshot preCascadeCandidate = new ServiceNpcAssignmentsSnapshot(
+                base.schemaVersion(), base.revision(), spawnPoints, assignments, worldNpcs
+        );
+
+        String sanityFailure = checkReferentialIntegrity(preCascadeCandidate, spawnPointsClosedThisBatch);
+        if (sanityFailure != null) return new Rejected(sanityFailure);
+
         // A removed spawn point can never leave a dangling assignment behind in the candidate,
         // even though real Rails traffic always closes the assignment first -- this candidate
         // must be internally consistent on its own terms, not by leaning on a publish-ordering
-        // assumption this slice does not want to depend on.
+        // assumption this slice does not want to depend on. Runs only now, after
+        // checkReferentialIntegrity has already confirmed every remaining dangling reference here
+        // belongs to a spawn point this exact batch legitimately closed -- anything else would
+        // already have been rejected above.
         assignments.values().removeIf(assignment -> !spawnPoints.containsKey(assignment.spawnPointPublicId()));
 
         ServiceNpcAssignmentsSnapshot candidate = new ServiceNpcAssignmentsSnapshot(
                 base.schemaVersion(), base.revision(), spawnPoints, assignments, worldNpcs
         );
 
-        String sanityFailure = checkReferentialIntegrity(candidate);
-        if (sanityFailure != null) return new Rejected(sanityFailure);
-
         return new Applied(candidate);
     }
 
     private static void applySpawnPointChange(
-            WorldStateChangeRecord change, Map<UUID, ServiceNpcAssignmentSpawnPointDefinition> spawnPoints
+            WorldStateChangeRecord change,
+            Map<UUID, ServiceNpcAssignmentSpawnPointDefinition> spawnPoints,
+            Set<UUID> closedThisBatch
     ) {
         UUID publicId = requireUuid(change.resourceId(), "resource_id");
         switch (change.changeType()) {
@@ -129,14 +165,19 @@ public final class ServiceNpcAssignmentsCandidateApply {
                         change.resourceRevision()
                 ));
             }
-            case "closed" -> spawnPoints.remove(publicId);
+            case "closed" -> {
+                spawnPoints.remove(publicId);
+                closedThisBatch.add(publicId);
+            }
             default -> throw new IllegalArgumentException(
                     "unrecognized service_npc_spawn_point change_type: " + change.changeType());
         }
     }
 
     private static void applyAssignmentChange(
-            WorldStateChangeRecord change, Map<UUID, ServiceNpcAssignmentDefinition> assignments
+            WorldStateChangeRecord change,
+            Map<UUID, ServiceNpcAssignmentDefinition> assignments,
+            Map<UUID, ServiceNpcAssignmentWorldNpcDefinition> worldNpcs
     ) {
         UUID publicId = requireUuid(change.resourceId(), "resource_id");
         switch (change.changeType()) {
@@ -149,43 +190,62 @@ public final class ServiceNpcAssignmentsCandidateApply {
                 // (this batch's first sight of it) uses this change's own created_at as the best
                 // available substitute.
                 String assignedAt = existing != null ? existing.assignedAt() : change.createdAt();
+                UUID worldNpcPublicId = requiredUuid(payload, "world_npc_public_id");
                 assignments.put(publicId, new ServiceNpcAssignmentDefinition(
                         publicId,
                         requiredUuid(payload, "spawn_point_public_id"),
-                        requiredUuid(payload, "world_npc_public_id"),
+                        worldNpcPublicId,
                         requiredString(payload, "status"),
                         change.resourceRevision(),
                         assignedAt
                 ));
+
+                // Only "created" carries the assigned World NPC's identity (Rails commit
+                // 777ad27); "closed" re-publishes the same status/spawn_point/world_npc trio but
+                // never identity, since the client already learned it from the earlier "created".
+                if (change.changeType().equals("created")) {
+                    worldNpcs.put(worldNpcPublicId, new ServiceNpcAssignmentWorldNpcDefinition(
+                            worldNpcPublicId,
+                            requiredString(payload, "world_npc_name"),
+                            requiredString(payload, "world_npc_gender_key"),
+                            requiredString(payload, "world_npc_profession_key"),
+                            optionalString(payload, "world_npc_service_npc_type_key"),
+                            requiredLong(payload, "world_npc_definition_revision")
+                    ));
+                }
             }
             default -> throw new IllegalArgumentException(
                     "unrecognized npc_spawn_assignment change_type: " + change.changeType());
         }
     }
 
-    private static void applyWorldNpcChange(
-            WorldStateChangeRecord change, Map<UUID, ServiceNpcAssignmentWorldNpcDefinition> worldNpcs
+    // Runs against the pre-cascade candidate (see apply()), so both branches below see the
+    // batch's real, unmodified state:
+    //
+    // The missing-spawn-point branch now genuinely runs -- previously the cascade in apply() ran
+    // before this check and unconditionally pruned any assignment whose spawn point was missing
+    // for ANY reason, so this branch could never fire; it was dead code. spawnPointsClosedThisBatch
+    // is the one legitimate exception: a spawn point this exact batch actually closed leaves its
+    // referencing assignment dangling on purpose (real Rails traffic does not always close the
+    // assignment first), and that case is not an error -- it is left for apply()'s cascade, which
+    // runs only after this check has passed, to clean up. Anything else -- a spawn point that
+    // never existed in base or this batch at all -- is a genuinely malformed batch and is now
+    // caught here instead of being silently swept away.
+    //
+    // The missing-world-NPC branch is no longer reachable via an ordinary "created" assignment
+    // change -- applyAssignmentChange now upserts worldNpcs from that same change's own embedded
+    // identity, so a "created" assignment can never leave its World NPC missing. It remains a
+    // real, meaningful backstop against a "closed" change arriving for an assignment whose
+    // "created" never actually populated worldNpcs in this candidate's own history (a malformed
+    // or out-of-order batch, or a corrupted base) -- see
+    // anAssignmentClosedReferencingAWorldNpcNeverEstablishedFailsTheSanityCheckAndLeavesTheBaseUntouched.
+    // There is no cascade for world NPCs, so no analogous exemption is needed here.
+    private static String checkReferentialIntegrity(
+            ServiceNpcAssignmentsSnapshot candidate, Set<UUID> spawnPointsClosedThisBatch
     ) {
-        UUID publicId = requireUuid(change.resourceId(), "resource_id");
-        switch (change.changeType()) {
-            case "created" -> {
-                JsonObject payload = requirePayload(change);
-                worldNpcs.put(publicId, new ServiceNpcAssignmentWorldNpcDefinition(
-                        publicId,
-                        requiredString(payload, "name"),
-                        requiredString(payload, "gender_key"),
-                        requiredString(payload, "profession_key"),
-                        optionalString(payload, "service_npc_type_key"),
-                        change.resourceRevision()
-                ));
-            }
-            default -> throw new IllegalArgumentException("unrecognized world_npc change_type: " + change.changeType());
-        }
-    }
-
-    private static String checkReferentialIntegrity(ServiceNpcAssignmentsSnapshot candidate) {
         for (ServiceNpcAssignmentDefinition assignment : candidate.assignments().values()) {
-            if (!candidate.spawnPoints().containsKey(assignment.spawnPointPublicId())) {
+            if (!candidate.spawnPoints().containsKey(assignment.spawnPointPublicId())
+                    && !spawnPointsClosedThisBatch.contains(assignment.spawnPointPublicId())) {
                 return "assignment " + assignment.publicId() + " references missing spawn point " + assignment.spawnPointPublicId();
             }
             if (!candidate.worldNpcs().containsKey(assignment.worldNpcPublicId())) {
@@ -240,6 +300,18 @@ public final class ServiceNpcAssignmentsCandidateApply {
         }
         try {
             return element.getAsInt();
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(field + " must be an integer");
+        }
+    }
+
+    private static long requiredLong(JsonObject value, String field) {
+        JsonElement element = value.get(field);
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isNumber()) {
+            throw new IllegalArgumentException(field + " must be an integer");
+        }
+        try {
+            return element.getAsLong();
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException(field + " must be an integer");
         }

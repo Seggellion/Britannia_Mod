@@ -144,7 +144,7 @@ class ServiceNpcAssignmentsCandidateApplyTest {
         ServiceNpcAssignmentsSnapshot base = snapshotWith(
                 Map.of(SPAWN_POINT, spawnPoint(SPAWN_POINT)), Map.of(), Map.of(WORLD_NPC, worldNpc(WORLD_NPC))
         );
-        WorldStateChangeRecord change = assignmentChange(5, "created", "active", "2026-07-16T13:00:00.000000Z");
+        WorldStateChangeRecord change = assignmentCreatedChange(5, "2026-07-16T13:00:00.000000Z");
 
         ServiceNpcAssignmentsSnapshot candidate = applied(
                 ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change))
@@ -165,7 +165,7 @@ class ServiceNpcAssignmentsCandidateApplyTest {
                 Map.of(ASSIGNMENT, new ServiceNpcAssignmentDefinition(ASSIGNMENT, SPAWN_POINT, WORLD_NPC, "active", 5L, "2026-07-16T13:00:00Z")),
                 Map.of(WORLD_NPC, worldNpc(WORLD_NPC))
         );
-        WorldStateChangeRecord change = assignmentChange(6, "closed", "closed", "2026-07-16T14:00:00.000000Z");
+        WorldStateChangeRecord change = assignmentClosedChange(6, "2026-07-16T14:00:00.000000Z");
 
         ServiceNpcAssignmentsSnapshot candidate = applied(
                 ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change))
@@ -175,14 +175,27 @@ class ServiceNpcAssignmentsCandidateApplyTest {
         assertEquals("closed", assignment.status());
         assertEquals(6, assignment.revision());
         assertEquals("2026-07-16T13:00:00Z", assignment.assignedAt(), "closing must preserve the original assigned_at, not substitute this change's own created_at");
+        ServiceNpcAssignmentWorldNpcDefinition npc = candidate.worldNpcs().get(WORLD_NPC);
+        assertEquals("Alice", npc.name(), "closing carries no identity fields -- the World NPC entry from base must survive completely untouched");
     }
 
+    /**
+     * Milestone 13 NeoForge follow-up (Rails commit 777ad27): there is no standalone {@code
+     * world_npc} resource type on the wire anymore. An assignment's own "created" change payload
+     * now carries the assigned World NPC's identity inline, and this is the only way a World NPC
+     * ever enters the candidate. world_npc_definition_revision is asserted as a distinct value
+     * from the change's own resourceRevision (the assignment's revision) to prove the World NPC's
+     * revision is read from its own dedicated field, not confused with the assignment's.
+     */
     @Test
-    void worldNpcCreatedUpserts() {
-        WorldStateChangeRecord change = worldNpcChange(7);
+    void assignmentCreatedUpsertsAFullyFormedWorldNpcEntryFromEmbeddedIdentity() {
+        ServiceNpcAssignmentsSnapshot base = snapshotWith(
+                Map.of(SPAWN_POINT, spawnPoint(SPAWN_POINT)), Map.of(), Map.of()
+        );
+        WorldStateChangeRecord change = assignmentCreatedChange(7, "2026-07-16T12:00:00.000000Z");
 
         ServiceNpcAssignmentsSnapshot candidate = applied(
-                ServiceNpcAssignmentsCandidateApply.apply(ServiceNpcAssignmentsSnapshot.empty(), List.of(change))
+                ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change))
         );
 
         ServiceNpcAssignmentWorldNpcDefinition npc = candidate.worldNpcs().get(WORLD_NPC);
@@ -190,15 +203,41 @@ class ServiceNpcAssignmentsCandidateApplyTest {
         assertEquals("female", npc.genderKey());
         assertEquals("banker", npc.professionKey());
         assertEquals("bank_teller", npc.serviceNpcTypeKey());
-        assertEquals(7, npc.revision());
+        assertEquals(3L, npc.revision(),
+                "the World NPC's own revision must come from world_npc_definition_revision (3), not the assignment change's own resourceRevision (7)");
+    }
+
+    @Test
+    void assignmentCreatedWithoutAServiceNpcTypeKeyLeavesItNull() {
+        ServiceNpcAssignmentsSnapshot base = snapshotWith(
+                Map.of(SPAWN_POINT, spawnPoint(SPAWN_POINT)), Map.of(), Map.of()
+        );
+        JsonObject payload = new JsonObject();
+        payload.addProperty("status", "active");
+        payload.addProperty("spawn_point_public_id", SPAWN_POINT.toString());
+        payload.addProperty("world_npc_public_id", WORLD_NPC.toString());
+        payload.addProperty("world_npc_name", "Alice");
+        payload.addProperty("world_npc_gender_key", "female");
+        payload.addProperty("world_npc_profession_key", "banker");
+        payload.addProperty("world_npc_definition_revision", 1L);
+        // world_npc_service_npc_type_key deliberately omitted -- Rails' own payload emits this as
+        // null whenever the World NPC has no service_npc_type association (@world_npc.service_npc_type&.key).
+        WorldStateChangeRecord change = new WorldStateChangeRecord(
+                1, "created", "npc_spawn_assignment", ASSIGNMENT.toString(), 1, payload, "2026-07-16T12:00:00.000000Z"
+        );
+
+        ServiceNpcAssignmentsSnapshot candidate = applied(
+                ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change))
+        );
+
+        assertEquals(null, candidate.worldNpcs().get(WORLD_NPC).serviceNpcTypeKey());
     }
 
     @Test
     void reapplyingTheIdenticalBatchProducesAByteIdenticalResultingState() {
         List<WorldStateChangeRecord> batch = List.of(
                 spawnPointChange(1, "created", SPAWN_POINT, 1, true, FIRST_SERVER_ID),
-                worldNpcChange(2),
-                assignmentChange(3, "created", "active", "2026-07-16T12:00:00.000000Z")
+                assignmentCreatedChange(2, "2026-07-16T12:00:00.000000Z")
         );
 
         ServiceNpcAssignmentsSnapshot firstApplication = applied(
@@ -216,8 +255,7 @@ class ServiceNpcAssignmentsCandidateApplyTest {
     void reapplyingTheIdenticalBatchFromTheOriginalBaseAlsoMatchesTheFirstApplication() {
         List<WorldStateChangeRecord> batch = List.of(
                 spawnPointChange(1, "created", SPAWN_POINT, 1, true, FIRST_SERVER_ID),
-                worldNpcChange(2),
-                assignmentChange(3, "created", "active", "2026-07-16T12:00:00.000000Z")
+                assignmentCreatedChange(2, "2026-07-16T12:00:00.000000Z")
         );
 
         ServiceNpcAssignmentsSnapshot fromEmpty = applied(
@@ -237,8 +275,7 @@ class ServiceNpcAssignmentsCandidateApplyTest {
         // exists purely as a defensive backstop proving apply() itself cannot be corrupted by
         // input ordering, not because this input is expected to occur in practice.
         List<WorldStateChangeRecord> scrambled = List.of(
-                worldNpcChange(9),
-                assignmentChange(8, "created", "active", "2026-07-16T12:00:00.000000Z"),
+                assignmentCreatedChange(8, "2026-07-16T12:00:00.000000Z"),
                 spawnPointChange(7, "created", SPAWN_POINT, 1, true, FIRST_SERVER_ID)
         );
 
@@ -315,13 +352,19 @@ class ServiceNpcAssignmentsCandidateApplyTest {
         assertEquals("active", base.assignments().get(ASSIGNMENT).status(), "base's own content must be byte-identical to before the rejected attempt");
     }
 
+    /**
+     * Milestone 13 NeoForge follow-up (Rails commit 777ad27): an assignment "created" change can
+     * no longer fail this check on its own -- it upserts its own World NPC entry from its own
+     * embedded identity in the same step, so the map it is checked against is always already
+     * populated for it. The check remains meaningful for a "closed" change whose assignment was
+     * never actually established in this candidate's own history (a malformed/out-of-order batch,
+     * or a corrupted base) -- a real case distinct from (and not repaired by) the spawn-point
+     * cascade a few lines above it in apply(), since nothing analogous exists for world NPCs.
+     */
     @Test
-    void anAssignmentReferencingAWorldNpcThatWasNeverCreatedFailsTheSanityCheckAndLeavesTheBaseUntouched() {
-        // world_npc creation for WORLD_NPC is deliberately never included in this batch or the
-        // base -- the one case this class's cascade does not defensively repair itself (unlike a
-        // removed spawn point), so it reaches the post-apply referential-integrity check instead.
+    void anAssignmentClosedReferencingAWorldNpcNeverEstablishedFailsTheSanityCheckAndLeavesTheBaseUntouched() {
         ServiceNpcAssignmentsSnapshot base = snapshotWith(Map.of(SPAWN_POINT, spawnPoint(SPAWN_POINT)), Map.of(), Map.of());
-        WorldStateChangeRecord change = assignmentChange(1, "created", "active", "2026-07-16T12:00:00.000000Z");
+        WorldStateChangeRecord change = assignmentClosedChange(1, "2026-07-16T12:00:00.000000Z");
 
         ServiceNpcAssignmentsCandidateApply.Result result =
                 ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change));
@@ -330,6 +373,52 @@ class ServiceNpcAssignmentsCandidateApplyTest {
                 assertInstanceOf(ServiceNpcAssignmentsCandidateApply.Rejected.class, result);
         assertTrue(rejected.reason().contains("missing world NPC"), rejected.reason());
         assertTrue(base.assignments().isEmpty(), "base must remain exactly as it was -- no dangling assignment ever committed to it");
+    }
+
+    /**
+     * Milestone 13 NeoForge follow-up (reordering fix): before this fix, apply()'s spawn-point
+     * cascade ran before checkReferentialIntegrity and unconditionally pruned ANY assignment whose
+     * spawn point was missing, for any reason -- so this exact scenario could never actually reach
+     * the check; the missing-spawn-point branch was dead code. checkReferentialIntegrity now runs
+     * first, against the batch's real, un-cascaded state: SPAWN_POINT is never created in this
+     * batch or present in base, so it is not among spawnPointsClosedThisBatch either -- a
+     * genuinely missing reference, not a legitimate in-batch closure, and it is now caught here
+     * instead of being silently swept away. Mirrors
+     * anAssignmentClosedReferencingAWorldNpcNeverEstablishedFailsTheSanityCheckAndLeavesTheBaseUntouched
+     * exactly, for the spawn-point side of the same check.
+     */
+    @Test
+    void anAssignmentReferencingASpawnPointThatWasNeverEstablishedFailsTheSanityCheckAndLeavesTheBaseUntouched() {
+        ServiceNpcAssignmentsSnapshot base = ServiceNpcAssignmentsSnapshot.empty();
+        WorldStateChangeRecord change = assignmentCreatedChange(1, "2026-07-16T12:00:00.000000Z");
+
+        ServiceNpcAssignmentsCandidateApply.Result result =
+                ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change));
+
+        ServiceNpcAssignmentsCandidateApply.Rejected rejected =
+                assertInstanceOf(ServiceNpcAssignmentsCandidateApply.Rejected.class, result);
+        assertTrue(rejected.reason().contains("missing spawn point"), rejected.reason());
+        assertTrue(base.isEmpty(), "base must remain exactly as it was -- no dangling assignment ever committed to it");
+    }
+
+    /**
+     * A "closed" change carries no identity fields (see assignmentClosedChange), so this proves
+     * the missing-spawn-point branch fires the same way for "closed" as it does for "created" --
+     * neither change_type gets a pass just because the spawn point happens to be missing for a
+     * different reason than an in-batch closure.
+     */
+    @Test
+    void anAssignmentClosedReferencingASpawnPointThatWasNeverEstablishedFailsTheSanityCheckAndLeavesTheBaseUntouched() {
+        ServiceNpcAssignmentsSnapshot base = ServiceNpcAssignmentsSnapshot.empty();
+        WorldStateChangeRecord change = assignmentClosedChange(1, "2026-07-16T12:00:00.000000Z");
+
+        ServiceNpcAssignmentsCandidateApply.Result result =
+                ServiceNpcAssignmentsCandidateApply.apply(base, List.of(change));
+
+        ServiceNpcAssignmentsCandidateApply.Rejected rejected =
+                assertInstanceOf(ServiceNpcAssignmentsCandidateApply.Rejected.class, result);
+        assertTrue(rejected.reason().contains("missing spawn point"), rejected.reason());
+        assertTrue(base.isEmpty(), "base must remain exactly as it was -- no dangling assignment ever committed to it");
     }
 
     private static ServiceNpcAssignmentsSnapshot applied(ServiceNpcAssignmentsCandidateApply.Result result) {
@@ -370,20 +459,33 @@ class ServiceNpcAssignmentsCandidateApplyTest {
         );
     }
 
-    private static WorldStateChangeRecord assignmentChange(long version, String changeType, String status, String createdAt) {
+    // Milestone 13 NeoForge follow-up (Rails commit 777ad27): a "created" assignment change's own
+    // payload carries the assigned World NPC's identity inline -- world_npc_definition_revision is
+    // fixed at 3 here, deliberately distinct from every version value these tests use for the
+    // change itself, so a test asserting on npc.revision() proves the two are read from separate
+    // fields rather than one being silently substituted for the other.
+    private static WorldStateChangeRecord assignmentCreatedChange(long version, String createdAt) {
         JsonObject payload = new JsonObject();
-        payload.addProperty("status", status);
+        payload.addProperty("status", "active");
         payload.addProperty("spawn_point_public_id", SPAWN_POINT.toString());
         payload.addProperty("world_npc_public_id", WORLD_NPC.toString());
-        return new WorldStateChangeRecord(version, changeType, "npc_spawn_assignment", ASSIGNMENT.toString(), version, payload, createdAt);
+        payload.addProperty("world_npc_name", "Alice");
+        payload.addProperty("world_npc_gender_key", "female");
+        payload.addProperty("world_npc_profession_key", "banker");
+        payload.addProperty("world_npc_service_npc_type_key", "bank_teller");
+        payload.addProperty("world_npc_definition_revision", 3L);
+        return new WorldStateChangeRecord(version, "created", "npc_spawn_assignment", ASSIGNMENT.toString(), version, payload, createdAt);
     }
 
-    private static WorldStateChangeRecord worldNpcChange(long version) {
+    // Rails' own NpcSpawnAssignments::Close never re-publishes identity fields -- a client that
+    // already saw the "created" change does not need them again, and one that has not (a malformed
+    // or out-of-order batch) is exactly what anAssignmentClosedReferencingAWorldNpcNeverEstablished...
+    // exists to catch.
+    private static WorldStateChangeRecord assignmentClosedChange(long version, String createdAt) {
         JsonObject payload = new JsonObject();
-        payload.addProperty("name", "Alice");
-        payload.addProperty("gender_key", "female");
-        payload.addProperty("profession_key", "banker");
-        payload.addProperty("service_npc_type_key", "bank_teller");
-        return new WorldStateChangeRecord(version, "created", "world_npc", WORLD_NPC.toString(), version, payload, "2026-07-16T12:00:00.000000Z");
+        payload.addProperty("status", "closed");
+        payload.addProperty("spawn_point_public_id", SPAWN_POINT.toString());
+        payload.addProperty("world_npc_public_id", WORLD_NPC.toString());
+        return new WorldStateChangeRecord(version, "closed", "npc_spawn_assignment", ASSIGNMENT.toString(), version, payload, createdAt);
     }
 }
