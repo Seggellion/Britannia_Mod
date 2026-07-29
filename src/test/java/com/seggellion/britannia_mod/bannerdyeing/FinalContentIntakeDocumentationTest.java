@@ -28,6 +28,8 @@ class FinalContentIntakeDocumentationTest {
             Path.of("content/banner-final-intake/intake.example.yml");
     private static final Path BATCH =
             Path.of("content/banner-final-intake/extra_small_batch.example.yml");
+    private static final Path SMALL_BATCH =
+            Path.of("content/banner-final-intake/small_batch.example.yml");
     private static final List<String> EXTRA_SMALL_IDS = List.of(
             "britannia_mod:road_guard",
             "britannia_mod:pale_road_guard",
@@ -38,6 +40,13 @@ class FinalContentIntakeDocumentationTest {
             "britannia_mod:small_curtain",
             "britannia_mod:prosperity_standard",
             "britannia_mod:guardian_standard");
+    private static final List<String> SMALL_IDS = List.of(
+            "britannia_mod:silver_and_gold_pennon",
+            "britannia_mod:end_01",
+            "britannia_mod:end_02",
+            "britannia_mod:pennon_of_silver",
+            "britannia_mod:iron_ward",
+            "britannia_mod:iron_ward_auxiliary");
 
     @Test
     void intakeGuideChecklistReadmeAndTemplatesExist() {
@@ -46,6 +55,7 @@ class FinalContentIntakeDocumentationTest {
         assertTrue(Files.isRegularFile(README));
         assertTrue(Files.isRegularFile(GENERIC));
         assertTrue(Files.isRegularFile(BATCH));
+        assertTrue(Files.isRegularFile(SMALL_BATCH));
     }
 
     @Test
@@ -99,7 +109,8 @@ class FinalContentIntakeDocumentationTest {
         String readme = Files.readString(README);
         String generic = Files.readString(GENERIC);
         String batch = Files.readString(BATCH);
-        for (String text : List.of(readme, generic, batch)) {
+        String smallBatch = Files.readString(SMALL_BATCH);
+        for (String text : List.of(readme, generic, batch, smallBatch)) {
             assertTrue(text.contains("128 x 128"));
         }
         assertTrue(readme.contains("Existing 16 x 16 diagnostic placeholders"));
@@ -156,9 +167,56 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
+    void smallTemplateContainsTheSixCatalogueMembersOnceAndNoGuessedApproval() throws Exception {
+        String raw = Files.readString(SMALL_BATCH);
+        JsonObject batch = JsonParser.parseString(raw).getAsJsonObject();
+        assertEquals("NOT_APPROVED", batch.get("template_status").getAsString());
+        var records = batch.getAsJsonArray("records");
+        assertEquals(6, records.size());
+        List<String> ids = records.asList().stream()
+                .map(JsonElement::getAsJsonObject)
+                .map(record -> record.getAsJsonObject("banner").get("stable_id").getAsString())
+                .toList();
+        assertEquals(SMALL_IDS, ids);
+        assertEquals(6, ids.stream().distinct().count());
+        for (JsonElement element : records) {
+            JsonObject record = element.getAsJsonObject();
+            JsonObject approval = record.getAsJsonObject("approval");
+            JsonObject banner = record.getAsJsonObject("banner");
+            JsonObject provisional = record.getAsJsonObject("current_provisional_state");
+            assertEquals("NOT_APPROVED", approval.get("status").getAsString());
+            assertTrue(approval.get("approved_by").getAsString().isEmpty());
+            assertTrue(approval.get("approved_date").getAsString().isEmpty());
+            assertTrue(banner.get("final_display_name").getAsString().isEmpty());
+            assertTrue(banner.get("width_blocks").isJsonNull());
+            assertTrue(banner.get("height_blocks").isJsonNull());
+            assertTrue(banner.getAsJsonArray("supported_orientations").isEmpty());
+            assertTrue(banner.getAsJsonArray("supported_mounts").isEmpty());
+            assertTrue(banner.get("default_mount").isJsonNull());
+            assertTrue(banner.get("placement_profile_id").isJsonNull());
+            assertTrue(banner.get("geometry_id").isJsonNull());
+            assertTrue(provisional.get("dimensions_provisional").getAsBoolean());
+            assertEquals("placeholder", provisional.get("content_status").getAsString());
+            assertEquals("INFORMATIONAL_NOT_INTAKE_APPROVAL",
+                    provisional.get("approval_meaning").getAsString());
+            assertEquals("in_progress", record.get("requested_content_status").getAsString());
+            assertFalse(record.getAsJsonObject("provenance").get("original_art").getAsBoolean());
+            assertFalse(record.getAsJsonObject("provenance")
+                    .get("distribution_permission_confirmed").getAsBoolean());
+            assertEquals(Set.of("base_texture", "dye_mask", "geometry"),
+                    record.getAsJsonObject("assets").keySet());
+            assertNoForbiddenIntakeKeys(record);
+        }
+        assertNoRemovedOrStrategyKeys(raw);
+        assertFalse(raw.contains("\"overlay\""));
+        SMALL_IDS.forEach(id -> assertEquals(1, occurrences(raw, "\"" + id + "\""), id));
+    }
+
+    @Test
     void templatesAreOutsideRuntimeResourcesAndRegistryDoesNotScanThem() throws Exception {
         assertFalse(GENERIC.normalize().startsWith(Path.of("src/main/resources")));
         assertFalse(BATCH.normalize().startsWith(Path.of("src/main/resources")));
+        assertFalse(SMALL_BATCH.normalize().startsWith(Path.of("src/main/resources")));
         Set<String> runtimeFolders = java.util.Arrays.stream(
                         com.seggellion.britannia_mod.bannerdyeing.registry.RegistryDomain.values())
                 .map(com.seggellion.britannia_mod.bannerdyeing.registry.RegistryDomain::folder)
