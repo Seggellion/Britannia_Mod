@@ -114,13 +114,15 @@ class BannerCatalogueManifestTest {
     }
 
     @Test
-    void extraSmallFamilyAwaitsLiveReview() {
+    void extraSmallFamilyAloneIsCompleteAfterGateE() {
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertTrue(manifest.banners().stream()
-                .filter(entry -> "complete".equals(entry.contentStatus()))
-                .findAny().isEmpty());
         assertEquals(9, manifest.banners().stream()
+                .filter(entry -> "complete".equals(entry.contentStatus())).count());
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
+        assertEquals(26, manifest.banners().stream()
+                .filter(entry -> entry.contentStatus() == null
+                        || "placeholder".equals(entry.contentStatus())).count());
     }
 
     @Test

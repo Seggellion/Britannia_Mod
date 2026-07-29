@@ -2,10 +2,13 @@
 
 Date prepared: 2026-07-28
 
-Status: NOT PERFORMED
+Status: COMPLETED - GATE E PASS
 
-This is the reusable Gate E procedure for the nine current 128 x 128 extra-small assets. Record `PASS` or `FAIL`
-only while running the live build. Do not reuse the historical Road Guard result.
+The product owner completed this Gate E procedure for the nine current 128 x 128 extra-small assets. The
+closeout-record date is 2026-07-28, and the build reviewed was
+`bf68e4b0025f1aed9a905904a669a09f39e06d31`. Authoritative results are recorded in
+`content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and the nine definition-specific review records. The
+historical 64 x 64 Road Guard result was not reused.
 
 ## Setup and reusable procedure
 
@@ -25,7 +28,8 @@ only while running the live build. Do not reuse the historical Road Guard result
 7. Save/reload, relog or exercise initial/late tracking, press F3+T, run `/reload`, break/drop, pick block, remove
    support, and re-place. Definition, material, colour, source pigment, mount, orientation, appearance, and exactly
    one configured drop must survive as applicable.
-8. Record observations and every result below. Any failure leaves the definition `in_progress`.
+8. The reviewer recorded every result below. During execution, any failure would have left the definition
+   `in_progress`; direct product-owner evidence reported no failure.
 
 Common expected mount behavior:
 
@@ -57,12 +61,12 @@ Use one row per definition. Add screenshots or a linked evidence folder where av
 
 | Definition | Natural | Blue/direct | Dye-tub preview/apply | Parallel mount | Perpendicular mount | N/S/E/W | Brass/iron untinted | Item/preview/placed | Persistence/reloads/tracking | Break/drop/pick/re-place | Overall | Notes/evidence |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `road_guard` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `pale_road_guard` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `red_crosslets` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `captains_red_crosslets` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `scarlet_court` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `verdant_court` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `small_curtain` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `prosperity_standard` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
-| `guardian_standard` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | PENDING | |
+| `road_guard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `pale_road_guard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `red_crosslets` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `captains_red_crosslets` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `scarlet_court` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `verdant_court` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `small_curtain` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `prosperity_standard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |
+| `guardian_standard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | APPROVED | |

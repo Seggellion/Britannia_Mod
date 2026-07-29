@@ -1,5 +1,41 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-28 - Nine-banner extra-small Gate E closeout
+
+- Direct product-owner evidence records the complete live review against commit
+  `bf68e4b0025f1aed9a905904a669a09f39e06d31` on Minecraft 1.21.1 with NeoForge 21.1.72. The exact execution date
+  was not separately supplied, so 2026-07-28 is the closeout-record date. Resource packs, shaders, and screenshots
+  were not supplied.
+- All required shared checks and all per-banner checks passed for Road Guard, Pale Road Guard, Red Crosslets,
+  Captain's Red Crosslets, Scarlet Court, Verdant Court, Small Curtain, Prosperity Standard, and Guardian Standard.
+  This includes 128 x 128 fidelity, two-file selective recolouring, natural/fixed/dyeable regions, preview,
+  brass/iron, both orientations, all facings, geometry groups, lifecycle, tracking, and reload behavior. Gate E is
+  `PASS`, every definition is `APPROVED`, and no correction was requested.
+- Exactly those nine catalogue entries transitioned from `in_progress` to `complete`. Production remains 35 active
+  definitions: 26 `placeholder`, 0 `in_progress`, 9 `complete`, and 0 disabled. `small_curtain` remains the canonical
+  ninth ID; `x_small_unnamed_01` remains inactive.
+- The authoritative batch evidence is `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md`; each intake
+  directory has a definition-specific `GATE_E_REVIEW.md`. Road Guard's superseded 64 x 64 history is preserved and
+  followed by the new 128 x 128 approval with the reviewed hashes.
+- No artwork bytes, geometry, placement profile, renderer, atlas, client index architecture, command, state schema,
+  placement, persistence, dyeing, crafting, or non-extra-small definition was changed. Another size family and
+  Milestone 17 were not started.
+- Automated closeout validation passed: 88 focused tests across 7 suites; 623 banner/dyeing tests across 54 suites;
+  `clean`; 629 unrestricted tests across 55 suites; and the production build, all with zero failures, errors, or
+  skips. Scaffold generation completed, all 37 generated-output hashes were unchanged on the idempotency run, and
+  `--check` passed. The normal JAR has 5,002 entries and the all-JAR 5,006, both with zero duplicates, 35 definitions
+  (26 placeholder, 0 in progress, 9 complete), both geometry groups, all 18 source/runtime/intake/package-identical
+  PNGs, required client index/atlas/profile resources, and no active legacy ID, old asset fields, recipes, or pattern
+  content. Review Markdown is intentionally excluded from runtime packaging.
+- The first focused run completed 88 tests with four failed stale expectations: raw inherited placeholder statuses
+  were counted as explicit strings in two tests, one manifest-ID comparison retained the `britannia_mod:` namespace,
+  and one admin validation count still treated complete definitions as placeholders. Those four assertions were
+  corrected to the actual data contracts; the identical 88-test selection then passed. No runtime or asset fix was
+  required.
+- Closeout commit: this section is part of the containing
+  `content(banners): complete extra-small banner family` commit; its full hash is reported after creation because a
+  commit cannot embed its own hash.
+
 ## 2026-07-28 - Authoritative-baseline intake audit correction
 
 - Audited `29109dff0ec7bddf45221b535aeee27c110add23` in place as the product-owner-authorized baseline. Commits

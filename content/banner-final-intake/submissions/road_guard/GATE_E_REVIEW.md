@@ -98,3 +98,46 @@ This Gate E record is preserved as historical evidence for the superseded runtim
 
 The current authoritative `banner.ai` export has different hashes. This record does not approve those
 replacement bytes; Road Guard returned to `in_progress` pending renewed live review.
+
+
+## 2026-07-28 authoritative 128 x 128 family review
+
+- Stable ID: `britannia_mod:road_guard`
+- Display name: Road Guard
+- Reviewer: Product Owner
+- Review/closeout-record date: 2026-07-28 (current local date; the exact execution date was not separately supplied)
+- Tested commit: `bf68e4b0025f1aed9a905904a669a09f39e06d31`
+- Base SHA-256: `46ce83a31b9954cea1b3934249eab919ca9408658772b96b0e2752c6aaa48b2d`
+- Mask SHA-256: `8efeff71ca5c8689fef725c7fc3172b783687ffcb3c9dd0bf978874cad048f77`
+- Texture dimensions: 128 x 128, 8-bit RGBA
+- Geometry: `britannia_mod:banner/road_guard/geometry`
+- Supported orientations: `wall_parallel`, `wall_perpendicular`
+- Supported mounts: `britannia_mod:brass`, `britannia_mod:iron`
+- Resource packs: not supplied
+- Shaders: not supplied
+- Screenshots: not supplied
+
+## Manual results
+
+- 128 x 128 fidelity: PASS
+- Natural appearance: PASS
+- Fixed regions: PASS
+- Dyeable regions: PASS
+- Highlights and shadows: PASS
+- Preview: PASS
+- Brass: PASS
+- Iron: PASS
+- Parallel: PASS
+- Perpendicular: PASS
+- Facing and rotation: PASS
+- Save/reload: PASS
+- Break/drop: PASS
+- Pick block and re-placement: PASS
+
+## Decision
+
+- Overall approval: APPROVED
+- Gate E result: PASS
+- Requested corrections: none
+- Approved status transition: `in_progress` to `complete`
+- Crafting: not applicable - product-disabled

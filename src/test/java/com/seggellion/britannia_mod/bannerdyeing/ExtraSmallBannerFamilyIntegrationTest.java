@@ -71,13 +71,13 @@ class ExtraSmallBannerFamilyIntegrationTest {
     }
 
     @Test
-    void familyCatalogueContractIsApprovedButStillInProgress() {
+    void familyCatalogueContractIsCompleteAfterGateE() {
         for (BannerScaffoldTool.BannerEntry entry : manifest.banners()) {
             if (!FAMILY.contains(entry.id())) {
                 continue;
             }
             assertEquals("x-small", entry.group(), entry.id());
-            assertEquals("in_progress", entry.contentStatus(), entry.id());
+            assertEquals("complete", entry.contentStatus(), entry.id());
             assertEquals(1, entry.widthBlocks(), entry.id());
             assertEquals(1, entry.heightBlocks(), entry.id());
             assertEquals(Boolean.FALSE, entry.dimensionsProvisional(), entry.id());
@@ -89,8 +89,10 @@ class ExtraSmallBannerFamilyIntegrationTest {
             assertEquals("britannia_mod:extra_small", entry.placementProfile(), entry.id());
             assertTrue(Boolean.TRUE.equals(entry.displayNameApproved()), entry.id());
         }
-        assertTrue(manifest.banners().stream()
-                .noneMatch(entry -> "complete".equals(entry.contentStatus())));
+        assertEquals(new HashSet<>(FAMILY), manifest.banners().stream()
+                .filter(entry -> "complete".equals(entry.contentStatus()))
+                .map(BannerScaffoldTool.BannerEntry::id)
+                .collect(java.util.stream.Collectors.toSet()));
     }
 
     @Test

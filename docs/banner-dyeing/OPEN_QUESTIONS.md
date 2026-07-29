@@ -4,27 +4,23 @@ Date: 2026-07-28
 
 Milestone: 16 complete extra-small family integration
 
-## Extra-small live review pending
+## Extra-small Gate E resolved
 
-The nine-definition extra-small family is integrated and passes automated catalogue, intake, asset, geometry,
-orientation, rendering, and lifecycle contracts. There are no missing Illustrator layers, artwork mappings, stable
-IDs, or integration decisions in this batch.
+The nine-definition extra-small family completed direct product-owner live review on the 2026-07-28 closeout-record
+date against commit `bf68e4b0025f1aed9a905904a669a09f39e06d31`. All shared and per-banner checks passed,
+Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correction remains open. The authoritative
+records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
+`GATE_E_REVIEW.md`.
 
-The remaining product-owner action is live review using
-`docs/banner-dyeing/EXTRA_SMALL_LIVE_REVIEW.md`. Every definition must be checked in natural and dyed states with
-brass and iron, both wall orientations, all four horizontal facings, item/preview/placed agreement, reload/tracking,
-and lifecycle behavior. Road Guard must be reviewed again because its current 128 x 128 bytes differ from the
-historically approved 64 x 64 hashes. No extra-small definition may move from `in_progress` to `complete` until its
-new exact hashes pass that review.
-
-The old placeholder-art questions below apply only to the remaining 26 definitions. They do not reopen the
-authoritative extra-small family, 128 x 128 canvas, shared Road Guard geometry, Small Curtain geometry, or
-orientation-specific mount decisions.
+The remaining open content work concerns the other 26 placeholder definitions and future size-family reviews. It
+does not reopen the 128 x 128 extra-small assets, the two reviewed geometry groups, Small Curtain, Prosperity
+Standard, Guardian Standard, mounts, orientations, or the canonical `small_curtain` identity.
 
 ## Milestone 16A remaining content and review questions
 
-- Supply and approve the final complete base texture and selective grayscale-alpha dye mask for every banner.
-- Approve the exact final pixel dimensions for each banner's two aligned images.
+- Supply and approve the final complete base texture and selective grayscale-alpha dye mask for each of the remaining
+  26 placeholder definitions.
+- Approve exact final pixel dimensions and per-definition presentation contracts for future size families.
 - Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
   examples.
 - Record whether a future design ever genuinely needs fixed foreground detail over a recoloured underlayer at the
@@ -33,30 +29,19 @@ orientation-specific mount decisions.
 
 ## Historical Milestone 16 content-intake baseline (superseded)
 
-This subsection records the pre-integration baseline only; the authoritative 2026-07-28 nine-definition section above
-supersedes its counts and readiness statements.
+Earlier intake preparation and Road Guard-only review states are historical, not active questions. They are retained
+in the implementation log and Road Guard review history. The current nine-banner evidence supersedes them; no
+extra-small live-review item remains unresolved.
 
-Road Guard was the first completed final-content banner under the two-file architecture. Its full Gate E manual review
-passed and is no longer an open question. The other six extra-small definitions, and the remaining 26 catalogue
-definitions, still have no approved final owner assets or decision packages. The intake kit defines the evidence
-required to integrate each without guessing.
-
-Owner input is still required per definition for final display name, dimensions, orientations, supported/default
-mounts, placement profile, geometry convention, localization, the complete base texture, the selective dye mask,
-provenance, and distribution permission. A completed intake may authorize an `in_progress` integration; it does not
-authorize `complete`.
-
-The read-only validator is implemented at:
+The read-only intake validator remains available at:
 
 ```text
 .\tools\scaffold_banners.bat --check-final-intake <path>
 ```
 
-It deliberately does not decide art direction, approve input, infer dimensions from pixels, copy assets, modify the
-catalogue, or perform live visual review. Whether future final assets need new pixel dimensions or custom geometry
-must be decided from actual approved inputs rather than pre-emptive tooling changes.
-
-Banner crafting remains product-disabled, survival acquisition remains unresolved, and Milestone 17 has not started.
+It does not decide art direction, approve input, infer dimensions, copy assets, modify the catalogue, or perform
+visual review. Banner crafting remains product-disabled, survival acquisition remains unresolved, and Milestone 17
+has not started.
 
 ## Milestone 15 provisional administration decisions
 

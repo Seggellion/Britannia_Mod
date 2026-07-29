@@ -31,7 +31,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -83,7 +83,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -135,7 +135,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -187,7 +187,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -239,7 +239,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -291,7 +291,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -343,7 +343,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/small_curtain/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -395,7 +395,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
@@ -447,7 +447,7 @@
         "default_mount": "britannia_mod:brass",
         "placement_profile_id": "britannia_mod:extra_small",
         "geometry_id": "britannia_mod:banner/road_guard/geometry",
-        "content_status": "in_progress",
+        "content_status": "complete",
         "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
       },
       "localization": {
