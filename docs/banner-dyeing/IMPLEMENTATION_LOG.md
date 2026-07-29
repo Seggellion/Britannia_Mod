@@ -1,4 +1,27 @@
 # Banner and Dyeing Implementation Log
+## 2026-07-29 - Small-family Gate E approval and closeout
+
+- Seggellion, acting as product owner, reported that every check in the six-banner Small-family live-review runbook
+  passed against commit `e4f457b132667efc0c9789ee6044c47bedf68bdc` on 2026-07-29.
+- Batch evidence is recorded in `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md`; each approved intake
+  directory has hash-bound `GATE_E_REVIEW.md` evidence. All result cells are PASS, Gate E is PASS, and no correction
+  was requested.
+- Exactly the six Small definitions transitioned from `in_progress` to `complete`. Production is now 35 active
+  definitions: 20 placeholder, 0 in progress, 15 complete, and 0 disabled.
+- No artwork bytes, geometry, stable IDs, catalogue indices, dimensions, orientations, mounts, placement profiles,
+  persistence schemas, networking, crafting policy, or Extra-small content changed.
+- Medium-family work begins with a readiness audit only; no Medium artwork or approval is inferred by this closeout.
+- `scaffold_banners.bat` generation and `--check` passed; all six intake validations remain
+  `READY_FOR_INTEGRATION`. The focused closeout selection passed 89 tests. After a separate clean, the full suite
+  passed 638 tests across 57 suites with zero failures, errors, or skips, and `build` passed.
+- Initial validation corrections were limited to expectations: one focused test listed completed families in the
+  reverse catalogue order, and one full-suite Extra-small test compared its nine IDs against all completed families.
+  The first now follows indices 21 through 35; the second scopes its assertion to the `x-small` group. A combined
+  `clean test build` invocation also exposed NeoForm's transient `Patch directory not found`; the established
+  separate clean, test, and build sequence passed without source or configuration changes.
+- Both production JARs contain 35 definitions, all six completed Small definitions, no `end_01`/`end_02` definition,
+  and no duplicate ZIP entries. The normal JAR has 5,032 entries; the all-JAR has 5,036.
+
 
 ## 2026-07-29 - Small-family intake approval and integration
 

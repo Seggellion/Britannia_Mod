@@ -231,25 +231,25 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
-    void productionCatalogueKeepsExtraSmallCompleteAndSmallInProgress() throws Exception {
+    void productionCatalogueKeepsApprovedExtraSmallAndSmallComplete() throws Exception {
         BannerScaffoldTool.Manifest manifest =
                 BannerScaffoldTool.readAndValidateManifest(Path.of(BannerScaffoldTool.MANIFEST_PATH));
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, manifest.banners().size());
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertEquals(EXTRA_SMALL_IDS.stream()
+        assertEquals(java.util.stream.Stream.concat(SMALL_IDS.stream(), EXTRA_SMALL_IDS.stream())
                         .map(id -> id.substring("britannia_mod:".length())).toList(),
                 manifest.banners().stream()
                         .filter(banner -> "complete".equals(banner.contentStatus()))
                         .map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(banner -> "in_progress".equals(banner.contentStatus())).count());
         var production = DyeResolverFixtures.productionSnapshot();
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
         assertEquals(20, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(6, production.banners().activeDefinitions().stream()
+        assertEquals(0, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(9, production.banners().activeDefinitions().stream()
+        assertEquals(15, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).count());
     }
 

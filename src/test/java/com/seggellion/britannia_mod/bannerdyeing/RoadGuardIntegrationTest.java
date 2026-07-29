@@ -127,9 +127,9 @@ class RoadGuardIntegrationTest {
 
         assertEquals(20, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(6, renderData.banners().values().stream()
+        assertEquals(0, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(9, renderData.banners().values().stream()
+        assertEquals(15, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.COMPLETE).count());
         assertTrue(renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.PLACEHOLDER)

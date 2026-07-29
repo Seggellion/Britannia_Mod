@@ -90,6 +90,7 @@ class ExtraSmallBannerFamilyIntegrationTest {
             assertTrue(Boolean.TRUE.equals(entry.displayNameApproved()), entry.id());
         }
         assertEquals(new HashSet<>(FAMILY), manifest.banners().stream()
+                .filter(entry -> "x-small".equals(entry.group()))
                 .filter(entry -> "complete".equals(entry.contentStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id)
                 .collect(java.util.stream.Collectors.toSet()));

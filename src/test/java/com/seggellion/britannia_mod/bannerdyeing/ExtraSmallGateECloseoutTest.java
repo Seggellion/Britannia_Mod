@@ -98,16 +98,17 @@ class ExtraSmallGateECloseoutTest {
     }
 
     @Test
-    void approvedExtraSmallIsCompleteAndSmallFamilyIsInProgress() {
+    void approvedExtraSmallRemainsCompleteAfterSmallFamilyCloseout() {
         Set<String> complete = manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id)
                 .collect(Collectors.toSet());
-        assertEquals(Set.copyOf(FAMILY), complete);
+        assertTrue(complete.containsAll(FAMILY));
+        assertEquals(15, complete.size());
         assertEquals(20, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
         assertEquals(35, manifest.banners().size());
         assertTrue(complete.contains("small_curtain"));

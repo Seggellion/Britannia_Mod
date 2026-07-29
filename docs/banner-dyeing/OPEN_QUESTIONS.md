@@ -2,19 +2,23 @@
 
 Date: 2026-07-29
 
-Milestone: 16 Batch 2A small-family integrated as in_progress
+Milestone: 16 Small-family Gate E complete; Medium-family intake is next
 
-## Small-family post-integration review
+## Small-family Gate E resolved
 
-The intake blockers are resolved. All six definitions are approved, validated, and integrated as `in_progress`.
-Seggellion is the approving product owner, creator, distribution-rights confirmer, and reported asset tester on
-2026-07-29. Star Standard and Ship Standard are now the active identities at indices 22 and 23.
+All six canonical Small definitions passed direct product-owner live review against commit
+`e4f457b132667efc0c9789ee6044c47bedf68bdc`. Seggellion approved every item, preview, placed-rendering,
+orientation, facing, mount, reload, and lifecycle check on 2026-07-29. The six definitions are `complete`; no
+Small-family correction remains open. Authoritative evidence is in
+`content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md` and each Small submission directory's
+`GATE_E_REVIEW.md`.
 
-The remaining small-family question is whether a separately recorded post-integration live-runtime evidence pass is
-needed before a future Gate E closeout. If performed, use `docs/banner-dyeing/SMALL_FAMILY_LIVE_REVIEW.md` to record
-the item, preview, placed rendering, orientation/facing, mounts, reload, and lifecycle cells against the integrated
-runtime hashes. Do not mark the six definitions complete as part of Batch 2A.
+## Medium-family intake questions
 
+The next family is the eight-entry `medium` catalogue group at indices 13 through 20. Final artwork packages,
+approved display names, exact pixel dimensions, per-definition geometry decisions, provenance, distribution
+permission, and manual verification evidence remain to be supplied. No Medium definition has been integrated or
+approved by this closeout.
 ## Extra-small Gate E resolved
 
 The nine-definition extra-small family completed direct product-owner live review on the 2026-07-28 closeout-record

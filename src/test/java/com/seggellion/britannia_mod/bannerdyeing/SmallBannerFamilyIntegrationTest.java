@@ -67,7 +67,7 @@ class SmallBannerFamilyIntegrationTest {
                 small.stream().map(BannerScaffoldTool.BannerEntry::index).toList());
         assertEquals(6, new HashSet<>(FAMILY).size());
         small.forEach(entry -> {
-            assertEquals("in_progress", entry.contentStatus(), entry.id());
+            assertEquals("complete", entry.contentStatus(), entry.id());
             assertEquals("small", entry.group(), entry.id());
             assertTrue(Boolean.TRUE.equals(entry.displayNameApproved()), entry.id());
             assertEquals("britannia_mod:small", entry.placementProfile(), entry.id());
@@ -77,7 +77,12 @@ class SmallBannerFamilyIntegrationTest {
                 .filter(entry -> "complete".equals(entry.contentStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id)
                 .collect(Collectors.toSet());
-        assertEquals(EXTRA_SMALL, complete);
+        assertEquals(Set.of(
+                "road_guard", "pale_road_guard", "red_crosslets",
+                "captains_red_crosslets", "scarlet_court", "verdant_court",
+                "small_curtain", "prosperity_standard", "guardian_standard",
+                "silver_and_gold_pennon", "star_standard", "ship_standard",
+                "pennon_of_silver", "iron_ward", "iron_ward_auxiliary"), complete);
         assertTrue(complete.contains("small_curtain"));
         assertFalse(manifest.banners().stream().anyMatch(entry -> Set.of(
                 "x_small_unnamed_01", "end_01", "end_02").contains(entry.id())));
@@ -85,7 +90,7 @@ class SmallBannerFamilyIntegrationTest {
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus()))
                 .count());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus()))
                 .count());
         assertEquals(35, manifest.banners().size());
@@ -259,7 +264,7 @@ class SmallBannerFamilyIntegrationTest {
 
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("in_progress", definition.get("content_status").getAsString(), id);
+            assertEquals("complete", definition.get("content_status").getAsString(), id);
             JsonObject assets = definition.getAsJsonObject("assets");
             assertEquals(approvedAssets.getAsJsonObject("base_texture")
                     .get("resource_id").getAsString(), assets.get("base_texture").getAsString(), id);

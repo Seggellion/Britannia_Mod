@@ -2,28 +2,26 @@
 
 Date: 2026-07-29
 
-Milestone: 16 Batch 2A small-family integrated as in_progress; extra-small family remains complete
+Milestone: 16 Small-family Gate E complete; Medium-family intake is next
 
 Feature branch: `banners-dyetub`
 
-## 2026-07-29 small-family integration facts
+## 2026-07-29 Small-family Gate E closeout facts
 
-- The active small family is exactly `silver_and_gold_pennon`, `star_standard`, `ship_standard`,
+- The active Small family is exactly `silver_and_gold_pennon`, `star_standard`, `ship_standard`,
   `pennon_of_silver`, `iron_ward`, and `iron_ward_auxiliary` at catalogue indices 21 through 26.
-- `star_standard` and `ship_standard` replace the provisional `end_01` and `end_02` stable IDs; the latter are not
-  active definitions.
-- Seggellion approved all six intakes on 2026-07-29, created the original artwork, confirmed distribution
-  permission, and reported testing the approved assets.
-- Each definition uses an approved 128 x 128 RGBA base texture and dye mask, approved geometry, 1 x 1 dimensions,
-  `wall_parallel` and `wall_perpendicular`, brass and iron mounts, brass by default, and the
-  `britannia_mod:small` placement profile.
-- The small family has five geometry models: one shared paired-pennon model and four definition-specific models.
-- All six small definitions are `in_progress`, not `complete`. Production totals are 20 placeholder, 6 in progress,
-  9 complete, and 0 disabled. The completed extra-small family remains unchanged.
-- Persisted banner/item/block-entity schemas are unchanged; the integration is catalogue, resource, generated-data,
-  tooling, test, and documentation work only.
-
-
+- `star_standard` and `ship_standard` remain the active replacements for provisional `end_01` and `end_02`.
+- Seggellion approved all six exact integrated asset pairs and all live-runtime review checks on 2026-07-29 against
+  commit `e4f457b132667efc0c9789ee6044c47bedf68bdc`.
+- Each definition keeps its approved 128 x 128 RGBA base texture and dye mask, approved geometry, 1 x 1 dimensions,
+  both wall orientations, brass and iron mounts, brass default mount, and `britannia_mod:small` placement profile.
+- The family uses five geometry models: one shared paired-pennon model and four definition-specific models.
+- All six Small definitions are `complete`. Production totals are 20 placeholder, 0 in progress, 15 complete, and
+  0 disabled; the nine completed Extra-small definitions remain unchanged.
+- Persisted banner/item/block-entity schemas are unchanged. No asset bytes, stable IDs, catalogue indices,
+  dimensions, orientations, mounts, crafting behavior, or gameplay authority changed in this closeout.
+- The next intake target is the eight-definition `medium` group at catalogue indices 13 through 20. Those entries
+  remain placeholder and unapproved.
 ## Historical 2026-07-28 small-family preparation facts
 
 - The small family is exactly `silver_and_gold_pennon`, `star_standard`, `ship_standard`, `pennon_of_silver`, `iron_ward`, and
@@ -56,7 +54,7 @@ Feature branch: `banners-dyetub`
 - The nine completed extra-small definitions and all their runtime/intake hashes remain unchanged.
   `small_curtain` remains canonical and `x_small_unnamed_01` remains inactive.
 
-## 2026-07-28 authoritative extra-small family facts
+## Historical 2026-07-28 authoritative extra-small family checkpoint
 
 This section supersedes the historical Road Guard/33-definition facts retained later in this document.
 
@@ -66,7 +64,7 @@ This section supersedes the historical Road Guard/33-definition facts retained l
   `small_curtain`. Prosperity Standard and Guardian Standard had no existing or unmistakable provisional
   predecessors, so they were appended at indices 34 and 35 without renumbering the first 33 definitions.
 - `small_curtain` is the canonical ninth extra-small stable ID; `x_small_unnamed_01` is inactive.
-- The production total is data-derived and is now 35: 20 `placeholder`, 6 `in_progress`, 9 `complete`, and 0
+- At that checkpoint, the data-derived production total was 35: 20 `placeholder`, 6 `in_progress`, 9 `complete`, and 0
   disabled. The nine-banner extra-small family is complete and has passed live Gate E review using 128 x 128
   `base_texture` and `dye_mask` assets. All nine are approved 1 x 1 entries supporting `wall_parallel` and
   `wall_perpendicular`, brass and iron mount materials, and brass by default.

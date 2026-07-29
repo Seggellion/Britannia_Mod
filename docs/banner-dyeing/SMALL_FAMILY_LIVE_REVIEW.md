@@ -4,12 +4,13 @@ Date prepared: 2026-07-28
 
 Approval evidence updated: 2026-07-29
 
-Status: ASSET APPROVAL/TESTING RECORDED - GRANULAR POST-INTEGRATION LIVE RUNTIME MATRIX NOT PERFORMED
+Status: GATE E PASS - PRODUCT-OWNER LIVE REVIEW COMPLETE
 
-This procedure covers the six small-family asset packages prepared from
-`C:/projects/britannia/raw fiels/tabbard/banner_small.ai`. Product-owner approval and asset testing by Seggellion are recorded on the exact intake hashes. All six intakes
-validate and are integrated as `in_progress`. This document remains the distinct granular post-integration live-runtime
-evidence matrix; no cell is inferred from the broader owner testing statement.
+This record covers the six small-family asset packages prepared from
+`C:/projects/britannia/raw fiels/tabbard/banner_small.ai`. Product-owner approval and live testing by Seggellion are recorded against commit
+`e4f457b132667efc0c9789ee6044c47bedf68bdc` and the exact intake hashes. All six intakes validate, every listed
+runtime check passed, and the family is approved for transition from `in_progress` to `complete`. The authoritative
+batch summary is `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md`.
 
 ## Setup and reusable procedure
 
@@ -31,7 +32,7 @@ evidence matrix; no cell is inferred from the broader owner testing statement.
 7. Save and reload, exercise initial and late client tracking, press F3+T, run `/reload`, break/drop, remove support,
    pick block, and re-place. Stable definition ID, material ID, resolved colour ID, source pigment, mount,
    orientation, and configured drops must survive.
-8. Record `PASS` or `FAIL` in every result cell. Do not infer live approval from automated tests or review images.
+8. The product owner recorded `PASS` for every result cell. Automated tests and review images remain supporting evidence rather than substitutes for that live approval.
 
 ## Definition-specific commands and expectations
 
@@ -49,13 +50,13 @@ four horizontal facings.
 
 ## Definition-specific result table
 
-All cells intentionally remain `NOT PERFORMED`.
+All cells were reported `PASS` by Seggellion on 2026-07-29.
 
 | Definition | Inventory item | Preview | Placed natural | Placed recoloured | Parallel | Perpendicular | Brass | Iron | N/S/E/W | Save/reload | Break/drop | Pick block | Re-placement | Resource reload | Data reload | No purple fallback | Overall |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `silver_and_gold_pennon` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED |
-| `star_standard` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED |
-| `ship_standard` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED |
-| `pennon_of_silver` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED |
-| `iron_ward` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED |
-| `iron_ward_auxiliary` | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED | NOT PERFORMED |
+| `silver_and_gold_pennon` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `star_standard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `ship_standard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `pennon_of_silver` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `iron_ward` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `iron_ward_auxiliary` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
