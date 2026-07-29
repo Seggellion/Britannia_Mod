@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.worldstate;
 import com.google.gson.JsonObject;
 import com.seggellion.britannia_mod.server.auth.ServerCredentials;
 import com.seggellion.britannia_mod.server.auth.ServerCredentialsTestFactory;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsSnapshot;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -27,6 +28,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * ({@code start}/{@code stop}/{@code tick(MinecraftServer)}) needs a real server, and that thin
  * wrapper is structurally identical to the already-proven {@code ServiceNpcSpawnDeliveryProcessor}
  * one it was modeled on.
+ *
+ * Milestone 13 NeoForge Slice 2: {@link WorldStateSyncPoller.ResponseApplier} is now an
+ * injectable seam too (mirroring the client/jitter/scheduler seams already established in Slice
+ * 1), so this test drives the apply step with a fake that reports {@code Applied}/{@code
+ * Rejected} without needing a real cache or a real {@code MinecraftServer} either. {@code
+ * ServiceNpcAssignmentsCandidateApply} itself and the real {@code
+ * ServiceNpcAssignmentsCache#applyWorldStateChanges} wiring are covered separately by {@code
+ * ServiceNpcAssignmentsCandidateApplyTest} and {@code WorldStateSyncGameTests}.
  */
 class WorldStateSyncPollerTest {
     private static final String SHARD = "11111111-1111-4111-8111-111111111111";
@@ -67,9 +76,8 @@ class WorldStateSyncPollerTest {
         List<Long> requestedVersions = new ArrayList<>();
         AtomicInteger jitterCalls = new AtomicInteger();
         WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
-                acceptingClient(requestedVersions),
-                () -> jitterCalls.incrementAndGet() == 1 ? 0 : 777,
-                Runnable::run
+                acceptingClient(requestedVersions), () -> jitterCalls.incrementAndGet() == 1 ? 0 : 777,
+                Runnable::run, () -> 0L, appliedApplier()
         );
 
         int firstCadence = WorldStateSyncPoller.BASE_CADENCE_TICKS;
@@ -79,6 +87,27 @@ class WorldStateSyncPollerTest {
         assertEquals(1, requestedVersions.size(), "poller did not fire exactly once at its scheduled tick");
         assertEquals(WorldStateSyncPoller.BASE_CADENCE_TICKS + 777, poller.ticksUntilNextPollForTest(),
                 "poller did not reschedule with a freshly-rolled jitter value");
+    }
+
+    @Test
+    void requestsTheVersionReportedByItsVersionSourceNotAnInMemoryFieldOfItsOwn() {
+        java.util.concurrent.atomic.AtomicReference<java.net.URI> capturedUri = new java.util.concurrent.atomic.AtomicReference<>();
+        WorldStateChangesResponse response = wellFormedResponse(SHARD, 42, 42, 42, List.of());
+        WorldStateChangesClient client = new WorldStateChangesClient(
+                ignored -> java.util.Optional.of(testCredentials()),
+                (ignored, task) -> CompletableFuture.completedFuture(
+                        (WorldStateChangesClient.Result) new WorldStateChangesClient.Success(response)),
+                (uri, maxBytes) -> {
+                    capturedUri.set(uri);
+                    return new com.seggellion.britannia_mod.server.http.CancellableHttpRequest(uri, maxBytes);
+                }
+        );
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run, () -> 42L, appliedApplier());
+
+        fireOnce(poller);
+
+        assertTrue(capturedUri.get() != null && capturedUri.get().getQuery().contains("from_version=42"),
+                "poller did not source from_version from its injected lastKnownVersionSource: " + capturedUri.get());
     }
 
     @Test
@@ -95,16 +124,37 @@ class WorldStateSyncPollerTest {
     }
 
     @Test
-    void aValidResponseIsAcceptedEndToEndAndHeldOnlyInMemoryForInspection() {
+    void aValidResponseIsAppliedAndAcceptedEndToEndThroughTheInjectedApplier() {
         WorldStateChangesResponse response = wellFormedResponse(SHARD, 0, 2, 2, List.of(1L, 2L));
         WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run);
+        List<WorldStateChangesResponse> appliedWith = new ArrayList<>();
+        WorldStateSyncPoller.ResponseApplier applier = (server, appliedResponse) -> {
+            appliedWith.add(appliedResponse);
+            return new ServiceNpcAssignmentsCandidateApply.Applied(ServiceNpcAssignmentsSnapshot.empty());
+        };
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run, () -> 0L, applier);
 
         fireOnce(poller);
 
+        assertEquals(List.of(response), appliedWith, "the injected applier was never invoked with the validated response");
         WorldStateSyncOutcome.Accepted accepted =
                 assertInstanceOf(WorldStateSyncOutcome.Accepted.class, poller.lastOutcomeForTest());
         assertEquals(response, accepted.response());
+    }
+
+    @Test
+    void anApplyRejectionLeavesATypedOutcomeDistinctFromAValidationRejectionAndDoesNotThrow() {
+        WorldStateChangesResponse response = wellFormedResponse(SHARD, 0, 2, 2, List.of(1L, 2L));
+        WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
+        WorldStateSyncPoller.ResponseApplier applier =
+                (server, appliedResponse) -> new ServiceNpcAssignmentsCandidateApply.Rejected("malformed_change: x must be an integer");
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run, () -> 0L, applier);
+
+        fireOnce(poller);
+
+        WorldStateSyncOutcome.ApplyRejected rejected =
+                assertInstanceOf(WorldStateSyncOutcome.ApplyRejected.class, poller.lastOutcomeForTest());
+        assertEquals("malformed_change: x must be an integer", rejected.reason());
     }
 
     @Test
@@ -113,7 +163,9 @@ class WorldStateSyncPollerTest {
                 99, SHARD, 0, 0, 0, false, List.of()
         );
         WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Success(response));
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run);
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier()
+        );
 
         fireOnce(poller);
 
@@ -125,7 +177,9 @@ class WorldStateSyncPollerTest {
     @Test
     void aTransportFailureIsLoggedAsATypedOutcomeAndDoesNotThrow() {
         WorldStateChangesClient client = respondingWith(new WorldStateChangesClient.Failure("http_status_failure"));
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run);
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier()
+        );
 
         fireOnce(poller);
 
@@ -146,7 +200,9 @@ class WorldStateSyncPollerTest {
                 },
                 com.seggellion.britannia_mod.server.http.CancellableHttpRequest::new
         );
-        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(client, fixedJitter(0), Runnable::run);
+        WorldStateSyncPoller poller = WorldStateSyncPoller.newForTest(
+                client, fixedJitter(0), Runnable::run, () -> 0L, neverCalledApplier()
+        );
 
         fireOnce(poller);
         assertEquals(1, callCount.get(), "credentials provider (proxy for a network attempt) was invoked");
@@ -171,7 +227,7 @@ class WorldStateSyncPollerTest {
     }
 
     private static WorldStateSyncPoller poller(java.util.function.IntSupplier jitter, List<Long> requestedVersions) {
-        return WorldStateSyncPoller.newForTest(acceptingClient(requestedVersions), jitter, Runnable::run);
+        return WorldStateSyncPoller.newForTest(acceptingClient(requestedVersions), jitter, Runnable::run, () -> 0L, appliedApplier());
     }
 
     private static java.util.function.IntSupplier fixedJitter(int value) {
@@ -180,6 +236,16 @@ class WorldStateSyncPollerTest {
 
     private static ServerCredentials testCredentials() {
         return ServerCredentialsTestFactory.create(URI.create("http://127.0.0.1"), UUID.randomUUID());
+    }
+
+    private static WorldStateSyncPoller.ResponseApplier appliedApplier() {
+        return (server, response) -> new ServiceNpcAssignmentsCandidateApply.Applied(ServiceNpcAssignmentsSnapshot.empty());
+    }
+
+    private static WorldStateSyncPoller.ResponseApplier neverCalledApplier() {
+        return (server, response) -> {
+            throw new AssertionError("responseApplier must not be invoked for a response that never reached acceptance");
+        };
     }
 
     private static WorldStateChangesClient acceptingClient(List<Long> requestedVersions) {

@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.worldstate;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsCache;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 
@@ -10,6 +11,7 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 
 /**
  * Server-scoped poller for the Milestone 13 world-state change log. Registered per {@link
@@ -18,17 +20,22 @@ import java.util.function.IntSupplier;
  * (see that class's doc, docs/service_npc_spawn_delivery_processor.md) -- this is the second
  * user of that same approved pattern, not a new one.
  *
- * SLICE 1 SCOPE (Milestone 13 NeoForge Slice 1)
+ * SLICE 2 SCOPE (Milestone 13 NeoForge Slice 2)
  *
- * This class only fires the poll, sends the last known version, and validates what comes back.
- * A validated response is logged and held in {@link #lastOutcome} for this slice's own tests to
- * inspect; it is never applied to {@code ServiceNpcAssignmentsCache} or any other live state,
- * and {@link #lastKnownVersion} is deliberately never advanced by a poll result -- there is
- * nothing yet that actually consumes a delta, so advancing it would just mean silently skipping
- * real changes once application logic does exist. Both begin in Slice 2. Neither
- * lastKnownVersion nor the pinned shard identity is persisted across a restart in this slice;
- * durable storage arrives with Slice 2's cache-application work, when there is actually
- * something worth persisting.
+ * A validated response is now actually applied: {@link #responseApplier} builds a candidate
+ * cache snapshot and, only if that candidate is itself internally consistent, durably commits it
+ * -- see {@link ServiceNpcAssignmentsCandidateApply} and {@code
+ * ServiceNpcAssignmentsCache#applyWorldStateChanges} for the mechanism and the three-policy
+ * distinction (on-disk corruption vs. an invalid batch vs. a candidate that fails its own sanity
+ * check) that governs it. This replaces Slice 1's "hold in memory and discard" placeholder.
+ *
+ * The version this poller requests each poll ({@link #lastKnownVersionSource}) is no longer a
+ * field this class owns -- Slice 1 tracked it in memory only, which meant a restart silently
+ * forgot how far this server had actually synced. It now reads {@code
+ * ServiceNpcAssignmentsCache#lastAppliedWorldStateVersion()} directly in production, the same
+ * durable value {@link #responseApplier} just committed, so there is exactly one authoritative
+ * source for "how far has this server actually applied" -- this class never keeps its own copy
+ * that could drift from it.
  *
  * CADENCE AND JITTER
  *
@@ -55,32 +62,42 @@ public final class WorldStateSyncPoller {
 
     private static final Map<MinecraftServer, WorldStateSyncPoller> ACTIVE = new HashMap<>();
 
+    @FunctionalInterface
+    public interface ResponseApplier {
+        ServiceNpcAssignmentsCandidateApply.Result apply(MinecraftServer server, WorldStateChangesResponse response);
+    }
+
     private final MinecraftServer server;
     private final WorldStateChangesClient client;
     private final IntSupplier jitterSource;
     private final Consumer<Runnable> tickThreadScheduler;
+    private final LongSupplier lastKnownVersionSource;
+    private final ResponseApplier responseApplier;
     private boolean stopped;
     private boolean pollInFlight;
     private int ticksUntilNextPoll;
-    private long lastKnownVersion;
     private String pinnedShardPublicId;
     private volatile WorldStateSyncOutcome lastOutcome = WorldStateSyncOutcome.neverPolled();
 
     private WorldStateSyncPoller(
             MinecraftServer server, WorldStateChangesClient client, IntSupplier jitterSource,
-            Consumer<Runnable> tickThreadScheduler
+            Consumer<Runnable> tickThreadScheduler, LongSupplier lastKnownVersionSource, ResponseApplier responseApplier
     ) {
         this.server = server;
         this.client = Objects.requireNonNull(client, "client");
         this.jitterSource = Objects.requireNonNull(jitterSource, "jitterSource");
         this.tickThreadScheduler = Objects.requireNonNull(tickThreadScheduler, "tickThreadScheduler");
+        this.lastKnownVersionSource = Objects.requireNonNull(lastKnownVersionSource, "lastKnownVersionSource");
+        this.responseApplier = Objects.requireNonNull(responseApplier, "responseApplier");
         this.ticksUntilNextPoll = BASE_CADENCE_TICKS + boundedJitter();
     }
 
     public static synchronized WorldStateSyncPoller start(MinecraftServer server) {
         return ACTIVE.computeIfAbsent(server, key -> {
             WorldStateSyncPoller poller = new WorldStateSyncPoller(
-                    key, new WorldStateChangesClient(), WorldStateSyncPoller::rollJitter, key::execute
+                    key, new WorldStateChangesClient(), WorldStateSyncPoller::rollJitter, key::execute,
+                    () -> ServiceNpcAssignmentsCache.get(key.overworld()).lastAppliedWorldStateVersion(),
+                    WorldStateSyncApply::applyAndCommit
             );
             LOGGER.info("World state sync poller started next_poll_in_ticks={}", poller.ticksUntilNextPoll);
             return poller;
@@ -108,14 +125,15 @@ public final class WorldStateSyncPoller {
 
     /**
      * Test-only construction bypassing the server-keyed registry: no {@link MinecraftServer}
-     * instance is required because the client and scheduler seams are both fully substitutable,
-     * exactly like every other Rails HTTP client in this codebase (see {@code
-     * BankingOpenClient}/{@code ServiceNpcSpawnRegistrationClient}'s own test constructors).
+     * instance is required because every seam is fully substitutable, exactly like every other
+     * Rails HTTP client in this codebase (see {@code BankingOpenClient}/{@code
+     * ServiceNpcSpawnRegistrationClient}'s own test constructors).
      */
     public static WorldStateSyncPoller newForTest(
-            WorldStateChangesClient client, IntSupplier jitterSource, Consumer<Runnable> tickThreadScheduler
+            WorldStateChangesClient client, IntSupplier jitterSource, Consumer<Runnable> tickThreadScheduler,
+            LongSupplier lastKnownVersionSource, ResponseApplier responseApplier
     ) {
-        return new WorldStateSyncPoller(null, client, jitterSource, tickThreadScheduler);
+        return new WorldStateSyncPoller(null, client, jitterSource, tickThreadScheduler, lastKnownVersionSource, responseApplier);
     }
 
     public void onTick() {
@@ -128,7 +146,7 @@ public final class WorldStateSyncPoller {
     private void firePoll() {
         if (stopped || pollInFlight) return;
         pollInFlight = true;
-        long requestedFromVersion = lastKnownVersion;
+        long requestedFromVersion = lastKnownVersionSource.getAsLong();
         LOGGER.info("World state sync poll attempted from_version={}", requestedFromVersion);
         client.fetchChangesSince(server, requestedFromVersion).whenComplete((result, failure) ->
                 tickThreadScheduler.accept(() -> complete(requestedFromVersion, result, failure)));
@@ -160,16 +178,25 @@ public final class WorldStateSyncPoller {
         }
 
         if (pinnedShardPublicId == null) pinnedShardPublicId = response.shardPublicId();
-        lastOutcome = WorldStateSyncOutcome.accepted(response);
         LOGGER.info(
-                "World state sync poll succeeded from_version={} to_version={} current_version={} changes={} full_bootstrap_required={}",
+                "World state sync poll validated from_version={} to_version={} current_version={} changes={} full_bootstrap_required={}",
                 response.fromVersion(), response.toVersion(), response.currentVersion(),
                 response.changes().size(), response.fullBootstrapRequired()
         );
-        // Slice 1 stops here: the response is validated and logged only. lastKnownVersion is
-        // deliberately never advanced, and response.changes()/fullBootstrapRequired() are never
-        // acted on -- applying a delta (or falling back to full bootstrap) is Slice 2/3 work,
-        // once ServiceNpcAssignmentsCache has an actual apply path to hand this to.
+
+        ServiceNpcAssignmentsCandidateApply.Result applyResult = responseApplier.apply(server, response);
+        if (applyResult instanceof ServiceNpcAssignmentsCandidateApply.Rejected rejected) {
+            lastOutcome = WorldStateSyncOutcome.applyRejected(rejected.reason());
+            LOGGER.warn("World state sync apply rejected reason={} from_version={} to_version={}",
+                    rejected.reason(), requestedFromVersion, response.toVersion());
+            return;
+        }
+
+        lastOutcome = WorldStateSyncOutcome.accepted(response);
+        LOGGER.info("World state sync poll applied and committed to_version={}", response.toVersion());
+        // Slice 3's own job starts here: response.fullBootstrapRequired() is validated and
+        // logged but never acted on -- falling back to a full bootstrap fetch when it is true is
+        // explicitly out of this slice's scope.
     }
 
     private void close() {
