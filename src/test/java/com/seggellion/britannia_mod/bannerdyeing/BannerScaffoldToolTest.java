@@ -39,7 +39,7 @@ class BannerScaffoldToolTest {
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, summary.generatedDefinitions());
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
                 countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
-        assertEquals(11, countSupportingJson(root));
+        assertEquals(12, countSupportingJson(root));
         assertEquals(6, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/placeholder")));
         assertEquals(3, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
         assertEquals(4, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/mount")));
@@ -57,11 +57,11 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Brass automated"));
         assertTrue(status.contains("Iron automated"));
         assertTrue(status.contains("Manual result"));
-        assertTrue(status.contains("Final per-definition orientations approved: 29 of "
+        assertTrue(status.contains("Final per-definition orientations approved: 35 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final per-definition mounts approved: 29 of "
+        assertTrue(status.contains("Final per-definition mounts approved: 35 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final placed artwork intake approved: 29 of "
+        assertTrue(status.contains("Final placed artwork intake approved: 35 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Banner crafting implemented: no"));
         assertTrue(status.contains("Admin acquisition implemented: yes"));
@@ -140,7 +140,8 @@ class BannerScaffoldToolTest {
     void checkFailsAfterGeneratedFileChanges() throws Exception {
         Path root = seed();
         run(root, false, false);
-        Path definition = root.resolve("src/main/resources/data/britannia_mod/banner_definitions/large_01.json");
+        Path definition = root.resolve(
+                "src/main/resources/data/britannia_mod/banner_definitions/tournament_curtain.json");
         Files.writeString(definition, Files.readString(definition) + " ", StandardCharsets.UTF_8);
         assertThrows(BannerScaffoldTool.ScaffoldException.class, () -> run(root, true, false));
     }
@@ -162,13 +163,15 @@ class BannerScaffoldToolTest {
     void normalGenerationPreservesCustomizedOutput() throws Exception {
         Path root = seed();
         run(root, false, false);
-        Path definition = root.resolve("src/main/resources/data/britannia_mod/banner_definitions/large_01.json");
+        Path definition = root.resolve(
+                "src/main/resources/data/britannia_mod/banner_definitions/tournament_curtain.json");
         byte[] customized = "customized\n".getBytes(StandardCharsets.UTF_8);
         Files.write(definition, customized);
 
         Invocation invocation = run(root, false, false);
         assertArrayEquals(customized, Files.readAllBytes(definition));
-        assertTrue(invocation.summary.customizedFiles().stream().anyMatch(path -> path.endsWith("large_01.json")));
+        assertTrue(invocation.summary.customizedFiles().stream()
+                .anyMatch(path -> path.endsWith("tournament_curtain.json")));
         assertTrue(invocation.output.contains("Preserved customized output"));
     }
 
@@ -176,16 +179,17 @@ class BannerScaffoldToolTest {
     void forceWarnsAndOverwritesOnlyDeclaredCustomizedOutputs() throws Exception {
         Path root = seed();
         run(root, false, false);
-        Path definition = root.resolve("src/main/resources/data/britannia_mod/banner_definitions/large_01.json");
+        Path definition = root.resolve(
+                "src/main/resources/data/britannia_mod/banner_definitions/tournament_curtain.json");
         Files.writeString(definition, "customized\n", StandardCharsets.UTF_8);
         Path unrelated = root.resolve("src/main/resources/data/britannia_mod/banner_definitions/user_owned.json");
         Files.writeString(unrelated, "user-owned\n", StandardCharsets.UTF_8);
 
         Invocation forced = run(root, false, true);
-        assertTrue(Files.readString(definition).contains("britannia_mod:large_01"));
+        assertTrue(Files.readString(definition).contains("britannia_mod:tournament_curtain"));
         assertEquals("user-owned\n", Files.readString(unrelated));
         assertTrue(forced.output.contains("WARNING: --force will overwrite"));
-        assertTrue(forced.output.contains("large_01.json"));
+        assertTrue(forced.output.contains("tournament_curtain.json"));
     }
 
     @Test
@@ -204,7 +208,8 @@ class BannerScaffoldToolTest {
     @Test
     void duplicateIdIsRejected() throws Exception {
         Path root = seed();
-        mutate(root, object -> banners(object).get(1).getAsJsonObject().addProperty("id", "large_01"));
+        mutate(root, object -> banners(object).get(1).getAsJsonObject()
+                .addProperty("id", "tournament_curtain"));
         assertInvalid(root, "Duplicate stable ID");
     }
 
@@ -280,9 +285,9 @@ class BannerScaffoldToolTest {
         Path root = seed();
         run(root, false, false);
         Path languagePath = root.resolve(BannerScaffoldTool.LOCALIZATION_PATH);
-        String key = "banner.britannia_mod.large_01";
+        String key = "banner.britannia_mod.tournament_curtain";
         String customized = Files.readString(languagePath).replace(
-                "Large Banner 01 (Name Required)", "Artist Custom Label");
+                "Tournament Curtain", "Artist Custom Label");
         Files.writeString(languagePath, customized, StandardCharsets.UTF_8);
 
         Invocation normal = run(root, false, false);
@@ -290,7 +295,7 @@ class BannerScaffoldToolTest {
         assertTrue(normal.summary.customizedFiles().stream().anyMatch(path -> path.contains(key)));
         Invocation forced = run(root, false, true);
         assertTrue(forced.output.contains("overwrite customized localization"));
-        assertTrue(Files.readString(languagePath).contains("Large Banner 01 (Name Required)"));
+        assertTrue(Files.readString(languagePath).contains("Tournament Curtain"));
     }
 
     private Path seed() throws Exception {
@@ -307,6 +312,15 @@ class BannerScaffoldToolTest {
                     "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/base_texture.png");
             copyApprovedAsset(root,
                     "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/dye_mask.png");
+        }
+        for (String banner : ProductionBannerCatalogue.CANONICAL_PATHS.subList(0, 6)) {
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/base_texture.png");
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/dye_mask.png");
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/models/banner/large/"
+                            + banner + "/geometry.json");
         }
         for (String banner : java.util.List.of(
                 "tournament_medium", "ceremonial_tournament", "iron_quarter", "outer_ward",

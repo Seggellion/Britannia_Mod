@@ -19,7 +19,7 @@ class BannerPlacedGeometryAndBoundsTest {
             new FamilyCase("small", 1, 1),
             new FamilyCase("medium", 1, 2),
             new FamilyCase("medium_wall", 1, 2),
-            new FamilyCase("large", 3, 2));
+            new FamilyCase("large", 2, 2));
 
     @BeforeAll
     static void setup() {
@@ -112,9 +112,9 @@ class BannerPlacedGeometryAndBoundsTest {
     void parallelAndPerpendicularPlanesPreserveMilestoneTwelveAxes() {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             var parallel = BannerPlacedGeometryPlan.create(BannerOrientation.WALL_PARALLEL,
-                    facing, 3, 2, BannerPlacedGeometryFamily.LARGE, false);
+                    facing, 2, 2, BannerPlacedGeometryFamily.LARGE, false);
             var perpendicular = BannerPlacedGeometryPlan.create(BannerOrientation.WALL_PERPENDICULAR,
-                    facing, 3, 2, BannerPlacedGeometryFamily.LARGE, false);
+                    facing, 2, 2, BannerPlacedGeometryFamily.LARGE, false);
             assertAxis(parallel.topRight().subtract(parallel.topLeft()), facing.getCounterClockWise());
             assertAxis(perpendicular.topRight().subtract(perpendicular.topLeft()), facing);
             assertEquals(facing, parallel.frontNormal());
@@ -130,13 +130,13 @@ class BannerPlacedGeometryAndBoundsTest {
                 Milestone13RenderFixtures.natural(material), Milestone13RenderFixtures.mount("brass"));
         BlockPos anchor = new BlockPos(15, 80, 15);
         var entity = Milestone13RenderFixtures.entity(anchor, Direction.SOUTH,
-                BannerOrientation.WALL_PERPENDICULAR, 1, 1, instance);
+                BannerOrientation.WALL_PARALLEL, 1, 1, instance);
         BannerPlacedRenderState state = Milestone13RenderFixtures.placed(entity, 1, 1);
         assertEquals(1, state.persistedWidth());
         assertEquals(1, state.persistedHeight());
         assertEquals(BannerPlacedRenderFailure.GEOMETRY_FOOTPRINT_MISMATCH, state.failure());
         assertEquals(expectedBounds(anchor, Direction.SOUTH,
-                        BannerOrientation.WALL_PERPENDICULAR, 1, 1),
+                        BannerOrientation.WALL_PARALLEL, 1, 1),
                 state.renderBounds());
         assertEquals(instance, entity.bannerState().orElseThrow());
         assertEquals(1, entity.placedStructure().orElseThrow().width());

@@ -2,40 +2,20 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Large assets prepared; integration approval required
+Milestone: parallel Large integrated; live Gate E review required
 
-## Parallel Large decisions required before integration
+## Parallel Large Gate E remains open
 
-The authoritative Illustrator source has now resolved artwork, candidate names, and six-member family scope. Draft
-packages exist for `tournament_curtain`, `threefold_chain_standard`, `iron_serpent_standard`,
-`silver_fleur_curtain`, `gilded_trellis_curtain`, and `gilded_chevron_curtain`, proposed as deliberate migrations
-from `large_01` through `large_06` without index changes.
+Seggellion approved and the repository integrated all six source-named Parallel Large packages on 2026-07-30.
+Approval, provenance, 2 x 2 dimensions, six distinct geometries, the shared `britannia_mod:large_parallel` profile,
+parallel-only placement, brass and iron mounts, stable-ID migration, and decode aliases are resolved. All six
+intakes validate `READY_FOR_INTEGRATION`.
 
-The following administrative and art-direction decisions are still required and were not inferred:
-
-- Product-owner approver identity and approval date.
-- Creator identity, original-art attestation, explicit not-copied-from-reference declaration, and distribution
-  permission.
-- Approval of the 2 x 2 logical-dimension proposal supported by the near-square Illustrator silhouettes, replacing
-  the provisional 3 x 2 placeholder dimensions.
-- Approval of six distinct custom Large geometry drafts and the `britannia_mod:large_parallel` placement profile.
-- Authorization to migrate the six provisional IDs and add the smallest decode-only saved-state aliases.
-
-Until those decisions are supplied, the actual intake validator correctly reports all six drafts `INVALID`: their
-canonical source-named IDs are not present in the live catalogue and required approval/provenance fields are absent.
-No draft may be integrated or advanced to Gate E.
-
-## Parallel Large intake submissions required
-
-The live catalogue Large membership remains `large_01`, `large_02`, `large_03`, `large_04`, `large_05`, and
-`large_06`. This historical readiness statement is superseded for asset availability: source-derived draft
-manifests, base textures, masks, geometry proposals, names, and hashes now exist. Approval, provenance, final
-dimensions, geometry acceptance, canonical-ID migration, runtime integration, and live review remain outstanding.
-Use the individual draft packages rather than treating the informational 3 x 2 batch-template state as approval.
-
-Large banners support `wall_parallel` placement only and do not support `wall_perpendicular` placement. That product
-decision is fixed for this family and is not an open alternative. Integration remains blocked until at least one
-complete Large package validates `READY_FOR_INTEGRATION`.
+The remaining question is the observed in-client result at the exact integration commit. Run every row in
+`docs/banner-dyeing/PARALLEL_LARGE_LIVE_REVIEW.md` and record product-owner results for natural and dyed artwork,
+preview, placed rendering, all four facings, brass and iron, footprint/anchor behavior, save/load, break/drop,
+pick block, re-placement, reload, and initial/late tracking. Until every row passes, Gate E is unperformed and all
+six definitions remain `in_progress`.
 
 ## Parallel Medium Gate E resolved
 
@@ -67,14 +47,11 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns the 6 Large-family placeholder definitions and their future review. It
+The remaining open content work concerns live Gate E review of the 6 in-progress Large-family definitions. It
 does not reopen the completed Extra-small, Small, or either Medium family.
 
 ## Milestone 16A remaining content and review questions
 
-- Supply and approve the final complete base texture and selective grayscale-alpha dye mask for each of the remaining
-  6 placeholder definitions.
-- Approve exact final pixel dimensions and per-definition presentation contracts for future size families.
 - Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
   examples.
 - Record whether a future design ever genuinely needs fixed foreground detail over a recoloured underlayer at the

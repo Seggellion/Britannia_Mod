@@ -7,7 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Catalogue geometry resources mapped to their exact persisted footprint support. */
 public enum BannerPlacedGeometryFamily {
-    LARGE(BannerAssetAvailability.id("banner/placeholder/large"), 3, 2, 0.03125, 0.0625),
+    LARGE(BannerAssetAvailability.id("banner/placeholder/large"), 2, 2, 0.03125, 0.0625),
     MEDIUM_WALL(BannerAssetAvailability.id("banner/placeholder/medium_wall"), 2, 2, 0.125, 0.125),
     MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2, 0.25, 0.03125),
     SMALL(BannerAssetAvailability.id("banner/placeholder/small"), 1, 1, 0.1875, 0.1875),
@@ -71,6 +71,10 @@ public enum BannerPlacedGeometryFamily {
         Optional<BannerPlacedGeometryFamily> exact = from(geometryId);
         if (exact.isPresent() || dimensions == null) {
             return exact;
+        }
+        if (geometryId.getPath().startsWith("banner/large/")
+                && LARGE.supports(dimensions.widthBlocks(), dimensions.heightBlocks())) {
+            return Optional.of(LARGE);
         }
         return Arrays.stream(values())
                 .filter(value -> value.geometryId.getPath().contains("/placeholder/"))

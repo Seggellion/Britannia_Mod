@@ -248,6 +248,28 @@ class CoreDataCodecTest {
     }
 
     @Test
+    void provisionalParallelLargeIdsDecodeToCanonicalIllustratorNames() {
+        Map<String, String> aliases = Map.of(
+                "large_01", "tournament_curtain",
+                "large_02", "threefold_chain_standard",
+                "large_03", "iron_serpent_standard",
+                "large_04", "silver_fleur_curtain",
+                "large_05", "gilded_trellis_curtain",
+                "large_06", "gilded_chevron_curtain");
+        aliases.forEach((legacyPath, canonicalPath) -> {
+            BannerDefinitionId canonical =
+                    BannerDefinitionId.parse("britannia_mod:" + canonicalPath);
+            BannerDefinitionId legacy = BannerDefinitionId.CODEC.parse(
+                    JsonOps.INSTANCE,
+                    new JsonPrimitive("britannia_mod:" + legacyPath)).getOrThrow();
+            assertEquals(canonical, legacy, legacyPath);
+            assertEquals("britannia_mod:" + canonicalPath,
+                    BannerDefinitionId.CODEC.encodeStart(JsonOps.INSTANCE, legacy)
+                            .getOrThrow().getAsString(), legacyPath);
+        });
+    }
+
+    @Test
     void stableMatchTypeNamesDoNotUseOrdinals() {
         assertStableEnum(MatchType.CODEC, MatchType.EXPLICIT_MAPPING, "explicit_mapping");
         assertStableEnum(MatchType.CODEC, MatchType.NEAREST_COLOUR, "nearest_colour");

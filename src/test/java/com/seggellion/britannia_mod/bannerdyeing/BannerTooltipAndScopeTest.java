@@ -39,8 +39,8 @@ import org.junit.jupiter.api.Test;
 
 class BannerTooltipAndScopeTest {
     private static final BannerDefinitionId WARD = BannerDefinitionId.parse("britannia_mod:joined_wards");
-    private static final BannerDefinitionId PLACEHOLDER =
-            BannerDefinitionId.parse("britannia_mod:large_01");
+    private static final BannerDefinitionId LARGE =
+            BannerDefinitionId.parse("britannia_mod:tournament_curtain");
     private static final FabricMaterialId SILK = FabricMaterialId.parse("britannia_mod:silk");
     private static final PigmentId MADDER = PigmentId.parse("britannia_mod:madder_red");
     private static final MountId BRASS = MountId.parse("britannia_mod:brass");
@@ -71,16 +71,16 @@ class BannerTooltipAndScopeTest {
     }
 
     @Test
-    void dyedPlaceholderTooltipShowsPigmentPlaceholderProvisionalAndBothOrientations() {
-        List<Component> lines = lines(dyedPlaceholder(), production);
+    void dyedLargeTooltipShowsPigmentApprovedDimensionsAndParallelOnly() {
+        List<Component> lines = lines(dyedLarge(), production);
         List<String> keys = keys(lines);
         assertTrue(keys.contains("tooltip.britannia_mod.banner.dyed_with"));
-        assertTrue(keys.contains("tooltip.britannia_mod.banner.placeholder_warning"));
-        assertTrue(keys.contains("tooltip.britannia_mod.banner.provisional_dimensions"));
+        assertFalse(keys.contains("tooltip.britannia_mod.banner.placeholder_warning"));
+        assertFalse(keys.contains("tooltip.britannia_mod.banner.provisional_dimensions"));
         Component placementArg = (Component) contents(lines.stream()
                 .filter(line -> key(line).equals("tooltip.britannia_mod.banner.placement"))
                 .findFirst().orElseThrow()).getArgs()[0];
-        assertEquals("tooltip.britannia_mod.banner.orientation.both", key(placementArg));
+        assertEquals("tooltip.britannia_mod.banner.orientation.parallel", key(placementArg));
     }
 
     @Test
@@ -212,8 +212,8 @@ class BannerTooltipAndScopeTest {
                 production, true).stack().orElseThrow();
     }
 
-    private static ItemStack dyedPlaceholder() {
-        return factory.fullySpecifiedBanner(PLACEHOLDER, SILK,
+    private static ItemStack dyedLarge() {
+        return factory.fullySpecifiedBanner(LARGE, SILK,
                 ResolvedColourId.parse("britannia_mod:silk_ruby"), Optional.of(MADDER), BRASS,
                 production, true).stack().orElseThrow();
     }

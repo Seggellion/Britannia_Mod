@@ -34,7 +34,7 @@ class BannerPlacedAppearanceAndKeyTest {
                         definition, material, Milestone13RenderFixtures.natural(material), mount);
                 BannerAppearanceState item = itemAppearance(instance, 7, 11);
                 BannerAppearanceState placed = placedAppearance(instance, Direction.NORTH,
-                        BannerOrientation.WALL_PARALLEL, 3, 2, 7, 11);
+                        BannerOrientation.WALL_PARALLEL, 2, 2, 7, 11);
                 assertEquals(item, placed, materialPath + "/" + mountPath);
                 assertEquals(item.key(), placed.key());
                 assertAll(
@@ -88,24 +88,24 @@ class BannerPlacedAppearanceAndKeyTest {
 
     @Test
     void placedContextChangesOnlyItsWrapperKey() {
-        var definition = Milestone13RenderFixtures.definitionForGeometry("large");
+        var definition = Milestone13RenderFixtures.definitionForGeometry("small");
         var cotton = Milestone13RenderFixtures.material("cotton");
         BannerInstanceState instance = Milestone13RenderFixtures.state(definition, cotton,
                 Milestone13RenderFixtures.natural(cotton), Milestone13RenderFixtures.mount("brass"));
         BannerPlacedRenderState northParallel = placed(instance, Direction.NORTH,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 5, 6);
+                BannerOrientation.WALL_PARALLEL, 1, 1, 5, 6);
         BannerPlacedRenderState northPerpendicular = placed(instance, Direction.NORTH,
-                BannerOrientation.WALL_PERPENDICULAR, 3, 2, 5, 6);
+                BannerOrientation.WALL_PERPENDICULAR, 1, 1, 5, 6);
         BannerPlacedRenderState eastParallel = placed(instance, Direction.EAST,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 5, 6);
+                BannerOrientation.WALL_PARALLEL, 1, 1, 5, 6);
         assertEquals(northParallel.appearance().key(), northPerpendicular.appearance().key());
         assertEquals(northParallel.appearance().key(), eastParallel.appearance().key());
         assertNotEquals(northParallel.key(), northPerpendicular.key());
         assertNotEquals(northParallel.key(), eastParallel.key());
         assertEquals(northParallel.key(), placed(instance, Direction.NORTH,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 5, 6).key());
+                BannerOrientation.WALL_PARALLEL, 1, 1, 5, 6).key());
         assertEquals(northParallel.key().hashCode(), placed(instance, Direction.NORTH,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 5, 6).key().hashCode());
+                BannerOrientation.WALL_PARALLEL, 1, 1, 5, 6).key().hashCode());
     }
 
     @Test
@@ -116,20 +116,20 @@ class BannerPlacedAppearanceAndKeyTest {
         BannerInstanceState base = Milestone13RenderFixtures.state(definition, cotton,
                 Milestone13RenderFixtures.natural(cotton), Milestone13RenderFixtures.mount("brass"));
         BannerPlacedRenderKey key = placed(base, Direction.NORTH,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 9, 10).key();
+                BannerOrientation.WALL_PARALLEL, 2, 2, 9, 10).key();
         assertNotEquals(key, placed(Milestone13RenderFixtures.state(definition, cotton,
                 Milestone13RenderFixtures.dyed(cotton), Milestone13RenderFixtures.mount("brass")),
-                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 3, 2, 9, 10).key());
+                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 2, 2, 9, 10).key());
         assertNotEquals(key, placed(Milestone13RenderFixtures.state(definition, wool,
                 Milestone13RenderFixtures.natural(wool), Milestone13RenderFixtures.mount("brass")),
-                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 3, 2, 9, 10).key());
+                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 2, 2, 9, 10).key());
         assertNotEquals(key, placed(Milestone13RenderFixtures.state(definition, cotton,
                 Milestone13RenderFixtures.natural(cotton), Milestone13RenderFixtures.mount("iron")),
-                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 3, 2, 9, 10).key());
+                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 2, 2, 9, 10).key());
         assertNotEquals(key, placed(base, Direction.NORTH,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 10, 10).key());
+                BannerOrientation.WALL_PARALLEL, 2, 2, 10, 10).key());
         assertNotEquals(key, placed(base, Direction.NORTH,
-                BannerOrientation.WALL_PARALLEL, 3, 2, 9, 11).key());
+                BannerOrientation.WALL_PARALLEL, 2, 2, 9, 11).key());
     }
 
     @Test

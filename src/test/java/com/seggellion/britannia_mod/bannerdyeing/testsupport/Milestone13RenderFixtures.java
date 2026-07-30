@@ -77,6 +77,9 @@ public final class Milestone13RenderFixtures {
                 return approvedSmall;
             }
         }
+        if ("large".equals(path)) {
+            return BannerDefinitionId.parse("britannia_mod:tournament_curtain");
+        }
         return renderData().banners().values().stream()
                 .filter(definition -> definition.assets().geometry().getPath().equals(
                         "banner/placeholder/" + path))

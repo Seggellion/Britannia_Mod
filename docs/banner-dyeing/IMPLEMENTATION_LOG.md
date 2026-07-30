@@ -1,5 +1,35 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-30 - Parallel Large approval and runtime integration
+
+- Seggellion approved all six prepared Parallel Large packages on 2026-07-30 and confirmed that Seggellion created
+  the original project artwork, it was not copied from reference art, and distribution with Britannia Mod/UltimaCraft
+  is permitted. The approved artwork-review source is
+  `content/banner-final-intake/review/parallel_large_family_review.png`, supported by each submission's review
+  artifacts.
+- Migrated catalogue indices 1 through 6 from `large_01` through `large_06` to `tournament_curtain`,
+  `threefold_chain_standard`, `iron_serpent_standard`, `silver_fleur_curtain`, `gilded_trellis_curtain`, and
+  `gilded_chevron_curtain`. Decode-time aliases accept the six provisional IDs and canonical encoding emits only
+  the new IDs; no duplicate active definition or persistence-schema change was introduced.
+- All six finalized intake manifests validate `READY_FOR_INTEGRATION`. The approved 128 x 128 base/mask hashes are
+  the exact values recorded in the preparation entry and `PROJECT_FACTS.md`; the runtime PNGs are byte-identical
+  to those prepared files.
+- All six definitions use approved 2 x 2 dimensions, only `wall_parallel`, brass and iron mounts with brass by
+  default, the shared `britannia_mod:large_parallel` placement profile, the existing untinted
+  `britannia_mod:banner/mount/wall_parallel` mount, and six intentionally distinct custom Large geometry resources.
+- Production remains 35 active definitions: 0 `placeholder`, 6 `in_progress`, 29 `complete`, and 0 disabled.
+  Parallel Large Gate E remains unperformed, so none of these six definitions is marked complete.
+- Scaffold generation produced an identical 49-file aggregate SHA-256
+  `069e5623a16ed9b3e80841d2225261d7c7ceb01b61091e18a517b42a9b716c82` on consecutive runs and scaffold
+  `--check` passed. The banner/dyeing suite passes 657 tests across 61 suites; after standalone clean, the
+  unrestricted suite passes 663 tests across 62 suites; both have zero failures, errors, or skips, and `build`
+  passes.
+- The normal JAR has 5,130 entries and the all-JAR has 5,134, with zero duplicate names. Both contain exactly 35
+  definitions (29 complete, 6 in progress, 0 placeholder, 0 disabled), six canonical Large definitions and no
+  provisional Large definition, all six approved base/mask/geometry trios, `large_parallel`, the shared
+  wall-parallel mount, brass/iron resources, the client index, and the block atlas. Neither contains forbidden
+  definition fields, static-overlay/fabric-base resources, banner recipes, or intake/live-review artifacts.
+
 ## 2026-07-30 - Parallel Large authoritative asset preparation
 
 - Audited `C:/projects/britannia/raw fiels/tabbard/banner_large.ai` through read-only Adobe Illustrator automation.

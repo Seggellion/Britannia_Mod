@@ -26,14 +26,14 @@ class BannerPlacedSynchronizationTest {
     @Test
     void initialChunkTagAndTrackingPacketContainCompleteBannerAndPlacedStructure() throws Exception {
         BannerBlockEntity server = entity("large", "cotton", "brass",
-                Direction.WEST, BannerOrientation.WALL_PERPENDICULAR, 3, 2);
+                Direction.WEST, BannerOrientation.WALL_PARALLEL, 2, 2);
         CompoundTag tag = server.getUpdateTag(RegistryAccess.EMPTY);
         assertTrue(tag.contains(BannerBlockEntity.STATE_TAG));
         assertTrue(tag.contains(BannerBlockEntity.PLACEMENT_TAG));
         assertTrue(tag.get(BannerBlockEntity.STATE_TAG).toString().contains("resolved_colour_id"));
         assertTrue(tag.get(BannerBlockEntity.STATE_TAG).toString().contains("mount_id"));
         assertTrue(tag.get(BannerBlockEntity.PLACEMENT_TAG).toString().contains("occupied_offsets"));
-        assertTrue(tag.get(BannerBlockEntity.PLACEMENT_TAG).toString().contains("wall_perpendicular"));
+        assertTrue(tag.get(BannerBlockEntity.PLACEMENT_TAG).toString().contains("wall_parallel"));
 
         var constructor = ClientboundBlockEntityDataPacket.class.getDeclaredConstructor(
                 BlockPos.class, BlockEntityType.class, CompoundTag.class);
@@ -65,7 +65,7 @@ class BannerPlacedSynchronizationTest {
     @Test
     void colourAndMountUpdatesChangeRenderKeysWithoutReplacingBlockOrFootprint() {
         BannerBlockEntity server = entity("large", "cotton", "brass",
-                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 3, 2);
+                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 2, 2);
         BannerBlockEntity client = emptyLike(server);
         client.handleUpdateTag(server.getUpdateTag(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
         var blockBefore = client.getBlockState();
@@ -98,13 +98,13 @@ class BannerPlacedSynchronizationTest {
         var largeState = Milestone13RenderFixtures.state(largeDefinition, cotton,
                 Milestone13RenderFixtures.natural(cotton), Milestone13RenderFixtures.mount("brass"));
         var large = Milestone13RenderFixtures.entity(server.getBlockPos(), Direction.EAST,
-                BannerOrientation.WALL_PERPENDICULAR, 3, 2, largeState);
+                BannerOrientation.WALL_PARALLEL, 2, 2, largeState);
         client.handleUpdateTag(large.getUpdateTag(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
         BannerPlacedRenderState after = Milestone13RenderFixtures.placed(client, 2, 3);
         assertNotEquals(before.renderBounds(), after.renderBounds());
-        assertEquals(3, after.persistedWidth());
+        assertEquals(2, after.persistedWidth());
         assertEquals(2, after.persistedHeight());
-        assertEquals(6, after.lightingSamplePositions().size());
+        assertEquals(4, after.lightingSamplePositions().size());
     }
 
     @Test
@@ -197,7 +197,7 @@ class BannerPlacedSynchronizationTest {
     @Test
     void futureAuthoritativeSetterIsServerOnlyAndPreservesPlacementBoundary() throws Exception {
         BannerBlockEntity detached = entity("large", "cotton", "brass",
-                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 3, 2);
+                Direction.NORTH, BannerOrientation.WALL_PARALLEL, 2, 2);
         var before = detached.bannerState();
         var structure = detached.placedStructure();
         assertFalse(detached.setBannerStateAndSynchronize(before.orElseThrow()));

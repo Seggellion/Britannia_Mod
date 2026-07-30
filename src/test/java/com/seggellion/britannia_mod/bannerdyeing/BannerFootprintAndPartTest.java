@@ -43,7 +43,7 @@ class BannerFootprintAndPartTest {
         Map<String, Long> counts = production.banners().activeDefinitions().stream().collect(Collectors.groupingBy(
                 definition -> definition.dimensions().widthBlocks() + "x" + definition.dimensions().heightBlocks(),
                 Collectors.counting()));
-        assertEquals(Map.of("1x1", 15L, "1x2", 14L, "3x2", 6L), counts);
+        assertEquals(Map.of("1x1", 15L, "1x2", 14L, "2x2", 6L), counts);
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
                 production.banners().activeDefinitions().size());
         for (var definition : production.banners().activeDefinitions()) {

@@ -58,7 +58,7 @@ class BannerRenderStateAndKeyTest {
             assertEquals(definition.id(), state.definitionId().orElseThrow());
         });
         assertTrue(BannerAssetAvailability.GEOMETRY_MODELS.containsAll(geometries));
-        assertEquals(18, geometries.size());
+        assertEquals(23, geometries.size());
         assertTrue(BannerAssetAvailability.GEOMETRY_MODELS.contains(
                 net.minecraft.resources.ResourceLocation.parse("britannia_mod:banner/mount/wall_parallel")));
         assertTrue(BannerAssetAvailability.GEOMETRY_MODELS.contains(

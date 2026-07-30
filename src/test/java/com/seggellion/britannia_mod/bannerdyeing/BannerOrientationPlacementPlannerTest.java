@@ -91,23 +91,23 @@ class BannerOrientationPlacementPlannerTest {
     }
 
     @Test
-    void perpendicularProjectsOutwardWhileParallelSpansViewerRight() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:large_01"), BRASS);
+    void parallelAndPerpendicularUseDistinctSpanAxes() {
+        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:road_guard"), BRASS);
         var parallel = plan(stack, production, BannerOrientation.WALL_PARALLEL,
                 BlockPos.ZERO, Direction.NORTH, new FakeWorld()).plan().orElseThrow();
         var perpendicular = plan(stack, production, BannerOrientation.WALL_PERPENDICULAR,
                 BlockPos.ZERO, Direction.NORTH, new FakeWorld()).plan().orElseThrow();
-        assertNotEquals(parallel.cells().get(1).worldPosition(), perpendicular.cells().get(1).worldPosition());
+        assertEquals(BannerOrientation.WALL_PARALLEL, parallel.orientation());
+        assertEquals(BannerOrientation.WALL_PERPENDICULAR, perpendicular.orientation());
         assertEquals(Direction.WEST, BannerStructureTransform.spanAxis(
                 Direction.NORTH, BannerOrientation.WALL_PARALLEL));
         assertEquals(Direction.NORTH, BannerStructureTransform.spanAxis(
                 Direction.NORTH, BannerOrientation.WALL_PERPENDICULAR));
-        assertEquals(perpendicular.anchorPos().north(), perpendicular.cells().get(1).worldPosition());
     }
 
     @Test
     void perpendicularRequiresOnlyAnchorSupportAndFailsBeforeMutation() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:large_01"), BRASS);
+        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:road_guard"), BRASS);
         var valid = plan(stack, production, BannerOrientation.WALL_PERPENDICULAR,
                 BlockPos.ZERO, Direction.EAST, new FakeWorld()).plan().orElseThrow();
         assertEquals(List.of(valid.anchorPos().west()), valid.requiredSupportPositions());
@@ -122,7 +122,7 @@ class BannerOrientationPlacementPlannerTest {
 
     @Test
     void supportBoundsFailBeforeAnyBlockStateCapture() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:large_01"), BRASS);
+        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:road_guard"), BRASS);
         var valid = plan(stack, production, BannerOrientation.WALL_PERPENDICULAR,
                 BlockPos.ZERO, Direction.EAST, new FakeWorld()).plan().orElseThrow();
         FakeWorld outside = new FakeWorld();
@@ -136,7 +136,7 @@ class BannerOrientationPlacementPlannerTest {
     @Test
     void definitionRestrictionsAreEnforcedBeforeAnyWorldRead() {
         BannerDefinition source = production.banners().require(
-                BannerDefinitionId.parse("britannia_mod:large_01"));
+                BannerDefinitionId.parse("britannia_mod:tournament_curtain"));
         BannerDefinition parallelOnly = copy(source, List.of(BannerOrientation.WALL_PARALLEL));
         FakeWorld world = new FakeWorld();
         assertEquals(BannerPlacementFailure.UNSUPPORTED_ORIENTATION,

@@ -80,10 +80,10 @@ class BannerCatalogueManifestTest {
     }
 
     @Test
-    void everyUnnamedEntryRemainsProvisionalAndVisible() {
+    void noUnnamedProvisionalEntriesRemainAfterLargeIntegration() {
         List<BannerScaffoldTool.BannerEntry> unnamed = manifest.banners().stream()
                 .filter(entry -> entry.sourceLabel() == null).toList();
-        assertEquals(6, unnamed.size());
+        assertEquals(0, unnamed.size());
         assertTrue(unnamed.stream().allMatch(entry -> "provisional".equals(entry.nameStatus())));
         assertTrue(unnamed.stream().allMatch(entry -> entry.notes().contains("Name Required")));
     }
@@ -92,7 +92,7 @@ class BannerCatalogueManifestTest {
     void sourceNamedEntriesRetainSourceLabelsAndApprovedNamesAreExplicit() {
         List<BannerScaffoldTool.BannerEntry> named = manifest.banners().stream()
                 .filter(entry -> "source-named".equals(entry.nameStatus())).toList();
-        assertEquals(29, named.size());
+        assertEquals(35, named.size());
         assertTrue(named.stream().allMatch(entry -> entry.sourceLabel() != null));
         assertEquals(Set.of("road_guard", "pale_road_guard", "red_crosslets",
                         "captains_red_crosslets", "scarlet_court", "verdant_court",
@@ -102,7 +102,9 @@ class BannerCatalogueManifestTest {
                         "silver_and_gold_pennon", "star_standard", "ship_standard",
                         "pennon_of_silver", "iron_ward", "iron_ward_auxiliary",
                         "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
-                        "twin_spades_pennon", "ankh_pennon", "joined_wards"),
+                        "twin_spades_pennon", "ankh_pennon", "joined_wards",
+                        "tournament_curtain", "threefold_chain_standard", "iron_serpent_standard",
+                        "silver_fleur_curtain", "gilded_trellis_curtain", "gilded_chevron_curtain"),
                 named.stream()
                 .filter(entry -> Boolean.TRUE.equals(entry.displayNameApproved()))
                 .map(BannerScaffoldTool.BannerEntry::id).collect(Collectors.toSet()));
@@ -119,7 +121,9 @@ class BannerCatalogueManifestTest {
                         "silver_and_gold_pennon", "star_standard", "ship_standard",
                         "pennon_of_silver", "iron_ward", "iron_ward_auxiliary",
                         "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
-                        "twin_spades_pennon", "ankh_pennon", "joined_wards"),
+                        "twin_spades_pennon", "ankh_pennon", "joined_wards",
+                        "tournament_curtain", "threefold_chain_standard", "iron_serpent_standard",
+                        "silver_fleur_curtain", "gilded_trellis_curtain", "gilded_chevron_curtain"),
                 manifest.banners().stream()
                 .filter(entry -> Boolean.FALSE.equals(entry.dimensionsProvisional()))
                 .map(BannerScaffoldTool.BannerEntry::id).collect(Collectors.toSet()));
@@ -130,9 +134,9 @@ class BannerCatalogueManifestTest {
         assertEquals("placeholder", manifest.defaults().contentStatus());
         assertEquals(29, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(0, manifest.banners().stream()
-                .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
         assertEquals(6, manifest.banners().stream()
+                .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
     }

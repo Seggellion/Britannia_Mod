@@ -91,11 +91,11 @@ class SmallBannerFamilyIntegrationTest {
         assertTrue(complete.contains("small_curtain"));
         assertFalse(manifest.banners().stream().anyMatch(entry -> Set.of(
                 "x_small_unnamed_01", "end_01", "end_02").contains(entry.id())));
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus()))
                 .count());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus()))
                 .count());
         assertEquals(35, manifest.banners().size());

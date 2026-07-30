@@ -45,18 +45,19 @@ class BannerPlacementPreviewTest {
 
     @Test
     void parallelAndPerpendicularExposeDimensionsOrientationMountAndOrderedCells() {
-        ItemStack stack = stack("large_01");
+        ItemStack stack = stack("road_guard");
         BannerInstanceState before = item.stateAccess().read(stack).orElseThrow();
         for (BannerOrientation orientation : BannerOrientation.values()) {
             PreviewWorld world = new PreviewWorld();
             world.protectionKnown = true;
             var preview = preview(stack, orientation, world);
             assertEquals(BannerPlacementPreviewStatus.VALID, preview.status());
-            assertEquals(3, preview.dimensions().widthBlocks());
-            assertEquals(2, preview.dimensions().heightBlocks());
-            assertEquals(6, preview.cells().size());
+            assertEquals(1, preview.dimensions().widthBlocks());
+            assertEquals(1, preview.dimensions().heightBlocks());
+            assertEquals(1, preview.cells().size());
             assertEquals(BannerCellRole.ANCHOR, preview.cells().getFirst().role());
-            assertEquals(5, preview.cells().stream().filter(cell -> cell.role() == BannerCellRole.PART).count());
+            assertEquals(0, preview.cells().stream()
+                    .filter(cell -> cell.role() == BannerCellRole.PART).count());
             assertEquals(orientation, preview.orientation());
             assertEquals(before.mountId(), preview.mountId());
             assertEquals(before, item.stateAccess().read(stack).orElseThrow());
@@ -73,12 +74,12 @@ class BannerPlacementPreviewTest {
 
     @Test
     void blockedCellsAndInvalidSupportsAreClassifiedDeterministically() {
-        ItemStack stack = stack("large_01");
+        ItemStack stack = stack("tournament_curtain");
         PreviewWorld baselineWorld = new PreviewWorld(); baselineWorld.protectionKnown = true;
         var baseline = preview(stack, BannerOrientation.WALL_PARALLEL, baselineWorld);
         PreviewWorld blocked = new PreviewWorld(); blocked.protectionKnown = true;
         blocked.blocked.add(baseline.cells().get(2).worldPosition());
-        blocked.blocked.add(baseline.cells().get(5).worldPosition());
+        blocked.blocked.add(baseline.cells().get(3).worldPosition());
         var blockedPreview = preview(stack, BannerOrientation.WALL_PARALLEL, blocked);
         assertEquals(BannerPlacementPreviewStatus.BLOCKED_CELL, blockedPreview.status());
         assertEquals(baseline.cells().get(2).worldPosition(),
@@ -95,10 +96,10 @@ class BannerPlacementPreviewTest {
 
     @Test
     void chunkAndBoundsFailuresAreTypedWithoutReadingUnavailableCells() {
-        ItemStack stack = stack("large_01");
+        ItemStack stack = stack("tournament_curtain");
         PreviewWorld unavailable = new PreviewWorld(); unavailable.loaded = false;
         assertEquals(BannerPlacementPreviewStatus.REQUIRED_CHUNK_UNAVAILABLE,
-                preview(stack, BannerOrientation.WALL_PERPENDICULAR, unavailable).status());
+                preview(stack, BannerOrientation.WALL_PARALLEL, unavailable).status());
         assertEquals(0, unavailable.replaceableReads);
 
         PreviewWorld bounds = new PreviewWorld(); bounds.inBounds = false;
@@ -108,7 +109,7 @@ class BannerPlacementPreviewTest {
 
     @Test
     void missingRenderDataProducesNoPlanAndRendererHasNoMutationOrPerFramePacket() throws Exception {
-        BannerInstanceState state = item.stateAccess().read(stack("large_01")).orElseThrow();
+        BannerInstanceState state = item.stateAccess().read(stack("tournament_curtain")).orElseThrow();
         assertTrue(BannerPlacementPreviewPlanner.plan(null, state, BannerOrientation.WALL_PARALLEL,
                 BlockPos.ZERO, Direction.NORTH, new PreviewWorld()).isEmpty());
         String renderer = Files.readString(Path.of(

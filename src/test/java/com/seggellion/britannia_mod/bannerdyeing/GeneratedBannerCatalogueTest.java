@@ -81,7 +81,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, decodeFolder("material_palettes", MaterialPalette.CODEC));
         assertEquals(7, decodeFolder("pigments", PigmentDefinition.CODEC));
         assertEquals(2, decodeFolder("banner_mounts", MountDefinition.CODEC));
-        assertEquals(9, decodeFolder("placement_profiles", PlacementProfile.CODEC));
+        assertEquals(10, decodeFolder("placement_profiles", PlacementProfile.CODEC));
     }
 
     @Test
@@ -124,7 +124,7 @@ class GeneratedBannerCatalogueTest {
     void activeDefinitionsReferenceTheProductionSizeProfiles() {
         Set<String> profiles = result.snapshot().banners().activeDefinitions().stream()
                 .map(definition -> definition.placementProfile().toString()).collect(java.util.stream.Collectors.toSet());
-        assertEquals(Set.of("britannia_mod:placeholder_large", "britannia_mod:medium_parallel",
+        assertEquals(Set.of("britannia_mod:large_parallel", "britannia_mod:medium_parallel",
                 "britannia_mod:small",
                 "britannia_mod:extra_small", "britannia_mod:medium_perpendicular"), profiles);
     }
@@ -135,7 +135,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, result.snapshot().materialPalettes().activeCount());
         assertEquals(7, result.snapshot().pigments().activeCount());
         assertEquals(2, result.snapshot().mounts().activeCount());
-        assertEquals(9, result.snapshot().placementProfiles().activeCount());
+        assertEquals(10, result.snapshot().placementProfiles().activeCount());
         assertTrue(result.snapshot().fabricMaterials().activeEntries().keySet().stream()
                 .anyMatch(id -> id.toString().equals("britannia_mod:cotton")));
         assertEquals(Set.of("britannia_mod:brass", "britannia_mod:iron"),
@@ -221,11 +221,11 @@ class GeneratedBannerCatalogueTest {
         assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
         assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
         assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
-        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(6, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(6, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(6, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.dimensions().provisional()).count());
     }
 
@@ -266,7 +266,7 @@ class GeneratedBannerCatalogueTest {
         List<String> provisional = manifest.banners().stream()
                 .filter(entry -> "provisional".equals(entry.nameStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id).toList();
-        assertEquals(6, provisional.size());
+        assertEquals(0, provisional.size());
         provisional.forEach(id -> assertTrue(status.contains("`" + id + "`"), id));
         assertTrue(status.contains("Catalogue target: data-derived from the canonical manifest"));
         assertTrue(status.contains("Stable identity set approved at Gate B: yes"));
@@ -274,14 +274,14 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("Survival acquisition implemented: no"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
-        assertTrue(status.contains("Final display names approved: 29 of "
+        assertTrue(status.contains("Final display names approved: 35 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final dimensions approved: 29 of "
+        assertTrue(status.contains("Final dimensions approved: 35 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Final artwork complete: 29 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("- placeholder: 6"));
-        assertTrue(status.contains("- in_progress: 0"));
+        assertTrue(status.contains("- placeholder: 0"));
+        assertTrue(status.contains("- in_progress: 6"));
         assertTrue(status.contains("- complete: 29"));
         assertTrue(status.contains("- disabled: 0"));
         assertTrue(status.contains("## Extra-small family integration"));
@@ -293,6 +293,8 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("## Perpendicular medium integration"));
         assertTrue(status.contains("## Parallel Medium integration"));
         assertTrue(status.contains("PARALLEL_MEDIUM_GATE_E_REVIEW.md"));
+        assertTrue(status.contains("## Parallel Large integration"));
+        assertTrue(status.contains("PARALLEL_LARGE_LIVE_REVIEW.md"));
         assertTrue(status.contains("Manual review: Gate E PASS for all eight authoritative hashes"));
         assertTrue(status.contains("MEDIUM_FAMILY_GATE_E_REVIEW.md"));
     }

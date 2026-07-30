@@ -105,20 +105,20 @@ class FinalContentIntakeValidatorTest {
     void largeIntakeRequiresExactlyWallParallelOrientation() throws Exception {
         Fixture parallel = seed();
         JsonObject parallelBanner = parallel.document().getAsJsonObject("banner");
-        parallelBanner.addProperty("stable_id", "britannia_mod:large_01");
+        parallelBanner.addProperty("stable_id", "britannia_mod:tournament_curtain");
         parallelBanner.getAsJsonArray("supported_orientations").remove(1);
         assertEquals(Status.READY_FOR_INTEGRATION, validate(parallel).status());
 
         Fixture perpendicular = seed();
         JsonObject perpendicularBanner = perpendicular.document().getAsJsonObject("banner");
-        perpendicularBanner.addProperty("stable_id", "britannia_mod:large_02");
+        perpendicularBanner.addProperty("stable_id", "britannia_mod:threefold_chain_standard");
         perpendicularBanner.getAsJsonArray("supported_orientations").remove(0);
         assertIssue(validate(perpendicular),
                 "large banners support wall_parallel orientation only");
 
         Fixture both = seed();
         both.document().getAsJsonObject("banner")
-                .addProperty("stable_id", "britannia_mod:large_03");
+                .addProperty("stable_id", "britannia_mod:iron_serpent_standard");
         assertIssue(validate(both),
                 "large banners support wall_parallel orientation only");
     }

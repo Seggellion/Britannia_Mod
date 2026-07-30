@@ -285,7 +285,7 @@ public final class BannerScaffoldTool {
                         "small", 6L, "x-small", 9L)),
                 "Canonical group counts do not match: " + groupCounts);
 
-        validateGroup(manifest.groups.get("large"), 3, 2, "placeholder_large", "large");
+        validateGroup(manifest.groups.get("large"), 2, 2, "large_parallel", "large");
         validateGroup(manifest.groups.get("medium-wall"), 2, 2, "placeholder_medium_wall", "medium_wall");
         validateGroup(manifest.groups.get("medium"), 1, 2, "placeholder_medium", "medium");
         validateGroup(manifest.groups.get("small"), 1, 1, "placeholder_small", "small");
@@ -385,6 +385,8 @@ public final class BannerScaffoldTool {
                 utf8(json(mediumParallelProfile())));
         output.put(DATA_ROOT + "placement_profiles/medium_perpendicular.json",
                 utf8(json(mediumPerpendicularProfile())));
+        output.put(DATA_ROOT + "placement_profiles/large_parallel.json",
+                utf8(json(largeParallelProfile())));
 
         output.put(ASSET_ROOT + "textures/banner/placeholder/base_texture.png", png(PngKind.BASE_TEXTURE));
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
@@ -419,7 +421,8 @@ public final class BannerScaffoldTool {
                     .contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_parallel");
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
-            } else if ("britannia_mod:medium_parallel".equals(banner.placementProfile)) {
+            } else if (Set.of("britannia_mod:medium_parallel", "britannia_mod:large_parallel")
+                    .contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_parallel");
             } else if ("britannia_mod:medium_perpendicular".equals(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
@@ -589,6 +592,22 @@ public final class BannerScaffoldTool {
         return root;
     }
 
+    private static JsonObject largeParallelProfile() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:large_parallel");
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", 2);
+        dimensions.addProperty("height_blocks", 2);
+        dimensions.addProperty("provisional", false);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        JsonObject mounts = new JsonObject();
+        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
+        root.add("orientation_mount_geometry", mounts);
+        return root;
+    }
+
     private static JsonObject mediumParallelProfile() {
         JsonObject root = new JsonObject();
         root.addProperty("schema_version", 1);
@@ -723,8 +742,8 @@ public final class BannerScaffoldTool {
         require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
         require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
         require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
-        require(result.snapshot().placementProfiles().activeCount() == 9,
-                "Nine placement profiles did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 10,
+                "Ten placement profiles did not become active");
         require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
         return result;
     }
@@ -1092,28 +1111,25 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all six authoritative hashes\n")
                 .append("- Runtime `content_status`: `complete`\n")
                 .append("- Gate E evidence: `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md`\n\n")
-                .append("## Parallel Large asset preparation\n\n")
+                .append("## Parallel Large integration\n\n")
                 .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_large.ai`\n")
                 .append("- Source SHA-256: `64fd720476243a937d155b9ea547de60003ccc83f1c78093098e45517d25379e`\n")
-                .append("- Six source-named candidates were exported: `tournament_curtain`, ")
+                .append("- Six canonical definitions: `tournament_curtain`, ")
                 .append("`threefold_chain_standard`, `iron_serpent_standard`, `silver_fleur_curtain`, ")
                 .append("`gilded_trellis_curtain`, and `gilded_chevron_curtain`\n")
-                .append("- Six aligned 128 x 128 RGBA draft base/mask pairs and diagnostic review packages ")
-                .append("are retained under `content/banner-final-intake/submissions/`\n")
-                .append("- Proposed dimensions: 2 x 2 from the near-square authoritative silhouettes; ")
-                .append("orientation remains `wall_parallel` only\n")
-                .append("- Proposed placement profile: `britannia_mod:large_parallel`; proposed mount geometry: ")
-                .append("shared `britannia_mod:banner/mount/wall_parallel`\n")
-                .append("- Intake validation: six `INVALID` drafts because canonical source-named IDs have not ")
-                .append("been migrated into the live catalogue and administrative approval/provenance is absent\n")
-                .append("- Runtime integration: not performed; `large_01` through `large_06` remain the six ")
-                .append("placeholder definitions at indices 1 through 6\n")
-                .append("- Product-owner approval, creator/original-art attestation, distribution permission, ")
-                .append("logical dimensions, geometry approval, and Gate E: pending\n")
-                .append("- Preparation tests: 5 passed; banner/dyeing suite: 655 passed; clean unrestricted suite: ")
-                .append("661 passed across 62 suites; build: passed\n")
-                .append("- JAR inspection: 35 definitions, six Large placeholders, zero draft candidate runtime ")
-                .append("entries, zero intake/review entries, and zero duplicate ZIP names\n\n")
+                .append("- Provisional `large_01` through `large_06` were replaced at unchanged catalogue ")
+                .append("indices; saved-state decode aliases map them to the canonical source names\n")
+                .append("- Product-owner approval, creator, original-project-art status, and distribution ")
+                .append("permission: Seggellion, 2026-07-30\n")
+                .append("- Six byte-preserved 128 x 128 RGBA base/mask pairs and six distinct approved custom ")
+                .append("geometries are integrated as runtime resources\n")
+                .append("- Approved dimensions: 2 x 2; orientation: `wall_parallel` only; placement profile: ")
+                .append("`britannia_mod:large_parallel`\n")
+                .append("- Mount geometry: shared `britannia_mod:banner/mount/wall_parallel`; ")
+                .append("brass/iron remain separate untinted materials\n")
+                .append("- Intake validation: six `READY_FOR_INTEGRATION`\n")
+                .append("- Runtime `content_status`: `in_progress`; live Gate E review remains unperformed\n")
+                .append("- Gate E procedure: `docs/banner-dyeing/PARALLEL_LARGE_LIVE_REVIEW.md`\n\n")
                 .append("## Parallel Medium integration\n\n")
                 .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`\n")
                 .append("- Source SHA-256: `a6a75becd1793dac7a5b36361c0a33d615846ac4e97502deff794ef5ac337fac`\n")
@@ -1409,12 +1425,12 @@ public final class BannerScaffoldTool {
 
     private static List<CanonicalEntry> canonicalEntries() {
         String table = """
-                1|large_01|large|1|1|Large Banner 01|provisional
-                2|large_02|large|1|2|Large Banner 02|provisional
-                3|large_03|large|1|3|Large Banner 03|provisional
-                4|large_04|large|1|4|Large Banner 04|provisional
-                5|large_05|large|1|5|Large Banner 05|provisional
-                6|large_06|large|1|6|Large Banner 06|provisional
+                1|tournament_curtain|large|1|1|Tournament Curtain|source-named
+                2|threefold_chain_standard|large|1|2|Threefold Chain Standard|source-named
+                3|iron_serpent_standard|large|1|3|Iron Serpent Standard|source-named
+                4|silver_fleur_curtain|large|1|4|Silver Fleur Curtain|source-named
+                5|gilded_trellis_curtain|large|1|5|Gilded Trellis Curtain|source-named
+                6|gilded_chevron_curtain|large|1|6|Gilded Chevron Curtain|source-named
                 7|verdant_grape_pennon|medium-wall|1|7|Verdant Grape Pennon|source-named
                 8|silver_rosette_pennon|medium-wall|1|8|Silver Rosette Pennon|source-named
                 9|four_seals_pennon|medium-wall|2|1|Four Seals Pennon|source-named

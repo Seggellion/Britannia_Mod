@@ -617,12 +617,6 @@
     "item.britannia_mod.beef_brisket": "Beef Brisket",
 
 
-  "banner.britannia_mod.large_01": "Large Banner 01 (Name Required)",
-  "banner.britannia_mod.large_02": "Large Banner 02 (Name Required)",
-  "banner.britannia_mod.large_03": "Large Banner 03 (Name Required)",
-  "banner.britannia_mod.large_04": "Large Banner 04 (Name Required)",
-  "banner.britannia_mod.large_05": "Large Banner 05 (Name Required)",
-  "banner.britannia_mod.large_06": "Large Banner 06 (Name Required)",
   "banner.britannia_mod.verdant_grape_pennon": "Verdant Grape Pennon",
   "banner.britannia_mod.silver_rosette_pennon": "Silver Rosette Pennon",
   "banner.britannia_mod.four_seals_pennon": "Four Seals Pennon",
@@ -855,5 +849,12 @@
   "banner.britannia_mod.small_curtain": "Small Curtain",
 
   "banner.britannia_mod.prosperity_standard": "Prosperity Standard",
-  "banner.britannia_mod.guardian_standard": "Guardian Standard"
+  "banner.britannia_mod.guardian_standard": "Guardian Standard",
+
+  "banner.britannia_mod.tournament_curtain": "Tournament Curtain",
+  "banner.britannia_mod.threefold_chain_standard": "Threefold Chain Standard",
+  "banner.britannia_mod.iron_serpent_standard": "Iron Serpent Standard",
+  "banner.britannia_mod.silver_fleur_curtain": "Silver Fleur Curtain",
+  "banner.britannia_mod.gilded_trellis_curtain": "Gilded Trellis Curtain",
+  "banner.britannia_mod.gilded_chevron_curtain": "Gilded Chevron Curtain"
 }

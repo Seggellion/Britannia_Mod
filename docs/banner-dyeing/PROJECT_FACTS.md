@@ -2,9 +2,32 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Large assets prepared; integration blocked on approval
+Milestone: parallel Large integrated; live Gate E review pending
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 parallel Large integration facts
+
+- Seggellion is the creator and product-owner approver. Approval date is 2026-07-30. The six packages are original
+  project artwork, are not copied from reference art, and are approved for distribution with Britannia
+  Mod/UltimaCraft. The family review source is
+  `content/banner-final-intake/review/parallel_large_family_review.png`.
+- Catalogue indices 1 through 6 now contain `tournament_curtain`, `threefold_chain_standard`,
+  `iron_serpent_standard`, `silver_fleur_curtain`, `gilded_trellis_curtain`, and
+  `gilded_chevron_curtain`. `large_01` through `large_06` are inactive decode aliases that canonicalize on load
+  and encode as the new IDs.
+- Every package validates `READY_FOR_INTEGRATION`. The approved and runtime-identical 128 x 128 RGBA base/mask
+  hashes are listed in the authoritative table below. Runtime paths are
+  `assets/britannia_mod/textures/banner/<canonical-path>/base_texture.png` and
+  `assets/britannia_mod/textures/banner/<canonical-path>/dye_mask.png`.
+- All six definitions have approved 2 x 2 logical dimensions, exactly `wall_parallel`, brass and iron mounts with
+  brass default, and profile `britannia_mod:large_parallel`. Each has its own approved geometry at
+  `assets/britannia_mod/models/banner/large/<canonical-path>/geometry.json`; the shared wall-parallel mount remains
+  separate and untinted.
+- Production is 35 active definitions: 0 placeholder, 6 in progress, 29 complete, and 0 disabled. Gate E remains
+  unperformed, so all six Parallel Large definitions remain `in_progress`.
+- No completed smaller-family definition or evidence, persistence schema, crafting policy, or Milestone 17 scope
+  changed.
 
 ## 2026-07-30 parallel Large authoritative preparation facts
 

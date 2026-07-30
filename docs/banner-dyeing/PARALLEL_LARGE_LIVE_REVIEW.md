@@ -2,12 +2,13 @@
 
 Date prepared: 2026-07-30
 
-Status: NOT READY — DRAFT INTAKES ARE NOT APPROVED OR INTEGRATED
+Status: READY FOR LIVE REVIEW — INTEGRATED; GATE E UNPERFORMED
 
-This runbook covers only the six candidates extracted from the authoritative
-`C:/projects/britannia/raw fiels/tabbard/banner_large.ai`. The commands below are exact for the proposed canonical
-IDs, but they are intentionally not runnable until approval, deliberate ID migration, runtime integration, and a
-successful build. No check in this document has been performed. No perpendicular Large case belongs here.
+This runbook covers only the six approved definitions extracted from the authoritative
+`C:/projects/britannia/raw fiels/tabbard/banner_large.ai`. Seggellion approved the prepared packages, provenance,
+distribution, canonical ID migrations, 2 x 2 dimensions, six geometries, and parallel-only placement on
+2026-07-30. The commands below use the integrated canonical IDs. No live check in this document has been performed,
+and no perpendicular Large case belongs here.
 
 ## Reusable parallel Large procedure
 
@@ -38,8 +39,8 @@ successful build. No check in this document has been performed. No perpendicular
 
 ## Definition-specific commands and expectations
 
-Every row is proposed as 2 x 2 logical dimensions, only `wall_parallel`, brass and iron mounts, brass by default,
-and all four horizontal facings. These proposals require approval before integration.
+Every row is approved as 2 x 2 logical dimensions, only `wall_parallel`, brass and iron mounts, brass by default,
+and all four horizontal facings.
 
 | Definition | Exact commands | Expected natural and fixed regions | Expected dyeable region | Expected geometry and attachment behaviour |
 |---|---|---|---|---|

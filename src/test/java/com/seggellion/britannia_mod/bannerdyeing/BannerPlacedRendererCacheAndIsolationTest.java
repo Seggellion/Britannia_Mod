@@ -45,7 +45,7 @@ class BannerPlacedRendererCacheAndIsolationTest {
                 Milestone13RenderFixtures.dyed(cotton), Milestone13RenderFixtures.mount("brass"));
         BannerPlacedRenderState dyedState = Milestone13RenderFixtures.placed(
                 Milestone13RenderFixtures.entity(BlockPos.ZERO, Direction.NORTH,
-                        BannerOrientation.WALL_PARALLEL, 3, 2, dyedInstance), 4, 5);
+                    BannerOrientation.WALL_PARALLEL, 2, 2, dyedInstance), 4, 5);
         BannerPlacedRenderPlan dyed = BannerPlacedRenderPlan.from(dyedState);
         assertEquals(List.of(
                         BannerPlacedRenderPass.Type.BASE_TEXTURE,
@@ -70,7 +70,7 @@ class BannerPlacedRendererCacheAndIsolationTest {
                 Milestone13RenderFixtures.dyed(cotton), Milestone13RenderFixtures.mount("brass"));
         BannerPlacedRenderState dyed = Milestone13RenderFixtures.placed(
                 Milestone13RenderFixtures.entity(BlockPos.ZERO, Direction.NORTH,
-                        BannerOrientation.WALL_PARALLEL, 3, 2, dyedInstance), 4, 5);
+                    BannerOrientation.WALL_PARALLEL, 2, 2, dyedInstance), 4, 5);
         BannerPlacedRenderPlan naturalPlan = BannerPlacedRenderPlan.from(natural);
         BannerPlacedRenderPlan dyedPlan = BannerPlacedRenderPlan.from(dyed);
         assertEquals(2, naturalPlan.passes().size());
@@ -223,12 +223,12 @@ class BannerPlacedRendererCacheAndIsolationTest {
         var instance = Milestone13RenderFixtures.state(definition, material,
                 Milestone13RenderFixtures.natural(material), Milestone13RenderFixtures.mount("brass"));
         var entity = Milestone13RenderFixtures.entity(new BlockPos(0, 64, 0), Direction.EAST,
-                BannerOrientation.WALL_PERPENDICULAR, 3, 2, instance);
+                BannerOrientation.WALL_PARALLEL, 2, 2, instance);
         BannerBlockEntityRenderer renderer = new BannerBlockEntityRenderer(null);
         assertEquals(64, renderer.getViewDistance());
         assertEquals(BannerPlacedRenderBounds.from(entity), renderer.getRenderBoundingBox(entity));
-        assertTrue(renderer.shouldRender(entity, new Vec3(66.0, 64.5, 0.5)));
-        assertFalse(renderer.shouldRender(entity, new Vec3(80.0, 64.5, 0.5)));
+        assertTrue(renderer.shouldRender(entity, new Vec3(0.5, 64.5, -65.0)));
+        assertFalse(renderer.shouldRender(entity, new Vec3(0.5, 64.5, -80.0)));
     }
 
     @Test
@@ -262,7 +262,7 @@ class BannerPlacedRendererCacheAndIsolationTest {
         var instance = Milestone13RenderFixtures.state(definition, material,
                 Milestone13RenderFixtures.natural(material), Milestone13RenderFixtures.mount(mountPath));
         return Milestone13RenderFixtures.placed(Milestone13RenderFixtures.entity(
-                BlockPos.ZERO, Direction.NORTH, BannerOrientation.WALL_PARALLEL, 3, 2, instance), 4, 5);
+                BlockPos.ZERO, Direction.NORTH, BannerOrientation.WALL_PARALLEL, 2, 2, instance), 4, 5);
     }
 
     private static BannerPlacedRenderState withFacing(BannerPlacedRenderState state, Direction facing) {

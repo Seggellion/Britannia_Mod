@@ -51,8 +51,8 @@ class BannerClientAssetIndexContractTest {
             }
         }
 
-        assertEquals(20, geometries.size(), "shared geometry IDs must be de-duplicated");
-        assertEquals(60, textures.size(), "shared texture IDs must be de-duplicated");
+        assertEquals(25, geometries.size(), "shared geometry IDs must be de-duplicated");
+        assertEquals(70, textures.size(), "shared texture IDs must be de-duplicated");
         assertEquals(geometries, BannerClientAssetIndex.geometryModels());
         assertEquals(textures, BannerClientAssetIndex.textures());
         assertFalse(geometries.contains(id("banner/placeholder/x_small")));

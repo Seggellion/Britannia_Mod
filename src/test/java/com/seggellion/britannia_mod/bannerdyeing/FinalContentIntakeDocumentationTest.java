@@ -326,13 +326,13 @@ class FinalContentIntakeDocumentationTest {
                 manifest.banners().stream()
                         .filter(banner -> "complete".equals(banner.contentStatus()))
                         .map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(banner -> "in_progress".equals(banner.contentStatus())).count());
         var production = DyeResolverFixtures.productionSnapshot();
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
-        assertEquals(6, production.banners().activeDefinitions().stream()
-                .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
         assertEquals(0, production.banners().activeDefinitions().stream()
+                .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
+        assertEquals(6, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
         assertEquals(29, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).count());

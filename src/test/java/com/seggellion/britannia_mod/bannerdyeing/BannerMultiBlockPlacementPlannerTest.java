@@ -74,17 +74,17 @@ class BannerMultiBlockPlacementPlannerTest {
     }
 
     @Test
-    void perpendicularAndParallelOneByTwoAndLargeThreeByTwoUseExpectedParts() {
+    void perpendicularAndParallelOneByTwoAndLargeTwoByTwoUseExpectedParts() {
         assertPartCount("tournament_medium", 1);
         assertPartCount("joined_wards", 1);
-        assertPartCount("large_01", 5);
+        assertPartCount("tournament_curtain", 3);
     }
 
     @Test
     void blockedMiddleAndFinalCellsFailBeforeMutationAndConsumption() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:large_01"));
+        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:tournament_curtain"));
         var successful = plan(stack, BlockPos.ZERO, Direction.NORTH, new FakeWorld()).plan().orElseThrow();
-        for (int index : new int[] {2, 5}) {
+        for (int index : new int[] {2, 3}) {
             FakeWorld world = new FakeWorld();
             world.occupied.add(successful.cells().get(index).worldPosition());
             BannerPlacementPlanningResult failed = plan(stack, BlockPos.ZERO, Direction.NORTH, world);
@@ -96,7 +96,7 @@ class BannerMultiBlockPlacementPlannerTest {
 
     @Test
     void unloadedOccupiedOrSupportChunkFailsWithoutForceLoading() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:large_01"));
+        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:tournament_curtain"));
         BlockPos clicked = new BlockPos(15, 70, 0);
         FakeWorld world = new FakeWorld();
         world.unloadedChunks.add("1,0");
@@ -117,7 +117,7 @@ class BannerMultiBlockPlacementPlannerTest {
 
     @Test
     void onlyTopRowRequiresSupport() {
-        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:large_01"));
+        ItemStack stack = natural(BannerDefinitionId.parse("britannia_mod:tournament_curtain"));
         BlockPos middleSupport = plan(stack, BlockPos.ZERO, Direction.NORTH, new FakeWorld())
                 .plan().orElseThrow().requiredSupportPositions().get(1);
         FakeWorld world = new FakeWorld();
@@ -136,7 +136,7 @@ class BannerMultiBlockPlacementPlannerTest {
     }
 
     private static void assertCrossesChunks(BlockPos clicked, Direction facing) {
-        var plan = plan(natural(BannerDefinitionId.parse("britannia_mod:large_01")),
+        var plan = plan(natural(BannerDefinitionId.parse("britannia_mod:tournament_curtain")),
                 clicked, facing, new FakeWorld()).plan().orElseThrow();
         assertTrue(plan.cells().stream().map(cell -> (cell.worldPosition().getX() >> 4) + ","
                 + (cell.worldPosition().getZ() >> 4)).distinct().count() >= 2);

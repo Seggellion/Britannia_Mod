@@ -8,7 +8,8 @@ import java.util.Set;
 /** Catalogue-specific release boundary; deliberately separate from generic registry loading. */
 public final class ProductionBannerCatalogue {
     public static final List<String> CANONICAL_PATHS = List.of(
-            "large_01", "large_02", "large_03", "large_04", "large_05", "large_06",
+            "tournament_curtain", "threefold_chain_standard", "iron_serpent_standard",
+            "silver_fleur_curtain", "gilded_trellis_curtain", "gilded_chevron_curtain",
             "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
             "twin_spades_pennon", "ankh_pennon",
             "joined_wards", "tournament_medium", "ceremonial_tournament", "iron_quarter", "outer_ward",
