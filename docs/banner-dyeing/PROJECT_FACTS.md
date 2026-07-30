@@ -2,9 +2,26 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Medium Gate E complete
+Milestone: parallel Large intake readiness blocked
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 parallel Large intake readiness facts
+
+- Catalogue group `large` contains exactly `large_01`, `large_02`, `large_03`, `large_04`, `large_05`, and
+  `large_06`, at unchanged group indices 1 through 6.
+- Large banners support `wall_parallel` placement only. They do not support `wall_perpendicular` placement.
+- No intake manifest, base texture, dye mask, geometry submission, approval, provenance, hash, or manual-review
+  evidence exists for any Large definition. All six are `NOT_SUBMITTED`, so runtime integration is blocked.
+- `content/banner-final-intake/large_batch.example.yml` is an unapproved, six-record intake template. Its 3 x 2
+  dimensions and placeholder assets/profile are explicitly informational; final dimensions, mounts, geometry, and
+  placement profile remain owner decisions.
+- The read-only validator derives the Large orientation constraint from catalogue group metadata and rejects any
+  submitted Large intake whose orientation list is not exactly `wall_parallel`. No Large stable-ID switch exists.
+- Production remains 35 active definitions: 6 Large placeholders, 0 in progress, 29 complete, and 0 disabled.
+  No catalogue, generated definition, runtime asset, placement, persistence, networking, crafting, or Milestone 17
+  change was made for this blocked readiness gate.
+
 ## 2026-07-30 parallel Medium Gate E closeout facts
 
 - Seggellion reported every Gate E live-review check passed for all six Parallel Medium definitions on 2026-07-30

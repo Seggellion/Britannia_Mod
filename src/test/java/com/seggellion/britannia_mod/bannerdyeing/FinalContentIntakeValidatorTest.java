@@ -102,6 +102,28 @@ class FinalContentIntakeValidatorTest {
     }
 
     @Test
+    void largeIntakeRequiresExactlyWallParallelOrientation() throws Exception {
+        Fixture parallel = seed();
+        JsonObject parallelBanner = parallel.document().getAsJsonObject("banner");
+        parallelBanner.addProperty("stable_id", "britannia_mod:large_01");
+        parallelBanner.getAsJsonArray("supported_orientations").remove(1);
+        assertEquals(Status.READY_FOR_INTEGRATION, validate(parallel).status());
+
+        Fixture perpendicular = seed();
+        JsonObject perpendicularBanner = perpendicular.document().getAsJsonObject("banner");
+        perpendicularBanner.addProperty("stable_id", "britannia_mod:large_02");
+        perpendicularBanner.getAsJsonArray("supported_orientations").remove(0);
+        assertIssue(validate(perpendicular),
+                "large banners support wall_parallel orientation only");
+
+        Fixture both = seed();
+        both.document().getAsJsonObject("banner")
+                .addProperty("stable_id", "britannia_mod:large_03");
+        assertIssue(validate(both),
+                "large banners support wall_parallel orientation only");
+    }
+
+    @Test
     void missingAssetInvalidPngAndMissingAlphaAreRejected() throws Exception {
         Fixture missing = seed();
         missing.document().getAsJsonObject("assets").getAsJsonObject("base_texture")

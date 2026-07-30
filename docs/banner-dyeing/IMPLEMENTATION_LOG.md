@@ -1,4 +1,29 @@
 # Banner and Dyeing Implementation Log
+
+## 2026-07-30 - Parallel Large intake gate preparation
+
+- Parallel Medium Gate E was closed first in commit `3f668dde0fbb054b14950029a96e623670dd996b`; all fourteen Medium
+  definitions remain complete.
+- Catalogue-derived Large membership is exactly `large_01` through `large_06` at group indices 1 through 6. A
+  complete submission audit found no Large intake manifests or owner assets, so all six are `NOT_SUBMITTED` and
+  runtime integration is blocked.
+- Added `large_batch.example.yml` with six `NOT_APPROVED` records and the product-approved `wall_parallel`-only
+  contract. Final dimensions, names, mounts, geometries, profiles, asset paths, hashes, provenance, and review
+  evidence remain unresolved rather than guessed.
+- The read-only intake validator now derives catalogue group metadata and rejects a Large intake unless its approved
+  orientation list is exactly `wall_parallel`; no stable-ID-specific branch was added.
+- No catalogue entry, content status, generated definition, runtime resource, placement profile, saved state,
+  networking contract, crafting policy, or Milestone 17 work changed. Normal scaffold generation was not run.
+- Read-only scaffold `--check` passes with 35 definitions, 35 active, 0 disabled, 6 provisional names, and 6
+  provisional dimensions. The focused validator/template tests pass 23 tests; the banner/dyeing suite passes 650
+  tests across 60 suites; after standalone clean, the unrestricted suite passes 656 tests across 61 suites; build
+  passes. All results have zero failures, errors, and skips.
+- The normal JAR has 5,098 entries and the all-JAR has 5,102. Each contains 35 definitions, keeps all six Large
+  definitions `placeholder`, has no intake-template entries or duplicate names, and therefore contains no Large
+  integration artifacts. The existing Gradle incubating-feature and scaffold terminal-capability warnings remain.
+- The first focused shell invocation exceeded its short command timeout while Gradle continued; the forced focused
+  result and every subsequent validation completed successfully, so no source correction was required.
+
 ## 2026-07-30 - Parallel Medium Gate E approval and closeout
 
 - Seggellion reported every check in the six-banner Parallel Medium live-review runbook passed on 2026-07-30

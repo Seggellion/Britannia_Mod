@@ -6,8 +6,11 @@ registries, and do not update `content/banner_catalogue.yml`.
 - `intake.example.yml` is a generic one-banner template using the non-catalogue ID
   `britannia_mod:example_banner`.
 - `extra_small_batch.example.yml` provides one visibly unapproved record for each current extra-small stable ID.
+- `small_batch.example.yml` provides one visibly unapproved record for each current Small stable ID.
+- `large_batch.example.yml` provides one visibly unapproved record for each current Large stable ID and records the
+  `wall_parallel`-only product constraint without approving unresolved content decisions.
 
-Both files use YAML 1.2 expressed in JSON-compatible syntax, matching the repository catalogue convention.
+All templates use YAML 1.2 expressed in JSON-compatible syntax, matching the repository catalogue convention.
 
 ## Owner workflow
 

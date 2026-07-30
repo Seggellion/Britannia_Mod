@@ -2,7 +2,19 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Medium Gate E complete
+Milestone: parallel Large intake readiness blocked
+
+## Parallel Large intake submissions required
+
+The authoritative Large membership is `large_01`, `large_02`, `large_03`, `large_04`, `large_05`, and `large_06`.
+Every definition is `NOT_SUBMITTED`: none has an intake manifest or owner-supplied base texture, dye mask, geometry,
+hashes, provenance, distribution approval, final display name, final dimensions, mounts, placement profile, or
+manual intake-review evidence. Use `content/banner-final-intake/large_batch.example.yml` to supply these decisions
+without treating its informational 3 x 2 placeholder state as approval.
+
+Large banners support `wall_parallel` placement only and do not support `wall_perpendicular` placement. That product
+decision is fixed for this family and is not an open alternative. Integration remains blocked until at least one
+complete Large package validates `READY_FOR_INTEGRATION`.
 
 ## Parallel Medium Gate E resolved
 

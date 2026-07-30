@@ -17,9 +17,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -123,13 +125,16 @@ public final class FinalContentIntakeValidator {
         }
 
         String stableId = requiredText(document, "banner.stable_id", missing, invalid);
+        String catalogueGroup = null;
         if (stableId != null && !stableId.isBlank()) {
             if (!RESOURCE_ID.matcher(stableId).matches()) {
                 invalid.add("banner.stable_id is not a valid namespaced resource ID");
             } else {
-                Set<String> catalogueIds = catalogueIds(root, invalid);
-                if (!catalogueIds.isEmpty() && !catalogueIds.contains(stableId)) {
+                Map<String, String> catalogueGroups = catalogueGroups(root, invalid);
+                if (!catalogueGroups.isEmpty() && !catalogueGroups.containsKey(stableId)) {
                     invalid.add("banner.stable_id is not present in the live catalogue: " + stableId);
+                } else {
+                    catalogueGroup = catalogueGroups.get(stableId);
                 }
             }
         }
@@ -154,6 +159,10 @@ public final class FinalContentIntakeValidator {
         } else {
             validateDistinctAllowed(orientations, ORIENTATIONS,
                     "banner.supported_orientations", invalid);
+            if ("large".equals(catalogueGroup)
+                    && !List.of("wall_parallel").equals(orientations)) {
+                invalid.add("large banners support wall_parallel orientation only");
+            }
         }
 
         List<String> mounts = stringList(document, "banner.supported_mounts", invalid);
@@ -350,19 +359,22 @@ public final class FinalContentIntakeValidator {
         }
     }
 
-    private static Set<String> catalogueIds(Path root, List<String> invalid) {
+    private static Map<String, String> catalogueGroups(Path root, List<String> invalid) {
         Path manifest = root.resolve(BannerScaffoldTool.MANIFEST_PATH);
         try {
             JsonObject object = JsonParser.parseString(
                     Files.readString(manifest, StandardCharsets.UTF_8)).getAsJsonObject();
-            LinkedHashSet<String> ids = new LinkedHashSet<>();
+            Map<String, String> groups = new LinkedHashMap<>();
             for (JsonElement element : object.getAsJsonArray("banners")) {
-                ids.add("britannia_mod:" + element.getAsJsonObject().get("id").getAsString());
+                JsonObject banner = element.getAsJsonObject();
+                groups.put(
+                        "britannia_mod:" + banner.get("id").getAsString(),
+                        banner.get("group").getAsString());
             }
-            return Set.copyOf(ids);
+            return Map.copyOf(groups);
         } catch (IOException | RuntimeException exception) {
             invalid.add("live catalogue IDs could not be read: " + exception.getMessage());
-            return Set.of();
+            return Map.of();
         }
     }
 
