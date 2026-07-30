@@ -81,6 +81,9 @@ class SmallBannerFamilyIntegrationTest {
                 "road_guard", "pale_road_guard", "red_crosslets",
                 "captains_red_crosslets", "scarlet_court", "verdant_court",
                 "small_curtain", "prosperity_standard", "guardian_standard",
+                "tournament_medium", "ceremonial_tournament", "iron_quarter",
+                "outer_ward", "ward_of_serpents", "serpent_guard",
+                "crossroad_guard", "argent_shield",
                 "silver_and_gold_pennon", "star_standard", "ship_standard",
                 "pennon_of_silver", "iron_ward", "iron_ward_auxiliary"), complete);
         assertTrue(complete.contains("small_curtain"));
@@ -90,7 +93,7 @@ class SmallBannerFamilyIntegrationTest {
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus()))
                 .count());
-        assertEquals(8, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus()))
                 .count());
         assertEquals(35, manifest.banners().size());

@@ -194,7 +194,7 @@ class GeneratedBannerCatalogueTest {
     }
 
     @Test
-    void authoritativeExtraSmallAndSmallFamiliesAreComplete() {
+    void authoritativeExtraSmallSmallAndMediumFamiliesAreComplete() {
         List<BannerDefinition> complete = result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).toList();
         assertEquals(Set.of("britannia_mod:road_guard", "britannia_mod:pale_road_guard",
@@ -202,6 +202,10 @@ class GeneratedBannerCatalogueTest {
                         "britannia_mod:scarlet_court", "britannia_mod:verdant_court",
                         "britannia_mod:small_curtain", "britannia_mod:prosperity_standard",
                         "britannia_mod:guardian_standard",
+                        "britannia_mod:tournament_medium", "britannia_mod:ceremonial_tournament",
+                        "britannia_mod:iron_quarter", "britannia_mod:outer_ward",
+                        "britannia_mod:ward_of_serpents", "britannia_mod:serpent_guard",
+                        "britannia_mod:crossroad_guard", "britannia_mod:argent_shield",
                         "britannia_mod:silver_and_gold_pennon", "britannia_mod:star_standard",
                         "britannia_mod:ship_standard", "britannia_mod:pennon_of_silver",
                         "britannia_mod:iron_ward", "britannia_mod:iron_ward_auxiliary"),
@@ -214,7 +218,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
         assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
         assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
-        assertEquals(8, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
         assertEquals(12, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
@@ -271,11 +275,11 @@ class GeneratedBannerCatalogueTest {
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Final dimensions approved: 23 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final artwork complete: 15 of "
+        assertTrue(status.contains("Final artwork complete: 23 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("- placeholder: 12"));
-        assertTrue(status.contains("- in_progress: 8"));
-        assertTrue(status.contains("- complete: 15"));
+        assertTrue(status.contains("- in_progress: 0"));
+        assertTrue(status.contains("- complete: 23"));
         assertTrue(status.contains("- disabled: 0"));
         assertTrue(status.contains("## Extra-small family integration"));
         assertTrue(status.contains("Intake validation: `READY_FOR_INTEGRATION`"));
@@ -283,6 +287,9 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Prosperity Standard and Guardian Standard"));
         assertTrue(status.contains("## Small-family integration"));
         assertTrue(status.contains("Manual review: Gate E PASS for all six authoritative hashes"));
+        assertTrue(status.contains("## Perpendicular medium integration"));
+        assertTrue(status.contains("Manual review: Gate E PASS for all eight authoritative hashes"));
+        assertTrue(status.contains("MEDIUM_FAMILY_GATE_E_REVIEW.md"));
     }
 
     @Test

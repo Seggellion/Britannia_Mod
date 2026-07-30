@@ -124,9 +124,9 @@ class BannerCatalogueManifestTest {
     @Test
     void approvedExtraSmallAndSmallFamiliesAreComplete() {
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertEquals(15, manifest.banners().stream()
+        assertEquals(23, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(8, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
         assertEquals(12, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null

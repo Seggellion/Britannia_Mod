@@ -15,20 +15,21 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class SmallGateECloseoutTest {
+class MediumGateECloseoutTest {
     private static final List<String> FAMILY = List.of(
-            "silver_and_gold_pennon",
-            "star_standard",
-            "ship_standard",
-            "pennon_of_silver",
-            "iron_ward",
-            "iron_ward_auxiliary");
+            "tournament_medium",
+            "ceremonial_tournament",
+            "iron_quarter",
+            "outer_ward",
+            "ward_of_serpents",
+            "serpent_guard",
+            "crossroad_guard",
+            "argent_shield");
     private static final List<String> BATCH_CHECKS = List.of(
-            "All six stable IDs correct",
-            "All six 128 x 128 base textures reviewed",
-            "All six 128 x 128 dye masks reviewed",
+            "All eight stable IDs correct",
+            "All eight 128 x 128 base textures reviewed",
+            "All eight 128 x 128 dye masks reviewed",
             "Natural appearance reviewed for every banner",
-            "Fixed regions remain unchanged",
             "Dyeable regions recolour correctly",
             "Highlights and shadows remain visible",
             "Alpha edges are clean",
@@ -46,7 +47,6 @@ class SmallGateECloseoutTest {
             "Unlimited dye tubs remain unlimited",
             "Brass mount behaviour",
             "Iron mount behaviour",
-            "Wall-parallel placement",
             "Wall-perpendicular placement",
             "North-facing placement",
             "South-facing placement",
@@ -57,7 +57,7 @@ class SmallGateECloseoutTest {
             "Save/reload",
             "Relog and client tracking",
             "F3+T resource reload",
-            "/reload data reload",
+            "`/reload` data reload",
             "Break/drop",
             "Support loss",
             "Pick block",
@@ -67,22 +67,19 @@ class SmallGateECloseoutTest {
             "All four materials represented",
             "Every unique geometry reviewed",
             "Block-atlas reload",
-            "Extra-small family regression");
+            "Extra-small and Small family regression",
+            "Perpendicular-only orientation enforcement",
+            "No parallel Medium placement was exposed");
     private static final List<String> PER_BANNER_CHECKS = List.of(
-            "128 x 128 fidelity",
-            "Natural appearance",
-            "Fixed regions",
-            "Dyeable regions",
-            "Highlights and shadows",
-            "Preview",
-            "Brass",
-            "Iron",
-            "Parallel",
-            "Perpendicular",
-            "Facing and rotation",
-            "Save/reload",
-            "Break/drop",
-            "Pick block and re-placement");
+            "Natural and recoloured appearance",
+            "Dyeable regions, highlights, shadows, and alpha edges",
+            "Inventory, hand, dropped-item, item-frame, and preview rendering",
+            "Brass and iron mounts",
+            "Perpendicular placement and all four facings",
+            "Save/reload, relog, resource reload, and data reload",
+            "Break/drop, support loss, pick block, and re-placement",
+            "No parallel placement exposed",
+            "No purple fallback");
     private static BannerScaffoldTool.Manifest manifest;
 
     @BeforeAll
@@ -92,15 +89,19 @@ class SmallGateECloseoutTest {
     }
 
     @Test
-    void smallFamilyIsCompleteAndOnlyLaterFamiliesRemainPlaceholder() {
-        Set<String> small = manifest.banners().stream()
-                .filter(entry -> "small".equals(entry.group()))
+    void mediumFamilyIsCompleteAndParallelMediumWallFamilyRemainsPlaceholder() {
+        Set<String> medium = manifest.banners().stream()
+                .filter(entry -> "medium".equals(entry.group()))
                 .map(BannerScaffoldTool.BannerEntry::id)
                 .collect(Collectors.toSet());
-        assertEquals(Set.copyOf(FAMILY), small);
+        assertEquals(Set.copyOf(FAMILY), medium);
         assertTrue(manifest.banners().stream()
-                .filter(entry -> small.contains(entry.id()))
+                .filter(entry -> medium.contains(entry.id()))
                 .allMatch(entry -> "complete".equals(entry.contentStatus())));
+        assertTrue(manifest.banners().stream()
+                .filter(entry -> "medium-wall".equals(entry.group()))
+                .allMatch(entry -> entry.contentStatus() == null
+                        || "placeholder".equals(entry.contentStatus())));
         assertEquals(23, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
         assertEquals(0, manifest.banners().stream()
@@ -113,10 +114,10 @@ class SmallGateECloseoutTest {
     @Test
     void productOwnerEvidenceMatchesApprovedIntakesAndHasNoUnresolvedResult() throws Exception {
         String batch = Files.readString(Path.of(
-                "content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md"));
+                "content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md"));
         assertTrue(batch.contains("Reviewer: Seggellion (Product Owner)"));
         assertTrue(batch.contains(
-                "Commit tested: `e4f457b132667efc0c9789ee6044c47bedf68bdc`"));
+                "Commit tested: `79474963299603ae73b2efcaf58a9a8614dc881b`"));
         BATCH_CHECKS.forEach(check -> assertTrue(batch.contains("- " + check + ": PASS"), check));
         assertTrue(batch.contains("Batch approval: APPROVED"));
         assertTrue(batch.contains("Gate E: PASS"));
@@ -135,7 +136,7 @@ class SmallGateECloseoutTest {
                     + banner.get("final_display_name").getAsString()), id);
             assertTrue(review.contains("Reviewer: Seggellion (Product Owner)"), id);
             assertTrue(review.contains(
-                    "Tested commit: `e4f457b132667efc0c9789ee6044c47bedf68bdc`"), id);
+                    "Tested commit: `79474963299603ae73b2efcaf58a9a8614dc881b`"), id);
             assertTrue(review.contains("Base SHA-256: `"
                     + assets.getAsJsonObject("base_texture").get("sha256").getAsString() + "`"), id);
             assertTrue(review.contains("Mask SHA-256: `"

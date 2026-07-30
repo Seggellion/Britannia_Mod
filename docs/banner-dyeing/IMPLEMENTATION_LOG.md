@@ -1,4 +1,24 @@
 # Banner and Dyeing Implementation Log
+## 2026-07-29 - Perpendicular Medium Gate E approval and closeout
+
+- Seggellion, acting as product owner, reported every check in the eight-banner perpendicular Medium live-review
+  runbook passed on 2026-07-29 against commit `79474963299603ae73b2efcaf58a9a8614dc881b`.
+- Batch evidence is recorded in `content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md`; each approved
+  submission directory has hash-bound `GATE_E_REVIEW.md` evidence. Every result cell is PASS, Gate E is PASS, and
+  no correction was requested.
+- Exactly the eight Medium definitions transitioned from `in_progress` to `complete`. Production is now 35 active
+  definitions: 12 placeholder, 0 in progress, 23 complete, and 0 disabled.
+- No artwork bytes, geometry, stable IDs, catalogue indices, dimensions, orientations, mounts, placement profiles,
+  item or placed persistence, networking, crafting policy, `medium-wall` content, or Milestone 17 work changed.
+- Scaffold generation and `--check` passed; all eight intake files remain `READY_FOR_INTEGRATION`. The focused
+  closeout selection passed 103 tests, the complete banner/dyeing suite passed 638 tests across 58 suites, standalone
+  `clean` passed, the unrestricted suite passed 644 tests across 59 suites, and `build` passed with no failures,
+  errors, or skips.
+- The sole initial test failure was a fixture expecting unformatted `/reload` while the evidence correctly records
+  the Markdown command as `` `/reload` ``; the assertion was aligned with the evidence and the same selection passed.
+- Both production JARs contain 35 definitions (12 placeholder, 0 in progress, 23 complete), every exact Medium
+  definition/base/mask resource, and zero duplicate entries. The normal JAR has 5,068 entries and the all-JAR has
+  5,072. The existing two-warning compile baseline remains unchanged.
 ## 2026-07-29 - Perpendicular Medium approval and integration
 
 - Seggellion approved all eight definitions on 2026-07-29, including authorship/originality, non-reference-copy provenance, distribution permission, 1 x 2 dimensions, perpendicular-only orientation, the five proposed geometry groups, and manual intake review. Visible crossbar/attachment pixels are approved fixed authored details.

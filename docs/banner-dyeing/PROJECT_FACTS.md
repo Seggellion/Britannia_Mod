@@ -2,9 +2,25 @@
 
 Date: 2026-07-29
 
-Milestone: 16 perpendicular-medium approved and integrated; Gate E pending
+Milestone: 16 perpendicular-medium Gate E complete
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-29 perpendicular medium Gate E closeout facts
+
+- Seggellion reported every Gate E live-review check passed for all eight Medium definitions on 2026-07-29 against
+  commit `79474963299603ae73b2efcaf58a9a8614dc881b`.
+- The exact reviewed definitions are `tournament_medium`, `ceremonial_tournament`, `iron_quarter`, `outer_ward`,
+  `ward_of_serpents`, `serpent_guard`, `crossroad_guard`, and `argent_shield`.
+- Batch evidence is recorded in `content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md`; each submission also
+  has hash-bound `GATE_E_REVIEW.md` evidence.
+- All eight definitions are `complete`. Production totals are 12 placeholder, 0 in progress, 23 complete, and
+  0 disabled.
+- The approved 128 x 128 base textures and dye masks, five geometry groups, 1 x 2 dimensions,
+  `wall_perpendicular` orientation, brass/iron mounts, brass default, and
+  `britannia_mod:medium_perpendicular` profile are unchanged by closeout.
+- The `medium-wall` family remains placeholder and unchanged. Stable IDs, catalogue indices, saved item and placed
+  state, networking, crafting absence, and Milestone 17 are unchanged.
 
 ## 2026-07-29 perpendicular medium integration facts
 

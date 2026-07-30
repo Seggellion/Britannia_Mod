@@ -130,7 +130,7 @@ class PerpendicularMediumIntegrationTest {
             if ("medium".equals(group)) {
                 String id = banner.get("id").getAsString();
                 medium.add(id);
-                assertEquals("in_progress", banner.get("content_status").getAsString(), id);
+                assertEquals("complete", banner.get("content_status").getAsString(), id);
                 assertFalse(banner.get("dimensions_provisional").getAsBoolean(), id);
                 assertEquals(List.of("wall_perpendicular"), banner.getAsJsonArray("supported_orientations")
                         .asList().stream().map(value2 -> value2.getAsString()).toList(), id);
@@ -153,7 +153,7 @@ class PerpendicularMediumIntegrationTest {
         for (String id : MEDIUM) {
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("in_progress", definition.get("content_status").getAsString());
+            assertEquals("complete", definition.get("content_status").getAsString());
             assertEquals("britannia_mod:medium_perpendicular", definition.get("placement_profile").getAsString());
             assertEquals(List.of("wall_perpendicular"), definition.getAsJsonArray("supported_orientations")
                     .asList().stream().map(value -> value.getAsString()).toList());

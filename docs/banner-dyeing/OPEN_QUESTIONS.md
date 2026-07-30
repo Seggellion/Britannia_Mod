@@ -2,14 +2,15 @@
 
 Date: 2026-07-29
 
-Milestone: 16 perpendicular-medium integrated; Gate E pending
+Milestone: 16 perpendicular-medium Gate E complete
 
-## Perpendicular Medium Gate E remains open
+## Perpendicular Medium Gate E resolved
 
-The product-owner intake decisions are resolved: Seggellion approved the eight assets, 1 x 2 dimensions, five geometry groups, perpendicular-only orientation, fixed authored crossbar/attachment pixels, and supported-orientation-only placement-profile mount maps on 2026-07-29. All eight definitions are integrated as `in_progress` and the intakes validate `READY_FOR_INTEGRATION`.
-
-The remaining question is the live Gate E result. Run and record the matrix in
-`docs/banner-dyeing/PERPENDICULAR_MEDIUM_LIVE_REVIEW.md`, including inventory, preview, natural and recoloured placed rendering, four facings, both mounts, reloads, lifecycle, and fallback checks. Do not mark these definitions `complete` until the product owner reports those runtime checks passed.
+Seggellion reported every live-review check passed for all eight Medium definitions on 2026-07-29 against commit
+`79474963299603ae73b2efcaf58a9a8614dc881b`. All eight definitions are `complete`, and no Medium correction remains
+open. Authoritative evidence is in `content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md`, the completed
+matrix in `docs/banner-dyeing/PERPENDICULAR_MEDIUM_LIVE_REVIEW.md`, and each Medium submission directory's
+`GATE_E_REVIEW.md`.
 ## Small-family Gate E resolved
 
 All six canonical Small definitions passed direct product-owner live review against commit
@@ -27,14 +28,13 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns the 12 placeholder definitions, the eight Medium Gate E reviews, and future size-family reviews. It
-does not reopen the 128 x 128 extra-small assets, the two reviewed geometry groups, Small Curtain, Prosperity
-Standard, Guardian Standard, mounts, orientations, or the canonical `small_curtain` identity.
+The remaining open content work concerns the 12 placeholder definitions and future size-family reviews. It does not
+reopen the completed Extra-small, Small, or Medium assets, geometry, mounts, orientations, or stable identities.
 
 ## Milestone 16A remaining content and review questions
 
 - Supply and approve the final complete base texture and selective grayscale-alpha dye mask for each of the remaining
-  20 placeholder definitions.
+  12 placeholder definitions.
 - Approve exact final pixel dimensions and per-definition presentation contracts for future size families.
 - Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
   examples.

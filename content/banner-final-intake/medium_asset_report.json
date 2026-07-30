@@ -22,7 +22,7 @@
       "britannia_mod:brass",
       "britannia_mod:iron"
     ],
-    "runtime_integration": "IN_PROGRESS",
+    "runtime_integration": "COMPLETE",
     "architecture_note": "Approved placement profiles contain mount geometry only for supported orientations. The profile contract now validates that non-empty orientation mount keys exactly match each banner definition supported orientations."
   },
   "geometry_groups": [

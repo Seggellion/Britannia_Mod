@@ -2,10 +2,16 @@
 
 Date prepared: 2026-07-29
 
-Status: READY FOR GATE E - LIVE RUNTIME CHECKS NOT PERFORMED
+Approval evidence updated: 2026-07-29
+
+Status: GATE E PASS - PRODUCT-OWNER LIVE REVIEW COMPLETE
 
 This runbook covers the eight exact-name layers in
-`C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`. It contains no parallel-medium cases. All eight intakes report `READY_FOR_INTEGRATION`, and the approved perpendicular-only placement profile is integrated. Execute this matrix against the integration commit before any definition is marked `complete`.
+`C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`. It contains no parallel-medium cases. Product-owner
+approval and live testing by Seggellion are recorded against commit
+`79474963299603ae73b2efcaf58a9a8614dc881b` and the exact intake hashes. All eight intakes validate, every
+listed runtime check passed, and the family is approved for transition from `in_progress` to `complete`. The
+authoritative batch summary is `content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md`.
 
 ## Reusable procedure
 
@@ -42,15 +48,15 @@ Every approved definition uses logical dimensions 1 x 2, `wall_perpendicular`, b
 
 ## Definition-specific result table
 
-No live checks have been performed.
+All cells were reported `PASS` by Seggellion on 2026-07-29.
 
 | Definition | Inventory item | Preview | Placed natural | Placed recoloured | Perpendicular | Brass | Iron | N/S/E/W | Save/reload | Break/drop | Pick block | Re-placement | Resource reload | Data reload | No purple fallback | Overall |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `tournament_medium` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `ceremonial_tournament` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `iron_quarter` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `outer_ward` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `ward_of_serpents` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `serpent_guard` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `crossroad_guard` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| `argent_shield` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| `tournament_medium` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `ceremonial_tournament` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `iron_quarter` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `outer_ward` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `ward_of_serpents` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `serpent_guard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `crossroad_guard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `argent_shield` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
