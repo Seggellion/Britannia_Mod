@@ -264,14 +264,14 @@ class FinalContentIntakeDocumentationTest {
             assertTrue(approval.get("approved_by").getAsString().isEmpty());
             assertTrue(approval.get("approved_date").getAsString().isEmpty());
             assertTrue(banner.get("final_display_name").getAsString().isEmpty());
-            assertTrue(banner.get("width_blocks").isJsonNull());
-            assertTrue(banner.get("height_blocks").isJsonNull());
+            assertTrue(isAbsentOrNull(banner, "width_blocks"));
+            assertTrue(isAbsentOrNull(banner, "height_blocks"));
             assertEquals(List.of("wall_parallel"), banner.getAsJsonArray("supported_orientations")
                     .asList().stream().map(JsonElement::getAsString).toList());
             assertTrue(banner.getAsJsonArray("supported_mounts").isEmpty());
-            assertTrue(banner.get("default_mount").isJsonNull());
-            assertTrue(banner.get("placement_profile_id").isJsonNull());
-            assertTrue(banner.get("geometry_id").isJsonNull());
+            assertTrue(isAbsentOrNull(banner, "default_mount"));
+            assertTrue(isAbsentOrNull(banner, "placement_profile_id"));
+            assertTrue(isAbsentOrNull(banner, "geometry_id"));
             assertEquals(3, provisional.get("width_blocks").getAsInt());
             assertEquals(2, provisional.get("height_blocks").getAsInt());
             assertTrue(provisional.get("dimensions_provisional").getAsBoolean());
@@ -345,6 +345,10 @@ class FinalContentIntakeDocumentationTest {
         assertFalse(raw.contains("\"render_strategy\""));
         assertFalse(raw.contains("\"optional_overlay\""));
         assertFalse(raw.contains("\"legacy_overlay\""));
+    }
+
+    private static boolean isAbsentOrNull(JsonObject object, String key) {
+        return !object.has(key) || object.get(key).isJsonNull();
     }
 
     private static void assertNoForbiddenIntakeKeys(JsonElement element) {

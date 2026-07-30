@@ -1,0 +1,710 @@
+﻿{
+    "schema_version":  1,
+    "source_file":  "C:/projects/britannia/raw fiels/tabbard/banner_large.ai",
+    "source_size_bytes":  35613618,
+    "source_sha256_before":  "64fd720476243a937d155b9ea547de60003ccc83f1c78093098e45517d25379e",
+    "pdf_compatible":  true,
+    "export_canvas_rule":  "Use the single authoritative 128 x 128 artboard. When the authored base/mask union extends outside it, apply one proportional downscale (never upscale) and one shared translation that centers the complete union within a two-pixel transparent margin. Export both objects with artboard clipping from that unchanged shared coordinate system.",
+    "reconciliation":  [
+                           {
+                               "illustrator_name":  "tournament_curtain",
+                               "candidate_stable_id":  "britannia_mod:tournament_curtain",
+                               "existing_catalogue_id":  "britannia_mod:large_01",
+                               "existing_group":  "large",
+                               "catalogue_index":  1,
+                               "mapping_evidence":  "Exact authoritative source name, one-to-one six-layer Large membership matching the six provisional Large slots, and the authored layer sequence matching the catalogue page/row sequence; the mapping is not based on anonymous layer order alone.",
+                               "orientation_evidence":  "The task identifies banner_large.ai as the authoritative parallel Large source and the catalogue intake gate independently fixes the large group to wall_parallel only.",
+                               "result":  "MIGRATE_PROVISIONAL_LARGE_ID"
+                           },
+                           {
+                               "illustrator_name":  "threefold_chain_standard",
+                               "candidate_stable_id":  "britannia_mod:threefold_chain_standard",
+                               "existing_catalogue_id":  "britannia_mod:large_02",
+                               "existing_group":  "large",
+                               "catalogue_index":  2,
+                               "mapping_evidence":  "Exact authoritative source name, one-to-one six-layer Large membership matching the six provisional Large slots, and the authored layer sequence matching the catalogue page/row sequence; the mapping is not based on anonymous layer order alone.",
+                               "orientation_evidence":  "The task identifies banner_large.ai as the authoritative parallel Large source and the catalogue intake gate independently fixes the large group to wall_parallel only.",
+                               "result":  "MIGRATE_PROVISIONAL_LARGE_ID"
+                           },
+                           {
+                               "illustrator_name":  "iron_serpent_standard",
+                               "candidate_stable_id":  "britannia_mod:iron_serpent_standard",
+                               "existing_catalogue_id":  "britannia_mod:large_03",
+                               "existing_group":  "large",
+                               "catalogue_index":  3,
+                               "mapping_evidence":  "Exact authoritative source name, one-to-one six-layer Large membership matching the six provisional Large slots, and the authored layer sequence matching the catalogue page/row sequence; the mapping is not based on anonymous layer order alone.",
+                               "orientation_evidence":  "The task identifies banner_large.ai as the authoritative parallel Large source and the catalogue intake gate independently fixes the large group to wall_parallel only.",
+                               "result":  "MIGRATE_PROVISIONAL_LARGE_ID"
+                           },
+                           {
+                               "illustrator_name":  "silver_fleur_curtain",
+                               "candidate_stable_id":  "britannia_mod:silver_fleur_curtain",
+                               "existing_catalogue_id":  "britannia_mod:large_04",
+                               "existing_group":  "large",
+                               "catalogue_index":  4,
+                               "mapping_evidence":  "Exact authoritative source name, one-to-one six-layer Large membership matching the six provisional Large slots, and the authored layer sequence matching the catalogue page/row sequence; the mapping is not based on anonymous layer order alone.",
+                               "orientation_evidence":  "The task identifies banner_large.ai as the authoritative parallel Large source and the catalogue intake gate independently fixes the large group to wall_parallel only.",
+                               "result":  "MIGRATE_PROVISIONAL_LARGE_ID"
+                           },
+                           {
+                               "illustrator_name":  "gilded_trellis_curtain",
+                               "candidate_stable_id":  "britannia_mod:gilded_trellis_curtain",
+                               "existing_catalogue_id":  "britannia_mod:large_05",
+                               "existing_group":  "large",
+                               "catalogue_index":  5,
+                               "mapping_evidence":  "Exact authoritative source name, one-to-one six-layer Large membership matching the six provisional Large slots, and the authored layer sequence matching the catalogue page/row sequence; the mapping is not based on anonymous layer order alone.",
+                               "orientation_evidence":  "The task identifies banner_large.ai as the authoritative parallel Large source and the catalogue intake gate independently fixes the large group to wall_parallel only.",
+                               "result":  "MIGRATE_PROVISIONAL_LARGE_ID"
+                           },
+                           {
+                               "illustrator_name":  "gilded_chevron_curtain",
+                               "candidate_stable_id":  "britannia_mod:gilded_chevron_curtain",
+                               "existing_catalogue_id":  "britannia_mod:large_06",
+                               "existing_group":  "large",
+                               "catalogue_index":  6,
+                               "mapping_evidence":  "Exact authoritative source name, one-to-one six-layer Large membership matching the six provisional Large slots, and the authored layer sequence matching the catalogue page/row sequence; the mapping is not based on anonymous layer order alone.",
+                               "orientation_evidence":  "The task identifies banner_large.ai as the authoritative parallel Large source and the catalogue intake gate independently fixes the large group to wall_parallel only.",
+                               "result":  "MIGRATE_PROVISIONAL_LARGE_ID"
+                           }
+                       ],
+    "document":  {
+                     "name":  "banner_large.ai",
+                     "colour_space":  "CMYK",
+                     "colour_space_com_value":  1,
+                     "raster_effects_resolution":  72,
+                     "artboard_name":  "Artboard 1",
+                     "artboard_bounds":  [
+                                             -32,
+                                             32,
+                                             96,
+                                             -96
+                                         ],
+                     "width":  128,
+                     "height":  128,
+                     "top_level_layers":  [
+                                              "tournament_curtain",
+                                              "threefold_chain_standard",
+                                              "iron_serpent_standard",
+                                              "silver_fleur_curtain",
+                                              "gilded_trellis_curtain",
+                                              "gilded_chevron_curtain"
+                                          ],
+                     "placed_items":  0,
+                     "raster_items":  6,
+                     "text_frames":  0,
+                     "clipping_mask_observation":  "No inspected named Large page item reports Clipped=true.",
+                     "opacity_mask_observation":  "Illustrator COM does not expose opacity-mask membership as a page-item property. Isolated base and dye-mask exports, hierarchy, alpha, and pixel-contract results are the available non-destructive evidence.",
+                     "embedded_resource_observation":  "The document has six embedded raster base items and zero linked/placed items.",
+                     "hierarchy":  [
+                                       {
+                                           "name":  "tournament_curtain",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "items":  [
+                                                         {
+                                                             "name":  "dye_mask",
+                                                             "geometric_bounds":  [
+                                                                                      -28.849433961237992,
+                                                                                      27.245787768308219,
+                                                                                      93.397894679386809,
+                                                                                      -62.170212765951874
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -28.849433961237992,
+                                                                                    27.245787768308219,
+                                                                                    93.397894679386809,
+                                                                                    -62.170212765951874
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  false
+                                                         },
+                                                         {
+                                                             "name":  "base_texture",
+                                                             "geometric_bounds":  [
+                                                                                      -43.042553191488878,
+                                                                                      46.531914893621433,
+                                                                                      107.85106382979211,
+                                                                                      -116.872340425527
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -43.042553191488878,
+                                                                                    46.531914893621433,
+                                                                                    107.85106382979211,
+                                                                                    -116.872340425527
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  true
+                                                         }
+                                                     ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "threefold_chain_standard",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "items":  [
+                                                         {
+                                                             "name":  "dye_mask",
+                                                             "geometric_bounds":  [
+                                                                                      -24.837736447603675,
+                                                                                      31.609003523446518,
+                                                                                      89.680851063832961,
+                                                                                      -93.510638297870173
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -24.837736447603675,
+                                                                                    31.609003523446518,
+                                                                                    89.680851063832961,
+                                                                                    -93.510638297870173
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  false
+                                                         },
+                                                         {
+                                                             "name":  "base_texture",
+                                                             "geometric_bounds":  [
+                                                                                      -34.340425531914661,
+                                                                                      34.55319148936178,
+                                                                                      99.319148936168858,
+                                                                                      -101
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -34.340425531914661,
+                                                                                    34.55319148936178,
+                                                                                    99.319148936168858,
+                                                                                    -101
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  true
+                                                         }
+                                                     ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "iron_serpent_standard",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "items":  [
+                                                         {
+                                                             "name":  "dye_mask",
+                                                             "geometric_bounds":  [
+                                                                                      -27.79266357421875,
+                                                                                      31.062110372807183,
+                                                                                      84.012939453125,
+                                                                                      -94.974996948812986
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -27.79266357421875,
+                                                                                    31.062110372807183,
+                                                                                    84.012939453125,
+                                                                                    -94.974996948812986
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  false
+                                                         },
+                                                         {
+                                                             "name":  "base_texture",
+                                                             "geometric_bounds":  [
+                                                                                      -33.086325376674722,
+                                                                                      33.986947258090368,
+                                                                                      89.170222712829855,
+                                                                                      -97.99758555596236
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -33.086325376674722,
+                                                                                    33.986947258090368,
+                                                                                    89.170222712829855,
+                                                                                    -97.99758555596236
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  true
+                                                         }
+                                                     ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "silver_fleur_curtain",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "items":  [
+                                                         {
+                                                             "name":  "dye_mask",
+                                                             "geometric_bounds":  [
+                                                                                      -31.240669541023635,
+                                                                                      30.534217699297187,
+                                                                                      95.594282081043275,
+                                                                                      -83.734332713023832
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -31.240669541023635,
+                                                                                    30.534217699297187,
+                                                                                    95.594282081043275,
+                                                                                    -83.734332713023832
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  false
+                                                         },
+                                                         {
+                                                             "name":  "base_texture",
+                                                             "geometric_bounds":  [
+                                                                                      -35.127659574466634,
+                                                                                      40.33713717601313,
+                                                                                      98.872340425523362,
+                                                                                      -99.067719856599069
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -35.127659574466634,
+                                                                                    40.33713717601313,
+                                                                                    98.872340425523362,
+                                                                                    -99.067719856599069
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  true
+                                                         }
+                                                     ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "gilded_trellis_curtain",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "items":  [
+                                                         {
+                                                             "name":  "dye_mask",
+                                                             "geometric_bounds":  [
+                                                                                      -31.340425531912842,
+                                                                                      31.080324068268055,
+                                                                                      94.608193866619331,
+                                                                                      -61.863483399465622
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -31.340425531912842,
+                                                                                    31.080324068268055,
+                                                                                    94.608193866619331,
+                                                                                    -61.863483399465622
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  false
+                                                         },
+                                                         {
+                                                             "name":  "base_texture",
+                                                             "geometric_bounds":  [
+                                                                                      -33.919978891310166,
+                                                                                      44.989361702128008,
+                                                                                      97.8085106383005,
+                                                                                      -107.68085106382932
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -33.919978891310166,
+                                                                                    44.989361702128008,
+                                                                                    97.8085106383005,
+                                                                                    -107.68085106382932
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  true
+                                                         }
+                                                     ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       },
+                                       {
+                                           "name":  "gilded_chevron_curtain",
+                                           "visible":  true,
+                                           "locked":  false,
+                                           "page_item_count":  2,
+                                           "group_item_count":  1,
+                                           "path_item_count":  0,
+                                           "compound_path_count":  0,
+                                           "placed_item_count":  0,
+                                           "raster_item_count":  1,
+                                           "items":  [
+                                                         {
+                                                             "name":  "dye_mask",
+                                                             "geometric_bounds":  [
+                                                                                      -31.3442510135701,
+                                                                                      31.267809331454373,
+                                                                                      94.4893617021371,
+                                                                                      -74.1063829787272
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -31.3442510135701,
+                                                                                    31.267809331454373,
+                                                                                    94.4893617021371,
+                                                                                    -74.1063829787272
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  false
+                                                         },
+                                                         {
+                                                             "name":  "base_texture",
+                                                             "geometric_bounds":  [
+                                                                                      -36.085106382978665,
+                                                                                      33.776595744682709,
+                                                                                      99.5531914893636,
+                                                                                      -97.893617021274622
+                                                                                  ],
+                                                             "visible_bounds":  [
+                                                                                    -36.085106382978665,
+                                                                                    33.776595744682709,
+                                                                                    99.5531914893636,
+                                                                                    -97.893617021274622
+                                                                                ],
+                                                             "hidden":  false,
+                                                             "locked":  false,
+                                                             "opacity":  100,
+                                                             "clipped":  false,
+                                                             "embedded":  true
+                                                         }
+                                                     ],
+                                           "child_layers":  [
+
+                                                            ]
+                                       }
+                                   ]
+                 },
+    "exports":  [
+                    {
+                        "stable_id":  "britannia_mod:tournament_curtain",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "tournament_curtain",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -43.042553191488878,
+                                                   46.531914893621433,
+                                                   107.85106382979211,
+                                                   -116.872340425527
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -28.849433961237992,
+                                                   27.245787768308219,
+                                                   93.397894679386809,
+                                                   -62.170212765951874
+                                               ],
+                        "union_bounds_before":  [
+                                                    -43.042553191488878,
+                                                    46.531914893621433,
+                                                    107.85106382979211,
+                                                    -116.872340425527
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.758854166666669,
+                        "base_bounds_after":  [
+                                                  -25.253125000002,
+                                                  30,
+                                                  89.253125000001091,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -14.482617334128918,
+                                                  15.364642072093375,
+                                                  78.28527736867909,
+                                                  -52.489062499998909
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/tournament_curtain/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/tournament_curtain/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:threefold_chain_standard",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "threefold_chain_standard",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -34.340425531914661,
+                                                   34.55319148936178,
+                                                   99.319148936168858,
+                                                   -101
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -24.837736447603675,
+                                                   31.609003523446518,
+                                                   89.680851063832961,
+                                                   -93.510638297870173
+                                               ],
+                        "union_bounds_before":  [
+                                                    -34.340425531914661,
+                                                    34.55319148936178,
+                                                    99.319148936168858,
+                                                    -101
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.91477005179720561,
+                        "base_bounds_after":  [
+                                                  -29.133887929680895,
+                                                  30,
+                                                  93.133887929679986,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -20.441112543810959,
+                                                  27.306745021918687,
+                                                  84.31706168576784,
+                                                  -87.148956207818628
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/threefold_chain_standard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/threefold_chain_standard/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:iron_serpent_standard",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "iron_serpent_standard",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -33.086325376674722,
+                                                   33.986947258090368,
+                                                   89.170222712829855,
+                                                   -97.99758555596236
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -27.79266357421875,
+                                                   31.062110372807183,
+                                                   84.012939453125,
+                                                   -94.974996948812986
+                                               ],
+                        "union_bounds_before":  [
+                                                    -33.086325376674722,
+                                                    33.986947258090368,
+                                                    89.170222712829855,
+                                                    -97.99758555596236
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.93950402638995745,
+                        "base_bounds_after":  [
+                                                  -25.430259591313188,
+                                                  30,
+                                                  89.4302595913141,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -20.456843013559592,
+                                                  27.252103969743075,
+                                                  84.5849712035888,
+                                                  -91.160265833459562
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/iron_serpent_standard/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/iron_serpent_standard/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:silver_fleur_curtain",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "silver_fleur_curtain",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -35.127659574466634,
+                                                   40.33713717601313,
+                                                   98.872340425523362,
+                                                   -99.067719856599069
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -31.240669541023635,
+                                                   30.534217699297187,
+                                                   95.594282081043275,
+                                                   -83.734332713023832
+                                               ],
+                        "union_bounds_before":  [
+                                                    -35.127659574466634,
+                                                    40.33713717601313,
+                                                    98.872340425523362,
+                                                    -99.067719856599069
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.88949555015139536,
+                        "base_bounds_after":  [
+                                                  -27.596201860139445,
+                                                  30,
+                                                  91.596201860138535,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -24.138741521908742,
+                                                  21.280346746968462,
+                                                  88.680383549588441,
+                                                  -80.3610203670396
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/silver_fleur_curtain/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/silver_fleur_curtain/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:gilded_trellis_curtain",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "gilded_trellis_curtain",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -33.919978891310166,
+                                                   44.989361702128008,
+                                                   97.8085106383005,
+                                                   -107.68085106382932
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -31.340425531912842,
+                                                   31.080324068268055,
+                                                   94.608193866619331,
+                                                   -61.863483399465622
+                                               ],
+                        "union_bounds_before":  [
+                                                    -33.919978891310166,
+                                                    44.989361702128008,
+                                                    97.8085106383005,
+                                                    -107.68085106382932
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.81220820848721409,
+                        "base_bounds_after":  [
+                                                  -21.495480243786005,
+                                                  30,
+                                                  85.495480243786,
+                                                  -94
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -19.400345831052618,
+                                                  18.702965461621716,
+                                                  82.896156692066143,
+                                                  -56.786757891728485
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/gilded_trellis_curtain/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/gilded_trellis_curtain/dye_mask.png"
+                    },
+                    {
+                        "stable_id":  "britannia_mod:gilded_chevron_curtain",
+                        "classification":  "READY_FOR_EXPORT",
+                        "layer":  "gilded_chevron_curtain",
+                        "base_object":  "base_texture",
+                        "mask_object":  "dye_mask",
+                        "base_bounds_before":  [
+                                                   -36.085106382978665,
+                                                   33.776595744682709,
+                                                   99.5531914893636,
+                                                   -97.893617021274622
+                                               ],
+                        "mask_bounds_before":  [
+                                                   -31.3442510135701,
+                                                   31.267809331454373,
+                                                   94.4893617021371,
+                                                   -74.1063829787272
+                                               ],
+                        "union_bounds_before":  [
+                                                    -36.085106382978665,
+                                                    33.776595744682709,
+                                                    99.5531914893636,
+                                                    -97.893617021274622
+                                                ],
+                        "artwork_extended_outside_artboard":  true,
+                        "shared_scale":  0.91419607843136019,
+                        "base_bounds_after":  [
+                                                  -30,
+                                                  28.186196078430839,
+                                                  94,
+                                                  -92.18619607842993
+                                              ],
+                        "mask_bounds_after":  [
+                                                  -25.665928612874268,
+                                                  25.892673377835308,
+                                                  89.370666666674879,
+                                                  -70.440000000005966
+                                              ],
+                        "output_canvas":  [
+                                              128,
+                                              128
+                                          ],
+                        "base_output":  "content/banner-final-intake/submissions/gilded_chevron_curtain/base_texture.png",
+                        "mask_output":  "content/banner-final-intake/submissions/gilded_chevron_curtain/dye_mask.png"
+                    }
+                ],
+    "source_sha256_after":  "64fd720476243a937d155b9ea547de60003ccc83f1c78093098e45517d25379e"
+}

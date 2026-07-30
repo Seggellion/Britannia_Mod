@@ -2,15 +2,36 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Large intake readiness blocked
+Milestone: parallel Large assets prepared; integration approval required
+
+## Parallel Large decisions required before integration
+
+The authoritative Illustrator source has now resolved artwork, candidate names, and six-member family scope. Draft
+packages exist for `tournament_curtain`, `threefold_chain_standard`, `iron_serpent_standard`,
+`silver_fleur_curtain`, `gilded_trellis_curtain`, and `gilded_chevron_curtain`, proposed as deliberate migrations
+from `large_01` through `large_06` without index changes.
+
+The following administrative and art-direction decisions are still required and were not inferred:
+
+- Product-owner approver identity and approval date.
+- Creator identity, original-art attestation, explicit not-copied-from-reference declaration, and distribution
+  permission.
+- Approval of the 2 x 2 logical-dimension proposal supported by the near-square Illustrator silhouettes, replacing
+  the provisional 3 x 2 placeholder dimensions.
+- Approval of six distinct custom Large geometry drafts and the `britannia_mod:large_parallel` placement profile.
+- Authorization to migrate the six provisional IDs and add the smallest decode-only saved-state aliases.
+
+Until those decisions are supplied, the actual intake validator correctly reports all six drafts `INVALID`: their
+canonical source-named IDs are not present in the live catalogue and required approval/provenance fields are absent.
+No draft may be integrated or advanced to Gate E.
 
 ## Parallel Large intake submissions required
 
-The authoritative Large membership is `large_01`, `large_02`, `large_03`, `large_04`, `large_05`, and `large_06`.
-Every definition is `NOT_SUBMITTED`: none has an intake manifest or owner-supplied base texture, dye mask, geometry,
-hashes, provenance, distribution approval, final display name, final dimensions, mounts, placement profile, or
-manual intake-review evidence. Use `content/banner-final-intake/large_batch.example.yml` to supply these decisions
-without treating its informational 3 x 2 placeholder state as approval.
+The live catalogue Large membership remains `large_01`, `large_02`, `large_03`, `large_04`, `large_05`, and
+`large_06`. This historical readiness statement is superseded for asset availability: source-derived draft
+manifests, base textures, masks, geometry proposals, names, and hashes now exist. Approval, provenance, final
+dimensions, geometry acceptance, canonical-ID migration, runtime integration, and live review remain outstanding.
+Use the individual draft packages rather than treating the informational 3 x 2 batch-template state as approval.
 
 Large banners support `wall_parallel` placement only and do not support `wall_perpendicular` placement. That product
 decision is fixed for this family and is not an open alternative. Integration remains blocked until at least one

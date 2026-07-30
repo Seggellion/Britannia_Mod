@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "files": {
-    "content/banner_catalogue_status.md": "13486debb53700b04c8ba030c9c0d8422c4bdc8a274b974b340639b3db23403f",
+    "content/banner_catalogue_status.md": "b0de5023601515d15399f50a0fc111cef3a7cabdecfad016ec647a8ace2db95a",
     "src/main/resources/assets/britannia_mod/banner_client_assets.json": "bd0fb6f176479b73ab353d37b396bc1cf0ca316ccacbc8e215982f4436a10b4e",
     "src/main/resources/assets/britannia_mod/models/banner/medium/argent_shield/geometry.json": "bb2f93b944944e956f4c2943043336efeb94184208f9fe226a4355a5ffe98f28",
     "src/main/resources/assets/britannia_mod/models/banner/medium/iron_quarter/geometry.json": "cc161d24ebdadcce5a4732da5919c2c59a9aed3e30b727d21f670a9b322fdc3c",

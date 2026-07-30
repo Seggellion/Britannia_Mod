@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "NOT_APPROVED",
+    "approved_by": "",
+    "approved_date": "",
+    "notes": "Draft prepared from the authoritative Illustrator source. The request supplies authoritative artwork, Large membership, and final names, but no product-owner identity/date, creator attestation, distribution permission, or manual approval."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:iron_serpent_standard",
+    "final_display_name": "Iron Serpent Standard",
+    "catalogue_index": 3,
+    "family": "large",
+    "width_blocks": 2,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:large_parallel",
+    "geometry_id": "britannia_mod:banner/large/iron_serpent_standard/geometry",
+    "geometry_convention": "Proposed 28-unit-tall parallel Large-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Physical placement uses a 2 x 2 wall_parallel footprint and the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Iron Serpent Standard"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/iron_serpent_standard/base_texture",
+      "source_file": "content/banner-final-intake/submissions/iron_serpent_standard/base_texture.png",
+      "sha256": "3f673ba9ebdbc18cf6810e0b89042b2e06fd61810373092d24a874d0b645acd4"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/iron_serpent_standard/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/iron_serpent_standard/dye_mask.png",
+      "sha256": "6cdd2bc25cf94ba4cb42c41737a05d02b6c9d61000078b78b05e88f54eac4062"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/iron_serpent_standard/source/geometry.json",
+      "sha256": "2e8ee13a5bc04a87807be3eff7fe7ac986dd3dd54c43dfa9dfe711f4c096cc74"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/iron_serpent_standard/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": false,
+    "creator": "",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_large.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the authored selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_large.ai",
+    "distribution_permission_confirmed": false,
+    "copied_from_reference_art": null
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed. Review artifacts are prepared, but Gate E must wait until the intake is approved and integrated."
+  },
+  "requested_content_status": "in_progress"
+}

@@ -2,9 +2,50 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Large intake readiness blocked
+Milestone: parallel Large assets prepared; integration blocked on approval
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 parallel Large authoritative preparation facts
+
+- `C:/projects/britannia/raw fiels/tabbard/banner_large.ai` is the authoritative source. It is 35,613,618 bytes,
+  PDF-compatible, CMYK, 72 ppi, and has one 128 x 128 artboard at `[-32, 32, 96, -96]`. Read-only Illustrator
+  automation found six embedded raster bases, no linked resources, and exactly six relevant layers. SHA-256 was
+  `64fd720476243a937d155b9ea547de60003ccc83f1c78093098e45517d25379e` before and after export.
+- The six source-named migration candidates, in proposed catalogue order, are `tournament_curtain`,
+  `threefold_chain_standard`, `iron_serpent_standard`, `silver_fleur_curtain`, `gilded_trellis_curtain`, and
+  `gilded_chevron_curtain`. They correspond one-to-one with provisional `large_01` through `large_06` at indices
+  1 through 6. No additional, unrelated, perpendicular, or ambiguous Illustrator layer exists.
+- Six aligned 128 x 128 RGBA base/mask pairs, draft custom geometry sources, individual review artifacts, and a
+  family contact sheet are prepared under `content/banner-final-intake/`. Exact hashes, pixel metrics, silhouette
+  comparisons, and proposal details are in `large_asset_report.json`; the source hierarchy and export transforms
+  are in `large_illustrator_report.json`.
+
+| Candidate | Base SHA-256 | Mask SHA-256 |
+|---|---|---|
+| `tournament_curtain` | `7c9b52aea693bd019f8e194d3c4eeadad3c98d9949443ab9cf90e9e505288276` | `15141ca8f227385c1ae2300793d81ce309cd7ff94afd8a93d48c7ab41fc0567e` |
+| `threefold_chain_standard` | `b800da02a68e35c3f31bcbe9efce352ffd0e3b13de312292cb69c82341092091` | `800ab6e9d877f74ca279acd50146bc28e7271c34b789b113879ff0afaa347374` |
+| `iron_serpent_standard` | `3f673ba9ebdbc18cf6810e0b89042b2e06fd61810373092d24a874d0b645acd4` | `6cdd2bc25cf94ba4cb42c41737a05d02b6c9d61000078b78b05e88f54eac4062` |
+| `silver_fleur_curtain` | `80421cf1b467a9985e8fbcf0734e6d3f70372d2ed8055c4dc188037a8ac48c14` | `10a918eb8f0271fb3d53d47fdc60eaa0d0c31de8ae3c13ee1eafd36d371632bc` |
+| `gilded_trellis_curtain` | `bfa9e4aad4b1292d75520bda76bb5c061e450ba0aa3e8ae80480f8e702dcdd7a` | `5904b55c216ee9a753fae05a381569f8c3b7158b018bdc2d78dcca212e16282a` |
+| `gilded_chevron_curtain` | `75eed237554c299a33341cd36c9432193b9c0cb14bcaa9f71d7a15636a583768` | `b736710549d6c90bd71ef77fca4b7c65ce3a9b0a63fdf3bfac650d012c699572` |
+
+- The source silhouettes support a draft 2 x 2 logical footprint rather than the provisional 3 x 2 placeholder.
+  All six silhouettes are distinct at the documented sharing threshold, so six custom geometry drafts are
+  proposed. The proposed `britannia_mod:large_parallel` profile contains only `wall_parallel`, reuses
+  `britannia_mod:banner/mount/wall_parallel`, supports brass and iron, and defaults to brass.
+- The intakes accurately remain `NOT_APPROVED`. No approver identity/date, creator/original-art attestation,
+  copied-reference declaration, distribution permission, dimension approval, or geometry approval was supplied.
+  The actual validator therefore reports each canonical source-named draft `INVALID`, including that its ID is not
+  yet present in the live catalogue. This blocks migration and runtime integration.
+- Production remains 35 active definitions: 6 placeholder, 0 in progress, 29 complete, and 0 disabled.
+  `large_01` through `large_06` remain active placeholders; no runtime Large assets or aliases were introduced.
+  All completed smaller families, persistence schemas, crafting absence, and the Milestone 17 boundary are
+  unchanged.
+- Scaffold generation is idempotent and `--check` passes. Preparation tests pass 5/5, the banner/dyeing suite passes
+  655 tests, the clean unrestricted suite passes 661 tests across 62 suites, and build passes. Both production JARs
+  retain 35 definitions and the six Large placeholders, contain no draft candidate runtime entries or intake/review
+  artifacts, and have no duplicate ZIP entries.
 
 ## 2026-07-30 parallel Large intake readiness facts
 

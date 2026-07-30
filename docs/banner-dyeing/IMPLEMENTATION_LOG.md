@@ -1,5 +1,43 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-30 - Parallel Large authoritative asset preparation
+
+- Audited `C:/projects/britannia/raw fiels/tabbard/banner_large.ai` through read-only Adobe Illustrator automation.
+  The 35,613,618-byte PDF-compatible CMYK document has one 128 x 128 artboard at
+  `[-32, 32, 96, -96]`, 72 ppi raster effects, six embedded raster bases, zero linked resources, and exactly six
+  visible unlocked top-level Large layers. Its SHA-256 remained
+  `64fd720476243a937d155b9ea547de60003ccc83f1c78093098e45517d25379e` before and after export.
+- The exact Illustrator membership is `tournament_curtain`, `threefold_chain_standard`,
+  `iron_serpent_standard`, `silver_fleur_curtain`, `gilded_trellis_curtain`, and
+  `gilded_chevron_curtain`. These are the deliberate source-named migration candidates for provisional
+  `large_01` through `large_06` at unchanged indices 1 through 6. The evidence combines exact source names,
+  one-to-one Large membership, and the authored sequence matching the existing catalogue page/row sequence; no
+  mapping was made from an anonymous layer order alone.
+- Exported six aligned 128 x 128 8-bit RGBA base/mask pairs with one shared proportional transform per pair and
+  two pixels of transparent artboard margin. Active authored mask pixels were normalized to white and constrained
+  to base alpha without expanding the selection. Natural bases retain fixed heraldry, borders, perforations,
+  attachment/crossbar details, highlights, shadows, and transparency. Diagnostic sheets and exact metrics/hashes
+  are in `content/banner-final-intake/large_asset_report.json`; Illustrator structure and transforms are in
+  `content/banner-final-intake/large_illustrator_report.json`.
+- All six authoritative alpha bounds are approximately square, so the draft proposes 2 x 2 logical dimensions
+  instead of the explicitly provisional 3 x 2 placeholder dimensions. Six distinct silhouettes fall below the
+  0.95 normalized-IoU sharing threshold and therefore have six draft custom Large geometry resources. The draft
+  `britannia_mod:large_parallel` profile remains `wall_parallel`-only and reuses the shared untinted
+  `britannia_mod:banner/mount/wall_parallel` geometry with brass and iron material choices.
+- Each source-named candidate has a complete draft intake package and review artifacts. The real validator confirms
+  both PNGs are 128 x 128, 8-bit RGBA, but reports `INVALID`: the deliberate canonical ID migration has not occurred
+  and approval identity/date, creator/original-art attestation, copied-reference declaration, and distribution
+  permission were not supplied. Those fields were left blank or false rather than fabricated.
+- No draft was integrated. The live catalogue remains 35 active definitions: 6 Large placeholders, 0 in progress,
+  29 complete, and 0 disabled. No runtime assets, generated definitions, localization, aliases, placement profiles,
+  client index, persistence, networking, crafting, or Milestone 17 work changed. Parallel Large Gate E remains
+  unavailable until intake approval and a reviewed integration commit exist.
+- Scaffold generation is idempotent and `--check` passes. The focused preparation class passes 5 tests; the complete
+  banner/dyeing suite passes 655 tests; after standalone clean, the unrestricted suite passes 661 tests across
+  62 suites with zero failures, errors, or skips; build passes. The normal JAR has 5,098 entries and the all-JAR
+  has 5,102, with 35 definitions, six unchanged Large placeholders, no source-named Large runtime entry, no
+  intake/review artifact, no banner recipe/removed architecture entry, and no duplicate ZIP name.
+
 ## 2026-07-30 - Parallel Large intake gate preparation
 
 - Parallel Medium Gate E was closed first in commit `3f668dde0fbb054b14950029a96e623670dd996b`; all fourteen Medium
