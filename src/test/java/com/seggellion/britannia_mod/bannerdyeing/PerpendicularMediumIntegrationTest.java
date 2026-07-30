@@ -137,7 +137,7 @@ class PerpendicularMediumIntegrationTest {
                 assertEquals("britannia_mod:medium_perpendicular", banner.get("placement_profile").getAsString(), id);
             } else if ("medium-wall".equals(group)) {
                 mediumWall.add(banner.get("id").getAsString());
-                assertEquals("in_progress", banner.get("content_status").getAsString());
+                assertEquals("complete", banner.get("content_status").getAsString());
                 assertFalse(banner.get("dimensions_provisional").getAsBoolean());
                 assertEquals(List.of("wall_parallel"), banner.getAsJsonArray("supported_orientations")
                         .asList().stream().map(value2 -> value2.getAsString()).toList());

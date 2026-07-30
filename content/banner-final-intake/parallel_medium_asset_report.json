@@ -29,7 +29,7 @@
       "britannia_mod:iron"
     ],
     "default_mount": "britannia_mod:brass",
-    "runtime_integration": "IN_PROGRESS_PENDING_GATE_E",
+    "runtime_integration": "COMPLETE",
     "architecture_note": "The placement-profile codec accepts an orientation-specific subset and registry cross-validation requires it to match the consuming definition. The integrated parallel-only Medium profile does not change smaller-family or perpendicular Medium profiles."
   },
   "geometry_groups": [

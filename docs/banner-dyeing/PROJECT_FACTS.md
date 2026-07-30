@@ -2,9 +2,21 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Medium runtime integration
+Milestone: parallel Medium Gate E complete
 
 Feature branch: `banners-dyetub`
+## 2026-07-30 parallel Medium Gate E closeout facts
+
+- Seggellion reported every Gate E live-review check passed for all six Parallel Medium definitions on 2026-07-30
+  against commit `c61d8121d6d1224ea5647bedee8f3d13dd7af933`.
+- Batch evidence is recorded in `content/banner-final-intake/PARALLEL_MEDIUM_GATE_E_REVIEW.md`; each submission has
+  hash-bound `GATE_E_REVIEW.md` evidence, and the completed matrix remains in
+  `docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md`.
+- All fourteen Medium definitions are now `complete`: six `medium-wall` definitions support only `wall_parallel`,
+  and eight `medium` definitions support only `wall_perpendicular`.
+- Production totals are 6 placeholder, 0 in progress, 29 complete, and 0 disabled.
+- The reviewed asset bytes, five Parallel Medium geometry groups, 1 x 2 dimensions, parallel-only profile, stable
+  IDs, catalogue indices, persistence, networking, crafting absence, and Milestone 17 are unchanged by closeout.
 
 ## 2026-07-30 parallel Medium integration facts
 

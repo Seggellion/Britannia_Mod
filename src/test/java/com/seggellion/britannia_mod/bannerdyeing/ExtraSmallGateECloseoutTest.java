@@ -104,11 +104,11 @@ class ExtraSmallGateECloseoutTest {
                 .map(BannerScaffoldTool.BannerEntry::id)
                 .collect(Collectors.toSet());
         assertTrue(complete.containsAll(FAMILY));
-        assertEquals(23, complete.size());
+        assertEquals(29, complete.size());
         assertEquals(6, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
         assertEquals(35, manifest.banners().size());
         assertTrue(complete.contains("small_curtain"));

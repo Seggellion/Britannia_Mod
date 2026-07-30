@@ -202,6 +202,9 @@ class GeneratedBannerCatalogueTest {
                         "britannia_mod:scarlet_court", "britannia_mod:verdant_court",
                         "britannia_mod:small_curtain", "britannia_mod:prosperity_standard",
                         "britannia_mod:guardian_standard",
+                        "britannia_mod:verdant_grape_pennon", "britannia_mod:silver_rosette_pennon",
+                        "britannia_mod:four_seals_pennon", "britannia_mod:twin_spades_pennon",
+                        "britannia_mod:ankh_pennon", "britannia_mod:joined_wards",
                         "britannia_mod:tournament_medium", "britannia_mod:ceremonial_tournament",
                         "britannia_mod:iron_quarter", "britannia_mod:outer_ward",
                         "britannia_mod:ward_of_serpents", "britannia_mod:serpent_guard",
@@ -218,7 +221,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
         assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
         assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
-        assertEquals(6, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
         assertEquals(6, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
@@ -275,11 +278,11 @@ class GeneratedBannerCatalogueTest {
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Final dimensions approved: 29 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final artwork complete: 23 of "
+        assertTrue(status.contains("Final artwork complete: 29 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("- placeholder: 6"));
-        assertTrue(status.contains("- in_progress: 6"));
-        assertTrue(status.contains("- complete: 23"));
+        assertTrue(status.contains("- in_progress: 0"));
+        assertTrue(status.contains("- complete: 29"));
         assertTrue(status.contains("- disabled: 0"));
         assertTrue(status.contains("## Extra-small family integration"));
         assertTrue(status.contains("Intake validation: `READY_FOR_INTEGRATION`"));
@@ -289,7 +292,7 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Manual review: Gate E PASS for all six authoritative hashes"));
         assertTrue(status.contains("## Perpendicular medium integration"));
         assertTrue(status.contains("## Parallel Medium integration"));
-        assertTrue(status.contains("Post-integration live Gate E review remains pending"));
+        assertTrue(status.contains("PARALLEL_MEDIUM_GATE_E_REVIEW.md"));
         assertTrue(status.contains("Manual review: Gate E PASS for all eight authoritative hashes"));
         assertTrue(status.contains("MEDIUM_FAMILY_GATE_E_REVIEW.md"));
     }

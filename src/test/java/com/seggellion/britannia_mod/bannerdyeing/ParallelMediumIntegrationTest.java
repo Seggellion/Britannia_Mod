@@ -106,7 +106,7 @@ class ParallelMediumIntegrationTest {
         assertEquals(Set.of("source-named"), parallel.stream()
                 .map(BannerScaffoldTool.BannerEntry::nameStatus)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(parallel.stream().allMatch(entry -> "in_progress".equals(entry.contentStatus())));
+        assertTrue(parallel.stream().allMatch(entry -> "complete".equals(entry.contentStatus())));
         assertTrue(parallel.stream().allMatch(entry -> entry.sourceLabel() != null));
         assertFalse(manifest.banners().stream()
                 .anyMatch(entry -> SUPERSEDED.contains(entry.id())));
@@ -114,7 +114,7 @@ class ParallelMediumIntegrationTest {
         for (String id : FAMILY) {
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("in_progress", definition.get("content_status").getAsString(), id);
+            assertEquals("complete", definition.get("content_status").getAsString(), id);
             assertEquals("medium-wall", definition.get("catalogue_group").getAsString(), id);
             assertFalse(definition.getAsJsonObject("dimensions")
                     .get("provisional").getAsBoolean(), id);

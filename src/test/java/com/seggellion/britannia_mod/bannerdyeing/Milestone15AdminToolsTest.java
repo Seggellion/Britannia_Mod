@@ -308,17 +308,17 @@ class Milestone15AdminToolsTest {
         assertEquals(4, validation.palettes());
         assertEquals(7, validation.pigments());
         assertEquals(2, validation.mounts());
-        assertEquals(12, validation.placeholders());
+        assertEquals(6, validation.placeholders());
         assertEquals(6, validation.provisionalNames());
         assertEquals(6, validation.provisionalDimensions());
         var first = service.placeholders(production, 1);
-        assertEquals(12, first.totalCount());
-        assertEquals(8, first.entries().size());
-        assertEquals(2, first.pageCount());
+        assertEquals(6, first.totalCount());
+        assertEquals(6, first.entries().size());
+        assertEquals(1, first.pageCount());
         assertEquals(first.entries().stream()
                 .map(entry -> entry.definitionId().toString()).sorted().toList(),
                 first.entries().stream().map(entry -> entry.definitionId().toString()).toList());
-        assertEquals(2, service.placeholders(production, 999).page());
+        assertEquals(1, service.placeholders(production, 999).page());
         assertEquals(1, service.placeholders(production, -10).page());
         assertEquals(0, service.placeholders(RegistrySnapshot.empty(), 1).totalCount());
     }

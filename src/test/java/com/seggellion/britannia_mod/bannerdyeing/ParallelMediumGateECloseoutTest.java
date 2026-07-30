@@ -15,20 +15,19 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class SmallGateECloseoutTest {
+class ParallelMediumGateECloseoutTest {
     private static final List<String> FAMILY = List.of(
-            "silver_and_gold_pennon",
-            "star_standard",
-            "ship_standard",
-            "pennon_of_silver",
-            "iron_ward",
-            "iron_ward_auxiliary");
+            "verdant_grape_pennon",
+            "silver_rosette_pennon",
+            "four_seals_pennon",
+            "twin_spades_pennon",
+            "ankh_pennon",
+            "joined_wards");
     private static final List<String> BATCH_CHECKS = List.of(
             "All six stable IDs correct",
             "All six 128 x 128 base textures reviewed",
             "All six 128 x 128 dye masks reviewed",
             "Natural appearance reviewed for every banner",
-            "Fixed regions remain unchanged",
             "Dyeable regions recolour correctly",
             "Highlights and shadows remain visible",
             "Alpha edges are clean",
@@ -47,42 +46,38 @@ class SmallGateECloseoutTest {
             "Brass mount behaviour",
             "Iron mount behaviour",
             "Wall-parallel placement",
-            "Wall-perpendicular placement",
             "North-facing placement",
             "South-facing placement",
             "East-facing placement",
             "West-facing placement",
-            "Rotation and mirroring",
+            "Anchor-only rendering and wall offset",
+            "No wall overlap or z-fighting",
             "Mount and model alignment",
             "Save/reload",
-            "Relog and client tracking",
+            "Initial and late client tracking",
             "F3+T resource reload",
-            "/reload data reload",
+            "`/reload` data reload",
             "Break/drop",
             "Support loss",
             "Pick block",
             "Re-placement",
             "Item/preview/placed consistency",
-            "All seven pigments represented",
-            "All four materials represented",
             "Every unique geometry reviewed",
             "Block-atlas reload",
-            "Extra-small family regression");
+            "Earlier-family regression",
+            "Parallel-only orientation enforcement",
+            "No perpendicular Parallel Medium placement was exposed");
     private static final List<String> PER_BANNER_CHECKS = List.of(
-            "128 x 128 fidelity",
-            "Natural appearance",
-            "Fixed regions",
-            "Dyeable regions",
-            "Highlights and shadows",
-            "Preview",
-            "Brass",
-            "Iron",
-            "Parallel",
-            "Perpendicular",
-            "Facing and rotation",
-            "Save/reload",
-            "Break/drop",
-            "Pick block and re-placement");
+            "Natural and recoloured appearance",
+            "Fixed and dyeable regions, highlights, shadows, and alpha edges",
+            "Inventory, hand, dropped-item, item-frame, and preview rendering",
+            "Brass and iron mounts",
+            "Parallel placement and all four facings",
+            "Anchor-only rendering, wall offset, and no z-fighting",
+            "Save/reload, tracking, resource reload, and data reload",
+            "Break/drop, support loss, pick block, and re-placement",
+            "No perpendicular placement exposed",
+            "No purple fallback");
     private static BannerScaffoldTool.Manifest manifest;
 
     @BeforeAll
@@ -92,14 +87,17 @@ class SmallGateECloseoutTest {
     }
 
     @Test
-    void smallFamilyIsCompleteAndOnlyLaterFamiliesRemainPlaceholder() {
-        Set<String> small = manifest.banners().stream()
-                .filter(entry -> "small".equals(entry.group()))
+    void allMediumDefinitionsAreCompleteAndOnlyLargeRemainsPlaceholder() {
+        Set<String> parallel = manifest.banners().stream()
+                .filter(entry -> "medium-wall".equals(entry.group()))
                 .map(BannerScaffoldTool.BannerEntry::id)
                 .collect(Collectors.toSet());
-        assertEquals(Set.copyOf(FAMILY), small);
+        assertEquals(Set.copyOf(FAMILY), parallel);
         assertTrue(manifest.banners().stream()
-                .filter(entry -> small.contains(entry.id()))
+                .filter(entry -> parallel.contains(entry.id()))
+                .allMatch(entry -> "complete".equals(entry.contentStatus())));
+        assertTrue(manifest.banners().stream()
+                .filter(entry -> "medium".equals(entry.group()))
                 .allMatch(entry -> "complete".equals(entry.contentStatus())));
         assertEquals(29, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
@@ -111,19 +109,27 @@ class SmallGateECloseoutTest {
     }
 
     @Test
-    void productOwnerEvidenceMatchesApprovedIntakesAndHasNoUnresolvedResult() throws Exception {
+    void productOwnerEvidenceBindsTheReviewedCommitAssetsAndEveryPassResult() throws Exception {
         String batch = Files.readString(Path.of(
-                "content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md"));
+                "content/banner-final-intake/PARALLEL_MEDIUM_GATE_E_REVIEW.md"));
         assertTrue(batch.contains("Reviewer: Seggellion (Product Owner)"));
         assertTrue(batch.contains(
-                "Commit tested: `e4f457b132667efc0c9789ee6044c47bedf68bdc`"));
+                "Commit tested: `c61d8121d6d1224ea5647bedee8f3d13dd7af933`"));
         BATCH_CHECKS.forEach(check -> assertTrue(batch.contains("- " + check + ": PASS"), check));
         assertTrue(batch.contains("Batch approval: APPROVED"));
         assertTrue(batch.contains("Gate E: PASS"));
         assertFalse(batch.contains(": FAIL"));
         assertFalse(batch.contains("NOT PERFORMED"));
 
+        String runbook = Files.readString(Path.of(
+                "docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md"));
+        assertTrue(runbook.contains("GATE E PASS"));
+        assertFalse(runbook.contains("NOT PERFORMED"));
         for (String id : FAMILY) {
+            assertTrue(runbook.lines()
+                    .filter(line -> line.startsWith("| `" + id + "` |"))
+                    .allMatch(line -> occurrences(line, "PASS") == 18), id);
+
             JsonObject intake = json(Path.of(
                     "content/banner-final-intake/submissions", id, id + ".yml"));
             JsonObject banner = intake.getAsJsonObject("banner");
@@ -133,9 +139,8 @@ class SmallGateECloseoutTest {
             assertTrue(review.contains("Stable ID: `britannia_mod:" + id + "`"), id);
             assertTrue(review.contains("Display name: "
                     + banner.get("final_display_name").getAsString()), id);
-            assertTrue(review.contains("Reviewer: Seggellion (Product Owner)"), id);
             assertTrue(review.contains(
-                    "Tested commit: `e4f457b132667efc0c9789ee6044c47bedf68bdc`"), id);
+                    "Tested commit: `c61d8121d6d1224ea5647bedee8f3d13dd7af933`"), id);
             assertTrue(review.contains("Base SHA-256: `"
                     + assets.getAsJsonObject("base_texture").get("sha256").getAsString() + "`"), id);
             assertTrue(review.contains("Mask SHA-256: `"
@@ -147,9 +152,11 @@ class SmallGateECloseoutTest {
             assertTrue(review.contains("Gate E result: PASS"), id);
             assertFalse(review.contains(": FAIL"), id);
             assertFalse(review.contains("NOT PERFORMED"), id);
-            assertFalse(review.toLowerCase().contains("unresolved"), id);
-            assertFalse(review.toLowerCase().contains("pending"), id);
         }
+    }
+
+    private static int occurrences(String value, String needle) {
+        return (value.length() - value.replace(needle, "").length()) / needle.length();
     }
 
     private static JsonObject json(Path path) throws Exception {

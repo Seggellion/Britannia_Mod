@@ -2,18 +2,14 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Medium runtime integration
+Milestone: parallel Medium Gate E complete
 
-## Parallel Medium Gate E pending
+## Parallel Medium Gate E resolved
 
-Seggellion approved the six exact prepared packages on 2026-07-30, including creator/original-art provenance, no
-reference copying, distribution permission, 1 × 2 dimensions, parallel-only placement, and the prepared geometry.
-All six validate `READY_FOR_INTEGRATION` and are integrated at `in_progress`.
-
-The remaining family task is the live Gate E matrix in
-`docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md`. Do not mark these definitions `complete` until the exact
-integrated hashes pass that review.
-
+Seggellion reported every live-review check passed for all six Parallel Medium definitions on 2026-07-30 against
+commit `c61d8121d6d1224ea5647bedee8f3d13dd7af933`. All six are `complete`; no Parallel Medium correction remains
+open. Evidence is in `content/banner-final-intake/PARALLEL_MEDIUM_GATE_E_REVIEW.md`, the completed runbook, and
+each submission directory's `GATE_E_REVIEW.md`.
 ## Perpendicular Medium Gate E resolved
 
 Seggellion reported every live-review check passed for all eight Medium definitions on 2026-07-29 against commit
@@ -38,9 +34,8 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns the 6 Large-family placeholder definitions, Parallel Medium Gate E, and
-future size-family reviews. It does not reopen the completed Extra-small, Small, or perpendicular Medium assets,
-geometry, mounts, orientations, or stable identities.
+The remaining open content work concerns the 6 Large-family placeholder definitions and their future review. It
+does not reopen the completed Extra-small, Small, or either Medium family.
 
 ## Milestone 16A remaining content and review questions
 

@@ -2,12 +2,15 @@
 
 Date prepared: 2026-07-30
 
-Status: NOT PERFORMED — INTEGRATED AS `in_progress`; READY FOR GATE E
+Status: GATE E PASS — PRODUCT-OWNER LIVE REVIEW COMPLETE
 
 This runbook covers only the six `medium-wall` definitions extracted from
 `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`. Seggellion approved the exact prepared assets,
 provenance, 1 × 2 dimensions, parallel-only placement, and five geometry groups on 2026-07-30. All six packages
-validate `READY_FOR_INTEGRATION` and are integrated as `in_progress`. No perpendicular case belongs in this review.
+validate `READY_FOR_INTEGRATION`. Seggellion completed every listed live check against commit
+`c61d8121d6d1224ea5647bedee8f3d13dd7af933` on 2026-07-30 and approved all six definitions for transition from
+`in_progress` to `complete`. No perpendicular case belongs in this review. The authoritative batch evidence is
+`content/banner-final-intake/PARALLEL_MEDIUM_GATE_E_REVIEW.md`.
 
 ## Reusable parallel Medium procedure
 
@@ -50,13 +53,13 @@ and all four horizontal facings.
 
 ## Definition-specific results
 
-No result has been performed. Replace each `—` with `PASS` or `FAIL` during the future Gate E session.
+All cells were reported `PASS` by Seggellion on 2026-07-30.
 
 | Definition | Inventory item | Preview | Placed natural | Placed recoloured | Parallel only | Brass | Iron | N/S/E/W | Anchor/offset | Save/reload | Initial/late tracking | Break/drop | Pick block | Re-placement | Resource reload | Data reload | No purple fallback | Overall |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `verdant_grape_pennon` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `silver_rosette_pennon` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `four_seals_pennon` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `twin_spades_pennon` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `ankh_pennon` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `joined_wards` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
+| `verdant_grape_pennon` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `silver_rosette_pennon` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `four_seals_pennon` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `twin_spades_pennon` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `ankh_pennon` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `joined_wards` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |

@@ -47,7 +47,13 @@ class FinalContentIntakeDocumentationTest {
             "britannia_mod:pennon_of_silver",
             "britannia_mod:iron_ward",
             "britannia_mod:iron_ward_auxiliary");
-    private static final List<String> MEDIUM_IDS = List.of(
+    private static final List<String> PARALLEL_MEDIUM_IDS = List.of(
+            "britannia_mod:verdant_grape_pennon",
+            "britannia_mod:silver_rosette_pennon",
+            "britannia_mod:four_seals_pennon",
+            "britannia_mod:twin_spades_pennon",
+            "britannia_mod:ankh_pennon",
+            "britannia_mod:joined_wards");    private static final List<String> MEDIUM_IDS = List.of(
             "britannia_mod:tournament_medium",
             "britannia_mod:ceremonial_tournament",
             "britannia_mod:iron_quarter",
@@ -246,21 +252,22 @@ class FinalContentIntakeDocumentationTest {
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, manifest.banners().size());
         assertEquals("placeholder", manifest.defaults().contentStatus());
         assertEquals(java.util.stream.Stream.concat(
-                        MEDIUM_IDS.stream(),
-                        java.util.stream.Stream.concat(SMALL_IDS.stream(), EXTRA_SMALL_IDS.stream()))
+                        PARALLEL_MEDIUM_IDS.stream(),
+                        java.util.stream.Stream.concat(MEDIUM_IDS.stream(),
+                                java.util.stream.Stream.concat(SMALL_IDS.stream(), EXTRA_SMALL_IDS.stream())))
                         .map(id -> id.substring("britannia_mod:".length())).toList(),
                 manifest.banners().stream()
                         .filter(banner -> "complete".equals(banner.contentStatus()))
                         .map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(banner -> "in_progress".equals(banner.contentStatus())).count());
         var production = DyeResolverFixtures.productionSnapshot();
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
         assertEquals(6, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(6, production.banners().activeDefinitions().stream()
+        assertEquals(0, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(23, production.banners().activeDefinitions().stream()
+        assertEquals(29, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).count());
     }
 

@@ -89,7 +89,7 @@ class MediumGateECloseoutTest {
     }
 
     @Test
-    void mediumFamilyIsCompleteAndParallelMediumWallFamilyRemainsPlaceholder() {
+    void bothMediumFamiliesAreComplete() {
         Set<String> medium = manifest.banners().stream()
                 .filter(entry -> "medium".equals(entry.group()))
                 .map(BannerScaffoldTool.BannerEntry::id)
@@ -100,10 +100,10 @@ class MediumGateECloseoutTest {
                 .allMatch(entry -> "complete".equals(entry.contentStatus())));
         assertTrue(manifest.banners().stream()
                 .filter(entry -> "medium-wall".equals(entry.group()))
-                .allMatch(entry -> "in_progress".equals(entry.contentStatus())));
-        assertEquals(23, manifest.banners().stream()
+                .allMatch(entry -> "complete".equals(entry.contentStatus())));
+        assertEquals(29, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
         assertEquals(6, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
