@@ -310,7 +310,7 @@ class Milestone15AdminToolsTest {
         assertEquals(2, validation.mounts());
         assertEquals(20, validation.placeholders());
         assertEquals(11, validation.provisionalNames());
-        assertEquals(20, validation.provisionalDimensions());
+        assertEquals(12, validation.provisionalDimensions());
         var first = service.placeholders(production, 1);
         assertEquals(20, first.totalCount());
         assertEquals(8, first.entries().size());

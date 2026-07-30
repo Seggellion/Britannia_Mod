@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed perpendicular medium-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/medium/iron_quarter/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/iron_quarter/base_texture",
+    "dye_mask": "britannia_mod:banner/iron_quarter/dye_mask",
+    "particle": "britannia_mod:banner/iron_quarter/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        -0.37607,
+        -4.0,
+        7.49
+      ],
+      "to": [
+        16.37607,
+        16.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.875,
+            0.75,
+            14.125,
+            15.375
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            1.875,
+            0.75,
+            14.125,
+            15.375
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.37607,
+        -4.0,
+        7.47
+      ],
+      "to": [
+        16.37607,
+        16.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.875,
+            0.75,
+            14.125,
+            15.375
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            1.875,
+            0.75,
+            14.125,
+            15.375
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

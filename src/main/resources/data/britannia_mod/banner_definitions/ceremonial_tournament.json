@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "britannia_mod:ceremonial_tournament",
   "display_name_key": "banner.britannia_mod.ceremonial_tournament",
-  "content_status": "placeholder",
+  "content_status": "in_progress",
   "source_reference": {
     "page": 2,
     "row": 6,
@@ -12,10 +12,9 @@
   "dimensions": {
     "width_blocks": 1,
     "height_blocks": 2,
-    "provisional": true
+    "provisional": false
   },
   "supported_orientations": [
-    "wall_parallel",
     "wall_perpendicular"
   ],
   "supported_mounts": [
@@ -25,9 +24,9 @@
   "default_mount": "britannia_mod:brass",
   "default_material": "britannia_mod:cotton",
   "assets": {
-    "geometry": "britannia_mod:banner/placeholder/medium",
-    "base_texture": "britannia_mod:banner/placeholder/base_texture",
-    "dye_mask": "britannia_mod:banner/placeholder/dye_mask"
+    "geometry": "britannia_mod:banner/medium/tournament_pair/geometry",
+    "base_texture": "britannia_mod:banner/ceremonial_tournament/base_texture",
+    "dye_mask": "britannia_mod:banner/ceremonial_tournament/dye_mask"
   },
-  "placement_profile": "britannia_mod:placeholder_medium"
+  "placement_profile": "britannia_mod:medium_perpendicular"
 }

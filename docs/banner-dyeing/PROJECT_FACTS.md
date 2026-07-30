@@ -2,11 +2,20 @@
 
 Date: 2026-07-29
 
-Milestone: 16 perpendicular-medium intake prepared; runtime integration blocked
+Milestone: 16 perpendicular-medium approved and integrated; Gate E pending
 
 Feature branch: `banners-dyetub`
 
-## 2026-07-29 perpendicular medium intake facts
+## 2026-07-29 perpendicular medium integration facts
+
+- Seggellion approved all eight Medium definitions on 2026-07-29 as original artwork created by Seggellion, not copied from reference art, with distribution permitted and manual intake review passed.
+- Approved dimensions are 1 x 2. Approved orientation is `wall_perpendicular` only. Brass and iron remain supported, with brass as the default mount. The five prepared geometry groups are approved.
+- Visible authored crossbars and attachment pixels are fixed banner details in each `base_texture`; they are not selectable mount hardware and remain transparent in the corresponding dye mask.
+- `britannia_mod:medium_perpendicular` contains only the mount geometry for its supported orientation. The placement-profile data contract now permits partial orientation maps, while cross-validation requires every non-empty map to match the consuming banner's supported orientations exactly.
+- All eight intakes validate `READY_FOR_INTEGRATION`; their exact approved base/mask pairs and geometry models are now runtime resources. The eight definitions are `in_progress` pending Gate E live review.
+- Production remains 35 active definitions: 12 placeholder, 8 in progress, 15 complete, and 0 disabled. The six-definition `medium-wall` family is unchanged. Stable IDs, catalogue indices, persisted banner state, block-entity state, network schema, crafting policy, and Milestone 17 remain unchanged.
+
+## Historical 2026-07-29 perpendicular medium intake facts
 
 - The perpendicular medium membership is exactly the existing eight-entry `medium` group at indices 13 through 20:
   `tournament_medium`, `ceremonial_tournament`, `iron_quarter`, `outer_ward`, `ward_of_serpents`,

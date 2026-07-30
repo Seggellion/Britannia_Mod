@@ -125,9 +125,9 @@ class RoadGuardIntegrationTest {
         assertFalse(rawDefinition.contains("render_strategy"));
         assertFalse(rawDefinition.contains("optional_overlay"));
 
-        assertEquals(20, renderData.banners().values().stream()
+        assertEquals(12, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(0, renderData.banners().values().stream()
+        assertEquals(8, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
         assertEquals(15, renderData.banners().values().stream()
                 .filter(value -> value.contentStatus() == BannerContentStatus.COMPLETE).count());

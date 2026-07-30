@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.resources.ResourceLocation;
 
-/** Declared occupancy, support boundary, and optional family-wide orientation mount selection. */
+/** Declared occupancy, support boundary, and optional per-supported-orientation mount selection. */
 public record PlacementProfile(
         int schemaVersion,
         PlacementProfileId id,
@@ -32,12 +32,7 @@ public record PlacementProfile(
         Objects.requireNonNull(dimensions, "dimensions");
         orientationMountGeometry = Map.copyOf(Objects.requireNonNull(
                 orientationMountGeometry, "orientationMountGeometry"));
-        if (!orientationMountGeometry.isEmpty()
-                && !orientationMountGeometry.keySet().equals(java.util.Set.of(
-                        BannerOrientation.WALL_PARALLEL, BannerOrientation.WALL_PERPENDICULAR))) {
-            throw new IllegalArgumentException(
-                    "orientationMountGeometry must define both wall orientations or neither");
-        }
+
         if (orientationMountGeometry.size() == 2
                 && orientationMountGeometry.get(BannerOrientation.WALL_PARALLEL)
                 .equals(orientationMountGeometry.get(BannerOrientation.WALL_PERPENDICULAR))) {

@@ -2,32 +2,14 @@
 
 Date: 2026-07-29
 
-Milestone: 16 perpendicular-medium intake prepared; runtime integration blocked
+Milestone: 16 perpendicular-medium integrated; Gate E pending
 
-## Perpendicular medium integration blockers
+## Perpendicular Medium Gate E remains open
 
-The Illustrator membership and names are resolved, but no definition is authorized for runtime integration:
+The product-owner intake decisions are resolved: Seggellion approved the eight assets, 1 x 2 dimensions, five geometry groups, perpendicular-only orientation, fixed authored crossbar/attachment pixels, and supported-orientation-only placement-profile mount maps on 2026-07-29. All eight definitions are integrated as `in_progress` and the intakes validate `READY_FOR_INTEGRATION`.
 
-- Who is the approving product owner, what is the approval date, who created the artwork, is it original rather
-  than copied, and is distribution permission confirmed for each of the eight exact asset pairs?
-- Are the apparent authored top attachment/crossbar pixels in `tournament_medium`, `ceremonial_tournament`,
-  `iron_quarter`, and `argent_shield` fixed banner ornamentation, or selectable mount hardware that must be removed
-  from `base_texture.png`? The source exposes them only inside the named raster `base_texture`, so automation cannot
-  separate them without an owner-approved edit.
-- Does the proposed 1 x 2 logical footprint preserve the intended placed proportions? The current placed renderer
-  maps the complete square atlas sprite across the footprint quad; live aspect and wall-clearance review is required
-  before treating the provisional dimensions as final.
-- How should a perpendicular-only placement profile select
-  `britannia_mod:banner/mount/wall_perpendicular`? `PlacementProfile` currently rejects a one-key orientation map
-  and requires either both wall orientations or neither. Adding the parallel key would broaden this batch; omitting
-  the map would lose perpendicular-specific mount selection. This architecture conflict blocks integration.
-- After those decisions, approve or revise the five proposed geometry groups and the 20-unit item-model presentation
-  proposal, then run the perpendicular-only live matrix in
-  `docs/banner-dyeing/PERPENDICULAR_MEDIUM_LIVE_REVIEW.md`.
-
-Until these questions are answered, all eight definitions remain `placeholder`; no draft asset may be copied into
-runtime resources and no `medium-wall` work may begin.
-
+The remaining question is the live Gate E result. Run and record the matrix in
+`docs/banner-dyeing/PERPENDICULAR_MEDIUM_LIVE_REVIEW.md`, including inventory, preview, natural and recoloured placed rendering, four facings, both mounts, reloads, lifecycle, and fallback checks. Do not mark these definitions `complete` until the product owner reports those runtime checks passed.
 ## Small-family Gate E resolved
 
 All six canonical Small definitions passed direct product-owner live review against commit
@@ -45,7 +27,7 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns the other 20 placeholder definitions and future size-family reviews. It
+The remaining open content work concerns the 12 placeholder definitions, the eight Medium Gate E reviews, and future size-family reviews. It
 does not reopen the 128 x 128 extra-small assets, the two reviewed geometry groups, Small Curtain, Prosperity
 Standard, Guardian Standard, mounts, orientations, or the canonical `small_curtain` identity.
 

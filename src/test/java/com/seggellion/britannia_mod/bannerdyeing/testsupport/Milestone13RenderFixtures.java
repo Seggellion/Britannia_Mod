@@ -64,6 +64,9 @@ public final class Milestone13RenderFixtures {
     }
 
     public static BannerDefinitionId definitionForGeometry(String path) {
+        if ("medium".equals(path)) {
+            return BannerDefinitionId.parse("britannia_mod:tournament_medium");
+        }
         if ("small".equals(path)) {
             BannerDefinitionId approvedSmall =
                     BannerDefinitionId.parse("britannia_mod:silver_and_gold_pennon");

@@ -38,7 +38,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class BannerTooltipAndScopeTest {
-    private static final BannerDefinitionId WARD = BannerDefinitionId.parse("britannia_mod:ward_of_serpents");
+    private static final BannerDefinitionId WARD = BannerDefinitionId.parse("britannia_mod:joined_wards");
     private static final FabricMaterialId SILK = FabricMaterialId.parse("britannia_mod:silk");
     private static final PigmentId MADDER = PigmentId.parse("britannia_mod:madder_red");
     private static final MountId BRASS = MountId.parse("britannia_mod:brass");
@@ -141,7 +141,7 @@ class BannerTooltipAndScopeTest {
     @Test
     void configuredDisplayNameUsesDefinitionButPlayerCustomNameWins() {
         ItemStack stack = natural();
-        assertEquals("banner.britannia_mod.ward_of_serpents", key(item.configuredName(stack, production)));
+        assertEquals("banner.britannia_mod.joined_wards", key(item.configuredName(stack, production)));
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("Custom Standard"));
         assertEquals("Custom Standard", stack.getHoverName().getString());
     }

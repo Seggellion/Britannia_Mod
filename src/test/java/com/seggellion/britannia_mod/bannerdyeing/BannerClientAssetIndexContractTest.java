@@ -41,17 +41,18 @@ class BannerClientAssetIndexContractTest {
         try (var paths = Files.list(PLACEMENT_PROFILES)) {
             for (Path path : paths.filter(value -> value.toString().endsWith(".json")).sorted().toList()) {
                 JsonObject profile = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
-                if (!profile.has("orientation_mount_geometry")) {
+                if (!profile.has("orientation_mount_geometry")
+                        || !profile.get("orientation_mount_geometry").isJsonObject()) {
                     continue;
                 }
                 JsonObject orientationModels = profile.getAsJsonObject("orientation_mount_geometry");
-                geometries.add(ResourceLocation.parse(orientationModels.get("wall_parallel").getAsString()));
-                geometries.add(ResourceLocation.parse(orientationModels.get("wall_perpendicular").getAsString()));
+                orientationModels.entrySet().forEach(entry ->
+                        geometries.add(ResourceLocation.parse(entry.getValue().getAsString())));
             }
         }
 
-        assertEquals(12, geometries.size(), "shared geometry IDs must be de-duplicated");
-        assertEquals(32, textures.size(), "shared texture IDs must be de-duplicated");
+        assertEquals(16, geometries.size(), "shared geometry IDs must be de-duplicated");
+        assertEquals(48, textures.size(), "shared texture IDs must be de-duplicated");
         assertEquals(geometries, BannerClientAssetIndex.geometryModels());
         assertEquals(textures, BannerClientAssetIndex.textures());
         assertFalse(geometries.contains(id("banner/placeholder/x_small")));

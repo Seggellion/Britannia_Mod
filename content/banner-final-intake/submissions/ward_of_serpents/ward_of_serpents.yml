@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "approval": {
-    "status": "NOT_APPROVED",
-    "approved_by": "",
-    "approved_date": "",
-    "notes": "Draft prepared from the authoritative Illustrator source. Product-owner identity, approval date, final provenance, and distribution permission have not been supplied."
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-29",
+    "notes": "Approved by the product owner on 2026-07-29; original artwork, creator, distribution permission, 1 x 2 dimensions, approved geometry, perpendicular-only orientation, and fixed authored attachment pixels confirmed."
   },
   "banner": {
     "stable_id": "britannia_mod:ward_of_serpents",
@@ -23,7 +23,7 @@
     "default_mount": "britannia_mod:brass",
     "placement_profile_id": "britannia_mod:medium_perpendicular",
     "geometry_id": "britannia_mod:banner/medium/pointed_ward/geometry",
-    "geometry_convention": "Proposed 20-unit-tall perpendicular medium-family planar geometry derived from the complete authored alpha bounds; the 128-pixel UV basis, established two-pass thickness, and separate perpendicular mount geometry are preserved. Runtime placement remains blocked pending approval and placed-aspect verification."
+    "geometry_convention": "Approved 20-unit-tall perpendicular medium-family planar geometry derived from the complete authored alpha bounds; the 128-pixel UV basis, established two-pass thickness, and separate perpendicular mount geometry are preserved. Fixed attachment and crossbar pixels are approved as authored banner details in base_texture rather than mount hardware; post-integration live aspect review remains Gate E work."
   },
   "localization": {
     "language": "en_us",
@@ -41,7 +41,7 @@
       "sha256": "badcb1bcea7a0fbc37ef0bc0d4257a9c60378244e0a1b4eb756a47deb8a01d8d"
     },
     "geometry": {
-      "shared_geometry_approved": false,
+      "shared_geometry_approved": true,
       "source_file": "content/banner-final-intake/submissions/outer_ward/source/geometry.json",
       "sha256": "c7791bbbab3c29615554b7e86024e18dfbd7eb93954a8b93166fb60c864157d3"
     }
@@ -51,18 +51,18 @@
     "preview_image_file": "content/banner-final-intake/submissions/ward_of_serpents/review/review_sheet.png"
   },
   "provenance": {
-    "original_art": false,
-    "creator": "",
+    "original_art": true,
+    "creator": "Seggellion",
     "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium.ai to one aligned 128 x 128 RGBA artboard. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding the selection.",
     "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium.ai",
-    "distribution_permission_confirmed": false,
-    "copied_from_reference_art": null
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
   },
   "manual_verification": {
-    "performed": false,
-    "tester": "",
-    "date": "",
-    "notes": "Not performed; use the generated review sheet and the reusable perpendicular-medium live-review procedure."
+    "performed": true,
+    "tester": "Seggellion",
+    "date": "2026-07-29",
+    "notes": "Product owner approved the prepared base/mask review, fixed attachment-pixel classification, 1 x 2 aspect, approved geometry, and perpendicular-only orientation. Post-integration Gate E live review remains separate."
   },
   "requested_content_status": "in_progress"
 }

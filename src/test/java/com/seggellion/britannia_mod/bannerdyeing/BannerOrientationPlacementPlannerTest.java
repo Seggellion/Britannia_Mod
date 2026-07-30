@@ -62,7 +62,7 @@ class BannerOrientationPlacementPlannerTest {
         int plans = 0;
         for (BannerDefinition definition : production.banners().activeDefinitions()) {
             for (MountId mount : List.of(BRASS, IRON)) {
-                for (BannerOrientation orientation : BannerOrientation.values()) {
+                for (BannerOrientation orientation : definition.supportedOrientations()) {
                     for (Direction facing : Direction.Plane.HORIZONTAL) {
                         BannerPlacementPlanningResult result = plan(
                                 natural(definition.id(), mount), production, orientation,
@@ -86,7 +86,8 @@ class BannerOrientationPlacementPlannerTest {
                 }
             }
         }
-        assertEquals(ProductionBannerCatalogue.TARGET_COUNT * 2 * 2 * 4, plans);
+        assertEquals(production.banners().activeDefinitions().stream()
+                .mapToInt(definition -> definition.supportedOrientations().size()).sum() * 2 * 4, plans);
     }
 
     @Test

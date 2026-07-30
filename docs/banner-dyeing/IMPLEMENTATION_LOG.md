@@ -1,5 +1,16 @@
 # Banner and Dyeing Implementation Log
-## 2026-07-29 - Perpendicular medium source audit and draft intake preparation
+## 2026-07-29 - Perpendicular Medium approval and integration
+
+- Seggellion approved all eight definitions on 2026-07-29, including authorship/originality, non-reference-copy provenance, distribution permission, 1 x 2 dimensions, perpendicular-only orientation, the five proposed geometry groups, and manual intake review. Visible crossbar/attachment pixels are approved fixed authored details.
+- All eight intake records now identify Seggellion as creator, approver, and manual intake reviewer; every real validator result is `READY_FOR_INTEGRATION`. Requested content status remains `in_progress` because Gate E live runtime review has not yet been performed.
+- Added runtime copies of all 16 exact approved PNGs and five de-duplicated geometry models. Generated definitions use definition-specific base/mask resources, approved geometry, and `britannia_mod:medium_perpendicular`.
+- Added the perpendicular-only placement profile with only `wall_perpendicular` mount geometry. `PlacementProfile` accepts a map for any supported subset; registry cross-validation requires a non-empty map's keys to equal the consuming banner's supported-orientation set, preventing accidental unsupported orientation data.
+- Production is 35 active definitions: 12 placeholder, 8 in progress, 15 complete, and 0 disabled. The `medium-wall` group, stable IDs, catalogue indices, persistence, block structures, network schema, crafting absence, and Milestone 17 remain unchanged.
+- All eight intake validations and scaffold `--check` passed. The focused Medium/catalogue/scaffold suite passed 59 tests; the complete banner/dyeing suite passed 636 tests; after standalone `clean`, the unrestricted suite passed 642 tests across 58 suites with zero failures, errors, or skips; `build` passed.
+- Initial corrections were limited to superseded test assumptions and build orchestration: scaffold fixtures needed the newly authoritative asset files; placement/render tests now iterate definition-supported orientations; the Medium render fixture now resolves an approved geometry; the client-index test accepts explicit null mount maps; and stale Gradle test bytecode required one forced no-cache compile. A combined `clean test` invocation reproduced NeoForm's known transient `Patch directory not found`; the required standalone `clean`, `test`, and `build` sequence passed.
+- Both production JARs contain all 16 Medium PNGs, five approved geometry models, eight in-progress definitions, and the perpendicular-only profile, with no missing or duplicate entries. The normal JAR has 5,068 entries and the all-JAR has 5,072. Existing compile warnings remain the two-warning baseline (`PlayerSleepMixin` Javadoc and deprecated `initializeClient`). Live Gate E checks remain explicitly unperformed in the Medium runbook.
+
+## Historical 2026-07-29 - Perpendicular medium source audit and draft intake preparation
 
 - Confirmed the clean tracked baseline at `d55d8093a2b9558063489130bc473e9aeace7008` on `banners-dyetub`.
   The closeout is the current HEAD, is an ancestor of itself, and the branch is 31 commits ahead of `patch-18`

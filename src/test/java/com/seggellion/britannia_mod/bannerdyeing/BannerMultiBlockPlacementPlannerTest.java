@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.seggellion.britannia_mod.banner.api.BannerDefinitionId;
+import com.seggellion.britannia_mod.banner.api.BannerOrientation;
 import com.seggellion.britannia_mod.banner.block.BannerBlock;
 import com.seggellion.britannia_mod.banner.block.BannerPartBlock;
 import com.seggellion.britannia_mod.banner.item.BannerItem;
@@ -54,7 +55,8 @@ class BannerMultiBlockPlacementPlannerTest {
         for (var definition : production.banners().activeDefinitions()) {
             FakeWorld world = new FakeWorld();
             ItemStack stack = natural(definition.id());
-            BannerPlacementPlanningResult result = plan(stack, BlockPos.ZERO, Direction.NORTH, world);
+            BannerPlacementPlanningResult result = plan(stack, definition.supportedOrientations().getFirst(),
+                    BlockPos.ZERO, Direction.NORTH, world);
             assertTrue(result.successful(), definition.id() + ": " + result.failure());
             var plan = result.plan().orElseThrow();
             int expectedCells = definition.dimensions().widthBlocks() * definition.dimensions().heightBlocks();
@@ -126,7 +128,8 @@ class BannerMultiBlockPlacementPlannerTest {
     }
 
     private static void assertPartCount(String path, int expectedParts) {
-        var plan = plan(natural(BannerDefinitionId.parse("britannia_mod:" + path)),
+        BannerDefinitionId id = BannerDefinitionId.parse("britannia_mod:" + path);
+        var plan = plan(natural(id), production.banners().require(id).supportedOrientations().getFirst(),
                 BlockPos.ZERO, Direction.NORTH, new FakeWorld()).plan().orElseThrow();
         assertEquals(expectedParts,
                 plan.cells().stream().filter(cell -> cell.role() == BannerCellRole.PART).count());
@@ -137,6 +140,12 @@ class BannerMultiBlockPlacementPlannerTest {
                 clicked, facing, new FakeWorld()).plan().orElseThrow();
         assertTrue(plan.cells().stream().map(cell -> (cell.worldPosition().getX() >> 4) + ","
                 + (cell.worldPosition().getZ() >> 4)).distinct().count() >= 2);
+    }
+
+    private static BannerPlacementPlanningResult plan(
+            ItemStack stack, BannerOrientation orientation, BlockPos clicked, Direction face, FakeWorld world) {
+        return BannerPlacementPlanner.plan(item, stack, production, true, orientation,
+                clicked, face, anchor, part, world);
     }
 
     private static BannerPlacementPlanningResult plan(

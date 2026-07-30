@@ -105,10 +105,10 @@ class ExtraSmallGateECloseoutTest {
                 .collect(Collectors.toSet());
         assertTrue(complete.containsAll(FAMILY));
         assertEquals(15, complete.size());
-        assertEquals(20, manifest.banners().stream()
+        assertEquals(12, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(8, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
         assertEquals(35, manifest.banners().size());
         assertTrue(complete.contains("small_curtain"));

@@ -103,9 +103,9 @@ class SmallGateECloseoutTest {
                 .allMatch(entry -> "complete".equals(entry.contentStatus())));
         assertEquals(15, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(8, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
-        assertEquals(20, manifest.banners().stream()
+        assertEquals(12, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
     }

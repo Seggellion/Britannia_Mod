@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 
 final class RegistryPolicyEngine {
@@ -157,6 +158,11 @@ final class RegistryPolicyEngine {
                     || profile.dimensions().heightBlocks() < banner.dimensions().heightBlocks()) {
                 issues.add(error(RegistryDomain.BANNER_DEFINITION, entry, "PLACEMENT_DIMENSION_MISMATCH",
                         "Placement profile dimensions cannot contain the banner dimensions", profile.id()));
+            } else if (!profile.orientationMountGeometry().isEmpty()
+                    && !profile.orientationMountGeometry().keySet()
+                    .equals(Set.copyOf(banner.supportedOrientations()))) {
+                issues.add(error(RegistryDomain.BANNER_DEFINITION, entry, "ORIENTATION_MOUNT_MISMATCH",
+                        "Placement profile mount geometry must match supported banner orientations", profile.id()));
             }
         }
     }

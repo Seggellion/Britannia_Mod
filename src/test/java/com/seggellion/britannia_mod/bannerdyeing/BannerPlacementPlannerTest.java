@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 
 class BannerPlacementPlannerTest {
     private static final BannerDefinitionId SMALL = BannerDefinitionId.parse("britannia_mod:silver_and_gold_pennon");
-    private static final BannerDefinitionId MULTI = BannerDefinitionId.parse("britannia_mod:tournament_medium");
+    private static final BannerDefinitionId MULTI = BannerDefinitionId.parse("britannia_mod:joined_wards");
     private static final FabricMaterialId COTTON = FabricMaterialId.parse("britannia_mod:cotton");
     private static final MountId BRASS = MountId.parse("britannia_mod:brass");
     private static final MountId IRON = MountId.parse("britannia_mod:iron");

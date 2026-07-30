@@ -81,7 +81,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, decodeFolder("material_palettes", MaterialPalette.CODEC));
         assertEquals(7, decodeFolder("pigments", PigmentDefinition.CODEC));
         assertEquals(2, decodeFolder("banner_mounts", MountDefinition.CODEC));
-        assertEquals(7, decodeFolder("placement_profiles", PlacementProfile.CODEC));
+        assertEquals(8, decodeFolder("placement_profiles", PlacementProfile.CODEC));
     }
 
     @Test
@@ -125,8 +125,8 @@ class GeneratedBannerCatalogueTest {
         Set<String> profiles = result.snapshot().banners().activeDefinitions().stream()
                 .map(definition -> definition.placementProfile().toString()).collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of("britannia_mod:placeholder_large", "britannia_mod:placeholder_medium_wall",
-                "britannia_mod:placeholder_medium", "britannia_mod:small",
-                "britannia_mod:extra_small"), profiles);
+                "britannia_mod:small",
+                "britannia_mod:extra_small", "britannia_mod:medium_perpendicular"), profiles);
     }
 
     @Test
@@ -135,7 +135,7 @@ class GeneratedBannerCatalogueTest {
         assertEquals(4, result.snapshot().materialPalettes().activeCount());
         assertEquals(7, result.snapshot().pigments().activeCount());
         assertEquals(2, result.snapshot().mounts().activeCount());
-        assertEquals(7, result.snapshot().placementProfiles().activeCount());
+        assertEquals(8, result.snapshot().placementProfiles().activeCount());
         assertTrue(result.snapshot().fabricMaterials().activeEntries().keySet().stream()
                 .anyMatch(id -> id.toString().equals("britannia_mod:cotton")));
         assertEquals(Set.of("britannia_mod:brass", "britannia_mod:iron"),
@@ -214,11 +214,11 @@ class GeneratedBannerCatalogueTest {
         assertEquals("britannia_mod:banner/road_guard/geometry", roadGuard.assets().geometry().toString());
         assertEquals("britannia_mod:banner/road_guard/base_texture", roadGuard.assets().baseTexture().toString());
         assertEquals("britannia_mod:banner/road_guard/dye_mask", roadGuard.assets().dyeMask().toString());
-        assertEquals(0, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(8, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(20, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(12, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(20, result.snapshot().banners().activeDefinitions().stream()
+        assertEquals(12, result.snapshot().banners().activeDefinitions().stream()
                 .filter(definition -> definition.dimensions().provisional()).count());
     }
 
@@ -267,14 +267,14 @@ class GeneratedBannerCatalogueTest {
         assertTrue(status.contains("Admin acquisition implemented: yes"));
         assertTrue(status.contains("Survival acquisition implemented: no"));
         assertTrue(status.contains("NPC/shop distribution implemented: no"));
-        assertTrue(status.contains("Final display names approved: 15 of "
+        assertTrue(status.contains("Final display names approved: 23 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final dimensions approved: 15 of "
+        assertTrue(status.contains("Final dimensions approved: 23 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Final artwork complete: 15 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("- placeholder: 20"));
-        assertTrue(status.contains("- in_progress: 0"));
+        assertTrue(status.contains("- placeholder: 12"));
+        assertTrue(status.contains("- in_progress: 8"));
         assertTrue(status.contains("- complete: 15"));
         assertTrue(status.contains("- disabled: 0"));
         assertTrue(status.contains("## Extra-small family integration"));

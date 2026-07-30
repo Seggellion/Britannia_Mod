@@ -17,7 +17,7 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 
-class PerpendicularMediumIntakePreparationTest {
+class PerpendicularMediumIntegrationTest {
     private static final List<String> MEDIUM = List.of(
             "tournament_medium",
             "ceremonial_tournament",
@@ -68,7 +68,7 @@ class PerpendicularMediumIntakePreparationTest {
     }
 
     @Test
-    void everyDraftPairSatisfiesTheTwoFilePixelContract() throws Exception {
+    void everyApprovedPairSatisfiesTheTwoFilePixelContract() throws Exception {
         for (String id : MEDIUM) {
             BufferedImage base = ImageIO.read(INTAKE.resolve(id).resolve("base_texture.png").toFile());
             BufferedImage mask = ImageIO.read(INTAKE.resolve(id).resolve("dye_mask.png").toFile());
@@ -107,19 +107,19 @@ class PerpendicularMediumIntakePreparationTest {
     }
 
     @Test
-    void actualValidatorKeepsEveryDraftNotReadyAndNeverInvalid() {
+    void actualValidatorAcceptsEveryApprovedIntake() {
         Path root = Path.of(".").toAbsolutePath().normalize();
         for (String id : MEDIUM) {
             FinalContentIntakeValidator.Result result = FinalContentIntakeValidator.validate(
                     root, INTAKE.resolve(id).resolve(id + ".yml").toAbsolutePath());
-            assertEquals(FinalContentIntakeValidator.Status.NOT_READY, result.status(), id);
+            assertEquals(FinalContentIntakeValidator.Status.READY_FOR_INTEGRATION, result.status(), id);
             assertTrue(result.issues().stream().noneMatch(issue -> issue.startsWith("INVALID:")), id);
             assertEquals(2, result.pngMetadata().size(), id);
         }
     }
 
     @Test
-    void runtimeCatalogueAndParallelFamilyRemainUntouched() throws Exception {
+    void runtimeCatalogueIntegratesPerpendicularFamilyAndLeavesParallelFamilyUntouched() throws Exception {
         JsonObject catalogue = json(Path.of("content/banner_catalogue.yml"));
         JsonArray banners = catalogue.getAsJsonArray("banners");
         Set<String> medium = new LinkedHashSet<>();
@@ -128,31 +128,45 @@ class PerpendicularMediumIntakePreparationTest {
             JsonObject banner = value.getAsJsonObject();
             String group = banner.get("group").getAsString();
             if ("medium".equals(group)) {
-                medium.add(banner.get("id").getAsString());
-                assertFalse(banner.has("content_status"), banner.toString());
-                assertFalse(banner.has("base_texture"), banner.toString());
-                assertFalse(banner.has("dye_mask"), banner.toString());
-                assertFalse(banner.has("geometry"), banner.toString());
+                String id = banner.get("id").getAsString();
+                medium.add(id);
+                assertEquals("in_progress", banner.get("content_status").getAsString(), id);
+                assertFalse(banner.get("dimensions_provisional").getAsBoolean(), id);
+                assertEquals(List.of("wall_perpendicular"), banner.getAsJsonArray("supported_orientations")
+                        .asList().stream().map(value2 -> value2.getAsString()).toList(), id);
+                assertEquals("britannia_mod:medium_perpendicular", banner.get("placement_profile").getAsString(), id);
             } else if ("medium-wall".equals(group)) {
                 mediumWall.add(banner.get("id").getAsString());
+                assertFalse(banner.has("content_status"), banner.toString());
             }
         }
         assertEquals(Set.copyOf(MEDIUM), medium);
         assertEquals(MEDIUM_WALL, mediumWall);
 
+        JsonObject profile = json(Path.of(
+                "src/main/resources/data/britannia_mod/placement_profiles/medium_perpendicular.json"));
+        JsonObject mounts = profile.getAsJsonObject("orientation_mount_geometry");
+        assertEquals(Set.of("wall_perpendicular"), mounts.keySet());
+        assertEquals("britannia_mod:banner/mount/wall_perpendicular",
+                mounts.get("wall_perpendicular").getAsString());
+
         for (String id : MEDIUM) {
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("placeholder", definition.get("content_status").getAsString());
+            assertEquals("in_progress", definition.get("content_status").getAsString());
+            assertEquals("britannia_mod:medium_perpendicular", definition.get("placement_profile").getAsString());
+            assertEquals(List.of("wall_perpendicular"), definition.getAsJsonArray("supported_orientations")
+                    .asList().stream().map(value -> value.getAsString()).toList());
             JsonObject assets = definition.getAsJsonObject("assets");
-            assertEquals("britannia_mod:banner/placeholder/medium",
-                    assets.get("geometry").getAsString());
-            assertEquals("britannia_mod:banner/placeholder/base_texture",
+            assertEquals("britannia_mod:banner/" + id + "/base_texture",
                     assets.get("base_texture").getAsString());
-            assertEquals("britannia_mod:banner/placeholder/dye_mask",
+            assertEquals("britannia_mod:banner/" + id + "/dye_mask",
                     assets.get("dye_mask").getAsString());
-            assertFalse(Files.exists(Path.of(
-                    "src/main/resources/assets/britannia_mod/textures/banner", id)));
+            Path runtime = Path.of("src/main/resources/assets/britannia_mod/textures/banner", id);
+            assertEquals(-1L, Files.mismatch(INTAKE.resolve(id).resolve("base_texture.png"),
+                    runtime.resolve("base_texture.png")), id);
+            assertEquals(-1L, Files.mismatch(INTAKE.resolve(id).resolve("dye_mask.png"),
+                    runtime.resolve("dye_mask.png")), id);
         }
     }
 

@@ -34,7 +34,7 @@ class BannerPlacedGeometryAndBoundsTest {
             var material = Milestone13RenderFixtures.material("cotton");
             var instance = Milestone13RenderFixtures.state(definition, material,
                     Milestone13RenderFixtures.natural(material), Milestone13RenderFixtures.mount("brass"));
-            for (BannerOrientation orientation : BannerOrientation.values()) {
+            for (BannerOrientation orientation : Milestone13RenderFixtures.renderData().banners().get(definition).supportedOrientations()) {
                 for (Direction facing : Direction.Plane.HORIZONTAL) {
                     var entity = Milestone13RenderFixtures.entity(anchor, facing, orientation,
                             family.width, family.height, instance);
@@ -64,7 +64,7 @@ class BannerPlacedGeometryAndBoundsTest {
                 var material = Milestone13RenderFixtures.material("linen");
                 var instance = Milestone13RenderFixtures.state(definition, material,
                         Milestone13RenderFixtures.natural(material), Milestone13RenderFixtures.mount("iron"));
-                for (BannerOrientation orientation : BannerOrientation.values()) {
+                for (BannerOrientation orientation : Milestone13RenderFixtures.renderData().banners().get(definition).supportedOrientations()) {
                     for (Direction facing : Direction.Plane.HORIZONTAL) {
                         var entity = Milestone13RenderFixtures.entity(
                                 anchor, facing, orientation, family.width, family.height, instance);

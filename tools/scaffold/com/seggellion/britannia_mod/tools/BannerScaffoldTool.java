@@ -381,6 +381,8 @@ public final class BannerScaffoldTool {
                 utf8(json(extraSmallProfile())));
         output.put(DATA_ROOT + "placement_profiles/small.json",
                 utf8(json(smallProfile())));
+        output.put(DATA_ROOT + "placement_profiles/medium_perpendicular.json",
+                utf8(json(mediumPerpendicularProfile())));
 
         output.put(ASSET_ROOT + "textures/banner/placeholder/base_texture.png", png(PngKind.BASE_TEXTURE));
         output.put(ASSET_ROOT + "textures/banner/placeholder/dye_mask.png", png(PngKind.DYE_MASK));
@@ -414,6 +416,8 @@ public final class BannerScaffoldTool {
             if (Set.of("britannia_mod:extra_small", "britannia_mod:small")
                     .contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_parallel");
+                geometries.add("britannia_mod:banner/mount/wall_perpendicular");
+            } else if ("britannia_mod:medium_perpendicular".equals(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
             }
         }
@@ -565,6 +569,21 @@ public final class BannerScaffoldTool {
         return root;
     }
 
+    private static JsonObject mediumPerpendicularProfile() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:medium_perpendicular");
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", 1);
+        dimensions.addProperty("height_blocks", 2);
+        dimensions.addProperty("provisional", false);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        JsonObject mounts = new JsonObject();
+        mounts.addProperty("wall_perpendicular", "britannia_mod:banner/mount/wall_perpendicular");
+        root.add("orientation_mount_geometry", mounts);
+        return root;
+    }
     private static JsonObject wallMountModel(String orientation) {
         JsonObject root = new JsonObject();
         root.addProperty("credit", "Shared small-family " + orientation
@@ -683,8 +702,8 @@ public final class BannerScaffoldTool {
         require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
         require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
         require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
-        require(result.snapshot().placementProfiles().activeCount() == 7,
-                "Seven placement profiles did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 8,
+                "Eight placement profiles did not become active");
         require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
         return result;
     }
@@ -1052,22 +1071,24 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all six authoritative hashes\n")
                 .append("- Runtime `content_status`: `complete`\n")
                 .append("- Gate E evidence: `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md`\n\n")
-                .append("## Perpendicular medium intake preparation\n\n")
+                .append("## Perpendicular medium integration\n\n")
                 .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`\n")
                 .append("- Source SHA-256: `5a219e6e276884e6b7173ec5c6608c8a85b53dcbdeb768b0f2c19ead0423d34d`\n")
-                .append("- Exact-name reconciliation: all eight Illustrator layers map one-to-one to catalogue ")
-                .append("indices 13 through 20; no new, migrated, ambiguous, or parallel definitions were found\n")
-                .append("- Eight aligned 128 x 128 RGBA base/mask pairs and review packages are prepared outside ")
-                .append("runtime resources\n")
-                .append("- Intake validation: eight `NOT_READY`, zero `INVALID`, zero `READY_FOR_INTEGRATION`\n")
-                .append("- Runtime remains unchanged: all eight definitions retain placeholder assets, inherited ")
-                .append("orientations, provisional 1 x 2 dimensions, and `content_status: placeholder`\n")
-                .append("- Blocking review: owner approval/provenance, apparent embedded attachment pixels in four ")
-                .append("bases, placed-aspect verification, and perpendicular-only placement-profile compatibility\n")
-                .append("- Parallel `medium-wall` content was audited for separation and not modified\n\n")
+                .append("- Authoritative family: eight exact-name definitions at catalogue indices 13 through 20\n")
+                .append("- Product-owner approval, creator, original-art status, and distribution permission: ")
+                .append("Seggellion, 2026-07-29\n")
+                .append("- Dimensions: 1 x 2 approved; orientation: `wall_perpendicular` only\n")
+                .append("- Mount materials: brass and iron; default brass; fixed authored attachment pixels remain ")
+                .append("in each complete base texture\n")
+                .append("- Placement profile: `britannia_mod:medium_perpendicular`, with only the approved ")
+                .append("`wall_perpendicular` mount-geometry entry\n")
+                .append("- Five approved geometry groups and eight aligned 128 x 128 RGBA base/mask pairs\n")
+                .append("- Intake validation: eight `READY_FOR_INTEGRATION`\n")
+                .append("- Runtime `content_status`: `in_progress`; Gate E live review remains pending\n")
+                .append("- Parallel `medium-wall` content remains unchanged and placeholder\n\n")
                 .append("## Gate D automated placement baseline\n\n")
                 .append("All ").append(total)
-                .append(" active definitions pass the automated parallel, perpendicular, brass, and iron ")
+                .append(" active definitions pass automated coverage for their supported orientations and brass/iron ")
                 .append("coverage matrix. These results validate data flow, transforms, planning, persistence, ")
                 .append("rollback, and preview classification; they do not constitute in-game visual approval. ")
                 .append("Manual in-game validation was not performed in this non-interactive run.\n\n")
