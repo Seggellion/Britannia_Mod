@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "NOT_APPROVED",
+    "approved_by": "",
+    "approved_date": "",
+    "notes": "Draft prepared from the authoritative Illustrator source. Product-owner identity, approval date, final provenance, and distribution permission have not been supplied."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:serpent_guard",
+    "final_display_name": "Serpent Guard",
+    "catalogue_index": 18,
+    "family": "medium",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_perpendicular",
+    "geometry_id": "britannia_mod:banner/medium/rounded_guard/geometry",
+    "geometry_convention": "Proposed 20-unit-tall perpendicular medium-family planar geometry derived from the complete authored alpha bounds; the 128-pixel UV basis, established two-pass thickness, and separate perpendicular mount geometry are preserved. Runtime placement remains blocked pending approval and placed-aspect verification."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Serpent Guard"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/serpent_guard/base_texture",
+      "source_file": "content/banner-final-intake/submissions/serpent_guard/base_texture.png",
+      "sha256": "6b157d409cb268bf03f305f0eda85450bb8dac3eaeaf227303ace82baba72ce8"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/serpent_guard/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/serpent_guard/dye_mask.png",
+      "sha256": "b3cd16f6c62431d44b76df6eef9a6554e4b03b668deb46a0d9daaf791202eaee"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/serpent_guard/source/geometry.json",
+      "sha256": "b681f00212b1556b976207596a2db79e7589afaf4531fb7c9fa8fe9d133484f9"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/serpent_guard/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": false,
+    "creator": "",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium.ai to one aligned 128 x 128 RGBA artboard. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium.ai",
+    "distribution_permission_confirmed": false,
+    "copied_from_reference_art": null
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed; use the generated review sheet and the reusable perpendicular-medium live-review procedure."
+  },
+  "requested_content_status": "in_progress"
+}

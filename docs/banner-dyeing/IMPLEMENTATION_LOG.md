@@ -1,4 +1,69 @@
 # Banner and Dyeing Implementation Log
+## 2026-07-29 - Perpendicular medium source audit and draft intake preparation
+
+- Confirmed the clean tracked baseline at `d55d8093a2b9558063489130bc473e9aeace7008` on `banners-dyetub`.
+  The closeout is the current HEAD, is an ancestor of itself, and the branch is 31 commits ahead of `patch-18`
+  with merge base `62df1dc97c5113a86f9c0f258cb90538f31efe89`. Only the expected untracked `.claude/` and `logs/`
+  existed; neither path was inspected or modified.
+- Audited `medium` and `medium-wall` separately. `medium` remains exactly the eight source-named definitions at
+  indices 13 through 20 and `medium-wall` remains the distinct six-definition parallel-family placeholder group
+  at indices 7 through 12.
+- Read-only/no-save Adobe Illustrator automation used only
+  `C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`, size 47,417,154 bytes and SHA-256
+  `5a219e6e276884e6b7173ec5c6608c8a85b53dcbdeb768b0f2c19ead0423d34d`. The hash was identical before
+  and after export. The PDF-compatible CMYK document has one 128 x 128 artboard at `[-32, 32, 96, -96]`,
+  72 ppi raster effects, eight embedded raster bases, no linked items, and eight exact-name top-level layers.
+  `ward_of_serpents` contains its mask in a named child layer; every other layer has named `base_texture` and
+  `dye_mask` page items.
+- All eight Illustrator names map exactly to their existing stable IDs: `tournament_medium`,
+  `ceremonial_tournament`, `iron_quarter`, `outer_ward`, `ward_of_serpents`, `serpent_guard`,
+  `crossroad_guard`, and `argent_shield`. No new definition, provisional-ID migration, parallel layer, unrelated
+  layer, or ambiguous name was found.
+- Each complete authored base/mask union extended beyond the artboard. One proportional downscale (never upscale)
+  and one shared translation centered the pair in a two-pixel transparent margin before artboard-clipped export.
+  Mask preparation only changed active RGB to white and applied
+  `output alpha = min(authored mask alpha, base alpha)`.
+
+| Definition | Base SHA-256 | Dye-mask SHA-256 |
+|---|---|---|
+| `tournament_medium` | `0fd6d82d3e674f964387be404739bd17a298af04fad6d36e1a7867e86549d503` | `739d65774502e03213da5fc56a8b21222c1febbda1e5163ca05a0cd674d521bb` |
+| `ceremonial_tournament` | `b8b623c0b03c8ee2dffb9183610d4dbc05703cc10876b6a783041fd7ab689804` | `8153536154f5163ccbca26cacec58c4c5cd60a1adbdd7e5c7ddc60954b8464ab` |
+| `iron_quarter` | `a0a7e52030d084b734737ed6dce970a402e38bc02cdd684b6196eb4271a337ca` | `1959fca2ee4cfe059ffd629cb2130d5835488ebad78280381df5cc14d0c750a8` |
+| `outer_ward` | `24269b8f0e07ff6f5050490217457f0fdb7931d57ebee4c51e046143af85a016` | `ff2c4c2231b6aa0090c0c1fb0650bcf79f5c1da868cea1375e68a77a1f7daae0` |
+| `ward_of_serpents` | `73332ee0c37c5c72fae721de76c9ea85141845bc59252d348d84b433104ff6ff` | `badcb1bcea7a0fbc37ef0bc0d4257a9c60378244e0a1b4eb756a47deb8a01d8d` |
+| `serpent_guard` | `6b157d409cb268bf03f305f0eda85450bb8dac3eaeaf227303ace82baba72ce8` | `b3cd16f6c62431d44b76df6eef9a6554e4b03b668deb46a0d9daaf791202eaee` |
+| `crossroad_guard` | `78f8580a8a308e0b3895fd7992a14c37074d8e03115565cdce18c0b76bcfdd59` | `f7cea5c270a963ed2782f47c73eabf8401d94915d516da7b3c499ae98fcc5f3a` |
+| `argent_shield` | `3f0f1829dd09920f15f4fe984608dd85088769a40cac7a3c7787f32100017556` | `0852a65d273ff9220cd56db45142db0b048050887f15925a22f479fddbdc67de` |
+
+- Every pair is 128 x 128, 8-bit RGBA with active and transparent mask pixels, fixed base pixels, white active mask
+  RGB, and zero mask-alpha-over-base violations. Five proposed geometry groups are recorded as intake evidence:
+  shared tournament pair, distinct Iron Quarter, shared pointed wards, shared rounded guards, and distinct Argent
+  Shield. Proposed logical dimensions remain 1 x 2 pending placed-aspect review.
+- The real intake validator returned `NOT_READY` and no `INVALID` findings for all eight drafts. Owner approval,
+  approval identity/date, original-art creator/copying provenance, and distribution permission are absent. Four
+  bases (`tournament_medium`, `ceremonial_tournament`, `iron_quarter`, and `argent_shield`) also contain apparent
+  authored crossbar/attachment pixels that require owner classification against the hardware-free contract.
+- Runtime integration is additionally blocked by a verified data-contract conflict: `PlacementProfile` accepts an
+  orientation-mount map only when both `wall_parallel` and `wall_perpendicular` are present, while this batch is
+  expressly perpendicular-only. An empty map would omit the required perpendicular-specific mount selection.
+  No schema, renderer, profile, catalogue entry, definition, localization, runtime texture, or runtime model was
+  changed to work around this conflict.
+- Review artifacts include natural, mask, blue recolour, alignment, combined sheet, and perpendicular silhouette
+  previews. The reusable unperformed matrix is
+  `docs/banner-dyeing/PERPENDICULAR_MEDIUM_LIVE_REVIEW.md`.
+- Scaffold generation produced the same aggregate digest
+  `c6ebe3fd01fe2e8c2f5a1947bdbb018420d2dcfe3d1ede39130ce6195db44663` on two consecutive runs,
+  and `--check` passed. The focused medium-intake/scaffold selection passed; the banner/dyeing selection passed
+  636 tests across 57 suites. After `clean`, the unrestricted suite passed 642 tests across 58 suites with zero
+  failures, errors, or skips, and `build` passed.
+- Both production JARs retain 35 definitions with 20 placeholder, 0 in progress, 15 complete, and 0 disabled. The
+  normal JAR has 5,032 entries and the all-JAR has 5,036; both have zero duplicates, all completed extra-small and
+  small definitions, required mounts/index/atlas/placeholders, and no draft medium assets, intake/review files,
+  removed three-file fields, or banner recipes.
+- Production remains data-derived at 35 definitions: 20 placeholder, 0 in progress, 15 complete, and 0 disabled.
+  Extra-small and small remain complete and unchanged; `medium-wall` remains unchanged. No persistence, crafting,
+  larger-family, Milestone 17, push, merge, or parallel-medium work was performed.
+
 ## 2026-07-29 - Small-family Gate E approval and closeout
 
 - Seggellion, acting as product owner, reported that every check in the six-banner Small-family live-review runbook

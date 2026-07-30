@@ -2,9 +2,37 @@
 
 Date: 2026-07-29
 
-Milestone: 16 Small-family Gate E complete; Medium-family intake is next
+Milestone: 16 perpendicular-medium intake prepared; runtime integration blocked
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-29 perpendicular medium intake facts
+
+- The perpendicular medium membership is exactly the existing eight-entry `medium` group at indices 13 through 20:
+  `tournament_medium`, `ceremonial_tournament`, `iron_quarter`, `outer_ward`, `ward_of_serpents`,
+  `serpent_guard`, `crossroad_guard`, and `argent_shield`.
+- The authoritative Illustrator document has exactly eight same-name top-level layers. No new, renamed, ambiguous,
+  unrelated, or explicitly parallel layer exists. The separate six-entry `medium-wall` group remains untouched.
+- Source: `C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`; size 47,417,154 bytes; SHA-256
+  `5a219e6e276884e6b7173ec5c6608c8a85b53dcbdeb768b0f2c19ead0423d34d` before and after read-only
+  Illustrator export. It is PDF-compatible, CMYK, 72 ppi, has one 128 x 128 artboard, eight embedded raster items,
+  no linked items, and explicit base/mask artwork for every layer.
+- All eight prepared base/mask pairs are 128 x 128, 8-bit RGBA. Each has active mask pixels, transparent mask
+  pixels, protected fixed base pixels, white active mask RGB, and no mask alpha beyond base alpha. Exact hashes and
+  pixel metrics are in `content/banner-final-intake/medium_asset_report.json`.
+- Geometry intake evidence groups the source silhouettes into tournament pair, Iron Quarter, pointed wards, rounded
+  guards, and Argent Shield. The provisional 1 x 2 footprint is retained only as a proposal pending placed-aspect
+  verification; it is not approved by extraction alone.
+- Every intake validator result is `NOT_READY`, with no `INVALID` package. Approval identity/date, original-art
+  creator/copying provenance, and distribution permission are absent. Apparent attachment/crossbar pixels in
+  Tournament Medium, Ceremonial Tournament, Iron Quarter, and Argent Shield also require owner classification
+  against the hardware-free base contract.
+- The current `PlacementProfile` codec permits orientation-specific mount geometry only when both
+  `wall_parallel` and `wall_perpendicular` keys exist. A perpendicular-only medium profile therefore cannot select
+  the required perpendicular mount without an architecture decision. No speculative parallel support was added.
+- No runtime or catalogue integration occurred. Production remains 35 definitions: 20 placeholder, 0 in progress,
+  15 complete, and 0 disabled. Extra-small and small remain complete and byte-identical; `medium-wall`, persistence,
+  crafting, larger families, and Milestone 17 remain unchanged.
 
 ## 2026-07-29 Small-family Gate E closeout facts
 

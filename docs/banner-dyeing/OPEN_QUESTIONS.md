@@ -2,7 +2,31 @@
 
 Date: 2026-07-29
 
-Milestone: 16 Small-family Gate E complete; Medium-family intake is next
+Milestone: 16 perpendicular-medium intake prepared; runtime integration blocked
+
+## Perpendicular medium integration blockers
+
+The Illustrator membership and names are resolved, but no definition is authorized for runtime integration:
+
+- Who is the approving product owner, what is the approval date, who created the artwork, is it original rather
+  than copied, and is distribution permission confirmed for each of the eight exact asset pairs?
+- Are the apparent authored top attachment/crossbar pixels in `tournament_medium`, `ceremonial_tournament`,
+  `iron_quarter`, and `argent_shield` fixed banner ornamentation, or selectable mount hardware that must be removed
+  from `base_texture.png`? The source exposes them only inside the named raster `base_texture`, so automation cannot
+  separate them without an owner-approved edit.
+- Does the proposed 1 x 2 logical footprint preserve the intended placed proportions? The current placed renderer
+  maps the complete square atlas sprite across the footprint quad; live aspect and wall-clearance review is required
+  before treating the provisional dimensions as final.
+- How should a perpendicular-only placement profile select
+  `britannia_mod:banner/mount/wall_perpendicular`? `PlacementProfile` currently rejects a one-key orientation map
+  and requires either both wall orientations or neither. Adding the parallel key would broaden this batch; omitting
+  the map would lose perpendicular-specific mount selection. This architecture conflict blocks integration.
+- After those decisions, approve or revise the five proposed geometry groups and the 20-unit item-model presentation
+  proposal, then run the perpendicular-only live matrix in
+  `docs/banner-dyeing/PERPENDICULAR_MEDIUM_LIVE_REVIEW.md`.
+
+Until these questions are answered, all eight definitions remain `placeholder`; no draft asset may be copied into
+runtime resources and no `medium-wall` work may begin.
 
 ## Small-family Gate E resolved
 
@@ -13,12 +37,6 @@ Small-family correction remains open. Authoritative evidence is in
 `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md` and each Small submission directory's
 `GATE_E_REVIEW.md`.
 
-## Medium-family intake questions
-
-The next family is the eight-entry `medium` catalogue group at indices 13 through 20. Final artwork packages,
-approved display names, exact pixel dimensions, per-definition geometry decisions, provenance, distribution
-permission, and manual verification evidence remain to be supplied. No Medium definition has been integrated or
-approved by this closeout.
 ## Extra-small Gate E resolved
 
 The nine-definition extra-small family completed direct product-owner live review on the 2026-07-28 closeout-record

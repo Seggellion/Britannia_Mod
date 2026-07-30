@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "source_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium.ai",
+  "source_sha256": "5a219e6e276884e6b7173ec5c6608c8a85b53dcbdeb768b0f2c19ead0423d34d",
+  "canvas": [
+    128,
+    128
+  ],
+  "placement_profile_proposal": {
+    "id": "britannia_mod:medium_perpendicular",
+    "dimensions": {
+      "width_blocks": 1,
+      "height_blocks": 2
+    },
+    "orientations": [
+      "wall_perpendicular"
+    ],
+    "orientation_mount_geometry": {
+      "wall_perpendicular": "britannia_mod:banner/mount/wall_perpendicular"
+    },
+    "mount_materials": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "runtime_integration": "BLOCKED_PENDING_READY_INTAKE",
+    "architecture_note": "The current PlacementProfile codec requires both wall-orientation mount geometry entries or neither. This perpendicular-only proposal therefore cannot be integrated without either broadening the profile or making the mount map compatible with a single supported orientation."
+  },
+  "geometry_groups": [
+    {
+      "key": "tournament_pair",
+      "resource_id": "britannia_mod:banner/medium/tournament_pair/geometry",
+      "members": [
+        "tournament_medium",
+        "ceremonial_tournament"
+      ],
+      "classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "shape_evidence": "Matching harlequin fields with the same rectangular body, three-point lower edge, top attachment treatment, and full-canvas layout.",
+      "source_file": "content/banner-final-intake/submissions/tournament_medium/source/geometry.json",
+      "sha256": "64805551200e9e7b35b526148580e04a8309bd93701c79236ad80c8992cab4a4",
+      "alpha_bounds": [
+        26,
+        13,
+        100,
+        120
+      ]
+    },
+    {
+      "key": "iron_quarter",
+      "resource_id": "britannia_mod:banner/medium/iron_quarter/geometry",
+      "members": [
+        "iron_quarter"
+      ],
+      "classification": "CUSTOM_GEOMETRY_REQUIRED",
+      "shape_evidence": "Wide single-point field with a distinct top crossbar and proportions.",
+      "source_file": "content/banner-final-intake/submissions/iron_quarter/source/geometry.json",
+      "sha256": "cc161d24ebdadcce5a4732da5919c2c59a9aed3e30b727d21f670a9b322fdc3c",
+      "alpha_bounds": [
+        15,
+        6,
+        113,
+        123
+      ]
+    },
+    {
+      "key": "pointed_ward",
+      "resource_id": "britannia_mod:banner/medium/pointed_ward/geometry",
+      "members": [
+        "outer_ward",
+        "ward_of_serpents"
+      ],
+      "classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "shape_evidence": "Matching pentagonal cloth silhouettes with one top attachment edge and a centered lower point; heraldry alone differs.",
+      "source_file": "content/banner-final-intake/submissions/outer_ward/source/geometry.json",
+      "sha256": "c7791bbbab3c29615554b7e86024e18dfbd7eb93954a8b93166fb60c864157d3",
+      "alpha_bounds": [
+        24,
+        6,
+        104,
+        124
+      ]
+    },
+    {
+      "key": "rounded_guard",
+      "resource_id": "britannia_mod:banner/medium/rounded_guard/geometry",
+      "members": [
+        "serpent_guard",
+        "crossroad_guard"
+      ],
+      "classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "shape_evidence": "Matching rectangular fields with rounded lower corners; heraldry alone differs.",
+      "source_file": "content/banner-final-intake/submissions/serpent_guard/source/geometry.json",
+      "sha256": "b681f00212b1556b976207596a2db79e7589afaf4531fb7c9fa8fe9d133484f9",
+      "alpha_bounds": [
+        23,
+        4,
+        106,
+        125
+      ]
+    },
+    {
+      "key": "argent_shield",
+      "resource_id": "britannia_mod:banner/medium/argent_shield/geometry",
+      "members": [
+        "argent_shield"
+      ],
+      "classification": "CUSTOM_GEOMETRY_REQUIRED",
+      "shape_evidence": "Narrow U-ended shield field with a distinct top crossbar and proportions.",
+      "source_file": "content/banner-final-intake/submissions/argent_shield/source/geometry.json",
+      "sha256": "bb2f93b944944e956f4c2943043336efeb94184208f9fe226a4355a5ffe98f28",
+      "alpha_bounds": [
+        24,
+        2,
+        104,
+        125
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "stable_id": "britannia_mod:tournament_medium",
+      "catalogue_index": 13,
+      "current_display_label": "Tournament Medium",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/tournament_medium/base_texture.png",
+      "base_sha256": "0fd6d82d3e674f964387be404739bd17a298af04fad6d36e1a7867e86549d503",
+      "mask_path": "content/banner-final-intake/submissions/tournament_medium/dye_mask.png",
+      "mask_sha256": "739d65774502e03213da5fc56a8b21222c1febbda1e5163ca05a0cd674d521bb",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        26,
+        13,
+        100,
+        120
+      ],
+      "mask_active_pixels": 4033,
+      "mask_transparent_pixels": 12351,
+      "fixed_base_pixels": 3472,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/tournament_medium/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/tournament_medium/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/tournament_pair/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/tournament_medium/tournament_medium.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification",
+        "authoring review of apparent crossbar/attachment pixels in base_texture"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:ceremonial_tournament",
+      "catalogue_index": 14,
+      "current_display_label": "Ceremonial Tournament",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/ceremonial_tournament/base_texture.png",
+      "base_sha256": "b8b623c0b03c8ee2dffb9183610d4dbc05703cc10876b6a783041fd7ab689804",
+      "mask_path": "content/banner-final-intake/submissions/ceremonial_tournament/dye_mask.png",
+      "mask_sha256": "8153536154f5163ccbca26cacec58c4c5cd60a1adbdd7e5c7ddc60954b8464ab",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        26,
+        12,
+        100,
+        120
+      ],
+      "mask_active_pixels": 4080,
+      "mask_transparent_pixels": 12304,
+      "fixed_base_pixels": 3365,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/ceremonial_tournament/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/ceremonial_tournament/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/tournament_pair/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/ceremonial_tournament/ceremonial_tournament.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification",
+        "authoring review of apparent crossbar/attachment pixels in base_texture"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:iron_quarter",
+      "catalogue_index": 15,
+      "current_display_label": "Iron Quarter",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/iron_quarter/base_texture.png",
+      "base_sha256": "a0a7e52030d084b734737ed6dce970a402e38bc02cdd684b6196eb4271a337ca",
+      "mask_path": "content/banner-final-intake/submissions/iron_quarter/dye_mask.png",
+      "mask_sha256": "1959fca2ee4cfe059ffd629cb2130d5835488ebad78280381df5cc14d0c750a8",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        15,
+        6,
+        113,
+        123
+      ],
+      "mask_active_pixels": 4298,
+      "mask_transparent_pixels": 12086,
+      "fixed_base_pixels": 4236,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/iron_quarter/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/iron_quarter/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/iron_quarter/geometry",
+      "geometry_classification": "CUSTOM_GEOMETRY_REQUIRED",
+      "intake_path": "content/banner-final-intake/submissions/iron_quarter/iron_quarter.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification",
+        "authoring review of apparent crossbar/attachment pixels in base_texture"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:outer_ward",
+      "catalogue_index": 16,
+      "current_display_label": "Outer Ward",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/outer_ward/base_texture.png",
+      "base_sha256": "24269b8f0e07ff6f5050490217457f0fdb7931d57ebee4c51e046143af85a016",
+      "mask_path": "content/banner-final-intake/submissions/outer_ward/dye_mask.png",
+      "mask_sha256": "ff2c4c2231b6aa0090c0c1fb0650bcf79f5c1da868cea1375e68a77a1f7daae0",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        24,
+        6,
+        104,
+        124
+      ],
+      "mask_active_pixels": 3851,
+      "mask_transparent_pixels": 12533,
+      "fixed_base_pixels": 4493,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/outer_ward/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/outer_ward/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/pointed_ward/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/outer_ward/outer_ward.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:ward_of_serpents",
+      "catalogue_index": 17,
+      "current_display_label": "Ward of Serpents",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/ward_of_serpents/base_texture.png",
+      "base_sha256": "73332ee0c37c5c72fae721de76c9ea85141845bc59252d348d84b433104ff6ff",
+      "mask_path": "content/banner-final-intake/submissions/ward_of_serpents/dye_mask.png",
+      "mask_sha256": "badcb1bcea7a0fbc37ef0bc0d4257a9c60378244e0a1b4eb756a47deb8a01d8d",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        22,
+        4,
+        106,
+        126
+      ],
+      "mask_active_pixels": 4943,
+      "mask_transparent_pixels": 11441,
+      "fixed_base_pixels": 3914,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/ward_of_serpents/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/ward_of_serpents/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/pointed_ward/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/ward_of_serpents/ward_of_serpents.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:serpent_guard",
+      "catalogue_index": 18,
+      "current_display_label": "Serpent Guard",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/serpent_guard/base_texture.png",
+      "base_sha256": "6b157d409cb268bf03f305f0eda85450bb8dac3eaeaf227303ace82baba72ce8",
+      "mask_path": "content/banner-final-intake/submissions/serpent_guard/dye_mask.png",
+      "mask_sha256": "b3cd16f6c62431d44b76df6eef9a6554e4b03b668deb46a0d9daaf791202eaee",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        23,
+        4,
+        106,
+        125
+      ],
+      "mask_active_pixels": 5175,
+      "mask_transparent_pixels": 11209,
+      "fixed_base_pixels": 4434,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/serpent_guard/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/serpent_guard/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/rounded_guard/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/serpent_guard/serpent_guard.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:crossroad_guard",
+      "catalogue_index": 19,
+      "current_display_label": "Crossroad Guard",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/crossroad_guard/base_texture.png",
+      "base_sha256": "78f8580a8a308e0b3895fd7992a14c37074d8e03115565cdce18c0b76bcfdd59",
+      "mask_path": "content/banner-final-intake/submissions/crossroad_guard/dye_mask.png",
+      "mask_sha256": "f7cea5c270a963ed2782f47c73eabf8401d94915d516da7b3c499ae98fcc5f3a",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        24,
+        7,
+        104,
+        123
+      ],
+      "mask_active_pixels": 1552,
+      "mask_transparent_pixels": 14832,
+      "fixed_base_pixels": 7335,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/crossroad_guard/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/crossroad_guard/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/rounded_guard/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/crossroad_guard/crossroad_guard.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:argent_shield",
+      "catalogue_index": 20,
+      "current_display_label": "Argent Shield",
+      "export_classification": "READY_FOR_EXPORT",
+      "integration_readiness": "NOT_READY",
+      "base_path": "content/banner-final-intake/submissions/argent_shield/base_texture.png",
+      "base_sha256": "3f0f1829dd09920f15f4fe984608dd85088769a40cac7a3c7787f32100017556",
+      "mask_path": "content/banner-final-intake/submissions/argent_shield/dye_mask.png",
+      "mask_sha256": "0852a65d273ff9220cd56db45142db0b048050887f15925a22f479fddbdc67de",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        24,
+        2,
+        104,
+        125
+      ],
+      "mask_active_pixels": 5293,
+      "mask_transparent_pixels": 11091,
+      "fixed_base_pixels": 2824,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/argent_shield/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/argent_shield/review/perpendicular_geometry_silhouette.png",
+      "geometry_id": "britannia_mod:banner/medium/argent_shield/geometry",
+      "geometry_classification": "CUSTOM_GEOMETRY_REQUIRED",
+      "intake_path": "content/banner-final-intake/submissions/argent_shield/argent_shield.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "placed-render aspect verification",
+        "authoring review of apparent crossbar/attachment pixels in base_texture"
+      ]
+    }
+  ],
+  "family_review_sheet": "content/banner-final-intake/review/medium_perpendicular_family_review.png"
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "NOT_APPROVED",
+    "approved_by": "",
+    "approved_date": "",
+    "notes": "Draft prepared from the authoritative Illustrator source. Product-owner identity, approval date, final provenance, and distribution permission have not been supplied."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:tournament_medium",
+    "final_display_name": "Tournament Medium",
+    "catalogue_index": 13,
+    "family": "medium",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_perpendicular",
+    "geometry_id": "britannia_mod:banner/medium/tournament_pair/geometry",
+    "geometry_convention": "Proposed 20-unit-tall perpendicular medium-family planar geometry derived from the complete authored alpha bounds; the 128-pixel UV basis, established two-pass thickness, and separate perpendicular mount geometry are preserved. Runtime placement remains blocked pending approval and placed-aspect verification."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Tournament Medium"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/tournament_medium/base_texture",
+      "source_file": "content/banner-final-intake/submissions/tournament_medium/base_texture.png",
+      "sha256": "0fd6d82d3e674f964387be404739bd17a298af04fad6d36e1a7867e86549d503"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/tournament_medium/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/tournament_medium/dye_mask.png",
+      "sha256": "739d65774502e03213da5fc56a8b21222c1febbda1e5163ca05a0cd674d521bb"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/tournament_medium/source/geometry.json",
+      "sha256": "64805551200e9e7b35b526148580e04a8309bd93701c79236ad80c8992cab4a4"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/tournament_medium/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": false,
+    "creator": "",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium.ai to one aligned 128 x 128 RGBA artboard. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium.ai",
+    "distribution_permission_confirmed": false,
+    "copied_from_reference_art": null
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed; use the generated review sheet and the reusable perpendicular-medium live-review procedure."
+  },
+  "requested_content_status": "in_progress"
+}
