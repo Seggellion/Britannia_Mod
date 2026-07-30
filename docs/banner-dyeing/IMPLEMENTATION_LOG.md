@@ -1,4 +1,66 @@
 # Banner and Dyeing Implementation Log
+## 2026-07-30 - Parallel Medium authoritative extraction and draft intake preparation
+
+- The mandated baseline passed on `banners-dyetub` at parent
+  `1ec430e84e6cb5d0091bde94c95c9f8037aa792a`, merge base
+  `62df1dc97c5113a86f9c0f258cb90538f31efe89`, 34 commits ahead of `patch-18`, with
+  `79474963299603ae73b2efcaf58a9a8614dc881b` in the current ancestry. Only the expected untracked `.claude/` and
+  `logs/` paths existed; neither was inspected or modified.
+- Read-only/no-save Illustrator automation used only
+  `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`, size 29,780,859 bytes and SHA-256
+  `a6a75becd1793dac7a5b36361c0a33d615846ac4e97502deff794ef5ac337fac`. The hash remained identical after
+  inspection and all exports. The PDF-compatible CMYK document has one 128 × 128 artboard at
+  `[-32, 32, 96, -96]`, 72 ppi raster effects, six embedded raster bases, zero linked/placed items, zero text
+  frames, and exactly six relevant top-level layers. No perpendicular, ambiguous, or unrelated layer exists.
+- The authoritative layer membership is `verdant_grape_pennon`, `silver_rosette_pennon`,
+  `four_seals_pennon`, `twin_spades_pennon`, `ankh_pennon`, and `joined_wards`. The first five replace clearly
+  provisional `medium_wall_01` through `medium_wall_05` at unchanged catalogue indices 7 through 11.
+  `joined_wards` exactly matches the existing identity at index 12. Saved-item and placed-state decoding aliases
+  map the five superseded provisional IDs to the canonical Illustrator names; no duplicate active identity remains.
+- Each authored base/mask union extended beyond the artboard. One proportional downscale (never upscale) and one
+  shared translation centred each complete pair inside a two-pixel transparent margin before artboard-clipped
+  export. Mask normalization only sets active RGB to white and applies
+  `output alpha = min(authored mask alpha, base alpha)`; it does not expand or reinterpret the authored selection.
+- All six pairs are 128 × 128 8-bit RGBA, with active and transparent mask pixels, protected fixed base pixels,
+  white active mask RGB, and zero mask-alpha-over-base violations.
+
+| Definition | Base SHA-256 | Dye-mask SHA-256 |
+|---|---|---|
+| `verdant_grape_pennon` | `5faf14b7a221752158bbf59393e6b096f4df109db3716437614898794cf0af3b` | `c1aa265275d1a61e2221bc547b3665bf2288f62ae062bbee95a6dd85ef2dfddb` |
+| `silver_rosette_pennon` | `e8eb84f1e2fee6cff3e6210cce20846e4dff8c675b6d9fbf8d762a3209c42633` | `e938710b77cd045981a077b4ea80c6d0a5af713e2b3a6ea068e954ec95bb2be8` |
+| `four_seals_pennon` | `0b7db42e5ef3969a347df79ee19cd1546f924a423227b5dd251ccc5a1f145a8f` | `81128cba4d6e1a49c60870eddf53ddd8c7bc7b1fcc04462b653a883a15cb9e14` |
+| `twin_spades_pennon` | `f6e5a834a57b940ade9b84873b78ad71f0c91efa09eeb8d93ef0a4820ed3fc0b` | `6908bb015759849df80c3c2b4aae7a746d5982fa311a1ae6bb1513ad35d515db` |
+| `ankh_pennon` | `65163afac35ae78167436a08be48f4029beb8df45b24fc0f544a6938191bfb80` | `7077db933ffbeb8383616f8bf34ba42f6c75472b6a0463599b23f36f2e393eab` |
+| `joined_wards` | `8551830308310eb073cc06bcf4760d69db4ebe897c2aed88bfe49239a84c5a70` | `ec964aa2ae06ab42ca323c232c4a2e18e952d5cd3aecdb9dcd1b161a6d9dba82` |
+
+- Proposed logical dimensions are 1 × 2: every base-alpha silhouette is 68–84 pixels wide and 115–121 pixels
+  high, matching the approved Medium footprint, while the live `medium-wall` 2 × 2 default is explicitly
+  provisional. The proposal supports only `wall_parallel`, reuses the existing untinted
+  `britannia_mod:banner/mount/wall_parallel` physical mount, retains brass/iron materials with brass by default,
+  and would use `britannia_mod:medium_parallel` after approval.
+- Five proposed fabric geometry groups were prepared: one shared grape/rosette pointed group and distinct Four
+  Seals, Twin Spades, Ankh, and Joined Wards groups. No completed perpendicular Medium model has identical
+  silhouette, proportions, attachment edge, and UV bounds, so no perpendicular geometry was duplicated or changed.
+- Every intake is accurately `NOT_APPROVED`; the real validator returns `NOT_READY`, never `INVALID`, for all six
+  packages. The request supplies authoritative artwork, family membership, and final names, but no product-owner
+  identity/date, creator/original-art attestation, distribution permission, logical-dimension approval, geometry
+  approval, or manual review. Consequently, no draft texture, geometry, placement profile, or `in_progress`
+  definition was integrated.
+- Runtime remains 35 definitions: 12 placeholder, 0 in progress, 23 complete, and 0 disabled. Extra-small, Small,
+  and perpendicular Medium runtime assets, geometry, placement, status, and persistence schemas remain unchanged.
+  Gate E is unperformed; its reusable parallel-only runbook is
+  `docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md`.
+- Scaffold generation was run twice; SHA-256 comparison passed for all 38 selected generated outputs, and
+  `--check` passed. The focused identity/asset/validator suite passed 83 tests. The complete banner/dyeing suite
+  passed 646 tests; standalone `clean` passed; the unrestricted suite passed 652 tests across 60 suites with zero
+  failures, errors, or skips; and `build` passed. The first banner-suite attempt exposed only two stale assertions
+  expecting 11 provisional names; both were updated to the authoritative data-derived count of six.
+- Both production JARs contain 35 canonical definitions with 12 placeholder, 0 in progress, 23 complete, and
+  0 disabled. They contain the canonical parallel identities but no superseded provisional definitions, draft
+  textures, draft geometry, `medium_parallel` profile, intake YAML, or review artifacts. All completed-family
+  textures and shared mount/profile/index/atlas resources are present. The normal JAR has 5,068 entries and the
+  all-JAR has 5,072; neither has duplicate ZIP entries.
+
 ## 2026-07-29 - Perpendicular Medium Gate E approval and closeout
 
 - Seggellion, acting as product owner, reported every check in the eight-banner perpendicular Medium live-review

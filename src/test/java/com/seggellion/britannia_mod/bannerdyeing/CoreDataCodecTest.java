@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.network.codec.StreamCodec;
@@ -223,6 +224,27 @@ class CoreDataCodecTest {
         assertStreamRoundTrip(DyeTubState.STREAM_CODEC, empty);
         assertStreamRoundTrip(DyeTubState.STREAM_CODEC, unlimited);
         assertStreamRoundTrip(DyeTubState.STREAM_CODEC, finite);
+    }
+
+    @Test
+    void provisionalParallelMediumIdsDecodeToCanonicalIllustratorNames() {
+        Map<String, String> aliases = Map.of(
+                "medium_wall_01", "verdant_grape_pennon",
+                "medium_wall_02", "silver_rosette_pennon",
+                "medium_wall_03", "four_seals_pennon",
+                "medium_wall_04", "twin_spades_pennon",
+                "medium_wall_05", "ankh_pennon");
+        aliases.forEach((legacyPath, canonicalPath) -> {
+            BannerDefinitionId canonical =
+                    BannerDefinitionId.parse("britannia_mod:" + canonicalPath);
+            BannerDefinitionId legacy = BannerDefinitionId.CODEC.parse(
+                    JsonOps.INSTANCE,
+                    new JsonPrimitive("britannia_mod:" + legacyPath)).getOrThrow();
+            assertEquals(canonical, legacy, legacyPath);
+            assertEquals("britannia_mod:" + canonicalPath,
+                    BannerDefinitionId.CODEC.encodeStart(JsonOps.INSTANCE, legacy)
+                            .getOrThrow().getAsString(), legacyPath);
+        });
     }
 
     @Test

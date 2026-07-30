@@ -9,9 +9,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
 public record BannerDefinitionId(ResourceLocation value) implements StableResourceId {
-    private static final Map<ResourceLocation, ResourceLocation> LEGACY_ALIASES = Map.of(
-            ResourceLocation.fromNamespaceAndPath("britannia_mod", "x_small_unnamed_01"),
-            ResourceLocation.fromNamespaceAndPath("britannia_mod", "small_curtain"));
+    private static final Map<ResourceLocation, ResourceLocation> LEGACY_ALIASES = Map.ofEntries(
+            alias("x_small_unnamed_01", "small_curtain"),
+            alias("medium_wall_01", "verdant_grape_pennon"),
+            alias("medium_wall_02", "silver_rosette_pennon"),
+            alias("medium_wall_03", "four_seals_pennon"),
+            alias("medium_wall_04", "twin_spades_pennon"),
+            alias("medium_wall_05", "ankh_pennon"));
 
     public static final Codec<BannerDefinitionId> CODEC =
             ResourceLocation.CODEC.xmap(BannerDefinitionId::new, BannerDefinitionId::value);
@@ -29,6 +33,13 @@ public record BannerDefinitionId(ResourceLocation value) implements StableResour
 
     public static BannerDefinitionId parse(String value) {
         return new BannerDefinitionId(ResourceLocation.parse(value));
+    }
+
+    private static Map.Entry<ResourceLocation, ResourceLocation> alias(
+            String legacyPath, String canonicalPath) {
+        return Map.entry(
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", legacyPath),
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", canonicalPath));
     }
 
     @Override

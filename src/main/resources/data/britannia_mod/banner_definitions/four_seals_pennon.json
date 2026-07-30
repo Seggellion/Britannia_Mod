@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "id": "britannia_mod:medium_wall_04",
-  "display_name_key": "banner.britannia_mod.medium_wall_04",
+  "id": "britannia_mod:four_seals_pennon",
+  "display_name_key": "banner.britannia_mod.four_seals_pennon",
   "content_status": "placeholder",
   "source_reference": {
     "page": 2,
-    "row": 2
+    "row": 1,
+    "source_label": "Four Seals Pennon"
   },
   "catalogue_group": "medium-wall",
   "dimensions": {

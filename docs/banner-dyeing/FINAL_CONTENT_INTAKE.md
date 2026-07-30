@@ -16,6 +16,10 @@ Every banner uses one architecture: a complete full-colour base texture plus a s
 - Milestone 16 Batch 1B is the explicit exception: `britannia_mod:x_small_unnamed_01` migrated to the canonical
   `britannia_mod:small_curtain`, and the legacy ID is decoded as the new ID for saved-item and placed-state
   compatibility.
+- The authoritative parallel Medium source replaces provisional `medium_wall_01` through `medium_wall_05` with
+  `verdant_grape_pennon`, `silver_rosette_pennon`, `four_seals_pennon`, `twin_spades_pennon`, and `ankh_pennon`
+  at the same catalogue indices. The five provisional IDs decode to their canonical replacements for saved-item
+  and placed-state compatibility.
 
 ## 3. Required owner decisions
 

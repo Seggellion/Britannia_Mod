@@ -9,7 +9,8 @@ import java.util.Set;
 public final class ProductionBannerCatalogue {
     public static final List<String> CANONICAL_PATHS = List.of(
             "large_01", "large_02", "large_03", "large_04", "large_05", "large_06",
-            "medium_wall_01", "medium_wall_02", "medium_wall_03", "medium_wall_04", "medium_wall_05",
+            "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
+            "twin_spades_pennon", "ankh_pennon",
             "joined_wards", "tournament_medium", "ceremonial_tournament", "iron_quarter", "outer_ward",
             "ward_of_serpents", "serpent_guard", "crossroad_guard", "argent_shield",
             "silver_and_gold_pennon", "star_standard", "ship_standard", "pennon_of_silver", "iron_ward",

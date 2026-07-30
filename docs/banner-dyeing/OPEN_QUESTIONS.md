@@ -1,8 +1,27 @@
 # Banner and Dyeing Open Questions
 
-Date: 2026-07-29
+Date: 2026-07-30
 
-Milestone: 16 perpendicular-medium Gate E complete
+Milestone: parallel Medium draft intake preparation
+
+## Parallel Medium approval blockers
+
+The authoritative artwork, final names, and six-member parallel family have been extracted and reconciled. The five
+provisional IDs are migrated at unchanged indices with compatibility aliases, but final content is not integrated.
+The following product-owner inputs are still required for each exact prepared hash:
+
+- Approver identity and approval date.
+- Creator/original-art attestation, confirmation that the artwork was not copied from reference art, and explicit
+  distribution permission.
+- Approval of the proposed 1 × 2 logical dimensions.
+- Approval of `wall_parallel` as the only supported orientation, brass/iron mounts with brass by default, and
+  `britannia_mod:medium_parallel`.
+- Approval of the five proposed geometry groups and fixed-versus-dyeable authored regions.
+- Manual intake review followed by the unperformed Gate E matrix in
+  `docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md`.
+
+Until those inputs exist, all six packages are `NOT_READY`, all six definitions remain placeholder, and no draft
+texture, geometry, or placement profile may enter runtime.
 
 ## Perpendicular Medium Gate E resolved
 

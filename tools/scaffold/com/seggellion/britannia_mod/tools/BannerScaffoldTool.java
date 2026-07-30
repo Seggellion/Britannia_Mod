@@ -1071,6 +1071,25 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all six authoritative hashes\n")
                 .append("- Runtime `content_status`: `complete`\n")
                 .append("- Gate E evidence: `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md`\n\n")
+                .append("## Parallel Medium draft preparation\n\n")
+                .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`\n")
+                .append("- Source SHA-256: `a6a75becd1793dac7a5b36361c0a33d615846ac4e97502deff794ef5ac337fac`\n")
+                .append("- Authoritative family: `verdant_grape_pennon`, `silver_rosette_pennon`, ")
+                .append("`four_seals_pennon`, `twin_spades_pennon`, `ankh_pennon`, and `joined_wards` ")
+                .append("at catalogue indices 7 through 12\n")
+                .append("- Provisional `medium_wall_01` through `medium_wall_05` were replaced without ")
+                .append("renumbering; saved-state decode aliases map them to the canonical source names\n")
+                .append("- Six aligned 128 x 128 RGBA base/mask pairs and five proposed geometry groups are ")
+                .append("prepared outside runtime resources\n")
+                .append("- Proposed dimensions: 1 x 2; proposed orientation: `wall_parallel` only; proposed ")
+                .append("profile: `britannia_mod:medium_parallel`\n")
+                .append("- Proposed mount geometry: shared `britannia_mod:banner/mount/wall_parallel`; ")
+                .append("brass/iron remain separate untinted materials\n")
+                .append("- Intake validation: six `NOT_READY`, zero `INVALID`; approval identity/date, creator ")
+                .append("attestation, distribution permission, dimension approval, geometry approval, and manual ")
+                .append("review remain missing\n")
+                .append("- Runtime remains placeholder: no draft artwork, geometry, or profile is integrated; ")
+                .append("Gate E is not performed\n\n")
                 .append("## Perpendicular medium integration\n\n")
                 .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`\n")
                 .append("- Source SHA-256: `5a219e6e276884e6b7173ec5c6608c8a85b53dcbdeb768b0f2c19ead0423d34d`\n")
@@ -1087,7 +1106,8 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all eight authoritative hashes\n")
                 .append("- Runtime `content_status`: `complete`\n")
                 .append("- Gate E evidence: `content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md`\n")
-                .append("- Parallel `medium-wall` content remains unchanged and placeholder\n\n")
+                .append("- Parallel `medium-wall` runtime content remains placeholder; perpendicular assets, ")
+                .append("geometry, profile, and Gate E evidence are unchanged\n\n")
                 .append("## Gate D automated placement baseline\n\n")
                 .append("All ").append(total)
                 .append(" active definitions pass automated coverage for their supported orientations and brass/iron ")
@@ -1097,7 +1117,9 @@ public final class BannerScaffoldTool {
                 .append("## Gate B decisions\n\n")
                 .append("The original Gate B identity set remains stable. The product owner subsequently added ")
                 .append("Prosperity Standard and Guardian Standard as authoritative extra-small definitions without ")
-                .append("renumbering earlier entries. The 13 unnamed banners retain visibly provisional ")
+                .append("renumbering earlier entries. The ")
+                .append(nameCounts.getOrDefault("provisional", 0L))
+                .append(" unnamed banners retain visibly provisional ")
                 .append("`Name Required` labels. Recipes remain product-disabled.\n");
         return report.toString();
     }
@@ -1349,11 +1371,11 @@ public final class BannerScaffoldTool {
                 4|large_04|large|1|4|Large Banner 04|provisional
                 5|large_05|large|1|5|Large Banner 05|provisional
                 6|large_06|large|1|6|Large Banner 06|provisional
-                7|medium_wall_01|medium-wall|1|7|Medium Wall Banner 01|provisional
-                8|medium_wall_02|medium-wall|1|8|Medium Wall Banner 02|provisional
-                9|medium_wall_03|medium-wall|2|1|Medium Wall Banner 03|provisional
-                10|medium_wall_04|medium-wall|2|2|Medium Wall Banner 04|provisional
-                11|medium_wall_05|medium-wall|2|3|Medium Wall Banner 05|provisional
+                7|verdant_grape_pennon|medium-wall|1|7|Verdant Grape Pennon|source-named
+                8|silver_rosette_pennon|medium-wall|1|8|Silver Rosette Pennon|source-named
+                9|four_seals_pennon|medium-wall|2|1|Four Seals Pennon|source-named
+                10|twin_spades_pennon|medium-wall|2|2|Twin Spades Pennon|source-named
+                11|ankh_pennon|medium-wall|2|3|Ankh Pennon|source-named
                 12|joined_wards|medium-wall|2|4|Joined Wards|source-named
                 13|tournament_medium|medium|2|5|Tournament Medium|source-named
                 14|ceremonial_tournament|medium|2|6|Ceremonial Tournament|source-named

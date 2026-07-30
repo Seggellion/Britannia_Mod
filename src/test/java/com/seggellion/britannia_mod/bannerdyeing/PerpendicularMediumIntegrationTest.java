@@ -28,11 +28,11 @@ class PerpendicularMediumIntegrationTest {
             "crossroad_guard",
             "argent_shield");
     private static final Set<String> MEDIUM_WALL = Set.of(
-            "medium_wall_01",
-            "medium_wall_02",
-            "medium_wall_03",
-            "medium_wall_04",
-            "medium_wall_05",
+            "verdant_grape_pennon",
+            "silver_rosette_pennon",
+            "four_seals_pennon",
+            "twin_spades_pennon",
+            "ankh_pennon",
             "joined_wards");
     private static final Path INTAKE =
             Path.of("content/banner-final-intake/submissions");

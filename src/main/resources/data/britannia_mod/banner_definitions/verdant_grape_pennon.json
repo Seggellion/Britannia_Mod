@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "id": "britannia_mod:medium_wall_05",
-  "display_name_key": "banner.britannia_mod.medium_wall_05",
+  "id": "britannia_mod:verdant_grape_pennon",
+  "display_name_key": "banner.britannia_mod.verdant_grape_pennon",
   "content_status": "placeholder",
   "source_reference": {
-    "page": 2,
-    "row": 3
+    "page": 1,
+    "row": 7,
+    "source_label": "Verdant Grape Pennon"
   },
   "catalogue_group": "medium-wall",
   "dimensions": {

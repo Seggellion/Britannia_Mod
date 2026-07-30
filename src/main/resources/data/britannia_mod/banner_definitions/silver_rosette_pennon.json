@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "id": "britannia_mod:medium_wall_03",
-  "display_name_key": "banner.britannia_mod.medium_wall_03",
+  "id": "britannia_mod:silver_rosette_pennon",
+  "display_name_key": "banner.britannia_mod.silver_rosette_pennon",
   "content_status": "placeholder",
   "source_reference": {
-    "page": 2,
-    "row": 1
+    "page": 1,
+    "row": 8,
+    "source_label": "Silver Rosette Pennon"
   },
   "catalogue_group": "medium-wall",
   "dimensions": {

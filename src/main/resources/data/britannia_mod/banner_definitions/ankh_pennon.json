@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "id": "britannia_mod:medium_wall_01",
-  "display_name_key": "banner.britannia_mod.medium_wall_01",
+  "id": "britannia_mod:ankh_pennon",
+  "display_name_key": "banner.britannia_mod.ankh_pennon",
   "content_status": "placeholder",
   "source_reference": {
-    "page": 1,
-    "row": 7
+    "page": 2,
+    "row": 3,
+    "source_label": "Ankh Pennon"
   },
   "catalogue_group": "medium-wall",
   "dimensions": {

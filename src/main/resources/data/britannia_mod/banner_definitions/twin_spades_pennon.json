@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "id": "britannia_mod:medium_wall_02",
-  "display_name_key": "banner.britannia_mod.medium_wall_02",
+  "id": "britannia_mod:twin_spades_pennon",
+  "display_name_key": "banner.britannia_mod.twin_spades_pennon",
   "content_status": "placeholder",
   "source_reference": {
-    "page": 1,
-    "row": 8
+    "page": 2,
+    "row": 2,
+    "source_label": "Twin Spades Pennon"
   },
   "catalogue_group": "medium-wall",
   "dimensions": {

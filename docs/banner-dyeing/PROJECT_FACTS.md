@@ -1,10 +1,42 @@
 # Banner and Dyeing Project Facts
 
-Date: 2026-07-29
+Date: 2026-07-30
 
-Milestone: 16 perpendicular-medium Gate E complete
+Milestone: parallel Medium draft intake preparation
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 parallel Medium preparation facts
+
+- The authoritative parallel Medium source is
+  `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`, size 29,780,859 bytes, SHA-256
+  `a6a75becd1793dac7a5b36361c0a33d615846ac4e97502deff794ef5ac337fac` before and after read-only Illustrator
+  automation. It is PDF-compatible, CMYK, 72 ppi, and contains one 128 × 128 artboard, six embedded raster bases,
+  zero linked resources, and exactly the six relevant banner layers.
+- Canonical `medium-wall` membership in catalogue order is `verdant_grape_pennon`, `silver_rosette_pennon`,
+  `four_seals_pennon`, `twin_spades_pennon`, `ankh_pennon`, and `joined_wards`. The first five source names replace
+  provisional `medium_wall_01` through `medium_wall_05` at indices 7 through 11; `joined_wards` remains index 12.
+  Decode aliases preserve saved-state compatibility, and only the canonical identities are active.
+- Six aligned 128 × 128 RGBA base/mask pairs and complete review artifacts are prepared under
+  `content/banner-final-intake/submissions/`. Active mask RGB is white, mask alpha never exceeds base alpha, and
+  fixed authored regions remain protected. Exact metrics and hashes are in
+  `content/banner-final-intake/parallel_medium_asset_report.json`; Illustrator structure and transforms are in
+  `content/banner-final-intake/parallel_medium_illustrator_report.json`.
+- Proposed dimensions are 1 × 2. Proposed orientation is only `wall_parallel`; proposed profile
+  `britannia_mod:medium_parallel` would reuse `britannia_mod:banner/mount/wall_parallel` while brass and iron remain
+  independent untinted materials. Five proposed geometry groups cover the shared grape/rosette silhouette plus four
+  distinct silhouettes.
+- Approval identity/date, original-art creator attestation, distribution permission, dimension approval, geometry
+  approval, and manual review are absent. All six draft intakes remain `NOT_READY`; no final asset, geometry, or
+  parallel Medium profile is a runtime resource. Production stays 12 placeholder, 0 in progress, 23 complete, and
+  0 disabled.
+- Scaffold idempotency and `--check` pass. The banner/dyeing suite passes 646 tests; the unrestricted suite passes
+  652 tests across 60 suites; standalone clean and build pass. Both production JARs contain the six canonical
+  placeholder identities and exclude every draft runtime/intake/review resource and superseded provisional
+  definition, with zero duplicate entries.
+- Completed Extra-small, Small, and perpendicular Medium content is unchanged. The perpendicular group remains
+  `complete` and `wall_perpendicular`-only. Persistence schemas, crafting absence, the large family, and Milestone 17
+  are unchanged.
 
 ## 2026-07-29 perpendicular medium Gate E closeout facts
 

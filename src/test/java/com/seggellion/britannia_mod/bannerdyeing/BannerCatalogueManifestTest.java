@@ -83,7 +83,7 @@ class BannerCatalogueManifestTest {
     void everyUnnamedEntryRemainsProvisionalAndVisible() {
         List<BannerScaffoldTool.BannerEntry> unnamed = manifest.banners().stream()
                 .filter(entry -> entry.sourceLabel() == null).toList();
-        assertEquals(11, unnamed.size());
+        assertEquals(6, unnamed.size());
         assertTrue(unnamed.stream().allMatch(entry -> "provisional".equals(entry.nameStatus())));
         assertTrue(unnamed.stream().allMatch(entry -> entry.notes().contains("Name Required")));
     }
@@ -92,7 +92,7 @@ class BannerCatalogueManifestTest {
     void sourceNamedEntriesRetainSourceLabelsAndApprovedNamesAreExplicit() {
         List<BannerScaffoldTool.BannerEntry> named = manifest.banners().stream()
                 .filter(entry -> "source-named".equals(entry.nameStatus())).toList();
-        assertEquals(24, named.size());
+        assertEquals(29, named.size());
         assertTrue(named.stream().allMatch(entry -> entry.sourceLabel() != null));
         assertEquals(Set.of("road_guard", "pale_road_guard", "red_crosslets",
                         "captains_red_crosslets", "scarlet_court", "verdant_court",

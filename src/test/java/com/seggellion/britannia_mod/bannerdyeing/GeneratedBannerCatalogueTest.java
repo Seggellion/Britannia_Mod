@@ -263,7 +263,7 @@ class GeneratedBannerCatalogueTest {
         List<String> provisional = manifest.banners().stream()
                 .filter(entry -> "provisional".equals(entry.nameStatus()))
                 .map(BannerScaffoldTool.BannerEntry::id).toList();
-        assertEquals(11, provisional.size());
+        assertEquals(6, provisional.size());
         provisional.forEach(id -> assertTrue(status.contains("`" + id + "`"), id));
         assertTrue(status.contains("Catalogue target: data-derived from the canonical manifest"));
         assertTrue(status.contains("Stable identity set approved at Gate B: yes"));

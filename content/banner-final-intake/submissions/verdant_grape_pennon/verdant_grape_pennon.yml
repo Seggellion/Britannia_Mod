@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "NOT_APPROVED",
+    "approved_by": "",
+    "approved_date": "",
+    "notes": "Draft prepared from the authoritative Illustrator source. The request supplies authoritative artwork, family membership, and final names, but no product-owner identity/date, creator attestation, distribution permission, or manual approval."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:verdant_grape_pennon",
+    "final_display_name": "Verdant Grape Pennon",
+    "catalogue_index": 7,
+    "family": "medium_wall",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_parallel",
+    "geometry_id": "britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+    "geometry_convention": "Proposed 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Verdant Grape Pennon"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/verdant_grape_pennon/base_texture",
+      "source_file": "content/banner-final-intake/submissions/verdant_grape_pennon/base_texture.png",
+      "sha256": "5faf14b7a221752158bbf59393e6b096f4df109db3716437614898794cf0af3b"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/verdant_grape_pennon/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/verdant_grape_pennon/dye_mask.png",
+      "sha256": "c1aa265275d1a61e2221bc547b3665bf2288f62ae062bbee95a6dd85ef2dfddb"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/verdant_grape_pennon/source/geometry.json",
+      "sha256": "818d4e606f8f03a4f3fb9aef8e3e7f90f90272673b5a802778b1ffb8e6c0ef97"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/verdant_grape_pennon/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": false,
+    "creator": "",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium_wall.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
+    "distribution_permission_confirmed": false,
+    "copied_from_reference_art": null
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed. Review artifacts are prepared, but Gate E must wait until the intake is approved and integrated."
+  },
+  "requested_content_status": "in_progress"
+}
