@@ -18,7 +18,7 @@ class BannerPlacedGeometryAndBoundsTest {
     private static final List<FamilyCase> FOOTPRINTS = List.of(
             new FamilyCase("small", 1, 1),
             new FamilyCase("medium", 1, 2),
-            new FamilyCase("medium_wall", 2, 2),
+            new FamilyCase("medium_wall", 1, 2),
             new FamilyCase("large", 3, 2));
 
     @BeforeAll

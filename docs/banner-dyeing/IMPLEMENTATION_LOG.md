@@ -1,4 +1,25 @@
 # Banner and Dyeing Implementation Log
+## 2026-07-30 - Parallel Medium approval and runtime integration
+
+- Seggellion approved all six prepared Parallel Medium packages on 2026-07-30, confirmed creator/original-art
+  provenance, confirmed the artwork was not copied from reference art, and granted distribution permission.
+- The six intake manifests now bind that approval to the prepared hashes and all validate
+  `READY_FOR_INTEGRATION`. Post-integration live Gate E remains explicitly unperformed.
+- Promoted twelve exact 128 × 128 RGBA textures, five deduplicated fabric geometry models, and the
+  `britannia_mod:medium_parallel` placement profile into runtime resources.
+- All six catalogue entries use approved 1 × 2 dimensions, `wall_parallel` only, brass and iron mounts with brass
+  by default, definition-specific base/mask resources, and `content_status: in_progress`.
+- The shared wall-parallel physical mount remains untinted. Perpendicular Medium resources and Gate E evidence are
+  unchanged. Persistence, networking, crafting policy, the Large family, and Milestone 17 remain unchanged.
+- Production is 35 active definitions: 6 placeholder, 6 in progress, 23 complete, and 0 disabled.
+- Scaffold generation is idempotent across 139 declared files and `--check` passes. The focused integration suite
+  passes 82 tests; the complete banner/dyeing suite passes 646; after standalone clean, the unrestricted suite
+  passes 652 tests across 60 suites with zero failures, errors, or skips; build passes.
+- The normal JAR contains 5,098 entries and the all-JAR contains 5,102. Both contain 35 definitions with status
+  totals 6 placeholder, 6 in progress, and 23 complete; all 12 Parallel Medium textures, five geometry models, the
+  parallel profile, and every completed-family texture are present. Duplicate, intake/review, removed-overlay, and
+  banner-recipe entries are absent.
+
 ## 2026-07-30 - Parallel Medium authoritative extraction and draft intake preparation
 
 - The mandated baseline passed on `banners-dyetub` at parent

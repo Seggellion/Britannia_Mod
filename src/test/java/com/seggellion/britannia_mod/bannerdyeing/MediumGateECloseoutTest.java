@@ -100,13 +100,12 @@ class MediumGateECloseoutTest {
                 .allMatch(entry -> "complete".equals(entry.contentStatus())));
         assertTrue(manifest.banners().stream()
                 .filter(entry -> "medium-wall".equals(entry.group()))
-                .allMatch(entry -> entry.contentStatus() == null
-                        || "placeholder".equals(entry.contentStatus())));
+                .allMatch(entry -> "in_progress".equals(entry.contentStatus())));
         assertEquals(23, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
-        assertEquals(12, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
     }

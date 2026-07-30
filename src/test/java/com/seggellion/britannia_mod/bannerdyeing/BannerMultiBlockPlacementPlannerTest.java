@@ -74,9 +74,9 @@ class BannerMultiBlockPlacementPlannerTest {
     }
 
     @Test
-    void oneByTwoTwoByTwoAndThreeByTwoPlansUseOneThreeAndFiveParts() {
+    void perpendicularAndParallelOneByTwoAndLargeThreeByTwoUseExpectedParts() {
         assertPartCount("tournament_medium", 1);
-        assertPartCount("joined_wards", 3);
+        assertPartCount("joined_wards", 1);
         assertPartCount("large_01", 5);
     }
 

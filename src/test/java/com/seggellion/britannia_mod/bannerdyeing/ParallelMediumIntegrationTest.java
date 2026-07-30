@@ -28,7 +28,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class ParallelMediumAssetPreparationTest {
+class ParallelMediumIntegrationTest {
     private static final List<String> FAMILY = List.of(
             "verdant_grape_pennon",
             "silver_rosette_pennon",
@@ -95,7 +95,7 @@ class ParallelMediumAssetPreparationTest {
     }
 
     @Test
-    void canonicalNamesReplaceOnlyTheFiveProvisionalIdsAtExistingIndices() {
+    void canonicalNamesReplaceOnlyTheFiveProvisionalIdsAndIntegrateAtExistingIndices() {
         List<BannerScaffoldTool.BannerEntry> parallel = manifest.banners().stream()
                 .filter(entry -> "medium-wall".equals(entry.group()))
                 .toList();
@@ -106,7 +106,7 @@ class ParallelMediumAssetPreparationTest {
         assertEquals(Set.of("source-named"), parallel.stream()
                 .map(BannerScaffoldTool.BannerEntry::nameStatus)
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(parallel.stream().allMatch(entry -> entry.contentStatus() == null));
+        assertTrue(parallel.stream().allMatch(entry -> "in_progress".equals(entry.contentStatus())));
         assertTrue(parallel.stream().allMatch(entry -> entry.sourceLabel() != null));
         assertFalse(manifest.banners().stream()
                 .anyMatch(entry -> SUPERSEDED.contains(entry.id())));
@@ -114,12 +114,20 @@ class ParallelMediumAssetPreparationTest {
         for (String id : FAMILY) {
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("placeholder", definition.get("content_status").getAsString(), id);
+            assertEquals("in_progress", definition.get("content_status").getAsString(), id);
             assertEquals("medium-wall", definition.get("catalogue_group").getAsString(), id);
-            assertTrue(definition.getAsJsonObject("dimensions")
+            assertFalse(definition.getAsJsonObject("dimensions")
                     .get("provisional").getAsBoolean(), id);
-            assertTrue(definition.getAsJsonObject("assets").toString()
+            assertEquals(1, definition.getAsJsonObject("dimensions")
+                    .get("width_blocks").getAsInt(), id);
+            assertEquals(2, definition.getAsJsonObject("dimensions")
+                    .get("height_blocks").getAsInt(), id);
+            assertEquals(List.of("wall_parallel"), strings(
+                    definition.getAsJsonArray("supported_orientations")), id);
+            assertFalse(definition.getAsJsonObject("assets").toString()
                     .contains("/placeholder/"), id);
+            assertEquals("britannia_mod:medium_parallel",
+                    definition.get("placement_profile").getAsString(), id);
         }
         for (String id : SUPERSEDED) {
             assertFalse(Files.exists(Path.of(
@@ -128,7 +136,7 @@ class ParallelMediumAssetPreparationTest {
     }
 
     @Test
-    void everyDraftPairSatisfiesTheAlignedTwoFilePixelContract() throws Exception {
+    void everyApprovedPairSatisfiesTheAlignedTwoFilePixelContractAndMatchesRuntime() throws Exception {
         JsonObject report = json(Path.of(
                 "content/banner-final-intake/parallel_medium_asset_report.json"));
         JsonArray assets = report.getAsJsonArray("assets");
@@ -147,6 +155,10 @@ class ParallelMediumAssetPreparationTest {
             assertRgba128(mask, id + " mask");
             assertEquals(asset.get("base_sha256").getAsString(), sha256(basePath), id);
             assertEquals(asset.get("mask_sha256").getAsString(), sha256(maskPath), id);
+            Path runtime = Path.of(
+                    "src/main/resources/assets/britannia_mod/textures/banner", id);
+            assertEquals(sha256(basePath), sha256(runtime.resolve("base_texture.png")), id);
+            assertEquals(sha256(maskPath), sha256(runtime.resolve("dye_mask.png")), id);
 
             int active = 0;
             int transparent = 0;
@@ -191,22 +203,30 @@ class ParallelMediumAssetPreparationTest {
     }
 
     @Test
-    void actualIntakeValidatorReportsNotReadyWithoutInvalidFindings() {
+    void actualIntakeValidatorReportsReadyForEveryApprovedPackage() {
         Path root = Path.of(".").toAbsolutePath().normalize();
         for (String id : FAMILY) {
             Path intake = SUBMISSIONS.resolve(id).resolve(id + ".yml").toAbsolutePath();
             FinalContentIntakeValidator.Result result =
                     FinalContentIntakeValidator.validate(root, intake);
-            assertEquals(FinalContentIntakeValidator.Status.NOT_READY,
+            assertEquals(FinalContentIntakeValidator.Status.READY_FOR_INTEGRATION,
                     result.status(), id + ": " + result.issues());
-            assertTrue(result.issues().stream()
-                    .noneMatch(issue -> issue.startsWith("INVALID:")),
-                    id + ": " + result.issues());
+            assertTrue(result.issues().isEmpty(), id + ": " + result.issues());
             assertEquals(2, result.pngMetadata().size(), id);
 
             JsonObject document = json(intake);
-            assertEquals("NOT_APPROVED", document.getAsJsonObject("approval")
+            assertEquals("APPROVED", document.getAsJsonObject("approval")
                     .get("status").getAsString(), id);
+            assertEquals("Seggellion", document.getAsJsonObject("approval")
+                    .get("approved_by").getAsString(), id);
+            assertEquals("2026-07-30", document.getAsJsonObject("approval")
+                    .get("approved_date").getAsString(), id);
+            assertTrue(document.getAsJsonObject("provenance")
+                    .get("original_art").getAsBoolean(), id);
+            assertFalse(document.getAsJsonObject("provenance")
+                    .get("copied_from_reference_art").getAsBoolean(), id);
+            assertTrue(document.getAsJsonObject("provenance")
+                    .get("distribution_permission_confirmed").getAsBoolean(), id);
             assertEquals("in_progress",
                     document.get("requested_content_status").getAsString(), id);
             assertEquals(List.of("wall_parallel"), strings(document
@@ -217,7 +237,7 @@ class ParallelMediumAssetPreparationTest {
     }
 
     @Test
-    void fiveProposedGeometryGroupsPreserveTheFullCanvasUvBasis() {
+    void fiveApprovedGeometryGroupsPreserveTheFullCanvasUvBasisAndMatchRuntime() throws Exception {
         JsonObject report = json(Path.of(
                 "content/banner-final-intake/parallel_medium_asset_report.json"));
         JsonArray groups = report.getAsJsonArray("geometry_groups");
@@ -232,6 +252,11 @@ class ParallelMediumAssetPreparationTest {
             assertFalse(group.get("existing_medium_geometry_reuse").getAsBoolean());
             strings(group.getAsJsonArray("members")).forEach(covered::add);
             JsonObject geometry = json(Path.of(group.get("source_file").getAsString()));
+            String geometryId = group.get("resource_id").getAsString();
+            Path runtimeGeometry = Path.of(
+                    "src/main/resources/assets/britannia_mod/models",
+                    geometryId.substring("britannia_mod:".length()) + ".json");
+            assertEquals(group.get("sha256").getAsString(), sha256(runtimeGeometry));
             assertEquals("minecraft:block/block", geometry.get("parent").getAsString());
             assertEquals("minecraft:translucent", geometry.get("render_type").getAsString());
             assertEquals(Set.of("base_texture", "dye_mask", "particle"),
@@ -257,7 +282,7 @@ class ParallelMediumAssetPreparationTest {
     }
 
     @Test
-    void proposedParallelPlacementUsesOnlyTheUntintedParallelMountAcrossFourFacings() {
+    void approvedParallelPlacementUsesOnlyTheUntintedParallelMountAcrossFourFacings() {
         JsonObject report = json(Path.of(
                 "content/banner-final-intake/parallel_medium_asset_report.json"));
         JsonObject profile = report.getAsJsonObject("placement_profile_proposal");
@@ -273,6 +298,14 @@ class ParallelMediumAssetPreparationTest {
                 .get("width_blocks").getAsInt());
         assertEquals(2, profile.getAsJsonObject("dimensions")
                 .get("height_blocks").getAsInt());
+        JsonObject runtimeProfile = json(Path.of(
+                "src/main/resources/data/britannia_mod/placement_profiles/medium_parallel.json"));
+        assertEquals("britannia_mod:medium_parallel",
+                runtimeProfile.get("id").getAsString());
+        assertEquals(profile.getAsJsonObject("orientation_mount_geometry"),
+                runtimeProfile.getAsJsonObject("orientation_mount_geometry"));
+        assertFalse(runtimeProfile.getAsJsonObject("dimensions")
+                .get("provisional").getAsBoolean());
 
         ResourceLocation mount =
                 ResourceLocation.parse("britannia_mod:banner/mount/wall_parallel");
@@ -304,22 +337,32 @@ class ParallelMediumAssetPreparationTest {
     }
 
     @Test
-    void draftFinalAssetsAreNotIntegratedIntoRuntime() {
-        assertFalse(Files.exists(Path.of(
+    void approvedFinalAssetsAreIntegratedAndDeclaredInTheClientIndex() {
+        assertTrue(Files.isRegularFile(Path.of(
                 "src/main/resources/data/britannia_mod/placement_profiles/medium_parallel.json")));
-        for (String id : FAMILY) {
-            assertFalse(Files.exists(Path.of(
-                    "src/main/resources/assets/britannia_mod/textures/banner", id)),
-                    id);
-        }
         JsonObject client = json(Path.of(
                 "src/main/resources/assets/britannia_mod/banner_client_assets.json"));
         String raw = client.toString();
         for (String id : FAMILY) {
-            assertFalse(raw.contains("banner/" + id + "/base_texture"), id);
-            assertFalse(raw.contains("banner/" + id + "/dye_mask"), id);
+            assertTrue(Files.isRegularFile(Path.of(
+                    "src/main/resources/assets/britannia_mod/textures/banner",
+                    id, "base_texture.png")), id);
+            assertTrue(Files.isRegularFile(Path.of(
+                    "src/main/resources/assets/britannia_mod/textures/banner",
+                    id, "dye_mask.png")), id);
+            assertTrue(raw.contains("banner/" + id + "/base_texture"), id);
+            assertTrue(raw.contains("banner/" + id + "/dye_mask"), id);
         }
-        assertFalse(raw.contains("medium_parallel"));
+        for (String geometry : List.of(
+                "banner/medium_wall/grape_rosette_pair/geometry",
+                "banner/medium_wall/four_seals_pennon/geometry",
+                "banner/medium_wall/twin_spades_pennon/geometry",
+                "banner/medium_wall/ankh_pennon/geometry",
+                "banner/medium_wall/joined_wards/geometry")) {
+            assertTrue(raw.contains(geometry), geometry);
+        }
+        assertTrue(raw.contains("banner/mount/wall_parallel"));
+        assertFalse(raw.contains("banner/mount/parallel"));
     }
 
     private static void assertRgba128(BufferedImage image, String label) {

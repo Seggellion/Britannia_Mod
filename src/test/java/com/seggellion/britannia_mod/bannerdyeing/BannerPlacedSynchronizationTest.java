@@ -49,7 +49,7 @@ class BannerPlacedSynchronizationTest {
     @Test
     void lateJoinAndInitialTrackingProduceEqualRenderState() {
         BannerBlockEntity server = entity("medium_wall", "linen", "iron",
-                Direction.SOUTH, BannerOrientation.WALL_PARALLEL, 2, 2);
+                Direction.SOUTH, BannerOrientation.WALL_PARALLEL, 1, 2);
         BannerBlockEntity initialClient = emptyLike(server);
         initialClient.handleUpdateTag(server.getUpdateTag(RegistryAccess.EMPTY), RegistryAccess.EMPTY);
         BannerBlockEntity lateClient = emptyLike(server);

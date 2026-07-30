@@ -2,26 +2,17 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Medium draft intake preparation
+Milestone: parallel Medium runtime integration
 
-## Parallel Medium approval blockers
+## Parallel Medium Gate E pending
 
-The authoritative artwork, final names, and six-member parallel family have been extracted and reconciled. The five
-provisional IDs are migrated at unchanged indices with compatibility aliases, but final content is not integrated.
-The following product-owner inputs are still required for each exact prepared hash:
+Seggellion approved the six exact prepared packages on 2026-07-30, including creator/original-art provenance, no
+reference copying, distribution permission, 1 × 2 dimensions, parallel-only placement, and the prepared geometry.
+All six validate `READY_FOR_INTEGRATION` and are integrated at `in_progress`.
 
-- Approver identity and approval date.
-- Creator/original-art attestation, confirmation that the artwork was not copied from reference art, and explicit
-  distribution permission.
-- Approval of the proposed 1 × 2 logical dimensions.
-- Approval of `wall_parallel` as the only supported orientation, brass/iron mounts with brass by default, and
-  `britannia_mod:medium_parallel`.
-- Approval of the five proposed geometry groups and fixed-versus-dyeable authored regions.
-- Manual intake review followed by the unperformed Gate E matrix in
-  `docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md`.
-
-Until those inputs exist, all six packages are `NOT_READY`, all six definitions remain placeholder, and no draft
-texture, geometry, or placement profile may enter runtime.
+The remaining family task is the live Gate E matrix in
+`docs/banner-dyeing/PARALLEL_MEDIUM_LIVE_REVIEW.md`. Do not mark these definitions `complete` until the exact
+integrated hashes pass that review.
 
 ## Perpendicular Medium Gate E resolved
 
@@ -47,13 +38,14 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns the 12 placeholder definitions and future size-family reviews. It does not
-reopen the completed Extra-small, Small, or Medium assets, geometry, mounts, orientations, or stable identities.
+The remaining open content work concerns the 6 Large-family placeholder definitions, Parallel Medium Gate E, and
+future size-family reviews. It does not reopen the completed Extra-small, Small, or perpendicular Medium assets,
+geometry, mounts, orientations, or stable identities.
 
 ## Milestone 16A remaining content and review questions
 
 - Supply and approve the final complete base texture and selective grayscale-alpha dye mask for each of the remaining
-  12 placeholder definitions.
+  6 placeholder definitions.
 - Approve exact final pixel dimensions and per-definition presentation contracts for future size families.
 - Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
   examples.

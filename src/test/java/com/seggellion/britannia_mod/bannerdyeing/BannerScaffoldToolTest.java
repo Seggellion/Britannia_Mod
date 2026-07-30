@@ -39,7 +39,7 @@ class BannerScaffoldToolTest {
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, summary.generatedDefinitions());
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT,
                 countJson(root.resolve("src/main/resources/data/britannia_mod/banner_definitions")));
-        assertEquals(10, countSupportingJson(root));
+        assertEquals(11, countSupportingJson(root));
         assertEquals(6, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/placeholder")));
         assertEquals(3, countFiles(root.resolve("src/main/resources/assets/britannia_mod/textures/banner/placeholder")));
         assertEquals(4, countFiles(root.resolve("src/main/resources/assets/britannia_mod/models/banner/mount")));
@@ -57,11 +57,11 @@ class BannerScaffoldToolTest {
         assertTrue(status.contains("Brass automated"));
         assertTrue(status.contains("Iron automated"));
         assertTrue(status.contains("Manual result"));
-        assertTrue(status.contains("Final per-definition orientations approved: 23 of "
+        assertTrue(status.contains("Final per-definition orientations approved: 29 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final per-definition mounts approved: 23 of "
+        assertTrue(status.contains("Final per-definition mounts approved: 29 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
-        assertTrue(status.contains("Final placed artwork intake approved: 23 of "
+        assertTrue(status.contains("Final placed artwork intake approved: 29 of "
                 + ProductionBannerCatalogue.TARGET_COUNT));
         assertTrue(status.contains("Banner crafting implemented: no"));
         assertTrue(status.contains("Admin acquisition implemented: yes"));
@@ -316,10 +316,25 @@ class BannerScaffoldToolTest {
             copyApprovedAsset(root,
                     "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/dye_mask.png");
         }
+        for (String banner : java.util.List.of(
+                "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
+                "twin_spades_pennon", "ankh_pennon", "joined_wards")) {
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/base_texture.png");
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/textures/banner/" + banner + "/dye_mask.png");
+        }
         for (String geometry : java.util.List.of(
                 "tournament_pair", "iron_quarter", "pointed_ward", "rounded_guard", "argent_shield")) {
             copyApprovedAsset(root,
                     "src/main/resources/assets/britannia_mod/models/banner/medium/"
+                            + geometry + "/geometry.json");
+        }
+        for (String geometry : java.util.List.of(
+                "grape_rosette_pair", "four_seals_pennon", "twin_spades_pennon",
+                "ankh_pennon", "joined_wards")) {
+            copyApprovedAsset(root,
+                    "src/main/resources/assets/britannia_mod/models/banner/medium_wall/"
                             + geometry + "/geometry.json");
         }
         copyApprovedAsset(root,

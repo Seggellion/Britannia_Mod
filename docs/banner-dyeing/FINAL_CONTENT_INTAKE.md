@@ -20,6 +20,8 @@ Every banner uses one architecture: a complete full-colour base texture plus a s
   `verdant_grape_pennon`, `silver_rosette_pennon`, `four_seals_pennon`, `twin_spades_pennon`, and `ankh_pennon`
   at the same catalogue indices. The five provisional IDs decode to their canonical replacements for saved-item
   and placed-state compatibility.
+- Seggellion approved the six exact Parallel Medium packages on 2026-07-30. Their validator state is
+  `READY_FOR_INTEGRATION`, and their runtime content status is `in_progress` pending Gate E.
 
 ## 3. Required owner decisions
 

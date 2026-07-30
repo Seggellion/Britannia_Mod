@@ -39,6 +39,8 @@ import org.junit.jupiter.api.Test;
 
 class BannerTooltipAndScopeTest {
     private static final BannerDefinitionId WARD = BannerDefinitionId.parse("britannia_mod:joined_wards");
+    private static final BannerDefinitionId PLACEHOLDER =
+            BannerDefinitionId.parse("britannia_mod:large_01");
     private static final FabricMaterialId SILK = FabricMaterialId.parse("britannia_mod:silk");
     private static final PigmentId MADDER = PigmentId.parse("britannia_mod:madder_red");
     private static final MountId BRASS = MountId.parse("britannia_mod:brass");
@@ -70,7 +72,7 @@ class BannerTooltipAndScopeTest {
 
     @Test
     void dyedPlaceholderTooltipShowsPigmentPlaceholderProvisionalAndBothOrientations() {
-        List<Component> lines = lines(dyed(), production);
+        List<Component> lines = lines(dyedPlaceholder(), production);
         List<String> keys = keys(lines);
         assertTrue(keys.contains("tooltip.britannia_mod.banner.dyed_with"));
         assertTrue(keys.contains("tooltip.britannia_mod.banner.placeholder_warning"));
@@ -206,6 +208,12 @@ class BannerTooltipAndScopeTest {
 
     private static ItemStack dyed() {
         return factory.fullySpecifiedBanner(WARD, SILK,
+                ResolvedColourId.parse("britannia_mod:silk_ruby"), Optional.of(MADDER), BRASS,
+                production, true).stack().orElseThrow();
+    }
+
+    private static ItemStack dyedPlaceholder() {
+        return factory.fullySpecifiedBanner(PLACEHOLDER, SILK,
                 ResolvedColourId.parse("britannia_mod:silk_ruby"), Optional.of(MADDER), BRASS,
                 production, true).stack().orElseThrow();
     }

@@ -2,11 +2,11 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Medium draft intake preparation
+Milestone: parallel Medium runtime integration
 
 Feature branch: `banners-dyetub`
 
-## 2026-07-30 parallel Medium preparation facts
+## 2026-07-30 parallel Medium integration facts
 
 - The authoritative parallel Medium source is
   `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`, size 29,780,859 bytes, SHA-256
@@ -17,23 +17,24 @@ Feature branch: `banners-dyetub`
   `four_seals_pennon`, `twin_spades_pennon`, `ankh_pennon`, and `joined_wards`. The first five source names replace
   provisional `medium_wall_01` through `medium_wall_05` at indices 7 through 11; `joined_wards` remains index 12.
   Decode aliases preserve saved-state compatibility, and only the canonical identities are active.
-- Six aligned 128 × 128 RGBA base/mask pairs and complete review artifacts are prepared under
+- Six aligned 128 × 128 RGBA base/mask pairs and complete review artifacts are retained under
   `content/banner-final-intake/submissions/`. Active mask RGB is white, mask alpha never exceeds base alpha, and
   fixed authored regions remain protected. Exact metrics and hashes are in
   `content/banner-final-intake/parallel_medium_asset_report.json`; Illustrator structure and transforms are in
   `content/banner-final-intake/parallel_medium_illustrator_report.json`.
-- Proposed dimensions are 1 × 2. Proposed orientation is only `wall_parallel`; proposed profile
-  `britannia_mod:medium_parallel` would reuse `britannia_mod:banner/mount/wall_parallel` while brass and iron remain
-  independent untinted materials. Five proposed geometry groups cover the shared grape/rosette silhouette plus four
+- Approved dimensions are 1 × 2. The only supported orientation is `wall_parallel`; the
+  `britannia_mod:medium_parallel` profile reuses `britannia_mod:banner/mount/wall_parallel` while brass and iron
+  remain independent untinted materials. Five approved geometry groups cover the shared grape/rosette silhouette plus four
   distinct silhouettes.
-- Approval identity/date, original-art creator attestation, distribution permission, dimension approval, geometry
-  approval, and manual review are absent. All six draft intakes remain `NOT_READY`; no final asset, geometry, or
-  parallel Medium profile is a runtime resource. Production stays 12 placeholder, 0 in progress, 23 complete, and
-  0 disabled.
-- Scaffold idempotency and `--check` pass. The banner/dyeing suite passes 646 tests; the unrestricted suite passes
-  652 tests across 60 suites; standalone clean and build pass. Both production JARs contain the six canonical
-  placeholder identities and exclude every draft runtime/intake/review resource and superseded provisional
-  definition, with zero duplicate entries.
+- Seggellion approved all six prepared packages on 2026-07-30 as original artwork created by Seggellion, not copied
+  from reference art, with distribution permission confirmed. All six intakes validate
+  `READY_FOR_INTEGRATION`. Their exact textures, five geometry models, and the parallel-only placement profile are
+  runtime resources; all six definitions are `in_progress` pending live Gate E review.
+- Production is 35 active definitions: 6 placeholder, 6 in progress, 23 complete, and 0 disabled. Scaffold
+  generation is idempotent across 139 declared files and `--check` passes. The focused suite passes 82 tests, the
+  banner/dyeing suite passes 646 tests, and the clean full suite passes 652 tests across 60 suites. Build passes.
+  Both JARs preserve these data-derived totals, include all 12 Parallel Medium textures and five geometry models,
+  and exclude intake/review artifacts and duplicate entries.
 - Completed Extra-small, Small, and perpendicular Medium content is unchanged. The perpendicular group remains
   `complete` and `wall_perpendicular`-only. Persistence schemas, crafting absence, the large family, and Milestone 17
   are unchanged.

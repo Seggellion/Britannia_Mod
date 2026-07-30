@@ -67,6 +67,9 @@ public final class Milestone13RenderFixtures {
         if ("medium".equals(path)) {
             return BannerDefinitionId.parse("britannia_mod:tournament_medium");
         }
+        if ("medium_wall".equals(path)) {
+            return BannerDefinitionId.parse("britannia_mod:verdant_grape_pennon");
+        }
         if ("small".equals(path)) {
             BannerDefinitionId approvedSmall =
                     BannerDefinitionId.parse("britannia_mod:silver_and_gold_pennon");

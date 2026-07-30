@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "britannia_mod:four_seals_pennon",
   "display_name_key": "banner.britannia_mod.four_seals_pennon",
-  "content_status": "placeholder",
+  "content_status": "in_progress",
   "source_reference": {
     "page": 2,
     "row": 1,
@@ -10,13 +10,12 @@
   },
   "catalogue_group": "medium-wall",
   "dimensions": {
-    "width_blocks": 2,
+    "width_blocks": 1,
     "height_blocks": 2,
-    "provisional": true
+    "provisional": false
   },
   "supported_orientations": [
-    "wall_parallel",
-    "wall_perpendicular"
+    "wall_parallel"
   ],
   "supported_mounts": [
     "britannia_mod:brass",
@@ -25,9 +24,9 @@
   "default_mount": "britannia_mod:brass",
   "default_material": "britannia_mod:cotton",
   "assets": {
-    "geometry": "britannia_mod:banner/placeholder/medium_wall",
-    "base_texture": "britannia_mod:banner/placeholder/base_texture",
-    "dye_mask": "britannia_mod:banner/placeholder/dye_mask"
+    "geometry": "britannia_mod:banner/medium_wall/four_seals_pennon/geometry",
+    "base_texture": "britannia_mod:banner/four_seals_pennon/base_texture",
+    "dye_mask": "britannia_mod:banner/four_seals_pennon/dye_mask"
   },
-  "placement_profile": "britannia_mod:placeholder_medium_wall"
+  "placement_profile": "britannia_mod:medium_parallel"
 }

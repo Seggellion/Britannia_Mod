@@ -156,7 +156,7 @@ class BannerOrientationPlacementPlannerTest {
         BannerDefinitionId id = BannerDefinitionId.parse("britannia_mod:joined_wards");
         for (MountId mount : List.of(BRASS, IRON)) {
             ItemStack stack = natural(id, mount);
-            var planned = plan(stack, production, BannerOrientation.WALL_PERPENDICULAR,
+            var planned = plan(stack, production, BannerOrientation.WALL_PARALLEL,
                     BlockPos.ZERO, Direction.SOUTH, new FakeWorld()).plan().orElseThrow();
             assertEquals(mount, planned.bannerState().mountId());
             assertEquals(mount, item.stateAccess().read(stack).orElseThrow().mountId());

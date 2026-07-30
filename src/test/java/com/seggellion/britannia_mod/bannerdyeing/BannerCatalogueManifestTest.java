@@ -100,7 +100,9 @@ class BannerCatalogueManifestTest {
                         "tournament_medium", "ceremonial_tournament", "iron_quarter",
                         "outer_ward", "ward_of_serpents", "serpent_guard", "crossroad_guard", "argent_shield",
                         "silver_and_gold_pennon", "star_standard", "ship_standard",
-                        "pennon_of_silver", "iron_ward", "iron_ward_auxiliary"),
+                        "pennon_of_silver", "iron_ward", "iron_ward_auxiliary",
+                        "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
+                        "twin_spades_pennon", "ankh_pennon", "joined_wards"),
                 named.stream()
                 .filter(entry -> Boolean.TRUE.equals(entry.displayNameApproved()))
                 .map(BannerScaffoldTool.BannerEntry::id).collect(Collectors.toSet()));
@@ -115,20 +117,22 @@ class BannerCatalogueManifestTest {
                         "tournament_medium", "ceremonial_tournament", "iron_quarter",
                         "outer_ward", "ward_of_serpents", "serpent_guard", "crossroad_guard", "argent_shield",
                         "silver_and_gold_pennon", "star_standard", "ship_standard",
-                        "pennon_of_silver", "iron_ward", "iron_ward_auxiliary"),
+                        "pennon_of_silver", "iron_ward", "iron_ward_auxiliary",
+                        "verdant_grape_pennon", "silver_rosette_pennon", "four_seals_pennon",
+                        "twin_spades_pennon", "ankh_pennon", "joined_wards"),
                 manifest.banners().stream()
                 .filter(entry -> Boolean.FALSE.equals(entry.dimensionsProvisional()))
                 .map(BannerScaffoldTool.BannerEntry::id).collect(Collectors.toSet()));
     }
 
     @Test
-    void approvedExtraSmallAndSmallFamiliesAreComplete() {
+    void approvedFamiliesExposeCurrentRuntimeStatuses() {
         assertEquals("placeholder", manifest.defaults().contentStatus());
         assertEquals(23, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(0, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
-        assertEquals(12, manifest.banners().stream()
+        assertEquals(6, manifest.banners().stream()
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus())).count());
     }

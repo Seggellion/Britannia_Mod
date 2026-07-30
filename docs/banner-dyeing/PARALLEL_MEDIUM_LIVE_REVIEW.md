@@ -2,13 +2,12 @@
 
 Date prepared: 2026-07-30
 
-Status: NOT PERFORMED — BLOCKED UNTIL INTAKES ARE `READY_FOR_INTEGRATION`
+Status: NOT PERFORMED — INTEGRATED AS `in_progress`; READY FOR GATE E
 
 This runbook covers only the six `medium-wall` definitions extracted from
-`C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`. The exact draft assets and proposed geometry are
-prepared, but product-owner approval, creator/original-art attestation, distribution permission, logical-dimension
-approval, and geometry approval are missing. None of the commands below should be treated as a successful runtime
-case until that intake is approved and integrated. No perpendicular case belongs in this review.
+`C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`. Seggellion approved the exact prepared assets,
+provenance, 1 × 2 dimensions, parallel-only placement, and five geometry groups on 2026-07-30. All six packages
+validate `READY_FOR_INTEGRATION` and are integrated as `in_progress`. No perpendicular case belongs in this review.
 
 ## Reusable parallel Medium procedure
 
@@ -37,8 +36,8 @@ case until that intake is approved and integrated. No perpendicular case belongs
 
 ## Definition-specific commands and expectations
 
-Every row proposes 1 × 2 logical dimensions, only `wall_parallel`, brass and iron mounts, brass by default, and all
-four horizontal facings. These values remain pending product-owner approval.
+Every row uses the approved 1 × 2 logical dimensions, only `wall_parallel`, brass and iron mounts, brass by default,
+and all four horizontal facings.
 
 | Definition | Exact commands | Expected natural and fixed regions | Expected dyeable region | Expected geometry and attachment behaviour |
 |---|---|---|---|---|

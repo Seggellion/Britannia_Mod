@@ -51,14 +51,18 @@ class BannerClientAssetIndexContractTest {
             }
         }
 
-        assertEquals(16, geometries.size(), "shared geometry IDs must be de-duplicated");
-        assertEquals(48, textures.size(), "shared texture IDs must be de-duplicated");
+        assertEquals(20, geometries.size(), "shared geometry IDs must be de-duplicated");
+        assertEquals(60, textures.size(), "shared texture IDs must be de-duplicated");
         assertEquals(geometries, BannerClientAssetIndex.geometryModels());
         assertEquals(textures, BannerClientAssetIndex.textures());
         assertFalse(geometries.contains(id("banner/placeholder/x_small")));
         assertTrue(geometries.contains(id("banner/road_guard/geometry")));
+        assertTrue(geometries.contains(id("banner/medium_wall/grape_rosette_pair/geometry")));
+        assertTrue(geometries.contains(id("banner/mount/wall_parallel")));
         assertTrue(textures.contains(id("banner/road_guard/base_texture")));
         assertTrue(textures.contains(id("banner/road_guard/dye_mask")));
+        assertTrue(textures.contains(id("banner/verdant_grape_pennon/base_texture")));
+        assertTrue(textures.contains(id("banner/verdant_grape_pennon/dye_mask")));
     }
 
     @Test
@@ -91,6 +95,8 @@ class BannerClientAssetIndexContractTest {
         for (String texture : List.of(
                 "banner/road_guard/base_texture",
                 "banner/road_guard/dye_mask",
+                "banner/verdant_grape_pennon/base_texture",
+                "banner/verdant_grape_pennon/dye_mask",
                 "banner/placeholder/base_texture",
                 "banner/placeholder/dye_mask",
                 "banner/placeholder/missing",

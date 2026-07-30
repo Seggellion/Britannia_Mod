@@ -119,7 +119,7 @@ class PerpendicularMediumIntegrationTest {
     }
 
     @Test
-    void runtimeCatalogueIntegratesPerpendicularFamilyAndLeavesParallelFamilyUntouched() throws Exception {
+    void completedPerpendicularFamilyRemainsUnchangedAlongsideParallelIntegration() throws Exception {
         JsonObject catalogue = json(Path.of("content/banner_catalogue.yml"));
         JsonArray banners = catalogue.getAsJsonArray("banners");
         Set<String> medium = new LinkedHashSet<>();
@@ -137,7 +137,11 @@ class PerpendicularMediumIntegrationTest {
                 assertEquals("britannia_mod:medium_perpendicular", banner.get("placement_profile").getAsString(), id);
             } else if ("medium-wall".equals(group)) {
                 mediumWall.add(banner.get("id").getAsString());
-                assertFalse(banner.has("content_status"), banner.toString());
+                assertEquals("in_progress", banner.get("content_status").getAsString());
+                assertFalse(banner.get("dimensions_provisional").getAsBoolean());
+                assertEquals(List.of("wall_parallel"), banner.getAsJsonArray("supported_orientations")
+                        .asList().stream().map(value2 -> value2.getAsString()).toList());
+                assertEquals("britannia_mod:medium_parallel", banner.get("placement_profile").getAsString());
             }
         }
         assertEquals(Set.copyOf(MEDIUM), medium);

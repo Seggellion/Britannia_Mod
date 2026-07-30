@@ -65,7 +65,7 @@ class BannerPlacementPreviewTest {
 
     @Test
     void ordinaryClientSuccessRemainsUnknownForServerOnlyProtection() {
-        var preview = preview(stack("joined_wards"), BannerOrientation.WALL_PERPENDICULAR, new PreviewWorld());
+        var preview = preview(stack("joined_wards"), BannerOrientation.WALL_PARALLEL, new PreviewWorld());
         assertEquals(BannerPlacementPreviewStatus.UNKNOWN_SERVER_PROTECTION, preview.status());
         assertTrue(preview.locallyPlaceable());
         assertEquals(1, preview.requiredSupportPositions().size());

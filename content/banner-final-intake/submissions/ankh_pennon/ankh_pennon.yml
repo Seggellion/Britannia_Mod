@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "approval": {
-    "status": "NOT_APPROVED",
-    "approved_by": "",
-    "approved_date": "",
-    "notes": "Draft prepared from the authoritative Illustrator source. The request supplies authoritative artwork, family membership, and final names, but no product-owner identity/date, creator attestation, distribution permission, or manual approval."
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-30",
+    "notes": "Approved by the product owner on 2026-07-30; creator identity, original-art status, no reference copying, distribution permission, 1 x 2 dimensions, prepared geometry, and parallel-only runtime integration confirmed."
   },
   "banner": {
     "stable_id": "britannia_mod:ankh_pennon",
@@ -23,7 +23,7 @@
     "default_mount": "britannia_mod:brass",
     "placement_profile_id": "britannia_mod:medium_parallel",
     "geometry_id": "britannia_mod:banner/medium_wall/ankh_pennon/geometry",
-    "geometry_convention": "Proposed 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+    "geometry_convention": "Approved 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
   },
   "localization": {
     "language": "en_us",
@@ -41,7 +41,7 @@
       "sha256": "7077db933ffbeb8383616f8bf34ba42f6c75472b6a0463599b23f36f2e393eab"
     },
     "geometry": {
-      "shared_geometry_approved": false,
+      "shared_geometry_approved": true,
       "source_file": "content/banner-final-intake/submissions/ankh_pennon/source/geometry.json",
       "sha256": "1754d8d9c69ed36d1610b79834c7a930f32a1a656b6e82c20cfacc4eddd4a5b3"
     }
@@ -51,18 +51,18 @@
     "preview_image_file": "content/banner-final-intake/submissions/ankh_pennon/review/review_sheet.png"
   },
   "provenance": {
-    "original_art": false,
-    "creator": "",
+    "original_art": true,
+    "creator": "Seggellion",
     "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium_wall.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the selection.",
     "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
-    "distribution_permission_confirmed": false,
-    "copied_from_reference_art": null
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
   },
   "manual_verification": {
     "performed": false,
     "tester": "",
     "date": "",
-    "notes": "Not performed. Review artifacts are prepared, but Gate E must wait until the intake is approved and integrated."
+    "notes": "Product-owner intake approval was supplied on 2026-07-30. Post-integration live Gate E review has not yet been performed."
   },
   "requested_content_status": "in_progress"
 }

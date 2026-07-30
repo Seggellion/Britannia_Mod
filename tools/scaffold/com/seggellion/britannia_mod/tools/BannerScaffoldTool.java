@@ -381,6 +381,8 @@ public final class BannerScaffoldTool {
                 utf8(json(extraSmallProfile())));
         output.put(DATA_ROOT + "placement_profiles/small.json",
                 utf8(json(smallProfile())));
+        output.put(DATA_ROOT + "placement_profiles/medium_parallel.json",
+                utf8(json(mediumParallelProfile())));
         output.put(DATA_ROOT + "placement_profiles/medium_perpendicular.json",
                 utf8(json(mediumPerpendicularProfile())));
 
@@ -417,6 +419,8 @@ public final class BannerScaffoldTool {
                     .contains(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_parallel");
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
+            } else if ("britannia_mod:medium_parallel".equals(banner.placementProfile)) {
+                geometries.add("britannia_mod:banner/mount/wall_parallel");
             } else if ("britannia_mod:medium_perpendicular".equals(banner.placementProfile)) {
                 geometries.add("britannia_mod:banner/mount/wall_perpendicular");
             }
@@ -584,6 +588,23 @@ public final class BannerScaffoldTool {
         root.add("orientation_mount_geometry", mounts);
         return root;
     }
+
+    private static JsonObject mediumParallelProfile() {
+        JsonObject root = new JsonObject();
+        root.addProperty("schema_version", 1);
+        root.addProperty("id", "britannia_mod:medium_parallel");
+        JsonObject dimensions = new JsonObject();
+        dimensions.addProperty("width_blocks", 1);
+        dimensions.addProperty("height_blocks", 2);
+        dimensions.addProperty("provisional", false);
+        root.add("dimensions", dimensions);
+        root.addProperty("requires_wall_support", true);
+        JsonObject mounts = new JsonObject();
+        mounts.addProperty("wall_parallel", "britannia_mod:banner/mount/wall_parallel");
+        root.add("orientation_mount_geometry", mounts);
+        return root;
+    }
+
     private static JsonObject wallMountModel(String orientation) {
         JsonObject root = new JsonObject();
         root.addProperty("credit", "Shared small-family " + orientation
@@ -702,8 +723,8 @@ public final class BannerScaffoldTool {
         require(result.snapshot().fabricMaterials().activeCount() == 1, "Cotton material did not become active");
         require(result.snapshot().materialPalettes().activeCount() == 1, "Cotton palette did not become active");
         require(result.snapshot().mounts().activeCount() == 2, "Brass and iron mounts did not become active");
-        require(result.snapshot().placementProfiles().activeCount() == 8,
-                "Eight placement profiles did not become active");
+        require(result.snapshot().placementProfiles().activeCount() == 9,
+                "Nine placement profiles did not become active");
         require(result.snapshot().pigments().activeCount() == 0, "Natural scaffold must not require pigments");
         return result;
     }
@@ -1071,7 +1092,7 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all six authoritative hashes\n")
                 .append("- Runtime `content_status`: `complete`\n")
                 .append("- Gate E evidence: `content/banner-final-intake/SMALL_FAMILY_GATE_E_REVIEW.md`\n\n")
-                .append("## Parallel Medium draft preparation\n\n")
+                .append("## Parallel Medium integration\n\n")
                 .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai`\n")
                 .append("- Source SHA-256: `a6a75becd1793dac7a5b36361c0a33d615846ac4e97502deff794ef5ac337fac`\n")
                 .append("- Authoritative family: `verdant_grape_pennon`, `silver_rosette_pennon`, ")
@@ -1079,17 +1100,16 @@ public final class BannerScaffoldTool {
                 .append("at catalogue indices 7 through 12\n")
                 .append("- Provisional `medium_wall_01` through `medium_wall_05` were replaced without ")
                 .append("renumbering; saved-state decode aliases map them to the canonical source names\n")
-                .append("- Six aligned 128 x 128 RGBA base/mask pairs and five proposed geometry groups are ")
-                .append("prepared outside runtime resources\n")
-                .append("- Proposed dimensions: 1 x 2; proposed orientation: `wall_parallel` only; proposed ")
-                .append("profile: `britannia_mod:medium_parallel`\n")
-                .append("- Proposed mount geometry: shared `britannia_mod:banner/mount/wall_parallel`; ")
+                .append("- Product-owner approval, creator, original-art status, and distribution permission: ")
+                .append("Seggellion, 2026-07-30\n")
+                .append("- Six aligned 128 x 128 RGBA base/mask pairs and five approved geometry groups are ")
+                .append("integrated as runtime resources\n")
+                .append("- Approved dimensions: 1 x 2; orientation: `wall_parallel` only; placement profile: ")
+                .append("`britannia_mod:medium_parallel`\n")
+                .append("- Mount geometry: shared `britannia_mod:banner/mount/wall_parallel`; ")
                 .append("brass/iron remain separate untinted materials\n")
-                .append("- Intake validation: six `NOT_READY`, zero `INVALID`; approval identity/date, creator ")
-                .append("attestation, distribution permission, dimension approval, geometry approval, and manual ")
-                .append("review remain missing\n")
-                .append("- Runtime remains placeholder: no draft artwork, geometry, or profile is integrated; ")
-                .append("Gate E is not performed\n\n")
+                .append("- Intake validation: six `READY_FOR_INTEGRATION`; runtime `content_status`: `in_progress`\n")
+                .append("- Post-integration live Gate E review remains pending\n\n")
                 .append("## Perpendicular medium integration\n\n")
                 .append("- Authoritative source: `C:/projects/britannia/raw fiels/tabbard/banner_medium.ai`\n")
                 .append("- Source SHA-256: `5a219e6e276884e6b7173ec5c6608c8a85b53dcbdeb768b0f2c19ead0423d34d`\n")
@@ -1106,8 +1126,8 @@ public final class BannerScaffoldTool {
                 .append("- Manual review: Gate E PASS for all eight authoritative hashes\n")
                 .append("- Runtime `content_status`: `complete`\n")
                 .append("- Gate E evidence: `content/banner-final-intake/MEDIUM_FAMILY_GATE_E_REVIEW.md`\n")
-                .append("- Parallel `medium-wall` runtime content remains placeholder; perpendicular assets, ")
-                .append("geometry, profile, and Gate E evidence are unchanged\n\n")
+                .append("- Parallel `medium-wall` integration does not alter perpendicular assets, geometry, ")
+                .append("profile, or Gate E evidence\n\n")
                 .append("## Gate D automated placement baseline\n\n")
                 .append("All ").append(total)
                 .append(" active definitions pass automated coverage for their supported orientations and brass/iron ")
