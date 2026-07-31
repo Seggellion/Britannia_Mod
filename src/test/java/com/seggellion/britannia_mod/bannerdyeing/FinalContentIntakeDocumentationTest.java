@@ -65,6 +65,13 @@ class FinalContentIntakeDocumentationTest {
             "britannia_mod:serpent_guard",
             "britannia_mod:crossroad_guard",
             "britannia_mod:argent_shield");
+    private static final List<String> CANONICAL_LARGE_IDS = List.of(
+            "britannia_mod:tournament_curtain",
+            "britannia_mod:threefold_chain_standard",
+            "britannia_mod:iron_serpent_standard",
+            "britannia_mod:silver_fleur_curtain",
+            "britannia_mod:gilded_trellis_curtain",
+            "britannia_mod:gilded_chevron_curtain");
     private static final List<String> LARGE_IDS = List.of(
             "britannia_mod:large_01",
             "britannia_mod:large_02",
@@ -313,28 +320,27 @@ class FinalContentIntakeDocumentationTest {
     }
 
     @Test
-    void productionCatalogueKeepsApprovedExtraSmallSmallAndMediumComplete() throws Exception {
+    void productionCatalogueKeepsAllApprovedFamiliesComplete() throws Exception {
         BannerScaffoldTool.Manifest manifest =
                 BannerScaffoldTool.readAndValidateManifest(Path.of(BannerScaffoldTool.MANIFEST_PATH));
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, manifest.banners().size());
         assertEquals("placeholder", manifest.defaults().contentStatus());
-        assertEquals(java.util.stream.Stream.concat(
-                        PARALLEL_MEDIUM_IDS.stream(),
-                        java.util.stream.Stream.concat(MEDIUM_IDS.stream(),
-                                java.util.stream.Stream.concat(SMALL_IDS.stream(), EXTRA_SMALL_IDS.stream())))
+        assertEquals(java.util.stream.Stream.of(
+                        CANONICAL_LARGE_IDS, PARALLEL_MEDIUM_IDS, MEDIUM_IDS, SMALL_IDS, EXTRA_SMALL_IDS)
+                        .flatMap(List::stream)
                         .map(id -> id.substring("britannia_mod:".length())).toList(),
                 manifest.banners().stream()
                         .filter(banner -> "complete".equals(banner.contentStatus()))
                         .map(BannerScaffoldTool.BannerEntry::id).toList());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(banner -> "in_progress".equals(banner.contentStatus())).count());
         var production = DyeResolverFixtures.productionSnapshot();
         assertEquals(ProductionBannerCatalogue.TARGET_COUNT, production.banners().activeCount());
         assertEquals(0, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.PLACEHOLDER).count());
-        assertEquals(6, production.banners().activeDefinitions().stream()
+        assertEquals(0, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.IN_PROGRESS).count());
-        assertEquals(29, production.banners().activeDefinitions().stream()
+        assertEquals(35, production.banners().activeDefinitions().stream()
                 .filter(definition -> definition.contentStatus() == BannerContentStatus.COMPLETE).count());
     }
 

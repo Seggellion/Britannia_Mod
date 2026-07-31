@@ -2,9 +2,34 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Large integrated; live Gate E review pending
+Milestone: Banner Content closed; all 35 definitions integrated and Gate E approved
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 Banner Content milestone closeout facts
+
+- Seggellion reported every required Parallel Large Gate E check passed on 2026-07-30 against integration commit
+  `598dde33b4f2f322f1ed32c4773b8ab69080eb22`, with no observed exceptions. Product-owner evidence is recorded in
+  `content/banner-final-intake/PARALLEL_LARGE_GATE_E_CLOSEOUT.md`, the completed live-review matrix, and each
+  Large submission directory's hash-bound `GATE_E_REVIEW.md`.
+- The final catalogue contains exactly 35 active, unique, localized definitions: 9 Extra-small, 6 Small, 8
+  perpendicular Medium, 6 parallel Medium, and 6 parallel Large. All 35 are `complete`; none is `placeholder`,
+  `in_progress`, or disabled.
+- Every final banner uses the authoritative two-file `base_texture` plus `dye_mask` contract and an approved geometry.
+  Artwork is 128 x 128 RGBA. Natural rendering leaves the authored base untinted; recolouring adds the resolved-colour
+  tinted grayscale-alpha mask. Brass and iron mount rendering remains separate and untinted.
+- Placement coverage is intentional: Extra-small and Small support both wall orientations, perpendicular Medium
+  supports only `wall_perpendicular`, and parallel Medium and Large support only `wall_parallel`. No Large
+  perpendicular content exists.
+- Provisional identities are inactive. Compatibility decoding preserves `x_small_unnamed_01` to `small_curtain`,
+  `end_01` to `star_standard`, `end_02` to `ship_standard`, `medium_wall_01` through `medium_wall_05` to their
+  canonical parallel Medium IDs, and `large_01` through `large_06` to their canonical Large IDs.
+- Validation passed: 57 focused closeout tests, 661 banner/dyeing tests, and 667 clean full-suite tests, with zero
+  failures, errors, or skips. Scaffold generation is idempotent, scaffold `--check` passes, and the production build
+  passes. The normal/all JARs contain 5,130/5,134 entries respectively, zero duplicate names, and exactly 35 complete
+  definitions with all required assets and no forbidden content.
+- Banner persistence and placed-structure schemas are unchanged. Crafting and pattern content remain absent.
+  No Banner Content intake or identity decision remains open; any later milestone requires separate authorization.
 
 ## 2026-07-30 parallel Large integration facts
 

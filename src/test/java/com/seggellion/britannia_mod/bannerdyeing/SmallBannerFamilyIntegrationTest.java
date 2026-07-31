@@ -87,7 +87,10 @@ class SmallBannerFamilyIntegrationTest {
                 "outer_ward", "ward_of_serpents", "serpent_guard",
                 "crossroad_guard", "argent_shield",
                 "silver_and_gold_pennon", "star_standard", "ship_standard",
-                "pennon_of_silver", "iron_ward", "iron_ward_auxiliary"), complete);
+                "pennon_of_silver", "iron_ward", "iron_ward_auxiliary",
+                "tournament_curtain", "threefold_chain_standard",
+                "iron_serpent_standard", "silver_fleur_curtain",
+                "gilded_trellis_curtain", "gilded_chevron_curtain"), complete);
         assertTrue(complete.contains("small_curtain"));
         assertFalse(manifest.banners().stream().anyMatch(entry -> Set.of(
                 "x_small_unnamed_01", "end_01", "end_02").contains(entry.id())));
@@ -95,7 +98,7 @@ class SmallBannerFamilyIntegrationTest {
                 .filter(entry -> entry.contentStatus() == null
                         || "placeholder".equals(entry.contentStatus()))
                 .count());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus()))
                 .count());
         assertEquals(35, manifest.banners().size());

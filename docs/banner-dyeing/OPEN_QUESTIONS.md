@@ -2,20 +2,18 @@
 
 Date: 2026-07-30
 
-Milestone: parallel Large integrated; live Gate E review required
+Milestone: Banner Content closed; unrelated future decisions retained below
 
-## Parallel Large Gate E remains open
+## Banner Content milestone resolved
 
-Seggellion approved and the repository integrated all six source-named Parallel Large packages on 2026-07-30.
-Approval, provenance, 2 x 2 dimensions, six distinct geometries, the shared `britannia_mod:large_parallel` profile,
-parallel-only placement, brass and iron mounts, stable-ID migration, and decode aliases are resolved. All six
-intakes validate `READY_FOR_INTEGRATION`.
+Seggellion reported every Parallel Large live-review check passed on 2026-07-30 against commit
+`598dde33b4f2f322f1ed32c4773b8ab69080eb22`. All six Large definitions are `complete`, and no Large correction
+remains open. Evidence is in `content/banner-final-intake/PARALLEL_LARGE_GATE_E_CLOSEOUT.md`, the completed matrix
+in `docs/banner-dyeing/PARALLEL_LARGE_LIVE_REVIEW.md`, and each Large submission directory's `GATE_E_REVIEW.md`.
 
-The remaining question is the observed in-client result at the exact integration commit. Run every row in
-`docs/banner-dyeing/PARALLEL_LARGE_LIVE_REVIEW.md` and record product-owner results for natural and dyed artwork,
-preview, placed rendering, all four facings, brass and iron, footprint/anchor behavior, save/load, break/drop,
-pick block, re-placement, reload, and initial/late tracking. Until every row passes, Gate E is unperformed and all
-six definitions remain `in_progress`.
+All five reviewed family groups are complete: nine Extra-small, six Small, eight perpendicular Medium, six parallel
+Medium, and six parallel Large definitions. The final 35-definition catalogue has no placeholder, in-progress,
+disabled, provisional-identity, or content-intake work remaining.
 
 ## Parallel Medium Gate E resolved
 
@@ -23,6 +21,7 @@ Seggellion reported every live-review check passed for all six Parallel Medium d
 commit `c61d8121d6d1224ea5647bedee8f3d13dd7af933`. All six are `complete`; no Parallel Medium correction remains
 open. Evidence is in `content/banner-final-intake/PARALLEL_MEDIUM_GATE_E_REVIEW.md`, the completed runbook, and
 each submission directory's `GATE_E_REVIEW.md`.
+
 ## Perpendicular Medium Gate E resolved
 
 Seggellion reported every live-review check passed for all eight Medium definitions on 2026-07-29 against commit
@@ -47,10 +46,7 @@ Gate E is `PASS`, all nine definitions are `complete`, and no extra-small correc
 records are `content/banner-final-intake/EXTRA_SMALL_GATE_E_REVIEW.md` and each intake directory's
 `GATE_E_REVIEW.md`.
 
-The remaining open content work concerns live Gate E review of the 6 in-progress Large-family definitions. It
-does not reopen the completed Extra-small, Small, or either Medium family.
-
-## Milestone 16A remaining content and review questions
+## Future two-file architecture questions
 
 - Decide the artist guidance for deliberate partial-alpha recolouring, including useful blend ranges and review
   examples.
@@ -107,9 +103,9 @@ creative configured-banner entry, NPC hook, loot table, recipe, pattern, bluepri
 
 ## Milestone 13 Gate D provisional decisions
 
-- Placed rendering uses generated planar placeholder geometry for the five existing footprint families. The mesh is
-  deliberately two-sided, uses a finite 64-block view distance, and samples bounded loaded-cell light. These are
-  implementation defaults pending final visual and performance review, not final art direction.
+- Milestone 13 used generated planar placeholder geometry for the five existing footprint families. The mesh was
+  deliberately two-sided, with a finite 64-block view distance and bounded loaded-cell light. Later content milestones
+  supplied approved per-family geometry; view-distance and lighting tuning remain separate future decisions.
 - Parallel and perpendicular transforms, persisted dimensions, support rules, anchor convention, allowed
   orientations, and allowed mounts remain exactly the Milestone 12 Gate D defaults. A definition/footprint mismatch
   renders the explicit missing-content fallback and never rewrites persisted occupancy.
@@ -118,18 +114,18 @@ creative configured-banner entry, NPC hook, loot table, recipe, pattern, bluepri
   resources remain separate. Server data packs still cannot distribute client models or textures.
 - Automated tests cover all five footprint families, both orientations, all four facings, brass and iron, tint
   separation, dynamic bounds, cache generations, missing content, state update tags/packets, and dedicated-server
-  class isolation. Manual in-game visual verification remains unperformed because the repository still has no safe
-  configured-banner acquisition path and Milestone 13 does not add one.
+  class isolation. This was the Milestone 13 state; later administrative acquisition and family Gate E runs
+  completed the banner visual-review matrix.
 
-Still unresolved at Gate D: final heraldic artwork, final cloth and mount geometry, approved dimensions,
-per-definition orientations and mounts, view-distance/lighting tuning, multiplayer client resource-pack
-distribution, and a gameplay workflow for directly dyeing or swapping mounts on placed banners.
+Banner Content closeout resolved final banner artwork, geometry, dimensions, orientations, and mounts. Still unresolved
+outside content intake: view-distance/lighting tuning, multiplayer client resource-pack distribution, and a gameplay
+workflow for directly dyeing or swapping mounts on placed banners.
 
 ## Milestone 12 Gate D provisional decisions
 
 - Both stable orientations are implemented. Wall-parallel width grows viewer-right and retains top-row wall support;
-  wall-perpendicular width grows outward and uses anchor-only wall support. These are development policies, not final
-  per-definition content approval.
+  wall-perpendicular width grows outward and uses anchor-only wall support. These began as development policies; the
+  final catalogue now approves each definition's supported orientation set.
 - Sneak-use cycles a server-owned per-player orientation preference; ordinary use places with the normalized
   selection. This interaction is provisional until manual usability review.
 - Brass and iron flow end-to-end as mount variants but do not alter occupancy or support. Static placed blocks remain
@@ -137,9 +133,10 @@ distribution, and a gameplay workflow for directly dyeing or swapping mounts on 
 - Client ghosts are explicitly advisory where server-only protection cannot be known. Manual in-game checks were not
   performed in this non-interactive milestone run.
 
-Still unresolved at Gate D: approve or revise final dimensions, each definition's allowed orientations and mounts,
-default mounts, support semantics, selection UX, mount-specific geometry/occupancy, and final placed artwork. The
-generated 33-row automated matrix is evidence of implementation coverage, not content or visual approval.
+Banner Content closeout resolved final dimensions, allowed orientations and mounts, default mounts, geometry, and placed
+artwork. Still unresolved outside content intake: support semantics, orientation-selection UX, and whether later gameplay
+changes ever require different mount occupancy. The current 35-definition matrix and family Gate E evidence approve the
+implemented content behavior.
 
 ## Milestone 11 provisional structure policies
 
@@ -156,8 +153,9 @@ generated 33-row automated matrix is evidence of implementation coverage, not co
 - External block replacement is detected through `onRemove` for ordinary `setBlock` paths. A world-edit tool that
   bypasses normal block callbacks can temporarily leave parts until the deferred chunk integrity pass; no universal
   hook exists for tools that bypass both callbacks and chunk lifecycle.
-- Development placement remains static diagnostic anchor/part block models. No layered placed renderer, placement
-  ghost, orientation selection, recipe, command, or direct placed-banner dyeing was introduced.
+- Milestone 11 placement used static diagnostic anchor/part block models and had no layered placed renderer, ghost,
+  orientation selection, recipe, command, or direct placed-banner dyeing. Later milestones added the approved renderer,
+  ghost, selection, and administrative acquisition while crafting and direct placed-banner dyeing remain absent.
 
 Still unresolved: whether Gate D retains top-row-only support and the no-drop explosion policy, and whether a later
 world-edit compatibility integration should expose an explicit structure-removal API.
@@ -172,11 +170,13 @@ world-edit compatibility integration should expose an explicit structure-removal
 - Milestone 16A supersedes Milestone 9's original image split. The current placeholder uses one complete base and
   one selective grayscale-alpha mask for every material; material-specific banner textures are intentionally not an
   open option.
-- The full in-game rendering matrix remains unperformed until a safe configured-banner acquisition path exists; no
-  recipes, commands, or creative catalogue entries were added solely for rendering QA.
+- At Milestone 9 the full in-game rendering matrix was unperformed because no safe configured-banner acquisition path
+  existed. Later administrative acquisition and all five family Gate E reviews completed the banner content matrix
+  without adding recipes or creative catalogue entries.
 
 Still unresolved: whether future multiplayer releases require an associated client resource-pack distribution
-policy for server-defined banner assets, and whether release art uses distinct authored fabric textures per material.
+policy for server-defined banner assets. Material-specific banner textures are rejected by the authoritative
+two-file architecture and are not an open option.
 
 ## Milestone 8 provisional preview and finite-use decisions
 
@@ -229,41 +229,34 @@ to end. These are provisional development rules, not permanently approved produc
 Still unresolved: whether any of these defaults are final; whether a loaded tub can be emptied or washed; whether
 finite uses will be enabled; final item artwork; and final pigment availability, acquisition, and economy.
 
-## Gate B decisions closed before Milestone 5
+## Gate B identity history (superseded by Banner Content closeout)
 
-Gate B approved the 33-definition identity set and closed the two scaffold-label questions:
-
-- `tournament_medium` remains the stable ID and `Tournament Medium` remains the current canonical scaffold label.
-- `pennon_of_silver` remains the stable ID and `Pennon of Silver` remains the current canonical scaffold label.
-- All 14 unnamed banners remain under their approved provisional stable IDs with visible `Name Required` labels.
-- Stable IDs do not change merely because a display label changes later.
-
-Final display names, dimensions, orientations, mount support, recipes, geometry, and artwork remain unapproved.
-The current source page/row references remain authoritative catalogue references.
+Gate B originally approved a 33-definition identity set, retained 14 provisional names, and closed the
+`tournament_medium` and `pennon_of_silver` label questions. Later owner-approved migrations expanded the authoritative
+catalogue to 35 canonical definitions while preserving catalogue indices and decode compatibility. The final
+Banner Content evidence approves all display names, dimensions, orientations, mounts, geometries, and artwork; no
+provisional identity or content decision remains open.
 
 Milestone 4 established deterministic scaffold paths. Milestone 9 selected vanilla JSON baked models and block-atlas
-PNG textures for the item renderer; Milestone 16A retains that mapping while limiting banner image IDs to complete
-base plus selective mask and keeping mount textures independent. This resolves the placeholder convention only;
-final artwork remains a separate decision.
+PNG textures for the item renderer; Milestone 16A retained that mapping while limiting banner image IDs to complete
+base plus selective mask and keeping mount textures independent. The completed family integrations supplied the final
+artwork and geometry.
 
-## Milestone 3 physical-asset validation boundary
+## Milestone 3 physical-asset validation boundary resolved
 
-Milestone 3 validates every authored geometry, texture, palette, and other logical reference as a namespaced
-`ResourceLocation`. It does not validate physical model or texture existence. Repository evidence does not yet define
-one reliable mapping from the extensionless logical IDs in `BannerAssets` and `MountDefinition` to packaged files:
-the project uses vanilla JSON models, GeckoLib geometry, textures with `.png` suffixes, and a custom geometry loader.
-Choosing one path convention here would reject valid future assets or silently bless the wrong resource type. The
-rendering/content milestone must establish that mapping before physical existence checks can be made authoritative.
-This is an asset convention question only; it does not affect stable definition IDs or snapshot safety.
+Milestone 3 originally validated only logical `ResourceLocation` identities because the packaged-file mapping was not
+yet authoritative. Later rendering and content milestones established it: banner geometry maps to model JSON, base
+and mask identities map to PNG textures, placement profiles map to data JSON, and mount resources remain separate.
+Scaffold checks, family integration tests, and the final JAR audit now validate physical existence. This is no longer
+an open Banner Content question.
 
-## Milestone 2 placement-profile boundary
+## Milestone 2 placement-profile boundary resolved
 
-The specifications establish declared width/height and wall-support requirements, but they do not yet establish
-authoritative occupied-cell offsets, facing transforms, anchor-cell selection, or whether support must exist behind
-every occupied cell. Milestone 2 therefore stores only versioned profile identity, declared dimensions, and
-`requires_wall_support`. Milestone 3 may validate that a definition and referenced profile agree on dimensions, but
-the final occupied-cell saved-data contract remains deferred until the placement design is implemented in Milestones
-10 through 12. No offset or anchor semantics were guessed in this milestone.
+Milestone 2 originally stored only versioned profile identity, declared dimensions, and `requires_wall_support` because
+occupied-cell offsets, facing transforms, anchors, and support rules were not yet authoritative. Milestones 10 through
+12 established the persisted placement contract, and the final content integrations approved the profile, geometry,
+dimensions, orientations, and mounts for every definition. Future changes to support semantics or interaction UX remain
+separate gameplay decisions, not Banner Content blockers.
 
 This register separates facts that the repository can resolve from product decisions that require owner input. A question is blocking only when proceeding would force an incompatible public API, saved-data contract, stable ID, or asset convention.
 
@@ -292,24 +285,23 @@ new `Item.initializeClient` hook or BEWLR was added. The unrelated `OrderShieldI
 
 ## Product decisions requiring owner input
 
-These decisions affect player experience or content approval. The data model can represent all options, so none blocks the next architecture milestone unless noted.
+Banner Content closeout resolved three former questions: every one of the 35 definitions supports brass and iron,
+materials share the definition's authored base rather than selecting material-specific textures, and all final banner
+names, dimensions, orientations, mounts, geometries, and artwork are approved. The unrelated owner decisions still
+open are:
 
 1. Does loading a dye tub consume one dye item, retain it, or partially consume a multi-use dye source?
 2. Are dye tubs unlimited-use in the first release, or do they store a finite use count?
 3. Can a loaded tub be emptied or washed, and does that recover anything?
 4. Is direct dyeing of placed banners in the first release, or must players break, dye, and replace them?
 5. Is mount style fixed when a banner is acquired, or can it be swapped later?
-6. Do all 33 designs support both brass and iron mounts, or does each definition have an approved subset?
-7. Do cotton, wool, linen, and silk use distinct fabric textures in release one, or palette differences only?
-8. Must every dye operation use a confirmation screen, or may repeat dyeing support an expedited interaction?
-9. How are special dyes such as ice dye obtained and priced?
-10. Should nearest-colour matching always choose the closest compatible colour, or reject results beyond an owner-defined threshold?
-11. Is there a natural/bleach operation to restore an undyed material colour?
-12. Approve final banner display names, dimensions, orientations, mounts, and art as content batches reach their
-    review gates; the stable identity set itself is already approved.
-13. Approve or revise the Milestone 5 development palette colours and the final pigment catalogue.
-14. Decide final special-pigment compatibility restrictions and whether rare pigments need additional semantics.
-15. Decide whether authored OKLab remains persisted long term or is migrated to computed-only data.
+6. Must every dye operation use a confirmation screen, or may repeat dyeing support an expedited interaction?
+7. How are special dyes such as ice dye obtained and priced?
+8. Should nearest-colour matching always choose the closest compatible colour, or reject results beyond an owner-defined threshold?
+9. Is there a natural/bleach operation to restore an undyed material colour?
+10. Approve or revise the Milestone 5 development palette colours and the final pigment catalogue.
+11. Decide final special-pigment compatibility restrictions and whether rare pigments need additional semantics.
+12. Decide whether authored OKLab remains persisted long term or is migrated to computed-only data.
 
 ## Deferred non-blocking decisions
 
@@ -318,17 +310,10 @@ These decisions affect player experience or content approval. The data model can
 - Rare dye economy, visual effects, multi-region tinting, washing, dye crafting, and other dyeable textiles are post-release hooks.
 - Milestone 5 development palettes and pigments prove the architecture but are not final art-direction-approved
   content.
-- Whether the first banner data loader supports live resource reload on day one or initially loads validated server data at startup can be decided in the registry milestone without changing stable IDs or item state.
-- A documentation/scaffold implementation language will be selected from tools already accepted by the project when Milestone 4 begins.
 - The Gradle combined `clean build` NeoForm race can be owned by build maintenance; separate `clean` then `build` succeeds and is sufficient for continued feature verification.
 
 ## Blocking decisions
 
-None blocks Milestone 9.
-
-The following become blocking at their stated review gates:
-
-- Before a final content entry is marked complete: approve its final name, dimensions, supported orientations, mounts, and original art.
-- Before release: explicitly approve any catalogue entries that remain provisional/placeholders.
-
-The lack of final names or dimensions is not currently blocking. Exactly 33 entries must still be present; unnamed banners receive stable provisional IDs and a visible `Name Required` status, and provisional names/dimensions are not approved lore.
+No Banner Content decision remains blocking: all 35 entries are canonical, approved, integrated, live-reviewed, and
+complete. Release approval, distribution policy, acquisition/economy, and later gameplay decisions remain separate
+from this closed content milestone.

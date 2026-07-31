@@ -2,13 +2,26 @@
 
 Date prepared: 2026-07-30
 
-Status: READY FOR LIVE REVIEW — INTEGRATED; GATE E UNPERFORMED
+Status: GATE E PASS — PRODUCT-OWNER APPROVED
 
 This runbook covers only the six approved definitions extracted from the authoritative
 `C:/projects/britannia/raw fiels/tabbard/banner_large.ai`. Seggellion approved the prepared packages, provenance,
 distribution, canonical ID migrations, 2 x 2 dimensions, six geometries, and parallel-only placement on
-2026-07-30. The commands below use the integrated canonical IDs. No live check in this document has been performed,
-and no perpendicular Large case belongs here.
+2026-07-30. The commands below use the integrated canonical IDs. Seggellion supplied the completed live-review
+results for the exact integrated commit; no perpendicular Large case belongs here.
+
+## Recorded Gate E evidence
+
+- Reviewer: Seggellion (Product Owner)
+- Review date: 2026-07-30
+- Tested commit: `598dde33b4f2f322f1ed32c4773b8ab69080eb22`
+- Product-owner result: every required Large visual and runtime case passed with no observed exceptions.
+- Overall approval: PASS
+- Evidence source: product-owner report supplied for this closeout; Codex did not directly observe the client.
+- Automated evidence from the integration commit: intake, asset/hash, geometry, renderer, reload, networking, and
+  build checks passed before live review.
+- Closeout validation: executed separately after the supplied evidence was recorded and reported in
+  `docs/banner-dyeing/BANNER_CONTENT_MILESTONE_CLOSEOUT.md`.
 
 ## Reusable parallel Large procedure
 
@@ -34,8 +47,8 @@ and no perpendicular Large case belongs here.
 9. Save/reload, test initial and late client tracking, press F3+T, run `/reload`, break/drop, remove support, pick
    block, and re-place. Stable definition ID, material ID, resolved colour ID, source pigment, mount, parallel
    orientation, and placed structure must survive.
-10. Record `PASS` or `FAIL` in every result cell. Gate E remains unperformed until the product owner reviews the
-    exact integrated hashes and every row passes.
+10. Record `PASS` or `FAIL` in every result cell. Gate E passed after the product owner reviewed the exact integrated
+    hashes and reported that every row passed.
 
 ## Definition-specific commands and expectations
 
@@ -53,13 +66,21 @@ and all four horizontal facings.
 
 ## Definition-specific results
 
-Use `PASS` or `FAIL`; every cell is intentionally blank.
+Every result below is product-owner-supplied evidence for the exact tested commit; all required cases passed.
 
 | Definition | Inventory item | Preview | Placed natural | Placed recoloured | Full footprint/anchor | Parallel only | Brass | Iron | N/S/E/W | Save/reload | Initial/late tracking | Break/drop | Pick block | Re-placement | Resource reload | Data reload | No purple fallback | Overall |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `tournament_curtain` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `threefold_chain_standard` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `iron_serpent_standard` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `silver_fleur_curtain` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `gilded_trellis_curtain` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
-| `gilded_chevron_curtain` | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — | — |
+| `tournament_curtain` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `threefold_chain_standard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `iron_serpent_standard` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `silver_fleur_curtain` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `gilded_trellis_curtain` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+| `gilded_chevron_curtain` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS |
+## Gate E decision
+
+- Reviewer: Seggellion (Product Owner)
+- Review date: 2026-07-30
+- Tested commit: `598dde33b4f2f322f1ed32c4773b8ab69080eb22`
+- Exceptions observed: none
+- Overall approval: PASS
+- Gate E: PASS

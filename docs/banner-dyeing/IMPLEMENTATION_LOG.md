@@ -1,5 +1,40 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-30 - Banner Content milestone final Gate E closeout
+
+- Seggellion supplied product-owner evidence that all required Parallel Large visual and runtime checks passed on
+  2026-07-30 against exact integration commit `598dde33b4f2f322f1ed32c4773b8ab69080eb22`, with no exceptions.
+  The completed runbook, batch closeout, and six per-submission records bind that result to the approved base, mask,
+  and geometry hashes without claiming that Codex directly observed the Minecraft client.
+- Promoted only the six canonical Parallel Large definitions to `complete`. The authoritative and generated totals
+  are now 35 active, 35 complete, 0 placeholder, 0 in progress, and 0 disabled across 9 Extra-small, 6 Small, 8
+  perpendicular Medium, 6 parallel Medium, and 6 parallel Large definitions.
+- The final catalogue audit passed: 35 unique IDs and indices, 35 localization keys, all placement profiles present,
+  105 matching catalogue/intake/runtime base-mask-geometry hashes, 70 valid 128 x 128 8-bit RGBA PNGs, and 35 valid
+  grayscale-alpha mask contracts. No active provisional ID or unsupported Large perpendicular definition remains.
+- The two-file `base_texture` plus `dye_mask` architecture remains authoritative. Natural rendering retains the
+  untinted base, dyed rendering adds only the tinted mask, and brass/iron mounts remain separate and untinted.
+  Runtime production sources contain no fabric-base, static-overlay, optional-overlay, or render-strategy mode;
+  banner recipes and pattern content remain absent. Persistence and placed-structure schemas are unchanged.
+- Consecutive normal scaffold runs produced identical generated state and `--check` passed. Focused closeout coverage
+  passed 57 tests across 6 suites. The banner/dyeing suite passed 661 tests across 62 suites, and the clean full suite
+  passed 667 tests across 63 suites; all results had zero failures, errors, or skips. Standalone `clean` and `build`
+  passed.
+- `Britannia_Mod-0.1.7k.jar` is 23,020,048 bytes, SHA-256
+  `a0175d60fe82b6bbef1ba1c9b3e146ce08f6da86031e05445088d56c4b7576c3`, and has 5,130 entries.
+  `Britannia_Mod-0.1.7k-all.jar` is 23,591,686 bytes, SHA-256
+  `c5ab628c232c7e7655b6953f9af53342fb62522eac56ac1efab51cd1c5552a75`, and has 5,134 entries. Both have zero
+  duplicate names, exactly 35 complete definitions, all final assets/profiles/mounts/index/atlas resources, and no
+  removed asset layers, banner recipes/patterns, intake/review artifacts, or provisional definitions.
+- Validation initially exposed a mechanically omitted Java quote in an aggregate expectation and one stale exact
+  29-ID set; both were corrected before the clean suite. A timed-out Gradle invocation briefly locked its own result
+  file; waiting for that process to exit and rerunning resolved it. The first ad hoc PowerShell audit used a newer JSON
+  option and selected Small Curtain's source geometry hash instead of its explicit runtime hash; the read-only script
+  was corrected, then passed without changing repository content.
+- No artwork, geometry, placement, stable ID, index, dimension, orientation, mount, persistence, crafting, release,
+  push, merge, or Milestone 17 work was performed. The Banner Content milestone is closed; unrelated future product
+  questions remain documented separately.
+
 ## 2026-07-30 - Parallel Large approval and runtime integration
 
 - Seggellion approved all six prepared Parallel Large packages on 2026-07-30 and confirmed that Seggellion created

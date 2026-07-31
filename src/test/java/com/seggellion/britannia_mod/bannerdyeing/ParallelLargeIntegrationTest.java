@@ -95,7 +95,7 @@ class ParallelLargeIntegrationTest {
                 large.stream().map(BannerScaffoldTool.BannerEntry::index).toList());
         assertTrue(large.stream().allMatch(entry -> "source-named".equals(entry.nameStatus())));
         assertTrue(large.stream().allMatch(entry -> Boolean.TRUE.equals(entry.displayNameApproved())));
-        assertTrue(large.stream().allMatch(entry -> "in_progress".equals(entry.contentStatus())));
+        assertTrue(large.stream().allMatch(entry -> "complete".equals(entry.contentStatus())));
         assertTrue(large.stream().allMatch(entry -> entry.widthBlocks() == 2
                 && entry.heightBlocks() == 2
                 && Boolean.FALSE.equals(entry.dimensionsProvisional())));
@@ -103,15 +103,15 @@ class ParallelLargeIntegrationTest {
                 List.of("wall_parallel").equals(entry.supportedOrientations())));
         assertFalse(manifest.banners().stream().anyMatch(entry -> SUPERSEDED.contains(entry.id())));
         assertEquals(35, manifest.banners().size());
-        assertEquals(29, manifest.banners().stream()
+        assertEquals(35, manifest.banners().stream()
                 .filter(entry -> "complete".equals(entry.contentStatus())).count());
-        assertEquals(6, manifest.banners().stream()
+        assertEquals(0, manifest.banners().stream()
                 .filter(entry -> "in_progress".equals(entry.contentStatus())).count());
 
         for (String id : FAMILY) {
             JsonObject definition = json(Path.of(
                     "src/main/resources/data/britannia_mod/banner_definitions", id + ".json"));
-            assertEquals("in_progress", definition.get("content_status").getAsString(), id);
+            assertEquals("complete", definition.get("content_status").getAsString(), id);
             assertEquals("large", definition.get("catalogue_group").getAsString(), id);
             assertEquals(2, definition.getAsJsonObject("dimensions")
                     .get("width_blocks").getAsInt(), id);
