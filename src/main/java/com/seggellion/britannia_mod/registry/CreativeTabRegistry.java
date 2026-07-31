@@ -554,7 +554,14 @@ public class CreativeTabRegistry {
             ItemRegistry.RADISH_SEEDS,
             ItemRegistry.PARSNIP_SEEDS,
             ItemRegistry.YAM_SEEDS,
-            ItemRegistry.RUTABAGA_SEEDS
+            ItemRegistry.RUTABAGA_SEEDS,
+            ItemRegistry.POPPY_SEEDS,
+            ItemRegistry.SNOWDROP_SEEDS,
+            ItemRegistry.LILY_SEEDS,
+            ItemRegistry.FOXGLOVE_SEEDS,
+            ItemRegistry.CAMPION_SEEDS,
+            ItemRegistry.HYACINTH_SEEDS,
+            ItemRegistry.ORFLUER_SEEDS
     );
 
     private static final List<Supplier<? extends Item>> FARMING_PRODUCE = List.of(
@@ -617,7 +624,14 @@ public class CreativeTabRegistry {
             ItemRegistry.RADISH,
             ItemRegistry.PARSNIP,
             ItemRegistry.YAM,
-            ItemRegistry.RUTABAGA
+            ItemRegistry.RUTABAGA,
+            ItemRegistry.POPPY,
+            ItemRegistry.SNOWDROP,
+            ItemRegistry.LILY,
+            ItemRegistry.FOXGLOVE,
+            ItemRegistry.CAMPION,
+            ItemRegistry.HYACINTH,
+            ItemRegistry.ORFLUER
     );
 
     private static ItemStack weightedWoodSample(WeightedWoodType woodType) {

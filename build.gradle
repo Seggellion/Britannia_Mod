@@ -45,6 +45,7 @@ tasks.named('test') {
     useJUnitPlatform()
     def flowerTestRunDir = layout.buildDirectory.dir('test-run')
     workingDir flowerTestRunDir
+    systemProperty 'britannia.projectDir', projectDir.absolutePath
     doFirst {
         flowerTestRunDir.get().asFile.mkdirs()
     }

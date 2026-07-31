@@ -1,0 +1,7 @@
+{
+  "parent": "britannia_mod:block/flowers/shared/multi_plane",
+  "textures": {
+    "flower": "britannia_mod:block/flowers/snowdrop/stage_7_base_texture",
+    "particle": "britannia_mod:block/flowers/snowdrop/stage_7_base_texture"
+  }
+}

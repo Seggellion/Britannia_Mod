@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:poppy",
+    "britannia_mod:snowdrop",
+    "britannia_mod:lily",
+    "britannia_mod:foxglove",
+    "britannia_mod:campion",
+    "britannia_mod:hyacinth",
+    "britannia_mod:orfluer"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "britannia_mod:block/flowers/shared/multi_plane",
+  "textures": {
+    "flower": "britannia_mod:block/flowers/foxglove/stage_2_dye_mask",
+    "particle": "britannia_mod:block/flowers/foxglove/stage_2_base_texture"
+  }
+}

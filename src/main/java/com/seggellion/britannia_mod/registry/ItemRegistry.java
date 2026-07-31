@@ -147,6 +147,10 @@ public class ItemRegistry {
         return ITEMS.register(id, () -> new CropSeedItem(cropId, new Item.Properties()));
     }
 
+    private static DeferredHolder<Item, Item> flowerContentItem(String id) {
+        return ITEMS.register(id, () -> new Item(new Item.Properties()));
+    }
+
     // General Items
     public static final DeferredHolder<Item, Item> GOLD_COIN = ITEMS.register("gold_coin",
             () -> new Item(new Item.Properties().stacksTo(99)));
@@ -543,6 +547,24 @@ public static final DeferredHolder<Item, WateringCanItem> WATERING_CAN = ITEMS.r
 
 public static final DeferredHolder<Item, FarmingHoeItem> FARMING_HOE = ITEMS.register("farming_hoe",
         () -> new FarmingHoeItem(new Item.Properties().stacksTo(1).durability(128)));
+
+// Flower content is deliberately ordinary inventory content in Milestone 3.
+// FlowerRegistry remains the sole authoritative seed-to-species mapping; later
+// interaction work may delegate harvested items to CropSeedExtractor.
+public static final DeferredHolder<Item, Item> POPPY = flowerContentItem("poppy");
+public static final DeferredHolder<Item, Item> POPPY_SEEDS = flowerContentItem("poppy_seeds");
+public static final DeferredHolder<Item, Item> SNOWDROP = flowerContentItem("snowdrop");
+public static final DeferredHolder<Item, Item> SNOWDROP_SEEDS = flowerContentItem("snowdrop_seeds");
+public static final DeferredHolder<Item, Item> LILY = flowerContentItem("lily");
+public static final DeferredHolder<Item, Item> LILY_SEEDS = flowerContentItem("lily_seeds");
+public static final DeferredHolder<Item, Item> FOXGLOVE = flowerContentItem("foxglove");
+public static final DeferredHolder<Item, Item> FOXGLOVE_SEEDS = flowerContentItem("foxglove_seeds");
+public static final DeferredHolder<Item, Item> CAMPION = flowerContentItem("campion");
+public static final DeferredHolder<Item, Item> CAMPION_SEEDS = flowerContentItem("campion_seeds");
+public static final DeferredHolder<Item, Item> HYACINTH = flowerContentItem("hyacinth");
+public static final DeferredHolder<Item, Item> HYACINTH_SEEDS = flowerContentItem("hyacinth_seeds");
+public static final DeferredHolder<Item, Item> ORFLUER = flowerContentItem("orfluer");
+public static final DeferredHolder<Item, Item> ORFLUER_SEEDS = flowerContentItem("orfluer_seeds");
 
     // 2. Grape Seeds (Connects to the Block)
 public static final DeferredHolder<Item, GrapeSeedsItem> GRAPE_SEEDS = ITEMS.register("grape_seeds",

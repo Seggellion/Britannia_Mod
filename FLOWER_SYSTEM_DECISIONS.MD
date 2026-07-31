@@ -115,3 +115,31 @@ Hydration uses the existing discrete `FarmingBlockEntity` scale 0-5. Nutrients u
 ## Remaining owner decisions
 
 None block Milestone 2. Later balancing, final art, and live interaction feedback remain milestone-scoped implementation work rather than unresolved owner-gate decisions.
+
+## Milestone 3 implementation consequences
+
+### M3.1 - Ordinary flower and seed item registrations
+
+- All seven harvested flower items and seven seed items are registered as ordinary `net.minecraft.world.item.Item` instances.
+- `CropSeedItem` was not reused because it represents ordinary crop planting, and `SeedExtractableHealingCropItem` was not reused because it would add unrelated food/healing behavior.
+- `FlowerRegistry` remains the only authoritative seed-to-species mapping. Milestone 3 does not implement `CropSeedExtractor` activation; the future interaction can delegate to that existing service without changing registry IDs.
+
+### M3.2 - Placeholder model and texture structure
+
+- Rendering Option A is represented by 49 base pass models and 49 dye-mask pass models inheriting one shared four-plane cutout geometry parent.
+- Every logical stage uses exactly `stage_<n>_base_texture.png` and `stage_<n>_dye_mask.png`; the particle reference aliases the paired base texture.
+- Every in-world PNG is 128x128. Base and mask share the same full-canvas UV and pixel grid, and their visible alpha is disjoint.
+- Stages 1 and 2 intentionally have transparent dye masks because the placeholder progression has no visible bloom at those stages. Stages 3-7 contain neutral grayscale tint regions.
+- Poppy stage 7 has a distinct reserved placeholder model and texture pair, but no advancement or other gameplay behavior is implemented.
+
+### M3.3 - Deterministic placeholder safety
+
+- `tools/generate_flower_placeholders.py` uses only the Python standard library and creates deterministic PNG/JSON/Markdown output.
+- Its default mode is create-only. `--overwrite-placeholders` verifies current files against `tools/flower_placeholder_hashes.json` before writing, and `--check` performs a non-writing byte-for-byte audit.
+- The generator therefore refuses to overwrite owner replacement artwork that no longer matches the recorded placeholder hash.
+
+### M3.4 - Content grouping and deferred skinning knife
+
+- Flower produce and seeds are appended to the existing Britannia World farming produce/seed groupings without reordering existing entries.
+- `britannia_mod:flowers` and `britannia_mod:flower_seeds` provide grouping tags; neither tag duplicates the authoritative one-seed-to-one-species mapping.
+- The dedicated skinning knife remains deferred. Milestone 3 adds no item, durability, recipe, balance, or Poppy interaction for it.

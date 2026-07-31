@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:poppy_seeds",
+    "britannia_mod:snowdrop_seeds",
+    "britannia_mod:lily_seeds",
+    "britannia_mod:foxglove_seeds",
+    "britannia_mod:campion_seeds",
+    "britannia_mod:hyacinth_seeds",
+    "britannia_mod:orfluer_seeds"
+  ]
+}
