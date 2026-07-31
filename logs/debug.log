@@ -1,0 +1,143 @@
+[30Jul2026 20:57:17.642] [Test worker/DEBUG] [io.netty.util.internal.logging.InternalLoggerFactory/]: Using SLF4J as the default logging framework
+[30Jul2026 20:57:17.660] [Test worker/DEBUG] [io.netty.util.ResourceLeakDetector/]: -Dio.netty.leakDetection.level: simple
+[30Jul2026 20:57:17.661] [Test worker/DEBUG] [io.netty.util.ResourceLeakDetector/]: -Dio.netty.leakDetection.targetRecords: 4
+[30Jul2026 20:57:22.230] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: -Dio.netty.noUnsafe: false
+[30Jul2026 20:57:22.230] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: Java version: 21
+[30Jul2026 20:57:22.231] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: sun.misc.Unsafe.theUnsafe: available
+[30Jul2026 20:57:22.235] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: sun.misc.Unsafe.copyMemory: available
+[30Jul2026 20:57:22.236] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: sun.misc.Unsafe.storeFence: available
+[30Jul2026 20:57:22.237] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: java.nio.Buffer.address: available
+[30Jul2026 20:57:22.238] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: java.nio.Bits.unaligned: available, true
+[30Jul2026 20:57:22.240] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent0/]: java.nio.DirectByteBuffer.<init>(long, {int,long}): unavailable
+[30Jul2026 20:57:22.241] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: sun.misc.Unsafe: available
+[30Jul2026 20:57:22.242] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: maxDirectMemory: 536870912 bytes (maybe)
+[30Jul2026 20:57:22.242] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: -Dio.netty.tmpdir: C:\Users\dusti\AppData\Local\Temp (java.io.tmpdir)
+[30Jul2026 20:57:22.243] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: -Dio.netty.bitMode: 64 (sun.arch.data.model)
+[30Jul2026 20:57:22.244] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: Platform: Windows
+[30Jul2026 20:57:22.245] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: -Dio.netty.maxDirectMemory: -1 bytes
+[30Jul2026 20:57:22.245] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: -Dio.netty.uninitializedArrayAllocationThreshold: -1
+[30Jul2026 20:57:22.246] [Test worker/DEBUG] [io.netty.util.internal.CleanerJava9/]: java.nio.ByteBuffer.cleaner(): available
+[30Jul2026 20:57:22.246] [Test worker/DEBUG] [io.netty.util.internal.PlatformDependent/]: -Dio.netty.noPreferDirect: false
+[30Jul2026 20:57:26.507] [Test worker/DEBUG] [io.netty.buffer.AbstractByteBuf/]: -Dio.netty.buffer.checkAccessible: true
+[30Jul2026 20:57:26.508] [Test worker/DEBUG] [io.netty.buffer.AbstractByteBuf/]: -Dio.netty.buffer.checkBounds: true
+[30Jul2026 20:57:26.510] [Test worker/DEBUG] [io.netty.util.ResourceLeakDetectorFactory/]: Loaded default ResourceLeakDetector: io.netty.util.ResourceLeakDetector@7caed18d
+[30Jul2026 20:57:26.527] [Test worker/WARN] [com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity/]: Ignoring structurally invalid banner block entity state at BlockPos{x=0, y=0, z=0}: Not a map: "not_a_record"
+[30Jul2026 20:57:26.550] [Test worker/WARN] [com.seggellion.britannia_mod.banner.blockentity.BannerBlockEntity/]: Ignoring structurally invalid banner placement at BlockPos{x=0, y=0, z=0}: Unsupported schema_version 999; expected 1
+[30Jul2026 20:57:27.982] [Test worker/DEBUG] [io.netty.util.internal.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.initialSize: 1024
+[30Jul2026 20:57:27.983] [Test worker/DEBUG] [io.netty.util.internal.InternalThreadLocalMap/]: -Dio.netty.threadLocalMap.stringBuilder.maxSize: 4096
+[30Jul2026 20:57:27.993] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.numHeapArenas: 21
+[30Jul2026 20:57:27.994] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.numDirectArenas: 21
+[30Jul2026 20:57:27.994] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.pageSize: 8192
+[30Jul2026 20:57:27.994] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.maxOrder: 9
+[30Jul2026 20:57:27.994] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.chunkSize: 4194304
+[30Jul2026 20:57:27.994] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.smallCacheSize: 256
+[30Jul2026 20:57:27.994] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.normalCacheSize: 64
+[30Jul2026 20:57:27.995] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedBufferCapacity: 32768
+[30Jul2026 20:57:27.995] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimInterval: 8192
+[30Jul2026 20:57:27.995] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.cacheTrimIntervalMillis: 0
+[30Jul2026 20:57:27.995] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.useCacheForAllThreads: false
+[30Jul2026 20:57:27.995] [Test worker/DEBUG] [io.netty.buffer.PooledByteBufAllocator/]: -Dio.netty.allocator.maxCachedByteBuffersPerChunk: 1023
+[30Jul2026 20:57:28.020] [Test worker/DEBUG] [io.netty.buffer.ByteBufUtil/]: -Dio.netty.allocator.type: pooled
+[30Jul2026 20:57:28.020] [Test worker/DEBUG] [io.netty.buffer.ByteBufUtil/]: -Dio.netty.threadLocalDirectBufferSize: 0
+[30Jul2026 20:57:28.020] [Test worker/DEBUG] [io.netty.buffer.ByteBufUtil/]: -Dio.netty.maxThreadLocalCharBufferSize: 16384
+[30Jul2026 20:57:28.031] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:end_02 to britannia_mod:ship_standard
+[30Jul2026 20:57:28.032] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:end_01 to britannia_mod:star_standard
+[30Jul2026 20:57:28.036] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:medium_wall_05 to britannia_mod:ankh_pennon
+[30Jul2026 20:57:28.038] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:medium_wall_04 to britannia_mod:twin_spades_pennon
+[30Jul2026 20:57:28.038] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:medium_wall_03 to britannia_mod:four_seals_pennon
+[30Jul2026 20:57:28.039] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:medium_wall_02 to britannia_mod:silver_rosette_pennon
+[30Jul2026 20:57:28.040] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:medium_wall_01 to britannia_mod:verdant_grape_pennon
+[30Jul2026 20:57:28.040] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:x_small_unnamed_01 to britannia_mod:small_curtain
+[30Jul2026 20:57:28.041] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:large_06 to britannia_mod:gilded_chevron_curtain
+[30Jul2026 20:57:28.041] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:large_05 to britannia_mod:gilded_trellis_curtain
+[30Jul2026 20:57:28.042] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:large_04 to britannia_mod:silver_fleur_curtain
+[30Jul2026 20:57:28.043] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:large_03 to britannia_mod:iron_serpent_standard
+[30Jul2026 20:57:28.045] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:large_02 to britannia_mod:threefold_chain_standard
+[30Jul2026 20:57:28.046] [Test worker/INFO] [com.seggellion.britannia_mod.banner.migration.BannerDefinitionMigrations/]: Canonicalized legacy banner definition ID britannia_mod:large_01 to britannia_mod:tournament_curtain
+[30Jul2026 20:57:55.136] [Test worker/ERROR] [com.seggellion.britannia_mod.dye.preview.DyeApplicationService/]: Unexpected dye application failure player=3e03b61d-e6cb-4ad6-9331-5104457d9a8b session=acfd33db-9b90-4e44-ae1d-ba050a787c07 pigment=britannia_mod:madder_red material=britannia_mod:cotton
+java.lang.IllegalStateException: fixture apply failure
+	at com.seggellion.britannia_mod.bannerdyeing.DyeApplicationServiceTest$1.applyColourUpdate(DyeApplicationServiceTest.java:181) ~[test/:?]
+	at com.seggellion.britannia_mod.dye.preview.DyeApplicationService.apply(DyeApplicationService.java:113) ~[main/:?]
+	at com.seggellion.britannia_mod.bannerdyeing.DyeApplicationServiceTest.apply(DyeApplicationServiceTest.java:249) ~[test/:?]
+	at com.seggellion.britannia_mod.bannerdyeing.DyeApplicationServiceTest.unexpectedApplyFailureRollsBannerBackAndNeverConsumesTub(DyeApplicationServiceTest.java:185) ~[test/:?]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728) ~[junit-platform-commons-1.10.2.jar:1.10.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.10.2.jar:5.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[?:?]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[?:?]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198) ~[junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169) ~[junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93) ~[junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141) [junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57) [junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) [junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) [junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) [junit-platform-launcher-1.10.2.jar:1.10.2]
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.processAllTestClasses(JUnitPlatformTestClassProcessor.java:124) [gradle-testing-junit-platform-8.9.jar:8.9]
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor$CollectAllTestClassesExecutor.access$000(JUnitPlatformTestClassProcessor.java:99) [gradle-testing-junit-platform-8.9.jar:8.9]
+	at org.gradle.api.internal.tasks.testing.junitplatform.JUnitPlatformTestClassProcessor.stop(JUnitPlatformTestClassProcessor.java:94) [gradle-testing-junit-platform-8.9.jar:8.9]
+	at org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.stop(SuiteTestClassProcessor.java:63) [gradle-testing-base-infrastructure-8.9.jar:8.9]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?]
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36) [gradle-messaging-8.9.jar:8.9]
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24) [gradle-messaging-8.9.jar:8.9]
+	at org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33) [gradle-messaging-8.9.jar:8.9]
+	at org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92) [gradle-messaging-8.9.jar:8.9]
+	at jdk.proxy1/jdk.proxy1.$Proxy4.stop(Unknown Source) [?:?]
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker$3.run(TestWorker.java:198) [gradle-testing-base-infrastructure-8.9.jar:8.9]
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:130) [gradle-testing-base-infrastructure-8.9.jar:8.9]
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:101) [gradle-testing-base-infrastructure-8.9.jar:8.9]
+	at org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:61) [gradle-testing-base-infrastructure-8.9.jar:8.9]
+	at org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56) [gradle-worker-main-8.9.jar:8.9]
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122) [gradle-worker-main-8.9.jar:8.9]
+	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:69) [gradle-worker-main-8.9.jar:8.9]
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69) [gradle-worker.jar:?]
+	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74) [gradle-worker.jar:?]
