@@ -2,9 +2,24 @@
 
 Date: 2026-07-30
 
-Milestone: 17A release hardening complete; ready for Gate F product-owner review (not PASS)
+Milestone: 17C Gate F product-owner approval complete; Gate F PASS; release not performed
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 Milestone 17C Gate F approval facts
+
+- The completed banner and dye-tub feature passed Gate F against release-candidate commit
+  `4cd7aec6babc2fb856244238d74d5fcf393d3c4d` and the recorded normal/all-JAR hashes.
+- The normal JAR SHA-256 is
+  `7CD283BCC929A645D2E5A08B3B9DF520E23FF7873BE5650000BFAA1F15F66539`; the all-JAR SHA-256 is
+  `AA4DB58AAB9C59CE97BF3ABD395C03A1BF7379A549EDA1A55AE574572113F5D8`.
+- Product-owner evidence records a completed dedicated-server and two-client matrix with every required server,
+  concurrency, synchronization, lifecycle, reload/restart, visual, diagnostics, and performance-smoke check passed.
+- The product owner confirmed distribution rights for all included banner assets.
+- Known limitations were reviewed and accepted. Overall product-owner approval is `APPROVED`, and release blockers
+  are `NONE`.
+- Gate F approval is a governance decision only: the branch has not been merged, pushed, tagged, versioned,
+  published, or released.
 
 ## 2026-07-30 Milestone 17A release facts
 

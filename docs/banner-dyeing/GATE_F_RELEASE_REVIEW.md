@@ -4,13 +4,20 @@ Prepared: 2026-07-30
 
 Branch: `banners-dyetub`
 
-Baseline HEAD: `527066efdeafe87b3553e013e79d7f6a3f5b3d33`
+Candidate commit: `4cd7aec6babc2fb856244238d74d5fcf393d3c4d`
 
-Status: **READY FOR PRODUCT-OWNER REVIEW — NOT GATE F PASS**
+Status: **PASS**
 
-Only the product owner may record Gate F PASS. Automation may advance this record to **READY FOR PRODUCT-OWNER
-REVIEW** after every technical gate succeeds. The required two-client dedicated-server matrix and final live visual
-review have not been performed for this release candidate.
+Gate F technical validation: **PASS**
+
+Product-owner Gate F approval: **APPROVED**
+
+Release performed: **NO**
+
+The product owner completed the required dedicated-server, two-client concurrency, synchronization, lifecycle,
+reload/restart, representative visual, diagnostics, and qualitative performance review on 2026-07-30 against the
+exact candidate commit and JAR hashes recorded below. The complete approval matrix is preserved in
+`GATE_F_LIVE_EVIDENCE.md`.
 
 ## Locked release inventory
 
@@ -126,14 +133,23 @@ Candidate artifacts (not published):
 
 The product version remains `0.1.7k`; this milestone did not change or publish it.
 
-## Manual product-owner Gate F matrix
+## Product-owner Gate F result
 
-Required and currently **NOT PERFORMED** for this candidate:
+- Reviewer: Product Owner
+- Review date: 2026-07-30
+- Exact candidate commit tested: PASS
+- Exact normal and all-JAR hashes verified: PASS
+- Dedicated-server ready state and restart: PASS
+- Two-client connection, complete catalogue, late tracking, and reconnect: PASS
+- Concurrent dyeing, stale-preview rejection, and cross-player token isolation: PASS
+- Cross-client rendering and multi-block lifecycle: PASS
+- Reload, representative visual sampling, diagnostics, and qualitative performance smoke: PASS
+- Known limitations reviewed and accepted: PASS
+- Distribution rights for included banner assets confirmed by the product owner
+- Release blockers: NONE
+- Overall product-owner approval: APPROVED
 
-- two clients on a dedicated server: simultaneous different/same pigment, different materials, changed hands,
-  cross-player token attempts, stale confirmation, parallel cancel/apply, and unlimited tubs;
-- natural/dyed item, preview, and placed review across all families and every supported orientation/facing/mount;
-- save/reload, relog/late tracking, F3+T, `/reload`, chunk boundary, support loss, break/drop, pick, and re-placement;
-- product-owner review of the exact candidate commit and artifact hash.
+Gate F decision: **PASS**.
 
-Gate F decision: **READY FOR PRODUCT-OWNER REVIEW — NOT PASS**.
+This approval does not merge the branch, change the version, publish either artifact, create a tag, or perform a
+release.

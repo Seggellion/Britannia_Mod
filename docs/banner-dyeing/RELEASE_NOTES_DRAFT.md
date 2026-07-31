@@ -1,7 +1,7 @@
 # Banner Dyeing Release Notes — Draft
 
-Status: release-candidate notes for product-owner review. This document does not change the project version,
-publish an artifact, create a tag, or declare Gate F PASS.
+Status: Gate F approved release-candidate notes. Gate F passed on 2026-07-30; this document does not change the
+project version, publish an artifact, create a tag, or perform a release.
 
 ## Highlights
 
@@ -25,4 +25,18 @@ publish an artifact, create a tag, or declare Gate F PASS.
 - Schema, reload-cycle, missing-content, colour-evolution, dense-placement, cross-chunk, and dedicated-server
   structural regressions are covered.
 
-Crafting remains product-disabled. Manual two-client dedicated-server Gate F review remains a product-owner action.
+## Gate F approval
+
+- Product-owner dedicated-server and two-client review completed against candidate commit
+  `4cd7aec6babc2fb856244238d74d5fcf393d3c4d`.
+- Normal JAR SHA-256:
+  `7CD283BCC929A645D2E5A08B3B9DF520E23FF7873BE5650000BFAA1F15F66539`.
+- All-JAR SHA-256:
+  `AA4DB58AAB9C59CE97BF3ABD395C03A1BF7379A549EDA1A55AE574572113F5D8`.
+- Dedicated-server readiness, two-client concurrency and synchronization, lifecycle, reload/restart,
+  representative visual sampling, diagnostics, and qualitative performance smoke passed.
+- The product owner confirmed distribution rights for all included banner artwork, textures, masks, geometry, and
+  related supplied assets.
+- Known limitations were accepted, overall approval is `APPROVED`, and release blockers are `NONE`.
+
+Crafting remains product-disabled. No merge, push, tag, version change, publication, or release has been performed.

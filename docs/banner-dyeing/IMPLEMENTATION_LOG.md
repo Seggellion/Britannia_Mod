@@ -1,5 +1,31 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-30 - Milestone 17C Gate F final approval and evidence closeout
+
+- The Product Owner completed and approved the full dedicated-server and two-client Gate F matrix on 2026-07-30
+  against release-candidate commit `4cd7aec6babc2fb856244238d74d5fcf393d3c4d`.
+- The reviewed normal JAR SHA-256 is
+  `7CD283BCC929A645D2E5A08B3B9DF520E23FF7873BE5650000BFAA1F15F66539`; the reviewed all-JAR SHA-256 is
+  `AA4DB58AAB9C59CE97BF3ABD395C03A1BF7379A549EDA1A55AE574572113F5D8`.
+- Dedicated-server readiness, 35/35 catalogue publication, two-client connection and late tracking, all concurrency
+  cases, stale-preview and cross-player token protection, cross-client rendering, lifecycle, reload/restart,
+  representative visual sampling, diagnostics, and qualitative performance smoke all passed.
+- The Product Owner confirmed the project has the necessary distribution rights for all included banner artwork,
+  base textures, dye masks, geometry, and related supplied assets.
+- Known limitations were reviewed and accepted. Gate F has no release blocker and is recorded as `PASS`; overall
+  product-owner approval is `APPROVED`.
+- Closeout regression validation passed: scaffold check reported 35 manifest/definition/active entries and no
+  disabled or provisional content; 689 focused tests in 70 suites and 695 clean full-suite tests in 71 suites passed
+  with zero failures, errors, or skips; standalone clean and production build passed.
+- The clean rebuild preserved both reviewed artifact sizes and entry counts and passed the complete runtime-content
+  audit. Its normal/all-JAR byte hashes changed to
+  `0F0D37F35EA01B1C59732773B0322CDC32776E4180B252F69E923417593851FE` and
+  `08960E1E8B5EACDB2AC98A9F0FEE902D84F487A8F308DD0DD64169837C84C00E` because regenerated ZIP metadata includes
+  new entry timestamps. Those rebuilt outputs are not reviewed artifacts and do not replace the approved hashes.
+- This milestone changes evidence and documentation only. It does not change runtime code, content, artwork,
+  geometry, catalogue identity/status, placement, schemas, commands, dyeing, crafting policy, or version.
+- No merge, push, tag, publication, or release was performed.
+
 ## 2026-07-30 - Milestone 17A release hardening and Gate F preparation
 
 - Locked the released 35-definition, four-material/palette, seven-pigment, two-mount, schema-1 contract in
