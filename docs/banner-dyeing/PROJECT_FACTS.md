@@ -2,9 +2,26 @@
 
 Date: 2026-07-30
 
-Milestone: Banner Content closed; all 35 definitions integrated and Gate E approved
+Milestone: 17A release hardening complete; ready for Gate F product-owner review (not PASS)
 
 Feature branch: `banners-dyetub`
+
+## 2026-07-30 Milestone 17A release facts
+
+- Release identity remains 35 active/complete definitions, four materials/palettes, seven pigments, two mounts,
+  70 released 128 x 128 RGBA textures, schema 1, and product-disabled crafting/pattern content.
+- Fourteen historically operator-obtainable provisional IDs have one centralized migration authority. This includes
+  `end_01` to `star_standard` and `end_02` to `ship_standard`; migration preserves material, resolved colour,
+  source pigment, and mount. Prosperity and Guardian Standards have no historical predecessor.
+- Saved resolved-colour identity is authoritative. A missing colour is repairable only from a still-active saved
+  source pigment; the system does not guess a natural colour when provenance is absent or unavailable.
+- Registry/client publication is atomic. Caches, diagnostics, packet strings/counts/bytes, and preview replay
+  tombstones have explicit bounds documented in `COMPATIBILITY.md`.
+- Final full/clean verification is 695 tests in 71 suites with no failures/errors/skips. Scaffold generation/check,
+  production build, JAR audit, and dedicated-server construction/banner reload passed. The GameTest runner contains
+  no project test functions, so live server behavior is not inferred from it.
+- Gate F is `READY FOR PRODUCT-OWNER REVIEW`, not PASS. The two-client dedicated-server matrix and exact-candidate
+  product-owner live review remain required.
 
 ## 2026-07-30 Banner Content milestone closeout facts
 

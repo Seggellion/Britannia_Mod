@@ -1,5 +1,36 @@
 # Banner and Dyeing Implementation Log
 
+## 2026-07-30 - Milestone 17A release hardening and Gate F preparation
+
+- Locked the released 35-definition, four-material/palette, seven-pigment, two-mount, schema-1 contract in
+  `content/banner_release_contract.json` and the Gate F inventory. No content identity, index, artwork, gameplay
+  architecture, recipe/pattern policy, or project version changed.
+- Audited operator-obtainable identities from administrative commit
+  `502c79bd5aa4dd8fffec481cc07baa2ebb67c518`. Centralized 14 idempotent decode aliases and added the missing
+  `end_01`/`end_02` migrations. Unknown IDs remain raw; all other stored fields are preserved.
+- Removed unprovable natural-colour repair. Missing colours re-resolve only from an active persisted source pigment;
+  absent/unavailable provenance remains typed invalid state without destructive rewriting.
+- Bounded client missing diagnostics (256), block-entity load diagnostics (1,024), migration logs (64), and terminal
+  preview replay records (4,096). Added 256-character preview-key limits, 64 KiB render-snapshot and 4 KiB preview
+  regression ceilings, and count rejection before decode allocation.
+- Added release-lock, migration, schema, colour-evolution, reload-cycle, diagnostics, payload, multiplayer,
+  dense-placement/cross-chunk, lifecycle, and dedicated-server safety regressions. The 280-banner fixture covered
+  536 occupied cells; measured payloads are 11,619-byte render snapshot, 297-byte preview, and 578-byte largest
+  tested block-entity update tag.
+- `runGameTestServer` exposed `TitleScreenBackgroundMixin` in the common mixin list. Moving it to the client-only
+  list removed the dedicated-server client-class probe. The rerun constructed the mod and published 35 active,
+  0 disabled, 0 placeholder banner definitions without validation messages, then reported that the repository has
+  no GameTest functions.
+- Scaffold generation/check passed. Focused banner/dye coverage passed 417 tests. The exact final full and clean
+  suites passed 695 tests in 71 suites with zero failures, errors, or skips. Production build and artifact audit
+  passed: 35 definitions, 70/70 released textures, required metadata/index/atlas/classes, and zero banner
+  recipe/pattern entries.
+- Candidate normal JAR SHA-256 is
+  `7CD283BCC929A645D2E5A08B3B9DF520E23FF7873BE5650000BFAA1F15F66539`; all-JAR SHA-256 is
+  `AA4DB58AAB9C59CE97BF3ABD395C03A1BF7379A549EDA1A55AE574572113F5D8`. Neither artifact was published.
+- Technical status is `READY FOR PRODUCT-OWNER REVIEW`, never Gate F PASS. Two-client dedicated-server and final
+  product-owner live review remain explicitly unperformed.
+
 ## 2026-07-30 - Banner Content milestone final Gate E closeout
 
 - Seggellion supplied product-owner evidence that all required Parallel Large visual and runtime checks passed on

@@ -22,10 +22,12 @@ import net.minecraft.resources.ResourceLocation;
 
 /** One-way display metadata synchronized on login and server data-pack reload. */
 public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) implements CustomPacketPayload {
-    private static final int MAX_BANNERS = 4096;
-    private static final int MAX_MATERIALS = 256;
-    private static final int MAX_COLOURS_PER_MATERIAL = 4096;
-    private static final int MAX_MOUNTS = 256;
+    public static final int MAX_BANNERS = 4096;
+    public static final int MAX_MATERIALS = 256;
+    public static final int MAX_COLOURS_PER_MATERIAL = 4096;
+    public static final int MAX_MOUNTS = 256;
+    /** Regression ceiling, comfortably above the measured release snapshot but below a large custom payload. */
+    public static final int MAX_ENCODED_BYTES = 64 * 1024;
     public static final ResourceLocation TYPE_ID = ResourceLocation.fromNamespaceAndPath(
             BritanniaMod.MODID, "banner_render_data");
     public static final Type<S2CBannerRenderDataPayload> TYPE = new Type<>(TYPE_ID);
@@ -37,6 +39,7 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
     }
 
     private static void encode(FriendlyByteBuf buffer, S2CBannerRenderDataPayload payload) {
+        int startIndex = buffer.writerIndex();
         BannerRenderDataSnapshot snapshot = payload.snapshot;
         buffer.writeVarInt(snapshot.banners().size());
         snapshot.orderedBanners().forEach(definition -> {
@@ -78,6 +81,11 @@ public record S2CBannerRenderDataPayload(BannerRenderDataSnapshot snapshot) impl
             buffer.writeResourceLocation(mount.geometry());
             buffer.writeResourceLocation(mount.texture());
         });
+        int encodedBytes = buffer.writerIndex() - startIndex;
+        if (encodedBytes > MAX_ENCODED_BYTES) {
+            throw new IllegalArgumentException("Banner render-data payload exceeds "
+                    + MAX_ENCODED_BYTES + " bytes: " + encodedBytes);
+        }
     }
 
     private static S2CBannerRenderDataPayload decode(FriendlyByteBuf buffer) {

@@ -247,24 +247,25 @@ class BannerItemFactoryAndValidationTest {
     }
 
     @Test
-    void missingColourWithoutSourceUsesNaturalFallback() {
+    void missingColourWithoutSourceRemainsTypedDiagnosticBecauseNaturalStateCannotBeProven() {
         ItemStack stack = stateStack(new BannerInstanceState(1, WARD, COTTON,
                 ResolvedColourId.parse("britannia_mod:cotton_red"), Optional.empty(), BRASS));
+        assertEquals(BannerStateStatus.INVALID,
+                access.validate(stack, withoutCottonRed(production), true).status());
         BannerRepairPlan plan = access.planRepair(stack, withoutCottonRed(production), true);
-        assertEquals(BannerRepairReason.MATERIAL_NATURAL_FALLBACK, plan.reason().orElseThrow());
-        assertFalse(plan.historicalPigmentRetained());
-        assertEquals(ResolvedColourId.parse("britannia_mod:cotton_natural"),
-                plan.replacementState().orElseThrow().resolvedColourId());
+        assertFalse(plan.successful());
+        assertEquals(ResolvedColourId.parse("britannia_mod:cotton_red"),
+                access.read(stack).orElseThrow().resolvedColourId());
     }
 
     @Test
-    void unusableHistoricalPigmentUsesNaturalFallbackAndRetainsProvenance() {
+    void unusableHistoricalPigmentRemainsDiagnosticAndRetainsRawState() {
         ItemStack stack = dyedCotton();
+        BannerInstanceState before = access.read(stack).orElseThrow();
         RegistrySnapshot unavailable = RegistrySnapshotTestFactory.withoutPigment(withoutCottonRed(production), MADDER);
         BannerRepairPlan plan = access.planRepair(stack, unavailable, true);
-        assertEquals(BannerRepairReason.MATERIAL_NATURAL_FALLBACK, plan.reason().orElseThrow());
-        assertTrue(plan.historicalPigmentRetained());
-        assertEquals(Optional.of(MADDER), plan.replacementState().orElseThrow().sourcePigmentId());
+        assertFalse(plan.successful());
+        assertEquals(before, access.read(stack).orElseThrow());
     }
 
     @Test

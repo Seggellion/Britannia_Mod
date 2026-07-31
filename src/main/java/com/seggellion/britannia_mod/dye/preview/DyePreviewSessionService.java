@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.dye.preview;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,10 +15,11 @@ import net.minecraft.world.item.ItemStack;
 /** One-use, player-bound, lazy-cleaned in-memory preview sessions. */
 public final class DyePreviewSessionService {
     public static final long DEFAULT_LIFETIME_MILLIS = 30_000L;
+    public static final int MAX_TERMINAL_SESSIONS = 4096;
     private static final long TOMBSTONE_LIFETIME_MILLIS = 60_000L;
 
     private final Map<UUID, DyePreviewSession> activeByPlayer = new HashMap<>();
-    private final Map<UUID, TerminalSession> terminalBySession = new HashMap<>();
+    private final Map<UUID, TerminalSession> terminalBySession = new LinkedHashMap<>();
     private final LongSupplier clock;
     private final Supplier<UUID> sessionIds;
     private final long lifetimeMillis;
@@ -136,6 +138,11 @@ public final class DyePreviewSessionService {
         return Optional.ofNullable(activeByPlayer.get(playerId));
     }
 
+    public synchronized int terminalCount() {
+        cleanup(clock.getAsLong());
+        return terminalBySession.size();
+    }
+
     public long lifetimeMillis() {
         return lifetimeMillis;
     }
@@ -153,6 +160,13 @@ public final class DyePreviewSessionService {
     }
 
     private void remember(DyePreviewSession session, TerminalReason reason, long now) {
+        while (terminalBySession.size() >= MAX_TERMINAL_SESSIONS) {
+            var oldest = terminalBySession.keySet().iterator();
+            if (oldest.hasNext()) {
+                oldest.next();
+                oldest.remove();
+            }
+        }
         terminalBySession.put(session.sessionId(),
                 new TerminalSession(session.playerId(), reason, now + TOMBSTONE_LIFETIME_MILLIS));
     }

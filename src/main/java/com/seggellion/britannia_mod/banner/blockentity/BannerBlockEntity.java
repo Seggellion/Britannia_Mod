@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
 import com.seggellion.britannia_mod.banner.structure.BannerPlacedStructure;
+import com.seggellion.britannia_mod.bannerdyeing.diagnostics.BoundedDiagnosticTracker;
 import com.seggellion.britannia_mod.bannerdyeing.registry.RegistrySnapshot;
 import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import java.util.Optional;
@@ -25,7 +26,10 @@ import org.slf4j.Logger;
 public final class BannerBlockEntity extends BlockEntity {
     public static final String STATE_TAG = "banner_state";
     public static final String PLACEMENT_TAG = "placed_structure";
+    public static final int MAX_LOAD_DIAGNOSTICS = 1024;
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final BoundedDiagnosticTracker<String> LOAD_DIAGNOSTICS =
+            new BoundedDiagnosticTracker<>(MAX_LOAD_DIAGNOSTICS);
 
     private Optional<BannerInstanceState> bannerState = Optional.empty();
     private Optional<BannerPlacedStructure> placedStructure = Optional.of(BannerPlacedStructure.legacyOneCell());
@@ -157,7 +161,11 @@ public final class BannerBlockEntity extends BlockEntity {
                     registries.createSerializationContext(NbtOps.INSTANCE), encoded);
             decoded.resultOrPartial(message -> {
                 structurallyInvalid = true;
-                LOGGER.warn("Ignoring structurally invalid banner block entity state at {}: {}", worldPosition, message);
+                if (LOAD_DIAGNOSTICS.first("state:" + worldPosition.asLong() + ":" + message)) {
+                    LOGGER.warn(
+                            "Ignoring structurally invalid banner block entity state at {}: {}",
+                            worldPosition, message);
+                }
             }).ifPresent(state -> bannerState = Optional.of(state));
         }
 
@@ -172,7 +180,9 @@ public final class BannerBlockEntity extends BlockEntity {
                 registries.createSerializationContext(NbtOps.INSTANCE), encodedPlacement);
         decodedPlacement.resultOrPartial(message -> {
             structurallyInvalid = true;
-            LOGGER.warn("Ignoring structurally invalid banner placement at {}: {}", worldPosition, message);
+            if (LOAD_DIAGNOSTICS.first("placement:" + worldPosition.asLong() + ":" + message)) {
+                LOGGER.warn("Ignoring structurally invalid banner placement at {}: {}", worldPosition, message);
+            }
         }).ifPresent(structure -> placedStructure = Optional.of(structure));
     }
 

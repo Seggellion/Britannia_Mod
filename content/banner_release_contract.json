@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "banner_definitions": [
+    {"index": 1, "id": "britannia_mod:tournament_curtain"},
+    {"index": 2, "id": "britannia_mod:threefold_chain_standard"},
+    {"index": 3, "id": "britannia_mod:iron_serpent_standard"},
+    {"index": 4, "id": "britannia_mod:silver_fleur_curtain"},
+    {"index": 5, "id": "britannia_mod:gilded_trellis_curtain"},
+    {"index": 6, "id": "britannia_mod:gilded_chevron_curtain"},
+    {"index": 7, "id": "britannia_mod:verdant_grape_pennon"},
+    {"index": 8, "id": "britannia_mod:silver_rosette_pennon"},
+    {"index": 9, "id": "britannia_mod:four_seals_pennon"},
+    {"index": 10, "id": "britannia_mod:twin_spades_pennon"},
+    {"index": 11, "id": "britannia_mod:ankh_pennon"},
+    {"index": 12, "id": "britannia_mod:joined_wards"},
+    {"index": 13, "id": "britannia_mod:tournament_medium"},
+    {"index": 14, "id": "britannia_mod:ceremonial_tournament"},
+    {"index": 15, "id": "britannia_mod:iron_quarter"},
+    {"index": 16, "id": "britannia_mod:outer_ward"},
+    {"index": 17, "id": "britannia_mod:ward_of_serpents"},
+    {"index": 18, "id": "britannia_mod:serpent_guard"},
+    {"index": 19, "id": "britannia_mod:crossroad_guard"},
+    {"index": 20, "id": "britannia_mod:argent_shield"},
+    {"index": 21, "id": "britannia_mod:silver_and_gold_pennon"},
+    {"index": 22, "id": "britannia_mod:star_standard"},
+    {"index": 23, "id": "britannia_mod:ship_standard"},
+    {"index": 24, "id": "britannia_mod:pennon_of_silver"},
+    {"index": 25, "id": "britannia_mod:iron_ward"},
+    {"index": 26, "id": "britannia_mod:iron_ward_auxiliary"},
+    {"index": 27, "id": "britannia_mod:road_guard"},
+    {"index": 28, "id": "britannia_mod:pale_road_guard"},
+    {"index": 29, "id": "britannia_mod:red_crosslets"},
+    {"index": 30, "id": "britannia_mod:captains_red_crosslets"},
+    {"index": 31, "id": "britannia_mod:scarlet_court"},
+    {"index": 32, "id": "britannia_mod:verdant_court"},
+    {"index": 33, "id": "britannia_mod:small_curtain"},
+    {"index": 34, "id": "britannia_mod:prosperity_standard"},
+    {"index": 35, "id": "britannia_mod:guardian_standard"}
+  ],
+  "materials": [
+    {"id": "britannia_mod:cotton", "natural_colour_id": "britannia_mod:cotton_natural", "palette_id": "britannia_mod:cotton"},
+    {"id": "britannia_mod:linen", "natural_colour_id": "britannia_mod:linen_natural", "palette_id": "britannia_mod:linen"},
+    {"id": "britannia_mod:silk", "natural_colour_id": "britannia_mod:silk_natural", "palette_id": "britannia_mod:silk"},
+    {"id": "britannia_mod:wool", "natural_colour_id": "britannia_mod:wool_natural", "palette_id": "britannia_mod:wool"}
+  ],
+  "pigments": [
+    "britannia_mod:chalk_white",
+    "britannia_mod:ice_blue",
+    "britannia_mod:madder_red",
+    "britannia_mod:soot_black",
+    "britannia_mod:verdigris",
+    "britannia_mod:weld_gold",
+    "britannia_mod:woad_blue"
+  ],
+  "mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+  "palettes": [
+    {
+      "id": "britannia_mod:cotton",
+      "material_id": "britannia_mod:cotton",
+      "colours": [
+        {"id": "britannia_mod:cotton_natural", "display_srgb": "#D6CDB7"},
+        {"id": "britannia_mod:cotton_red", "display_srgb": "#B53A42"},
+        {"id": "britannia_mod:cotton_blue", "display_srgb": "#3975A8"},
+        {"id": "britannia_mod:cotton_green", "display_srgb": "#4F7A4A"},
+        {"id": "britannia_mod:cotton_gold", "display_srgb": "#D09A2D"},
+        {"id": "britannia_mod:cotton_charcoal", "display_srgb": "#2F3034"},
+        {"id": "britannia_mod:cotton_ivory", "display_srgb": "#F1EBDD"},
+        {"id": "britannia_mod:cotton_taupe", "display_srgb": "#897D6C"}
+      ],
+      "pigment_overrides": {"britannia_mod:madder_red": "britannia_mod:cotton_red"}
+    },
+    {
+      "id": "britannia_mod:linen",
+      "material_id": "britannia_mod:linen",
+      "colours": [
+        {"id": "britannia_mod:linen_natural", "display_srgb": "#D8CCAE"},
+        {"id": "britannia_mod:linen_madder", "display_srgb": "#965B55"},
+        {"id": "britannia_mod:linen_dusty_blue", "display_srgb": "#60788C"},
+        {"id": "britannia_mod:linen_sage", "display_srgb": "#68765A"},
+        {"id": "britannia_mod:linen_ochre", "display_srgb": "#B58E4B"},
+        {"id": "britannia_mod:linen_slate", "display_srgb": "#3F4140"},
+        {"id": "britannia_mod:linen_flax_white", "display_srgb": "#E8DFC8"},
+        {"id": "britannia_mod:linen_taupe", "display_srgb": "#8B806D"}
+      ],
+      "pigment_overrides": {"britannia_mod:madder_red": "britannia_mod:linen_madder"}
+    },
+    {
+      "id": "britannia_mod:silk",
+      "material_id": "britannia_mod:silk",
+      "colours": [
+        {"id": "britannia_mod:silk_natural", "display_srgb": "#E7DCC9"},
+        {"id": "britannia_mod:silk_ruby", "display_srgb": "#C51F4A"},
+        {"id": "britannia_mod:silk_sapphire", "display_srgb": "#2454B8"},
+        {"id": "britannia_mod:silk_emerald", "display_srgb": "#16855B"},
+        {"id": "britannia_mod:silk_gold", "display_srgb": "#E4AA16"},
+        {"id": "britannia_mod:silk_onyx", "display_srgb": "#1B1C28"},
+        {"id": "britannia_mod:silk_pearl", "display_srgb": "#F5F0E8"},
+        {"id": "britannia_mod:silk_amethyst", "display_srgb": "#7B3FB2"},
+        {"id": "britannia_mod:silk_glacial", "display_srgb": "#8ED8E8"}
+      ],
+      "pigment_overrides": {"britannia_mod:madder_red": "britannia_mod:silk_ruby"}
+    },
+    {
+      "id": "britannia_mod:wool",
+      "material_id": "britannia_mod:wool",
+      "colours": [
+        {"id": "britannia_mod:wool_natural", "display_srgb": "#C8B89E"},
+        {"id": "britannia_mod:wool_oxblood", "display_srgb": "#8F3435"},
+        {"id": "britannia_mod:wool_indigo", "display_srgb": "#405B78"},
+        {"id": "britannia_mod:wool_moss", "display_srgb": "#586B3D"},
+        {"id": "britannia_mod:wool_ochre", "display_srgb": "#B8832E"},
+        {"id": "britannia_mod:wool_black", "display_srgb": "#262324"},
+        {"id": "britannia_mod:wool_cream", "display_srgb": "#E4D7BE"},
+        {"id": "britannia_mod:wool_brown", "display_srgb": "#735A43"}
+      ],
+      "pigment_overrides": {"britannia_mod:madder_red": "britannia_mod:wool_oxblood"}
+    }
+  ],
+  "schemas": {
+    "banner_definition": 1,
+    "banner_instance_state": 1,
+    "dye_tub_state": 1,
+    "placed_structure": 1,
+    "client_asset_index": 1,
+    "display_snapshot": "unversioned packet type under protocol 1",
+    "preview_payload": "unversioned packet type under protocol 1"
+  }
+}

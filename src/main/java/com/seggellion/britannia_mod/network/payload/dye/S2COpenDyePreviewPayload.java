@@ -23,6 +23,7 @@ public record S2COpenDyePreviewPayload(
         BannerPreviewRenderState currentRenderState,
         BannerPreviewRenderState proposedRenderState,
         long lifetimeMillis) implements CustomPacketPayload {
+    public static final int MAX_ENCODED_BYTES = 4 * 1024;
     public static final ResourceLocation TYPE_ID = ResourceLocation.fromNamespaceAndPath(
             BritanniaMod.MODID, "open_dye_preview");
     public static final Type<S2COpenDyePreviewPayload> TYPE = new Type<>(TYPE_ID);
@@ -40,16 +41,18 @@ public record S2COpenDyePreviewPayload(
     }
 
     private static void encode(FriendlyByteBuf buffer, S2COpenDyePreviewPayload payload) {
+        int startIndex = buffer.writerIndex();
         DyePreviewDisplayData data = payload.displayData;
         buffer.writeUUID(payload.sessionId);
-        buffer.writeUtf(data.bannerNameKey());
-        buffer.writeUtf(data.materialNameKey());
-        buffer.writeUtf(data.mountNameKey());
-        buffer.writeUtf(data.currentColourNameKey());
+        buffer.writeUtf(data.bannerNameKey(), DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        buffer.writeUtf(data.materialNameKey(), DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        buffer.writeUtf(data.mountNameKey(), DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        buffer.writeUtf(data.currentColourNameKey(), DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
         buffer.writeBoolean(data.currentPigmentNameKey().isPresent());
-        data.currentPigmentNameKey().ifPresent(buffer::writeUtf);
-        buffer.writeUtf(data.tubPigmentNameKey());
-        buffer.writeUtf(data.newColourNameKey());
+        data.currentPigmentNameKey().ifPresent(
+                key -> buffer.writeUtf(key, DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH));
+        buffer.writeUtf(data.tubPigmentNameKey(), DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        buffer.writeUtf(data.newColourNameKey(), DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
         buffer.writeEnum(data.matchType());
         buffer.writeDouble(data.perceptualDistance());
         buffer.writeInt(data.currentSrgb());
@@ -59,17 +62,24 @@ public record S2COpenDyePreviewPayload(
         writeRenderState(buffer, payload.currentRenderState);
         writeRenderState(buffer, payload.proposedRenderState);
         buffer.writeVarLong(payload.lifetimeMillis);
+        int encodedBytes = buffer.writerIndex() - startIndex;
+        if (encodedBytes > MAX_ENCODED_BYTES) {
+            throw new IllegalArgumentException("Dye-preview payload exceeds "
+                    + MAX_ENCODED_BYTES + " bytes: " + encodedBytes);
+        }
     }
 
     private static S2COpenDyePreviewPayload decode(FriendlyByteBuf buffer) {
         UUID sessionId = buffer.readUUID();
-        String banner = buffer.readUtf();
-        String material = buffer.readUtf();
-        String mount = buffer.readUtf();
-        String currentColour = buffer.readUtf();
-        Optional<String> currentPigment = buffer.readBoolean() ? Optional.of(buffer.readUtf()) : Optional.empty();
-        String tubPigment = buffer.readUtf();
-        String newColour = buffer.readUtf();
+        String banner = buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        String material = buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        String mount = buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        String currentColour = buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        Optional<String> currentPigment = buffer.readBoolean()
+                ? Optional.of(buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH))
+                : Optional.empty();
+        String tubPigment = buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
+        String newColour = buffer.readUtf(DyePreviewDisplayData.MAX_TRANSLATION_KEY_LENGTH);
         MatchType matchType = buffer.readEnum(MatchType.class);
         double distance = buffer.readDouble();
         int currentSrgb = buffer.readInt();

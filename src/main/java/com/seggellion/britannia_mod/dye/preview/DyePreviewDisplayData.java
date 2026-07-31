@@ -19,6 +19,8 @@ public record DyePreviewDisplayData(
         int newSrgb,
         boolean placeholder,
         boolean provisionalDimensions) {
+    public static final int MAX_TRANSLATION_KEY_LENGTH = 256;
+
     public DyePreviewDisplayData {
         bannerNameKey = requireKey(bannerNameKey, "bannerNameKey");
         materialNameKey = requireKey(materialNameKey, "materialNameKey");
@@ -38,8 +40,9 @@ public record DyePreviewDisplayData(
 
     private static String requireKey(String value, String name) {
         Objects.requireNonNull(value, name);
-        if (value.isBlank()) {
-            throw new IllegalArgumentException(name + " must not be blank");
+        if (value.isBlank() || value.length() > MAX_TRANSLATION_KEY_LENGTH) {
+            throw new IllegalArgumentException(
+                    name + " must be non-blank and at most " + MAX_TRANSLATION_KEY_LENGTH + " characters");
         }
         return value;
     }

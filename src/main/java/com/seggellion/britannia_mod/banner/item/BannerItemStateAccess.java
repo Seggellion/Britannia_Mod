@@ -81,8 +81,10 @@ public final class BannerItemStateAccess {
         if (palette != null && palette.entries().stream().noneMatch(entry -> entry.id().equals(state.resolvedColourId()))) {
             issues.add(new BannerStateIssue(BannerStateIssueKind.RESOLVED_COLOUR_MISSING,
                     state.resolvedColourId().toString()));
-            issues.add(new BannerStateIssue(BannerStateIssueKind.REPAIRABLE_MISSING_COLOUR,
-                    state.resolvedColourId().toString()));
+            if (state.sourcePigmentId().filter(snapshot.pigments()::contains).isPresent()) {
+                issues.add(new BannerStateIssue(BannerStateIssueKind.REPAIRABLE_MISSING_COLOUR,
+                        state.resolvedColourId().toString()));
+            }
         }
         state.sourcePigmentId().ifPresent(pigmentId -> {
             if (!snapshot.pigments().contains(pigmentId)) {
@@ -104,8 +106,11 @@ public final class BannerItemStateAccess {
         });
         boolean missingColour = issues.stream().anyMatch(issue ->
                 issue.kind() == BannerStateIssueKind.RESOLVED_COLOUR_MISSING);
+        boolean repairableColour = issues.stream().anyMatch(issue ->
+                issue.kind() == BannerStateIssueKind.REPAIRABLE_MISSING_COLOUR);
         BannerStateStatus status = severe ? BannerStateStatus.INVALID
-                : missingColour ? BannerStateStatus.REPAIRABLE
+                : missingColour && repairableColour ? BannerStateStatus.REPAIRABLE
+                : missingColour ? BannerStateStatus.INVALID
                 : issues.isEmpty() ? BannerStateStatus.VALID : BannerStateStatus.VALID_WITH_DIAGNOSTICS;
         return new BannerStateValidation(status, Optional.of(state), issues);
     }
@@ -192,20 +197,14 @@ public final class BannerItemStateAccess {
             }
         }
         if (replacementColour.isEmpty()) {
-            DyeResolutionOutcome natural = dyeResolver.resolveNatural(original.materialId(), snapshot);
-            if (!natural.successful()) {
-                return failedRepair(new BannerStateIssue(BannerStateIssueKind.RESOLVED_COLOUR_MISSING,
-                        original.resolvedColourId().toString()));
-            }
-            replacementColour = Optional.of(natural.result().orElseThrow().resolvedColourId());
-            reason = Optional.of(BannerRepairReason.MATERIAL_NATURAL_FALLBACK);
+            return failedRepair(new BannerStateIssue(BannerStateIssueKind.RESOLVED_COLOUR_MISSING,
+                    original.resolvedColourId().toString()));
         }
         BannerInstanceState replacement = new BannerInstanceState(
                 original.schemaVersion(), original.bannerDefinitionId(), original.materialId(),
                 replacementColour.orElseThrow(), original.sourcePigmentId(), original.mountId());
-        boolean retained = reason.orElseThrow() == BannerRepairReason.MATERIAL_NATURAL_FALLBACK
-                && original.sourcePigmentId().isPresent();
-        return new BannerRepairPlan(Optional.of(original), Optional.of(replacement), reason, retained, Optional.empty());
+        return new BannerRepairPlan(
+                Optional.of(original), Optional.of(replacement), reason, false, Optional.empty());
     }
 
     public boolean applyRepair(ItemStack stack, BannerRepairPlan plan) {

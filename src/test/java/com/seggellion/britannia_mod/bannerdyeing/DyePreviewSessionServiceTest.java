@@ -121,6 +121,38 @@ class DyePreviewSessionServiceTest {
                 naturalBanner(snapshot), plan, snapshot).isEmpty());
     }
 
+    @Test
+    void twoPlayersKeepIndependentAuthorityAndCrossPlayerTokensCannotConsumeEitherSession() {
+        DyePreviewSessionService service = new DyePreviewSessionService();
+        UUID firstPlayer = UUID.randomUUID();
+        UUID secondPlayer = UUID.randomUUID();
+        DyePreviewSession first = create(service, firstPlayer);
+        DyePreviewSession second = create(service, secondPlayer);
+        assertEquals(2, service.activeCount());
+        assertEquals(DyeApplicationResultCode.SESSION_MISMATCH,
+                service.claimForConfirmation(firstPlayer, second.sessionId()).result());
+        assertEquals(DyeApplicationResultCode.SESSION_MISMATCH,
+                service.claimForConfirmation(secondPlayer, first.sessionId()).result());
+        assertEquals(first.sessionId(), service.activeFor(firstPlayer).orElseThrow().sessionId());
+        assertEquals(second.sessionId(), service.activeFor(secondPlayer).orElseThrow().sessionId());
+        assertTrue(service.claimForConfirmation(firstPlayer, first.sessionId()).session().isPresent());
+        assertEquals(DyeApplicationResultCode.CANCELLED,
+                service.cancel(secondPlayer, second.sessionId()));
+        assertEquals(0, service.activeCount());
+    }
+
+    @Test
+    void terminalSessionReplayProtectionIsStrictlyBoundedUnderUniquePlayerLoad() {
+        DyePreviewSessionService service = new DyePreviewSessionService();
+        for (int index = 0; index < DyePreviewSessionService.MAX_TERMINAL_SESSIONS + 128; index++) {
+            UUID player = UUID.randomUUID();
+            DyePreviewSession session = create(service, player);
+            assertEquals(DyeApplicationResultCode.CANCELLED,
+                    service.cancel(player, session.sessionId()));
+        }
+        assertEquals(DyePreviewSessionService.MAX_TERMINAL_SESSIONS, service.terminalCount());
+    }
+
     private static DyePreviewSession create(DyePreviewSessionService service, UUID player) {
         return service.create(player, loadedTub(MADDER, Optional.of(4)), naturalBanner(snapshot), plan, snapshot)
                 .orElseThrow();

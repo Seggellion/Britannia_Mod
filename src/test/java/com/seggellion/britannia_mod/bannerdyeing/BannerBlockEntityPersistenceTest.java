@@ -23,6 +23,7 @@ import com.seggellion.britannia_mod.dye.api.FabricMaterialId;
 import com.seggellion.britannia_mod.dye.api.PigmentId;
 import com.seggellion.britannia_mod.dye.api.ResolvedColourId;
 import java.util.Optional;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -205,6 +206,25 @@ class BannerBlockEntityPersistenceTest {
         assertEquals(dyed.resolvedColourId(), item.stateAccess().read(recovered).orElseThrow().resolvedColourId());
         assertEquals(dyed.sourcePigmentId(), item.stateAccess().read(recovered).orElseThrow().sourcePigmentId());
         assertEquals(dyed.mountId(), item.stateAccess().read(recovered).orElseThrow().mountId());
+    }
+
+    @Test
+    void largestReleasedBlockEntityUpdateTagStaysWithinTheDocumentedFourKibBudget() {
+        BannerBlockEntity entity = entity();
+        BannerPlacedStructure largest = BannerPlacedStructure.fromFootprint(
+                BannerOrientation.WALL_PARALLEL,
+                BannerFootprint.fromDimensions(new BannerDimensions(3, 2, false)).footprint());
+        assertTrue(entity.setPlacedState(dyed, largest));
+        net.minecraft.network.FriendlyByteBuf buffer =
+                new net.minecraft.network.FriendlyByteBuf(Unpooled.buffer());
+        try {
+            buffer.writeNbt(entity.getUpdateTag(RegistryAccess.EMPTY));
+            assertTrue(buffer.readableBytes() <= 4 * 1024,
+                    "block entity update tag bytes=" + buffer.readableBytes());
+            System.out.println("Gate F block entity update tag bytes=" + buffer.readableBytes());
+        } finally {
+            buffer.release();
+        }
     }
 
     private static void assertRoundTrip(BannerInstanceState state) {

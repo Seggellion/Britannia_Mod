@@ -22,7 +22,10 @@ import com.seggellion.britannia_mod.dye.preview.DyePreviewDisplayData;
 import com.seggellion.britannia_mod.dye.service.MatchType;
 import com.seggellion.britannia_mod.network.payload.banner.S2CBannerRenderDataPayload;
 import com.seggellion.britannia_mod.network.payload.dye.C2SConfirmDyeApplicationPayload;
+import com.seggellion.britannia_mod.network.payload.dye.C2SCancelDyePreviewPayload;
+import com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload;
 import com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload;
+import com.seggellion.britannia_mod.dye.preview.DyeApplicationResultCode;
 import io.netty.buffer.Unpooled;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -127,6 +130,58 @@ class BannerRenderDataAndPreviewTest {
         assertArrayEquals(new Class<?>[] {UUID.class}, java.util.Arrays.stream(
                 C2SConfirmDyeApplicationPayload.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getType)
                 .toArray(Class<?>[]::new));
+    }
+
+    @Test
+    void productionPayloadsStayWithinExplicitRegressionBudgets() {
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            S2CBannerRenderDataPayload.STREAM_CODEC.encode(
+                    buffer, new S2CBannerRenderDataPayload(snapshot));
+            int renderDataBytes = buffer.readableBytes();
+            assertTrue(renderDataBytes <= S2CBannerRenderDataPayload.MAX_ENCODED_BYTES);
+            System.out.println("Gate F production render-data payload bytes=" + renderDataBytes);
+
+            buffer.clear();
+            BannerPreviewRenderState current = current();
+            BannerPreviewRenderState proposed = new BannerPreviewRenderState(
+                    current.bannerDefinitionId(), current.materialId(), dyed(),
+                    Optional.of(PigmentId.parse("britannia_mod:madder_red")), current.mountId());
+            S2COpenDyePreviewPayload.STREAM_CODEC.encode(buffer, new S2COpenDyePreviewPayload(
+                    UUID.randomUUID(), display(), current, proposed, 30_000));
+            int previewBytes = buffer.readableBytes();
+            assertTrue(previewBytes <= S2COpenDyePreviewPayload.MAX_ENCODED_BYTES);
+            System.out.println("Gate F preview payload bytes=" + previewBytes);
+
+            UUID token = UUID.randomUUID();
+            buffer.clear();
+            C2SConfirmDyeApplicationPayload.STREAM_CODEC.encode(
+                    buffer, new C2SConfirmDyeApplicationPayload(token));
+            assertEquals(16, buffer.readableBytes());
+            buffer.clear();
+            C2SCancelDyePreviewPayload.STREAM_CODEC.encode(
+                    buffer, new C2SCancelDyePreviewPayload(token));
+            assertEquals(16, buffer.readableBytes());
+            buffer.clear();
+            S2CDyeApplicationResultPayload.STREAM_CODEC.encode(buffer,
+                    new S2CDyeApplicationResultPayload(
+                            token, DyeApplicationResultCode.SUCCESS, true));
+            assertTrue(buffer.readableBytes() <= 18);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    void synchronizedSnapshotRejectsCountsAboveItsProtocolBoundBeforeAllocation() {
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            buffer.writeVarInt(S2CBannerRenderDataPayload.MAX_BANNERS + 1);
+            assertThrows(IllegalArgumentException.class,
+                    () -> S2CBannerRenderDataPayload.STREAM_CODEC.decode(buffer));
+        } finally {
+            buffer.release();
+        }
     }
 
     @Test
