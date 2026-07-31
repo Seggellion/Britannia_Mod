@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.block.TrellisBlock;
+import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.farming.CropDefinition;
 import com.seggellion.britannia_mod.farming.CropEnvironmentRules;
 import com.seggellion.britannia_mod.farming.CropGrowthContext;
@@ -9,6 +10,7 @@ import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.FarmingClimate;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.farming.FlowerSoilSnapshot;
 import com.seggellion.britannia_mod.farming.TallCropSupport;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.skill.SkillManager;
@@ -24,6 +26,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class FarmingBlockEntity extends BlockEntity {
     public static final int MAX_HYDRATION = 5;
@@ -246,6 +250,68 @@ public class FarmingBlockEntity extends BlockEntity {
                 && !hasCrop()
                 && (storedSeedVariety == null || storedSeedVariety.isBlank())
                 && level.getGameTime() >= seedableUntilGameTime;
+    }
+
+    /**
+     * Captures every FarmingBlock/FarmingBlockEntity value before flower
+     * replacement. Export is permitted only for genuinely empty soil.
+     */
+    public FlowerConversionSnapshot exportFlowerConversionSnapshot(BlockState farmingState) {
+        Objects.requireNonNull(farmingState, "Farming blockstate is required for flower conversion");
+        if (!(farmingState.getBlock() instanceof FarmingBlock)) {
+            throw new IllegalArgumentException("Flower conversion snapshot requires an existing FarmingBlock");
+        }
+        if (farmingState.getValue(FarmingBlock.HAS_SEEDS)
+                || hasCrop()
+                || storedSeedVariety != null && !storedSeedVariety.isBlank()) {
+            throw new IllegalStateException("Flower planting requires empty FarmingBlock soil");
+        }
+
+        int fertilizerLevel = farmingState.getValue(FarmingBlock.FERTILIZER);
+        FlowerSoilSnapshot soil = communityPlot
+                ? FlowerSoilSnapshot.communitySoil(
+                        hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                        seedableUntilGameTime
+                )
+                : FlowerSoilSnapshot.privateSoil(
+                        hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter
+                );
+        return new FlowerConversionSnapshot(
+                farmingState,
+                soil,
+                storedSeedVariety == null ? "" : storedSeedVariety,
+                plantedCropId == null ? "" : plantedCropId,
+                growthProgress,
+                growthStage,
+                tickProgress,
+                rootEstablishedGameTime,
+                mature,
+                growthBlocked,
+                communityPlot,
+                seedableUntilGameTime
+        );
+    }
+
+    /** Restores a previously exported snapshot after a failed conversion. */
+    public void restoreFlowerConversionSnapshot(FlowerConversionSnapshot snapshot) {
+        Objects.requireNonNull(snapshot, "Flower conversion rollback snapshot is required");
+        FlowerSoilSnapshot soil = snapshot.soil();
+        this.hydration = soil.hydration();
+        this.nitrogen = soil.nitrogen();
+        this.phosphorus = soil.phosphorus();
+        this.potassium = soil.potassium();
+        this.organicMatter = soil.organicMatter();
+        this.storedSeedVariety = snapshot.storedSeedVariety();
+        this.plantedCropId = snapshot.plantedCropId();
+        this.growthProgress = snapshot.growthProgress();
+        this.growthStage = snapshot.growthStage();
+        this.tickProgress = snapshot.tickProgress();
+        this.rootEstablishedGameTime = snapshot.rootEstablishedGameTime();
+        this.mature = snapshot.mature();
+        this.growthBlocked = snapshot.growthBlocked();
+        this.communityPlot = snapshot.communityPlot();
+        this.seedableUntilGameTime = snapshot.seedableUntilGameTime();
+        setChangedAndSync();
     }
 
     public CropGrowthContext createGrowthContext(Level level, BlockPos pos, CropDefinition crop, @Nullable Player player) {
@@ -546,5 +612,27 @@ public class FarmingBlockEntity extends BlockEntity {
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    public record FlowerConversionSnapshot(
+            BlockState blockState,
+            FlowerSoilSnapshot soil,
+            String storedSeedVariety,
+            String plantedCropId,
+            float growthProgress,
+            int growthStage,
+            int tickProgress,
+            long rootEstablishedGameTime,
+            boolean mature,
+            boolean growthBlocked,
+            boolean communityPlot,
+            long seedableUntilGameTime
+    ) {
+        public FlowerConversionSnapshot {
+            Objects.requireNonNull(blockState, "Rollback blockstate is required");
+            Objects.requireNonNull(soil, "Rollback soil snapshot is required");
+            storedSeedVariety = Objects.requireNonNull(storedSeedVariety, "Rollback seed variety is required");
+            plantedCropId = Objects.requireNonNull(plantedCropId, "Rollback crop ID is required");
+        }
     }
 }

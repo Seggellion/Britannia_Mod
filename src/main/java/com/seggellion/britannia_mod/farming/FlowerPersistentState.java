@@ -1,11 +1,15 @@
 package com.seggellion.britannia_mod.farming;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** NBT-ready identity/state contract for the later FlowerBlockEntity milestone. */
 public record FlowerPersistentState(
@@ -22,6 +26,8 @@ public record FlowerPersistentState(
         FlowerGrowthState growthState
 ) {
     public static final int CURRENT_DATA_VERSION = 1;
+    private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Set<String> REPORTED_LOAD_WARNINGS = ConcurrentHashMap.newKeySet();
 
     public FlowerPersistentState {
         if (dataVersion < 1 || dataVersion > CURRENT_DATA_VERSION) {
@@ -73,6 +79,14 @@ public record FlowerPersistentState(
     }
 
     public CompoundTag toTag() {
+        return toTag(true);
+    }
+
+    public CompoundTag toClientTag() {
+        return toTag(false);
+    }
+
+    private CompoundTag toTag(boolean includePlanterUuid) {
         CompoundTag tag = new CompoundTag();
         tag.putInt("DataVersion", dataVersion);
         tag.putString("SpeciesId", speciesId.toString());
@@ -80,7 +94,9 @@ public record FlowerPersistentState(
         tag.putInt("GrowthStage", growthStage);
         tag.putString("PlantingOrigin", plantingOrigin.name());
         tag.putBoolean("Protected", protectedFlower);
-        planterUuid.ifPresent(uuid -> tag.putUUID("PlanterUuid", uuid));
+        if (includePlanterUuid) {
+            planterUuid.ifPresent(uuid -> tag.putUUID("PlanterUuid", uuid));
+        }
         tag.put("RegionProvenance", regionProvenance.toTag());
         tag.putInt("Quality", quality.value());
         tag.put("Soil", soil.toTag());
@@ -94,33 +110,50 @@ public record FlowerPersistentState(
         requireKey(tag, "SpeciesId");
         requireKey(tag, "ColorTint");
         requireKey(tag, "GrowthStage");
-        requireKey(tag, "PlantingOrigin");
         requireKey(tag, "RegionProvenance");
         requireKey(tag, "Quality");
         requireKey(tag, "Soil");
         requireKey(tag, "GrowthState");
 
         ResourceLocation speciesId = FlowerDefinitionValidator.parseNamespacedId("Saved flower SpeciesId", tag.getString("SpeciesId"));
-        FlowerDefinition definition = registry.byId(speciesId)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown saved flower species: " + speciesId));
-        int stage = tag.getInt("GrowthStage");
-        if (stage > definition.absoluteMaximumStage()) {
-            throw new IllegalArgumentException("Saved flower stage " + stage + " exceeds absolute maximum "
-                    + definition.absoluteMaximumStage() + " for " + speciesId);
+        FlowerDefinition definition = registry.byId(speciesId).orElse(null);
+        if (definition == null) {
+            warnOnce("unknown-species:" + speciesId,
+                    "[flower persistence] Unknown saved flower species {}; preserving the saved identity in a safe missing-species state",
+                    speciesId);
         }
-        FlowerPlantingOrigin origin;
-        try {
-            origin = FlowerPlantingOrigin.valueOf(tag.getString("PlantingOrigin"));
-        } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException("Unknown saved flower planting origin: " + tag.getString("PlantingOrigin"), exception);
+        int savedStage = tag.getInt("GrowthStage");
+        int maximumStage = definition == null ? 7 : definition.absoluteMaximumStage();
+        int stage = Math.max(1, Math.min(maximumStage, savedStage));
+        if (stage != savedStage) {
+            warnOnce("stage:" + speciesId + ":" + savedStage,
+                    "[flower persistence] Clamped saved stage {} to {} for {}",
+                    savedStage, stage, speciesId);
+        }
+        boolean legacyOriginOrProtection = !tag.contains("PlantingOrigin") || !tag.contains("Protected");
+        FlowerPlantingOrigin origin = FlowerPlantingOrigin.PLAYER;
+        boolean protectedFlower = false;
+        if (!legacyOriginOrProtection) {
+            try {
+                origin = FlowerPlantingOrigin.valueOf(tag.getString("PlantingOrigin"));
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalArgumentException("Unknown saved flower planting origin: " + tag.getString("PlantingOrigin"), exception);
+            }
+            protectedFlower = tag.getBoolean("Protected");
+        }
+        FlowerColor color = new FlowerColor(tag.getInt("ColorTint"));
+        if (definition != null && !registry.isAllowedColor(definition, color)) {
+            warnOnce("unknown-color:" + speciesId + ":" + color.tintValue(),
+                    "[flower persistence] Saved tint {} is outside the current palette for {}; preserving it for deterministic fallback rendering",
+                    color.hex(), speciesId);
         }
         return new FlowerPersistentState(
                 tag.getInt("DataVersion"),
                 speciesId,
-                new FlowerColor(tag.getInt("ColorTint")),
+                color,
                 stage,
                 origin,
-                tag.getBoolean("Protected"),
+                protectedFlower,
                 tag.hasUUID("PlanterUuid") ? Optional.of(tag.getUUID("PlanterUuid")) : Optional.empty(),
                 FlowerRegionProvenance.fromTag(tag.getCompound("RegionProvenance")),
                 new FlowerQuality(tag.getInt("Quality")),
@@ -132,6 +165,21 @@ public record FlowerPersistentState(
     private static void requireKey(CompoundTag tag, String key) {
         if (!tag.contains(key)) {
             throw new IllegalArgumentException("Saved flower data is missing required field " + key);
+        }
+    }
+
+    public FlowerColor visualColor(FlowerRegistry registry) {
+        return registry.byId(speciesId)
+                .filter(definition -> registry.isAllowedColor(definition, color))
+                .map(definition -> color)
+                .orElseGet(() -> registry.byId(speciesId)
+                        .map(registry::fallbackColor)
+                        .orElse(new FlowerColor(0xFFFFFF)));
+    }
+
+    private static void warnOnce(String key, String message, Object... arguments) {
+        if (REPORTED_LOAD_WARNINGS.add(key)) {
+            LOGGER.warn(message, arguments);
         }
     }
 }

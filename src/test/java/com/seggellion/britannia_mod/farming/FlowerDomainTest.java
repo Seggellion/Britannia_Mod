@@ -271,8 +271,8 @@ class FlowerDomainTest {
         IllegalArgumentException missing = assertThrows(
                 IllegalArgumentException.class,
                 () -> new FlowerSoilSnapshot(
-                        2, 0.4f, 0.4f, 0.4f, 0.4f,
-                        FlowerSoilOrigin.COMMUNITY_PLOT, Optional.empty()
+                        2, 0, 0.4f, 0.4f, 0.4f, 0.4f,
+                        FlowerSoilOrigin.COMMUNITY_PLOT, Optional.empty(), 0L
                 )
         );
         assertTrue(missing.getMessage().contains("requires restoration metadata"));

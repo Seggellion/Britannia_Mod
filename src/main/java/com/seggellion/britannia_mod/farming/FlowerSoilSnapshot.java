@@ -12,16 +12,21 @@ import java.util.Optional;
  */
 public record FlowerSoilSnapshot(
         int hydration,
+        int fertilizerLevel,
         float nitrogen,
         float phosphorus,
         float potassium,
         float organicMatter,
         FlowerSoilOrigin origin,
-        Optional<FlowerCommunityRestoration> communityRestoration
+        Optional<FlowerCommunityRestoration> communityRestoration,
+        long communitySeedableUntilGameTime
 ) {
     public FlowerSoilSnapshot {
         if (hydration < 0 || hydration > FarmingBlockEntity.MAX_HYDRATION) {
             throw new IllegalArgumentException("Flower soil hydration must use the FarmingBlock scale 0..5: " + hydration);
+        }
+        if (fertilizerLevel < 0 || fertilizerLevel > 2) {
+            throw new IllegalArgumentException("Flower soil fertilizer level must use the FarmingBlock scale 0..2: " + fertilizerLevel);
         }
         requireNormalized("nitrogen", nitrogen);
         requireNormalized("phosphorus", phosphorus);
@@ -35,14 +40,30 @@ public record FlowerSoilSnapshot(
         if (origin == FlowerSoilOrigin.PRIVATE_FARMING_BLOCK && communityRestoration.isPresent()) {
             throw new IllegalArgumentException("Private FarmingBlock soil cannot contain community restoration metadata");
         }
+        if (communitySeedableUntilGameTime < 0L) {
+            throw new IllegalArgumentException("Community seed-window time cannot be negative: " + communitySeedableUntilGameTime);
+        }
+        if (origin == FlowerSoilOrigin.PRIVATE_FARMING_BLOCK && communitySeedableUntilGameTime != 0L) {
+            throw new IllegalArgumentException("Private FarmingBlock soil cannot contain a community seed-window time");
+        }
     }
 
     public static FlowerSoilSnapshot privateSoil(
             int hydration, float nitrogen, float phosphorus, float potassium, float organicMatter
     ) {
         return new FlowerSoilSnapshot(
-                hydration, nitrogen, phosphorus, potassium, organicMatter,
-                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty()
+                hydration, 0, nitrogen, phosphorus, potassium, organicMatter,
+                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L
+        );
+    }
+
+    public static FlowerSoilSnapshot privateSoil(
+            int hydration, int fertilizerLevel,
+            float nitrogen, float phosphorus, float potassium, float organicMatter
+    ) {
+        return new FlowerSoilSnapshot(
+                hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                FlowerSoilOrigin.PRIVATE_FARMING_BLOCK, Optional.empty(), 0L
         );
     }
 
@@ -50,21 +71,37 @@ public record FlowerSoilSnapshot(
             int hydration, float nitrogen, float phosphorus, float potassium, float organicMatter
     ) {
         return new FlowerSoilSnapshot(
-                hydration, nitrogen, phosphorus, potassium, organicMatter,
+                hydration, 0, nitrogen, phosphorus, potassium, organicMatter,
                 FlowerSoilOrigin.COMMUNITY_PLOT,
-                Optional.of(FlowerCommunityRestoration.currentRepositoryState())
+                Optional.of(FlowerCommunityRestoration.currentRepositoryState()),
+                0L
+        );
+    }
+
+    public static FlowerSoilSnapshot communitySoil(
+            int hydration, int fertilizerLevel,
+            float nitrogen, float phosphorus, float potassium, float organicMatter,
+            long communitySeedableUntilGameTime
+    ) {
+        return new FlowerSoilSnapshot(
+                hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                FlowerSoilOrigin.COMMUNITY_PLOT,
+                Optional.of(FlowerCommunityRestoration.currentRepositoryState()),
+                communitySeedableUntilGameTime
         );
     }
 
     public CompoundTag toTag() {
         CompoundTag tag = new CompoundTag();
         tag.putInt("Hydration", hydration);
+        tag.putInt("FertilizerLevel", fertilizerLevel);
         tag.putFloat("Nitrogen", nitrogen);
         tag.putFloat("Phosphorus", phosphorus);
         tag.putFloat("Potassium", potassium);
         tag.putFloat("OrganicMatter", organicMatter);
         tag.putString("Origin", origin.name());
         communityRestoration.ifPresent(restoration -> tag.put("CommunityRestoration", restoration.toTag()));
+        tag.putLong("CommunitySeedableUntilGameTime", communitySeedableUntilGameTime);
         return tag;
     }
 
@@ -80,12 +117,14 @@ public record FlowerSoilSnapshot(
                 : Optional.empty();
         return new FlowerSoilSnapshot(
                 tag.getInt("Hydration"),
+                tag.getInt("FertilizerLevel"),
                 tag.getFloat("Nitrogen"),
                 tag.getFloat("Phosphorus"),
                 tag.getFloat("Potassium"),
                 tag.getFloat("OrganicMatter"),
                 origin,
-                restoration
+                restoration,
+                tag.getLong("CommunitySeedableUntilGameTime")
         );
     }
 

@@ -106,6 +106,7 @@ import com.seggellion.britannia_mod.block.TrashBarrelBlock;
 import com.seggellion.britannia_mod.block.CommunityFarmBlock;
 import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
+import com.seggellion.britannia_mod.block.FlowerBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -213,6 +214,16 @@ public static final DeferredHolder<Block, CommunityHoedFarmBlock> COMMUNITY_HOED
 public static final DeferredHolder<Block, FarmingBlock> FARMING_BLOCK = BLOCKS.register(
             "farming_block",
             () -> new FarmingBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.GRAVEL)
+                    .isViewBlocking((state, level, pos) -> true)
+                    .isSuffocating((state, level, pos) -> true))
+    );
+
+public static final DeferredHolder<Block, FlowerBlock> FLOWER_BLOCK = BLOCKS.register(
+            "flower_block",
+            () -> new FlowerBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.DIRT)
                     .strength(0.6F)
                     .sound(SoundType.GRAVEL)

@@ -143,3 +143,30 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - Flower produce and seeds are appended to the existing Britannia World farming produce/seed groupings without reordering existing entries.
 - `britannia_mod:flowers` and `britannia_mod:flower_seeds` provide grouping tags; neither tag duplicates the authoritative one-seed-to-one-species mapping.
 - The dedicated skinning knife remains deferred. Milestone 3 adds no item, durability, recipe, balance, or Poppy interaction for it.
+
+## Milestone 4 implementation consequences
+
+### M4.1 - One generic persistent flower block
+
+- `britannia_mod:flower_block` and `britannia_mod:flower_block_be` are the sole block and block-entity registrations for all seven species. Species, stage, colour, identity, provenance, quality, growth state, and the soil restoration snapshot live in the block entity rather than multiplying registry entries.
+- The generic block has no block item, random tick, growth handler, harvest interaction, cutback, uproot, protection enforcement, renderer, or client-only class reference in this milestone.
+- Six temporary hydration variants render only the existing farming-soil models. They are an explicit Milestone 4 bridge and do not select flower species/stage models or compete with the Milestone 7 renderer.
+
+### M4.2 - Atomic FarmingBlock conversion
+
+- Flower planting is integrated in `FarmingBlock.useItemOn` after existing care-item handling and before grape/ordinary-crop planting.
+- The held item's registry ID is resolved through `FlowerRegistry`; a tagged but unmapped flower seed is rejected rather than falling through to ordinary crop behavior.
+- All non-random validation completes before the colour selector is invoked exactly once. The service then captures the complete farming soil/block-entity snapshot, builds the complete persistent state, replaces the block, initializes and verifies the flower block entity, synchronizes it, consumes one seed outside Creative, and emits the existing crop-plant sound.
+- Any exception after replacement restores the exact original block state, every farming block-entity field, community restoration metadata/deadline, and held-stack count. Expected invalid inputs return an explicit non-mutating result instead of relying on partial mutation or exception control flow.
+
+### M4.3 - Planting identity, authority, and skill behavior
+
+- Player planting records the player's UUID. Creative mode or server operator permission level 2 records administrative origin and protected state; otherwise origin is player and protection is false. Pre-existing soil preparation ownership does not change flower origin.
+- Planting region name and climate are immutable provenance captured once; future current-climate evaluation remains live world state. Initial authoritative quality is 50, matching the existing crop default.
+- No Farming skill award is granted at flower planting because `FlowerDefinition` has no crop tier or skill modifier from which to derive the existing award formula. Adding a guessed amount would be an unauthorized balance decision. Existing planting sound feedback is reused.
+
+### M4.4 - Persistence, synchronization, and compatibility
+
+- Full server persistence includes data version, species, stage, exact RGB tint, quality, planting origin, protection, optional planter UUID, planting-region provenance, complete growth state, hydration, fertilizer level, N/P/K/organic matter, soil origin, optional community restoration target/prepared state, and the community seedable deadline.
+- Client update tags and packets contain the shared visual/gameplay identity but deliberately omit planter UUID. Multiple observers deserialize the same species, stage, colour, quality, provenance, and soil state without rerunning colour selection.
+- Unknown saved species IDs and RGB values are preserved. Unknown colours receive a deterministic visual fallback without rewriting saved identity; invalid stages clamp deterministically with bounded warnings. Impossible community metadata is rejected rather than silently normalized.

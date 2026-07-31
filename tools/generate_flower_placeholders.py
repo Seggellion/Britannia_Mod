@@ -286,6 +286,7 @@ def build_manifest() -> bytes:
         "",
         "## Shared and supporting resources",
         "",
+        "- Milestone 4 temporary generic-block presentation: `assets/britannia_mod/blockstates/flower_block.json` selects six thin wrapper models, `models/block/flower_block_0.json` through `flower_block_5.json`, which inherit the existing hydration-specific farming-soil models. These files deliberately render soil only; they do not select a species/stage model, apply tint, or compete with the Milestone 7 block-entity renderer. Milestone 7 may retain or replace this soil pass when the flower renderer is registered.",
         f"- Shared geometry parent: `{resource_path(SHARED_PARENT_PATH)}` (generated, four intersecting planes, cutout, no PNG dependency of its own).",
         "- Harvested-item tag: `src/main/resources/data/britannia_mod/tags/items/flowers.json`.",
         "- Seed-item tag: `src/main/resources/data/britannia_mod/tags/items/flower_seeds.json`.",

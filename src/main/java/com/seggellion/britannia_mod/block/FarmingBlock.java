@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.farming.CropSupportRequirement;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.farming.FlowerPlantingService;
 import com.seggellion.britannia_mod.farming.FruitProvenance;
 import com.seggellion.britannia_mod.farming.FruitTreeDefinition;
 import com.seggellion.britannia_mod.farming.FruitTreeRegistry;
@@ -130,6 +131,16 @@ public class FarmingBlock extends Block implements EntityBlock {
         ItemInteractionResult careResult = applyCareItem(level, pos, state, player, hand, stack);
         if (careResult != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
             return careResult;
+        }
+
+        FlowerPlantingService.Outcome flowerPlanting = FlowerPlantingService.tryPlant(
+                level, pos, state, player, stack
+        );
+        if (flowerPlanting == FlowerPlantingService.Outcome.PLANTED) {
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (flowerPlanting == FlowerPlantingService.Outcome.REJECTED) {
+            return ItemInteractionResult.SUCCESS;
         }
 
         // 1. PLANTING SEEDS LOGIC

@@ -93,6 +93,7 @@ Harvested flowers and seeds are ordinary `net.minecraft.world.item.Item` registr
 
 ## Shared and supporting resources
 
+- Milestone 4 temporary generic-block presentation: `assets/britannia_mod/blockstates/flower_block.json` selects six thin wrapper models, `models/block/flower_block_0.json` through `flower_block_5.json`, which inherit the existing hydration-specific farming-soil models. These files deliberately render soil only; they do not select a species/stage model, apply tint, or compete with the Milestone 7 block-entity renderer. Milestone 7 may retain or replace this soil pass when the flower renderer is registered.
 - Shared geometry parent: `src/main/resources/assets/britannia_mod/models/block/flowers/shared/multi_plane.json` (generated, four intersecting planes, cutout, no PNG dependency of its own).
 - Harvested-item tag: `src/main/resources/data/britannia_mod/tags/items/flowers.json`.
 - Seed-item tag: `src/main/resources/data/britannia_mod/tags/items/flower_seeds.json`.
