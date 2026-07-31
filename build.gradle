@@ -37,6 +37,17 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     implementation "io.github.llamalad7:mixinextras-common:0.3.5"
     annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
+    testImplementation platform('org.junit:junit-bom:5.11.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    def flowerTestRunDir = layout.buildDirectory.dir('test-run')
+    workingDir flowerTestRunDir
+    doFirst {
+        flowerTestRunDir.get().asFile.mkdirs()
+    }
 }
 
 runs {

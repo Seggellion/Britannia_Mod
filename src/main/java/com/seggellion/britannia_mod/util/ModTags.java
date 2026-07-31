@@ -26,6 +26,7 @@ public class ModTags {
     public static class Items {
         public static final TagKey<Item> GRAIN_HARVEST_BLADES = createTag("grain_harvest_blades");
         public static final TagKey<Item> ROOT_CROP_SHOVELS = createTag("root_crop_shovels");
+        public static final TagKey<Item> SKINNING_KNIVES = createTag("skinning_knives");
 
         private static TagKey<Item> createTag(String name) {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name));

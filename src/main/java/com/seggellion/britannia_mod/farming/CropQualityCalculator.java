@@ -26,7 +26,7 @@ public final class CropQualityCalculator {
         return Math.max(0.05f, 1.0f - (distance / safeTolerance));
     }
 
-    public static float hydrationFit(float actual, CropDefinition crop) {
+    public static float hydrationFit(float actual, FarmingGrowthProfile crop) {
         float hydration = Math.max(0.0f, Math.min(1.0f, actual));
         if (hydration < crop.minHydrationToGrow()) {
             return 0.0f;
@@ -50,7 +50,7 @@ public final class CropQualityCalculator {
     }
 
     public static float weightedNutrientFit(
-            CropDefinition crop,
+            FarmingGrowthProfile crop,
             float boneMeal,
             float turquoise,
             float sulphurousAsh,
@@ -69,7 +69,7 @@ public final class CropQualityCalculator {
     }
 
     private static float weightedMaximumNutrientFit(
-            CropDefinition crop,
+            FarmingGrowthProfile crop,
             float boneMeal,
             float turquoise,
             float sulphurousAsh,
@@ -84,7 +84,7 @@ public final class CropQualityCalculator {
     }
 
     private static float weightedAverage(
-            CropDefinition crop,
+            FarmingGrowthProfile crop,
             float boneMealFit,
             float turquoiseFit,
             float sulphurousAshFit,
@@ -117,6 +117,14 @@ public final class CropQualityCalculator {
     }
 
     public static int calculateQuality(CropDefinition crop, CropGrowthContext context, Player player, int rootAgeDays) {
+        return calculateQuality(crop, context, rootAgeQualityBonus(crop, rootAgeDays));
+    }
+
+    public static int calculateQuality(FarmingGrowthProfile profile, CropGrowthContext context) {
+        return calculateQuality(profile, context, 0);
+    }
+
+    private static int calculateQuality(FarmingGrowthProfile crop, CropGrowthContext context, int rootAgeQualityBonus) {
         if (!context.climateAllowed() || !context.altitudeAllowed() || !context.specialEnvironmentAllowed()) {
             return 0;
         }
@@ -128,7 +136,7 @@ public final class CropQualityCalculator {
 
         conditionScore = lerp(conditionScore, conditionScore * conditionScore, Math.max(0.0f, crop.qualitySensitivity() - 1.0f));
         int quality = Math.round(conditionScore * 100.0f);
-        quality += rootAgeQualityBonus(crop, rootAgeDays);
+        quality += rootAgeQualityBonus;
 
         if (context.nutrientFit() < 0.40f) {
             quality = Math.min(quality, 5);

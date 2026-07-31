@@ -55,7 +55,7 @@ public record CropDefinition(
         int maxRootAgeQualityBonus,
         CropHarvestTool harvestTool,
         String notes
-) {
+) implements FarmingGrowthProfile {
     public int maxGrowthAge() {
         return Math.max(0, growthStages - 1);
     }
