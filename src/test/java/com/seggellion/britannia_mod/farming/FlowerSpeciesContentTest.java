@@ -181,7 +181,8 @@ class FlowerSpeciesContentTest {
         assertTrue(items.contains("new Item.Properties().durability(128)"));
         assertTrue(creative.contains("safeAccept(output, ItemRegistry.SKINNING_KNIFE.get())"));
         assertEquals("Skinning Knife", language.get("item.britannia_mod.skinning_knife").getAsString());
-        assertEquals(Set.of("britannia_mod:skinning_knife"), tagValues("skinning_knives.json"));
+        assertEquals(Set.of("britannia_mod:skinning_knife"), tagValuesAt(
+                "data/britannia_mod/tags/item/skinning_knives.json"));
         assertItemAsset(id("skinning_knife"));
     }
 
@@ -358,7 +359,11 @@ class FlowerSpeciesContentTest {
     }
 
     private static Set<String> tagValues(String filename) throws IOException {
-        JsonArray values = json(RESOURCES.resolve("data/britannia_mod/tags/items/" + filename)).getAsJsonArray("values");
+        return tagValuesAt("data/britannia_mod/tags/items/" + filename);
+    }
+
+    private static Set<String> tagValuesAt(String relativePath) throws IOException {
+        JsonArray values = json(RESOURCES.resolve(relativePath)).getAsJsonArray("values");
         Set<String> result = new HashSet<>();
         values.forEach(value -> assertTrue(result.add(value.getAsString())));
         return result;

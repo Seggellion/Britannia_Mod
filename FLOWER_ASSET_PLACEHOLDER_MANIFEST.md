@@ -98,7 +98,7 @@ Harvested flowers use `HarvestedFlowerItem` for the established crop-to-seed act
 - Shared geometry parent: `src/main/resources/assets/britannia_mod/models/block/flowers/shared/multi_plane.json` (generated, four intersecting planes, cutout, no PNG dependency of its own).
 - Harvested-item tag: `src/main/resources/data/britannia_mod/tags/items/flowers.json`.
 - Seed-item tag: `src/main/resources/data/britannia_mod/tags/items/flower_seeds.json`.
-- Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/items/skinning_knives.json`.
+- Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/item/skinning_knives.json`.
 - Placeholder hash ledger: `tools/flower_placeholder_hashes.json` (generated safety metadata; it does not include itself).
 - Placeholder generator: `tools/generate_flower_placeholders.py` (handwritten development tooling; not a runtime dependency).
 

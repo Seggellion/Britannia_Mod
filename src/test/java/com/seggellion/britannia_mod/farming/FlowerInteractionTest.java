@@ -134,12 +134,14 @@ class FlowerInteractionTest {
     void toolTagsAndSkinningKnifeRegistrationMatchOwnerPolicy() throws IOException {
         String blades = resource("data/britannia_mod/tags/items/grain_harvest_blades.json");
         String shovels = resource("data/britannia_mod/tags/items/root_crop_shovels.json");
-        String knives = resource("data/britannia_mod/tags/items/skinning_knives.json");
+        String knives = resource("data/britannia_mod/tags/item/skinning_knives.json");
         String items = source("registry/ItemRegistry.java");
         assertTrue(blades.contains("britannia_mod:dagger"));
         assertTrue(blades.contains("minecraft:netherite_sword"));
         assertTrue(shovels.contains("britannia_mod:britannia_shovel"));
         assertTrue(knives.contains("britannia_mod:skinning_knife"));
+        assertFalse(Files.exists(PROJECT.resolve(
+                "src/main/resources/data/britannia_mod/tags/items/skinning_knives.json")));
         assertTrue(items.contains("SKINNING_KNIFE"));
         assertTrue(items.contains("new Item.Properties().durability(128)"));
     }

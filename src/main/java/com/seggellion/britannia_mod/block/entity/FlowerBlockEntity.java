@@ -7,6 +7,7 @@ import com.seggellion.britannia_mod.farming.FlowerDefinition;
 import com.seggellion.britannia_mod.farming.FlowerGrowthEvaluation;
 import com.seggellion.britannia_mod.farming.FlowerGrowthEvaluator;
 import com.seggellion.britannia_mod.farming.FlowerGrowthState;
+import com.seggellion.britannia_mod.farming.FlowerInteractionTransactionGate;
 import com.seggellion.britannia_mod.farming.FlowerPersistentState;
 import com.seggellion.britannia_mod.farming.FlowerRegistry;
 import com.seggellion.britannia_mod.farming.FlowerResetReason;
@@ -35,6 +36,8 @@ public final class FlowerBlockEntity extends BlockEntity {
 
     @Nullable
     private FlowerPersistentState flowerState;
+    private final FlowerInteractionTransactionGate interactionTransactionGate =
+            new FlowerInteractionTransactionGate();
 
     public FlowerBlockEntity(BlockPos pos, BlockState blockState) {
         super(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), pos, blockState);
@@ -125,7 +128,7 @@ public final class FlowerBlockEntity extends BlockEntity {
             return false;
         }
         FlowerPersistentState reset = FlowerGrowthEvaluator.resetToStageOne(flowerState);
-        if (reset.equals(flowerState)) {
+        if (!mayCommitInteraction(reset)) {
             return false;
         }
         flowerState = reset;
@@ -142,7 +145,7 @@ public final class FlowerBlockEntity extends BlockEntity {
         FlowerPersistentState updated = flowerState
                 .withQuality(new FlowerQuality(quality))
                 .withGrowth(1, FlowerGrowthState.newlyPlanted());
-        if (updated.equals(flowerState)) {
+        if (!mayCommitInteraction(updated)) {
             return false;
         }
         flowerState = updated;
@@ -157,7 +160,7 @@ public final class FlowerBlockEntity extends BlockEntity {
             return false;
         }
         FlowerPersistentState updated = flowerState.withSoil(soil);
-        if (updated.equals(flowerState)) {
+        if (!mayCommitInteraction(updated)) {
             return false;
         }
         flowerState = updated;
@@ -177,11 +180,21 @@ public final class FlowerBlockEntity extends BlockEntity {
                 || flowerState.growthStage() != 6) {
             return false;
         }
-        flowerState = flowerState.withGrowth(7, new FlowerGrowthState(
+        FlowerPersistentState updated = flowerState.withGrowth(7, new FlowerGrowthState(
                 1.0f, flowerState.growthState().tickProgress(), false
         ));
+        if (!mayCommitInteraction(updated)) {
+            return false;
+        }
+        flowerState = updated;
         setChangedAndSync();
         return true;
+    }
+
+    private boolean mayCommitInteraction(FlowerPersistentState updated) {
+        return updated != null && flowerState != null && !updated.equals(flowerState)
+                && level != null && !level.isClientSide
+                && interactionTransactionGate.tryCommit(level.getGameTime());
     }
 
     public void setChangedAndSync() {

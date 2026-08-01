@@ -255,6 +255,7 @@ public final class FlowerInteractionService {
             return ItemInteractionResult.sidedSuccess(true);
         }
         if (restoreUnderlyingSoil((ServerLevel) level, pos, flower, persistent)) {
+            FlowerInteractionTransactionGate.markReplacement((ServerLevel) level, pos);
             damageAfterSuccess(player, hand, stack);
             level.playSound(null, pos, SoundEvents.GRAVEL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
         }

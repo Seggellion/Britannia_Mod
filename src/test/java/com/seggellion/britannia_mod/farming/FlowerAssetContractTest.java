@@ -206,7 +206,8 @@ class FlowerAssetContractTest {
         assertEquals(231, files.size());
         assertTrue(files.has("src/main/resources/assets/britannia_mod/models/item/skinning_knife.json"));
         assertTrue(files.has("src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png"));
-        assertTrue(files.has("src/main/resources/data/britannia_mod/tags/items/skinning_knives.json"));
+        assertTrue(files.has("src/main/resources/data/britannia_mod/tags/item/skinning_knives.json"));
+        assertFalse(files.has("src/main/resources/data/britannia_mod/tags/items/skinning_knives.json"));
         for (String relative : files.keySet()) {
             Path path = PROJECT.resolve(relative);
             assertTrue(Files.isRegularFile(path), relative);

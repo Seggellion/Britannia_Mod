@@ -260,3 +260,21 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 ### M8.3 - Deterministic completeness and viability evidence
 
 - `FlowerSpeciesContentTest` is the Milestone 8 audit suite. It locks all seven IDs and item mappings, the 8/4/10/9/6/9/9 palette counts, weights/fallbacks, exact stage/timing/profile mappings, practical positive maturity, slower tolerated climates, blocked unsuitable climates, localization/creative/tag/model/texture coverage, harvest/seed wiring, and absence of unapproved acquisition data.
+
+## Milestone 9 implementation consequences
+
+### M9.1 - Strict contention is a transient single-winner transaction boundary
+
+- Strict two-client raw-input validation established that valid flower mutations which arrive close together must not chain through intermediate states. Each flower block entity therefore accepts one player-driven state mutation in a ten-game-tick contention window. The gate is transient, server-authoritative, absent from NBT/update tags, and excluded from natural growth; later intentional input remains available at the exact window boundary.
+- Harvest, care, cutback, uproot initiation, and Poppy mastery continue to use the existing centralized services and successful-only item/skill effects. The gate changes only which near-simultaneous transaction commits; it does not change any approved output, durability, skill amount, stage rule, protection decision, or save contract.
+- Uproot replaces the flower block entity with the saved soil block, so its losing follow-up packet cannot use the per-entity gate. A separate transient position/dimension guard covers the same ten-tick window after successful restoration and suppresses only interaction at that replaced position.
+
+### M9.2 - Raw event routing follows authoritative runtime identity
+
+- NeoForge 1.21 resolves the built-in skinning-knife membership from the singular `data/britannia_mod/tags/item/skinning_knives.json` path. The inert plural legacy copy was removed from generator ownership, its hash ledger, tests, and resources so there is one authoritative path and no duplicate membership contract. A highest-priority right-click boundary routes tagged knives on flowers into `FlowerInteractionService`, preserving the central policy when the ordinary block-use path is not reached by the raw packet.
+- Adventure cutback uses the server player's actual `GameType.ADVENTURE`, not `abilities.mayBuild`; operator permission can otherwise leave that ability true even while the player is in Adventure mode. Non-server fallback keeps the existing ability-based predicate for client cancellation.
+
+### M9.3 - Support and fluid runtime boundaries
+
+- Flower blocks have no support-survival callback. Removing the block below leaves the flower floating and preserves its exact persistent state; this is the documented neighbor/support behavior rather than an implicit uproot or drop path.
+- Ordinary and protected flowers are both inherently non-replaceable to normal water placement while occupied. The approved protection policy still denies destructive fluid mutation of protected flowers and permits ordinary environmental mutation, but normal placement cannot exercise that distinction. Validation records the unreachable destructive fixture accurately instead of weakening block replacement or inventing a bypass.

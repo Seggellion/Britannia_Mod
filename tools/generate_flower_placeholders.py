@@ -306,7 +306,7 @@ def build_manifest() -> bytes:
         f"- Shared geometry parent: `{resource_path(SHARED_PARENT_PATH)}` (generated, four intersecting planes, cutout, no PNG dependency of its own).",
         "- Harvested-item tag: `src/main/resources/data/britannia_mod/tags/items/flowers.json`.",
         "- Seed-item tag: `src/main/resources/data/britannia_mod/tags/items/flower_seeds.json`.",
-        "- Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/items/skinning_knives.json`.",
+        "- Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/item/skinning_knives.json`.",
         "- Placeholder hash ledger: `tools/flower_placeholder_hashes.json` (generated safety metadata; it does not include itself).",
         "- Placeholder generator: `tools/generate_flower_placeholders.py` (handwritten development tooling; not a runtime dependency).",
         "",
@@ -380,7 +380,7 @@ def expected_outputs() -> dict[Path, bytes]:
         "textures": {"layer0": "britannia_mod:item/skinning_knife"},
     })
     outputs[ASSETS / "textures" / "item" / "skinning_knife.png"] = skinning_knife_art()
-    outputs[DATA / "tags" / "items" / "skinning_knives.json"] = json_bytes({
+    outputs[DATA / "tags" / "item" / "skinning_knives.json"] = json_bytes({
         "replace": False, "values": ["britannia_mod:skinning_knife"]
     })
     outputs[MANIFEST] = build_manifest()
