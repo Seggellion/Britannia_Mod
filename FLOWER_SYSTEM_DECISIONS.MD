@@ -294,3 +294,15 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - This approval covers the implemented technical feature and closeout records only. It approves zero placeholder textures as final artwork; final artwork remains pending a separate owner review and replacement process.
 - Survival flower/seed acquisition, survival skinning-knife acquisition, recipes, natural generation, merchants, economy, Rails integration, and all other deferred expansion remain unimplemented.
 - No merge, push, pull request, release tag, deployment, or production-readiness claim is included in this approval.
+
+## Farming Skill Progression Milestone 14 - Definition metadata
+
+- The authoritative schema is `FarmingSkillRequirement.minimumFarmingSkill()`, implemented as an explicit finite `float` in inclusive range `0..100`. This matches the existing Farming skill representation and preserves the approved inclusive future comparison boundary.
+- `CropDefinition` owns requirements for all 67 crop-catalog species, including berries, trellis/lifecycle-special crops, orchard species, compatibility definitions, and Grapes. `FlowerDefinition` owns requirements for the seven persistent flowers. `FruitTreeDefinition` remains a non-owning structure overlay and must resolve its crop-owned value; aliases never own values.
+- Missing requirements never default to zero. Construction and centralized bootstrap validation fail with the species, planting item where relevant, invalid value, and approved proposal source. Duplicate IDs, conflicting values, ambiguous items, incomplete counts, unresolved mappings, and fruit-tree overlay conflicts also fail closed.
+- Common setup runs the definition/mapping validator once after deferred registrations are available. Proposal/catalog reconciliation remains test-only so the Markdown authority is not duplicated into a production value table.
+- Requirements are definition metadata only. They are not persisted to crop, flower, tree, or item state and are not networked. Existing saved species IDs resolve current metadata automatically; no migration or compatibility fallback is required.
+- Native vanilla planting routes remain excluded and untouched. Catalog compatibility definitions may carry approved metadata but authorize no native interception.
+- Grapes carries the approved Farming 80 metadata only through its existing `CropDefinition`. The established grape planting, variety, component/NBT, name, rendering, and harvest systems are unchanged; future `a brown seed` presentation is deferred.
+- Ordinary Poppy carries Farming 20. The independent stage-7 mastery contract remains Farming 100, stage 6, an approved skinning knife, and authorized mutation. Neither threshold derives from the other.
+- These decisions do not reopen DECISION-001 through DECISION-016 and do not authorize Milestone 15 planting enforcement, Milestone 16 presentation, acquisition/economy work, or any recipe behavior.

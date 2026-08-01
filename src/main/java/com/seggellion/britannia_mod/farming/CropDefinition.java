@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 public record CropDefinition(
         String id,
+        float minimumFarmingSkill,
         String displayName,
         Supplier<? extends Item> seedItem,
         Supplier<? extends Item> harvestItem,
@@ -55,7 +56,11 @@ public record CropDefinition(
         int maxRootAgeQualityBonus,
         CropHarvestTool harvestTool,
         String notes
-) implements FarmingGrowthProfile {
+) implements FarmingGrowthProfile, FarmingSkillRequirement {
+    public CropDefinition {
+        FarmingSkillRequirementValidator.validateValue(id, minimumFarmingSkill);
+    }
+
     public int maxGrowthAge() {
         return Math.max(0, growthStages - 1);
     }

@@ -7,6 +7,7 @@ import java.util.Objects;
 
 public record FlowerDefinition(
         ResourceLocation id,
+        float minimumFarmingSkill,
         ResourceLocation seedItemId,
         ResourceLocation harvestedItemId,
         int naturalMaximumStage,
@@ -15,9 +16,10 @@ public record FlowerDefinition(
         List<FlowerPaletteEntry> palette,
         ResourceLocation fallbackColorId,
         FlowerColorLifecycle colorLifecycle
-) {
+) implements FarmingSkillRequirement {
     public FlowerDefinition {
         Objects.requireNonNull(id, "Flower species ID is required");
+        FarmingSkillRequirementValidator.validateValue(id.toString(), minimumFarmingSkill);
         Objects.requireNonNull(seedItemId, "Flower seed item ID is required");
         Objects.requireNonNull(harvestedItemId, "Harvested flower item ID is required");
         Objects.requireNonNull(growthProfile, "Flower growth profile is required");

@@ -95,7 +95,7 @@ public final class FlowerRegistry {
         registerInitialColors(builder);
 
         builder.registerDefinition(flower(
-                POPPY, 6, 7,
+                POPPY, 20.0f, 6, 7,
                 profile(5, .30f, .55f, .15f, .70f, .35f, .65f, .15f, .80f, 45, 125, 20, 170,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.ARID)),
                 entries(
@@ -106,7 +106,7 @@ public final class FlowerRegistry {
                 ), "scarlet"
         ));
         builder.registerDefinition(flower(
-                SNOWDROP, 7, 7,
+                SNOWDROP, 40.0f, 7, 7,
                 profile(7, .50f, .75f, .35f, .90f, .50f, .80f, .30f, .95f, 55, 155, 30, 220,
                         climates(FarmingClimate.ICE), climates(FarmingClimate.TEMPERATE, FarmingClimate.WETLAND)),
                 entries(
@@ -115,7 +115,7 @@ public final class FlowerRegistry {
                 ), "snow_white"
         ));
         builder.registerDefinition(flower(
-                LILY, 7, 7,
+                LILY, 50.0f, 7, 7,
                 profile(8, .45f, .70f, .30f, .85f, .60f, .85f, .40f, 1.00f, 45, 150, 20, 200,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.ICE)),
                 entries(
@@ -127,7 +127,7 @@ public final class FlowerRegistry {
                 ), "snow_white"
         ));
         builder.registerDefinition(flower(
-                FOXGLOVE, 7, 7,
+                FOXGLOVE, 65.0f, 7, 7,
                 profile(9, .50f, .75f, .35f, .90f, .50f, .80f, .25f, .95f, 70, 180, 40, 240,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.WETLAND)),
                 entries(
@@ -139,7 +139,7 @@ public final class FlowerRegistry {
                 ), "violet"
         ));
         builder.registerDefinition(flower(
-                CAMPION, 7, 7,
+                CAMPION, 10.0f, 7, 7,
                 profile(6, .45f, .70f, .25f, .85f, .40f, .70f, .20f, .90f, 45, 150, 20, 210,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.WETLAND)),
                 entries(
@@ -149,7 +149,7 @@ public final class FlowerRegistry {
                 ), "rose_pink"
         ));
         builder.registerDefinition(flower(
-                HYACINTH, 7, 7,
+                HYACINTH, 30.0f, 7, 7,
                 profile(7, .35f, .60f, .20f, .75f, .50f, .75f, .30f, .90f, 40, 120, 20, 170,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.ICE)),
                 entries(
@@ -161,7 +161,7 @@ public final class FlowerRegistry {
                 ), "hyacinth_blue"
         ));
         builder.registerDefinition(flower(
-                ORFLUER, 7, 7,
+                ORFLUER, 95.0f, 7, 7,
                 profile(9, .40f, .65f, .25f, .80f, .55f, .85f, .35f, 1.00f, 110, 220, 70, 280,
                         climates(FarmingClimate.MAGICAL, FarmingClimate.ICE), climates(FarmingClimate.TEMPERATE)),
                 entries(
@@ -217,6 +217,7 @@ public final class FlowerRegistry {
 
     private static FlowerDefinition flower(
             ResourceLocation speciesId,
+            float minimumFarmingSkill,
             int naturalMaximumStage,
             int absoluteMaximumStage,
             FlowerGrowthProfile profile,
@@ -225,6 +226,7 @@ public final class FlowerRegistry {
     ) {
         return new FlowerDefinition(
                 speciesId,
+                minimumFarmingSkill,
                 id(speciesId.getPath() + "_seeds"),
                 speciesId,
                 naturalMaximumStage,

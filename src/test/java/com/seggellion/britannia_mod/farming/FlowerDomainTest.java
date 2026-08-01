@@ -96,6 +96,7 @@ class FlowerDomainTest {
         FlowerDefinition snowdrop = registry.byId(FlowerRegistry.SNOWDROP).orElseThrow();
         FlowerDefinition duplicateSeed = new FlowerDefinition(
                 snowdrop.id(),
+                snowdrop.minimumFarmingSkill(),
                 poppy.seedItemId(),
                 snowdrop.harvestedItemId(),
                 snowdrop.naturalMaximumStage(),
@@ -149,7 +150,7 @@ class FlowerDomainTest {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> new FlowerDefinition(
-                        poppy.id(), poppy.seedItemId(), poppy.harvestedItemId(),
+                        poppy.id(), poppy.minimumFarmingSkill(), poppy.seedItemId(), poppy.harvestedItemId(),
                         poppy.naturalMaximumStage(), poppy.absoluteMaximumStage(),
                         poppy.growthProfile(), poppy.palette(), poppy.fallbackColorId(),
                         FlowerColorLifecycle.SELECT_DURING_DESERIALIZATION
