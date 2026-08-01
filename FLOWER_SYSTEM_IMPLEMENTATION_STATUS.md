@@ -2,8 +2,8 @@
 
 Repository: `C:/projects/britannia/mod/Britannia_Mod`  
 Branch: `Farming`  
-Current HEAD: `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`
-Working state: Milestone 7 is owner-approved and ready for its isolated commit; Milestone 8 is authorized and in progress; unrelated `.claude/` is preserved.
+Current HEAD: `66b36a926bac376188fbe79bd2ba73d2d4fb0190`
+Working state: Milestone 7 is committed; Milestone 8 is owner-approved, revalidated, and ready for its isolated commit; Milestone 9 is authorized and in progress after that commit; unrelated `.claude/` is preserved.
 
 | Milestone | Status | HEAD/commit | Tests | Owner approval | Notes |
 |---|---|---|---|---|---|
@@ -15,9 +15,9 @@ Working state: Milestone 7 is owner-approved and ready for its isolated commit; 
 | 4. Lifecycle | Approved | `f5ed405484d99695862fe788dd01b8449cef594f` | Full automated suite plus isolated server/client smoke passed | Approved | Committed as `feat(flowers): add atomic planting and persistent flower state`. |
 | 5. Growth | Approved | `f3589b2526ecd51ab5286f6e8735a1527ea74df7` | Full and focused flower suites passed: 38 tests, 0 failures; placeholder audit and bounded isolated server/client smokes passed | Approved | Committed as `feat(flowers): integrate perennial growth with farming simulation`. |
 | 6. Interactions | Approved | `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d` | Full 48-test suite, focused flower suites, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Committed as `feat(flowers): add protected interactions and poppy mastery stage`. |
-| 7. Rendering | Approved | Working tree on `bc94e4d` | 57-test suite, focused rendering suite, 231-file generator audit, isolated dedicated-server restarts, live client fixture, resource reload, chunk cycle, and screenshot review passed | Approved | Owner personally approved the rendered result after both runtime defects were corrected and revalidated; ready for its isolated commit. |
-| 8. Species content | In progress | Working tree after the Milestone 7 commit | Gap analysis and validation pending | Authorized | Audit and complete only missing initial-species content, balance wiring, and player-facing data. |
-| 9. QA | Not started |  |  | Not authorized | Milestone 2 unit coverage is not full feature QA. |
+| 7. Rendering | Approved | `66b36a926bac376188fbe79bd2ba73d2d4fb0190` | 57-test suite, focused rendering suite, 231-file generator audit, isolated dedicated-server restarts, live client fixture, resource reload, chunk cycle, and screenshot review passed | Approved | Committed as `feat(flowers): render multi-plane flowers with dye masks`. |
+| 8. Species content | Approved | Unstaged working tree on `66b36a9` | Full/focused 64-test suite, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Owner-approved and revalidated; isolated commit pending. Approved definitions were already complete; localized two interaction messages and added comprehensive content/viability/acquisition coverage. |
+| 9. QA | In progress | Begins after the isolated Milestone 8 commit | Test-gap analysis pending | Authorized | Regression testing, save safety, and multiplayer QA only. |
 | 10. Closeout | Not started |  |  | Not authorized |  |
 
 ## Current Milestone 2 validation state
@@ -67,7 +67,7 @@ No client rendering, dedicated-server loading, multiplayer synchronization, worl
 - No manual planted-world save/restart, prolonged random-tick observation, or two-live-client multiplayer session is claimed. Persistence, resumed growth, natural maturity, reset invariants, and identical observer update tags are covered by automated tests; live interaction/rendering awaits later authorized milestones.
 - An initial runtime launch did not honor the intended working-directory override and reached stable startup in the existing `run/server` directory before being stopped. No tracked files changed, but its log/world runtime may have been touched; the final server validation was rerun successfully in the isolated disposable directory above.
 
-Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb254302e6311fa57f5743b`. Milestone 4 is validated, owner-approved, and committed as `f5ed405484d99695862fe788dd01b8449cef594f`. Milestone 5 is validated, owner-approved, and committed as `f3589b2526ecd51ab5286f6e8735a1527ea74df7`. Milestone 6 is validated, owner-approved, and committed as `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`. Milestone 7 is validated, owner-approved, and ready for its isolated commit. Milestone 8 is authorized and in progress.
+Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb254302e6311fa57f5743b`. Milestone 4 is validated, owner-approved, and committed as `f5ed405484d99695862fe788dd01b8449cef594f`. Milestone 5 is validated, owner-approved, and committed as `f3589b2526ecd51ab5286f6e8735a1527ea74df7`. Milestone 6 is validated, owner-approved, and committed as `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`. Milestone 7 is validated, owner-approved, and committed as `66b36a926bac376188fbe79bd2ba73d2d4fb0190`. Milestone 8 is owner-approved, revalidated, and ready for its isolated commit. Milestone 9 is authorized and in progress after that commit.
 
 ## Current Milestone 6 implementation state
 
@@ -115,3 +115,58 @@ Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb2
 - A live in-session resource reload completed twice after the fixture was visible; the final corrected run then captured the unchanged fixture. Teleporting to `(1000,1000)` and back forced a chunk unload/reload and preserved species, stage, tint, rotation, and rendering. Server restart queries also confirmed the unknown species, clamped stages, and exact corrupt tint persisted as expected.
 - Evidence is retained in ignored development output at `build/flower-render-review/`; `defect-before-tintindex.png` records the found tint failure and screenshots `25` through `33` record the corrected restart, close-up, matrix, dense, live-reload, and chunk-cycle results.
 - No two-live-client session or formal profiler capture was performed. Deterministic observer equality remains covered by automated synchronization/render-plan tests; owner multiplayer and subjective motion/performance playtesting remain recommended rather than claimed.
+
+## Milestone 8 gap analysis and resolution
+
+- The design document, `FLOWER_SYSTEM_DECISIONS.MD`, `FlowerRegistry`, item registration, localization, model resources, creative groupings, and the existing tests were compared species by species before editing.
+- All seven definitions already matched the approved design palettes, weights, stage limits, initial timings, item/seed mappings, altitude ranges, and the recorded canonical-climate conversion. No approved palette or balance value was overwritten.
+- The design's conceptual 0-100 hydration values remain normalized into the shared profile and evaluated against the existing 0-5 FarmingBlock hydration scale. The composite nutrient range remains the recorded repository adaptation: the same midpoint and conservative symmetric tolerance are applied to nitrogen, phosphorus, potassium, and organic matter through `CropQualityCalculator`. No second growth formula or climate enum was introduced.
+- The only player-facing data gap was two hard-coded interaction messages. Protected-action denial and Poppy stage-7 requirements now use English localization keys.
+- The only validation gap was explicit per-species practical viability and lower/unsuitable-condition coverage. `FlowerSpeciesContentTest` now audits all seven species, all palettes and mappings, practical maturity, differentiated climate response, player-facing resources, acquisition boundaries, and the 98-model/98-PNG contract.
+- Debug output remains literal by repository convention and is not a missing localization-dependent registration. No broad lore, tooltip, manual, or guidebook content was added.
+
+## Initial species content table
+
+Legend: climate columns are preferred / tolerated / unsuitable; hydration and nutrient ranges are design-normalized ideal / tolerated values; `N/P/K/OM` means the same initial composite midpoint/tolerance is applied to all four shared farming nutrients. Every row has stage models 1-7, English localization, one-item mature harvest with stage-1 identity-preserving reset, species-mapped one-seed extraction through `CropSeedExtractor`, Creative/admin access, no recipe/worldgen/economy source, and **Initial tuning** balance status.
+
+| Species registry ID | Flower item / seed item | Natural / absolute max | Base ticks | Climate: preferred / tolerated / unsuitable | Altitude ideal / tolerated Y | Hydration ideal / tolerated | N/P/K/OM ideal / tolerated | Palette count / fallback | Models / localization | Harvest / seed recovery | Acquisition / balance |
+|---|---|---:|---:|---|---|---|---|---|---|---|---|
+| `britannia_mod:poppy` | `poppy` / `poppy_seeds` | 6 / 7 | 5 | `TEMPERATE` / `ARID` / `ICE,FIRE,WETLAND,TROPICAL,MAGICAL,UNDERGROUND` | 45-125 / 20-170 | .30-.55 / .15-.70 | .35-.65 / .15-.80 | 8 / `scarlet` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+| `britannia_mod:snowdrop` | `snowdrop` / `snowdrop_seeds` | 7 / 7 | 7 | `ICE` / `TEMPERATE,WETLAND` / `FIRE,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 55-155 / 30-220 | .50-.75 / .35-.90 | .50-.80 / .30-.95 | 4 / `snow_white` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+| `britannia_mod:lily` | `lily` / `lily_seeds` | 7 / 7 | 8 | `TEMPERATE` / `ICE` / `FIRE,WETLAND,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 45-150 / 20-200 | .45-.70 / .30-.85 | .60-.85 / .40-1.00 | 10 / `snow_white` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+| `britannia_mod:foxglove` | `foxglove` / `foxglove_seeds` | 7 / 7 | 9 | `TEMPERATE` / `WETLAND` / `ICE,FIRE,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 70-180 / 40-240 | .50-.75 / .35-.90 | .50-.80 / .25-.95 | 9 / `violet` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+| `britannia_mod:campion` | `campion` / `campion_seeds` | 7 / 7 | 6 | `TEMPERATE` / `WETLAND` / `ICE,FIRE,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 45-150 / 20-210 | .45-.70 / .25-.85 | .40-.70 / .20-.90 | 6 / `rose_pink` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+| `britannia_mod:hyacinth` | `hyacinth` / `hyacinth_seeds` | 7 / 7 | 7 | `TEMPERATE` / `ICE` / `FIRE,WETLAND,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 40-120 / 20-170 | .35-.60 / .20-.75 | .50-.75 / .30-.90 | 9 / `hyacinth_blue` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+| `britannia_mod:orfluer` | `orfluer` / `orfluer_seeds` | 7 / 7 | 9 | `MAGICAL,ICE` / `TEMPERATE` / `FIRE,WETLAND,TROPICAL,ARID,UNDERGROUND` | 110-220 / 70-280 | .40-.65 / .25-.80 | .55-.85 / .35-1.00 | 9 / `lavender` | 1-7 / yes | 1 flower, reset 1 / 1 seed | Creative/admin + renewal / Initial tuning |
+
+## Practical growth scenarios
+
+All scenarios use valid private FarmingBlock support, all four nutrients at the species profile midpoint, fertilizer level 0, and the shared evaluator. The tolerated climate is a positive but slower 0.65 climate-fit tier; the listed unsuitable climate blocks growth.
+
+| Species | Positive practical condition | Lower-performing condition | Unsuitable condition |
+|---|---|---|---|
+| Poppy | Hydration 2, `TEMPERATE`, Y85 | `ARID`, same soil/Y | `FIRE` |
+| Snowdrop | Hydration 3, `ICE`, Y105 | `TEMPERATE`, same soil/Y | `FIRE` |
+| Lily | Hydration 3, `TEMPERATE`, Y97 | `ICE`, same soil/Y | `FIRE` |
+| Foxglove | Hydration 3, `TEMPERATE`, Y125 | `WETLAND`, same soil/Y | `FIRE` |
+| Campion | Hydration 3, `TEMPERATE`, Y97 | `WETLAND`, same soil/Y | `FIRE` |
+| Hyacinth | Hydration 2, `TEMPERATE`, Y80 | `ICE`, same soil/Y | `FIRE` |
+| Orfluer | Hydration 3, `MAGICAL`, Y165 | `TEMPERATE`, same soil/Y | `FIRE` |
+
+## Milestone 8 acquisition and content boundaries
+
+- All fourteen flower/seed items are registered, localized, modeled, textured with non-final placeholders, and appended to the existing Farming Produce/Farming Seeds creative groupings without reordering unrelated entries.
+- `skinning_knife` remains registered, localized, modeled, placeholder-textured, present in the farming tools grouping, and the sole built-in member of `britannia_mod:skinning_knives`.
+- Approved renewable path: shear a mature flower for exactly one species item while preserving the planted colour/identity and resetting to stage 1; off-hand or shift-use converts one harvested item into exactly one mapped seed with existing Creative/server-authoritative behavior.
+- Deferred: flower/seed/skinning-knife recipes, natural generation, grass/mob/chest/merchant/quest sources, economy pricing, Rails integration, and final art. Skinning-knife acquisition is Creative/admin only until a later owner-approved source is implemented.
+
+## Current Milestone 8 validation state
+
+- Final combined command: `.\gradlew.bat cleanTest compileJava processResources test --console=plain --no-configuration-cache` - passed; 64 tests total, 0 failures, 0 errors, 0 skipped.
+- Focused `FlowerDomainTest`, `FlowerAssetContractTest`, `FlowerLifecycleTest`, `FlowerGrowthTest`, `FlowerInteractionTest`, `FlowerRenderingTest`, and `FlowerSpeciesContentTest` runs passed independently. `FlowerSpeciesContentTest` contributes seven comprehensive species-content tests.
+- Placeholder generator verification: `python tools/generate_flower_placeholders.py --check` - passed for 231 generated files plus the hash ledger. `git diff --check` passed with line-ending warnings only.
+- A dedicated-server smoke ran from an ignored isolated project copy under `build/m8-runtime-smoke-66b36a9/`, generated a disposable world, and reached `Done (8.178s)`. Targeted review found no flower-related registration, classloading, or resource failure. The first bounded launch expired while Gradle prepared the isolated copy before Minecraft started; the warm retry passed.
+- A client smoke from the same isolated copy reached sound-engine initialization and block-atlas creation. Targeted review found no Poppy, Snowdrop, Lily, Foxglove, Campion, Hyacinth, Orfluer, flower renderer, model, or texture failure.
+- The client retained unrelated pre-existing invalid-path and GeckoLib animation diagnostics plus the optional-configuration warning. These did not prevent readiness and were left untouched.
+- Milestone 8 changed no visual assets or model references, so the owner-approved Milestone 7 rendering result remains applicable and no new subjective visual review is claimed.
+- No manually played multi-condition growth session, live two-client multiplayer session, recipe/economy/world-generation integration, or Milestone 9 regression pass is claimed. The approved practical-growth cases and acquisition boundaries are covered deterministically by the new suite.

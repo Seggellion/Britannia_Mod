@@ -244,3 +244,19 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 
 - Live same-species colour comparison showed that `ModelBlockRenderer` applies the supplied RGB multiplier only to tint-indexed baked quads. The shared four-plane parent therefore declares `tintindex: 0` on every face. Both passes inherit that contract: white leaves the base artwork unchanged, while the mask receives the exact resolved tint. The generator, hash ledger, manifest, and rendering contract test enforce this requirement.
 - The ordinary public `FlowerColor(int)` constructor still rejects values outside the 24-bit RGB range. Deserialization alone may construct a raw saved tint so corrupt NBT survives load/save unchanged and reaches the existing renderer fallback. This avoids clearing the entire block-entity state or silently rewriting the corrupt value; bounded persistence and rendering warnings identify the condition.
+
+## Milestone 8 implementation consequences
+
+### M8.1 - Approved species values retained
+
+- The species-by-species comparison found `FlowerRegistry` already matches the design palettes, weights, fallbacks, stage limits, altitude bands, and initial base-growth timings. The canonical climate conversion and shared midpoint/tolerance nutrient adaptation remain governed by A2; legacy `FarmingClimate` aliases outside the approved canonical eight are not accepted by flower profiles.
+- No palette, profile, timing, crop definition, renderer, saved tint, harvest quantity, or seed mapping was changed merely to create Milestone 8 activity. All seven definitions remain initial tuning rather than final production balance.
+
+### M8.2 - Player-facing messages and acquisition boundary
+
+- Protected-action denial and the Poppy stage-7 requirement now use `en_us.json` localization keys. Existing debug-command output remains literal under the repository's established diagnostic convention.
+- The only approved content sources remain Creative/admin access, mature shearing, and harvested-item seed extraction. Recipes, natural generation, loot, merchants, economy/Rails placement, and a survival acquisition source for the skinning knife remain deferred.
+
+### M8.3 - Deterministic completeness and viability evidence
+
+- `FlowerSpeciesContentTest` is the Milestone 8 audit suite. It locks all seven IDs and item mappings, the 8/4/10/9/6/9/9 palette counts, weights/fallbacks, exact stage/timing/profile mappings, practical positive maturity, slower tolerated climates, blocked unsuitable climates, localization/creative/tag/model/texture coverage, harvest/seed wiring, and absence of unapproved acquisition data.

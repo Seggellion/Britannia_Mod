@@ -34,6 +34,9 @@ import org.slf4j.Logger;
 /** Server-authoritative flower interaction and restoration transaction boundary. */
 public final class FlowerInteractionService {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final String PROTECTED_MESSAGE_KEY = "message.britannia_mod.flower.protected";
+    private static final String POPPY_STAGE_SEVEN_REQUIREMENTS_KEY =
+            "message.britannia_mod.flower.poppy_stage_seven_requirements";
     public static final float POPPY_STAGE_SEVEN_SKILL = 100.0F;
 
     private FlowerInteractionService() {
@@ -67,7 +70,7 @@ public final class FlowerInteractionService {
         }
         if (persistent.protectedFlower() && stack.getItem() instanceof BlockItem
                 && !FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.REPLACEMENT)) {
-            deny(player, level, "That flower is protected.");
+            deny(player, level, PROTECTED_MESSAGE_KEY);
             return ItemInteractionResult.SUCCESS;
         }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
@@ -127,7 +130,7 @@ public final class FlowerInteractionService {
             ItemStack stack, FlowerBlockEntity flower, FlowerPersistentState persistent
     ) {
         if (!FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.CARE)) {
-            deny(player, level, "That flower is protected.");
+            deny(player, level, PROTECTED_MESSAGE_KEY);
             return ItemInteractionResult.SUCCESS;
         }
         if (level.isClientSide) {
@@ -186,7 +189,7 @@ public final class FlowerInteractionService {
         if (definition == null || !isMature(persistent, definition)
                 || !FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.HARVEST)) {
             if (persistent.protectedFlower()) {
-                deny(player, level, "That flower is protected.");
+                deny(player, level, PROTECTED_MESSAGE_KEY);
             }
             return ItemInteractionResult.SUCCESS;
         }
@@ -225,7 +228,7 @@ public final class FlowerInteractionService {
         if (!canAdvancePoppy(persistent, skill, stack.is(ModTags.Items.SKINNING_KNIVES))
                 || !FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.POPPY_STAGE_SEVEN)) {
             if (!level.isClientSide && FlowerRegistry.POPPY.equals(persistent.speciesId()) && persistent.growthStage() == 6) {
-                player.displayClientMessage(Component.literal("Poppy stage 7 requires Farming 100 and an authorized skinning knife.")
+                player.displayClientMessage(Component.translatable(POPPY_STAGE_SEVEN_REQUIREMENTS_KEY)
                         .withStyle(ChatFormatting.YELLOW), true);
             }
             return ItemInteractionResult.SUCCESS;
@@ -245,7 +248,7 @@ public final class FlowerInteractionService {
             FlowerBlockEntity flower, FlowerPersistentState persistent
     ) {
         if (!FlowerProtectionService.mayMutate(persistent, player, FlowerMutationReason.PERMANENT_UPROOT)) {
-            deny(player, level, "That flower is protected.");
+            deny(player, level, PROTECTED_MESSAGE_KEY);
             return ItemInteractionResult.SUCCESS;
         }
         if (level.isClientSide) {
@@ -310,9 +313,9 @@ public final class FlowerInteractionService {
         }
     }
 
-    private static void deny(Player player, Level level, String message) {
+    private static void deny(Player player, Level level, String messageKey) {
         if (!level.isClientSide) {
-            player.displayClientMessage(Component.literal(message).withStyle(ChatFormatting.RED), true);
+            player.displayClientMessage(Component.translatable(messageKey).withStyle(ChatFormatting.RED), true);
         }
     }
 }
