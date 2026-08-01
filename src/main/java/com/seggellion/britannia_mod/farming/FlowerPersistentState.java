@@ -141,8 +141,12 @@ public record FlowerPersistentState(
             }
             protectedFlower = tag.getBoolean("Protected");
         }
-        FlowerColor color = new FlowerColor(tag.getInt("ColorTint"));
-        if (definition != null && !registry.isAllowedColor(definition, color)) {
+        FlowerColor color = FlowerColor.fromSavedTint(tag.getInt("ColorTint"));
+        if (!color.isValidTint()) {
+            warnOnce("invalid-color:" + speciesId + ":" + color.tintValue(),
+                    "[flower persistence] Saved tint {} is not a 24-bit RGB value for {}; preserving it for deterministic fallback rendering",
+                    color.tintValue(), speciesId);
+        } else if (definition != null && !registry.isAllowedColor(definition, color)) {
             warnOnce("unknown-color:" + speciesId + ":" + color.tintValue(),
                     "[flower persistence] Saved tint {} is outside the current palette for {}; preserving it for deterministic fallback rendering",
                     color.hex(), speciesId);

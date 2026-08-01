@@ -2,8 +2,8 @@
 
 Repository: `C:/projects/britannia/mod/Britannia_Mod`  
 Branch: `Farming`  
-Current HEAD: `f3589b2526ecd51ab5286f6e8735a1527ea74df7`
-Working state: Milestone 6 is owner-approved and ready for its isolated commit; Milestone 7 is authorized and in progress; unrelated `.claude/` is preserved.
+Current HEAD: `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`
+Working state: Milestone 7 is owner-approved and ready for its isolated commit; Milestone 8 is authorized and in progress; unrelated `.claude/` is preserved.
 
 | Milestone | Status | HEAD/commit | Tests | Owner approval | Notes |
 |---|---|---|---|---|---|
@@ -14,9 +14,9 @@ Working state: Milestone 6 is owner-approved and ready for its isolated commit; 
 | 3. Placeholders | Approved | `ebba19b92269e5649eb254302e6311fa57f5743b` | Full build/test passed; 18 tests, 0 failures; focused domain and asset tests passed; generator check passed; bounded client resource-load smoke passed for flower assets | Approved | Committed as `content(flowers): add placeholder items seeds models and masks`. |
 | 4. Lifecycle | Approved | `f5ed405484d99695862fe788dd01b8449cef594f` | Full automated suite plus isolated server/client smoke passed | Approved | Committed as `feat(flowers): add atomic planting and persistent flower state`. |
 | 5. Growth | Approved | `f3589b2526ecd51ab5286f6e8735a1527ea74df7` | Full and focused flower suites passed: 38 tests, 0 failures; placeholder audit and bounded isolated server/client smokes passed | Approved | Committed as `feat(flowers): integrate perennial growth with farming simulation`. |
-| 6. Interactions | Approved | Working tree on `f3589b2` | Full 48-test suite, focused flower suites, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Centralized authorization, interactions, protection, uprooting, and Poppy stage 7 only; ready for its isolated commit. |
-| 7. Rendering | In progress | Working tree after the Milestone 6 commit | Validation pending | Authorized | Two cached baked-model passes using shared geometry and separate base/mask artwork; implementation remains outside the Milestone 6 commit. |
-| 8. Species content | Not started |  |  | Not authorized | Initial definitions exist only as Milestone 2 domain data. |
+| 6. Interactions | Approved | `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d` | Full 48-test suite, focused flower suites, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Committed as `feat(flowers): add protected interactions and poppy mastery stage`. |
+| 7. Rendering | Approved | Working tree on `bc94e4d` | 57-test suite, focused rendering suite, 231-file generator audit, isolated dedicated-server restarts, live client fixture, resource reload, chunk cycle, and screenshot review passed | Approved | Owner personally approved the rendered result after both runtime defects were corrected and revalidated; ready for its isolated commit. |
+| 8. Species content | In progress | Working tree after the Milestone 7 commit | Gap analysis and validation pending | Authorized | Audit and complete only missing initial-species content, balance wiring, and player-facing data. |
 | 9. QA | Not started |  |  | Not authorized | Milestone 2 unit coverage is not full feature QA. |
 | 10. Closeout | Not started |  |  | Not authorized |  |
 
@@ -67,7 +67,7 @@ No client rendering, dedicated-server loading, multiplayer synchronization, worl
 - No manual planted-world save/restart, prolonged random-tick observation, or two-live-client multiplayer session is claimed. Persistence, resumed growth, natural maturity, reset invariants, and identical observer update tags are covered by automated tests; live interaction/rendering awaits later authorized milestones.
 - An initial runtime launch did not honor the intended working-directory override and reached stable startup in the existing `run/server` directory before being stopped. No tracked files changed, but its log/world runtime may have been touched; the final server validation was rerun successfully in the isolated disposable directory above.
 
-Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb254302e6311fa57f5743b`. Milestone 4 is validated, owner-approved, and committed as `f5ed405484d99695862fe788dd01b8449cef594f`. Milestone 5 is validated, owner-approved, and committed as `f3589b2526ecd51ab5286f6e8735a1527ea74df7`. Milestone 6 is validated, owner-approved, and ready for its isolated commit. Milestone 7 is authorized and in progress.
+Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb254302e6311fa57f5743b`. Milestone 4 is validated, owner-approved, and committed as `f5ed405484d99695862fe788dd01b8449cef594f`. Milestone 5 is validated, owner-approved, and committed as `f3589b2526ecd51ab5286f6e8735a1527ea74df7`. Milestone 6 is validated, owner-approved, and committed as `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`. Milestone 7 is validated, owner-approved, and ready for its isolated commit. Milestone 8 is authorized and in progress.
 
 ## Current Milestone 6 implementation state
 
@@ -91,3 +91,27 @@ Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb2
 - A bounded client smoke used the same disposable ignored runtime. Britannia initialized, OpenAL and the sound engine started, and the 8192x4096 block atlas was created. Targeted log review found no flower or `skinning_knife` resource failure; unrelated legacy missing-model warnings remain.
 - No live two-client session or manually played interaction fixture is claimed. Watering/fertilizer, shearing, Adventure cutback, private/community uprooting, protected denial, Poppy stage 7, and restart-after-interaction are covered by automated/source-contract tests but remain candidates for owner playtesting.
 - No Milestone 7 renderer, block-entity-renderer registration, model selection, or tint-mask behavior was added. The temporary soil-only presentation remains in effect.
+
+## Current Milestone 7 implementation state
+
+- `FlowerVisualModels` owns immutable identifiers for all 98 render models: seven species, seven stages, and the base/mask passes. Its pure render-plan resolver preserves exact valid stages and saved 24-bit tints, clamps invalid stages only for presentation, and supplies deterministic Poppy-stage-1/white fallbacks without mutating persisted flower state.
+- `FlowerBlockEntityRenderer` reacquires baked models from `ModelManager` on every render, submits exactly two ordered `RenderType.cutout()` passes (white base, then saved-tint mask), and shares one pose, deterministic yaw, packed light, and overlay across both passes. Missing requested models fall back per pass; missing fallback models skip only that pass with bounded diagnostics.
+- `ClientModSetup` registers all 98 additional models and binds `FLOWER_BLOCK_BE` to the flower renderer exactly once under the existing client-only subscriber. Reload handling clears only bounded diagnostics; no baked-model reference survives a reload.
+- The renderer draws flower planes above the existing soil surface. Hydration soil blockstates, the existing crop renderer/model selector, persisted flower data, growth, interactions, recipes, world generation, balance, and species content are unchanged.
+- Placeholder geometry and artwork remain the Milestone 3 shared four-plane assets. Every shared-parent face now declares tint index 0 so Minecraft applies the renderer multiplier to both white-base and coloured-mask submissions. Milestone 7 adds no third pass and no new PNG artwork.
+- Corrupt out-of-range saved tint integers are preserved through load/save in a persistence-only `FlowerColor` construction path. Normal callers still enforce the 24-bit RGB boundary; the renderer receives corrupt raw values and uses its deterministic species fallback without rewriting saved data.
+
+## Current Milestone 7 validation state
+
+- Owner visual approval closes the Milestone 7 visual gate. The owner personally reviewed and approved placement above farming soil, visible soil, multi-plane viewing angles, deterministic rotation, base/mask alignment, fixed stem and leaf colours, bloom-only tint isolation, light and dark tint readability, stage selection, Poppy stages 6 and 7, empty early-stage masks, same-species colour variation, absence of visible Z-fighting and coloured halos, and the overall renderer result.
+- Final combined command: `.\gradlew.bat cleanTest compileJava processResources test --console=plain --no-configuration-cache` - passed; 57 tests total, 0 failures, 0 errors, 0 skipped.
+- Focused `FlowerDomainTest`, `FlowerAssetContractTest`, `FlowerLifecycleTest`, `FlowerGrowthTest`, `FlowerInteractionTest`, and `FlowerRenderingTest` run passed independently. `FlowerRenderingTest` contributes nine rendering/model/reload/boundary tests.
+- Placeholder generator verification: `python tools/generate_flower_placeholders.py --check` - passed for 231 generated files plus the hash ledger. A generator overwrite/check cycle also passed after the manifest contract was updated.
+- An ignored full project copy under `build/flower-validation-project/` hosted an isolated flat disposable world on `127.0.0.1:25576`. The dedicated server reached readiness on three clean starts, including two save/stop/restart cycles after corrections; the final start reached `Done (0.507s)`. No flower client-render classloading failure occurred. Known unrelated `TitleScreenBackgroundMixin`, optional-config, and legacy startup diagnostics remain untouched.
+- A live client joined and rejoined that server as `Dev`. A temporary client-only capture harness existed only in the ignored project copy; it used Minecraft's real framebuffer screenshot and `reloadResourcePacks()` APIs and never entered tracked source.
+- The world contained a seven-species by seven-stage matrix, targeted Poppy stage-5 light/dark, Poppy stage-6/7, empty-mask, community/protected, unknown-species, low/high-stage, corrupt-tint fixtures, and a 10x10 dense garden (160 flowers total including the targeted row and invalid cases). All valid species/stages, multiple colours, hydration 0-5, deterministic rotations, and soil visibility were inspected.
+- The first close-up exposed untinted white masks because the shared model faces lacked `tintindex`; the final corrected captures show the saved light and burgundy Poppy stage-5 colours distinctly while the green base remains unchanged. A corrupt `ColorTint:-1` initially cleared block-entity state; the persistence-only raw-tint path now preserves `-1`, logs once per diagnostic scope, and renders the configured fallback without changing saved NBT.
+- Static front, side, elevated, low, normal-eye, matrix, and dense-garden views showed correct soil-top placement, multi-plane visibility, aligned alpha-disjoint base/mask pixels, and no visible checkerboarding, halos, seam separation, or static Z-fighting. Continuous-motion flicker and formal frame-time profiling were not measured by the automated framebuffer harness.
+- A live in-session resource reload completed twice after the fixture was visible; the final corrected run then captured the unchanged fixture. Teleporting to `(1000,1000)` and back forced a chunk unload/reload and preserved species, stage, tint, rotation, and rendering. Server restart queries also confirmed the unknown species, clamped stages, and exact corrupt tint persisted as expected.
+- Evidence is retained in ignored development output at `build/flower-render-review/`; `defect-before-tintindex.png` records the found tint failure and screenshots `25` through `33` record the corrected restart, close-up, matrix, dense, live-reload, and chunk-cycle results.
+- No two-live-client session or formal profiler capture was performed. Deterministic observer equality remains covered by automated synchronization/render-plan tests; owner multiplayer and subjective motion/performance playtesting remain recommended rather than claimed.

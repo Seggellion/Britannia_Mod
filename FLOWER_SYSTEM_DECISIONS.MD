@@ -218,3 +218,29 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - Protected flowers are removed from explosion target lists and reject fluid placement; ordinary flowers keep normal environmental behavior. Every flower blocks piston movement.
 - `skinning_knife` is a recipe-less non-combat utility item with 128 durability, default non-stackable durability behavior, no declared repair ingredient, farming-tool creative placement, and a generated placeholder icon. Recipe/economy placement remains deferred.
 - Exact Poppy stage 6 plus Farming 100.0 or greater, `skinning_knives`, server authority, and mutation authorization advances to stage 7. Successful advancement costs one durability and preserves identity/soil/quality. Any reset returns to stage 1, and natural growth remains capped at 6 without a saved unlock flag.
+
+## Milestone 7 implementation consequences
+
+### M7.1 - Client renderer, registration, and soil boundary
+
+- `client/renderer/FlowerBlockEntityRenderer` is registered exactly once for `BlockEntityRegistry.FLOWER_BLOCK_BE` through the existing client-only `EntityRenderersEvent.RegisterRenderers` subscriber. No common registry, block, block entity, domain, or persistent-state class references it.
+- The normal FlowerBlock blockstate continues to render the six hydration-driven farming-soil wrapper models. The block-entity renderer renders only the species/stage flower planes one block above that soil and never duplicates the soil model.
+- The renderer follows the farming crop transform: translate to block center and soil top, apply the same deterministic position/species yaw function, translate back, acquire one `RenderType.cutout` buffer, then render base first and dye mask second with the same pose, block state, packed light, and packed overlay.
+
+### M7.2 - Authoritative model resolver and reload behavior
+
+- `client/renderer/FlowerVisualModels` precomputes 49 base and 49 dye-mask `ModelResourceLocation` identifiers for all seven species and stages 1-7. `ClientModSetup.registerAdditionalModels` registers all 98 standalone pass models explicitly; blockstate discovery is not relied upon.
+- Resource identifiers remain cached because they are immutable. `BakedModel` instances are never stored in static or renderer fields: every render reacquires the model from Minecraft's reload-managed `ModelManager`, which owns the baked-model cache. Reload clears only bounded diagnostic sets and never reads or writes flower state.
+- Valid stages map exactly. Invalid known-species stages clamp visually to 1-7 without persistence mutation. Unknown species use the deterministic Poppy stage-1 model pair and neutral white tint without replacing the saved species. A missing baked model attempts the same safe pair and skips the pass if even that fallback is unavailable. All unexpected-state and missing-model diagnostics are bounded.
+
+### M7.3 - Tint, pass order, and geometry discipline
+
+- The renderer reads the synchronized `FlowerPersistentState.color().tintValue()` directly. Every valid 24-bit value, including values not present in the original planting palette, is converted exactly as `R/255.0F`, `G/255.0F`, `B/255.0F`, alpha 1.0. No selector, palette weight, planter UUID, nutrients, or growth progress participates in rendering.
+- An impossible numeric tint outside `0x000000..0xFFFFFF` uses the known species' configured fallback colour; an unknown species uses neutral white. These are visual-only fallbacks and do not rewrite state.
+- The base baked model is rendered in white before the paired grayscale mask is rendered with the saved tint. Both passes inherit the same four-plane geometry and use identical transforms. No depth offset, translucent layer, emissive layer, third pass, or third in-world texture was introduced; alpha-disjoint placeholder artwork remains the Z-fighting control.
+- Expected visible-flower cost is two cached baked-model lookups/submissions and one cutout buffer/pose transform. Model JSON, textures, registries, palette weights, and large collections are not parsed or rebuilt per frame.
+
+### M7.4 - Validation corrections and corrupt-tint preservation
+
+- Live same-species colour comparison showed that `ModelBlockRenderer` applies the supplied RGB multiplier only to tint-indexed baked quads. The shared four-plane parent therefore declares `tintindex: 0` on every face. Both passes inherit that contract: white leaves the base artwork unchanged, while the mask receives the exact resolved tint. The generator, hash ledger, manifest, and rendering contract test enforce this requirement.
+- The ordinary public `FlowerColor(int)` constructor still rejects values outside the 24-bit RGB range. Deserialization alone may construct a raw saved tint so corrupt NBT survives load/save unchanged and reaches the existing renderer fallback. This avoids clearing the entire block-entity state or silently rewriting the corrupt value; bounded persistence and rendering warnings identify the condition.

@@ -200,6 +200,13 @@ class FlowerLifecycleTest {
         assertNotEquals(colorLoaded.color(), colorLoaded.visualColor(registry));
         assertEquals(registry.fallbackColor(poppy), colorLoaded.visualColor(registry));
 
+        CompoundTag corruptColor = original.copy();
+        corruptColor.putInt("ColorTint", -1);
+        FlowerPersistentState corruptColorLoaded = FlowerPersistentState.fromTag(corruptColor, registry);
+        assertEquals(-1, corruptColorLoaded.color().tintValue());
+        assertEquals(-1, corruptColorLoaded.toTag().getInt("ColorTint"));
+        assertEquals(registry.fallbackColor(poppy), corruptColorLoaded.visualColor(registry));
+
         CompoundTag unknownSpecies = original.copy();
         ResourceLocation missing = ResourceLocation.parse("britannia_mod:missing_flower");
         unknownSpecies.putString("SpeciesId", missing.toString());
@@ -259,8 +266,10 @@ class FlowerLifecycleTest {
         assertTrue(flowerBlockSource.contains("randomTick("));
         assertFalse(flowerBlockSource.contains("tryHarvest"));
         assertFalse(flowerBlockSource.contains("SWORD_CUTBACK"));
-        assertFalse(Files.exists(PROJECT.resolve(
+        assertTrue(Files.exists(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/client/renderer/FlowerBlockEntityRenderer.java")));
+        assertFalse(flowerBlockSource.contains("FlowerBlockEntityRenderer"));
+        assertFalse(flowerBlockSource.contains("FlowerVisualModels"));
     }
 
     private FlowerPlantingService.Outcome execute(FakeAccess access, AtomicInteger selectorCalls) {

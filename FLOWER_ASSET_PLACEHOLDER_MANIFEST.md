@@ -16,7 +16,7 @@ Generated deterministically by `tools/generate_flower_placeholders.py` using onl
 
 ## In-world stage placeholders
 
-Every pass inherits the same four-plane cutout parent. UV `[0,0,16,16]` covers the full 128x128 canvas; base and mask use identical canvas bounds, padding assumptions, model transforms, and pixel grid. Stages 1-2 intentionally have no visible bloom, so their dye masks are valid fully transparent PNGs. Poppy stage 7 is a distinct reserved manual-stage asset only; this milestone adds no advancement behavior.
+Every pass inherits the same four-plane cutout parent with tint index 0 on every face. UV `[0,0,16,16]` covers the full 128x128 canvas; base and mask use identical canvas bounds, padding assumptions, model transforms, and pixel grid. Stages 1-2 intentionally have no visible bloom, so their dye masks are valid fully transparent PNGs. Poppy stage 7 is a distinct reserved manual-stage asset only; this milestone adds no advancement behavior.
 
 | Species registry ID | Stage | Base model path | Dye-mask model path | Shared geometry parent | Base texture path | Dye-mask texture path | Dimensions | UV assumptions | Dye mask intentionally empty | Status | Replacement status | Particle texture source | Final-art approval |
 |---|---:|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -101,6 +101,12 @@ Harvested flowers use `HarvestedFlowerItem` for the established crop-to-seed act
 - Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/items/skinning_knives.json`.
 - Placeholder hash ledger: `tools/flower_placeholder_hashes.json` (generated safety metadata; it does not include itself).
 - Placeholder generator: `tools/generate_flower_placeholders.py` (handwritten development tooling; not a runtime dependency).
+
+## Milestone 7 rendering boundary
+
+`FlowerBlock` blockstate wrappers continue to render hydration-specific farming soil. The client-only `FlowerBlockEntityRenderer` renders only the flower planes above that soil. `FlowerVisualModels` registers and resolves all 49 base plus 49 dye-mask standalone pass models; baked models are reacquired from Minecraft's resource-reload-managed model cache.
+
+Each visible flower submits the paired base model first in white and the paired dye-mask model second using the exact saved 24-bit RGB tint. Both passes use one shared transform, deterministic position/species rotation, cutout render type, packed light, and overlay. Alpha-disjoint artwork remains the Z-fighting control; no depth offset, third pass, or third in-world PNG is used.
 
 ## Counts and replacement contract
 

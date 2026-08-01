@@ -145,13 +145,16 @@ class FlowerInteractionTest {
     }
 
     @Test
-    void milestoneSixAddsNoRendererOrTintApplication() throws IOException {
-        assertFalse(Files.exists(PROJECT.resolve(
+    void milestoneSevenRendererStaysOutOfCommonInteractionPaths() throws IOException {
+        assertTrue(Files.exists(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/client/renderer/FlowerBlockEntityRenderer.java"
         )));
         String block = source("block/FlowerBlock.java");
+        String service = source("farming/FlowerInteractionService.java");
         assertFalse(block.contains("FlowerVisualModels"));
         assertFalse(block.contains("dye_mask"));
+        assertFalse(service.contains("FlowerVisualModels"));
+        assertFalse(service.contains("dye_mask"));
     }
 
     private FlowerPersistentState state(FlowerDefinition definition, int stage) {

@@ -1,6 +1,6 @@
 {
   "files": {
-    "FLOWER_ASSET_PLACEHOLDER_MANIFEST.md": "7f6ec39d4d44c0f916e1dcdcc9b04f875768fc2bf24b24c86f121356e56af6de",
+    "FLOWER_ASSET_PLACEHOLDER_MANIFEST.md": "75f6c4ba90ed0b7c7ea8a4a7fe7617e2c293c51091e438fd2fb389c93e98d82c",
     "src/main/resources/assets/britannia_mod/models/block/flowers/campion/stage_1_base.json": "6cffe54d90a0b442da8a2a72eb8d21b42a5b50205319119914932776458a9eed",
     "src/main/resources/assets/britannia_mod/models/block/flowers/campion/stage_1_dye_mask.json": "f91564ea17f1646317d0a011a723d7fbc0899386baa47d7dc4489c3f9f76cc8c",
     "src/main/resources/assets/britannia_mod/models/block/flowers/campion/stage_2_base.json": "246682d9c472ac557344f96b67e7aef016f9398d0bf0eca01686cb032bef66f8",
@@ -85,7 +85,7 @@
     "src/main/resources/assets/britannia_mod/models/block/flowers/poppy/stage_6_dye_mask.json": "c36baceb23f81c554a909f67107d598c56d73faa4f1cd5713c252a6796058b09",
     "src/main/resources/assets/britannia_mod/models/block/flowers/poppy/stage_7_base.json": "0505045b9008f30370a76b45881c76d3f130da552df2da0c5c089ee58c6fedb5",
     "src/main/resources/assets/britannia_mod/models/block/flowers/poppy/stage_7_dye_mask.json": "76a9c3d105a65d30070305603747fa062403ce59ff9031fe89911e0d2240e3e9",
-    "src/main/resources/assets/britannia_mod/models/block/flowers/shared/multi_plane.json": "ce2031749399d60e843d1840beebc6a0734870d88786ebab4e59aaf8c48f8faa",
+    "src/main/resources/assets/britannia_mod/models/block/flowers/shared/multi_plane.json": "17014a3c97963451e8b307475bb14f63d71140ae909b427819c68d3171030fcc",
     "src/main/resources/assets/britannia_mod/models/block/flowers/snowdrop/stage_1_base.json": "c7697cbebfa67da1502ae9f4bbf49aac3914df2fbd86944892acc8e06dec459f",
     "src/main/resources/assets/britannia_mod/models/block/flowers/snowdrop/stage_1_dye_mask.json": "a3271e5b52514e1699c9d2fbb5810f7940f91fbc4cc0f4623ff9e58dde8b64e1",
     "src/main/resources/assets/britannia_mod/models/block/flowers/snowdrop/stage_2_base.json": "dfbdfdf9c7253e7e4b025ed952312e3fcfe27ac817f60020940cf2a4d2961b4e",

@@ -29,6 +29,8 @@ import com.seggellion.britannia_mod.farming.GrapeVisualResolver;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
 import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.FlowerBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.FlowerVisualModels;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
@@ -221,6 +223,7 @@ public class ClientModSetup {
             ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
         ));
         registerFarmingCropModels(event);
+        registerFlowerModels(event);
     }
 
     private static void registerFarmingCropModels(ModelEvent.RegisterAdditional event) {
@@ -242,10 +245,18 @@ public class ClientModSetup {
         }
     }
 
+    private static void registerFlowerModels(ModelEvent.RegisterAdditional event) {
+        for (ModelResourceLocation model : FlowerVisualModels.allModelLocations()) {
+            event.register(model);
+        }
+    }
+
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
         ThinWallModels.onModifyBakingResults(event);
         new ThinWallClient().onModifyBaking(event);
+        FlowerVisualModels.onModelsReloaded();
+        FlowerBlockEntityRenderer.onModelsReloaded();
     }
 
     @SubscribeEvent
@@ -446,6 +457,7 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.WINE_BOTTLE_BE.get(), WineBottleBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.FARMING_BLOCK_BE.get(), FarmingBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), FlowerBlockEntityRenderer::new);
         // Entity Renderers
       //  event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
