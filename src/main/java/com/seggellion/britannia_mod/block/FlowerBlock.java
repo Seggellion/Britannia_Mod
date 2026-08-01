@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.FlowerBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -34,6 +36,34 @@ public final class FlowerBlock extends Block implements EntityBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    @Override
+    public boolean isRandomlyTicking(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!(level.getBlockEntity(pos) instanceof FlowerBlockEntity flower) || !flower.isInitialized()) {
+            return;
+        }
+
+        int hydration = flower.hydration();
+        if (state.getValue(HYDRATION) != hydration) {
+            level.setBlock(pos, state.setValue(HYDRATION, hydration), 3);
+            state = level.getBlockState(pos);
+        }
+
+        if (FarmingBlock.shouldDecayHydration(hydration, random)) {
+            hydration--;
+        }
+        hydration = FarmingBlock.hydrationAfterRain(level, pos, hydration);
+
+        if (state.getValue(HYDRATION) != hydration) {
+            level.setBlock(pos, state.setValue(HYDRATION, hydration), 3);
+        }
+        flower.tickGrowth(level, hydration);
     }
 
     @Nullable

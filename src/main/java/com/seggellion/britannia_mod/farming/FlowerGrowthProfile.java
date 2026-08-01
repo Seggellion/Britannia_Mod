@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public record FlowerGrowthProfile(
+        int baseGrowthTicks,
         float idealBoneMeal,
         float idealTurquoise,
         float idealSulphurousAsh,
@@ -30,6 +31,9 @@ public record FlowerGrowthProfile(
         NutrientPreferenceMode nutrientPreferenceMode
 ) implements FarmingGrowthProfile {
     public FlowerGrowthProfile {
+        if (baseGrowthTicks <= 0) {
+            throw new IllegalArgumentException("Flower base growth ticks must be positive: " + baseGrowthTicks);
+        }
         idealClimates = Set.copyOf(Objects.requireNonNull(idealClimates, "Ideal climates are required"));
         allowedClimates = Set.copyOf(Objects.requireNonNull(allowedClimates, "Allowed climates are required"));
         forbiddenClimates = Set.copyOf(Objects.requireNonNull(forbiddenClimates, "Forbidden climates are required"));

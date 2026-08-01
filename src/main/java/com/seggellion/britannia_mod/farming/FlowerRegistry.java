@@ -88,7 +88,7 @@ public final class FlowerRegistry {
 
         builder.registerDefinition(flower(
                 POPPY, 6, 7,
-                profile(.30f, .55f, .15f, .70f, .35f, .65f, .15f, .80f, 45, 125, 20, 170,
+                profile(5, .30f, .55f, .15f, .70f, .35f, .65f, .15f, .80f, 45, 125, 20, 170,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.ARID)),
                 entries(
                         entry("scarlet", 35, "Common"), entry("crimson", 20, "Common"),
@@ -99,7 +99,7 @@ public final class FlowerRegistry {
         ));
         builder.registerDefinition(flower(
                 SNOWDROP, 7, 7,
-                profile(.50f, .75f, .35f, .90f, .50f, .80f, .30f, .95f, 55, 155, 30, 220,
+                profile(7, .50f, .75f, .35f, .90f, .50f, .80f, .30f, .95f, 55, 155, 30, 220,
                         climates(FarmingClimate.ICE), climates(FarmingClimate.TEMPERATE, FarmingClimate.WETLAND)),
                 entries(
                         entry("snow_white", 78, "Common"), entry("ivory", 15, "Uncommon"),
@@ -108,7 +108,7 @@ public final class FlowerRegistry {
         ));
         builder.registerDefinition(flower(
                 LILY, 7, 7,
-                profile(.45f, .70f, .30f, .85f, .60f, .85f, .40f, 1.00f, 45, 150, 20, 200,
+                profile(8, .45f, .70f, .30f, .85f, .60f, .85f, .40f, 1.00f, 45, 150, 20, 200,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.ICE)),
                 entries(
                         entry("snow_white", 16, "Common"), entry("cream", 10, "Common"),
@@ -120,7 +120,7 @@ public final class FlowerRegistry {
         ));
         builder.registerDefinition(flower(
                 FOXGLOVE, 7, 7,
-                profile(.50f, .75f, .35f, .90f, .50f, .80f, .25f, .95f, 70, 180, 40, 240,
+                profile(9, .50f, .75f, .35f, .90f, .50f, .80f, .25f, .95f, 70, 180, 40, 240,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.WETLAND)),
                 entries(
                         entry("violet", 25, "Common"), entry("rose_pink", 22, "Common"),
@@ -132,7 +132,7 @@ public final class FlowerRegistry {
         ));
         builder.registerDefinition(flower(
                 CAMPION, 7, 7,
-                profile(.45f, .70f, .25f, .85f, .40f, .70f, .20f, .90f, 45, 150, 20, 210,
+                profile(6, .45f, .70f, .25f, .85f, .40f, .70f, .20f, .90f, 45, 150, 20, 210,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.WETLAND)),
                 entries(
                         entry("rose_pink", 40, "Common"), entry("magenta", 22, "Common"),
@@ -142,7 +142,7 @@ public final class FlowerRegistry {
         ));
         builder.registerDefinition(flower(
                 HYACINTH, 7, 7,
-                profile(.35f, .60f, .20f, .75f, .50f, .75f, .30f, .90f, 40, 120, 20, 170,
+                profile(7, .35f, .60f, .20f, .75f, .50f, .75f, .30f, .90f, 40, 120, 20, 170,
                         climates(FarmingClimate.TEMPERATE), climates(FarmingClimate.ICE)),
                 entries(
                         entry("hyacinth_blue", 22, "Common"), entry("violet", 20, "Common"),
@@ -154,7 +154,7 @@ public final class FlowerRegistry {
         ));
         builder.registerDefinition(flower(
                 ORFLUER, 7, 7,
-                profile(.40f, .65f, .25f, .80f, .55f, .85f, .35f, 1.00f, 110, 220, 70, 280,
+                profile(9, .40f, .65f, .25f, .80f, .55f, .85f, .35f, 1.00f, 110, 220, 70, 280,
                         climates(FarmingClimate.MAGICAL, FarmingClimate.ICE), climates(FarmingClimate.TEMPERATE)),
                 entries(
                         entry("lavender", 20, "Common"), entry("ivory", 18, "Common"),
@@ -229,6 +229,7 @@ public final class FlowerRegistry {
     }
 
     private static FlowerGrowthProfile profile(
+            int baseGrowthTicks,
             float hydrationIdealMin,
             float hydrationIdealMax,
             float hydrationToleratedMin,
@@ -255,6 +256,7 @@ public final class FlowerRegistry {
         Set<FarmingClimate> forbidden = EnumSet.copyOf(FlowerDefinitionValidator.canonicalClimates());
         forbidden.removeAll(allowed);
         return new FlowerGrowthProfile(
+                baseGrowthTicks,
                 nutrientIdeal, nutrientIdeal, nutrientIdeal, nutrientIdeal,
                 nutrientTolerance,
                 1.0f, 1.0f, 1.0f, 1.0f,

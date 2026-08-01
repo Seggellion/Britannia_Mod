@@ -9,6 +9,8 @@ import java.util.Set;
  * Implementations provide data only; {@link CropQualityCalculator} owns the math.
  */
 public interface FarmingGrowthProfile {
+    int baseGrowthTicks();
+
     float idealBoneMeal();
 
     float idealTurquoise();

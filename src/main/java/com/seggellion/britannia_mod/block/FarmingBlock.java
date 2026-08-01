@@ -64,7 +64,8 @@ import com.mojang.logging.LogUtils;
 public class FarmingBlock extends Block implements EntityBlock {
     // 0 = Dry, 5 = Fully Hydrated
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int RAIN_HYDRATION_MINIMUM = 2;
+    public static final float HYDRATION_DECAY_CHANCE = 0.10f;
+    public static final int RAIN_HYDRATION_MINIMUM = 2;
 
     public static final IntegerProperty HYDRATION = IntegerProperty.create("hydration", 0, 5);
     // 0 = None, 1 = Manure, 2 = Chemical
@@ -308,13 +309,32 @@ public class FarmingBlock extends Block implements EntityBlock {
         return level.canSeeSky(pos.above());
     }
 
+    public static boolean shouldDecayHydration(int currentHydration, RandomSource random) {
+        return currentHydration > 0 && hydrationDecays(currentHydration, random.nextFloat());
+    }
+
+    public static boolean hydrationDecays(int currentHydration, float randomRoll) {
+        return currentHydration > 0 && randomRoll < HYDRATION_DECAY_CHANCE;
+    }
+
+    public static int hydrationAfterRain(Level level, BlockPos pos, int currentHydration) {
+        return hydrationAfterRain(currentHydration, isRainHydrating(level, pos));
+    }
+
+    public static int hydrationAfterRain(int currentHydration, boolean rainingAtFlower) {
+        return currentHydration < RAIN_HYDRATION_MINIMUM && rainingAtFlower
+                ? RAIN_HYDRATION_MINIMUM
+                : currentHydration;
+    }
+
     private int applyRainHydrationIfOutdoors(ServerLevel level, BlockPos pos, BlockState state, int currentHydration) {
-        if (currentHydration >= RAIN_HYDRATION_MINIMUM || !isRainHydrating(level, pos)) {
+        int hydrated = hydrationAfterRain(level, pos, currentHydration);
+        if (hydrated == currentHydration) {
             return currentHydration;
         }
 
-        setHydration(level, pos, state, RAIN_HYDRATION_MINIMUM);
-        return RAIN_HYDRATION_MINIMUM;
+        setHydration(level, pos, state, hydrated);
+        return hydrated;
     }
 
     @Override
@@ -337,7 +357,7 @@ public class FarmingBlock extends Block implements EntityBlock {
         }
 
         // 1. Hydration Decay
-        if (currentHydration > 0 && random.nextFloat() < 0.10f) {
+        if (shouldDecayHydration(currentHydration, random)) {
             setHydration(level, pos, state, currentHydration - 1);
             state = level.getBlockState(pos);
             currentHydration = getSyncedHydration(level, pos, state);

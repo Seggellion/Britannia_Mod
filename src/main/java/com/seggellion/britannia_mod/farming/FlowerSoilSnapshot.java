@@ -105,6 +105,20 @@ public record FlowerSoilSnapshot(
         return tag;
     }
 
+    public FlowerSoilSnapshot withHydration(int hydration) {
+        return new FlowerSoilSnapshot(
+                hydration,
+                fertilizerLevel,
+                nitrogen,
+                phosphorus,
+                potassium,
+                organicMatter,
+                origin,
+                communityRestoration,
+                communitySeedableUntilGameTime
+        );
+    }
+
     public static FlowerSoilSnapshot fromTag(CompoundTag tag) {
         FlowerSoilOrigin origin;
         try {

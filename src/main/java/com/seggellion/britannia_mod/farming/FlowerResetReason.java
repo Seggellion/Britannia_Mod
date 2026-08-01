@@ -4,5 +4,6 @@ package com.seggellion.britannia_mod.farming;
 public enum FlowerResetReason {
     HARVEST,
     SWORD_CUTBACK,
-    PRUNING
+    PRUNING,
+    ADMIN_RESET
 }

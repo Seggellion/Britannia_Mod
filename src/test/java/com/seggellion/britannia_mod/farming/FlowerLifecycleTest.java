@@ -223,7 +223,7 @@ class FlowerLifecycleTest {
     }
 
     @Test
-    void registrationIntegrationAndTemporaryResourcesStayMilestoneFourOnly() throws IOException {
+    void registrationIntegrationAndTemporaryResourcesRemainCompatibleWithGrowthMilestone() throws IOException {
         String farmingBlock = source("block/FarmingBlock.java");
         int care = farmingBlock.indexOf("applyCareItem(");
         int flowers = farmingBlock.indexOf("FlowerPlantingService.tryPlant(");
@@ -256,8 +256,9 @@ class FlowerLifecycleTest {
         }
 
         String flowerBlockSource = source("block/FlowerBlock.java");
-        assertFalse(flowerBlockSource.contains("randomTick("));
-        assertFalse(flowerBlockSource.contains("resetToStage"));
+        assertTrue(flowerBlockSource.contains("randomTick("));
+        assertFalse(flowerBlockSource.contains("tryHarvest"));
+        assertFalse(flowerBlockSource.contains("SWORD_CUTBACK"));
         assertFalse(Files.exists(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/client/renderer/FlowerBlockEntityRenderer.java")));
     }

@@ -177,6 +177,22 @@ public record FlowerPersistentState(
                         .orElse(new FlowerColor(0xFFFFFF)));
     }
 
+    /** Returns the same planted identity with only soil simulation state replaced. */
+    public FlowerPersistentState withSoil(FlowerSoilSnapshot updatedSoil) {
+        return new FlowerPersistentState(
+                dataVersion, speciesId, color, growthStage, plantingOrigin, protectedFlower,
+                planterUuid, regionProvenance, quality, Objects.requireNonNull(updatedSoil), growthState
+        );
+    }
+
+    /** Returns the same planted identity with only natural growth state replaced. */
+    public FlowerPersistentState withGrowth(int updatedStage, FlowerGrowthState updatedGrowthState) {
+        return new FlowerPersistentState(
+                dataVersion, speciesId, color, updatedStage, plantingOrigin, protectedFlower,
+                planterUuid, regionProvenance, quality, soil, Objects.requireNonNull(updatedGrowthState)
+        );
+    }
+
     private static void warnOnce(String key, String message, Object... arguments) {
         if (REPORTED_LOAD_WARNINGS.add(key)) {
             LOGGER.warn(message, arguments);

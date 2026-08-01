@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.block.entity.FlowerBlockEntity;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
 import com.seggellion.britannia_mod.farming.CropDefinition;
 import com.seggellion.britannia_mod.farming.CropGrowthContext;
@@ -13,6 +14,10 @@ import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.CropVisualModels;
 import com.seggellion.britannia_mod.farming.CropVisualRotation;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
+import com.seggellion.britannia_mod.farming.FlowerDefinition;
+import com.seggellion.britannia_mod.farming.FlowerGrowthEvaluation;
+import com.seggellion.britannia_mod.farming.FlowerPersistentState;
+import com.seggellion.britannia_mod.farming.FlowerRegistry;
 import com.seggellion.britannia_mod.farming.FruitTreeDefinition;
 import com.seggellion.britannia_mod.farming.GrapeVisualResolver;
 import com.seggellion.britannia_mod.farming.OrangeTreeUtils;
@@ -26,6 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -62,6 +68,10 @@ public final class FarmingDebugCommand {
         Level level = player.level();
         BlockPos lookedAtPos = blockHitResult.getBlockPos();
         BlockState lookedAtState = level.getBlockState(lookedAtPos);
+        if (level instanceof ServerLevel serverLevel
+                && level.getBlockEntity(lookedAtPos) instanceof FlowerBlockEntity flower) {
+            return debugFlower(source, serverLevel, lookedAtPos, flower);
+        }
         OrangeTreeRootBlockEntity fruitTreeRoot = OrangeTreeUtils.findRoot(level, lookedAtPos).orElse(null);
         if (fruitTreeRoot != null) {
             debugOrangeTree(source, level, lookedAtPos, fruitTreeRoot, player);
@@ -280,6 +290,61 @@ public final class FarmingDebugCommand {
             )), false);
         }
 
+        return 1;
+    }
+
+    private static int debugFlower(
+            CommandSourceStack source,
+            ServerLevel level,
+            BlockPos pos,
+            FlowerBlockEntity flower
+    ) {
+        FlowerPersistentState state = flower.flowerState().orElse(null);
+        if (state == null) {
+            source.sendFailure(Component.literal("Target Flower Block has no initialized flower state."));
+            return 0;
+        }
+        FlowerDefinition definition = FlowerRegistry.initial().byId(state.speciesId()).orElse(null);
+        FlowerGrowthEvaluation evaluation = flower.evaluateGrowth(level).orElse(null);
+        source.sendSuccess(() -> Component.literal("Flower debug at " + pos.toShortString()), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+                "identity: species=%s, tint=%s, origin=%s, protected=%s, community_origin=%s",
+                state.speciesId(), state.color().hex(), state.plantingOrigin(), state.protectedFlower(),
+                state.soil().origin()
+        )), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+                "growth: stage=%d, natural_max=%s, absolute_max=%s, progress=%.3f, base_growth_ticks=%s, mature=%s, blocked=%s, tick_progress=%d",
+                state.growthStage(),
+                definition == null ? "<unknown>" : definition.naturalMaximumStage(),
+                definition == null ? "<unknown>" : definition.absoluteMaximumStage(),
+                state.growthState().progress(),
+                definition == null ? "<unknown>" : definition.growthProfile().baseGrowthTicks(),
+                evaluation != null && evaluation.mature(),
+                state.growthState().blocked(),
+                state.growthState().tickProgress()
+        )), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+                "soil: hydration=%d/%d, fertilizer=%d, nitrogen=%.3f, phosphorus=%.3f, potassium=%.3f, organic_matter=%.3f",
+                state.soil().hydration(), FarmingBlockEntity.MAX_HYDRATION,
+                state.soil().fertilizerLevel(), state.soil().nitrogen(), state.soil().phosphorus(),
+                state.soil().potassium(), state.soil().organicMatter()
+        )), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+                "environment: current_climate=%s, planted_climate=%s, planted_region=%s, altitude=%d, multiplier=%s, blocking_reason=%s, quality=%d/100 (persisted; harvest mutation deferred)",
+                evaluation == null ? FarmingClimateResolver.resolve(level, pos) : evaluation.currentClimate(),
+                state.regionProvenance().plantingClimate(), state.regionProvenance().plantingRegionName(), pos.getY(),
+                evaluation == null ? "<unknown>" : String.format("%.3f", evaluation.multiplier()),
+                evaluation == null ? "UNKNOWN_SPECIES" : evaluation.blockingReason(),
+                state.quality().value()
+        )), false);
+        if (evaluation != null) {
+            source.sendSuccess(() -> Component.literal(String.format(
+                    "fits: nutrient=%.3f, hydration=%.3f, climate=%.3f, climate_allowed=%s, altitude_allowed=%s",
+                    evaluation.farmingContext().nutrientFit(), evaluation.farmingContext().hydrationFit(),
+                    evaluation.farmingContext().climateFit(), evaluation.farmingContext().climateAllowed(),
+                    evaluation.farmingContext().altitudeAllowed()
+            )), false);
+        }
         return 1;
     }
 

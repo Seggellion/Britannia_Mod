@@ -170,3 +170,30 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - Full server persistence includes data version, species, stage, exact RGB tint, quality, planting origin, protection, optional planter UUID, planting-region provenance, complete growth state, hydration, fertilizer level, N/P/K/organic matter, soil origin, optional community restoration target/prepared state, and the community seedable deadline.
 - Client update tags and packets contain the shared visual/gameplay identity but deliberately omit planter UUID. Multiple observers deserialize the same species, stage, colour, quality, provenance, and soil state without rerunning colour selection.
 - Unknown saved species IDs and RGB values are preserved. Unknown colours receive a deterministic visual fallback without rewriting saved identity; invalid stages clamp deterministically with bounded warnings. Impossible community metadata is rejected rather than silently normalized.
+
+## Milestone 5 implementation consequences
+
+### M5.1 - Shared evaluator and live growth entry point
+
+- `FlowerGrowthProfile` continues to implement the Milestone 2 `FarmingGrowthProfile` contract. The only shared interface addition is `baseGrowthTicks()`, which existing `CropDefinition` already supplies through its record field; crop values and formulas are unchanged.
+- `FlowerGrowthEvaluator` is an adapter, not a second farming engine. It builds the existing `CropGrowthContext` and calls `CropQualityCalculator.weightedNutrientFit`, `hydrationFit`, and `growthMultiplier`. `FarmingClimateResolver` dynamically resolves the current world climate on every flower growth evaluation; saved planting climate remains historical provenance only.
+- `FlowerBlock.randomTick` follows the existing FarmingBlock cadence: synchronize BE hydration to blockstate, apply the shared 10% hydration-decay roll, apply the shared rain-at-`pos.above()` minimum hydration of 2, then ask `FlowerBlockEntity` to evaluate growth. The block is randomly ticking only on the logical server through Minecraft's `ServerLevel` entry point.
+- `FarmingBlock.HYDRATION_DECAY_CHANCE`, `shouldDecayHydration`, and `hydrationAfterRain` are now shared helpers used by both crops and flowers. Existing FarmingBlock sequencing and results are unchanged.
+
+### M5.2 - Initial timing conversion and 1-based stages
+
+- The design supplies normalized growth intent but no exact flower tick counts. Initial flower timings therefore use the existing crop `baseGrowthTicks` unit and its observed 4-10 range: Poppy 5, Snowdrop 7, Lily 8, Foxglove 9, Campion 6, Hyacinth 7, and Orfluer 9. These are initial tuning values, not final balance.
+- One authoritative mapping converts normalized progress to a 1-based stage: `1 + floor(progress * naturalMaximumStage)`, clamped to `1..naturalMaximumStage`. Progress 0 is stage 1; progress 1 is deterministic natural maturity.
+- Automatic Poppy progression uses natural maximum 6 and can never select stage 7. A Poppy already raised manually to reserved stage 7 is treated as terminal and cannot be demoted by natural ticking. The other six initial species use natural maximum 7. Mature flowers remain planted at progress 1 and receive no further automatic advancement or reset.
+
+### M5.3 - Blocking, quality, identity, and perennial reset
+
+- Zero hydration preserves FarmingBlock's outer growth precondition and produces a blocked flower state. Unsuitable climate or altitude produces the existing zero multiplier. Poor nutrient/hydration fit otherwise changes speed through the unchanged crop multiplier formula. Restored conditions clear the blocked flag and resume from saved progress.
+- Persisted flower quality remains stable at its current authoritative value during natural growth. `CropQualityCalculator` can estimate current fit for diagnostics, but quality mutation and harvested-item quality remain deferred to the Milestone 6 harvest path.
+- `FlowerBlockEntity.resetToStageOne(FlowerResetReason)` is the central logical-server reset. `HARVEST`, `SWORD_CUTBACK`, `PRUNING`, and `ADMIN_RESET` are represented, but no player interaction calls the method in this milestone. Reset changes only stage/progress/timing/blocked state and synchronizes; species, exact tint, origin, protection, planter UUID, provenance, quality, soil/fertilizer values, and community restoration state remain unchanged.
+- Colour selection is absent from random tick, evaluation, advancement, blocking, reset, persistence, and synchronization paths.
+
+### M5.4 - Care interaction deferral and diagnostics
+
+- Player watering and fertilizer clicks on `FlowerBlock` remain deferred. The current care handlers are coupled to `FarmingBlockEntity`; enabling a partial flower variant before Milestone 6's central mutation authorization would let ordinary players change protected flowers. Rain, hydration decay, blockstate synchronization, saved soil nutrients, and condition-sensitive growth are active now.
+- `/farming debug` recognizes the generic FlowerBlockEntity and reports species, exact tint, stage/maxima, progress, timing, mature/blocked state, hydration/nutrients, current and planting climates, altitude, multiplier, blocking reason, persisted-quality authority, and community origin. It does not expose the planter UUID.
