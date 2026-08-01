@@ -167,3 +167,30 @@ All rows used `M9Admin` and `M9Player`, the same isolated dedicated world, ordin
 | Support/neighbor | Server removes support below Campion | Flower inventory effects none; one unrelated adjacent sand entity | Skills remain 0 | Flower remains floating with exact state; A/B converged | Full-pass report; pass/documented applicable behavior |
 | Fluid ordinary/protected | Ordinary and protected Campion, normal water placement | No inventory/loose item change | Skills remain 0 | Both flowers exact because occupied blocks are non-replaceable; A/B converged | Full-pass report; observation passed, destructive distinction not executable |
 | Command/system mutation | Protected Campion, `/setblock` | No inventory/loose item change | Skills remain 0 | Target becomes stone and BE is removed; A/B converged | Full-pass report; pass |
+
+## Milestone 10 final test-matrix audit
+
+The Milestone 9 numbered matrix remains the evidence authority. Milestone 10 adds the three explicitly unexecuted non-critical rows below so the final totals do not hide work previously mentioned only in prose.
+
+| # | Required row | Status | Test/method | Command | Environment | Result and evidence | Limitation |
+|---:|---|---|---|---|---|---|---|
+| 74 | Formal packet-level profile | Not executed; owner-approved deferral | Packet counters/redundant block-update instrumentation | Deferred | Profiler/instrumented network fixture not attached | Behavioral convergence and exact authoritative state/accounting passed in rows 54, 60, 63, and 66-73 | No packet counts or byte/update-frequency proof |
+| 75 | Arbitrary other-mod mutation interoperability | Not executed; owner-approved deferral | Third-party mutation fixture | Deferred | No representative external mod selected | Central known player/environment/system policies and command mutation passed | Other mods can bypass exposed NeoForge paths; universal interception is impossible |
+| 76 | World-generation mutation fixture | Not executed; owner-approved deferral | World-generation/system placement fixture | Deferred | No flower worldgen exists in current scope | `WORLD_GENERATION` is explicitly authorized by policy and no flower worldgen was added | No runtime fixture until an authorized worldgen source exists |
+
+### Final counts
+
+- Total numbered rows: **76**.
+- Rows with automated passed evidence: **55** (rows 1-53 plus 64-65; 14 also have strict/runtime evidence).
+- Rows with runtime passed evidence: **31** (14 automated/runtime hybrid rows plus 17 runtime-primary rows).
+- Manual passed gates: **1** owner visual review from Milestone 7, cross-referenced in the rendering evidence and not added as a duplicate numbered row.
+- Runtime-smoke rows passed: **4** (55-58: clean restart/crash recovery, dedicated server, and client resource loading).
+- Rows not executed: **4** (62, 74, 75, 76).
+- Rows blocked: **0**.
+- Deferred with owner approval: **4** non-critical rows (62, 74, 75, 76).
+
+Every `Passed` row has source, automated, runtime, or owner-review evidence recorded in its row. Strict race evidence records produced-item and seed counts, total durability, Farming-skill totals, final stage/block state, and two-client convergence. No critical row is incomplete.
+
+### Milestone 10 revalidation
+
+On 2026-08-01, the exact full build gate and the focused eleven-suite flower gate both passed at HEAD `7b7a4384686e52db4cafeb26e38ece3f683ac316`: 82 tests, 0 failures, 0 errors, 0 skipped. The placeholder checker verified 231 generated files plus the hash ledger. A fresh ignored dedicated-server run loaded Britannia, reached `Done (3.799s)`, and completed loopback-RCON stop/player/world saves. A fresh ignored client run reloaded `mod/britannia_mod`, initialized OpenAL and the sound engine, and built the `8192x4096x4` block atlas. Targeted server/client searches found no flower, Orfluer, or skinning-knife failure. These checks revalidate rows 57, 58, 64, and 65 without adding duplicate numbered rows or changing the final counts above.

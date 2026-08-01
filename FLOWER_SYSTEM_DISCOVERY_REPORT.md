@@ -977,3 +977,15 @@ The value space is 16,777,216 colors, exceeding the requested approximate two-mi
 `FarmingGrowthProfile` is the narrow shared data interface now implemented by both `CropDefinition` and `FlowerGrowthProfile`. `CropQualityCalculator` continues to own the unchanged hydration, nutrient, growth-multiplier, and quality formulas. Flower definitions adapt design ranges to existing scales rather than copying formulas.
 
 `FlowerPersistentState`, `FlowerSoilSnapshot`, `FlowerCommunityRestoration`, `FlowerRegionProvenance`, `FlowerQuality`, and `FlowerGrowthState` form the NBT-ready Milestone 2 contract. They are not a block entity and do not perform world mutation. The complete climate mapping and rationale are recorded in `FLOWER_SYSTEM_DECISIONS.MD`.
+
+## 24. Final implemented-architecture cross-reference
+
+This section cross-references the final implementation without rewriting the historical discovery evidence above.
+
+- The recommended one-block/one-block-entity architecture was implemented as `block/FlowerBlock.java` and `block/entity/FlowerBlockEntity.java` for all seven species.
+- The recommended seed-only insertion point was implemented in `FarmingBlock.useItemOn` through `FlowerPlantingService`, including rollback and private/community soil snapshots.
+- The recommended shared-evaluator approach was implemented through `FarmingGrowthProfile`, `FlowerGrowthEvaluator`, `FarmingClimateResolver`, and `CropQualityCalculator`; no parallel flower soil/climate/quality/skill engine was added.
+- Rendering Option A was implemented through client-only `FlowerBlockEntityRenderer` and `FlowerVisualModels`: 49 base plus 49 dye-mask models, base-first/mask-second cutout passes, reload-managed baked models, and exact saved tint.
+- The original discovery found inconsistent legacy tag directory forms. NeoForge 1.21 runtime validation proved `data/britannia_mod/tags/item/skinning_knives.json` is authoritative for the Poppy tool. The plural legacy copy was removed in Milestone 9 and generator/tests now enforce one path.
+- The final interaction layer uses `FlowerProtectionService`, `FlowerInteractionService`, `FlowerInteractionHandler`, and the transient ten-tick `FlowerInteractionTransactionGate` for strict single-winner contention. This gate is runtime-only and does not change natural growth or persistence.
+- Final milestone history through Milestone 10 is recorded in `FLOWER_SYSTEM_IMPLEMENTATION_STATUS.md`, with the closeout commit referenced from branch history rather than self-referenced; final row-level evidence remains in `FLOWER_SYSTEM_TEST_MATRIX.md`; the artist replacement contract remains in `FLOWER_ASSET_PLACEHOLDER_MANIFEST.md`.

@@ -2,8 +2,8 @@
 
 Repository: `C:/projects/britannia/mod/Britannia_Mod`  
 Branch: `Farming`  
-Current HEAD: `9e596ac2ece519754f3828745e3e1e921120a935`
-Working state: Milestone 8 is owner-approved and committed; Milestone 9 is owner-approved, revalidated after its final singular-tag correction, and ready for its isolated commit; Milestone 10 is in progress only as the post-commit documentation/closeout phase; unrelated `.claude/` is preserved.
+Current HEAD: `7b7a4384686e52db4cafeb26e38ece3f683ac316`
+Working state: Milestone 9 is owner-approved and committed in isolation; the owner has approved the validated Milestone 10 documentation and handoff for its single closeout commit; unrelated `.claude/` is preserved.
 
 | Milestone | Status | HEAD/commit | Tests | Owner approval | Notes |
 |---|---|---|---|---|---|
@@ -17,8 +17,8 @@ Working state: Milestone 8 is owner-approved and committed; Milestone 9 is owner
 | 6. Interactions | Approved | `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d` | Full 48-test suite, focused flower suites, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Committed as `feat(flowers): add protected interactions and poppy mastery stage`. |
 | 7. Rendering | Approved | `66b36a926bac376188fbe79bd2ba73d2d4fb0190` | 57-test suite, focused rendering suite, 231-file generator audit, isolated dedicated-server restarts, live client fixture, resource reload, chunk cycle, and screenshot review passed | Approved | Committed as `feat(flowers): render multi-plane flowers with dye masks`. |
 | 8. Species content | Approved | `9e596ac2ece519754f3828745e3e1e921120a935` | Full/focused 64-test suite, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Committed as `content(flowers): wire initial species palettes and growth profiles`. |
-| 9. QA | Approved | Pending isolated commit on `9e596ac2ece519754f3828745e3e1e921120a935` | 82 focused tests pass; strict two-client raw-input accounting, clean disk-world restart, live reload, protected bypass checks, and dense-garden review pass | Approved | Owner approved the reported result. Final pre-commit review removed the inert plural skinning-knife tag and revalidated all 82 tests plus the generator audit. |
-| 10. Closeout | In progress | Begins after the isolated Milestone 9 commit | Documentation and final audit in progress | Authorized | Documentation, verification, and handoff only; must remain unstaged/uncommitted. |
+| 9. QA | Approved | `7b7a4384686e52db4cafeb26e38ece3f683ac316` | 82 focused tests pass; strict two-client raw-input accounting, clean disk-world restart, live reload, protected bypass checks, and dense-garden review pass | Approved | Committed as `test(flowers): complete regression and multiplayer coverage`; final pre-commit review removed the inert plural skinning-knife tag and revalidated all 82 tests plus the generator audit. |
+| 10. Closeout | Approved | See final closeout commit in branch history | Full/focused 82-test gates, 231-file placeholder audit, isolated server/client smoke, and repository audit passed | Approved | Owner approved the documentation and implementation handoff. This does not approve placeholder art or authorize merge, push, release, or deployment. |
 
 ## Current Milestone 2 validation state
 
@@ -67,7 +67,7 @@ No client rendering, dedicated-server loading, multiplayer synchronization, worl
 - No manual planted-world save/restart, prolonged random-tick observation, or two-live-client multiplayer session is claimed. Persistence, resumed growth, natural maturity, reset invariants, and identical observer update tags are covered by automated tests; live interaction/rendering awaits later authorized milestones.
 - An initial runtime launch did not honor the intended working-directory override and reached stable startup in the existing `run/server` directory before being stopped. No tracked files changed, but its log/world runtime may have been touched; the final server validation was rerun successfully in the isolated disposable directory above.
 
-Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb254302e6311fa57f5743b`. Milestone 4 is validated, owner-approved, and committed as `f5ed405484d99695862fe788dd01b8449cef594f`. Milestone 5 is validated, owner-approved, and committed as `f3589b2526ecd51ab5286f6e8735a1527ea74df7`. Milestone 6 is validated, owner-approved, and committed as `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`. Milestone 7 is validated, owner-approved, and committed as `66b36a926bac376188fbe79bd2ba73d2d4fb0190`. Milestone 8 is owner-approved, revalidated, and committed as `9e596ac2ece519754f3828745e3e1e921120a935`. Milestone 9 is **Approved**, revalidated, and ready for its isolated commit; Milestone 10 is **In progress** only as the post-commit documentation and handoff phase.
+Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb254302e6311fa57f5743b`. Milestone 4 is validated, owner-approved, and committed as `f5ed405484d99695862fe788dd01b8449cef594f`. Milestone 5 is validated, owner-approved, and committed as `f3589b2526ecd51ab5286f6e8735a1527ea74df7`. Milestone 6 is validated, owner-approved, and committed as `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d`. Milestone 7 is validated, owner-approved, and committed as `66b36a926bac376188fbe79bd2ba73d2d4fb0190`. Milestone 8 is owner-approved, revalidated, and committed as `9e596ac2ece519754f3828745e3e1e921120a935`. Milestone 9 is **Approved**, revalidated, and committed as `7b7a4384686e52db4cafeb26e38ece3f683ac316`; Milestone 10 is **Approved** for the documentation and implementation handoff recorded by the final closeout commit in branch history.
 
 ## Current Milestone 6 implementation state
 
@@ -194,4 +194,210 @@ All scenarios use valid private FarmingBlock support, all four nutrients at the 
 - Ordinary and protected flowers both resisted the attempted water replacement because the occupied flower block is inherently non-replaceable, so the intended destructive ordinary-versus-protected fluid distinction cannot be reached by normal placement. Automated event-policy coverage remains valid; the destructive distinction is not falsely marked as live-passed. Powered piston, explosion, and command/system checks retain their prior passing evidence; command replacement changed the selected protected flower to stone and removed its block entity.
 - Clients converged on final flower/block state after every strict race; the final resource reload and dense-garden captures passed. A clean `save-all flush`, stop, and same-world restart preserved the stage-1 Foxglove fixture and the protected stage-7 dense-garden Poppy. No flower registration, render, model, texture, or persistence error was found.
 - Three strict-live defects were reproduced and corrected: mixed mastery/harvest transitions, post-uproot follow-up interaction on the replacement block, and raw packet routing/tag recognition for skinning-knife mastery plus server-authoritative Adventure detection. Regression tests cover both gate arrival orders/boundary and position-scoped post-uproot suppression. No approved gameplay, protection strength, renderer, persistence schema, species balance, recipe, acquisition source, or Milestone 10 behavior changed.
-- Formal profiler benchmarking, packet-level counters, arbitrary other-mod mutation, and world-generation mutation remain unexecuted, as permitted when accurately recorded. There is no unresolved critical production defect. Milestone 9 is **Approved** and ready for its isolated commit.
+- Formal profiler benchmarking, packet-level counters, arbitrary other-mod mutation, and world-generation mutation remain unexecuted, as permitted when accurately recorded. There is no unresolved critical production defect. Milestone 9 is **Approved** and committed as `7b7a4384686e52db4cafeb26e38ece3f683ac316`.
+
+## Milestone 10 final closeout
+
+### Final implementation summary
+
+The implemented feature uses one generic `FlowerBlock` and one generic `FlowerBlockEntity` for Poppy, Snowdrop, Lily, Foxglove, Campion, Hyacinth, and Orfluer. A successful server-side seed transaction converts an existing `FarmingBlock`, chooses one value from the species allowlist, and persists the exact 24-bit tint with species, stage, origin, protection, planter UUID, planting provenance, quality, farming growth state, and private/community restoration data. The representation has 16,777,216 possible RGB values and is the Dye-Tub-compatible boundary available on this branch; no Dye Tub implementation exists here to reuse directly.
+
+Flowers reuse the farming hydration/nutrient scales, `FarmingClimateResolver`, altitude evaluation, `CropQualityCalculator`, random-tick cadence, weather hydration, Farming skill source, soil-care arithmetic, quality/provenance conventions, and `CropSeedExtractor`. Mature scissors harvesting yields one mapped flower item and resets the same planting to stage 1. Off-hand or shift-use converts one harvested flower into its mapped seed. Adventure grain-blade cutback resets without output. Approved hoe/shovel uprooting ends the instance and restores private farming soil or the community block. Poppy stops naturally at stage 6 and requires Farming 100 plus the tagged skinning knife for each stage-7 cycle.
+
+Creative/operator-level-2 planting creates protected flowers. Central policy covers care, harvest, cutback, uproot, normal break, replacement, Poppy mastery, explosion, fluid, piston, admin, command, world-generation, and system reasons. Rendering is client-only and performs exactly two ordered cutout submissions: untinted base then exact saved-tint grayscale mask. Save/load, update-tag redaction, corrupt visual fallbacks, live resource reload, restart, and strict two-client contention have been validated. All current art remains generated technical placeholder art under the replacement contract in `FLOWER_ASSET_PLACEHOLDER_MANIFEST.md`.
+
+### Milestone commit history audit
+
+Every hash below was verified with Git on `Farming`. Milestones 0, 1, and the owner decision gate share the documentation baseline commit; history was not rewritten to manufacture separate boundaries.
+
+| Milestone | Commit | Message | Files / scope | Validation state | Owner approval |
+|---|---|---|---|---|---|
+| 0. Preflight | `41fb51a568fb393e27a276d12cbcbfd26c8730d0` | `added documentation` | Design/playbook intake and repository baseline; same 85-file documentation commit as Milestone 1/gate | Baseline compile/resources/tests passed | Approved |
+| 1. Discovery | `41fb51a568fb393e27a276d12cbcbfd26c8730d0` | `added documentation` | Full farming architecture, renderer, persistence, tooling, risk, and test discovery | Read-only discovery completed | Approved |
+| Owner decision gate | `41fb51a568fb393e27a276d12cbcbfd26c8730d0` | `added documentation` | B1-B2, A1-A3, G1-G4, AS1, N1, and colour-capacity decisions | No blockers remained | Approved |
+| 2. Data contracts | `0a600a9d2b86ac839e4ff03b1dabf445eccec7bf` | `feat(flowers): add species and colour data contracts` | 33 files; domain values, registries, shared growth profile, policy, persistence contracts, tests | 13 tests and build passed | Approved |
+| 3. Placeholders | `ebba19b92269e5649eb254302e6311fa57f5743b` | `content(flowers): add placeholder items seeds models and masks` | 238 files; 14 items, 49 stages, 98 PNGs, generator, ledger, manifest | 18 tests, generator, client resource smoke passed | Approved |
+| 4. Lifecycle | `f5ed405484d99695862fe788dd01b8449cef594f` | `feat(flowers): add atomic planting and persistent flower state` | 24 files; generic block/entity, atomic conversion, NBT and sync | 27 tests plus server/client smoke passed | Approved |
+| 5. Growth | `f3589b2526ecd51ab5286f6e8735a1527ea74df7` | `feat(flowers): integrate perennial growth with farming simulation` | 16 files; shared evaluator adapter, timing, random tick, reset, diagnostics | 38 tests plus generator/server/client checks passed | Approved |
+| 6. Interactions | `bc94e4d10bff03a86f5cf519b4a03a488f3e6e9d` | `feat(flowers): add protected interactions and poppy mastery stage` | 30 files; protection, care, harvest, extraction, cutback, uproot, Poppy, knife | 48 tests plus server/client checks passed | Approved |
+| 7. Rendering | `66b36a926bac376188fbe79bd2ba73d2d4fb0190` | `feat(flowers): render multi-plane flowers with dye masks` | 15 files; two-pass BER, resolver, 98 registrations, tint and fallback corrections | 57 tests, reload/restart/chunk/dense visual review passed | Approved |
+| 8. Species content | `9e596ac2ece519754f3828745e3e1e921120a935` | `content(flowers): wire initial species palettes and growth profiles` | 6 files; localized feedback and comprehensive species/content coverage | 64 tests plus server/client/generator checks passed | Approved |
+| 9. QA | `7b7a4384686e52db4cafeb26e38ece3f683ac316` | `test(flowers): complete regression and multiplayer coverage` | 18 files; four QA suites, ten-tick transaction gate, post-uproot guard, authoritative raw routing, singular tag path, QA docs | 11 suites, 82 tests, strict two-client/restart/reload/dense evidence passed | Approved |
+| 10. Closeout | See final closeout commit in branch history | `docs(flowers): close implementation and asset handoff` | Documentation, invariant/species/test/repository audits, player/admin and asset handoff | Final validation recorded below | Approved |
+
+### Final species-content table
+
+All values remain **Initial tuning**, not final production balance. `N/P/K/OM` uses the same approved midpoint/tolerance for the four shared farming nutrients. All harvested mappings produce one item on mature scissors harvest and all seed mappings use one harvested item to produce one seed through `CropSeedExtractor`.
+
+| Species ID | Flower item | Seed item | Natural / absolute max | Base ticks | Preferred / tolerated / unsuitable climates | Ideal / tolerated altitude | Hydration ideal / tolerated | N/P/K/OM ideal / tolerated | Palette / fallback | Harvested-item mapping | Seed-extraction mapping | Stage-model coverage | Art status | Balance |
+|---|---|---|---:|---:|---|---|---|---|---|---|---|---|---|---|
+| `britannia_mod:poppy` | `britannia_mod:poppy` | `britannia_mod:poppy_seeds` | 6 / 7 | 5 | `TEMPERATE` / `ARID` / `ICE,FIRE,WETLAND,TROPICAL,MAGICAL,UNDERGROUND` | 45-125 / 20-170 | .30-.55 / .15-.70 | .35-.65 / .15-.80 | 8 / `scarlet` | Poppy | Poppy -> Poppy Seeds | Stages 1-7; stage 7 manual | Placeholder; not approved | Initial tuning |
+| `britannia_mod:snowdrop` | `britannia_mod:snowdrop` | `britannia_mod:snowdrop_seeds` | 7 / 7 | 7 | `ICE` / `TEMPERATE,WETLAND` / `FIRE,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 55-155 / 30-220 | .50-.75 / .35-.90 | .50-.80 / .30-.95 | 4 / `snow_white` | Snowdrop | Snowdrop -> Snowdrop Seeds | Stages 1-7 | Placeholder; not approved | Initial tuning |
+| `britannia_mod:lily` | `britannia_mod:lily` | `britannia_mod:lily_seeds` | 7 / 7 | 8 | `TEMPERATE` / `ICE` / `FIRE,WETLAND,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 45-150 / 20-200 | .45-.70 / .30-.85 | .60-.85 / .40-1.00 | 10 / `snow_white` | Lily | Lily -> Lily Seeds | Stages 1-7 | Placeholder; not approved | Initial tuning |
+| `britannia_mod:foxglove` | `britannia_mod:foxglove` | `britannia_mod:foxglove_seeds` | 7 / 7 | 9 | `TEMPERATE` / `WETLAND` / `ICE,FIRE,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 70-180 / 40-240 | .50-.75 / .35-.90 | .50-.80 / .25-.95 | 9 / `violet` | Foxglove | Foxglove -> Foxglove Seeds | Stages 1-7 | Placeholder; not approved | Initial tuning |
+| `britannia_mod:campion` | `britannia_mod:campion` | `britannia_mod:campion_seeds` | 7 / 7 | 6 | `TEMPERATE` / `WETLAND` / `ICE,FIRE,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 45-150 / 20-210 | .45-.70 / .25-.85 | .40-.70 / .20-.90 | 6 / `rose_pink` | Campion | Campion -> Campion Seeds | Stages 1-7 | Placeholder; not approved | Initial tuning |
+| `britannia_mod:hyacinth` | `britannia_mod:hyacinth` | `britannia_mod:hyacinth_seeds` | 7 / 7 | 7 | `TEMPERATE` / `ICE` / `FIRE,WETLAND,TROPICAL,ARID,MAGICAL,UNDERGROUND` | 40-120 / 20-170 | .35-.60 / .20-.75 | .50-.75 / .30-.90 | 9 / `hyacinth_blue` | Hyacinth | Hyacinth -> Hyacinth Seeds | Stages 1-7 | Placeholder; not approved | Initial tuning |
+| `britannia_mod:orfluer` | `britannia_mod:orfluer` | `britannia_mod:orfluer_seeds` | 7 / 7 | 9 | `MAGICAL,ICE` / `TEMPERATE` / `FIRE,WETLAND,TROPICAL,ARID,UNDERGROUND` | 110-220 / 70-280 | .40-.65 / .25-.80 | .55-.85 / .35-1.00 | 9 / `lavender` | Orfluer | Orfluer -> Orfluer Seeds | Stages 1-7 | Placeholder; not approved | Initial tuning |
+
+### Player and administrator guide
+
+#### Planting and growth
+
+- Prepare valid private or community farming soil, then use a registered flower seed. Tilling, watering, or fertilizing alone never creates a flower.
+- Successful planting stores species and one server-selected colour. Creative or operator-level-2 planting creates a protected flower; soil prepared earlier by an administrator does not transfer protection to an ordinary planter.
+- Flowers reuse farming hydration, nutrients, climate, altitude, weather, quality, and growth cadence. Poppy naturally stops at stage 6; the other initial species naturally reach stage 7.
+- A planted flower is persistent. Growth, care, harvest reset, cutback, save/restart, client reconnect, and resource reload do not change its saved colour.
+
+#### Harvest, seed recovery, cutback, and uprooting
+
+- Use the registered scissors on a mature flower to receive exactly one mapped flower item. The same planted flower resets to stage 1 with unchanged species and colour.
+- Use the existing off-hand or shift-use harvested-crop interaction on one harvested flower to obtain its one mapped seed. Flower colour does not select a different seed.
+- In Adventure mode, attack an eligible unprotected flower with an item in `britannia_mod:grain_harvest_blades`. Successful cutback resets to stage 1, costs one durability, and produces no flower or seed.
+- Use `britannia_mod:farming_hoe` or an item in `britannia_mod:root_crop_shovels` to uproot an authorized flower. Private soil restores to `FarmingBlock`; community soil restores to the unprepared community block. Uprooting ends the instance, and replanting performs a new colour roll.
+- For Poppy mastery, use an item in `britannia_mod:skinning_knives` on an authorized stage-6 Poppy with Farming skill 100 or greater. Success advances to stage 7 and costs one durability. After any reset, stage 7 must be earned again.
+
+#### Protection and administration
+
+- Creative- or operator-level-2-planted flowers are protected. Ordinary actors cannot care for, harvest, cut back, uproot, normally break, replace, or master them, and denied actions produce no consumption, durability, drop, skill, or success feedback.
+- Protected explosions and exposed fluid mutation hooks are denied; all flowers block pistons. Authorized Creative/operator removal and explicit command/system mutation remain possible.
+- The bounded `/farming debug` flower diagnostics and bounded fallback warnings are approved operational aids. They do not expose planter UUID to clients and are not temporary test instrumentation.
+
+#### Current acquisition limitation
+
+Flower items and seeds are currently available through Creative/admin access and flower renewal paths. The skinning knife is currently Creative/admin only. No survival recipe, natural generation, merchant, economy, or Rails source has been added.
+
+### Final design-invariant audit
+
+The tables below use the required columns. “Automated evidence” identifies the focused suite(s); runtime evidence is not inflated beyond the recorded Milestone 7/9 work.
+
+#### FarmingBlock conversion and identity
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Tilling never creates `FlowerBlock`; fertilized dirt creates only `FarmingBlock`; watering/fertilizer never converts it | `FertilizedDirtItem`, `FarmingHoeItem`, `FarmingBlock.useItemOn` | `FlowerRegressionTest`, `FlowerLifecycleTest` | Existing farming server/client smoke | Pass | Contract/live flower planting split is intentional |
+| Only a valid mapped flower seed converts `FarmingBlock`; invalid planting is atomic | `FarmingBlock.useItemOn` -> `FlowerPlantingService` | Lifecycle rollback injection and multiplayer first-wins tests | Strict shared-state evidence; ordinary planting contention remains deterministic harness coverage | Pass | No human click fixture retained |
+| Community plots are supported with restoration metadata | `FlowerSoilSnapshot`, `FlowerCommunityRestoration`, planting/restoration services | Lifecycle/save/interaction/multiplayer tests | Strict community uproot restored exactly once | Pass | No unique community plot ID exists in the current farming system |
+| One species ID, exact tint, origin, protection, server planter UUID, provenance, quality, farming state, and community restoration state persist | `FlowerPersistentState`, `FlowerBlockEntity`, soil/provenance/quality value objects | Domain/lifecycle/save compatibility tests | Clean disk-world restart preserved representative private/protected states | Pass | Unknown/corrupt values use bounded fallback policy |
+| Clients receive approved synchronized fields only; planter UUID stays server-side | `FlowerBlockEntity.clientStateTag`, update tag/packet | Lifecycle/save/multiplayer UUID-redaction tests | Two clients converged after every strict action | Pass | No packet-byte capture/profile |
+
+#### Colour selection and persistence
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Colour is selected exactly once after successful server validation | `FlowerPlantingService`, `WeightedFlowerColorSelector`, `FlowerColorLifecycle` | Domain/lifecycle/multiplayer planting tests | Disk fixture retained saved values across restart | Pass | Planting race uses deterministic server-order harness |
+| Species palettes are explicit allowlists with at least two entries and no small enum ceiling | `FlowerRegistry`, `FlowerDefinitionValidator`, 24-bit `FlowerColor` | Domain/species tests cover 8/4/10/9/6/9/9 palettes and 16,777,216-value capacity | Multiple same-species colours visually reviewed | Pass | Current palettes are initial tuning |
+| Load, growth, reset, rendering, and resource reload never select colour | Persistent state, growth evaluator, reset methods, renderer plan/reload handler | Save/growth/rendering source and behavior tests | Restart, reconnect, chunk cycle, and live reload preserved colour | Pass | None |
+| Existing flowers are never recoloured | All lifecycle transitions preserve `FlowerColor` | Growth/interaction/save/multiplayer suites | Two-client convergence and restart evidence | Pass | Future nutrient bias remains planting-only |
+| Unknown palette tint and invalid raw tint are preserved; corrupt presentation fallback never rewrites NBT | Persistence-only raw tint path and `visualColor`/renderer fallback | Save compatibility and rendering tests | Corrupt `ColorTint:-1` survived live restart and rendered fallback | Pass | Bounded warning, not automatic migration |
+
+#### Persistent regrowth and removal
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Mature shearing yields one flower and resets the same planting to stage 1 | `FlowerInteractionService.harvest`, `FlowerBlockEntity.harvestAndReset` | Interaction/multiplayer tests | Strict Lily/Poppy/Foxglove races produced one winning output | Pass | None |
+| Sword cutback resets to stage 1 without item or seed | `FlowerInteractionHandler.onLeftClickBlock`, `cutBack`, `resetToStageOne` | Interaction/protection/multiplayer tests | Strict cutback-first/harvest-first races | Pass | Delayed fixture could not independently retain one sword-slot durability reading; production path is test-covered |
+| Harvest/cutback preserve identity and do not restore community soil | Central reset mutates stage/progress/timing only | Growth/interaction/save tests | Clients converged on reset state | Pass | None |
+| Reset never produces a seed; seed recovery consumes a harvested item through existing extraction | `HarvestedFlowerItem`, `CropSeedExtractor` | Interaction/species/regression tests | Strict repeated-packet extraction produced one seed from one source | Pass | No survival acquisition source |
+| True uprooting ends the flower and restores private/community substrate once | `restoreUnderlyingSoil`, replacement guard | Interaction/multiplayer/save tests | Strict private/community races: one restoration, one durability, no output/skill | Pass | Position guard intentionally suppresses same-position use only for ten ticks |
+
+#### Protection
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Creative and operator-level-2 planting is protected; ordinary planting is unprotected; protection derives from planter, not prepared soil | `FlowerProtectionService`, planting access/origin capture | Domain/lifecycle/protection tests | Operator/Creative authorization exercised in strict runtime | Pass | No external permissions-plugin integration |
+| Unauthorized care, harvest, cutback, uproot, Poppy mastery, normal break, and BlockItem replacement are denied | Central mutation reasons in service/handler | Interaction and exhaustive bypass tests | Raw protected break and stone placement preserved exact state | Pass | None for covered paths |
+| Protected explosion removal and exposed fluid mutation are denied; all flowers block pistons | Explosion/fluid event hooks; `FlowerBlock.getPistonPushReaction` | Bypass/interaction source-policy tests | Explosion/piston passed; normal water placement could not replace either nonreplaceable flower | Pass for exposed engine paths | Ordinary/protected destructive fluid distinction is unreachable through normal placement |
+| Command/system mutation remains possible | `FlowerMutationReason.ADMIN_COMMAND`, `WORLD_GENERATION`, `SYSTEM_MUTATION` | Protection policy suite | `/setblock` replaced a protected flower | Pass | Arbitrary other-mod mutation cannot be universally intercepted |
+| Denied actions cause no consumption, durability, drop, skill, or success feedback | Service validates authorization/state before all effects | Interaction/protection/multiplayer accounting | Strict inventories, loose items, durability, and skills stayed exact | Pass | No packet counter instrumentation |
+
+#### Poppy stage 7
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Natural Poppy growth stops at 6; stage 7 requires exact stage 6, Farming >=100, `britannia_mod:skinning_knives`, and authorization | Registry profile, growth evaluator, interaction service, singular tag | Domain/growth/interaction/species/protection tests | Strict mastery/harvest both orders | Pass | Knife acquisition is Creative/admin only |
+| One durability is charged only after successful mastery | `advancePoppy`, `damageAfterSuccess` | Interaction/multiplayer tests | Mastery-first knife damage 0->1; loser unchanged | Pass | None |
+| Natural growth never creates 7; saved 7 persists; harvest/cutback reset to 1 and natural regrowth stops at 6 again | Growth evaluator, persistent state, reset path | Growth/save/interaction/rendering tests | Stage-7 protected Poppy survived restart; reset races converged | Pass | No permanent mastery flag by design |
+
+#### Shared farming simulation
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Flowers reuse hydration/nutrient scales, climate resolver, altitude evaluator, `CropQualityCalculator`, and growth-multiplier semantics | `FarmingGrowthProfile`, `FlowerGrowthEvaluator`, `FarmingClimateResolver` | Domain/growth/species/regression tests | Practical mixed-condition/dense fixtures | Pass | Coarse eight-value climate enum loses fine habitat distinctions |
+| Flowers reuse random-tick cadence, hydration decay, and weather hydration | `FlowerBlock.randomTick`, shared `FarmingBlock` helpers | Growth/regression tests | Dedicated worlds remained stable | Pass | No prolonged weather benchmark |
+| Flowers reuse Farming skill source, soil care, quality/provenance, and crop item-to-seed extraction | `SkillManager`/`FarmingSkill`, `FarmingSoilCare`, `CropQualityCalculator`, `FruitProvenance`, `CropSeedExtractor` | Interaction/species/regression/accounting tests | Exact harvest/care skill totals and seed extraction passed | Pass | No separate flower economy/value layer |
+| No duplicate flower climate, nutrient, hydration, quality, or skill engine exists | Adapter/profile architecture and source isolation | Growth/regression source-contract tests | Repository audit found no parallel engine | Pass | Existing crop-only nutrient event duplication predates flowers |
+
+#### Rendering and exact texture contract
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| One generic renderer/block/entity; model chosen by synchronized species/stage | `FlowerBlockEntityRenderer`, `FlowerVisualModels`, `FlowerBlock`, `FlowerBlockEntity` | Rendering/lifecycle tests | Seven-by-seven matrix and two clients | Pass | None |
+| Base renders first untinted; mask renders second with exact saved tint; every shared face has `tintindex: 0` | Renderer and generated shared parent | Asset/rendering/save tests | Light/dark tint review passed after tintindex correction | Pass | Continuous-motion flicker was not formally recorded |
+| Invalid tint/species/stage use deterministic visual fallbacks without persistent mutation | Render-plan resolver and `visualColor` | Rendering/save compatibility tests | Corrupt/unknown fixtures survived reload/restart | Pass | Bounded warnings are retained intentionally |
+| Rendering never mutates persistent state; dedicated server never loads client renderer classes; reload is safe | Client-only subscriber, reload-managed model lookups | Rendering/protection source checks | Dedicated starts and two live reloads passed | Pass | Known unrelated client-only mixin warning remains |
+| Exact content is 7 species, 49 logical stages, 49 base textures, 49 dye masks, 98 in-world PNGs at 128x128 | Generator, ledger, manifest, resolver | Asset/rendering/species tests and generator check | Full matrix visual review | Pass | Artwork is placeholder, not final |
+| Each pair has identical dimensions/UV/padding/pixel alignment; visible alpha is disjoint; masks are grayscale/alpha-selected | Generator image/model contract | `FlowerAssetContractTest` | No halos, seams, checkerboarding, or static Z-fighting observed | Pass | Artist must preserve contract |
+| No third in-world texture/pass, per-colour texture/block/model, baked final mask colour, or invalid mask channel exists | Two-pass resolver/generator contract | Asset/rendering/species repository tests | Runtime logs/captures showed two aligned passes | Pass | None |
+
+#### Multiplayer and transaction safety
+
+| Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
+|---|---|---|---|---|---|
+| Two clients receive the same species, colour, and stage and converge after tested actions | Update tags/packets and server-authoritative transitions | Lifecycle/save/multiplayer tests | Two distinct loopback clients converged after every strict fixture | Pass | No packet-byte capture |
+| Planting contention has one winner | Atomic `FlowerPlantingService` | Deterministic first-wins transaction test | Not repeated as a raw two-client fixture | Pass | Deterministic harness, not network scheduling |
+| Harvest, cutback/harvest, mastery/harvest, care, and uprooting contention each commit one result | Per-entity ten-tick gate plus post-uproot position/dimension guard | Interaction and multiplayer tests, including both orders and exact tick-10 boundary | Strict two-client raw packets covered all listed non-plant races | Pass | No formal packet counter profile |
+| No duplicate item, seed, durability, or skill occurs | Effects occur only after committed server mutation | Regression/interaction/multiplayer accounting | Exact counts: one output/seed/durability/award where applicable, losers zero | Pass | One delayed cutback client slot limitation is documented above |
+| Transaction gates expire exactly and do not persist, block natural growth, alter saved identity, or lock later interactions | Transient BE field and static replacement map; no NBT/update-tag fields | Exact 10-tick tests, save/source isolation | Later interactions and restart remained available | Pass | Replacement guard blocks all same-position clicks inside its deliberately short window because stale packets are not identifiable |
+
+### Deferred work register
+
+The following items are wholly deferred and are not partially implemented: final owner-approved species artwork; survival flower-seed acquisition; survival skinning-knife acquisition; recipes; natural flower generation; merchant/economy integration; Rails integration; flower pricing; formal packet-level profiling; formal performance benchmarking; arbitrary other-mod mutation interoperability; a world-generation mutation fixture; flower breeding/genetics; cross-pollination; quality-based yield/value expansion; biome or seasonal influence; admin colour-selection tools; rare-colour achievements; flower-arranging/decorative crafting; additional species; and nutrient-biased colour weighting at planting.
+
+**Future nutrient logic may bias colour weights only when a new seed is successfully planted.**
+
+**It must never recolour an existing flower.**
+
+### Known limitations
+
+- All 98 in-world flower textures and all 15 item textures are technical placeholders; owner-approved artwork count is 0 and 113 texture replacements remain.
+- Survival flower/seed acquisition is incomplete. Renewal works only after Creative/admin access supplies initial content.
+- The skinning knife has no survival recipe, merchant, economy, or Rails source.
+- Formal packet-level profiling and formal profiler/frame-time benchmarking were not performed.
+- Arbitrary other-mod block mutation cannot be universally intercepted; only exposed/known engine paths are governed.
+- Normal water placement cannot demonstrate an ordinary/protected destructive distinction because occupied `FlowerBlock` instances are inherently nonreplaceable.
+- Flowers remain floating if support below them is removed because no support-survival callback is implemented.
+- DOCX visual rendering was unavailable because LibreOffice/`soffice` is not installed; all 224 paragraphs and 43 tables were structurally reviewed.
+- Existing unrelated optional configuration, legacy asset, GeckoLib, and client-only mixin warnings remain outside flower scope.
+
+Placeholder artwork is a limitation of presentation only; it does not invalidate the validated gameplay, persistence, protection, rendering contract, or transaction behavior.
+
+### Final validation and repository audit
+
+- Full gate: `.\gradlew.bat cleanTest compileJava processResources test --console=plain --no-configuration-cache` passed on 2026-08-01.
+- Focused gate: all eleven flower suites passed with 82 tests, 0 failures, 0 errors, and 0 skipped.
+- Placeholder audit: `python tools/generate_flower_placeholders.py --check` verified 231 generated files plus the hash ledger. The test suite also enforces the artist warnings and the singular NeoForge item-tag path.
+- Dedicated server: an ignored run under `build/m10-runtime/server` loaded Britannia 0.1.8, created/reopened only `server-world`, reached `Done (3.799s)`, accepted a loopback RCON stop, and logged `Stopping server`, `Saving players`, and `Saving worlds`. No flower-specific registration, classloading, persistence, model, texture, or skinning-knife failure appeared.
+- Client: an ignored run under `build/m10-runtime/client` reloaded `mod/britannia_mod`, initialized OpenAL and the sound engine, and created the `8192x4096x4` block atlas. Targeted review found no flower, Orfluer, or skinning-knife warning/error. Pre-existing non-flower missing-model/texture warnings remain outside scope.
+- Representative planted state was not recreated in Milestone 10 because no production behavior or visual asset changed after the owner-approved Milestone 9 clean save/restart and two-client fixture. That evidence remains authoritative and is cross-referenced in the matrix.
+- Repository scope: Milestone 10 changes only four flower Markdown closeout records. The generator-owned manifest, generator, hash ledger, production Java, tests, models, PNGs, localization, tags, recipes, world generation, economy, Gradle configuration, and runtime files are unchanged.
+- History boundary: Milestone 10 began from `7b7a4384686e52db4cafeb26e38ece3f683ac316`, nine commits ahead of `origin/Farming`. Its commit is intentionally referenced from branch history rather than self-referenced or amended. Unrelated `.claude/` remains untouched.
+- Runtime artifacts: the Milestone 10 server/client working directories and temporary init script were ignored disposable evidence and are removed after validation. Existing tracked `logs/` files predate this closeout and are not modified by the Milestone 10 diff.
+- Source audit: all intended flower paths are referenced or intentionally policy/data-facing. `FlowerRemovalReason` remains a reserved semantic enum from Milestone 2 rather than temporary instrumentation; no test harness, debug branch, fake player, temporary command, or compiled instrumentation is retained in source.
+- `git diff --check` reports only the repository's existing CRLF conversion warnings and no whitespace errors. Duplicate-case documentation and plural `tags/items/skinning_knives.json` audits are clean.
+
+### Final owner approval and feature disposition
+
+- **Milestone 10 - Approved.** The owner approved the Milestone 10 documentation and implementation handoff.
+- The Persistent Flower System implementation milestones are complete on the `Farming` branch.
+- Placeholder artwork remains non-final. Zero placeholder textures are approved as final artwork; final-art replacement is a separate owner-approval process.
+- Survival flower/seed acquisition and survival skinning-knife acquisition remain deferred.
+- Recipes, natural generation, merchants, economy, and Rails integration remain deferred.
+- This approval includes no merge, push, pull request, release tag, deployment, or production-readiness claim.
+
+Persistent Flower System implementation: **Approved on the Farming branch.**
+
+Final artwork: **Not approved and still pending replacement.**
+
+Deferred acquisition, economy, generation, and expansion features: **Not implemented.**
+
+Milestone 10 status: **Approved.** Commit message: `docs(flowers): close implementation and asset handoff`.

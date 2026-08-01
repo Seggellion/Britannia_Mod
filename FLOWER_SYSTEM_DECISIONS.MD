@@ -278,3 +278,19 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 
 - Flower blocks have no support-survival callback. Removing the block below leaves the flower floating and preserves its exact persistent state; this is the documented neighbor/support behavior rather than an implicit uproot or drop path.
 - Ordinary and protected flowers are both inherently non-replaceable to normal water placement while occupied. The approved protection policy still denies destructive fluid mutation of protected flowers and permits ordinary environmental mutation, but normal placement cannot exercise that distinction. Validation records the unreachable destructive fixture accurately instead of weakening block replacement or inventing a bypass.
+
+## Milestone 10 closeout decisions
+
+- Milestone 9 owner approval is recorded by the isolated commit `7b7a4384686e52db4cafeb26e38ece3f683ac316` (`test(flowers): complete regression and multiplayer coverage`). Milestone 10 does not reopen approved gameplay, balance, persistence, protection, or rendering decisions.
+- The existing implementation-status document is the sole final closeout record. No overlapping `FLOWER_SYSTEM_CLOSEOUT.md` is required.
+- Current generated flower art remains technical placeholder art. Technical asset-contract validation and the earlier owner-approved renderer result do not constitute approval of any final species artwork.
+- Normal final-art replacement preserves the existing paths, 128x128 paired canvas, UV layout, transparent padding, alpha-disjoint base/mask ownership, grayscale visible mask RGB, shared `tintindex: 0`, and exact two-pass renderer. It requires no Java change.
+- The generator remains a placeholder scaffold with create-only default, non-writing `--check`, and hash-guarded overwrite. It is not a final-art conversion or approval pipeline.
+- No additional owner decision blocks technical closeout. Future artwork approval and every item in the deferred-work register require separate owner authorization.
+
+### M10.1 - Final owner approval
+
+- The owner approved the Milestone 10 documentation and implementation handoff. Milestone 10 is **Approved**, and the Persistent Flower System implementation milestones are complete on `Farming`.
+- This approval covers the implemented technical feature and closeout records only. It approves zero placeholder textures as final artwork; final artwork remains pending a separate owner review and replacement process.
+- Survival flower/seed acquisition, survival skinning-knife acquisition, recipes, natural generation, merchants, economy, Rails integration, and all other deferred expansion remain unimplemented.
+- No merge, push, pull request, release tag, deployment, or production-readiness claim is included in this approval.
