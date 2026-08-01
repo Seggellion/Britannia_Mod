@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.farming;
 
 public enum FlowerMutationReason {
     PLANTING(false),
+    CARE(false),
     HARVEST(false),
     SWORD_CUTBACK(false),
     PERMANENT_UPROOT(false),
@@ -11,6 +12,8 @@ public enum FlowerMutationReason {
     FLUID(false),
     REPLACEMENT(false),
     PISTON(false),
+    ADMIN_REMOVE(true),
+    SYSTEM_MUTATION(true),
     ADMIN_COMMAND(true),
     WORLD_GENERATION(true);
 

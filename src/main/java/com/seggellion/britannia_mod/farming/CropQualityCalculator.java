@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.resources.ResourceLocation;
 
 public final class CropQualityCalculator {
     public static final String CROP_ID_KEY = "CropId";
@@ -167,6 +168,18 @@ public final class CropQualityCalculator {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
         int clamped = clampQuality(quality);
         tag.putString(CROP_ID_KEY, crop.id());
+        tag.putInt(QUALITY_SCORE_KEY, clamped);
+        tag.putInt(LEGACY_QUALITY_KEY, clamped);
+        tag.putInt(COMMODITY_QUALITY_KEY, clamped);
+        tag.putString("QualityLabel", qualityLabel(quality));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    public static void applyQuality(ItemStack stack, ResourceLocation produceId, int quality) {
+        setQuality(stack, quality);
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
+        int clamped = clampQuality(quality);
+        tag.putString(CROP_ID_KEY, produceId.toString());
         tag.putInt(QUALITY_SCORE_KEY, clamped);
         tag.putInt(LEGACY_QUALITY_KEY, clamped);
         tag.putInt(COMMODITY_QUALITY_KEY, clamped);

@@ -1,6 +1,6 @@
 {
   "files": {
-    "FLOWER_ASSET_PLACEHOLDER_MANIFEST.md": "faa0271a31be11edfa8d6942a0220764d15b3eec1133cb0ab16b59bfe39343f0",
+    "FLOWER_ASSET_PLACEHOLDER_MANIFEST.md": "7f6ec39d4d44c0f916e1dcdcc9b04f875768fc2bf24b24c86f121356e56af6de",
     "src/main/resources/assets/britannia_mod/models/block/flowers/campion/stage_1_base.json": "6cffe54d90a0b442da8a2a72eb8d21b42a5b50205319119914932776458a9eed",
     "src/main/resources/assets/britannia_mod/models/block/flowers/campion/stage_1_dye_mask.json": "f91564ea17f1646317d0a011a723d7fbc0899386baa47d7dc4489c3f9f76cc8c",
     "src/main/resources/assets/britannia_mod/models/block/flowers/campion/stage_2_base.json": "246682d9c472ac557344f96b67e7aef016f9398d0bf0eca01686cb032bef66f8",
@@ -112,6 +112,7 @@
     "src/main/resources/assets/britannia_mod/models/item/orfluer_seeds.json": "a86c4470fc51f3fe45cd80b5cfa1d3336946d199d98fb4e25b695e2febf6a932",
     "src/main/resources/assets/britannia_mod/models/item/poppy.json": "a3f472ac3ff763dc8dfe0275622f90fc2432a496d4cd7ed3691c677fbaba57f8",
     "src/main/resources/assets/britannia_mod/models/item/poppy_seeds.json": "7b1fc5c88bc28066f9855b3bd92ec2944cbc7f61439e3fac0b1dc566c948f9ac",
+    "src/main/resources/assets/britannia_mod/models/item/skinning_knife.json": "1a114c13146d7827a6a3d8699b761d97f22b4882125da59d2d997ecffa1f8a17",
     "src/main/resources/assets/britannia_mod/models/item/snowdrop.json": "97c3208896f17926261c813ed9abf65703deafde48e821824a5c49c6ba0321c3",
     "src/main/resources/assets/britannia_mod/models/item/snowdrop_seeds.json": "c1be2073b11f5aa3cd08942e830412f1332ba2722d1c61584cb9e0f3ed7a6bcf",
     "src/main/resources/assets/britannia_mod/textures/block/flowers/campion/stage_1_base_texture.png": "0df5430e170455680f13d422ee723c6b708e3a5c93aac7ada8ebc9afd56d550d",
@@ -226,8 +227,10 @@
     "src/main/resources/assets/britannia_mod/textures/item/flowers/poppy_seeds.png": "0c7259e773df222c6324ce9928e6565d4877a5925826744ffbfa4ce300ab98ea",
     "src/main/resources/assets/britannia_mod/textures/item/flowers/snowdrop.png": "bf827654791ed6c63c3ae13eb9ff95362797b5af3354ad6f59063cbfc2fbc912",
     "src/main/resources/assets/britannia_mod/textures/item/flowers/snowdrop_seeds.png": "9ecac2b983ff06deea20daff17c59b77047b1ecc7224e5421384e105decd2340",
+    "src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png": "581ab5cd23f160aa62f4409effab9af08ea662aa2bda1f8bb8284b06fe1a5fc7",
     "src/main/resources/data/britannia_mod/tags/items/flower_seeds.json": "75a30d45f3a293fe201fb25ec821a25e0ca9bddc546d7d25c12efc165499d2b6",
-    "src/main/resources/data/britannia_mod/tags/items/flowers.json": "c48c5b0dd64810be3c909a0a7b78e87354fdc6c2c06366b7813e90fa086eca27"
+    "src/main/resources/data/britannia_mod/tags/items/flowers.json": "c48c5b0dd64810be3c909a0a7b78e87354fdc6c2c06366b7813e90fa086eca27",
+    "src/main/resources/data/britannia_mod/tags/items/skinning_knives.json": "4d1e6618d256a8e5b393d9bcc8e40bfb16886216d85b016362a71b89617789ea"
   },
   "generator": "tools/generate_flower_placeholders.py",
   "schema": 1

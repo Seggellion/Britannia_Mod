@@ -11,6 +11,7 @@ import com.seggellion.britannia_mod.item.CropSeedItem;
 import com.seggellion.britannia_mod.item.FertilizedDirtItem;
 import com.seggellion.britannia_mod.item.FarmingHoeItem;
 import com.seggellion.britannia_mod.item.SeedExtractableHealingCropItem;
+import com.seggellion.britannia_mod.item.HarvestedFlowerItem;
 import com.seggellion.britannia_mod.item.WateringCanItem;
 import com.seggellion.britannia_mod.item.CookedFishSteakItem;
 import com.seggellion.britannia_mod.item.WeightedCommodityItem;
@@ -149,6 +150,10 @@ public class ItemRegistry {
 
     private static DeferredHolder<Item, Item> flowerContentItem(String id) {
         return ITEMS.register(id, () -> new Item(new Item.Properties()));
+    }
+
+    private static DeferredHolder<Item, HarvestedFlowerItem> harvestedFlowerItem(String id) {
+        return ITEMS.register(id, () -> new HarvestedFlowerItem(new Item.Properties()));
     }
 
     // General Items
@@ -548,22 +553,25 @@ public static final DeferredHolder<Item, WateringCanItem> WATERING_CAN = ITEMS.r
 public static final DeferredHolder<Item, FarmingHoeItem> FARMING_HOE = ITEMS.register("farming_hoe",
         () -> new FarmingHoeItem(new Item.Properties().stacksTo(1).durability(128)));
 
+public static final DeferredHolder<Item, Item> SKINNING_KNIFE = ITEMS.register("skinning_knife",
+        () -> new Item(new Item.Properties().durability(128)));
+
 // Flower content is deliberately ordinary inventory content in Milestone 3.
 // FlowerRegistry remains the sole authoritative seed-to-species mapping; later
 // interaction work may delegate harvested items to CropSeedExtractor.
-public static final DeferredHolder<Item, Item> POPPY = flowerContentItem("poppy");
+public static final DeferredHolder<Item, HarvestedFlowerItem> POPPY = harvestedFlowerItem("poppy");
 public static final DeferredHolder<Item, Item> POPPY_SEEDS = flowerContentItem("poppy_seeds");
-public static final DeferredHolder<Item, Item> SNOWDROP = flowerContentItem("snowdrop");
+public static final DeferredHolder<Item, HarvestedFlowerItem> SNOWDROP = harvestedFlowerItem("snowdrop");
 public static final DeferredHolder<Item, Item> SNOWDROP_SEEDS = flowerContentItem("snowdrop_seeds");
-public static final DeferredHolder<Item, Item> LILY = flowerContentItem("lily");
+public static final DeferredHolder<Item, HarvestedFlowerItem> LILY = harvestedFlowerItem("lily");
 public static final DeferredHolder<Item, Item> LILY_SEEDS = flowerContentItem("lily_seeds");
-public static final DeferredHolder<Item, Item> FOXGLOVE = flowerContentItem("foxglove");
+public static final DeferredHolder<Item, HarvestedFlowerItem> FOXGLOVE = harvestedFlowerItem("foxglove");
 public static final DeferredHolder<Item, Item> FOXGLOVE_SEEDS = flowerContentItem("foxglove_seeds");
-public static final DeferredHolder<Item, Item> CAMPION = flowerContentItem("campion");
+public static final DeferredHolder<Item, HarvestedFlowerItem> CAMPION = harvestedFlowerItem("campion");
 public static final DeferredHolder<Item, Item> CAMPION_SEEDS = flowerContentItem("campion_seeds");
-public static final DeferredHolder<Item, Item> HYACINTH = flowerContentItem("hyacinth");
+public static final DeferredHolder<Item, HarvestedFlowerItem> HYACINTH = harvestedFlowerItem("hyacinth");
 public static final DeferredHolder<Item, Item> HYACINTH_SEEDS = flowerContentItem("hyacinth_seeds");
-public static final DeferredHolder<Item, Item> ORFLUER = flowerContentItem("orfluer");
+public static final DeferredHolder<Item, HarvestedFlowerItem> ORFLUER = harvestedFlowerItem("orfluer");
 public static final DeferredHolder<Item, Item> ORFLUER_SEEDS = flowerContentItem("orfluer_seeds");
 
     // 2. Grape Seeds (Connects to the Block)

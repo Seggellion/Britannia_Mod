@@ -72,7 +72,7 @@ Every pass inherits the same four-plane cutout parent. UV `[0,0,16,16]` covers t
 
 ## Item placeholders
 
-Harvested flowers and seeds are ordinary `net.minecraft.world.item.Item` registrations in Milestone 3. `FlowerRegistry` remains the sole seed-to-species mapping. No food, healing, colour-bearing item state, planting, harvesting, or crop-to-seed activation behavior is implemented here.
+Harvested flowers use `HarvestedFlowerItem` for the established crop-to-seed activation; seeds remain ordinary items. The Milestone 6 skinning knife is a non-combat utility item with 128 durability, stack size 1, no recipe, no repair ingredient, and Creative-tab availability.
 
 | Registry ID | Item model path | Item texture path | Item class / registration approach | Creative-tab placement | Status | Final-art approval |
 |---|---|---|---|---|---|---|
@@ -90,6 +90,7 @@ Harvested flowers and seeds are ordinary `net.minecraft.world.item.Item` registr
 | `britannia_mod:hyacinth_seeds` | `src/main/resources/assets/britannia_mod/models/item/hyacinth_seeds.json` | `src/main/resources/assets/britannia_mod/textures/item/flowers/hyacinth_seeds.png` | Ordinary `Item`; authoritative mapping in `FlowerRegistry` | Britannia World - Farming Seeds | Generated placeholder | Not approved |
 | `britannia_mod:orfluer` | `src/main/resources/assets/britannia_mod/models/item/orfluer.json` | `src/main/resources/assets/britannia_mod/textures/item/flowers/orfluer.png` | Ordinary `Item`; authoritative mapping in `FlowerRegistry` | Britannia World - Farming Produce | Generated placeholder | Not approved |
 | `britannia_mod:orfluer_seeds` | `src/main/resources/assets/britannia_mod/models/item/orfluer_seeds.json` | `src/main/resources/assets/britannia_mod/textures/item/flowers/orfluer_seeds.png` | Ordinary `Item`; authoritative mapping in `FlowerRegistry` | Britannia World - Farming Seeds | Generated placeholder | Not approved |
+| `britannia_mod:skinning_knife` | `src/main/resources/assets/britannia_mod/models/item/skinning_knife.json` | `src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png` | Utility `Item`, 128 durability, no combat attributes or recipe | Britannia World - Farming Tools | Generated placeholder | Not approved |
 
 ## Shared and supporting resources
 
@@ -97,6 +98,7 @@ Harvested flowers and seeds are ordinary `net.minecraft.world.item.Item` registr
 - Shared geometry parent: `src/main/resources/assets/britannia_mod/models/block/flowers/shared/multi_plane.json` (generated, four intersecting planes, cutout, no PNG dependency of its own).
 - Harvested-item tag: `src/main/resources/data/britannia_mod/tags/items/flowers.json`.
 - Seed-item tag: `src/main/resources/data/britannia_mod/tags/items/flower_seeds.json`.
+- Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/items/skinning_knives.json`.
 - Placeholder hash ledger: `tools/flower_placeholder_hashes.json` (generated safety metadata; it does not include itself).
 - Placeholder generator: `tools/generate_flower_placeholders.py` (handwritten development tooling; not a runtime dependency).
 
@@ -104,6 +106,7 @@ Harvested flowers and seeds are ordinary `net.minecraft.world.item.Item` registr
 
 - 7 species
 - 14 logical flower/seed items and 14 item textures
+- 1 skinning-knife utility item and placeholder texture
 - 49 logical in-world stage models
 - 49 base pass models and 49 dye-mask pass models
 - 49 base textures and 49 dye-mask textures (98 in-world PNGs total)

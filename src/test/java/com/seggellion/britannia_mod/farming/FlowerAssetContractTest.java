@@ -40,7 +40,7 @@ class FlowerAssetContractTest {
     );
 
     @Test
-    void registryMappingsCoverSevenSpeciesAndFourteenOrdinaryItems() throws IOException {
+    void registryMappingsCoverSevenSpeciesAndFourteenFlowerItems() throws IOException {
         FlowerRegistry registry = FlowerRegistry.initial();
         String itemRegistrySource = Files.readString(
                 PROJECT.resolve("src/main/java/com/seggellion/britannia_mod/registry/ItemRegistry.java"),
@@ -56,8 +56,9 @@ class FlowerAssetContractTest {
             assertEquals(content.flowerId(), definition.harvestedItemId());
             assertEquals(content.seedId(), definition.seedItemId());
             assertEquals(definition, registry.bySeedItemId(content.seedId()).orElseThrow());
+            assertEquals(definition, registry.byHarvestedItemId(content.flowerId()).orElseThrow());
             assertTrue(itemRegistrySource.contains(
-                    content.constantName() + " = flowerContentItem(\"" + content.path() + "\")"
+                    content.constantName() + " = harvestedFlowerItem(\"" + content.path() + "\")"
             ));
             assertTrue(itemRegistrySource.contains(
                     content.constantName() + "_SEEDS = flowerContentItem(\"" + content.path() + "_seeds\")"
@@ -202,7 +203,10 @@ class FlowerAssetContractTest {
 
         JsonObject ledger = readJson(PROJECT.resolve("tools/flower_placeholder_hashes.json"));
         JsonObject files = ledger.getAsJsonObject("files");
-        assertEquals(228, files.size());
+        assertEquals(231, files.size());
+        assertTrue(files.has("src/main/resources/assets/britannia_mod/models/item/skinning_knife.json"));
+        assertTrue(files.has("src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png"));
+        assertTrue(files.has("src/main/resources/data/britannia_mod/tags/items/skinning_knives.json"));
         for (String relative : files.keySet()) {
             Path path = PROJECT.resolve(relative);
             assertTrue(Files.isRegularFile(path), relative);

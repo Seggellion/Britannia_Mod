@@ -10,6 +10,8 @@ import com.seggellion.britannia_mod.farming.FlowerGrowthState;
 import com.seggellion.britannia_mod.farming.FlowerPersistentState;
 import com.seggellion.britannia_mod.farming.FlowerRegistry;
 import com.seggellion.britannia_mod.farming.FlowerResetReason;
+import com.seggellion.britannia_mod.farming.FlowerQuality;
+import com.seggellion.britannia_mod.farming.FlowerSoilSnapshot;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import net.minecraft.core.BlockPos;
@@ -130,6 +132,55 @@ public final class FlowerBlockEntity extends BlockEntity {
         setChangedAndSync();
         LOGGER.debug("[flower growth] reset species={} reason={} at {}",
                 flowerState.speciesId(), reason, worldPosition);
+        return true;
+    }
+
+    public boolean harvestAndReset(int quality) {
+        if (flowerState == null || level == null || level.isClientSide) {
+            return false;
+        }
+        FlowerPersistentState updated = flowerState
+                .withQuality(new FlowerQuality(quality))
+                .withGrowth(1, FlowerGrowthState.newlyPlanted());
+        if (updated.equals(flowerState)) {
+            return false;
+        }
+        flowerState = updated;
+        setChangedAndSync();
+        return true;
+    }
+
+    public boolean replaceSoil(FlowerSoilSnapshot soil) {
+        if (soil == null || flowerState == null || level == null || level.isClientSide
+                || soil.origin() != flowerState.soil().origin()
+                || !soil.communityRestoration().equals(flowerState.soil().communityRestoration())) {
+            return false;
+        }
+        FlowerPersistentState updated = flowerState.withSoil(soil);
+        if (updated.equals(flowerState)) {
+            return false;
+        }
+        flowerState = updated;
+        BlockState state = getBlockState();
+        if (state.getBlock() instanceof FlowerBlock) {
+            level.setBlock(worldPosition, state
+                    .setValue(FlowerBlock.HYDRATION, soil.hydration())
+                    .setValue(FlowerBlock.FERTILIZER, soil.fertilizerLevel()), 3);
+        }
+        setChangedAndSync();
+        return true;
+    }
+
+    public boolean advancePoppyToStageSeven() {
+        if (flowerState == null || level == null || level.isClientSide
+                || !FlowerRegistry.POPPY.equals(flowerState.speciesId())
+                || flowerState.growthStage() != 6) {
+            return false;
+        }
+        flowerState = flowerState.withGrowth(7, new FlowerGrowthState(
+                1.0f, flowerState.growthState().tickProgress(), false
+        ));
+        setChangedAndSync();
         return true;
     }
 

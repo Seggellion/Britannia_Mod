@@ -197,3 +197,24 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 
 - Player watering and fertilizer clicks on `FlowerBlock` remain deferred. The current care handlers are coupled to `FarmingBlockEntity`; enabling a partial flower variant before Milestone 6's central mutation authorization would let ordinary players change protected flowers. Rain, hydration decay, blockstate synchronization, saved soil nutrients, and condition-sensitive growth are active now.
 - `/farming debug` recognizes the generic FlowerBlockEntity and reports species, exact tint, stage/maxima, progress, timing, mature/blocked state, hydration/nutrients, current and planting climates, altitude, multiplier, blocking reason, persisted-quality authority, and community origin. It does not expose the planter UUID.
+
+## Milestone 6 implementation consequences
+
+### M6.1 - Central mutation policy and event boundary
+
+- `FlowerProtectionService` remains the only administrator/protection decision point. All direct interactions and the left-click, normal-break, explosion, and fluid handlers pass an explicit `FlowerMutationReason`; every flower returns piston reaction `BLOCK`.
+- Protected environmental mutation is denied even without an actor. Ordinary environmental mutation follows the block/event default and produces no configured flower drop. Explicit command, world-generation, admin-removal, and system reasons remain authorized.
+
+### M6.2 - Interaction order, care, harvesting, and seed extraction
+
+- `FlowerBlock` right-click order is care, mature scissors harvest, tagged skinning-knife Poppy advancement, farming-hoe/root-shovel uproot, protected replacement denial, then superclass behavior. Adventure blade cutback is separate and canceled on both sides.
+- `FarmingSoilCare` centralizes nutrient item identity and normalized addition/clamping for crops and flowers. Flower watering uses the existing 0-5 scale, watering-can charges, bucket replacement, sounds, consumption, and Farming tending precedent. The older crop-only nutrient event duplication remains documented rather than expanded.
+- Shearing creates exactly one mapped harvested item, applies the shared quality and region-provenance component convention, resets and persists the same flower, then damages scissors once. No seed is returned directly.
+- `HarvestedFlowerItem` uses `CropSeedExtractor.shouldExtract` and `tryExtractSeed`: off-hand or shift-use produces exactly one `FlowerRegistry` seed, plays the existing pumpkin-carve sound, consumes one produce item outside Creative, has no cooldown/animation/skill award, and cannot duplicate client-side.
+
+### M6.3 - Removal, indirect policy, and Poppy mastery
+
+- Farming hoe and `root_crop_shovels` permanently restore the preserved private FarmingBlock soil or unprepared community block atomically. No uproot drop is created. Normal break uses the same restoration and no-drop policy so community restoration cannot be bypassed.
+- Protected flowers are removed from explosion target lists and reject fluid placement; ordinary flowers keep normal environmental behavior. Every flower blocks piston movement.
+- `skinning_knife` is a recipe-less non-combat utility item with 128 durability, default non-stackable durability behavior, no declared repair ingredient, farming-tool creative placement, and a generated placeholder icon. Recipe/economy placement remains deferred.
+- Exact Poppy stage 6 plus Farming 100.0 or greater, `skinning_knives`, server authority, and mutation authorization advances to stage 7. Successful advancement costs one durability and preserves identity/soil/quality. Any reset returns to stage 1, and natural growth remains capped at 6 without a saved unlock flag.

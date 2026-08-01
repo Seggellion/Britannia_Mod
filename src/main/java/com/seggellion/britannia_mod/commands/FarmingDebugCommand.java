@@ -18,11 +18,17 @@ import com.seggellion.britannia_mod.farming.FlowerDefinition;
 import com.seggellion.britannia_mod.farming.FlowerGrowthEvaluation;
 import com.seggellion.britannia_mod.farming.FlowerPersistentState;
 import com.seggellion.britannia_mod.farming.FlowerRegistry;
+import com.seggellion.britannia_mod.farming.FlowerInteractionService;
+import com.seggellion.britannia_mod.farming.FlowerMutationReason;
+import com.seggellion.britannia_mod.farming.FlowerProtectionService;
+import com.seggellion.britannia_mod.farming.GrainHarvestTools;
+import com.seggellion.britannia_mod.farming.RootCropShovelTools;
+import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.skill.SkillManager;
+import com.seggellion.britannia_mod.util.ModTags;
 import com.seggellion.britannia_mod.farming.FruitTreeDefinition;
 import com.seggellion.britannia_mod.farming.GrapeVisualResolver;
 import com.seggellion.britannia_mod.farming.OrangeTreeUtils;
-import com.seggellion.britannia_mod.farming.GrainHarvestTools;
-import com.seggellion.britannia_mod.farming.RootCropShovelTools;
 import com.seggellion.britannia_mod.farming.TallCropSupport;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.commands.CommandSourceStack;
@@ -70,7 +76,7 @@ public final class FarmingDebugCommand {
         BlockState lookedAtState = level.getBlockState(lookedAtPos);
         if (level instanceof ServerLevel serverLevel
                 && level.getBlockEntity(lookedAtPos) instanceof FlowerBlockEntity flower) {
-            return debugFlower(source, serverLevel, lookedAtPos, flower);
+            return debugFlower(source, serverLevel, lookedAtPos, flower, player);
         }
         OrangeTreeRootBlockEntity fruitTreeRoot = OrangeTreeUtils.findRoot(level, lookedAtPos).orElse(null);
         if (fruitTreeRoot != null) {
@@ -297,7 +303,8 @@ public final class FarmingDebugCommand {
             CommandSourceStack source,
             ServerLevel level,
             BlockPos pos,
-            FlowerBlockEntity flower
+            FlowerBlockEntity flower,
+            ServerPlayer player
     ) {
         FlowerPersistentState state = flower.flowerState().orElse(null);
         if (state == null) {
@@ -345,6 +352,21 @@ public final class FarmingDebugCommand {
                     evaluation.farmingContext().altitudeAllowed()
             )), false);
         }
+        float farmingSkill = SkillManager.getSkill(player, FarmingSkill.SKILL_ID);
+        source.sendSuccess(() -> Component.literal(String.format(
+                "interactions: actor_admin=%s, care=%s, mature=%s, harvest_tool=%s, cutback_blade=%s, uproot_tool=%s, poppy_stage_7=%s (skill=%.1f/100.0), community_target=%s",
+                FlowerProtectionService.isAdministrator(player),
+                FlowerProtectionService.mayMutate(state, player, FlowerMutationReason.CARE),
+                definition != null && FlowerInteractionService.isMature(state, definition),
+                player.getMainHandItem().is(ItemRegistry.SCISSORS.get()),
+                GrainHarvestTools.isGrainHarvestBlade(player.getMainHandItem()),
+                FlowerInteractionService.isUprootingTool(player.getMainHandItem()),
+                FlowerInteractionService.canAdvancePoppy(
+                        state, farmingSkill, player.getMainHandItem().is(ModTags.Items.SKINNING_KNIVES)
+                ) && FlowerProtectionService.mayMutate(state, player, FlowerMutationReason.POPPY_STAGE_SEVEN),
+                farmingSkill,
+                state.soil().communityRestoration().map(restoration -> restoration.blockId().toString()).orElse("private_farming_block")
+        )), false);
         return 1;
     }
 

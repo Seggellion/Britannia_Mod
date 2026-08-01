@@ -28,15 +28,18 @@ public final class FlowerRegistry {
     private final Map<ResourceLocation, FlowerColorDefinition> colors;
     private final Map<ResourceLocation, FlowerDefinition> definitions;
     private final Map<ResourceLocation, ResourceLocation> speciesBySeedItem;
+    private final Map<ResourceLocation, ResourceLocation> speciesByHarvestedItem;
 
     private FlowerRegistry(
             Map<ResourceLocation, FlowerColorDefinition> colors,
             Map<ResourceLocation, FlowerDefinition> definitions,
-            Map<ResourceLocation, ResourceLocation> speciesBySeedItem
+            Map<ResourceLocation, ResourceLocation> speciesBySeedItem,
+            Map<ResourceLocation, ResourceLocation> speciesByHarvestedItem
     ) {
         this.colors = Map.copyOf(colors);
         this.definitions = Map.copyOf(definitions);
         this.speciesBySeedItem = Map.copyOf(speciesBySeedItem);
+        this.speciesByHarvestedItem = Map.copyOf(speciesByHarvestedItem);
     }
 
     public static FlowerRegistry initial() {
@@ -65,6 +68,11 @@ public final class FlowerRegistry {
 
     public Optional<FlowerDefinition> bySeedItemId(ResourceLocation seedItemId) {
         ResourceLocation speciesId = speciesBySeedItem.get(seedItemId);
+        return speciesId == null ? Optional.empty() : byId(speciesId);
+    }
+
+    public Optional<FlowerDefinition> byHarvestedItemId(ResourceLocation harvestedItemId) {
+        ResourceLocation speciesId = speciesByHarvestedItem.get(harvestedItemId);
         return speciesId == null ? Optional.empty() : byId(speciesId);
     }
 
@@ -298,6 +306,7 @@ public final class FlowerRegistry {
         private final Map<ResourceLocation, FlowerColorDefinition> colors = new LinkedHashMap<>();
         private final Map<ResourceLocation, FlowerDefinition> definitions = new LinkedHashMap<>();
         private final Map<ResourceLocation, ResourceLocation> speciesBySeedItem = new LinkedHashMap<>();
+        private final Map<ResourceLocation, ResourceLocation> speciesByHarvestedItem = new LinkedHashMap<>();
 
         public Builder registerColor(FlowerColorDefinition color) {
             FlowerColorDefinition previous = colors.putIfAbsent(color.id(), color);
@@ -318,6 +327,13 @@ public final class FlowerRegistry {
                 throw new IllegalArgumentException("Duplicate flower seed mapping " + definition.seedItemId()
                         + " for " + previousSpecies + " and " + definition.id());
             }
+            ResourceLocation previousHarvest = speciesByHarvestedItem.putIfAbsent(
+                    definition.harvestedItemId(), definition.id()
+            );
+            if (previousHarvest != null) {
+                throw new IllegalArgumentException("Duplicate harvested flower mapping "
+                        + definition.harvestedItemId() + " for " + previousHarvest + " and " + definition.id());
+            }
             return this;
         }
 
@@ -336,7 +352,7 @@ public final class FlowerRegistry {
 
         private FlowerRegistry build(boolean requireInitialSpecies) {
             FlowerDefinitionValidator.validateRegistry(colors, definitions, requireInitialSpecies);
-            return new FlowerRegistry(colors, definitions, speciesBySeedItem);
+            return new FlowerRegistry(colors, definitions, speciesBySeedItem, speciesByHarvestedItem);
         }
     }
 }

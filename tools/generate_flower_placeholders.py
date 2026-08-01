@@ -184,6 +184,17 @@ def item_art(species_index: int, accent: tuple[int, int, int], seeds: bool) -> b
     return encode_png(size, size, pixels)
 
 
+def skinning_knife_art() -> bytes:
+    size = 32
+    pixels = canvas(size)
+    line(pixels, 7, 27, 20, 14, (92, 57, 32, 255), 5)
+    line(pixels, 8, 26, 20, 14, (151, 101, 55, 255), 2)
+    line(pixels, 18, 16, 27, 5, (72, 78, 84, 255), 6)
+    line(pixels, 19, 15, 27, 5, (208, 216, 222, 255), 3)
+    line(pixels, 25, 7, 28, 4, (245, 247, 248, 255), 1)
+    return encode_png(size, size, pixels)
+
+
 def shared_parent() -> dict[str, object]:
     def faces(a: str, b: str) -> dict[str, object]:
         return {
@@ -265,9 +276,9 @@ def build_manifest() -> bytes:
         "",
         "## Item placeholders",
         "",
-        "Harvested flowers and seeds are ordinary `net.minecraft.world.item.Item` registrations in Milestone 3. "
-        "`FlowerRegistry` remains the sole seed-to-species mapping. No food, healing, colour-bearing item state, "
-        "planting, harvesting, or crop-to-seed activation behavior is implemented here.",
+        "Harvested flowers use `HarvestedFlowerItem` for the established crop-to-seed activation; seeds remain "
+        "ordinary items. The Milestone 6 skinning knife is a non-combat utility item with 128 durability, stack "
+        "size 1, no recipe, no repair ingredient, and Creative-tab availability.",
         "",
         "| Registry ID | Item model path | Item texture path | Item class / registration approach | Creative-tab placement | Status | Final-art approval |",
         "|---|---|---|---|---|---|---|",
@@ -281,6 +292,11 @@ def build_manifest() -> bytes:
                 f"| `{registry_id}` | `{model}` | `{texture}` | Ordinary `Item`; authoritative mapping in `FlowerRegistry` | "
                 f"{placement} | Generated placeholder | Not approved |"
             )
+    lines.append(
+        "| `britannia_mod:skinning_knife` | `src/main/resources/assets/britannia_mod/models/item/skinning_knife.json` | "
+        "`src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png` | Utility `Item`, 128 durability, "
+        "no combat attributes or recipe | Britannia World - Farming Tools | Generated placeholder | Not approved |"
+    )
 
     lines.extend([
         "",
@@ -290,6 +306,7 @@ def build_manifest() -> bytes:
         f"- Shared geometry parent: `{resource_path(SHARED_PARENT_PATH)}` (generated, four intersecting planes, cutout, no PNG dependency of its own).",
         "- Harvested-item tag: `src/main/resources/data/britannia_mod/tags/items/flowers.json`.",
         "- Seed-item tag: `src/main/resources/data/britannia_mod/tags/items/flower_seeds.json`.",
+        "- Skinning-knife tag: `src/main/resources/data/britannia_mod/tags/items/skinning_knives.json`.",
         "- Placeholder hash ledger: `tools/flower_placeholder_hashes.json` (generated safety metadata; it does not include itself).",
         "- Placeholder generator: `tools/generate_flower_placeholders.py` (handwritten development tooling; not a runtime dependency).",
         "",
@@ -297,6 +314,7 @@ def build_manifest() -> bytes:
         "",
         "- 7 species",
         "- 14 logical flower/seed items and 14 item textures",
+        "- 1 skinning-knife utility item and placeholder texture",
         "- 49 logical in-world stage models",
         "- 49 base pass models and 49 dye-mask pass models",
         "- 49 base textures and 49 dye-mask textures (98 in-world PNGs total)",
@@ -345,6 +363,14 @@ def expected_outputs() -> dict[Path, bytes]:
 
     outputs[DATA / "tags" / "items" / "flowers.json"] = json_bytes({"replace": False, "values": flowers})
     outputs[DATA / "tags" / "items" / "flower_seeds.json"] = json_bytes({"replace": False, "values": seeds})
+    outputs[ASSETS / "models" / "item" / "skinning_knife.json"] = json_bytes({
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "britannia_mod:item/skinning_knife"},
+    })
+    outputs[ASSETS / "textures" / "item" / "skinning_knife.png"] = skinning_knife_art()
+    outputs[DATA / "tags" / "items" / "skinning_knives.json"] = json_bytes({
+        "replace": False, "values": ["britannia_mod:skinning_knife"]
+    })
     outputs[MANIFEST] = build_manifest()
     return outputs
 
@@ -383,12 +409,15 @@ def verify_safe_overwrite(outputs: dict[Path, bytes]) -> None:
     ledger = json.loads(HASH_LEDGER.read_text(encoding="utf-8"))
     recorded = ledger.get("files", {})
     expected_paths = {resource_path(path) for path in outputs}
-    if set(recorded) != expected_paths:
-        raise RuntimeError("Refusing overwrite because the managed placeholder path set changed")
+    if not set(recorded).issubset(expected_paths):
+        raise RuntimeError("Refusing overwrite because a previously managed placeholder path was removed")
     changed = []
     for path in outputs:
-        if path.exists() and digest(path.read_bytes()) != recorded[resource_path(path)]:
-            changed.append(resource_path(path))
+        relative = resource_path(path)
+        if relative in recorded and path.exists() and digest(path.read_bytes()) != recorded[relative]:
+            changed.append(relative)
+        if relative not in recorded and path.exists():
+            changed.append(relative + " (new managed path already exists)")
     if changed:
         raise RuntimeError("Refusing to overwrite replaced or edited artwork:\n" + "\n".join(changed))
 

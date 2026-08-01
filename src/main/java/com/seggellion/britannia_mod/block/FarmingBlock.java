@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.farming.CropSupportRequirement;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.farming.FarmingSoilCare;
 import com.seggellion.britannia_mod.farming.FlowerPlantingService;
 import com.seggellion.britannia_mod.farming.FruitProvenance;
 import com.seggellion.britannia_mod.farming.FruitTreeDefinition;
@@ -234,7 +235,7 @@ public class FarmingBlock extends Block implements EntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
-        Fertilizer fertilizer = fertilizerFor(stack);
+        FarmingSoilCare.Fertilizer fertilizer = FarmingSoilCare.fertilizerFor(stack).orElse(null);
         if (fertilizer == null) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
@@ -243,7 +244,7 @@ public class FarmingBlock extends Block implements EntityBlock {
         float beforeFit = plantedCrop == null ? 0.0f : farmBe.nutrientFit(plantedCrop);
         boolean changed = false;
         if (!level.isClientSide) {
-            changed = farmBe.addNutrients(fertilizer.boneMeal, fertilizer.turquoise, fertilizer.ash, fertilizer.flesh);
+            changed = farmBe.addNutrients(fertilizer.nitrogen(), fertilizer.phosphorus(), fertilizer.potassium(), fertilizer.organicMatter());
         }
 
         if (level.isClientSide) {
@@ -255,7 +256,7 @@ public class FarmingBlock extends Block implements EntityBlock {
             level.setBlock(pos, state.setValue(FERTILIZER, 1), 3);
             boolean meaningful = plantedCrop == null || farmBe.nutrientFit(plantedCrop) > beforeFit + 0.001f;
             if (player != null) {
-                player.displayClientMessage(Component.literal(fertilizerMessage(fertilizer.name, farmBe)).withStyle(ChatFormatting.GREEN), true);
+                player.displayClientMessage(Component.literal(fertilizerMessage(fertilizer.name(), farmBe)).withStyle(ChatFormatting.GREEN), true);
             }
             level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (meaningful && player instanceof ServerPlayer serverPlayer) {
@@ -267,22 +268,6 @@ public class FarmingBlock extends Block implements EntityBlock {
         }
 
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    private static Fertilizer fertilizerFor(ItemStack stack) {
-        if (stack.is(Items.BONE_MEAL)) {
-            return new Fertilizer("bone meal", 0.6f, 0.0f, 0.0f, 0.0f);
-        }
-        if (stack.is(ItemRegistry.TURQUOISE_POWDER.get())) {
-            return new Fertilizer("turquoise", 0.0f, 0.3f, 0.0f, 0.0f);
-        }
-        if (stack.is(ItemRegistry.SULPHUROUS_ASH.get())) {
-            return new Fertilizer("sulphurous ash", 0.0f, 0.0f, 0.8f, 0.0f);
-        }
-        if (stack.is(Items.ROTTEN_FLESH)) {
-            return new Fertilizer("rotten flesh", 0.0f, 0.0f, 0.0f, 0.5f);
-        }
-        return null;
     }
 
     private static void setHydration(Level level, BlockPos pos, BlockState state, int value) {
@@ -395,9 +380,6 @@ public class FarmingBlock extends Block implements EntityBlock {
                 farmBe.getSulphurousAshNutrient(),
                 farmBe.getRottenFleshNutrient()
         );
-    }
-
-    private record Fertilizer(String name, float boneMeal, float turquoise, float ash, float flesh) {
     }
 
     public static ItemInteractionResult tryPlantSeed(Level level, BlockPos pos, BlockState state, @Nullable Player player, ItemStack stack, boolean requireTrellisCrop, String interactionSource) {

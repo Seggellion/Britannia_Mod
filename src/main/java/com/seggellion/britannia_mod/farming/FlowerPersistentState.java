@@ -193,6 +193,14 @@ public record FlowerPersistentState(
         );
     }
 
+    /** Returns the same planted identity with only authoritative quality replaced. */
+    public FlowerPersistentState withQuality(FlowerQuality updatedQuality) {
+        return new FlowerPersistentState(
+                dataVersion, speciesId, color, growthStage, plantingOrigin, protectedFlower,
+                planterUuid, regionProvenance, Objects.requireNonNull(updatedQuality), soil, growthState
+        );
+    }
+
     private static void warnOnce(String key, String message, Object... arguments) {
         if (REPORTED_LOAD_WARNINGS.add(key)) {
             LOGGER.warn(message, arguments);

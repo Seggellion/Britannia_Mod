@@ -119,6 +119,20 @@ public record FlowerSoilSnapshot(
         );
     }
 
+    public FlowerSoilSnapshot withFertilizerLevel(int fertilizerLevel) {
+        return new FlowerSoilSnapshot(
+                hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                origin, communityRestoration, communitySeedableUntilGameTime
+        );
+    }
+
+    public FlowerSoilSnapshot withNutrients(float nitrogen, float phosphorus, float potassium, float organicMatter) {
+        return new FlowerSoilSnapshot(
+                hydration, fertilizerLevel, nitrogen, phosphorus, potassium, organicMatter,
+                origin, communityRestoration, communitySeedableUntilGameTime
+        );
+    }
+
     public static FlowerSoilSnapshot fromTag(CompoundTag tag) {
         FlowerSoilOrigin origin;
         try {

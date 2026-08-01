@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.FarmingClimate;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.farming.FarmingSoilCare;
 import com.seggellion.britannia_mod.farming.FlowerSoilSnapshot;
 import com.seggellion.britannia_mod.farming.TallCropSupport;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
@@ -175,10 +176,10 @@ public class FarmingBlockEntity extends BlockEntity {
         float oldP = this.phosphorus;
         float oldK = this.potassium;
         float oldOm = this.organicMatter;
-        this.nitrogen = clamp01(this.nitrogen + boneMeal);
-        this.phosphorus = clamp01(this.phosphorus + turquoise);
-        this.potassium = clamp01(this.potassium + sulphurousAsh);
-        this.organicMatter = clamp01(this.organicMatter + rottenFlesh);
+        this.nitrogen = FarmingSoilCare.addNormalized(this.nitrogen, boneMeal);
+        this.phosphorus = FarmingSoilCare.addNormalized(this.phosphorus, turquoise);
+        this.potassium = FarmingSoilCare.addNormalized(this.potassium, sulphurousAsh);
+        this.organicMatter = FarmingSoilCare.addNormalized(this.organicMatter, rottenFlesh);
         boolean changed = oldN != nitrogen || oldP != phosphorus || oldK != potassium || oldOm != organicMatter;
         if (changed) {
             setChangedAndSync();
@@ -311,6 +312,30 @@ public class FarmingBlockEntity extends BlockEntity {
         this.growthBlocked = snapshot.growthBlocked();
         this.communityPlot = snapshot.communityPlot();
         this.seedableUntilGameTime = snapshot.seedableUntilGameTime();
+        setChangedAndSync();
+    }
+
+    /** Initializes empty private soil restored from a permanently uprooted flower. */
+    public void restoreUprootedFlowerSoil(FlowerSoilSnapshot soil) {
+        Objects.requireNonNull(soil, "Flower soil restoration snapshot is required");
+        if (soil.origin() != com.seggellion.britannia_mod.farming.FlowerSoilOrigin.PRIVATE_FARMING_BLOCK) {
+            throw new IllegalArgumentException("Private FarmingBlock restoration cannot use community soil");
+        }
+        hydration = soil.hydration();
+        nitrogen = soil.nitrogen();
+        phosphorus = soil.phosphorus();
+        potassium = soil.potassium();
+        organicMatter = soil.organicMatter();
+        storedSeedVariety = "";
+        plantedCropId = "";
+        growthProgress = 0.0f;
+        growthStage = 0;
+        tickProgress = 0;
+        rootEstablishedGameTime = -1L;
+        mature = false;
+        growthBlocked = false;
+        communityPlot = false;
+        seedableUntilGameTime = 0L;
         setChangedAndSync();
     }
 

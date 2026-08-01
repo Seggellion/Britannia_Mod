@@ -16,6 +16,29 @@ public final class FlowerProtectionService {
                 || player instanceof ServerPlayer serverPlayer && serverPlayer.hasPermissions(ADMIN_PERMISSION_LEVEL));
     }
 
+    public static int effectivePermissionLevel(@Nullable Player player) {
+        return player instanceof ServerPlayer serverPlayer
+                && serverPlayer.hasPermissions(ADMIN_PERMISSION_LEVEL)
+                ? ADMIN_PERMISSION_LEVEL
+                : 0;
+    }
+
+    public static boolean mayMutate(
+            FlowerPersistentState flower,
+            @Nullable Player actor,
+            FlowerMutationReason reason
+    ) {
+        if (flower == null || reason == null) {
+            return false;
+        }
+        return mayMutate(
+                flower.protectedFlower(),
+                actor != null && actor.isCreative(),
+                effectivePermissionLevel(actor),
+                reason
+        );
+    }
+
     public static boolean isAdministrator(boolean creativeMode, int permissionLevel) {
         return creativeMode || permissionLevel >= ADMIN_PERMISSION_LEVEL;
     }
@@ -26,9 +49,18 @@ public final class FlowerProtectionService {
             int permissionLevel,
             FlowerMutationReason reason
     ) {
+        if (reason == null || reason == FlowerMutationReason.PISTON) {
+            return false;
+        }
+        if (reason.isSystemAuthorized()) {
+            return true;
+        }
         if (!flowerProtected) {
             return true;
         }
-        return reason.isSystemAuthorized() || isAdministrator(creativeMode, permissionLevel);
+        if (reason == FlowerMutationReason.EXPLOSION || reason == FlowerMutationReason.FLUID) {
+            return false;
+        }
+        return isAdministrator(creativeMode, permissionLevel);
     }
 }

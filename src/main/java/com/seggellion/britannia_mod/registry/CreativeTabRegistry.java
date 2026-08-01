@@ -88,6 +88,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.VINTNER_HOE.get());
                 safeAccept(output, ItemRegistry.SCISSORS.get());
                 safeAccept(output, ItemRegistry.FARMING_HOE.get());
+                safeAccept(output, ItemRegistry.SKINNING_KNIFE.get());
                 
                 // 2. Farming Blocks
                 safeAccept(output, ItemRegistry.FARMING_BLOCK_ITEM.get());
