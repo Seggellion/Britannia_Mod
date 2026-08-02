@@ -180,3 +180,169 @@ None. Milestone 0 added no gameplay implementation. Baseline build repair was in
 ### Next permitted milestone
 
 Milestone 1 only. Do not begin it.
+
+## 2026-08-02 - Milestone 1: Definition Catalogue, Footprints, and Transform Foundation
+
+### Commit and branch state
+
+- Starting branch: `shrines-monoliths`.
+- Starting commit: `b10efd3382f74bf8e1970588bcd0b57869c8771a`.
+- Integration branch: `patch-18` at `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+- Starting merge base: `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+- Starting ahead/behind (`patch-18...shrines-monoliths`, left/right): `0 1` (zero behind, one ahead).
+- Ending commit: the single Milestone 1 commit `feat(structures): add shrine and monolith definitions`; its full immutable hash is recorded in the final report because a commit cannot contain its own final hash.
+- Branch action: no switch, reset, recreate, merge, rebase, stash, clean, or push was performed.
+
+### Files changed
+
+- `build.gradle`: adds only JUnit Jupiter 5.10.2, the matching platform launcher, and `useJUnitPlatform()` for the previously empty conventional test source set.
+- `src/main/java/com/seggellion/britannia_mod/structure/definition/StructureIdentity.java`: stable family/variant/display/resource identities, availability, and approved/provisional metadata.
+- `StructureGeometry.java`: dimensions, local offsets, deterministic rectangular footprints, placement/collision/render metadata, and voxel-to-block conversion.
+- `StructureTransform.java`: the shared pure four-facing forward and reverse transform.
+- `StructureDefinition.java`: immutable family and variant records.
+- `DefinitionDiagnostic.java`, `DefinitionValidation.java`, `StructureDefinitionValidator.java`: typed structured validation and initial-family compatibility rules.
+- `StructureCatalogue.java`: immutable validated family catalogue with family-scoped variant lookup.
+- `StructureVariantCycler.java`: deterministic enabled/compatible cycle selection, wrap-around, disabled skipping, and missing-ID refusal.
+- `ShrineMonolithDefinitions.java`: the production logical shrine and monolith catalogue without concrete client paths.
+- `src/test/java/com/seggellion/britannia_mod/structure/definition/DefinitionFixtures.java`: test-only valid and invalid definition builders, including a two-model monolith fixture.
+- `StructureFootprintTransformTest.java`, `ShrineMonolithCatalogueTest.java`, `StructureDefinitionValidationTest.java`, `MilestoneOneBoundaryTest.java`: 48 focused tests in four classes.
+- `docs/shrines-monoliths/PROJECT_FACTS.md`: records the proven generated-artifact cause/recovery and current definition/test facts.
+- `docs/shrines-monoliths/OPEN_QUESTIONS.md`: removes the resolved NeoGradle build blocker.
+- `docs/shrines-monoliths/IMPLEMENTATION_LOG.md`: records this milestone.
+
+### Definition architecture
+
+- Definitions are immutable Java records in common-side code; no reloadable data-pack framework was introduced.
+- Family identity, variant identity, display identity, and logical client-resource identity are independent values.
+- A client resource contains a stable logical identity plus an optional concrete namespaced path and explicit `AVAILABLE`/`UNAVAILABLE` state. Missing resources therefore do not change or substitute family/variant identity.
+- Families own dimensions, ordered footprint, anchor, placement/collision/render contracts, geometry mode, default variant, and variants. Variants repeat the placement contract so catalogue validation can reject incompatible cycle candidates before future gameplay uses them.
+- Diagnostics are `DefinitionDiagnostic` records with a typed `Code`, location, and message; validation is non-mutating.
+
+### Production catalogue and test-only fixtures
+
+- Production family `shrine`: approved `2 x 1 x 2`, four cells, shared logical geometry, zero render correction, and nine approved logical variants in explicit order: `honesty`, `compassion`, `valor`, `justice`, `sacrifice`, `honor`, `spirituality`, `humility`, `chaos`.
+- All shrine display metadata is unresolved and every logical model/texture resource is explicitly unavailable. No model, texture, localization, or registry path is claimed.
+- Production family `monolith`: approved `3 x 3 x 2`, eighteen cells, per-variant geometry, and `[0, 16, 0]` voxel render offset.
+- Because no supplied monolith content exists and the validated family shape requires a default, production contains exactly one `diagnostic_missing_content` variant. It is explicitly provisional, enabled only as the structural default, non-player-facing, unresolved, and missing-resource-aware; it is not presented as supplied or final content.
+- `DefinitionFixtures` creates a test-only second monolith variant (`test_second_model` with logical model `test_second_monolith_model`) to prove per-variant models, plus bounded mutations for every rejection/cycle case. No test fixture is registered or packaged as player content.
+
+### Facing and footprint conventions
+
+- `FACING` points outward from the front. The anchor is the lower front-left cell. Local X is viewer-right, local Y is up, and local Z is away from the viewer into the structure.
+- Basis: `right = FACING.counterClockwise()`, `away = FACING.opposite()`.
+- Transform: `world = anchor + right * localX + UP * localY + away * localZ`.
+- With anchor `[10, 64, 20]` and local `[1, 2, 1]`, explicit expected results are North `[9, 66, 21]`, East `[9, 66, 19]`, South `[11, 66, 19]`, and West `[11, 66, 21]`.
+- Footprint ordering is nested `Y`, then `Z`, then `X`: layers bottom-to-top; rows front-to-back; cells left-to-right. `[0, 0, 0]` is therefore first and occurs exactly once.
+
+### Validation diagnostics
+
+Typed codes cover duplicate family/variant IDs and cycle positions; invalid cycle position; missing/disabled default; invalid/oversized dimensions; empty/duplicate/out-of-bounds/out-of-encoding footprints; invalid/missing/duplicate anchor; invalid resource namespace/path and availability mismatch; missing content status; missing shared geometry; shrine/monolith family contract mismatch; shrine geometry change; cross-family membership; variant dimensions/footprint/placement/collision/render-origin/render-offset mismatch; and incompatible enabled cycle candidates.
+
+### Exact commands and results
+
+All commands ran from the repository root.
+
+```text
+git branch --show-current
+git status --short --branch
+git rev-parse HEAD
+git merge-base shrines-monoliths patch-18
+git rev-list --left-right --count patch-18...shrines-monoliths
+git log --oneline --decorate -15
+git show --stat --oneline --decorate b10efd3382f74bf8e1970588bcd0b57869c8771a
+git diff-tree --no-commit-id --name-status -r b10efd3382f74bf8e1970588bcd0b57869c8771a
+```
+
+Result: branch, HEAD, merge base, and divergence exactly matched the authorization. Milestone 0 contains only the two root specifications and three project documents. Unrelated modified/untracked paths were recorded and preserved.
+
+```text
+.\gradlew.bat test --no-daemon --stacktrace --no-configuration-cache
+```
+
+Pre-implementation result: exit `1` at `:compileJava`; first material failures were missing `BlockEntityRenderer` and `net.minecraft.core.BlockPos`. NeoForm tasks claimed up-to-date.
+
+Generated-artifact inspection found the supplied NeoForge JAR was 9,265,437 bytes with exactly 4,096 class entries and lacked both `BlockPos` and the client block-entity renderer. The earlier rename-stage JAR contained both, proving generated recompile/pack state was incomplete.
+
+The pinned NeoGradle task inventory exposed its normal NeoForm supply pipeline. A documented binary-mode property was tried as a bounded diagnostic but this plugin version continued to select the decompile/recompile pipeline. The successful recovery was:
+
+```text
+.\gradlew.bat supplyRawJarForneoFormJoined1.21.1-20240808.144430 selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_21.1.72 --rerun-tasks '-Pneogradle.subsystems.recompiler.maxMemory=4g' --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: exit `0`; `BUILD SUCCESSFUL in 3m 4s`; the rebuilt supplied artifact was 21,955,724 bytes with 9,729 class entries and contained both missing classes. Only ignored generated/cache outputs changed.
+
+```text
+.\gradlew.bat test --no-daemon --stacktrace --no-configuration-cache
+```
+
+Repaired unmodified baseline result: exit `0`; `BUILD SUCCESSFUL in 41s`; `test NO-SOURCE`, zero authored baseline tests; the two known pre-existing compiler warnings remained.
+
+```text
+.\gradlew.bat test --tests 'com.seggellion.britannia_mod.structure.definition.StructureFootprintTransformTest' --no-daemon --no-configuration-cache --stacktrace
+```
+
+Final focused class result: exit `0`; 1 class, 12 tests, 0 failures, 0 errors, 0 skipped.
+
+```text
+.\gradlew.bat test --tests 'com.seggellion.britannia_mod.structure.definition.*' --no-daemon --no-configuration-cache --stacktrace
+```
+
+Final complete feature-package result: exit `0`; `BUILD SUCCESSFUL in 38s`; 4 classes, 48 tests, 0 failures, 0 errors, 0 skipped.
+
+```text
+.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace
+```
+
+Full repository test result: exit `0`; `BUILD SUCCESSFUL in 18s`; 4 classes, 48 tests, 0 failures, 0 errors, 0 skipped.
+
+```text
+git diff --check -- build.gradle src/main/java/com/seggellion/britannia_mod/structure/definition src/test/java/com/seggellion/britannia_mod/structure/definition docs/shrines-monoliths
+```
+
+Result before the final documentation edit: exit `0`. It is rerun during the final audit.
+
+```text
+git ls-files -- build .gradle run runs src/generated/resources
+.\gradlew.bat clean --dry-run --no-daemon --no-configuration-cache
+.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: no generated path is tracked; dry-run exit `0` with `:clean SKIPPED`; actual clean build exit `0`, `BUILD SUCCESSFUL in 2m 1s`, 36 actionable tasks (6 executed, 23 from cache, 7 up-to-date). The normal clean-build command required no source/configuration workaround.
+
+### Manual checks
+
+Performed:
+
+- Read both root specifications and all three project documents completely.
+- Verified branch identity, ancestry, Milestone 0 scope, worktree preservation, and clean scope.
+- Inspected Gradle configuration, task inventory, generated NeoForm stages, resolved dependencies, and generated JAR contents.
+- Confirmed the production `-all.jar` contains every definition class and no test fixture class.
+- Searched the production definition package for client imports, registration APIs, block entities, world mutation, actual voxel shapes, Interior Decorator code, and block/item registry references; none were found.
+- Confirmed no concrete client resource path, model, texture, localization, blockstate, or asset was introduced.
+
+Not performed:
+
+- Client launch, dedicated-server launch, multiplayer, GameTest, or in-world checks; Milestone 1 has no registered world content.
+- Visual asset or horizon review; no shrine/monolith assets exist.
+- Placement, lifecycle, persistence, rendering, collision-shape, drops, decorator, or Interior Decorator checks; all belong to later milestones.
+
+### Build-state outcome and limitations
+
+- The NeoGradle baseline issue is resolved for this workspace: the generated artifact was repaired through NeoGradle's own pipeline and the subsequent normal clean production build passed.
+- Existing compiler warnings remain: missing Javadoc on a Mixin `@Overwrite` and deprecated-for-removal `Item.initializeClient` usage. Neither is related to this feature.
+- Logical shrine identities are production definitions, but all client resource paths and translation keys remain unresolved.
+- Monolith production content remains unavailable; only the explicit non-player-facing diagnostic default represents the validated family contract.
+- No manual gameplay validation is possible or required at this pure-definition milestone.
+
+### Deviations
+
+- No design deviation. The extra `playerFacing` flag is the smallest explicit safeguard required to ensure the structurally necessary monolith diagnostic default cannot be mistaken for approved player content.
+- No tracked recompiler-memory setting was added: the 4 GB value was used only for bounded generated-state recovery, and the normal clean build then passed unchanged.
+
+### Preserved unrelated work
+
+The pre-existing modified `.gitignore` and untracked `.claude/`, `CyberSecurity_Hobbit.pdf`, `CyberSecurity_Phishing_IAM.zip`, `UltimaCraft_Farming_Skill_Progression_Codex_Milestones_12_17.md`, and `UltimaCraft_Flower_System_Corrective_Milestone_11_Single_Model_Two_Textures.md` were not edited or staged.
+
+### Next permitted milestone
+
+Milestone 2 only. Do not begin it.

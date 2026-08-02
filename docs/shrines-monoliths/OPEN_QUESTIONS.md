@@ -1,6 +1,6 @@
 # Shrine and Monolith Open Questions
 
-Settled decisions from the authoritative design and playbook are intentionally omitted. No unresolved product question prevents the architecture/discovery work of Milestone 1, but the baseline build issue is an engineering gate that must be acknowledged.
+Settled decisions from the authoritative design and playbook are intentionally omitted. No remaining open question blocks the completed Milestone 1 definition and transform foundation.
 
 ## 1. When will the completed banner branch be integrated?
 
@@ -26,17 +26,10 @@ Settled decisions from the authoritative design and playbook are intentionally o
 - **Blocks Milestone 1:** **No.** It blocks asset integration and visual acceptance in later milestones.
 - **Smallest owner decision required:** Supply the asset package and a mapping from each file to either an approved stable display/variant name or an explicit `unnamed/provisional` status.
 
-## 4. How should the unmodified clean-build failure be cleared?
-
-- **Unresolved issue:** The initial `test` task passed, but `clean build` failed in `:neoFormPatch` with `Patch directory not found`; subsequent builds reconstructed an incomplete Minecraft compile classpath and failed on missing `net.minecraft`/client classes. A cache-disabled retry reproduced the missing-class failure.
-- **Why inspection did not answer it:** No shrine/monolith files existed during these runs, source control showed no build-script change, and Milestone 0 forbids unrelated build-system repair. The failure arose only after the clean deleted prior generated NeoForm state.
-- **Evidence inspected:** exact baseline Gradle outputs; `git status`; `git diff`; `build.gradle`; wrapper/toolchain versions; clean dry-run and ignored/tracked-path checks.
-- **Blocks Milestone 1:** **Conditionally yes.** Design documentation can proceed, but a milestone that requires a passing clean build cannot be accepted until the environment/NeoGradle generated state is repaired or the baseline failure is formally waived.
-- **Smallest owner decision required:** Authorize a separate build-environment/cache repair investigation, or explicitly accept this captured baseline failure for Milestone 1 while keeping source changes independently verified.
-
 ## Confirmed non-questions
 
 - Shrine dimensions, occupied cells, family behavior, and nine identities are settled.
 - Monolith dimensions, occupied cells, family behavior, and the positive sixteen-voxel render correction are settled.
 - Collision/render independence and per-cell `0..16` bounds are settled.
 - Cross-family conversion is forbidden and is not open for interpretation.
+- The Milestone 0 NeoForm clean-build issue is resolved: NeoGradle's supply pipeline rebuilt the incomplete generated artifact, and the normal Milestone 1 clean production build passed.

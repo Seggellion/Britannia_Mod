@@ -29,6 +29,7 @@ This file separates facts found in the repository from product requirements appr
 | Verified repository fact | Documented client command: `.\gradlew.bat runClient -Pdev --no-configuration-cache` on Windows (the README shows the shell form `./gradlew runClient -Pdev --no-configuration-cache`). | `README.md`; `build.gradle` |
 | Verified repository fact | The configured dedicated-server run is `runServer`; the native Windows invocation is `.\gradlew.bat runServer -Pdev --no-configuration-cache`. It supplies `--nogui`. | `build.gradle` |
 | Verified repository fact | Native baseline commands are `.\gradlew.bat test --no-daemon --stacktrace` and `.\gradlew.bat clean build --no-daemon --stacktrace`. A production package is created by the `build` lifecycle; `-Pdev` disables embedded GeckoLib packaging for development. | `build.gradle`; Gradle wrapper tasks |
+| Verified repository fact | The Milestone 0 NeoForm failure was an incomplete generated NeoForge compile artifact: it contained exactly 4,096 class entries and omitted common/client Minecraft classes. Rerunning NeoGradle's own supply pipeline with a 4 GB recompiler heap rebuilt 9,729 class entries; the normal full test task and normal clean production build then passed without a tracked Gradle-memory override. | generated JAR inventory; `supplyRawJarForneoFormJoined1.21.1-20240808.144430`; post-recovery `test` and `clean build` output |
 
 ## Approved structure contract
 
@@ -121,8 +122,8 @@ Verified repository fact: no current-branch implementation provides all of ancho
 
 | Classification | Finding | Evidence |
 | --- | --- | --- |
-| Verified repository fact | No shrine or monolith gameplay block, item, block entity, model, Blockbench file, GeckoLib geometry/animation, texture, localization key, variant ID, display name, saved-state ID, or feature documentation exists outside the two root specifications on this branch. | case-insensitive name/content searches across `src`, `content`, `docs`, and repository filenames |
-| Verified repository fact | None of the nine approved shrine identities has an existing repository ID or content path. Their names appear only in the root design/playbook. | searches for Honesty, Compassion, Valor, Justice, Sacrifice, Honor, Spirituality, Humility, Chaos |
+| Verified repository fact | Milestone 1 adds only common-side logical definitions and pure transforms. No shrine or monolith gameplay block, item, block entity, renderer, model, Blockbench file, GeckoLib geometry/animation, texture, localization key, saved-state schema, or world mutation exists. | `src/main/java/com/seggellion/britannia_mod/structure/definition`; registration/resource inventories; scope tests |
+| Verified repository fact | The nine approved shrine identities now have stable lower-case logical variant IDs, but still have no claimed localization, model, or texture path. Their client resources are explicitly unavailable while identity remains stable. | `ShrineMonolithDefinitions.java`; catalogue tests |
 | Verified repository fact | No supplied monolith models or textures are present, so there are no repository-backed authored coordinates, lowest-Y measurements, stable names, or provisional asset names to record. | asset/file inventory and model-content searches |
 | Approved product requirement | The positive sixteen-voxel monolith Y render correction is authoritative even though no supplied model is currently available to inspect. | root design/playbook |
 | Unresolved question | Asset delivery, exact monolith names, and authored-coordinate evidence remain unresolved; see `OPEN_QUESTIONS.md`. | `docs/shrines-monoliths/OPEN_QUESTIONS.md` |
@@ -131,7 +132,7 @@ Verified repository fact: no current-branch implementation provides all of ancho
 
 | Classification | Finding | Evidence |
 | --- | --- | --- |
-| Verified repository fact | The current branch has no repository-authored unit-test dependency declaration and no Java test files. The Gradle `test` task exists through the Java plugin and completed successfully in the initial unmodified baseline. | `build.gradle`; source inventory; baseline command output |
+| Verified repository fact | Milestone 1 uses the repository's conventional `src/test/java` source set with JUnit Jupiter 5.10.2 and the JUnit Platform launcher. The shrine/monolith definition package has four test classes and 48 test methods. | `build.gradle`; `src/test/java/com/seggellion/britannia_mod/structure/definition`; JUnit XML results |
 | Verified repository fact | Client/server runs set `neoforge.enabledGameTestNamespaces=britannia_mod`, but no `@GameTest` implementation exists on this branch. | `build.gradle`; GameTest symbol search |
 | Verified repository fact | No client test suite, dedicated-server startup test, current-branch multiblock test, Interior Decorator test, CI workflow, or production-JAR inspection convention was found. | source/docs/`.github` searches |
 | Verified repository fact | The unintegrated `banners-dyetub` branch has JUnit/contract coverage, including dedicated-server-safety and production/release contract tests; those tests are not available to the active branch. | `git ls-tree banners-dyetub -- src/test`; banner branch build files |
