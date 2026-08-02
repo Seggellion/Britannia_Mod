@@ -213,20 +213,20 @@ class FlowerSpeciesContentTest {
     void everySpeciesHasStagesOneThroughSevenAndExactlyTwoInWorldTexturesPerStage() throws IOException {
         Path models = ASSETS.resolve("models/block/flowers");
         Path textures = ASSETS.resolve("textures/block/flowers");
-        assertEquals(49, countSuffix(models, "_base.json"));
-        assertEquals(49, countSuffix(models, "_dye_mask.json"));
+        assertEquals(49, countSuffix(models, ".json"));
+        assertEquals(0, countSuffix(models, "_base.json"));
+        assertEquals(0, countSuffix(models, "_dye_mask.json"));
         assertEquals(49, countSuffix(textures, "_base_texture.png"));
         assertEquals(49, countSuffix(textures, "_dye_mask.png"));
 
         for (ExpectedSpecies expected : EXPECTED.values()) {
             for (int stage = 1; stage <= 7; stage++) {
-                FlowerVisualModels.ModelPair pair = FlowerVisualModels.pair(expected.id(), stage);
-                assertTrue(Files.isRegularFile(models.resolve(pair.baseId().getPath().substring("block/flowers/".length()) + ".json")));
-                assertTrue(Files.isRegularFile(models.resolve(pair.dyeMaskId().getPath().substring("block/flowers/".length()) + ".json")));
+                FlowerVisualModels.StageModel model = FlowerVisualModels.stageModel(expected.id(), stage);
+                assertTrue(Files.isRegularFile(models.resolve(model.canonicalId().getPath().substring("block/flowers/".length()) + ".json")));
                 assertTrue(Files.isRegularFile(textures.resolve(expected.id().getPath() + "/stage_" + stage + "_base_texture.png")));
                 assertTrue(Files.isRegularFile(textures.resolve(expected.id().getPath() + "/stage_" + stage + "_dye_mask.png")));
             }
-            assertFalse(Files.exists(models.resolve(expected.id().getPath() + "/stage_8_base.json")));
+            assertFalse(Files.exists(models.resolve(expected.id().getPath() + "/stage_8.json")));
             assertFalse(Files.exists(textures.resolve(expected.id().getPath() + "/stage_8_base_texture.png")));
         }
     }

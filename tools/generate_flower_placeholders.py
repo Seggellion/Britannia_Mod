@@ -4,7 +4,9 @@
 The default mode is create-only and refuses to overwrite any target. The explicit
 --overwrite-placeholders mode first verifies every existing target against the
 previous generated hash ledger, so owner replacement artwork is never silently
-replaced. --check performs a byte-for-byte reproducibility audit without writing.
+replaced. It may retire only hash-verified pass-specific stage-model JSONs during
+canonical model migrations. --check performs a byte-for-byte reproducibility audit
+without writing.
 """
 
 from __future__ import annotations
@@ -250,25 +252,24 @@ def build_manifest() -> bytes:
         "",
         "## In-world stage placeholders",
         "",
-        "Every pass inherits the same four-plane cutout parent with tint index 0 on every face. UV `[0,0,16,16]` covers the full 128x128 canvas; "
-        "base and mask use identical canvas bounds, padding assumptions, model transforms, and pixel grid. "
+        "Every canonical stage model inherits the same four-plane cutout parent with tint index 0 on every face and exposes both image textures. "
+        "UV `[0,0,16,16]` covers the full 128x128 canvas; base and mask use identical canvas bounds, padding assumptions, geometry, and pixel grid. "
         "Stages 1-2 intentionally have no visible bloom, so their dye masks are valid fully transparent PNGs. "
-        "Poppy stage 7 is a distinct reserved manual-stage asset only; this milestone adds no advancement behavior.",
+        "Poppy stage 7 remains the distinct reserved manual-stage asset.",
         "",
-        "| Species registry ID | Stage | Base model path | Dye-mask model path | Shared geometry parent | Base texture path | Dye-mask texture path | Dimensions | UV assumptions | Dye mask intentionally empty | Status | Replacement status | Particle texture source | Final-art approval |",
-        "|---|---:|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Species registry ID | Stage | model_path | base_texture_path | dye_mask_texture_path | Shared geometry parent | Dimensions | UV assumptions | Dye mask intentionally empty | Status | Replacement status | Particle texture source | Final-art approval |",
+        "|---|---:|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for species, _, _ in SPECIES:
         for stage in STAGES:
             prefix = f"src/main/resources/assets/britannia_mod"
-            base_model = f"{prefix}/models/block/flowers/{species}/stage_{stage}_base.json"
-            mask_model = f"{prefix}/models/block/flowers/{species}/stage_{stage}_dye_mask.json"
+            model = f"{prefix}/models/block/flowers/{species}/stage_{stage}.json"
             base_texture = f"{prefix}/textures/block/flowers/{species}/stage_{stage}_base_texture.png"
             mask_texture = f"{prefix}/textures/block/flowers/{species}/stage_{stage}_dye_mask.png"
             empty = "Yes - no bloom at this stage" if stage in EMPTY_MASK_STAGES else "No"
             lines.append(
-                f"| `britannia_mod:{species}` | {stage} | `{base_model}` | `{mask_model}` | "
-                f"`{SHARED_PARENT_ID}` | `{base_texture}` | `{mask_texture}` | 128x128 | Full-canvas 0..16; identical pass geometry and pixel grid | "
+                f"| `britannia_mod:{species}` | {stage} | `{model}` | `{base_texture}` | `{mask_texture}` | "
+                f"`{SHARED_PARENT_ID}` | 128x128 | Full-canvas 0..16; identical two-pass geometry and pixel grid | "
                 f"{empty} | Generated placeholder | Pending owner replacement | Paired base texture | Not approved |"
             )
 
@@ -314,12 +315,13 @@ def build_manifest() -> bytes:
         "",
         "`FlowerBlock` blockstate wrappers continue to render hydration-specific farming soil. The client-only "
         "`FlowerBlockEntityRenderer` renders only the flower planes above that soil. `FlowerVisualModels` registers "
-        "and resolves all 49 base plus 49 dye-mask standalone pass models; baked models are reacquired from Minecraft's "
-        "resource-reload-managed model cache.",
+        "and resolves one canonical standalone model for each of the 49 species/stage combinations; the canonical baked "
+        "model is reacquired from Minecraft's resource-reload-managed model cache.",
         "",
-        "Each visible flower submits the paired base model first in white and the paired dye-mask model second using the "
-        "exact saved 24-bit RGB tint. Both passes use one shared transform, deterministic position/species rotation, "
-        "cutout render type, packed light, and overlay. Alpha-disjoint artwork remains the Z-fighting control; no depth "
+        "Each visible flower submits the canonical model geometry first with its base texture in white, then submits the "
+        "same canonical baked geometry through a UV remap from the base atlas sprite to its directly bound grayscale "
+        "dye-mask texture using the exact saved 24-bit RGB tint. Both passes use one shared transform, deterministic "
+        "position/species rotation, cutout rendering, packed light, and overlay. Alpha-disjoint artwork remains the Z-fighting control; no depth "
         "offset, third pass, or third in-world PNG is used.",
         "",
         "## Counts and replacement contract",
@@ -327,8 +329,8 @@ def build_manifest() -> bytes:
         "- 7 species",
         "- 14 logical flower/seed items and 14 item textures",
         "- 1 skinning-knife utility item and placeholder texture",
-        "- 49 logical in-world stage models",
-        "- 49 base pass models and 49 dye-mask pass models",
+        "- 49 canonical in-world stage models",
+        "- 0 pass-specific species/stage models",
         "- 49 base textures and 49 dye-mask textures (98 in-world PNGs total)",
         "- 1 shared geometry parent",
         "",
@@ -360,13 +362,9 @@ def expected_outputs() -> dict[Path, bytes]:
             base_ref = f"britannia_mod:block/flowers/{species}/stage_{stage}_base_texture"
             mask_ref = f"britannia_mod:block/flowers/{species}/stage_{stage}_dye_mask"
             model_root = ASSETS / "models" / "block" / "flowers" / species
-            outputs[model_root / f"stage_{stage}_base.json"] = json_bytes({
+            outputs[model_root / f"stage_{stage}.json"] = json_bytes({
                 "parent": SHARED_PARENT_ID,
-                "textures": {"flower": base_ref, "particle": base_ref},
-            })
-            outputs[model_root / f"stage_{stage}_dye_mask.json"] = json_bytes({
-                "parent": SHARED_PARENT_ID,
-                "textures": {"flower": mask_ref, "particle": base_ref},
+                "textures": {"flower": base_ref, "dye_mask": mask_ref, "particle": base_ref},
             })
             base_png, mask_png = stage_art(species_index, species, stage)
             texture_root = ASSETS / "textures" / "block" / "flowers" / species
@@ -394,7 +392,7 @@ def digest(data: bytes) -> str:
 def ledger_bytes(outputs: dict[Path, bytes]) -> bytes:
     return json_bytes({
         "generator": "tools/generate_flower_placeholders.py",
-        "schema": 1,
+        "schema": 2,
         "files": {resource_path(path): digest(data) for path, data in sorted(outputs.items(), key=lambda entry: resource_path(entry[0]))},
     })
 
@@ -411,18 +409,37 @@ def check(outputs: dict[Path, bytes]) -> None:
         failures.append(f"missing: {resource_path(HASH_LEDGER)}")
     elif HASH_LEDGER.read_bytes() != expected_ledger:
         failures.append(f"hash ledger mismatch: {resource_path(HASH_LEDGER)}")
+    model_root = ASSETS / "models" / "block" / "flowers"
+    if model_root.is_dir():
+        for path in model_root.glob("*/stage_*_base.json"):
+            failures.append(f"prohibited pass-specific model: {resource_path(path)}")
+        for path in model_root.glob("*/stage_*_dye_mask.json"):
+            failures.append(f"prohibited pass-specific model: {resource_path(path)}")
     if failures:
         raise RuntimeError("Placeholder check failed:\n" + "\n".join(failures))
 
 
-def verify_safe_overwrite(outputs: dict[Path, bytes]) -> None:
+def is_retirable_pass_model(relative: str) -> bool:
+    path = Path(relative)
+    return (
+        len(path.parts) >= 2
+        and path.parts[:7] == ("src", "main", "resources", "assets", "britannia_mod", "models", "block")
+        and "flowers" in path.parts
+        and path.name.startswith("stage_")
+        and (path.name.endswith("_base.json") or path.name.endswith("_dye_mask.json"))
+    )
+
+
+def verify_safe_overwrite(outputs: dict[Path, bytes]) -> list[Path]:
     if not HASH_LEDGER.is_file():
         raise RuntimeError("Cannot overwrite without the generated hash ledger")
     ledger = json.loads(HASH_LEDGER.read_text(encoding="utf-8"))
     recorded = ledger.get("files", {})
     expected_paths = {resource_path(path) for path in outputs}
-    if not set(recorded).issubset(expected_paths):
-        raise RuntimeError("Refusing overwrite because a previously managed placeholder path was removed")
+    retired_relatives = set(recorded) - expected_paths
+    unexpected_retired = sorted(relative for relative in retired_relatives if not is_retirable_pass_model(relative))
+    if unexpected_retired:
+        raise RuntimeError("Refusing overwrite because non-model managed paths were removed:\n" + "\n".join(unexpected_retired))
     changed = []
     for path in outputs:
         relative = resource_path(path)
@@ -432,15 +449,26 @@ def verify_safe_overwrite(outputs: dict[Path, bytes]) -> None:
             changed.append(relative + " (new managed path already exists)")
     if changed:
         raise RuntimeError("Refusing to overwrite replaced or edited artwork:\n" + "\n".join(changed))
+    retired_paths = []
+    for relative in sorted(retired_relatives):
+        path = ROOT / relative
+        if path.exists() and digest(path.read_bytes()) != recorded[relative]:
+            raise RuntimeError("Refusing to retire edited pass-specific model: " + relative)
+        retired_paths.append(path)
+    return retired_paths
 
 
 def write(outputs: dict[Path, bytes], overwrite: bool) -> None:
+    retired_paths: list[Path] = []
     if overwrite:
-        verify_safe_overwrite(outputs)
+        retired_paths = verify_safe_overwrite(outputs)
     else:
         existing = [resource_path(path) for path in (*outputs.keys(), HASH_LEDGER) if path.exists()]
         if existing:
             raise RuntimeError("Create-only generation refused existing targets:\n" + "\n".join(existing))
+    for path in retired_paths:
+        if path.exists():
+            path.unlink()
     for path, data in sorted(outputs.items(), key=lambda entry: resource_path(entry[0])):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)

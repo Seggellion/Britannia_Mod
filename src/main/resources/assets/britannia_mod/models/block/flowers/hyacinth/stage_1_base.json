@@ -1,7 +1,0 @@
-{
-  "parent": "britannia_mod:block/flowers/shared/multi_plane",
-  "textures": {
-    "flower": "britannia_mod:block/flowers/hyacinth/stage_1_base_texture",
-    "particle": "britannia_mod:block/flowers/hyacinth/stage_1_base_texture"
-  }
-}

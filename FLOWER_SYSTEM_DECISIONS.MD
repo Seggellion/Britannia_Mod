@@ -1,5 +1,7 @@
 # Persistent Flower System Owner Decisions
 
+> **Current rendering authority:** Corrective Milestone 11 supersedes A1/M3/M7 wording that described separate base-pass and dye-mask species/stage model resources. Historical milestone notes below remain as an implementation record, not the current asset contract.
+
 Owner decision gate: **Approved** for Milestone 2 on branch `Farming` at HEAD `41fb51a568fb393e27a276d12cbcbfd26c8730d0`.
 
 ## B1 - Poppy skinning knife
@@ -124,7 +126,7 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - `CropSeedItem` was not reused because it represents ordinary crop planting, and `SeedExtractableHealingCropItem` was not reused because it would add unrelated food/healing behavior.
 - `FlowerRegistry` remains the only authoritative seed-to-species mapping. Milestone 3 does not implement `CropSeedExtractor` activation; the future interaction can delegate to that existing service without changing registry IDs.
 
-### M3.2 - Placeholder model and texture structure
+### M3.2 - Placeholder model and texture structure (historical; superseded by Corrective Milestone 11)
 
 - Rendering Option A is represented by 49 base pass models and 49 dye-mask pass models inheriting one shared four-plane cutout geometry parent.
 - Every logical stage uses exactly `stage_<n>_base_texture.png` and `stage_<n>_dye_mask.png`; the particle reference aliases the paired base texture.
@@ -227,7 +229,7 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - The normal FlowerBlock blockstate continues to render the six hydration-driven farming-soil wrapper models. The block-entity renderer renders only the species/stage flower planes one block above that soil and never duplicates the soil model.
 - The renderer follows the farming crop transform: translate to block center and soil top, apply the same deterministic position/species yaw function, translate back, acquire one `RenderType.cutout` buffer, then render base first and dye mask second with the same pose, block state, packed light, and packed overlay.
 
-### M7.2 - Authoritative model resolver and reload behavior
+### M7.2 - Authoritative model resolver and reload behavior (historical; superseded by Corrective Milestone 11)
 
 - `client/renderer/FlowerVisualModels` precomputes 49 base and 49 dye-mask `ModelResourceLocation` identifiers for all seven species and stages 1-7. `ClientModSetup.registerAdditionalModels` registers all 98 standalone pass models explicitly; blockstate discovery is not relied upon.
 - Resource identifiers remain cached because they are immutable. `BakedModel` instances are never stored in static or renderer fields: every render reacquires the model from Minecraft's reload-managed `ModelManager`, which owns the baked-model cache. Reload clears only bounded diagnostic sets and never reads or writes flower state.
@@ -295,6 +297,17 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - Survival flower/seed acquisition, survival skinning-knife acquisition, recipes, natural generation, merchants, economy, Rails integration, and all other deferred expansion remain unimplemented.
 - No merge, push, pull request, release tag, deployment, or production-readiness claim is included in this approval.
 
+## Corrective Milestone 11 - One canonical model, two textures
+
+- Each flower species/growth-stage lookup resolves one canonical multi-plane model at `assets/britannia_mod/models/block/flowers/<species>/stage_<n>.json`.
+- The canonical model exposes the fixed base texture, grayscale dye-mask texture, and a particle alias to the base texture. The two unique image resources remain `stage_<n>_base_texture.png` and `stage_<n>_dye_mask.png`.
+- `FlowerVisualModels` registers and resolves 49 canonical stage models. Separate base-pass and dye-mask stage-model resources are prohibited.
+- `FlowerBlockEntityRenderer` requests one canonical baked model. It renders those baked quads once with the block-atlas base texture and white tint, then renders the same geometry again through normalized UV remapping to the directly bound dye-mask texture with the saved flower tint. Direct binding avoids relying on an unused model texture key being stitched into the block atlas.
+- The shared transform, cutout rendering, packed light/overlay, `tintindex: 0`, and alpha-disjoint artwork remain the Z-fighting and tint-isolation strategy. No gameplay, registry, persistence, networking, palette, growth, interaction, or item contract changes.
+- The placeholder generator may retire only prior hash-verified pass-specific stage JSONs during this migration. Owner-replaced artwork remains protected by the existing ledger checks.
+- Runtime validation established that the two render types must be acquired sequentially: the base pass is fully submitted before the directly bound mask buffer is requested. This preserves the passed `MultiBufferSource` lifecycle and prevents emission into a buffer that render-type switching has already ended.
+- Final validation passed 15 suites / 108 tests, the focused 9-test renderer suite, generator and repository audits, persisted-world dedicated-server restart/save, corrected client reconnect, live resource reload, chunk unload/reload, and original-resolution review of nine fresh captures. **Corrective Milestone 11 — Approved.**
+
 ## Farming Skill Progression Milestone 14 - Definition metadata
 
 - The authoritative schema is `FarmingSkillRequirement.minimumFarmingSkill()`, implemented as an explicit finite `float` in inclusive range `0..100`. This matches the existing Farming skill representation and preserves the approved inclusive future comparison boundary.
@@ -306,3 +319,14 @@ None block Milestone 2. Later balancing, final art, and live interaction feedbac
 - Grapes carries the approved Farming 80 metadata only through its existing `CropDefinition`. The established grape planting, variety, component/NBT, name, rendering, and harvest systems are unchanged; future `a brown seed` presentation is deferred.
 - Ordinary Poppy carries Farming 20. The independent stage-7 mastery contract remains Farming 100, stage 6, an approved skinning knife, and authorized mutation. Neither threshold derives from the other.
 - These decisions do not reopen DECISION-001 through DECISION-016 and do not authorize Milestone 15 planting enforcement, Milestone 16 presentation, acquisition/economy work, or any recipe behavior.
+
+## Farming Skill Progression Milestone 15 - Server-authoritative cultivation gate
+
+- New planting uses one central inclusive policy: `current Farming >= minimumFarmingSkill`. The result vocabulary is `ELIGIBLE`, `INSUFFICIENT_SKILL`, `NOT_APPLICABLE`, `UNRESOLVED_SPECIES`, `APPROVED_BYPASS`, `NON_PLAYER_POLICY`, and `SKILL_DATA_UNAVAILABLE`.
+- The server observes explicit skill-data load state. Missing, loading, and failed Rails data blocks planting; it is never treated as an authoritative zero and never fails open. Creative and real operator-level-2-or-higher players retain the approved bypass.
+- Fake and non-player automation is denied because no trustworthy owner-UUID skill attribution contract exists. World generation, commands, growth, care, harvest, perennial reset, and protection decisions remain outside the new-planting gate.
+- Ordinary crop eligibility is checked immediately after authoritative non-grape definition resolution and before species-specific support/clearance feedback, crop state, blocks, structures, consumption, sounds, or Farming awards. Eligible and bypassed players still pass through every existing occupancy, support, soil, and structure rule. Flowers are checked after registered definition/target validation and before soil snapshot, colour selection, conversion, persistence, consumption, or success feedback.
+- Direct custom seed, farming-block, trellis, tall-crop, berry, orchard, root/tuber/bulb, and lifecycle-special paths converge on the ordinary transaction. All seven flowers converge on the flower transaction. Native vanilla planting is not intercepted.
+- Grapes retains Farming 80 metadata but remains explicitly exempt from active Milestone 15 enforcement. Its planting, varieties, component/NBT, naming, rendering, and harvest code is untouched; `a brown seed` remains deferred to Milestone 16.
+- Denials consume the interaction, do not consume the item or mutate the target, and trigger a server correction broadcast. Localized action-bar feedback uses only a generic unidentified material category and current/required Farming values, never the resolved species identity.
+- Milestone 15 adds no viewer-specific item names, tooltip, narration, hover text, recipes, acquisition/economy behavior, requirement persistence, or new network payload.

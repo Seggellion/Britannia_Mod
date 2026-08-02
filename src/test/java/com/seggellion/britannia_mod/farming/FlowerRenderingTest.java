@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlowerRenderingTest {
@@ -22,20 +24,18 @@ class FlowerRenderingTest {
     private static final float EPSILON = 0.0000001F;
 
     @Test
-    void allSevenSpeciesAndStagesResolveExactlyNinetyEightStandalonePassModels() {
+    void allSevenSpeciesAndStagesResolveExactlyFortyNineCanonicalModels() {
         assertEquals(7, FlowerVisualModels.supportedSpecies().size());
-        assertEquals(49, FlowerVisualModels.baseModelLocations().size());
-        assertEquals(49, FlowerVisualModels.dyeMaskModelLocations().size());
-        assertEquals(98, FlowerVisualModels.allModelLocations().size());
-        assertEquals(98, FlowerVisualModels.allModelLocations().stream().distinct().count());
+        assertEquals(49, FlowerVisualModels.allModelLocations().size());
+        assertEquals(49, FlowerVisualModels.allModelLocations().stream().distinct().count());
 
         for (ResourceLocation species : FlowerVisualModels.supportedSpecies()) {
             for (int stage = 1; stage <= 7; stage++) {
-                FlowerVisualModels.ModelPair pair = FlowerVisualModels.pair(species, stage);
+                FlowerVisualModels.StageModel model = FlowerVisualModels.stageModel(species, stage);
                 String prefix = "block/flowers/" + species.getPath() + "/stage_" + stage;
-                assertEquals(prefix + "_base", pair.baseId().getPath());
-                assertEquals(prefix + "_dye_mask", pair.dyeMaskId().getPath());
-                assertNotEquals(pair.baseModel(), pair.dyeMaskModel());
+                assertEquals(prefix, model.canonicalId().getPath());
+                assertEquals(prefix + "_base_texture", model.baseTextureId().getPath());
+                assertEquals(prefix + "_dye_mask", model.dyeMaskTextureId().getPath());
             }
         }
     }
@@ -52,9 +52,9 @@ class FlowerRenderingTest {
             }
         }
         assertTrue(FlowerVisualModels.resolve(FlowerRegistry.POPPY, 6, 0x123456)
-                .models().baseId().getPath().endsWith("stage_6_base"));
+                .model().canonicalId().getPath().endsWith("stage_6"));
         assertTrue(FlowerVisualModels.resolve(FlowerRegistry.POPPY, 7, 0x123456)
-                .models().baseId().getPath().endsWith("stage_7_base"));
+                .model().canonicalId().getPath().endsWith("stage_7"));
     }
 
     @Test
@@ -106,33 +106,51 @@ class FlowerRenderingTest {
     }
 
     @Test
-    void stagePassAssetsUseSharedGeometryPairedParticlesAndNoThirdTexture() throws IOException {
+    void canonicalStageAssetGraphUsesOneModelAndExactlyTwoImageTextures() throws IOException {
         Path models = PROJECT.resolve("src/main/resources/assets/britannia_mod/models");
+        Path flowerModels = models.resolve("block/flowers");
         Path sharedModel = models.resolve("block/flowers/shared/multi_plane.json");
         assertTrue(Files.isRegularFile(sharedModel));
         JsonObject shared = json(sharedModel);
         shared.getAsJsonArray("elements").forEach(element ->
                 element.getAsJsonObject().getAsJsonObject("faces").entrySet().forEach(face ->
                         assertEquals(0, face.getValue().getAsJsonObject().get("tintindex").getAsInt())));
+        Set<Path> resolvedStageModels = new HashSet<>();
         for (ResourceLocation species : FlowerVisualModels.supportedSpecies()) {
             for (int stage = 1; stage <= 7; stage++) {
-                FlowerVisualModels.ModelPair pair = FlowerVisualModels.pair(species, stage);
-                JsonObject base = json(models.resolve(pair.baseId().getPath() + ".json"));
-                JsonObject mask = json(models.resolve(pair.dyeMaskId().getPath() + ".json"));
+                FlowerVisualModels.StageModel stageModel = FlowerVisualModels.stageModel(species, stage);
+                Path modelPath = models.resolve(stageModel.canonicalId().getPath() + ".json").normalize();
+                assertTrue(resolvedStageModels.add(modelPath));
+                JsonObject model = json(modelPath);
                 String baseTexture = "britannia_mod:block/flowers/" + species.getPath()
                         + "/stage_" + stage + "_base_texture";
                 String maskTexture = "britannia_mod:block/flowers/" + species.getPath()
                         + "/stage_" + stage + "_dye_mask";
-                assertEquals("britannia_mod:block/flowers/shared/multi_plane", base.get("parent").getAsString());
-                assertEquals("britannia_mod:block/flowers/shared/multi_plane", mask.get("parent").getAsString());
-                assertEquals(2, base.getAsJsonObject("textures").size());
-                assertEquals(2, mask.getAsJsonObject("textures").size());
-                assertEquals(baseTexture, base.getAsJsonObject("textures").get("flower").getAsString());
-                assertEquals(maskTexture, mask.getAsJsonObject("textures").get("flower").getAsString());
-                assertEquals(baseTexture, base.getAsJsonObject("textures").get("particle").getAsString());
-                assertEquals(baseTexture, mask.getAsJsonObject("textures").get("particle").getAsString());
+                assertEquals("britannia_mod:block/flowers/shared/multi_plane", model.get("parent").getAsString());
+                JsonObject textures = model.getAsJsonObject("textures");
+                assertEquals(Set.of("flower", "dye_mask", "particle"), textures.keySet());
+                assertEquals(baseTexture, textures.get("flower").getAsString());
+                assertEquals(maskTexture, textures.get("dye_mask").getAsString());
+                assertEquals(baseTexture, textures.get("particle").getAsString());
+                assertEquals(2, Set.of(
+                        textures.get("flower").getAsString(),
+                        textures.get("dye_mask").getAsString()
+                ).size());
             }
         }
+
+        Set<Path> actualStageModels = new HashSet<>();
+        try (Stream<Path> paths = Files.walk(flowerModels)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> !path.startsWith(flowerModels.resolve("shared")))
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .forEach(path -> actualStageModels.add(path.normalize()));
+        }
+        assertEquals(resolvedStageModels, actualStageModels);
+        assertEquals(49, actualStageModels.size());
+        assertTrue(actualStageModels.stream().noneMatch(path ->
+                path.getFileName().toString().endsWith("_base.json")
+                        || path.getFileName().toString().endsWith("_dye_mask.json")));
     }
 
     @Test
@@ -144,7 +162,16 @@ class FlowerRenderingTest {
         int mask = renderer.indexOf("plan.dyeMaskTint(), packedLight, packedOverlay");
         assertTrue(base >= 0 && mask > base);
         assertEquals(2, count(renderer, "renderPass(minecraft"));
+        assertEquals(2, count(renderer, "resolved.model(),"));
+        assertEquals(1, count(renderer, "resolveModel(modelManager, plan.model()"));
+        assertTrue(renderer.contains("RenderType.entityCutout(textureFile(resolved.assets().dyeMaskTextureId()))"));
+        assertTrue(renderer.contains("new TextureRemappingVertexConsumer("));
+        assertTrue(renderer.contains("delegate.setUv(relativeU, relativeV)"));
+        assertFalse(renderer.contains("dyeMaskModel"));
         assertEquals(1, count(renderer, "bufferSource.getBuffer(RenderType.cutout())"));
+        assertEquals(1, count(renderer, "bufferSource.getBuffer(RenderType.entityCutout("));
+        assertTrue(renderer.indexOf("bufferSource.getBuffer(RenderType.cutout())")
+                < renderer.indexOf("bufferSource.getBuffer(RenderType.entityCutout("));
         assertEquals(1, count(renderer, "poseStack.pushPose()"));
         assertEquals(1, count(renderer, "poseStack.popPose()"));
         assertEquals(1, count(renderer, "poseStack.mulPose("));
@@ -164,6 +191,7 @@ class FlowerRenderingTest {
         assertTrue(setup.contains("FlowerBlockEntityRenderer.onModelsReloaded()"));
         assertTrue(renderer.contains("modelManager.getModel("));
         assertFalse(renderer.contains("static final BakedModel"));
+        assertFalse(resolver.contains("ModelPair"));
         assertFalse(resolver.contains("WeightedFlowerColorSelector"));
         assertFalse(renderer.contains("WeightedFlowerColorSelector"));
 
@@ -180,7 +208,7 @@ class FlowerRenderingTest {
         FlowerVisualModels.RenderPlan first = FlowerVisualModels.resolve(FlowerRegistry.HYACINTH, 7, 0x374E82);
         FlowerVisualModels.RenderPlan second = FlowerVisualModels.resolve(FlowerRegistry.HYACINTH, 7, 0x374E82);
         assertEquals(first, second);
-        assertEquals(first.models(), second.models());
+        assertEquals(first.model(), second.model());
         assertEquals(first.dyeMaskTint(), second.dyeMaskTint());
 
         ResourceLocation unknown = ResourceLocation.fromNamespaceAndPath("britannia_mod", "missing");

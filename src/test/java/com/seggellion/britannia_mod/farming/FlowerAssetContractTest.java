@@ -99,8 +99,9 @@ class FlowerAssetContractTest {
     @Test
     void allLogicalStageAndItemModelsResolveThroughSharedMultiPlaneGeometry() throws IOException {
         Path flowerModels = ASSETS.resolve("models/block/flowers");
-        assertEquals(49, countMatching(flowerModels, "_base.json"));
-        assertEquals(49, countMatching(flowerModels, "_dye_mask.json"));
+        assertEquals(49, countMatching(flowerModels, ".json"));
+        assertEquals(0, countMatching(flowerModels, "_base.json"));
+        assertEquals(0, countMatching(flowerModels, "_dye_mask.json"));
 
         JsonObject parent = readJson(resolveModel(SHARED_PARENT));
         assertEquals("minecraft:cutout", parent.get("render_type").getAsString());
@@ -110,15 +111,14 @@ class FlowerAssetContractTest {
             for (int stage = 1; stage <= 7; stage++) {
                 String baseTexture = "britannia_mod:block/flowers/" + content.path() + "/stage_" + stage + "_base_texture";
                 String maskTexture = "britannia_mod:block/flowers/" + content.path() + "/stage_" + stage + "_dye_mask";
-                JsonObject base = readJson(model(content.path(), stage, "base"));
-                JsonObject mask = readJson(model(content.path(), stage, "dye_mask"));
-                assertEquals(SHARED_PARENT, base.get("parent").getAsString());
-                assertEquals(SHARED_PARENT, mask.get("parent").getAsString());
-                assertTrue(Files.isRegularFile(resolveModel(base.get("parent").getAsString())));
-                assertEquals(baseTexture, base.getAsJsonObject("textures").get("flower").getAsString());
-                assertEquals(baseTexture, base.getAsJsonObject("textures").get("particle").getAsString());
-                assertEquals(maskTexture, mask.getAsJsonObject("textures").get("flower").getAsString());
-                assertEquals(baseTexture, mask.getAsJsonObject("textures").get("particle").getAsString());
+                JsonObject model = readJson(model(content.path(), stage));
+                assertEquals(SHARED_PARENT, model.get("parent").getAsString());
+                assertTrue(Files.isRegularFile(resolveModel(model.get("parent").getAsString())));
+                JsonObject textures = model.getAsJsonObject("textures");
+                assertEquals(Set.of("flower", "dye_mask", "particle"), textures.keySet());
+                assertEquals(baseTexture, textures.get("flower").getAsString());
+                assertEquals(maskTexture, textures.get("dye_mask").getAsString());
+                assertEquals(baseTexture, textures.get("particle").getAsString());
                 Set<String> referenced = Set.of(baseTexture, maskTexture);
                 assertEquals(2, referenced.size());
                 assertTrue(referenced.stream().allMatch(texture -> Files.isRegularFile(resolveTexture(texture))));
@@ -200,10 +200,11 @@ class FlowerAssetContractTest {
         assertTrue(manifest.contains("Do not add a third in-world texture."));
         assertTrue(manifest.contains("Do not bake a species colour into dye_mask."));
         assertTrue(manifest.contains("Do not overwrite approved replacement artwork with the placeholder generator."));
+        assertTrue(manifest.contains("| Species registry ID | Stage | model_path | base_texture_path | dye_mask_texture_path |"));
 
         JsonObject ledger = readJson(PROJECT.resolve("tools/flower_placeholder_hashes.json"));
         JsonObject files = ledger.getAsJsonObject("files");
-        assertEquals(231, files.size());
+        assertEquals(182, files.size());
         assertTrue(files.has("src/main/resources/assets/britannia_mod/models/item/skinning_knife.json"));
         assertTrue(files.has("src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png"));
         assertTrue(files.has("src/main/resources/data/britannia_mod/tags/item/skinning_knives.json"));
@@ -242,8 +243,8 @@ class FlowerAssetContractTest {
         return result;
     }
 
-    private static Path model(String species, int stage, String pass) {
-        return ASSETS.resolve("models/block/flowers/" + species + "/stage_" + stage + "_" + pass + ".json");
+    private static Path model(String species, int stage) {
+        return ASSETS.resolve("models/block/flowers/" + species + "/stage_" + stage + ".json");
     }
 
     private static Path texture(String species, int stage, String pass) {

@@ -1,5 +1,7 @@
 # Persistent Flower System Test Matrix
 
+> **Current model authority:** Corrective Milestone 11 replaces the historical 49-base-model plus 49-mask-model resource structure with 49 canonical stage models. Historical evidence below remains valid for gameplay and visual parity but does not define the current resource graph.
+
 Milestone 6 evidence is recorded here without claiming a live two-client session or final Milestone 7 rendering.
 
 | Area | Automated evidence | Runtime/manual evidence | Status |
@@ -23,7 +25,7 @@ Runtime log notes: the dedicated server still reports the pre-existing client-on
 
 | Area | Automated evidence | Runtime/manual evidence | Status |
 |---|---|---|---|
-| Model coverage | `FlowerRenderingTest` resolves 7 species x 7 stages x 2 passes, asserts 49 base + 49 mask registrations, exact paths, tint index 0 on every shared-parent face, paired particle reference, and no third model texture | Live 7x7 matrix plus targeted fixtures rendered all species/stages; corrected screenshots retained under `build/flower-render-review/` | Validated |
+| Model coverage | `FlowerRenderingTest` resolves 7 species x 7 stages to 49 canonical model registrations, compares the complete resolver graph with disk assets, verifies two unique texture resources per model, tint index 0 on every shared-parent face, base particle alias, and absence of pass-specific stage models | Corrective live 7x7 matrix and targeted fixtures passed | Pass |
 | Stage mapping | Exact stages 1-7, Poppy 6/7, stage-1 reset mapping, and low/high visual clamps are covered | Poppy 6/7 distinct shapes, empty stage-1 mask, and persisted low/high clamps were inspected after restart | Validated |
 | Tint conversion | Black, white, RGB primaries, `0x123456`, and every configured palette tint use exact channel division with alpha 1; invalid numeric and unknown-species fallbacks covered | Same-species stage-5 light/burgundy comparison visibly differs after adding model tint indices; corrupt `-1` and unknown species visibly use deterministic fallbacks | Validated |
 | Pass contract | Pure plan fixes base then mask; source contract asserts two cutout calls, base white, saved mask tint, one shared pose/rotation, identical light/overlay, and no translucent/third pass | Multi-angle corrected/geometry captures show fixed green base regions, coloured masks, aligned silhouettes, no halo/seam/checkerboard, and no static Z-fighting | Validated; continuous-motion flicker remains subjective owner review |
@@ -44,7 +46,7 @@ Milestone 7 runtime notes: the isolated client rendered 160 valid/targeted/corru
 | Palette validation | Every species has an explicit smaller-than-global allowlist, positive weights totaling 100, nonblank rarity, unique IDs/tints, valid fallback, 24-bit values, and 2,000 seeded selections restricted to its allowlist | Design palette counts remain 8/4/10/9/6/9/9; no palette was broadened | Validated |
 | Practical growth | Every species reaches natural maturity under a deterministic hydration/nutrient/preferred-climate/altitude scenario; every tolerated climate is positive and slower; every unsuitable climate blocks | Scenarios are documented in the implementation status; no manual multi-condition growth session is claimed | Validated by deterministic coverage |
 | Player-facing data | Fourteen registrations/localizations/item models/textures, creative grouping, flowers/seeds tags, and skinning-knife registration/localization/model/texture/tag/grouping are asserted | Protected denial and Poppy stage-7 feedback were converted from literals to localization keys | Validated |
-| Models and textures | Seven species x stages 1-7, 49 base + 49 mask models, 49 base + 49 mask PNGs, and absence of stage 8 are asserted | Milestone 7 owner-approved renderer/model references were not changed | Preserved |
+| Models and textures | Seven species x stages 1-7, 49 canonical models, 49 base + 49 mask PNGs, absence of pass-specific models, and absence of stage 8 are asserted | Corrective resource load and visual matrix passed | Pass |
 | Harvest and renewal | Registry reverse mappings plus one mapped harvested-item construction, shared quality/provenance, identity-preserving reset, and `CropSeedExtractor` delegation are source-contract tested | No live inventory interaction is newly claimed | Preserved |
 | Acquisition scope | Test scans recipe, loot, and worldgen JSON for all fourteen item IDs and `skinning_knife`; no unapproved source may resolve | Creative/admin, mature harvest, and item-to-seed extraction remain the only approved paths | Preserved |
 | Regression boundary | No crop definitions, crop models, renderer architecture, saved colour schema, protection policy, or Poppy mastery rule changed | Milestone 9 regression/multiplayer closeout was not performed | Preserved by scope |
@@ -194,3 +196,20 @@ Every `Passed` row has source, automated, runtime, or owner-review evidence reco
 ### Milestone 10 revalidation
 
 On 2026-08-01, the exact full build gate and the focused eleven-suite flower gate both passed at HEAD `7b7a4384686e52db4cafeb26e38ece3f683ac316`: 82 tests, 0 failures, 0 errors, 0 skipped. The placeholder checker verified 231 generated files plus the hash ledger. A fresh ignored dedicated-server run loaded Britannia, reached `Done (3.799s)`, and completed loopback-RCON stop/player/world saves. A fresh ignored client run reloaded `mod/britannia_mod`, initialized OpenAL and the sound engine, and built the `8192x4096x4` block atlas. Targeted server/client searches found no flower, Orfluer, or skinning-knife failure. These checks revalidate rows 57, 58, 64, and 65 without adding duplicate numbered rows or changing the final counts above.
+
+## Corrective Milestone 11 validation matrix
+
+| Area | Required automated evidence | Runtime/manual evidence | Status |
+|---|---|---|---|
+| Canonical lookup graph | Resolver exposes 49 distinct canonical stage models and the on-disk graph matches exactly | Client log contains no missing canonical flower model | Pass |
+| Two-texture model contract | Every canonical model resolves base + dye-mask PNGs, with particle aliasing base; no third unique image | Existing 98 PNGs remained byte-identical; all rendered | Pass |
+| Shared geometry/two passes | Renderer requests one canonical baked model, completes its block-atlas base submission, then submits that same model through normalized UV remapping to a directly bound mask | Light/dark, stages 6/7, matrix, and dense fixtures showed aligned geometry and isolated tint without static Z-fighting | Pass |
+| Texture integrity | Dimensions, UV alignment, alpha separation, and visible-mask grayscale checks cover all 49 pairs | Light/dark readability and empty-mask early-stage fixtures passed | Pass |
+| Stale-resource prevention | Actual asset-graph test rejects any extra species/stage JSON; generator check rejects pass-specific models | Client loaded only the canonical flower model graph | Pass |
+| Generator determinism | Hash-guarded migration and non-writing `--check` pass with 182 managed files plus ledger | N/A | Pass |
+| Client/server boundary | Full 15-suite / 108-test gate and focused 9-test renderer gate pass; dedicated server does not load client renderer/model/texture classes | Isolated server loaded the persisted world and reached `Done`; corrected isolated client loaded, connected, captured nine views, and shut down cleanly | Pass |
+| Gameplay regression | All eleven flower suites (83 tests) and four Farming progression suites (25 tests) remain green; production changes are client/resource-only | Prior multiplayer/save evidence remains applicable; server restart, reconnect, reload, and chunk unload/reload captures retained state | Pass |
+
+The fresh-runtime gate first rejected atlas-remapped missing-mask output and then rejected premature render-buffer switching with `BufferBuilder: Not building`. Neither defect was approved or committed. After direct mask binding and sequential pass-buffer acquisition, screenshots `25` through `33` were freshly recaptured on 2026-08-02 and inspected at original resolution; server shutdown completed player/world save and reported all dimensions saved. **Corrective Milestone 11 — Approved.**
+
+Validation limitations: screenshots validate static alignment but do not formally measure continuous-motion flicker or GPU performance. The DOCX authority was structurally reviewed but could not be rendered because LibreOffice/`soffice` is unavailable. Placeholder artwork remains deliberately unapproved. Unrelated pre-existing client resource warnings were observed and left out of scope.

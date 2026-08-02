@@ -462,7 +462,7 @@ Both options preserve exactly two PNG files for every unique in-world stage mode
 
 The mask is grayscale with alpha only where tint is applied. Both files have identical dimensions, UV positions, transparent padding, and pixel alignment.
 
-### Option A — two cached baked-model passes in a flower block-entity renderer (recommended)
+### Option A — two cached baked-model passes in a flower block-entity renderer (historical recommendation; resource shape superseded by Corrective Milestone 11)
 
 Create two standalone JSON model resources per species/stage: one referencing the base texture and one referencing the dye-mask texture. Register both through `ClientModSetup.registerAdditionalModels`. `FlowerBlockEntityRenderer` renders the base model in white, then renders the mask model with the stored RGB color, both with the same transform and `RenderType.cutout`.
 
@@ -688,7 +688,7 @@ Likely additions:
 
 Likely documentation/status files required by the playbook, only when that gate is reached.
 
-## 18. Placeholder asset structure proposed for the seven species
+## 18. Placeholder asset structure proposed for the seven species (historical; superseded by Corrective Milestone 11)
 
 ### Recommendation for rendering Option A
 
@@ -982,10 +982,12 @@ The value space is 16,777,216 colors, exceeding the requested approximate two-mi
 
 This section cross-references the final implementation without rewriting the historical discovery evidence above.
 
+Corrective Milestone 11 supersedes the historical Option A resource shape in sections 13 and 18. Those sections explain why the defect was originally implemented but are not the current model contract.
+
 - The recommended one-block/one-block-entity architecture was implemented as `block/FlowerBlock.java` and `block/entity/FlowerBlockEntity.java` for all seven species.
 - The recommended seed-only insertion point was implemented in `FarmingBlock.useItemOn` through `FlowerPlantingService`, including rollback and private/community soil snapshots.
 - The recommended shared-evaluator approach was implemented through `FarmingGrowthProfile`, `FlowerGrowthEvaluator`, `FarmingClimateResolver`, and `CropQualityCalculator`; no parallel flower soil/climate/quality/skill engine was added.
-- Rendering Option A was implemented through client-only `FlowerBlockEntityRenderer` and `FlowerVisualModels`: 49 base plus 49 dye-mask models, base-first/mask-second cutout passes, reload-managed baked models, and exact saved tint.
+- Rendering now uses client-only `FlowerBlockEntityRenderer` and `FlowerVisualModels`: 49 canonical stage models, each resolving its base and dye-mask textures. The renderer requests one reload-managed baked model and submits the same geometry for the base-first and mask-second cutout passes with the exact saved tint.
 - The original discovery found inconsistent legacy tag directory forms. NeoForge 1.21 runtime validation proved `data/britannia_mod/tags/item/skinning_knives.json` is authoritative for the Poppy tool. The plural legacy copy was removed in Milestone 9 and generator/tests now enforce one path.
 - The final interaction layer uses `FlowerProtectionService`, `FlowerInteractionService`, `FlowerInteractionHandler`, and the transient ten-tick `FlowerInteractionTransactionGate` for strict single-winner contention. This gate is runtime-only and does not change natural growth or persistence.
 - Final milestone history through Milestone 10 is recorded in `FLOWER_SYSTEM_IMPLEMENTATION_STATUS.md`, with the closeout commit referenced from branch history rather than self-referenced; final row-level evidence remains in `FLOWER_SYSTEM_TEST_MATRIX.md`; the artist replacement contract remains in `FLOWER_ASSET_PLACEHOLDER_MANIFEST.md`.

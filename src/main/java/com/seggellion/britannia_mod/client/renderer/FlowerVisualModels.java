@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Client-only, authoritative flower species/stage/pass model resolver. */
+/** Client-only, authoritative flower species/stage model and texture resolver. */
 @OnlyIn(Dist.CLIENT)
 public final class FlowerVisualModels {
     public static final int MIN_STAGE = 1;
@@ -35,9 +35,7 @@ public final class FlowerVisualModels {
             FlowerRegistry.HYACINTH,
             FlowerRegistry.ORFLUER
     );
-    private static final Map<ResourceLocation, List<ModelPair>> MODELS = buildModels();
-    private static final List<ModelResourceLocation> BASE_MODELS = collectModels(Pass.BASE);
-    private static final List<ModelResourceLocation> DYE_MASK_MODELS = collectModels(Pass.DYE_MASK);
+    private static final Map<ResourceLocation, List<StageModel>> MODELS = buildModels();
     private static final List<ModelResourceLocation> ALL_MODELS = collectAllModels();
     private static final List<Pass> PASS_ORDER = List.of(Pass.BASE, Pass.DYE_MASK);
     private static final Set<String> REPORTED_UNEXPECTED_STATE = ConcurrentHashMap.newKeySet();
@@ -76,13 +74,13 @@ public final class FlowerVisualModels {
                     savedTint, savedSpecies);
         }
 
-        ModelPair pair = pair(visualSpecies, visualStage);
+        StageModel model = stageModel(visualSpecies, visualStage);
         return new RenderPlan(
                 savedSpecies,
                 visualSpecies,
                 savedStage,
                 visualStage,
-                pair,
+                model,
                 savedTint,
                 visualTint,
                 Tint.WHITE,
@@ -93,8 +91,8 @@ public final class FlowerVisualModels {
         );
     }
 
-    public static ModelPair pair(ResourceLocation species, int stage) {
-        List<ModelPair> stages = MODELS.get(species);
+    public static StageModel stageModel(ResourceLocation species, int stage) {
+        List<StageModel> stages = MODELS.get(species);
         if (stages == null) {
             return MODELS.get(FALLBACK_SPECIES).get(FALLBACK_STAGE - 1);
         }
@@ -102,20 +100,12 @@ public final class FlowerVisualModels {
         return stages.get(clampedStage - 1);
     }
 
-    public static ModelPair fallbackPair() {
-        return pair(FALLBACK_SPECIES, FALLBACK_STAGE);
+    public static StageModel fallbackModel() {
+        return stageModel(FALLBACK_SPECIES, FALLBACK_STAGE);
     }
 
     public static List<ResourceLocation> supportedSpecies() {
         return SUPPORTED_SPECIES;
-    }
-
-    public static List<ModelResourceLocation> baseModelLocations() {
-        return BASE_MODELS;
-    }
-
-    public static List<ModelResourceLocation> dyeMaskModelLocations() {
-        return DYE_MASK_MODELS;
     }
 
     public static List<ModelResourceLocation> allModelLocations() {
@@ -131,18 +121,17 @@ public final class FlowerVisualModels {
         REPORTED_UNEXPECTED_STATE.clear();
     }
 
-    private static Map<ResourceLocation, List<ModelPair>> buildModels() {
-        Map<ResourceLocation, List<ModelPair>> models = new LinkedHashMap<>();
+    private static Map<ResourceLocation, List<StageModel>> buildModels() {
+        Map<ResourceLocation, List<StageModel>> models = new LinkedHashMap<>();
         for (ResourceLocation species : SUPPORTED_SPECIES) {
-            List<ModelPair> stages = new ArrayList<>(MAX_STAGE);
+            List<StageModel> stages = new ArrayList<>(MAX_STAGE);
             for (int stage = MIN_STAGE; stage <= MAX_STAGE; stage++) {
-                ResourceLocation base = modelId(species, stage, "base");
-                ResourceLocation mask = modelId(species, stage, "dye_mask");
-                stages.add(new ModelPair(
-                        base,
-                        mask,
-                        ModelResourceLocation.standalone(base),
-                        ModelResourceLocation.standalone(mask)
+                ResourceLocation canonical = modelId(species, stage);
+                stages.add(new StageModel(
+                        canonical,
+                        ModelResourceLocation.standalone(canonical),
+                        textureId(species, stage, "base_texture"),
+                        textureId(species, stage, "dye_mask")
                 ));
             }
             models.put(species, List.copyOf(stages));
@@ -150,29 +139,25 @@ public final class FlowerVisualModels {
         return Map.copyOf(models);
     }
 
-    private static ResourceLocation modelId(ResourceLocation species, int stage, String pass) {
+    private static ResourceLocation modelId(ResourceLocation species, int stage) {
         return ResourceLocation.fromNamespaceAndPath(
                 BritanniaMod.MODID,
-                "block/flowers/" + species.getPath() + "/stage_" + stage + "_" + pass
+                "block/flowers/" + species.getPath() + "/stage_" + stage
         );
     }
 
-    private static List<ModelResourceLocation> collectModels(Pass pass) {
-        List<ModelResourceLocation> models = new ArrayList<>(SUPPORTED_SPECIES.size() * MAX_STAGE);
-        for (ResourceLocation species : SUPPORTED_SPECIES) {
-            for (ModelPair pair : MODELS.get(species)) {
-                models.add(pass == Pass.BASE ? pair.baseModel() : pair.dyeMaskModel());
-            }
-        }
-        return List.copyOf(models);
+    private static ResourceLocation textureId(ResourceLocation species, int stage, String suffix) {
+        return ResourceLocation.fromNamespaceAndPath(
+                BritanniaMod.MODID,
+                "block/flowers/" + species.getPath() + "/stage_" + stage + "_" + suffix
+        );
     }
 
     private static List<ModelResourceLocation> collectAllModels() {
-        List<ModelResourceLocation> models = new ArrayList<>(SUPPORTED_SPECIES.size() * MAX_STAGE * 2);
+        List<ModelResourceLocation> models = new ArrayList<>(SUPPORTED_SPECIES.size() * MAX_STAGE);
         for (ResourceLocation species : SUPPORTED_SPECIES) {
-            for (ModelPair pair : MODELS.get(species)) {
-                models.add(pair.baseModel());
-                models.add(pair.dyeMaskModel());
+            for (StageModel model : MODELS.get(species)) {
+                models.add(model.canonicalModel());
             }
         }
         return List.copyOf(models);
@@ -189,11 +174,11 @@ public final class FlowerVisualModels {
         DYE_MASK
     }
 
-    public record ModelPair(
-            ResourceLocation baseId,
-            ResourceLocation dyeMaskId,
-            ModelResourceLocation baseModel,
-            ModelResourceLocation dyeMaskModel
+    public record StageModel(
+            ResourceLocation canonicalId,
+            ModelResourceLocation canonicalModel,
+            ResourceLocation baseTextureId,
+            ResourceLocation dyeMaskTextureId
     ) {
     }
 
@@ -215,7 +200,7 @@ public final class FlowerVisualModels {
             ResourceLocation visualSpecies,
             int savedStage,
             int visualStage,
-            ModelPair models,
+            StageModel model,
             int savedTint,
             int visualTint,
             Tint baseTint,

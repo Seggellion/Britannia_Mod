@@ -2,8 +2,10 @@
 
 Repository: `C:/projects/britannia/mod/Britannia_Mod`  
 Branch: `Farming`  
-Current HEAD: `7b7a4384686e52db4cafeb26e38ece3f683ac316`
-Working state: Milestone 9 is owner-approved and committed in isolation; the owner has approved the validated Milestone 10 documentation and handoff for its single closeout commit; unrelated `.claude/` is preserved.
+Current validation base HEAD: `68ae7754543cd733cf225f92d3c428398814b0a3`
+Working state: **Corrective Milestone 11 — Approved** and ready for its one owner-authorized isolated commit; unrelated `.claude/`, supplied milestone briefs, and unrelated archives are preserved.
+
+Corrective Milestone 11 supersedes historical pass-specific model-resource wording while preserving the approved two-texture/two-pass visual result.
 
 | Milestone | Status | HEAD/commit | Tests | Owner approval | Notes |
 |---|---|---|---|---|---|
@@ -19,6 +21,19 @@ Working state: Milestone 9 is owner-approved and committed in isolation; the own
 | 8. Species content | Approved | `9e596ac2ece519754f3828745e3e1e921120a935` | Full/focused 64-test suite, 231-file generator audit, diff check, and isolated server/client smokes passed | Approved | Committed as `content(flowers): wire initial species palettes and growth profiles`. |
 | 9. QA | Approved | `7b7a4384686e52db4cafeb26e38ece3f683ac316` | 82 focused tests pass; strict two-client raw-input accounting, clean disk-world restart, live reload, protected bypass checks, and dense-garden review pass | Approved | Committed as `test(flowers): complete regression and multiplayer coverage`; final pre-commit review removed the inert plural skinning-knife tag and revalidated all 82 tests plus the generator audit. |
 | 10. Closeout | Approved | See final closeout commit in branch history | Full/focused 82-test gates, 231-file placeholder audit, isolated server/client smoke, and repository audit passed | Approved | Owner approved the documentation and implementation handoff. This does not approve placeholder art or authorize merge, push, release, or deployment. |
+| 11. Canonical model correction | Approved | See final flower rendering correction commit in branch history | Full 108-test gate, focused 9-test renderer gate, 182-file generator audit, isolated dedicated-server/client restart, reload/chunk-cycle capture, and nine-view visual review passed | Owner-authorized validation and isolated commit | Replaced 98 pass-specific stage JSONs with 49 canonical stage models; retained the same 98 PNGs and corrected the two-pass renderer to bind the mask directly after completing the base pass. |
+
+## Corrective Milestone 11 implementation state
+
+- The duplicate-model defect was confirmed in `FlowerVisualModels`, `FlowerBlockEntityRenderer`, `ClientModSetup`, `tools/generate_flower_placeholders.py`, all 98 stage JSONs, three focused test suites, the placeholder manifest, and the hash ledger.
+- Every species/stage now has one canonical model path: `assets/britannia_mod/models/block/flowers/<species>/stage_<n>.json`.
+- Each canonical JSON inherits `shared/multi_plane` and resolves exactly two unique image resources through `flower` (base), `dye_mask`, and `particle` (base alias).
+- `FlowerVisualModels` exposes 49 canonical `StageModel` records and registers only their canonical `ModelResourceLocation` values.
+- `FlowerBlockEntityRenderer` resolves one canonical baked model. The base pass renders it in white from the block atlas; the dye-mask pass sends the same baked geometry through normalized UV remapping to the directly bound grayscale mask with the saved tint. Direct binding ensures the otherwise-unused mask material is available without a second baked model.
+- All 98 former `stage_<n>_base.json` and `stage_<n>_dye_mask.json` files were retired through the generator only after their bytes matched the prior hash ledger. The 98 PNG textures are unchanged.
+- Gameplay, saved data, registry IDs, networking, blockstates, soil rendering, item models, palettes, and interaction code are unchanged.
+
+Final validation is complete. `cleanTest compileJava processResources test` passed 15 suites / 108 tests with no failure, error, or skip; the focused renderer suite passed all 9 tests; the non-writing generator audit verified 182 managed files plus its ledger. A fresh isolated client run correctly exposed that atlas-remapping an unstitched mask produced corrupt planes; direct mask binding then exposed premature buffer switching, which was corrected by completing the base submission before acquiring the mask render type. The corrected isolated dedicated server loaded the persisted fixture and reached `Done`; the corrected client connected, captured all nine required views, completed an in-session resource reload and chunk unload/reload, and exited cleanly. Visual review confirmed aligned shared geometry, tint isolation, empty-mask behavior, deterministic invalid-value fallbacks, dense-garden rendering, distinct Poppy stages 6/7, and persistence across server restart, reload, and chunk cycle. The server then completed clean player/world save and reported all dimensions saved. Existing unrelated repository resource warnings remain outside this correction. **Corrective Milestone 11 — Approved.**
 
 ## Current Milestone 2 validation state
 
@@ -92,7 +107,7 @@ Milestone 3 is validated, owner-approved, and committed as `ebba19b92269e5649eb2
 - No live two-client session or manually played interaction fixture is claimed. Watering/fertilizer, shearing, Adventure cutback, private/community uprooting, protected denial, Poppy stage 7, and restart-after-interaction are covered by automated/source-contract tests but remain candidates for owner playtesting.
 - No Milestone 7 renderer, block-entity-renderer registration, model selection, or tint-mask behavior was added. The temporary soil-only presentation remains in effect.
 
-## Current Milestone 7 implementation state
+## Historical Milestone 7 implementation state (model-resource shape superseded by Corrective Milestone 11)
 
 - `FlowerVisualModels` owns immutable identifiers for all 98 render models: seven species, seven stages, and the base/mask passes. Its pure render-plan resolver preserves exact valid stages and saved 24-bit tints, clamps invalid stages only for presentation, and supplies deterministic Poppy-stage-1/white fallbacks without mutating persisted flower state.
 - `FlowerBlockEntityRenderer` reacquires baked models from `ModelManager` on every render, submits exactly two ordered `RenderType.cutout()` passes (white base, then saved-tint mask), and shares one pose, deterministic yaw, packed light, and overlay across both passes. Missing requested models fall back per pass; missing fallback models skip only that pass with bounded diagnostics.
@@ -332,10 +347,10 @@ The tables below use the required columns. “Automated evidence” identifies t
 | Invariant | Implementation path | Automated evidence | Runtime/manual evidence | Final result | Known limitation |
 |---|---|---|---|---|---|
 | One generic renderer/block/entity; model chosen by synchronized species/stage | `FlowerBlockEntityRenderer`, `FlowerVisualModels`, `FlowerBlock`, `FlowerBlockEntity` | Rendering/lifecycle tests | Seven-by-seven matrix and two clients | Pass | None |
-| Base renders first untinted; mask renders second with exact saved tint; every shared face has `tintindex: 0` | Renderer and generated shared parent | Asset/rendering/save tests | Light/dark tint review passed after tintindex correction | Pass | Continuous-motion flicker was not formally recorded |
+| One canonical baked model renders first with its untinted base texture; the same geometry renders second with the dye mask and exact saved tint; every shared face has `tintindex: 0` | Renderer, canonical stage models, and generated shared parent | Asset/rendering/save tests | Corrective light/dark, late-stage, early-stage/empty-mask, matrix, and dense-garden captures passed | Pass | Continuous-motion flicker was not formally recorded |
 | Invalid tint/species/stage use deterministic visual fallbacks without persistent mutation | Render-plan resolver and `visualColor` | Rendering/save compatibility tests | Corrupt/unknown fixtures survived reload/restart | Pass | Bounded warnings are retained intentionally |
 | Rendering never mutates persistent state; dedicated server never loads client renderer classes; reload is safe | Client-only subscriber, reload-managed model lookups | Rendering/protection source checks | Dedicated starts and two live reloads passed | Pass | Known unrelated client-only mixin warning remains |
-| Exact content is 7 species, 49 logical stages, 49 base textures, 49 dye masks, 98 in-world PNGs at 128x128 | Generator, ledger, manifest, resolver | Asset/rendering/species tests and generator check | Full matrix visual review | Pass | Artwork is placeholder, not final |
+| Exact content is 7 species, 49 canonical stage models, 49 base textures, 49 dye masks, and 98 in-world PNGs at 128x128 | Generator, ledger, manifest, resolver | Asset/rendering/species tests and generator check | Corrective client resource load and full-matrix visual review passed | Pass | Artwork is placeholder, not final |
 | Each pair has identical dimensions/UV/padding/pixel alignment; visible alpha is disjoint; masks are grayscale/alpha-selected | Generator image/model contract | `FlowerAssetContractTest` | No halos, seams, checkerboarding, or static Z-fighting observed | Pass | Artist must preserve contract |
 | No third in-world texture/pass, per-colour texture/block/model, baked final mask colour, or invalid mask channel exists | Two-pass resolver/generator contract | Asset/rendering/species repository tests | Runtime logs/captures showed two aligned passes | Pass | None |
 
@@ -401,3 +416,5 @@ Final artwork: **Not approved and still pending replacement.**
 Deferred acquisition, economy, generation, and expansion features: **Not implemented.**
 
 Milestone 10 status: **Approved.** Commit message: `docs(flowers): close implementation and asset handoff`.
+
+Corrective Milestone 11 status: **Corrective Milestone 11 — Approved.** Commit message: `fix(flowers): use canonical models with two texture passes`. This approval authorizes only the isolated local commit; it does not authorize merge, push, tag, release, or deployment.
