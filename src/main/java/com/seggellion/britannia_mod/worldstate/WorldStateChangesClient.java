@@ -115,15 +115,35 @@ public final class WorldStateChangesClient {
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("Accept", "application/json");
                 connection.setRequestProperty("Minecraft-Server-Key", serverKey.toString());
-                if (!RailsRequestAuthenticator.apply(connection, credentials)) {
+                // Milestone 14 Security Slice 2: the one call site chosen to prove HMAC request
+                // signing end to end first -- read-only, no request body, no real financial
+                // consequence if this integration has a mistake. The empty byte array is the
+                // real signed body for a bodyless GET, not a placeholder -- it must match
+                // exactly what Rails' own body-hash check computes for an absent body.
+                if (!RailsRequestAuthenticator.apply(connection, credentials, new byte[0])) {
                     throw new IllegalStateException("credentials_unavailable");
                 }
             });
             if (response.status() != 200) {
+                // 409/503 are the two new real outcomes this endpoint can now return once
+                // signed: Rails' own Api::ShardServerAuthentication#render_signature_failure
+                // maps "the same nonce was already reserved" to 409 (a real, valid signature
+                // describing an already-processed request, not an auth failure) and "Redis was
+                // unreachable when checking replay protection" to 503 (Rails' own fail-closed
+                // decision -- Security Slice 1 -- rejects a signed request rather than silently
+                // treating it as unsigned). Both are given their own distinct, non-crashing
+                // safe code here rather than falling into the generic default bucket, matching
+                // this client's own established one-safe-code-per-real-cause discipline; a
+                // signing mistake on this client's own side would show up as
+                // authentication_rejected (401), the existing bucket, not a new one -- that
+                // case is not expected to be reachable if the canonical string is constructed
+                // correctly, and this client does not try to guess otherwise.
                 String code = switch (response.status()) {
                     case 400 -> "invalid_request";
                     case 401, 403 -> "authentication_rejected";
                     case 404 -> "route_failure";
+                    case 409 -> "signature_replayed";
+                    case 503 -> "signature_store_unavailable";
                     default -> "http_status_failure";
                 };
                 return new Failure(code);
