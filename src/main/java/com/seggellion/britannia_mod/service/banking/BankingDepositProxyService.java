@@ -259,7 +259,7 @@ public final class BankingDepositProxyService {
                 case BankingDepositPrepareResult.LocalFailure failure ->
                         outcome.complete(new PrepareAndRemoveOutcome.LocalFailure(failure.safeCode()));
                 case BankingDepositPrepareResult.Success success ->
-                        revalidateAndRemove(server, player, slotIndex, capture, success, outcome);
+                        revalidateAndRemove(server, player, teller, slotIndex, capture, success, outcome);
             }
         }));
         return outcome;
@@ -276,20 +276,36 @@ public final class BankingDepositProxyService {
      * (before removal is certain) would risk a receipt for an item that was never actually
      * taken; any later than immediately after removal reopens exactly the unrecoverable window
      * this ordering exists to close.
+     *
+     * <p>Milestone 14 priority 2 (context enforcement, dimension 5): re-resolves the teller
+     * via {@link BankingProxyService#resolve} as part of the same revalidation this method
+     * already performs on the live slot -- the prepare HTTP round trip is exactly the window
+     * where the player could have walked out of range or the teller could have been
+     * discarded/reassigned, mirroring {@link BankingProxyService#handle}'s own second
+     * resolve() immediately before its mutating action. A failed teller re-resolve is folded
+     * into the exact same "revalidation failed, cancel the already-prepared Rails operation"
+     * path the fingerprint mismatch below already uses, not a separate bare local failure --
+     * a real Rails-side PREPARED operation exists by this point and must be actively
+     * cancelled, not left to expire on its own.
      */
     private static void revalidateAndRemove(
-            MinecraftServer server, ServerPlayer player, int slotIndex, LocalCapture capture,
+            MinecraftServer server, ServerPlayer player, ServiceNpcEntity teller, int slotIndex, LocalCapture capture,
             BankingDepositPrepareResult.Success success, CompletableFuture<PrepareAndRemoveOutcome> outcome
     ) {
+        boolean tellerStillValid = BankingProxyService.resolve(player, teller) != null;
         ItemStack live = player.getInventory().getItem(slotIndex);
-        boolean matches = !live.isEmpty()
+        boolean matches = tellerStillValid && !live.isEmpty()
                 && capture.fingerprint().equals(BankItemFingerprint.fingerprint(live, player.registryAccess()));
 
         if (!matches) {
+            String cancelReason = tellerStillValid ? "removal_revalidation_failed" : "teller_no_longer_valid";
+            if (!tellerStillValid) {
+                LOGGER.info("Discarding banking/deposit result: teller is no longer live/in range for {}", player.getUUID());
+            }
             final CompletableFuture<BankingCancelResult> cancelFuture;
             try {
                 cancelFuture = client.cancel(
-                        server, BankingOperationRequest.cancel(player.getUUID(), success.operationPublicId(), "removal_revalidation_failed")
+                        server, BankingOperationRequest.cancel(player.getUUID(), success.operationPublicId(), cancelReason)
                 );
             } catch (RuntimeException synchronousFailure) {
                 LOGGER.warn("banking/cancel submission threw synchronously after a removal-revalidation mismatch", synchronousFailure);

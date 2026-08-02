@@ -257,7 +257,7 @@ public final class BankingCurrencyDepositProxyService {
                 case BankingCurrencyDepositPrepareResult.LocalFailure failure ->
                         outcome.complete(new PrepareAndRemoveOutcome.LocalFailure(failure.safeCode()));
                 case BankingCurrencyDepositPrepareResult.Success success ->
-                        revalidateAndRemove(server, player, slotIndex, capture, success, outcome);
+                        revalidateAndRemove(server, player, teller, slotIndex, capture, success, outcome);
             }
         }));
         return outcome;
@@ -268,21 +268,32 @@ public final class BankingCurrencyDepositProxyService {
      * always on the main server thread (marshaled there by the caller). See the class docs for
      * why the removal-then-receipt ordering is inherited from the item deposit unchanged, and
      * why revalidation is item+count identity rather than a fingerprint.
+     *
+     * <p>Milestone 14 priority 2 (context enforcement, dimension 5): also re-resolves the
+     * teller via {@link BankingProxyService#resolve}, folded into the same "revalidation
+     * failed, cancel the already-prepared Rails operation" path the item+count mismatch below
+     * already uses -- mirrors {@link BankingDepositProxyService#revalidateAndRemove}'s own
+     * identical fix exactly.
      */
     private static void revalidateAndRemove(
-            MinecraftServer server, ServerPlayer player, int slotIndex, CoinCapture capture,
+            MinecraftServer server, ServerPlayer player, ServiceNpcEntity teller, int slotIndex, CoinCapture capture,
             BankingCurrencyDepositPrepareResult.Success success, CompletableFuture<PrepareAndRemoveOutcome> outcome
     ) {
+        boolean tellerStillValid = BankingProxyService.resolve(player, teller) != null;
         ItemStack live = player.getInventory().getItem(slotIndex);
-        boolean matches = !live.isEmpty()
+        boolean matches = tellerStillValid && !live.isEmpty()
                 && live.getItem() == capture.coinItem()
                 && live.getCount() == capture.count();
 
         if (!matches) {
+            String cancelReason = tellerStillValid ? "removal_revalidation_failed" : "teller_no_longer_valid";
+            if (!tellerStillValid) {
+                LOGGER.info("Discarding banking/currency_deposit result: teller is no longer live/in range for {}", player.getUUID());
+            }
             final CompletableFuture<BankingCancelResult> cancelFuture;
             try {
                 cancelFuture = client.cancel(
-                        server, BankingOperationRequest.cancel(player.getUUID(), success.operationPublicId(), "removal_revalidation_failed")
+                        server, BankingOperationRequest.cancel(player.getUUID(), success.operationPublicId(), cancelReason)
                 );
             } catch (RuntimeException synchronousFailure) {
                 LOGGER.warn("banking/cancel submission threw synchronously after a currency removal-revalidation mismatch", synchronousFailure);

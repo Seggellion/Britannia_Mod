@@ -308,7 +308,7 @@ public final class BankingWithdrawalProxyService {
                 case BankingWithdrawalPrepareResult.LocalFailure failure ->
                         outcome.complete(new PrepareAndInsertOutcome.LocalFailure(failure.safeCode()));
                 case BankingWithdrawalPrepareResult.Success success ->
-                        reconstructAndInsert(server, player, success, outcome);
+                        reconstructAndInsert(server, player, teller, success, outcome);
             }
         }));
         return outcome;
@@ -319,11 +319,23 @@ public final class BankingWithdrawalProxyService {
      * server thread (marshaled there by the caller). See the class docs for why the receipt is
      * written before insertion, and why a full pre-check pass makes insertion failure
      * structurally unreachable here.
+     *
+     * <p>Milestone 14 priority 2 (context enforcement, dimension 5): re-resolves the teller
+     * first, before decode/fingerprint/capacity -- the prepare round trip is exactly the
+     * window the player could have walked out of range or the teller could have been
+     * discarded/reassigned, mirroring {@link BankingProxyService#handle}'s own second
+     * resolve() immediately before its mutating action.
      */
     private static void reconstructAndInsert(
-            MinecraftServer server, ServerPlayer player, BankingWithdrawalPrepareResult.Success success,
+            MinecraftServer server, ServerPlayer player, ServiceNpcEntity teller, BankingWithdrawalPrepareResult.Success success,
             CompletableFuture<PrepareAndInsertOutcome> outcome
     ) {
+        if (BankingProxyService.resolve(player, teller) == null) {
+            LOGGER.info("Discarding banking/withdrawal result: teller is no longer live/in range for {}", player.getUUID());
+            abortAfterPrepare(server, player, success.operationPublicId(), BankingWithdrawalAbortReason.TELLER_NO_LONGER_VALID, outcome);
+            return;
+        }
+
         HolderLookup.Provider registries = player.registryAccess();
         BankItemDecodeResult decoded = BankItemCodec.deserialize(success.payload(), registries);
         ItemStack reconstructed;
@@ -435,6 +447,7 @@ public final class BankingWithdrawalProxyService {
 
     private static String cancelReasonFor(BankingWithdrawalAbortReason reason) {
         return switch (reason) {
+            case TELLER_NO_LONGER_VALID -> "teller_no_longer_valid";
             case DECODE_FAILED -> "payload_decode_failed";
             case FINGERPRINT_MISMATCH -> "fingerprint_mismatch";
             case INSUFFICIENT_CAPACITY -> "insufficient_capacity";

@@ -9,6 +9,12 @@ package com.seggellion.britannia_mod.service.banking;
  */
 public enum BankingCurrencyWithdrawalAbortReason {
     /**
+     * Milestone 14 priority 2 (context enforcement, dimension 5): re-resolving the teller via
+     * {@link BankingProxyService#resolve} after the prepare round trip found it no longer
+     * live/in range/capable.
+     */
+    TELLER_NO_LONGER_VALID,
+    /**
      * The player's inventory no longer has room for the requested amount by the time this
      * second, post-prepare check runs -- unlike the pre-prepare local rejection ({@link
      * BankingCurrencyWithdrawalLocalRejectionReason#INSUFFICIENT_CAPACITY}), a real yield point

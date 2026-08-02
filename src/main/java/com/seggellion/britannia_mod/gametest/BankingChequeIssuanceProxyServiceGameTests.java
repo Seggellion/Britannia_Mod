@@ -252,6 +252,68 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
         }
     }
 
+    /**
+     * Milestone 14 priority 2 (context enforcement, dimension 5): mirrors {@link
+     * #aForcedSaveFailureAfterInsertionAbortsAndRestoresLocallyLeavingTheReceiptPending}'s own
+     * PendingDelivery-checking shape, but for the earlier "teller no longer valid" case rather
+     * than a forced-save failure -- confirm has already irrevocably happened (see class docs on
+     * why there is no post-confirm Cancel here), so a stale teller at delivery time is reported
+     * the same safe-to-retry-later way, not as a cancelled operation. Uses a pending confirm
+     * future (the deposit/withdrawal flows' own established technique) to open a real window to
+     * walk the player away between confirm being dispatched and it resolving.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void tellerNoLongerValidAtDeliveryTimeLeavesTheReceiptPendingWithNoInsertion(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        UUID operationId = UUID.randomUUID();
+        UUID chequeId = UUID.randomUUID();
+        CompletableFuture<BankingChequeIssuanceConfirmResult> pendingConfirm = new CompletableFuture<>();
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> CompletableFuture.completedFuture(new BankingChequeIssuancePrepareResult.Success(operationId));
+        fake.confirmBehavior = () -> pendingConfirm;
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingChequeIssuanceResult> future =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+
+            // The player walks far out of interaction range while confirm is still in flight --
+            // by the time it resolves, delivery must re-resolve the teller and find it gone.
+            player.teleportTo(teller.getX() + 100.0, teller.getY(), teller.getZ());
+            pendingConfirm.complete(new BankingChequeIssuanceConfirmResult.Confirmed(chequeId, SAMPLE_AMOUNT_COPPER));
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "the operation must complete even when the teller goes out of range");
+                BankingChequeIssuanceResult result = future.join();
+                check(result instanceof BankingChequeIssuanceResult.PendingDelivery,
+                        "a teller no longer in range at delivery time must report PendingDelivery, got " + result);
+                BankingChequeIssuanceResult.PendingDelivery pending = (BankingChequeIssuanceResult.PendingDelivery) result;
+                check(pending.chequePublicId().equals(chequeId), "wrong cheque id in PendingDelivery result");
+
+                check(findChequeStack(player) == null,
+                        "no cheque may ever be inserted once the teller is found out of range at delivery time");
+
+                BankTransferReceiptStore.ScanResult scan = readFreshStore(player.serverLevel()).scanUnresolved();
+                check(scan.pending().stream().anyMatch(r -> r.operationId().equals(operationId)),
+                        "the receipt must remain an ordinary PENDING_LOCAL_ACTION candidate -- a later retry is safe for a cheque");
+                check(scan.reconciliationRequired().stream().noneMatch(r -> r.operationId().equals(operationId)),
+                        "the receipt must NOT be escalated -- Rails' confirm already succeeded and cannot be undone, "
+                                + "but a later delivery attempt is always safe");
+
+                check(fake.prepareRequests.size() == 1 && fake.confirmRequests.size() == 1,
+                        "prepare/confirm must still run exactly once -- only delivery is affected by the stale teller");
+
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
     // ---------- Crash-recovery resume ----------
 
     /**

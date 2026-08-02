@@ -297,6 +297,54 @@ public final class BankingCurrencyWithdrawalProxyServiceGameTests {
         }
     }
 
+    // Milestone 14 priority 2 (context enforcement, dimension 5): mirrors
+    // aRaceThatFillsTheInventoryDuringThePrepareRoundTripIsCaughtByTheSecondCapacityCheck
+    // exactly, above, just with the player walking out of range during the prepare round trip
+    // instead of the inventory filling up -- both are caught before insertion, cancel-and-report.
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void playerWalkingOutOfRangeDuringThePrepareRoundTripIsCaughtBeforeInsertion(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        UUID operationId = UUID.randomUUID();
+        CompletableFuture<BankingCurrencyWithdrawalPrepareResult> pendingPrepare = new CompletableFuture<>();
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> pendingPrepare;
+        fake.cancelBehavior = () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        BankingCurrencyWithdrawalProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingCurrencyWithdrawalResult> future =
+                    BankingCurrencyWithdrawalProxyService.triggerCurrencyWithdrawalForTesting(player, teller, "gold", 30);
+
+            // The player walks far out of interaction range while prepare is still in flight.
+            player.teleportTo(teller.getX() + 100.0, teller.getY(), teller.getZ());
+            pendingPrepare.complete(new BankingCurrencyWithdrawalPrepareResult.Success(operationId));
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "currency withdrawal did not complete");
+                BankingCurrencyWithdrawalResult result = future.join();
+                check(result instanceof BankingCurrencyWithdrawalResult.Aborted, "expected Aborted, got " + result);
+                BankingCurrencyWithdrawalResult.Aborted aborted = (BankingCurrencyWithdrawalResult.Aborted) result;
+                check(aborted.reason() == BankingCurrencyWithdrawalAbortReason.TELLER_NO_LONGER_VALID,
+                        "wrong abort reason: " + aborted.reason());
+                check(aborted.operationPublicId().equals(operationId), "wrong operation id in Aborted result");
+
+                check(fake.cancelRequests.size() == 1, "cancel must be called once the teller is found out of range");
+                check(fake.confirmRequests.isEmpty(), "confirm must never be called");
+                check(!hasAnyReceiptFor(player.serverLevel(), operationId),
+                        "no receipt may exist -- the teller check runs before the receipt write");
+                check(findStack(player, ItemRegistry.GOLD_COIN.get()) == null, "no gold must have been inserted");
+
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
     // ---------- IN_FLIGHT dedup: same denomination blocked, different denominations independent ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)

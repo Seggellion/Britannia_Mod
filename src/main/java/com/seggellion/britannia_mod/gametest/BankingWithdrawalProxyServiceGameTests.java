@@ -551,6 +551,60 @@ public final class BankingWithdrawalProxyServiceGameTests {
         }
     }
 
+    // Milestone 14 priority 2 (context enforcement, dimension 5): mirrors
+    // fingerprintMismatchIsAbortedWithNoReceiptAndCancelCalled exactly, above, just with the
+    // player walking out of range during the prepare round trip (a pending future, completed
+    // only after teleporting away) rather than a synchronously-mismatched fingerprint -- both
+    // go through the identical abortAfterPrepare/cancel-and-report path.
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void playerWalkingOutOfRangeBeforeInsertionIsAbortedWithNoReceiptAndCancelCalled(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        HolderLookup.Provider registries = player.registryAccess();
+
+        ItemStack original = new ItemStack(Items.DIAMOND, 5);
+        byte[] payload = BankItemCodec.serialize(original.copy(), registries);
+        String fingerprint = BankItemFingerprint.fingerprint(original.copy(), registries);
+
+        UUID operationId = UUID.randomUUID();
+        UUID bankItemId = UUID.randomUUID();
+        CompletableFuture<BankingWithdrawalPrepareResult> pending = new CompletableFuture<>();
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> pending;
+        fake.cancelBehavior = () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        BankingWithdrawalProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingWithdrawalResult> future =
+                    BankingWithdrawalProxyService.triggerWithdrawalForTesting(player, teller, bankItemId);
+
+            // The player walks far out of interaction range while prepare is still in flight.
+            player.teleportTo(teller.getX() + 100.0, teller.getY(), teller.getZ());
+            pending.complete(new BankingWithdrawalPrepareResult.Success(
+                    operationId, bankItemId, BankItemSchemaVersion.CURRENT, payload, fingerprint, 1.0));
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "withdrawal did not complete");
+                BankingWithdrawalResult result = future.join();
+                check(result instanceof BankingWithdrawalResult.Aborted, "expected Aborted, got " + result);
+                check(((BankingWithdrawalResult.Aborted) result).reason() == BankingWithdrawalAbortReason.TELLER_NO_LONGER_VALID,
+                        "wrong abort reason: " + result);
+
+                check(fake.cancelRequests.size() == 1, "cancel was not called after the teller went out of range");
+                check(fake.confirmRequests.isEmpty(), "confirm must never be called after the teller went out of range");
+                check(!hasAnyReceiptFor(player.serverLevel(), operationId),
+                        "a receipt must never be written once the teller is out of range");
+                check(player.getInventory().isEmpty(), "no item must have been conjured once the teller is out of range");
+
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
     // ---------- Simulated crash: after insertion, before confirmation ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)

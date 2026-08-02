@@ -9,6 +9,13 @@ package com.seggellion.britannia_mod.service.banking;
  * BankingDepositLocalRejectionReason}.
  */
 public enum BankingWithdrawalAbortReason {
+    /**
+     * Milestone 14 priority 2 (context enforcement, dimension 5): re-resolving the teller via
+     * {@link BankingProxyService#resolve} after the prepare round trip found it no longer
+     * live/in range/capable -- the player could have walked away, or the teller could have
+     * been discarded/reassigned, while the request was in flight.
+     */
+    TELLER_NO_LONGER_VALID,
     /** {@link com.seggellion.britannia_mod.bank.item.BankItemCodec#deserialize} reported a corrupt or unsupported-schema payload. */
     DECODE_FAILED,
     /** The reconstructed stack decoded cleanly but its own fingerprint did not match what Rails sent -- a data-integrity mismatch. */

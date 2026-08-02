@@ -278,6 +278,60 @@ public final class BankingDepositProxyServiceGameTests {
         }
     }
 
+    // Milestone 14 priority 2 (context enforcement, dimension 5): mirrors
+    // slotContentsChangingBeforeRevalidationCancelsAndReportsRemovalFailed exactly, above, just
+    // with the player walking out of range during the prepare round trip instead of the slot
+    // contents changing -- both are "revalidation failed after prepare succeeded" and go
+    // through the identical cancel-and-report path.
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void playerWalkingOutOfRangeBeforeRevalidationCancelsAndReportsRemovalFailed(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        UUID operationId = UUID.randomUUID();
+        CompletableFuture<BankingDepositPrepareResult> pending = new CompletableFuture<>();
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> pending;
+        fake.cancelBehavior = () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        BankingDepositProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingDepositResult> future =
+                    BankingDepositProxyService.triggerDepositForTesting(player, teller, SLOT);
+
+            // The player walks far out of interaction range while prepare is still in flight.
+            player.teleportTo(teller.getX() + 100.0, teller.getY(), teller.getZ());
+            pending.complete(new BankingDepositPrepareResult.Success(operationId, UUID.randomUUID()));
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "deposit did not complete");
+                BankingDepositResult result = future.join();
+                check(result instanceof BankingDepositResult.RemovalFailed,
+                        "expected RemovalFailed, got " + result);
+                check(((BankingDepositResult.RemovalFailed) result).operationPublicId().equals(operationId),
+                        "wrong operation id in RemovalFailed result");
+
+                check(fake.cancelRequests.size() == 1, "cancel was not called after the teller went out of range");
+                check(fake.cancelRequests.get(0).operationPublicId().equals(operationId), "wrong operation id sent to cancel");
+                check(fake.confirmRequests.isEmpty(), "confirm must never be called after the teller went out of range");
+
+                check(player.getInventory().getItem(SLOT).getItem() == Items.DIAMOND,
+                        "the item must never be removed once the teller is out of range");
+                check(player.getInventory().getItem(SLOT).getCount() == 5, "no item was lost");
+
+                check(!hasAnyReceiptFor(player.serverLevel(), operationId),
+                        "a receipt must never be written on the removal-failed path");
+
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
     // ---------- Simulated crash: after removal, before confirmation ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)

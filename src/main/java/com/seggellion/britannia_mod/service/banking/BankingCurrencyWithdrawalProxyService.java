@@ -287,7 +287,7 @@ public final class BankingCurrencyWithdrawalProxyService {
                 case BankingCurrencyWithdrawalPrepareResult.LocalFailure failure ->
                         outcome.complete(new PrepareAndInsertOutcome.LocalFailure(failure.safeCode()));
                 case BankingCurrencyWithdrawalPrepareResult.Success success ->
-                        reconstructAndInsert(server, player, coinItem.get(), currencyKey, amount, success, outcome);
+                        reconstructAndInsert(server, player, teller, coinItem.get(), currencyKey, amount, success, outcome);
             }
         }));
         return outcome;
@@ -298,11 +298,21 @@ public final class BankingCurrencyWithdrawalProxyService {
      * thread (marshaled there by the caller). See the class docs for why this second check --
      * not the first -- is what makes insertion failure structurally unreachable, and why the
      * receipt is written before insertion (Section A.6's withdrawal ordering, unchanged).
+     *
+     * <p>Milestone 14 priority 2 (context enforcement, dimension 5): re-resolves the teller
+     * first, before the second capacity check -- mirrors {@link
+     * BankingWithdrawalProxyService#reconstructAndInsert}'s own identical fix exactly.
      */
     private static void reconstructAndInsert(
-            MinecraftServer server, ServerPlayer player, Item coinItem, String currencyKey, int amount,
+            MinecraftServer server, ServerPlayer player, ServiceNpcEntity teller, Item coinItem, String currencyKey, int amount,
             BankingCurrencyWithdrawalPrepareResult.Success success, CompletableFuture<PrepareAndInsertOutcome> outcome
     ) {
+        if (BankingProxyService.resolve(player, teller) == null) {
+            LOGGER.info("Discarding banking/currency_withdrawal result: teller is no longer live/in range for {}", player.getUUID());
+            abortAfterPrepare(server, player, success.operationPublicId(), BankingCurrencyWithdrawalAbortReason.TELLER_NO_LONGER_VALID, outcome);
+            return;
+        }
+
         // Check 2 of 2 -- see class docs. Back to back with the real insertion below, no yield
         // point in between, exactly mirroring item withdrawal's own timing guarantee.
         if (!BankingWithdrawalProxyService.hasSufficientCapacity(player.getInventory(), new ItemStack(coinItem, amount))) {
@@ -385,6 +395,7 @@ public final class BankingCurrencyWithdrawalProxyService {
 
     private static String cancelReasonFor(BankingCurrencyWithdrawalAbortReason reason) {
         return switch (reason) {
+            case TELLER_NO_LONGER_VALID -> "teller_no_longer_valid";
             case INSUFFICIENT_CAPACITY -> "insufficient_capacity";
             case INSERTION_FAILED -> "insertion_failed_after_passing_precheck";
         };

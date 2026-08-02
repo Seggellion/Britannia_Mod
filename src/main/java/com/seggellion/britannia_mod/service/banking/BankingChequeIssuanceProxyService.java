@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -128,7 +129,7 @@ public final class BankingChequeIssuanceProxyService {
             return CompletableFuture.completedFuture(new BankingChequeIssuanceResult.LocalFailure("cheque_issuance_already_in_flight"));
         }
         return prepareAndConfirmInternal(player, teller, amountCopper)
-                .thenCompose(outcome -> continueToDelivery(player, outcome))
+                .thenCompose(outcome -> continueToDelivery(player, teller, outcome))
                 .whenComplete((result, error) -> IN_FLIGHT.remove(playerId));
     }
 
@@ -171,7 +172,10 @@ public final class BankingChequeIssuanceProxyService {
             ServerPlayer player, UUID operationPublicId, UUID chequePublicId, int amountCopper
     ) {
         CompletableFuture<BankingChequeIssuanceResult> result = new CompletableFuture<>();
-        attemptDelivery(player.server, player, operationPublicId, chequePublicId, amountCopper, result);
+        // null teller, matching resumeConfirmChequeIssuance's own real production caller: this
+        // is a crash-recovery/resume-shaped entry point, not a live interaction, so there is no
+        // live teller to re-check proximity against -- see attemptDelivery's own docs.
+        attemptDelivery(player.server, player, null, operationPublicId, chequePublicId, amountCopper, result);
         return result;
     }
 
@@ -218,7 +222,9 @@ public final class BankingChequeIssuanceProxyService {
                                 operationPublicId, confirmed.chequePublicId(), confirmed.amount()));
                         return;
                     }
-                    attemptDelivery(server, player, operationPublicId, confirmed.chequePublicId(), confirmed.amount(), result);
+                    // null teller: this is the server-startup reconciliation resume path, not a
+                    // live interaction -- see attemptDelivery's own docs.
+                    attemptDelivery(server, player, null, operationPublicId, confirmed.chequePublicId(), confirmed.amount(), result);
                 }
                 case BankingChequeIssuanceConfirmResult.ReconciliationRequired ignored ->
                         result.complete(escalateAndReport(server, operationPublicId));
@@ -233,11 +239,13 @@ public final class BankingChequeIssuanceProxyService {
         return result;
     }
 
-    private static CompletableFuture<BankingChequeIssuanceResult> continueToDelivery(ServerPlayer player, PrepareAndConfirmOutcome outcome) {
+    private static CompletableFuture<BankingChequeIssuanceResult> continueToDelivery(
+            ServerPlayer player, ServiceNpcEntity teller, PrepareAndConfirmOutcome outcome
+    ) {
         return switch (outcome) {
             case PrepareAndConfirmOutcome.Confirmed confirmed -> {
                 CompletableFuture<BankingChequeIssuanceResult> result = new CompletableFuture<>();
-                attemptDelivery(player.server, player, confirmed.operationPublicId(), confirmed.chequePublicId(), confirmed.amount(), result);
+                attemptDelivery(player.server, player, teller, confirmed.operationPublicId(), confirmed.chequePublicId(), confirmed.amount(), result);
                 yield result;
             }
             case PrepareAndConfirmOutcome.ReconciliationRequired reconciliationRequired ->
@@ -370,11 +378,37 @@ public final class BankingChequeIssuanceProxyService {
      * real item and insert), and step 7 (forceSave, then resolve or -- on a detected failure --
      * abort-and-restore the local insertion while leaving the receipt pending). Always runs on
      * the main server thread.
+     *
+     * <p>Milestone 14 priority 2 (context enforcement, dimension 5): {@code teller} is
+     * {@code @Nullable} because this method has two genuinely different kinds of caller. The
+     * live interaction path ({@link #continueToDelivery}) always passes the real teller, and
+     * this re-resolves it via {@link BankingProxyService#resolve} before doing anything
+     * physical -- the confirm round trip is exactly the window the player could have walked
+     * away or the teller could have been discarded/reassigned. The resume paths ({@link
+     * #resumeConfirmChequeIssuance}, {@link #deliverForTesting}) pass {@code null} on purpose:
+     * unlike every insertion-shaped flow before it, Rails' confirm has already irrevocably
+     * committed with no post-confirm Cancel (see class docs), so a stale/out-of-range teller
+     * here cannot be treated as a cancellable failure the way it is in {@link
+     * BankingDepositProxyService}/{@link BankingWithdrawalProxyService} -- it is folded into
+     * the exact same {@code PendingDelivery} path this method already uses for "no room" and
+     * "forceSave failed", since redemption is Rails-side value-gated, not teller-proximity-
+     * gated, and a later delivery attempt (from any teller, or none at all, per resume) is
+     * always safe.
      */
     private static void attemptDelivery(
-            MinecraftServer server, ServerPlayer player, UUID operationPublicId, UUID chequePublicId, int amountCopper,
+            MinecraftServer server, ServerPlayer player, @Nullable ServiceNpcEntity teller,
+            UUID operationPublicId, UUID chequePublicId, int amountCopper,
             CompletableFuture<BankingChequeIssuanceResult> result
     ) {
+        if (teller != null && BankingProxyService.resolve(player, teller) == null) {
+            LOGGER.info(
+                    "Cheque issuance {} confirmed but the teller is no longer live/in range for delivery; "
+                            + "receipt remains pending for a later delivery attempt", operationPublicId
+            );
+            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCopper));
+            return;
+        }
+
         if (!hasRoomForOneCheque(player)) {
             // Rails has already, irrevocably confirmed -- there is nothing to cancel. The
             // receipt stays PENDING_LOCAL_ACTION (untouched): a later retry is always safe for
