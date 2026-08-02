@@ -231,10 +231,6 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
 
                 // FIX 2: ServerWorld / getServerWorld() -> ServerLevel / serverLevel()
                 ServerLevel world = sp.serverLevel();
-                
-                if (!RailsRequestAuthenticator.apply(c, world.getServer())) throw new IllegalStateException("Server authentication unavailable");
-
-                c.setDoOutput(true);
 
                 JsonObject body = new JsonObject();
                 // FIX 4: getUuid() -> getUUID()
@@ -243,9 +239,14 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
                 body.addProperty("skill_name", skillName);
                 body.addProperty("username", sp.getGameProfile().getName());
                 body.addProperty("value", newVal);
+                byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+
+                if (!RailsRequestAuthenticator.apply(c, world.getServer(), bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
+
+                c.setDoOutput(true);
 
                 try (OutputStream os = c.getOutputStream()) {
-                    os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                    os.write(bodyBytes);
                 }
                 BoundedHttp.readUtf8(c.getInputStream(), 64 * 1024);
             } catch (Exception e) {
@@ -287,18 +288,19 @@ private static void postGain(ServerPlayer sp, String skillName, float newVal) {
             c.setConnectTimeout(5000);
             c.setReadTimeout(5000);
 
-            if (!RailsRequestAuthenticator.apply(c, sp.server)) throw new IllegalStateException("Server authentication unavailable");
-
-            c.setDoOutput(true);
-
             JsonObject body = new JsonObject();
             body.addProperty("uuid", sp.getUUID().toString());
             body.addProperty("shard", shardName(sp));
             body.addProperty("skill_name", skillName);
             body.addProperty("value", newVal);
+            byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+
+            if (!RailsRequestAuthenticator.apply(c, sp.server, bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
+
+            c.setDoOutput(true);
 
             try (OutputStream os = c.getOutputStream()) {
-                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
             BoundedHttp.readUtf8(c.getInputStream(), 64 * 1024);
         } catch (Exception e) {
@@ -353,7 +355,7 @@ private static JsonElement doGetJson(Endpoint endpoint, Map<String, String> quer
     c.setRequestProperty("Accept", "application/json");
     BoundedHttp.configure(c);
 
-    if (!RailsRequestAuthenticator.apply(c, sp.server)) throw new IllegalStateException("Server authentication unavailable");
+    if (!RailsRequestAuthenticator.apply(c, sp.server, new byte[0])) throw new IllegalStateException("Server authentication unavailable");
 
     String response = BoundedHttp.readUtf8(c.getInputStream(), MAX_RESPONSE_BYTES);
     return JsonParser.parseString(response);

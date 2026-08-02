@@ -51,7 +51,7 @@ public class CityDataSync {
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
 
-            attachAuth(serverLevel, connection);
+            attachAuth(serverLevel, connection, new byte[0]);
 
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
@@ -77,8 +77,8 @@ public class CityDataSync {
             HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Content-Type", "application/json");
-            attachAuth(serverLevel, connection);
-            
+            attachAuth(serverLevel, connection, new byte[0]);
+
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
                 try (Scanner scanner = new Scanner(connection.getInputStream())) {
@@ -112,7 +112,6 @@ public class CityDataSync {
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
-            attachAuth(serverLevel, connection);
 
             JsonObject payload = new JsonObject();
             payload.addProperty("npc_id", npcId.toString());
@@ -129,8 +128,11 @@ public class CityDataSync {
             payload.addProperty("shard",
                     com.seggellion.britannia_mod.server.auth.ServerAuthRegistry.credentials(serverLevel.getServer())
                             .orElseThrow().shardName());
+            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
 
-            connection.getOutputStream().write(payload.toString().getBytes());
+            attachAuth(serverLevel, connection, bodyBytes);
+
+            connection.getOutputStream().write(bodyBytes);
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
             }
@@ -145,7 +147,7 @@ public class CityDataSync {
                     .resolvePath(Endpoint.NPC_DELETE, Map.of("npc_id", npcId.toString()));
             HttpURLConnection connection = (HttpURLConnection) requestUri.toURL().openConnection();
             connection.setRequestMethod("DELETE");
-            attachAuth(serverLevel, connection);
+            attachAuth(serverLevel, connection, new byte[0]);
 
             int responseCode = connection.getResponseCode();
             if (responseCode != 200) {
@@ -163,7 +165,7 @@ public static JsonObject fetchCityDataWithMarketPrices(ServerLevel serverLevel, 
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json");
 
-        attachAuth(serverLevel, connection);
+        attachAuth(serverLevel, connection, new byte[0]);
 
         int responseCode = connection.getResponseCode();
         if (responseCode == 200) {
@@ -380,12 +382,14 @@ private static ApiResult sendJson(ServerLevel serverLevel, String method, Endpoi
         connection.setRequestMethod(method);
         connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         connection.setRequestProperty("Accept", "application/json");
-        attachAuth(serverLevel, connection);
+        boolean hasBody = payload != null && !"GET".equals(method) && !"DELETE".equals(method);
+        byte[] bodyBytes = hasBody ? payload.toString().getBytes(StandardCharsets.UTF_8) : new byte[0];
+        attachAuth(serverLevel, connection, bodyBytes);
 
-        if (payload != null && !"GET".equals(method) && !"DELETE".equals(method)) {
+        if (hasBody) {
             connection.setDoOutput(true);
             try (OutputStream os = connection.getOutputStream()) {
-                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
         }
 
@@ -403,9 +407,9 @@ private static ApiResult sendJson(ServerLevel serverLevel, String method, Endpoi
     }
 }
 
-private static void attachAuth(ServerLevel serverLevel, HttpURLConnection connection) {
+private static void attachAuth(ServerLevel serverLevel, HttpURLConnection connection, byte[] body) {
     BoundedHttp.configure(connection);
-    if (!RailsRequestAuthenticator.apply(connection, serverLevel.getServer())) {
+    if (!RailsRequestAuthenticator.apply(connection, serverLevel.getServer(), body)) {
         throw new IllegalStateException("Server authentication unavailable");
     }
 }

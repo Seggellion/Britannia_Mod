@@ -54,9 +54,6 @@ public class HouseDataAPI {
             BoundedHttp.configure(conn);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            
-            if (!RailsRequestAuthenticator.apply(conn, level.getServer())) throw new IllegalStateException("Server authentication unavailable");
-            conn.setDoOutput(true);
 
             // Build JSON
             JsonObject payload = new JsonObject();
@@ -98,8 +95,11 @@ public class HouseDataAPI {
             payload.addProperty("placed_at", timestamp);
 
             // Send it
+            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+            if (!RailsRequestAuthenticator.apply(conn, level.getServer(), bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
+            conn.setDoOutput(true);
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
 
             // Handle response
@@ -126,9 +126,6 @@ public static void deleteHouseRecord(ServerPlayer player, StructureRecord record
         conn.setRequestMethod("DELETE");
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
-        if (!RailsRequestAuthenticator.apply(conn, player.server)) throw new IllegalStateException("Server authentication unavailable");
-
-        conn.setDoOutput(true);
         JsonObject payload = new JsonObject();
         payload.addProperty("owner", player.getName().getString());
         payload.addProperty("uuid", record.getHouseUuid().toString());
@@ -136,9 +133,13 @@ public static void deleteHouseRecord(ServerPlayer player, StructureRecord record
         if (record.getDeedId() != null) {
             payload.addProperty("deed_id", record.getDeedId().toString());
         }
+        byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
 
+        if (!RailsRequestAuthenticator.apply(conn, player.server, bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
+
+        conn.setDoOutput(true);
         try (OutputStream os = conn.getOutputStream()) {
-            os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+            os.write(bodyBytes);
         }
 
         int responseCode = conn.getResponseCode();

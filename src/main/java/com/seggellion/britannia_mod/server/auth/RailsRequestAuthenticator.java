@@ -40,4 +40,14 @@ public final class RailsRequestAuthenticator {
                 .applyTo(connection);
         return true;
     }
+
+    /**
+     * Milestone 14 Security Slice 3: the {@code MinecraftServer}-keyed mirror of the overload
+     * above, for the majority of call sites that only have a {@code MinecraftServer} in scope
+     * (not an already-resolved {@link ServerCredentials}) -- same delegation shape as the
+     * existing 2-arg {@code MinecraftServer} overload just above.
+     */
+    public static boolean apply(HttpURLConnection connection, MinecraftServer server, byte[] body) {
+        return ServerAuthRegistry.credentials(server).map(credentials -> apply(connection, credentials, body)).orElse(false);
+    }
 }

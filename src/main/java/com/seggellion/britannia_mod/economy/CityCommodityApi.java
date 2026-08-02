@@ -55,7 +55,7 @@ public final class CityCommodityApi {
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(5_000);
         conn.setReadTimeout(10_000);
-        if (!RailsRequestAuthenticator.apply(conn, level.getServer())) {
+        if (!RailsRequestAuthenticator.apply(conn, level.getServer(), new byte[0])) {
             throw new IllegalStateException("Server authentication unavailable");
         }
         int status = conn.getResponseCode();

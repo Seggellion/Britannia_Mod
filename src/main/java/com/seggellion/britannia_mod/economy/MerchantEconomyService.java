@@ -167,7 +167,6 @@ public final class MerchantEconomyService {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Idempotency-Key", idempotencyKey);
-            attachServerAuth(level, conn);
 
             JsonObject payload = new JsonObject();
             payload.addProperty("transaction_type", "purchase");
@@ -222,8 +221,11 @@ public final class MerchantEconomyService {
             payload.add("consumed_commodities", inputs.deepCopy());
             payload.add("commodity_inputs", inputs.deepCopy());
 
+            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+            attachServerAuth(level, conn, bodyBytes);
+
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
 
             int status = conn.getResponseCode();
@@ -442,8 +444,8 @@ public final class MerchantEconomyService {
         return raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static void attachServerAuth(ServerLevel level, HttpURLConnection conn) {
-        if (!RailsRequestAuthenticator.apply(conn, level.getServer())) {
+    private static void attachServerAuth(ServerLevel level, HttpURLConnection conn, byte[] body) {
+        if (!RailsRequestAuthenticator.apply(conn, level.getServer(), body)) {
             throw new IllegalStateException("Server authentication unavailable");
         }
     }

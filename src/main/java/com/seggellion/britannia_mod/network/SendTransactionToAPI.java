@@ -130,12 +130,13 @@ public class SendTransactionToAPI {
         BoundedHttp.configure(conn);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        if (!RailsRequestAuthenticator.apply(conn, serverLevel.getServer())) {
+        byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+        if (!RailsRequestAuthenticator.apply(conn, serverLevel.getServer(), bodyBytes)) {
             throw new IOException("Server authentication unavailable");
         }
         conn.setDoOutput(true);
         try (OutputStream output = conn.getOutputStream()) {
-            output.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+            output.write(bodyBytes);
         }
         int status = conn.getResponseCode();
         String body = BoundedHttp.readUtf8(

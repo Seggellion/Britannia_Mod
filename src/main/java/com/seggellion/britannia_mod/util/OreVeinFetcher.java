@@ -50,7 +50,7 @@ public class OreVeinFetcher {
             BoundedHttp.configure(conn);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
-            if (!RailsRequestAuthenticator.apply(conn, server)) throw new IllegalStateException("Server authentication unavailable");
+            if (!RailsRequestAuthenticator.apply(conn, server, new byte[0])) throw new IllegalStateException("Server authentication unavailable");
 
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {

@@ -123,7 +123,7 @@ public final class ServiceNpcSpawnRegistrationClient {
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "application/json");
                 connection.setRequestProperty(SERVER_KEY_HEADER, serverKey.toString());
-                if (!RailsRequestAuthenticator.apply(connection, credentials)) {
+                if (!RailsRequestAuthenticator.apply(connection, credentials, body)) {
                     throw new IllegalStateException("credentials_unavailable");
                 }
             }, body);

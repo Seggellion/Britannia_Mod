@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.service.spawn;
 
+import com.seggellion.britannia_mod.server.auth.RequestSignature;
 import com.seggellion.britannia_mod.server.auth.ServerCredentials;
 import com.seggellion.britannia_mod.server.auth.ServerCredentialsTestFactory;
 import com.seggellion.britannia_mod.server.http.CancellableHttpRequest;
@@ -7,9 +8,13 @@ import com.sun.net.httpserver.HttpServer;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -78,6 +83,70 @@ class ServiceNpcSpawnRegistrationClientTest {
             body.get().getBytes(StandardCharsets.UTF_8));
         assertFalse(body.get().contains("test-only-secret-sentinel"));
         assertFalse(body.get().contains(serverKey.toString()));
+    }
+
+    /**
+     * Milestone 14 Security Slice 3: proves the signing rollout onto this value-changing
+     * (spawn registration) call site, mirroring {@code WorldStateChangesClientTest}'s and
+     * {@code BankingOpenClientTest}'s own proofs exactly. The expected signature is recomputed
+     * independently of {@link RequestSignature} (raw {@code Mac}/{@code MessageDigest}) so this
+     * test cannot trivially agree with its own production code.
+     */
+    @Test
+    void sendsAValidHmacSignatureWhoseCanonicalStringMatchesTheRealPostBodyActuallySent() throws Exception {
+        AtomicReference<String> path = new AtomicReference<>();
+        AtomicReference<byte[]> requestBody = new AtomicReference<>();
+        AtomicReference<String> timestampHeader = new AtomicReference<>();
+        AtomicReference<String> nonceHeader = new AtomicReference<>();
+        AtomicReference<String> signatureHeader = new AtomicReference<>();
+        ServiceNpcSpawnOperationRequest request = request();
+        long beforeRequest = System.currentTimeMillis() / 1000;
+
+        start(exchange -> {
+            path.set(exchange.getRequestURI().getPath());
+            requestBody.set(exchange.getRequestBody().readAllBytes());
+            timestampHeader.set(exchange.getRequestHeaders().getFirst(RequestSignature.TIMESTAMP_HEADER));
+            nonceHeader.set(exchange.getRequestHeaders().getFirst(RequestSignature.NONCE_HEADER));
+            signatureHeader.set(exchange.getRequestHeaders().getFirst(RequestSignature.SIGNATURE_HEADER));
+            byte[] response = success(request).getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+
+        ServiceNpcSpawnClientResult result = synchronousClient().submitForTesting(
+            request, credentials(UUID.randomUUID())
+        ).future().get(5, TimeUnit.SECONDS);
+        long afterRequest = System.currentTimeMillis() / 1000;
+
+        assertEquals(ServiceNpcSpawnClientResult.Disposition.SUCCESS, result.disposition());
+        assertTrue(timestampHeader.get() != null && !timestampHeader.get().isBlank(), "expected an X-Signature-Timestamp header");
+        assertTrue(nonceHeader.get() != null && nonceHeader.get().matches("[0-9a-f-]{36}"),
+                "expected a UUID-shaped X-Signature-Nonce header, got: " + nonceHeader.get());
+        assertTrue(signatureHeader.get() != null && signatureHeader.get().matches("[0-9a-f]{64}"),
+                "expected a 64-character lowercase-hex X-Signature header, got: " + signatureHeader.get());
+
+        long timestamp = Long.parseLong(timestampHeader.get());
+        assertTrue(timestamp >= beforeRequest && timestamp <= afterRequest,
+                "expected the signed timestamp to be the real time this request was actually sent");
+
+        String canonical = String.join("\n", "POST", path.get(), timestampHeader.get(), nonceHeader.get(),
+                sha256Hex(requestBody.get()));
+        String expectedSignature = hmacSha256Hex("test-only-secret-sentinel", canonical);
+
+        assertEquals(expectedSignature, signatureHeader.get(),
+                "the real signature sent over the wire must match Rails' own documented canonical-string algorithm applied to the real POST body that was actually sent");
+    }
+
+    private static String sha256Hex(byte[] data) throws Exception {
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(data));
+    }
+
+    private static String hmacSha256Hex(String key, String message) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        return HexFormat.of().formatHex(mac.doFinal(message.getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test

@@ -42,8 +42,6 @@ public class KarmaManager {
             BoundedHttp.configure(connection);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
-            if (!RailsRequestAuthenticator.apply(connection, server)) throw new IllegalStateException("Server authentication unavailable");
-            connection.setDoOutput(true);
 
             JsonObject payload = new JsonObject();
             payload.addProperty("karma", karmaChange);
@@ -52,9 +50,12 @@ public class KarmaManager {
             payload.addProperty("x", x);
             payload.addProperty("y", y);
             payload.addProperty("z", z);
+            byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
+
+            if (!RailsRequestAuthenticator.apply(connection, server, input)) throw new IllegalStateException("Server authentication unavailable");
+            connection.setDoOutput(true);
 
             try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
                 os.write(input, 0, input.length);
             }
 

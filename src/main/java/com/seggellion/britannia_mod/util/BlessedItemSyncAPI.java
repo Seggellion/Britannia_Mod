@@ -31,7 +31,7 @@ public final class BlessedItemSyncAPI {
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
 
-            if (!RailsRequestAuthenticator.apply(conn, player.server)) throw new IllegalStateException("Server authentication unavailable");
+            if (!RailsRequestAuthenticator.apply(conn, player.server, new byte[0])) throw new IllegalStateException("Server authentication unavailable");
 
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {

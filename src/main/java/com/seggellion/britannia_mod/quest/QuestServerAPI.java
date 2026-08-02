@@ -96,10 +96,10 @@ public final class QuestServerAPI {
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         connection.setRequestProperty("Accept", "application/json");
-        if (!RailsRequestAuthenticator.apply(connection, server)) {
+        byte[] body = payload.toString().getBytes(StandardCharsets.UTF_8);
+        if (!RailsRequestAuthenticator.apply(connection, server, body)) {
             throw new IllegalStateException("Server authentication unavailable");
         }
-        byte[] body = payload.toString().getBytes(StandardCharsets.UTF_8);
         try (OutputStream output = connection.getOutputStream()) { output.write(body); }
         int status = connection.getResponseCode();
         InputStream input = status >= 200 && status < 300

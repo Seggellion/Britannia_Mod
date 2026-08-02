@@ -70,7 +70,7 @@ public final class WorldBootstrapAPI {
             CancellableHttpRequest.Response response = request.execute(connection -> {
                 connection.setRequestMethod("GET");
                 connection.setRequestProperty("Accept", "application/json");
-                RailsRequestAuthenticator.apply(connection, credentials);
+                RailsRequestAuthenticator.apply(connection, credentials, new byte[0]);
             });
 
             if (response.status() != 200) {

@@ -64,15 +64,18 @@ public class QuestCommand {
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json");
-            if (!RailsRequestAuthenticator.apply(connection, player.server)) {
-                throw new IllegalStateException("Server authentication unavailable");
-            }
 
             JsonObject payload = new JsonObject();
             payload.addProperty("player_uuid", playerId.toString());
             payload.addProperty("shard", credentials.shardName());
+            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+
+            if (!RailsRequestAuthenticator.apply(connection, player.server, bodyBytes)) {
+                throw new IllegalStateException("Server authentication unavailable");
+            }
+
             try (OutputStream output = connection.getOutputStream()) {
-                output.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                output.write(bodyBytes);
             }
 
             int status = connection.getResponseCode();

@@ -469,10 +469,11 @@ public final class ServerEconomyService {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Idempotency-Key", idempotencyKey);
-            attachServerAuth(level, conn);
+            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+            attachServerAuth(level, conn, bodyBytes);
 
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
 
             int status = conn.getResponseCode();
@@ -501,8 +502,8 @@ public final class ServerEconomyService {
         }
     }
 
-    private static void attachServerAuth(ServerLevel level, HttpURLConnection conn) {
-        if (!RailsRequestAuthenticator.apply(conn, level.getServer())) {
+    private static void attachServerAuth(ServerLevel level, HttpURLConnection conn, byte[] body) {
+        if (!RailsRequestAuthenticator.apply(conn, level.getServer(), body)) {
             throw new IllegalStateException("Server authentication unavailable");
         }
     }

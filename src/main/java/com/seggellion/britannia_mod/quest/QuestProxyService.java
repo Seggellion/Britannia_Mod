@@ -80,9 +80,6 @@ public final class QuestProxyService {
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             connection.setRequestProperty("Accept", "application/json");
-            if (!RailsRequestAuthenticator.apply(connection, server)) {
-                throw new IllegalStateException("Server authentication unavailable");
-            }
 
             JsonObject payload = new JsonObject();
             payload.addProperty("player_uuid", playerUuid);
@@ -93,6 +90,11 @@ public final class QuestProxyService {
                 default -> { }
             }
             byte[] bytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+
+            if (!RailsRequestAuthenticator.apply(connection, server, bytes)) {
+                throw new IllegalStateException("Server authentication unavailable");
+            }
+
             try (OutputStream output = connection.getOutputStream()) { output.write(bytes); }
 
             int status = connection.getResponseCode();

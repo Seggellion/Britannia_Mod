@@ -121,7 +121,7 @@ public final class BankingCurrencyWithdrawalClient implements BankingCurrencyWit
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setRequestProperty("Accept", "application/json");
                 connection.setRequestProperty("Minecraft-Server-Key", serverKey.toString());
-                if (!RailsRequestAuthenticator.apply(connection, credentials)) {
+                if (!RailsRequestAuthenticator.apply(connection, credentials, body)) {
                     throw new IllegalStateException("credentials_unavailable");
                 }
             }, body);

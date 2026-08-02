@@ -106,12 +106,12 @@ public final class ServerCatalogService {
         BoundedHttp.configure(connection);
         connection.setRequestMethod(method);
         connection.setRequestProperty("Accept", "application/json");
-        if (!RailsRequestAuthenticator.apply(connection, player.server)) {
+        byte[] encoded = body != null ? body.getBytes(StandardCharsets.UTF_8) : new byte[0];
+        if (encoded.length > 262_144) throw new IllegalArgumentException("Catalog request too large");
+        if (!RailsRequestAuthenticator.apply(connection, player.server, encoded)) {
             throw new IllegalStateException("Server authentication unavailable");
         }
         if (body != null) {
-            byte[] encoded = body.getBytes(StandardCharsets.UTF_8);
-            if (encoded.length > 262_144) throw new IllegalArgumentException("Catalog request too large");
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             try (OutputStream output = connection.getOutputStream()) { output.write(encoded); }

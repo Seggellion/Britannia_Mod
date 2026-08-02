@@ -90,16 +90,17 @@ if (!(entity instanceof HouseLotBlockEntity)) {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
 
-            if (!RailsRequestAuthenticator.apply(conn, level.getServer())) throw new IllegalStateException("Server authentication unavailable");
-
-            conn.setDoOutput(true);
-
             JsonObject body = new JsonObject();
             body.addProperty("house_name", newName);
             body.addProperty("house_uuid", houseUuid.toString());
+            byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+
+            if (!RailsRequestAuthenticator.apply(conn, level.getServer(), bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
+
+            conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
 
             return conn.getResponseCode();
