@@ -43,6 +43,17 @@ public class SkillManager {
     /** Skill definitions keyed by skill name (loaded once per server). */
 private static final Map<String, SkillDef> SKILL_DEFS = new java.util.concurrent.ConcurrentHashMap<>();
 private static final Map<UUID, PlayerSkills> PLAYER_SKILLS = new java.util.concurrent.ConcurrentHashMap<>();
+private static final Map<UUID, SkillDataState> PLAYER_SKILL_STATES = new java.util.concurrent.ConcurrentHashMap<>();
+
+public enum SkillDataState {
+    NOT_LOADED,
+    LOADING,
+    AVAILABLE,
+    UNAVAILABLE
+}
+
+public record SkillSnapshot(SkillDataState state, float value) {
+}
 
 
     /* =====  Public API  ===== */
@@ -150,7 +161,8 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
     LOGGER.info("SKILL SYSTEM LOGIN (MP-safe)");
 
     // Ensure the player has a skills map right now so gains won’t be dropped in MP
-    PLAYER_SKILLS.putIfAbsent(sp.getUUID(), new PlayerSkills());
+    PLAYER_SKILLS.put(sp.getUUID(), new PlayerSkills());
+    PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.LOADING);
 
     EXECUTOR.submit(() -> {
         try {
@@ -164,24 +176,41 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
                 }
             }
 
-            // Load player’s values; if API fails, keep the seeded empty map
+            // Load the authoritative values; an API failure leaves cultivation unavailable.
             PlayerSkills loaded = fetchPlayerSkillsAsync(sp);
-            if (loaded == null) return;
+            if (loaded == null) {
+                sp.server.execute(() -> markSkillDataUnavailable(sp));
+                return;
+            }
 
             sp.server.execute(() -> {
-                if (!sp.isAlive() || sp.connection == null) return;
+                if (!isCurrentConnectedPlayer(sp)) return;
                 PLAYER_SKILLS.put(sp.getUUID(), loaded);
+                PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.AVAILABLE);
                 NetworkHandler.sendToPlayer(sp, new SkillSyncPayload(loaded.map));
                 LOGGER.info("✅ Loaded {} skills for {}", loaded.size(), sp.getScoreboardName());
             });
 
         } catch (Exception ex) {
             LOGGER.error("Login skill bootstrap failed for {}", sp.getScoreboardName(), ex);
+            sp.server.execute(() -> markSkillDataUnavailable(sp));
         }
     });
 }
     private static void onPlayerLogOut(PlayerEvent.PlayerLoggedOutEvent e) {
         PLAYER_SKILLS.remove(e.getEntity().getUUID());
+        PLAYER_SKILL_STATES.remove(e.getEntity().getUUID());
+    }
+
+    private static boolean isCurrentConnectedPlayer(ServerPlayer player) {
+        return player.isAlive() && player.connection != null
+                && player.server.getPlayerList().getPlayer(player.getUUID()) == player;
+    }
+
+    private static void markSkillDataUnavailable(ServerPlayer player) {
+        if (isCurrentConnectedPlayer(player)) {
+            PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.UNAVAILABLE);
+        }
     }
 
     /* =====  HTTP helpers  ===== */
@@ -208,6 +237,7 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
         // FIX 1: getUuid() -> getUUID()
         PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
         p.set(key, value);
+        PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
 
         LOGGER.info("🛠️ ADMIN: Set {}'s {} skill to {}", player.getGameProfile().getName(), key, value);
 
@@ -280,11 +310,13 @@ private static void fetchPlayerSkills(ServerPlayer sp) {
             ps.set(o.get("skill_name").getAsString(), o.get("value").getAsFloat());
         }
         PLAYER_SKILLS.put(sp.getUUID(), ps);
+        PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.AVAILABLE);
         NetworkHandler.sendToPlayer(sp, new SkillSyncPayload(ps.map));
         LOGGER.info("✅ Loaded {} skills for {}", ps.size(), sp.getScoreboardName());
 
     } catch (Exception ex) {
         LOGGER.error("Failed to load player skills for {}", sp.getScoreboardName(), ex);
+        PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.UNAVAILABLE);
     }
 }
 
@@ -358,9 +390,9 @@ private static PlayerSkills fetchPlayerSkillsAsync(ServerPlayer sp) {
         }
         return ps;
     } catch (Exception ex) {
-        // Return empty so MP still gains; we’ll POST gains and next login will resync.
+        // Preserve the distinction between an authoritative zero and unavailable data.
         LOGGER.error("Failed to load player skills for {}", sp.getScoreboardName(), ex);
-        return new PlayerSkills();
+        return null;
     }
 }
 
@@ -412,6 +444,11 @@ private static JsonElement doGetJson(String spec, ServerPlayer sp) throws IOExce
     public static float getSkill(java.util.UUID playerUUID, String skillName) {
         PlayerSkills ps = PLAYER_SKILLS.get(playerUUID);
         return (ps == null) ? 0f : ps.get(skillName);
+    }
+
+    public static SkillSnapshot getSkillSnapshot(UUID playerUUID, String skillName) {
+        SkillDataState state = PLAYER_SKILL_STATES.getOrDefault(playerUUID, SkillDataState.NOT_LOADED);
+        return new SkillSnapshot(state, getSkill(playerUUID, skillName));
     }
 
     // 2. The helper method that accepts a Player (Fixes all your Server errors!)

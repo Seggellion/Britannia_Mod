@@ -68,6 +68,16 @@ public final class FlowerPlantingService {
                 return Outcome.REJECTED;
             }
             validateDefinitionForPlanting(definition, access.heldItemId(), registry);
+            FarmingCultivationGate.Evaluation eligibility = FarmingCultivationGate.evaluateResolved(
+                    new FarmingSkillRequirementResolver.ResolvedRequirement(
+                            definition.id().toString(), definition
+                    ),
+                    access.cultivationSubject()
+            );
+            if (!eligibility.permitsPlanting()) {
+                access.applyCultivationDenial(eligibility);
+                return Outcome.REJECTED;
+            }
 
             FlowerSoilSnapshot soil = access.captureSoilSnapshot();
             FlowerPlantingOrigin origin = Objects.requireNonNull(access.plantingOrigin(), "Planting origin is required");
@@ -182,6 +192,10 @@ public final class FlowerPlantingService {
 
         boolean targetOccupied();
 
+        FarmingCultivationGate.Subject cultivationSubject();
+
+        void applyCultivationDenial(FarmingCultivationGate.Evaluation evaluation);
+
         FlowerSoilSnapshot captureSoilSnapshot();
 
         FlowerPlantingOrigin plantingOrigin();
@@ -261,6 +275,17 @@ public final class FlowerPlantingService {
                     || !(blockEntity instanceof FarmingBlockEntity farming)
                     || farming.hasCrop()
                     || farming.getStoredSeed() != null && !farming.getStoredSeed().isBlank();
+        }
+
+        @Override
+        public FarmingCultivationGate.Subject cultivationSubject() {
+            return FarmingCultivationGate.subject(player);
+        }
+
+        @Override
+        public void applyCultivationDenial(FarmingCultivationGate.Evaluation evaluation) {
+            FarmingCultivationGate.sendDenialFeedback(player, evaluation);
+            FarmingCultivationGate.synchronizeDeniedInteraction(player, level, pos);
         }
 
         @Override

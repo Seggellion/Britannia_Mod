@@ -87,6 +87,22 @@ class FlowerLifecycleTest {
     }
 
     @Test
+    void cultivationDenialPrecedesColorSelectionAndEveryMutation() {
+        for (FlowerDefinition definition : registry.definitions().values()) {
+            FakeAccess access = new FakeAccess(definition.seedItemId());
+            access.cultivationSubject = FarmingCultivationGate.Subject.loadedPlayer(
+                    definition.minimumFarmingSkill() - 0.1F
+            );
+            AtomicInteger selectorCalls = new AtomicInteger();
+
+            assertEquals(FlowerPlantingService.Outcome.REJECTED, execute(access, selectorCalls));
+            assertEquals(0, selectorCalls.get(), definition.id().toString());
+            assertFalse(access.mutated(), definition.id().toString());
+            assertEquals(1, access.cultivationDenialCalls, definition.id().toString());
+        }
+    }
+
+    @Test
     void postReplacementFailuresRestoreWorldSoilCommunityAndHeldSeed() {
         ResourceLocation seed = registry.byId(FlowerRegistry.ORFLUER).orElseThrow().seedItemId();
         for (FailurePoint failure : new FailurePoint[]{
@@ -312,6 +328,9 @@ class FlowerLifecycleTest {
         private boolean logicalServer = true;
         private boolean validTarget = true;
         private boolean occupied;
+        private FarmingCultivationGate.Subject cultivationSubject =
+                FarmingCultivationGate.Subject.loadedPlayer(100.0F);
+        private int cultivationDenialCalls;
         private FlowerSoilSnapshot soil = FlowerSoilSnapshot.privateSoil(3, 1, 0.2f, 0.4f, 0.6f, 0.8f);
         private FlowerPlantingOrigin origin = FlowerPlantingOrigin.PLAYER;
         private final Optional<UUID> planterUuid = Optional.of(
@@ -359,6 +378,16 @@ class FlowerLifecycleTest {
         @Override
         public boolean targetOccupied() {
             return occupied;
+        }
+
+        @Override
+        public FarmingCultivationGate.Subject cultivationSubject() {
+            return cultivationSubject;
+        }
+
+        @Override
+        public void applyCultivationDenial(FarmingCultivationGate.Evaluation evaluation) {
+            cultivationDenialCalls++;
         }
 
         @Override

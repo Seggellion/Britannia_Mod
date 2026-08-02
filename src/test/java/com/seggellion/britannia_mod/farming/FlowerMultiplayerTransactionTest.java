@@ -124,6 +124,10 @@ class FlowerMultiplayerTransactionTest {
         @Override public boolean logicalServer() { return true; }
         @Override public boolean targetIsFarmingBlock() { return plot.farmingBlock; }
         @Override public boolean targetOccupied() { return plot.flowerState.isPresent(); }
+        @Override public FarmingCultivationGate.Subject cultivationSubject() {
+            return FarmingCultivationGate.Subject.loadedPlayer(100.0F);
+        }
+        @Override public void applyCultivationDenial(FarmingCultivationGate.Evaluation evaluation) { }
         @Override public FlowerSoilSnapshot captureSoilSnapshot() {
             return FlowerSoilSnapshot.privateSoil(3, 1, 0.4F, 0.5F, 0.6F, 0.7F);
         }

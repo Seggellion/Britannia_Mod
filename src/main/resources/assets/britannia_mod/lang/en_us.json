@@ -790,7 +790,13 @@
     "skill.britannia_mod.farming.title.horticulturist": "Horticulturist",
     "skill.britannia_mod.farming.title.agriculturist": "Agriculturist",
     "skill.britannia_mod.farming.title.master_farmer": "Master Farmer",
-    "skill.britannia_mod.farming.title.grandmaster_farmer": "Grandmaster Farmer"
+    "skill.britannia_mod.farming.title.grandmaster_farmer": "Grandmaster Farmer",
+    "message.britannia_mod.farming.cultivation.insufficient.crop": "Unidentified Seeds require Farming %2$s to plant (current: %1$s).",
+    "message.britannia_mod.farming.cultivation.insufficient.flower": "Unidentified Flower Seeds require Farming %2$s to plant (current: %1$s).",
+    "message.britannia_mod.farming.cultivation.insufficient.material": "Unidentified Planting Material requires Farming %2$s to plant (current: %1$s).",
+    "message.britannia_mod.farming.cultivation.skill_unavailable": "Farming skill data is unavailable; planting is blocked.",
+    "message.britannia_mod.farming.cultivation.automation_blocked": "Automated planting requires a trusted player skill identity.",
+    "message.britannia_mod.farming.cultivation.unresolved": "This planting material cannot be verified; planting is blocked."
 
 
 }

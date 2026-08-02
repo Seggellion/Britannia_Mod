@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.CropSupportRequirement;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
+import com.seggellion.britannia_mod.farming.FarmingCultivationGate;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
 import com.seggellion.britannia_mod.farming.FarmingSoilCare;
 import com.seggellion.britannia_mod.farming.FlowerPlantingService;
@@ -393,6 +394,17 @@ public class FarmingBlock extends Block implements EntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
 
+        if (!level.isClientSide) {
+            FarmingCultivationGate.Evaluation eligibility = FarmingCultivationGate.evaluate(player, stack.getItem());
+            if (!eligibility.permitsPlanting()) {
+                FarmingCultivationGate.sendDenialFeedback(player, eligibility);
+                FarmingCultivationGate.synchronizeDeniedInteraction(player, level, pos);
+                logPlantingFlow(interactionSource, level, pos, stack, crop, false, false,
+                        "farming_gate_" + eligibility.type().name().toLowerCase(java.util.Locale.ROOT));
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+
         boolean trellisCrop = isTrellisCrop(crop);
         boolean supportSatisfied = canPlantWithCurrentSupport(level, pos, crop);
         if (requireTrellisCrop && !trellisCrop) {
@@ -423,9 +435,11 @@ public class FarmingBlock extends Block implements EntityBlock {
                 }
                 return ItemInteractionResult.SUCCESS;
             }
-            if (crop.treeCrop() && FruitTreeRegistry.byId(crop.id()).isPresent()) {
-                FruitTreeDefinition tree = FruitTreeRegistry.byIdOrDefault(crop.id());
-                BlockPos rootPos = pos.above();
+            FruitTreeDefinition tree = crop.treeCrop() && FruitTreeRegistry.byId(crop.id()).isPresent()
+                    ? FruitTreeRegistry.byIdOrDefault(crop.id())
+                    : null;
+            BlockPos rootPos = tree == null ? null : pos.above();
+            if (tree != null) {
                 if (!level.getBlockState(rootPos).canBeReplaced()) {
                     logPlantingFlow(interactionSource, level, pos, stack, crop, true, false, "tree_space_blocked");
                     if (player != null) {
@@ -433,6 +447,9 @@ public class FarmingBlock extends Block implements EntityBlock {
                     }
                     return ItemInteractionResult.SUCCESS;
                 }
+            }
+
+            if (tree != null) {
                 farmBe.plant(crop);
                 level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
                 level.setBlock(rootPos, tree.rootBlock().get().defaultBlockState(), 3);

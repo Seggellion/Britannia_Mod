@@ -184,17 +184,22 @@ class FarmingSkillRequirementTest {
     }
 
     @Test
-    void milestoneFourteenDoesNotAddPlantingOrViewerBehavior() throws IOException {
-        for (String relative : List.of(
-                "src/main/java/com/seggellion/britannia_mod/block/FarmingBlock.java",
-                "src/main/java/com/seggellion/britannia_mod/farming/FlowerPlantingService.java",
-                "src/main/java/com/seggellion/britannia_mod/item/GrapeSeedsItem.java"
-        )) {
-            String source = Files.readString(PROJECT.resolve(relative));
-            assertFalse(source.contains("FarmingSkillRequirementResolver"), relative);
-            assertFalse(source.contains("minimumFarmingSkill"), relative);
-            assertFalse(source.contains("a brown seed"), relative);
-        }
+    void milestoneFifteenKeepsGrapeAndViewerBehaviorOutOfScope() throws IOException {
+        String grapes = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/item/GrapeSeedsItem.java"));
+        assertFalse(grapes.contains("FarmingCultivationGate"));
+        assertFalse(grapes.contains("minimumFarmingSkill"));
+        assertFalse(grapes.contains("a brown seed"));
+
+        String farmingBlock = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/block/FarmingBlock.java"));
+        String flowerPlanting = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/farming/FlowerPlantingService.java"));
+        assertTrue(farmingBlock.contains("FarmingCultivationGate.evaluate(player, stack.getItem())"));
+        assertTrue(flowerPlanting.contains("FarmingCultivationGate.evaluateResolved("));
+        assertFalse(farmingBlock.contains("a brown seed"));
+        assertFalse(flowerPlanting.contains("a brown seed"));
+
         String commonSetup = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/ModEventHandler.java"));
         assertTrue(commonSetup.contains("event.enqueueWork(FarmingSkillRequirementValidator::validateRegisteredDefinitions)"));
