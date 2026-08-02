@@ -1,14 +1,27 @@
 # Farming Skill Progression Implementation Status
 
-Milestone: 16 - Player-Specific Seed Identification and UI
+Milestone: 17 - Progression Validation, Gameplay QA, and Closeout
 Branch: `Farming`
+Milestone 12 status: Approved
+Milestone 12 commit: `ca696c602ea9fe47b7a8ec30069ba17bc180d5cf` (`docs(farming): inventory plantable content and skill integration points`)
+Milestone 13 status: Approved
+Milestone 13 commit: `922cc766c34628dd4cd86d49cec01eaeeb91eb4e` (`docs(farming): approve crop skill progression`)
 Milestone 14 status: Approved
 Milestone 14 commit: `ddc488aa6a423a125510bea1a6556117e9ca6d0e` (`feat(farming): add approved crop skill requirements`)
 Milestone 15 status: Approved
 Milestone 15 commit: `7db9d1d549640d1389f11aa8416e5e3d2fe325d2` (`feat(farming): gate planting by farming skill`)
 Milestone 16 status: Approved
-Milestone 12 commit: `ca696c602ea9fe47b7a8ec30069ba17bc180d5cf` (`docs(farming): inventory plantable content and skill integration points`)
-Milestone 13 commit: `922cc766c34628dd4cd86d49cec01eaeeb91eb4e` (`docs(farming): approve crop skill progression`)
+Milestone 16 commit: `cd11434b1ec76f3f36f7e83b8b00b382fcf0c728` (`feat(farming): add player-specific seed identification`)
+Milestone 17 status: Approved
+Milestone 17 commit: See final progression closeout commit in branch history.
+
+## Final owner approval
+
+Farming Skill Progression implementation: **Approved on the `Farming` branch.**
+
+All 74 approved progression values, server-authoritative cultivation gating, and player-specific planting-item identification are complete. Ordinary identification and cultivation use the same inclusive threshold. The approved grape planting exemption and native compatibility exclusions remain unchanged, and viewer-specific presentation does not mutate stack identity or grant client cultivation authority. All required closeout validation passed.
+
+Deferred acquisition, economy, recipe, natural-generation, and compatibility-expansion work remains unimplemented. No merge, push, release, or deployment was performed or included in this approval.
 
 ## Coverage
 
@@ -52,7 +65,7 @@ The requirement remains immutable definition metadata and is not written to crop
 - Native vanilla planting behavior remains untouched.
 - The existing grape variety, NBT/component, planting, rendering, and harvesting system remains untouched. Milestone 16 projects the localized under-skilled name `a brown seed` without mutating the stack.
 - Acquisition, recipes, merchants, natural generation, loot, Rails/economy, and pricing remain deferred.
-- Milestone 17 final regression/closeout remains deferred and unstarted.
+- Milestone 17 reconciliation, final regression review, and combined runtime closeout are complete and owner-approved.
 
 ## Milestone 15 cultivation gate
 
@@ -98,9 +111,99 @@ An ignored disposable copy under `build/m16-live-runtime` ran one NeoForge 21.1.
 
 Runtime evidence remains ignored and untracked in `build/m16-live-runtime/run/server/m16-evidence-pass1`, `build/m16-live-runtime/run/server/m16-evidence`, `build/m16-live-runtime/run/client-low/m16-client-evidence-pass1.txt`, `build/m16-live-runtime/run/client-low/m16-client-evidence.txt`, and the equivalent `client-high` files. Screenshots are in the two ignored client `screenshots` directories. Disposable skill hooks, drivers, identity exemptions, and custom run configurations were removed after capture; none entered production source. The only production correction is the three missing existing-handler registrations plus its regression assertion.
 
+## Milestone 17 final reconciliation
+
+`FarmingSkillProgressionCloseoutTest` parses the accepted catalog and approved proposal rather than declaring a second 74-value table. In one cross-system loop it reconciles 74 catalog species, 74 distinct planting IDs, 74 `APPROVED` proposal rows, 74 runtime definitions, 74 cultivation decisions, and 74 presentation policies. Results are 67 crops, seven flowers, 68 maskable custom items, six native exclusions, no missing/extra species, no duplicate item, no conflicting value, and every value finite and inside inclusive `0..100`.
+
+For every ordinary applicable species, identification and cultivation use `current Farming >= minimumFarmingSkill` at `requirement - 1`, `requirement - 0.01`, exact requirement, `requirement + 0.01`, and `requirement + 1`. Loading/unavailable state fails closed and Creative/operator level 2+ uses the shared approved administrative bypass. Grapes is the documented exception: viewer identity changes at Farming 80 while established planting remains ungated. The six native compatibility items retain their catalog/reference requirements while native vanilla routes remain unmasked and ungated.
+
+Poppy ordinary identification/planting remains Farming 20. Stage-7 mastery remains an independent stage-6 transaction requiring Farming 100, an item in the skinning-knife tag, and mutation authorization; failed mastery has no durability cost and success costs one. Gate-order assertions keep crop denial before `farmBe.plant`, and flower denial before soil snapshot, colour selection, block/entity state, or item consumption.
+
+### Final progression distribution
+
+| Farming | New | Cumulative | Species unlocked | Category diversity |
+|---:|---:|---:|---|---|
+| 0 | 4 | 4 | Carrot, Lettuce, Green Onion, Wheat | Root, leaf, allium, grain |
+| 5 | 5 | 9 | Potato, Vanilla Potato, Peas, Turnips, Radish | Roots/tubers, compatibility food, pulse |
+| 10 | 5 | 14 | Squash, Cabbage, Yellow Onion, Rye, Campion | Gourd, brassica, allium, grain, flower |
+| 15 | 4 | 18 | Barley, Oats, Strawberry, Parsnip | Grain, berry, root |
+| 20 | 5 | 23 | Pumpkin, Garlic, Flax, Snow Peas, Poppy | Gourd, root/allium, fibre, pulse, flower |
+| 25 | 4 | 27 | Beans, Vanilla Pumpkin, Raspberry, Broccoli | Pulse, compatibility gourd, berry, brassica |
+| 30 | 5 | 32 | Corn, Mustard, Blackberry, Cauliflower, Hyacinth | Grain, seed crop, berry, brassica, flower |
+| 35 | 4 | 36 | Blueberry, Cucumbers, Yam, Rutabaga | Berry, trellis perennial, roots/tubers |
+| 40 | 5 | 41 | Tomato, Huckleberry, Cotton, Celery, Snowdrop | Trellis, berry, fibre, stalk, flower |
+| 45 | 4 | 45 | Vanilla Melon, Mulberry, Bell Peppers, Rhubarb | Compatibility melon, berry, trellis, stalk |
+| 50 | 4 | 49 | Watermelon, Elderberry, Hemp, Lily | Melon, berry, fibre, flower |
+| 55 | 4 | 53 | Brown Mushroom, Apple, Peach, Cantaloupe | Mushroom, orchard, trellis |
+| 60 | 5 | 58 | Red Mushroom, Cherries, Hops, Pear, Honeydew | Mushroom, orchard, trellis |
+| 65 | 4 | 62 | Pineapple, Plum, Tobacco, Foxglove | Fruit, orchard, processing candidate, flower |
+| 70 | 4 | 66 | Ginseng, Cranberry, Lemon, Orange | Medicinal, berry, orchard |
+| 75 | 3 | 69 | Rice, Lime, Olive | Grain/wetland, orchard |
+| 80 | 2 | 71 | Banana, Grapes | Tall perennial, vine perennial |
+| 85 | 1 | 72 | Nightshade | Magical/medicinal |
+| 90 | 1 | 73 | Mandrake | Magical/medicinal |
+| 95 | 1 | 74 | Orfluer | Magical decorative flower |
+
+Phase totals are starter 4, early game 19 (5-20), lower midgame 18 (25-40), upper midgame 17 (45-60), late game 13 (65-80), and endgame 3 (85-95). Food is available in every phase. Fruit starts with Strawberry at 15, expands through berries and melons, opens orchards at 55, and reaches Banana/Grapes at 80. Fibre appears at 20/40/50. Medicinal/magical content is at 70/85/90. Utility/economic/processing candidates span Flax, Cotton, Hemp, Hops, Tobacco, orchards, and Grapes; their actual recipes and prices remain unknown. Decorative flowers are deliberately spaced at 10/20/30/40/50/65/95.
+
+Perennial/recurring choices begin with Campion at 10, Cucumbers at 35, Tomato at 40, orchards at 55, and Banana/Grapes at 80. Trellis species are Cucumbers 35, Tomato 40, Bell Peppers 45, Cantaloupe 55, Hops 60, and Honeydew 60. Orchard species are Apple/Peach 55, Cherries/Pear 60, Plum 65, Lemon/Orange 70, and Lime/Olive 75. Corn 30 and Banana 80 need tall clearance; Grapes 80 uses its established vine route. Special post-planting/environment mechanics include Celery, mushrooms, Cranberry, Rice, Nightshade, Mandrake, all persistent flowers, and Poppy mastery.
+
+The longest gap between ordinary unlock bands is five Farming points. The largest cluster is five species at bands 5, 10, 20, 30, 40, and 60. No band exceeds five and 71/74 species unlock by 80. Review observations, not value changes: 23 species unlock by 20; endgame bands 85/90/95 are intentionally sparse; medicinal/magical content is late; initial survival acquisition is unproven for much of the roster; processing-chain and economy sequencing cannot be validated until recipes, tools, structures, prices, and acquisition exist. Approved low-confidence placements remain Rice 75, Ginseng 70, Nightshade 85, Mandrake 90, Tobacco 65, Grapes 80, and Orfluer 95.
+
+### Milestone 17 scope and deferred register
+
+No production Java/resource behavior changed in Milestone 17. The work is limited to reconciliation tests and final progression documentation. Deferred: survival acquisition, seed recipes, skinning-knife acquisition, natural generation, merchants, economy/Rails pricing, balance revision, processing expansion, formal packet/performance profiling, unsupported third-party recipe viewers, broad chat-component rewriting, arbitrary other-mod planting compatibility, additional species, and nutrient-biased flower-colour weights. A future colour-weight change may only select a colour when a new seed is successfully planted and may never recolour an existing flower.
+
+### Milestone 17 validation execution - 2026-08-02
+
+Reexecuted in Milestone 17 after commit `cd11434b1ec76f3f36f7e83b8b00b382fcf0c728`:
+
+- `FarmingSkillProgressionCloseoutTest`: PASS, three tests after one test-assertion wording correction; no production defect.
+- Full clean compile/resource/test gate: PASS, 15 suites and 108 tests with zero failures, errors, or skips.
+- Corrective Milestone 11 non-writing placeholder audit: PASS, 182 generated files plus hash ledger.
+- `git diff --check`: PASS with only existing LF-to-CRLF warnings.
+- Dedicated common bootstrap: PASS through 74/67/7/74 validation with no M16 client-class load; established unrelated `TitleScreenBackgroundMixin`, missing development config, and empty GameTest warnings remain.
+- Isolated disposable client startup: PASS through mod discovery, M16 mixin application, resource/model loading, OpenAL, sound engine, and all render-thread atlas creation. No Farming presentation/accessor exception occurred. Existing unrelated crop/other-model errors and missing-texture warnings remain.
+
+Referenced from previously approved evidence because Milestone 17 made no production change:
+
+- Milestone 15 two-client/server planting matrix for crop/flower denial and success, `-1`/exact/`+1` boundaries, decimal boundaries, one-item/off-hand/contention, downstream restrictions, Poppy mastery, protected flowers, persistence, and farming/flower regressions.
+- Milestone 16 corrected two-client UI matrix for per-viewer inventory/shared-container/drop-label presentation, open-UI gain/loss, Creative/operator bypass, narration, grapes, stale revisions, reconnect/respawn/dimension/server restart/resource reload, 68-item leakage, and stack equality.
+
+Fresh combined validation was subsequently executed after the Milestone 16 commit and before the Milestone 17 closeout commit in one ignored disposable NeoForge runtime rooted at `build/m16-live-runtime`, using dedicated server world `run/m17-server/m17-combined-world` on localhost port 25617 and real clients `M17Low` and `M17High`. The run passed the representative crop/flower transactions, all-seven flower loop, Poppy mastery, save/restart, reconnect, shared-container UI, dynamic skill gain/loss, administrative bypasses, fail-closed states, session/resource transitions, protected-flower denial, stack immutability, and M11 resource contract. The owner has reviewed and approved Milestone 17 and authorized its isolated closeout commit.
+
+### Fresh combined two-client validation - 2026-08-02
+
+| Area | Fresh runtime evidence/result |
+|---|---|
+| Runtime and identities | Dedicated server plus two graphical clients; disposable world `m17-combined-world`; ordinary identities `M17Low` and `M17High`. Login, reconnect, server stop/restart, and second login are present in the server/client logs. |
+| Skill authority and sync | The ignored harness changed the real `SkillManager` authoritative state and emitted production `SkillSyncPayload` revisions. Clients observed only `ClientSkillTable`. Connection epochs began at `NOT_LOADED`, moved through `LOADING`, and returned to `AVAILABLE`; an intentionally stale real payload was rejected. |
+| Initial two-viewer comparison | In the same open chest, Farming 19 rendered Corn, Poppy, Orfluer, Hyacinth, Snowdrop, Lily, and Foxglove generically and both grape varieties as `a brown seed`; Farming 100 rendered exact names, including `Concord grape seeds` and `Wild grape seeds`. Carrot and native Brown Mushroom correctly remained exact at both viewers under their applicable policies. |
+| Viewer surfaces | Inventory/hotbar stack projection, off-hand-equivalent stack policy, one shared chest, basic and advanced tooltips, narration result, dropped-label policy, Creative/admin presentation, and Creative-search policy were exercised. Advanced diagnostics retained the approved registry/component boundary. Server-visible chat-link text remains the documented unavoidable disclosure; viewer-local hover remains governed by the same stack policy. No recipe-book or external viewer surface exists for this roster. |
+| Stack integrity | Client and server records retain registry ID, count, component map, grape `GrapeVariety`, empty custom-name state, and unchanged shared-container stacks. Presentation wrote no item data. The chest stack component hash stayed unchanged through open-UI gain. |
+| Crop denial/success | Farming 19 Corn denial: item same, count 1, FarmingBlock and block entity unchanged, award delta 0, statistic delta 0, zero success effects. Farming 100 Corn success: planted once, count 0, one award invocation, one established sound path, no particle path. |
+| Flower denial/success | Farming 19 Hyacinth denial: item same, count 1, soil unchanged, award 0, colour-selection delta 0, zero success effects. Farming 100 success: planted once, count 0, one persistent state, exactly one colour selection. |
+| Unified threshold | The all-seven live loop set each flower to requirement-1 and exact requirement. Every below case returned `REJECTED` with count 1 and colour delta 0; every exact case returned `PLANTED` with count 0 and colour delta 1. The closeout suite separately covers all ordinary applicable policies at -1, -0.01, exact, +0.01, and +1. |
+| Open-UI skill gain | `M17Low` remained in `ContainerScreen`; revision changed and Poppy changed from `Unidentified Flower Seeds` at 19 to `Poppy Seeds` at exact 20 without stack replacement or component change. New Poppy planting then succeeded. |
+| Open-UI skill loss | `M17High` remained in `ContainerScreen`; Corn/Poppy/grapes and higher flowers changed from exact identity at 100 to approved generic identity at 19. New Corn planting denied with count 1. Existing Corn and Hyacinth remained present; growth, care, harvest, colour, and protection remain independent of new-plant eligibility and no eligibility field was saved. |
+| Shared-container isolation | Both clients inspected the same chest stacks simultaneously. Low/high names differed exactly by viewer skill, both grape varieties were masked only for the low viewer, and the server stacks/components were unchanged. Reopening after restart reproduced current viewer-local output. |
+| Grapes | Concord and Wild Grape components/names were compared. Low rendered `a brown seed`; high rendered each exact variety. Low Farming 0 planting returned the established item result, consumed one, stored `concord`, and the cultivation policy returned `NOT_APPLICABLE`. The variety survived restart. |
+| Flowers | Campion 10, Poppy 20, Hyacinth 30, Snowdrop 40, Lily 50, Foxglove 65, and Orfluer 95 all passed below/exact identity and cultivation accounting in the fresh session. |
+| Poppy split | Ordinary planting passed at 20. A real stage-6 Poppy stayed stage 6 at Farming 99 with a tagged knife and at Farming 100 with the wrong tool; both failures cost zero durability. Farming 100 plus the tagged knife advanced to stage 7, cost one durability, produced no item, and preserved colour. Reset/recreated stage 6 again rejected Farming 99. |
+| Creative and operator | Creative at effective Farming 0 showed exact identities, planted without consumption, and remained subject to occupied/downstream rules. Operator level 2 outside Creative showed exact identities and bypassed the threshold while downstream rules stayed active. De-op returned the ordinary policy. |
+| Fail closed | `NOT_LOADED`, `LOADING`, and `UNAVAILABLE` each denied Corn with count 1 and no mutation despite a supplied value of 100. `AVAILABLE` at exact 30 updated identity/eligibility immediately and planted. No maximum-skill assumption occurred. |
+| Session transitions | Dimension transfer to Nether and back generated authoritative resync; death caused a real client respawn request and a new revision; resource reload completed successfully at the same revision and retained the generic Poppy name; server restart reloaded current states and both clients reconnected through a fresh epoch. No raw localization key appeared. |
+| Save/network authority | Saved crop and Poppy block entities loaded without rechecking planting eligibility. Poppy colour/stage and grape variety persisted. Requirements/presentation results were not written to world or item data. Client display never supplied server skill authority; low denial/high success and stale-payload rejection prove the authority split. |
+| Protection | A Creative-planted Poppy saved `protected=true`; an ordinary scissors attempt left state and colour identical, damaged no item, and produced no output. |
+| Corrective M11 | 49 canonical stage models, 49 base textures, 49 dye-mask textures, zero separate pass models, and zero third textures. The renderer passes one resolved model twice. Dedicated startup and live client resource reload remained safe apart from the established unrelated TitleScreen mixin warning. |
+| Defects/corrections | No production M17 defect. No production correction or regression test was required. Disposable instrumentation and run definitions stayed ignored and were removed after capture. |
+| Evidence | `build/m16-live-runtime/run/m17-server/m17-evidence/server.txt`; `run/m17-client-low/m17-evidence/client-low.txt`; `run/m17-client-high/m17-evidence/client-high.txt`; the three runtimes' `logs/latest.log`; and `m17-*-process*.log` in the ignored runtime root. |
+
+Structured performance/network review found cached requirement resolution, immutable client snapshots, event/revision-triggered packets, one Creative search refresh per accepted revision, no Markdown parsing at runtime, and no per-tooltip packet or catalog rebuild. No formal profiler or packet benchmark was run; those remain deferred unless a practical defect appears.
+
 ## Working-tree boundary
 
-Milestone 14 is owner-approved and isolated in `ddc488aa6a423a125510bea1a6556117e9ca6d0e`. Milestone 15 is isolated in `7db9d1d549640d1389f11aa8416e5e3d2fe325d2`. Milestone 16 changes remain intentionally unstaged and uncommitted. Pre-existing Corrective Milestone 11 changes remain present and preserved. No `.claude/` file was modified.
+Milestone 14 is owner-approved and isolated in `ddc488aa6a423a125510bea1a6556117e9ca6d0e`. Milestone 15 is isolated in `7db9d1d549640d1389f11aa8416e5e3d2fe325d2`. Milestone 16 is owner-approved and isolated in `cd11434b1ec76f3f36f7e83b8b00b382fcf0c728`. Pre-existing Corrective Milestone 11 changes remain present, separate, and unstaged. No `.claude/` file was modified.
 
 ## Validation result
 

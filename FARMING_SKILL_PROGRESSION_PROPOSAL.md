@@ -1,11 +1,11 @@
 ﻿# Farming Skill Progression Proposal
 
-Milestone: 13 - Progression Design and Owner Approval Gate
-Status: Milestone 13 approval gate complete; awaiting explicit Milestone 14 authorization
+Milestone: 13 approved design; Milestone 17 final implementation reconciliation
+Status: All 74 approved values implemented; Milestone 17 approved
 Branch/starting authority: Farming at ca696c602ea9fe47b7a8ec30069ba17bc180d5cf
-Document status: Design-only; no runtime requirement exists.
+Document status: Approved design authority reconciled exactly with 74 runtime requirements.
 Progression-row approval: APPROVED 74/74 by direct owner instruction on 2026-08-01.
-Behavior-decision approval: APPROVED 15/15; DECISION-001 through DECISION-015 are answered.
+Behavior-decision approval: APPROVED 16/16; DECISION-001 through DECISION-016 are answered.
 
 ## 1. Scope and authority
 
@@ -246,7 +246,7 @@ The requirement belongs to the resolved species, never the item suffix. Seed-nam
 
 Confirmed repository evidence contains no farming recipes, merchant prices, or complete acquisition economy for this roster. The proposal therefore uses registered yield, recurrence, seed renewal, structure, timing, and environment, while describing food/utility/medicinal/economic roles as gameplay inference. It does not invent prices, brewing, medicine, textiles, or Tobacco processing.
 
-Potential circularity review found no registered crop-dependent trellis/orchard/tool recipe that unlocks after its crop, because those recipe chains are absent. That absence prevents proving circularity; it does not prove the future economy safe. Milestone 14 must not add acquisition or recipe content under this approval gate.
+Potential circularity review found no registered crop-dependent trellis/orchard/tool recipe that unlocks after its crop, because those recipe chains are absent. That absence prevents proving circularity; it does not prove the future economy safe. Milestone 14 correctly added no acquisition or recipe content under this approval gate.
 
 ## 18. Tier gaps
 
@@ -587,10 +587,10 @@ Repository finding: The proposal contains 74 complete rows, and the owner explic
 Recommended answer: APPROVED as answered on 2026-08-01; retain the approved bands unless the owner later issues a specific revision.
 Alternatives: Approve by category/band; revise individual rows; reject and request rebalance.
 Reason: The direct instruction explicitly approves every proposed row and satisfies the row-level approval gate.
-Implementation consequence: The progression values are authorized for a later Milestone 14, but implementation remains blocked by unresolved blocking behavior decisions and separate authorization to begin Milestone 14.
+Implementation consequence: The progression values were authorized for Milestone 14 and are implemented unchanged in `ddc488aa6a423a125510bea1a6556117e9ca6d0e`.
 Progression consequence: The 74 approved values are now the sole progression-table authority.
-Blocking or non-blocking: RESOLVED for progression rows; Milestone 14 remains blocked on behavior decisions.
-Documents affected: Proposal; the established decision log may be updated when the remaining decisions are answered without mixing into pre-existing Corrective Milestone 11 work.
+Blocking or non-blocking: RESOLVED; all behavior decisions and the later implementation authorization were supplied.
+Documents affected: Proposal, implementation status, test matrix, and the established decision log consequences; Corrective Milestone 11 remains separate.
 Follow-up validation: Continue verifying 74 approved rows and recalculate distribution after any owner revision.
 
 
@@ -598,11 +598,11 @@ Follow-up validation: Continue verifying 74 approved rows and recalculate distri
 
 Every progression row is APPROVED by direct owner instruction dated 2026-08-01.
 
-DECISION-001 through DECISION-015 are APPROVED. DECISION-015 is resolved by explicit deferral to future sprints.
+DECISION-001 through DECISION-016 are APPROVED. DECISION-015 is resolved by explicit deferral to future sprints and DECISION-016 records final table approval.
 
 Silence is not approval.
 
-The Milestone 13 approval gate is satisfied. Milestone 14 cannot begin until the owner gives separate explicit authorization to start it.
+The Milestone 13 approval gate was satisfied and the owner subsequently authorized Milestones 14, 15, and 16. Those implementations preserve this table unchanged.
 
 Practical response forms:
 
@@ -616,10 +616,10 @@ Revise species <registry_id> from <old band> to <new band>
 Reject decision <ID>: <reason>
 ~~~
 
-The owner's direct progression instruction approves all 74 rows. Subsequent direct answers approve DECISION-001 through DECISION-015, including the native-vanilla exclusion, grape masking exception, and future-sprint acquisition/economy deferral.
+The owner's direct progression instruction approves all 74 rows. Subsequent direct answers approve DECISION-001 through DECISION-016, including the native-vanilla exclusion, grape masking exception, future-sprint acquisition/economy deferral, and final-table approval.
 
-## 25. Hard stop
+## 25. Historical hard stop and final implementation status
 
-Milestone 13 is design-only and remains uncommitted. All progression rows and behavior decisions are approved. No production behavior, tests, resources, registrations, localization, data, saves, networking, or Milestone 14 work has begun.
+The original Milestone 13 hard stop prohibited implementation until separate owner authorization. That authorization was later supplied. Milestone 14 implemented the 74 immutable requirements, Milestone 15 implemented the server-authoritative new-planting gate, and Milestone 16 implemented viewer-specific identity without changing any approved value.
 
-Status: Milestone 13 approval gate complete; awaiting explicit Milestone 14 authorization.
+Status: Approved design implemented exactly; Milestone 17 closeout is approved.

@@ -1,9 +1,9 @@
 # Farming Content Master Catalog
 
-Milestone: 12 discovery
+Milestone: 12 discovery; Milestone 17 final reconciliation overlay
 Repository: `C:/projects/britannia/mod/Britannia_Mod`
 Branch/HEAD inspected: `Farming` / `a2c2e73e0a7500c8c5c2628f51292fae55f67428`
-Status: **Discovery inventory; no progression requirement is proposed or approved here.**
+Status: **Approved Farming Skill Progression implementation; the 74-species roster and Milestone 17 final reconciliation are complete on `Farming`.**
 
 ## Scope and counting rules
 
@@ -38,7 +38,7 @@ The table below records the per-species identity and every varying planting cont
 - Six compatibility materials use vanilla item classes: Potato, Wheat Seeds, Brown Mushroom, Red Mushroom, Pumpkin Seeds, and Melon Seeds. The table marks them `vanilla`. They enter the custom farming path through `FarmingBlock.useItemOn`/`CropRegistry.bySeed`, but retain vanilla behavior elsewhere.
 - Grapes use one `GrapeSeedsItem` registry ID with stack-held variety data. It has both a FarmingBlock path and an active fallback `ItemNameBlockItem`/`GrapeVineBlock` placement path.
 - Flower seeds are ordinary `Item` instances. `FlowerRegistry` is the sole one-to-one seed/species/harvest mapping. All seven plant through `FlowerPlantingService`, persist a server-selected colour, and regrow from stage 1 after harvest.
-- Current minimum Farming skill to **plant** is `none` for all 74 entries. Normal crops award the existing `PLANT` action after success; flower planting deliberately awards none. The FarmingBlock grape branch currently omits the award while the duplicate item route awards it.
+- The original Milestone 12 discovery snapshot recorded no skill gate. The current approved minimums are the 74 `APPROVED` rows in `FARMING_SKILL_PROGRESSION_PROPOSAL.md`, implemented as immutable definition metadata and reconciled by `FarmingSkillProgressionCloseoutTest`. Normal crops retain the existing `PLANT` award after success; flower planting deliberately awards none. Grapes retain their established ungated planting routes.
 - There are no active registered bulb, tuber-item, sapling, cutting, start, spore-item, rhizome, pit, kernel, graft, slip, or transplant planting classes. Potato/Yam are described botanically as tubers but use seed-named `CropSeedItem`s; mushrooms use the mushroom item itself.
 - No farming species has a JSON recipe, farming loot-table acquisition entry, merchant/trade entry, or world-generation acquisition entry under `src/main/resources/data`. Successful crop harvest can return the definition's seed item according to its current registered seed-return contract; `CropSeedExtractor` also supplies renewal for Corn, Lime, Orange, Olive, grapes, and all harvested flowers. Creative inventory supplies the explicitly listed custom seeds/flowers, dynamic grape varieties, and Wheat Seeds. These are renewal/administrative paths, not a complete initial survival acquisition or economic story.
 
@@ -135,9 +135,38 @@ Legend: lifecycle `A` annual, `T` trellis perennial (requires trellis), `P` othe
 
 Non-species lookup aliases are: `carrots -> carrot`, `sweet_potato -> yam`, `mandrake_root -> mandrake`, `strawberries -> strawberry`, and `blueberries -> blueberry`. They do not introduce additional planting items.
 
+## Milestone 17 final progression overlay
+
+The catalog roster and planting IDs remain unchanged: 74 species, 74 distinct planting items, 67 crops, and seven flowers. Current approved requirements and implementation status are summarized below; the full per-row rationale remains in the approved proposal and the executable values remain on `CropDefinition`/`FlowerDefinition`.
+
+| Farming | Count | Species | Final policy status |
+|---:|---:|---|---|
+| 0 | 4 | Carrot, Lettuce, Green Onion, Wheat | Implemented |
+| 5 | 5 | Potato, Vanilla Potato, Peas, Turnips, Radish | Implemented |
+| 10 | 5 | Squash, Cabbage, Yellow Onion, Rye, Campion | Implemented |
+| 15 | 4 | Barley, Oats, Strawberry, Parsnip | Implemented |
+| 20 | 5 | Pumpkin, Garlic, Flax, Snow Peas, Poppy | Implemented |
+| 25 | 4 | Beans, Vanilla Pumpkin, Raspberry, Broccoli | Implemented |
+| 30 | 5 | Corn, Mustard, Blackberry, Cauliflower, Hyacinth | Implemented |
+| 35 | 4 | Blueberry, Cucumbers, Yam, Rutabaga | Implemented |
+| 40 | 5 | Tomato, Huckleberry, Cotton, Celery, Snowdrop | Implemented |
+| 45 | 4 | Vanilla Melon, Mulberry, Bell Peppers, Rhubarb | Implemented |
+| 50 | 4 | Watermelon, Elderberry, Hemp, Lily | Implemented |
+| 55 | 4 | Brown Mushroom, Apple, Peach, Cantaloupe | Implemented |
+| 60 | 5 | Red Mushroom, Cherries, Hops, Pear, Honeydew | Implemented |
+| 65 | 4 | Pineapple, Plum, Tobacco, Foxglove | Implemented |
+| 70 | 4 | Ginseng, Cranberry, Lemon, Orange | Implemented |
+| 75 | 3 | Rice, Lime, Olive | Implemented |
+| 80 | 2 | Banana, Grapes | Implemented; Grapes identification only, planting ungated |
+| 85 | 1 | Nightshade | Implemented |
+| 90 | 1 | Mandrake | Implemented |
+| 95 | 1 | Orfluer | Implemented |
+
+The six native compatibility items (Potato, Wheat Seeds, Brown Mushroom, Red Mushroom, Pumpkin Seeds, and Melon Seeds) remain explicit catalog records and approved reference values, but their native vanilla routes receive no new gate or masking behavior. The 68 custom planting items have explicit viewer-presentation policies. All applicable custom crop/flower planting routes use the server gate; Grapes remains the approved ungated exception.
+
 ## Machine-editable representation
 
-This repository has no established catalog data format, so the required representation is CSV. `profile_ref` points to the complete authoritative nutrient/hydration/climate declaration; `current_plant_skill` is intentionally `NONE`, not a proposed value.
+This repository has no established catalog data format, so the original Milestone 12 representation remains CSV. `profile_ref` points to the complete authoritative nutrient/hydration/climate declaration; its historical `current_plant_skill=NONE` values describe the accepted discovery baseline, while the Milestone 17 overlay above and the approved proposal carry the implemented progression.
 
 ```csv
 ordinal,species_id,display_name,primary_category,planting_item_id,material,item_class,lifecycle,support,current_plant_skill,status,profile_ref

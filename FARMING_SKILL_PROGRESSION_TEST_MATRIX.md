@@ -1,6 +1,6 @@
 # Farming Skill Progression Test Matrix
 
-Milestone: 16 - Player-Specific Seed Identification and UI
+Milestone: 17 - Progression Validation, Gameplay QA, and Closeout
 Status: Approved
 
 | Area | Required evidence | Automated coverage | Current result |
@@ -42,6 +42,89 @@ Status: Approved
 | Farming/flower regressions | Existing compile/resource/test suite | Full Gradle validation | PASS - clean full suite |
 | Placeholder integrity | Corrective Milestone 11 generator check remains non-writing | `generate_flower_placeholders.py --check` | PASS - 182 files plus ledger |
 | Whitespace | Repository diff check | `git diff --check` | PASS |
+
+## Milestone 17 cross-system closeout
+
+| Area | Evidence | Result |
+|---|---|---|
+| Catalog/proposal/runtime | One parser-driven loop over 74 catalog rows, 74 approved proposal rows, and 74 runtime definitions | PASS - `FarmingSkillProgressionCloseoutTest` |
+| Planting mappings | 74 distinct catalog and proposal planting IDs; runtime bootstrap 74 | PASS automated and dedicated bootstrap |
+| Policy totals | 74 cultivation decisions; 74 presentation decisions; 68 maskable custom items; six native exclusions | PASS automated |
+| Unified threshold | `-1`, `-0.01`, exact, `+0.01`, and `+1` identification/cultivation comparison | PASS for all ordinary applicable policies |
+| Approved exceptions | Grapes identity at 80 with ungated planting; six native routes untouched | PASS automated/source boundary |
+| Load/bypass | Unavailable fails closed; Creative/operator level 2+ bypasses the threshold | PASS automated |
+| Stack integrity | One-item stacks retain item, count, and components through all policy evaluations | PASS automated |
+| Poppy | Ordinary 20; stage 7 remains stage 6 + Farming 100 + tagged knife + authorization | PASS automated/source boundary |
+| Denial ordering | Crop before plant mutation; flower before snapshot, colour RNG, mutation, and shrink | PASS deterministic source-order assertion plus existing transaction counters |
+| Production scope | No M17 production Java/resource change and no deferred feature | PASS scoped diff audit |
+
+Focused command:
+
+~~~text
+.\gradlew.bat test --tests com.seggellion.britannia_mod.farming.FarmingSkillProgressionCloseoutTest --console=plain --no-configuration-cache
+~~~
+
+Current focused result: PASS, three tests. Final full-suite and runtime rows are recorded below after execution.
+
+## Milestone 17 final validation accounting - 2026-08-02
+
+| Row | Classification | Evidence/result |
+|---|---|---|
+| Closeout reconciliation | PASSED - reexecuted in M17 | 3/3 cross-system tests |
+| Complete automation | PASSED - reexecuted in M17 | 15 suites, 108 tests, zero failure/error/skip |
+| Placeholder/model contract | PASSED - reexecuted in M17 | 182 generated outputs plus ledger; existing Corrective M11 suites pass |
+| Dedicated server/common | PASSED - reexecuted in M17 | 74 species, 67 crops, seven flowers, 74 planting items; no M16 client-class load |
+| Client startup | PASSED - reexecuted in M17 | M16 mixins, resources, OpenAL, sound engine, and render atlases completed |
+| Crop/flower live boundaries | PASSED - referenced approved M15 evidence | No M17 production change; not reexecuted post-commit |
+| Two-client identification/UI | PASSED - referenced approved M16 evidence | No M17 production change; not reexecuted post-commit |
+| Final combined live matrix | PASSED - reexecuted after M16 and before the M17 closeout commit in a fresh ignored runtime | Dedicated server, `M17Low`, `M17High`, disposable `m17-combined-world`; identification/cultivation, open-UI gain/loss, shared chest, grapes, all flowers, Poppy, bypass/fail-closed, transitions, restart, and protection passed |
+| Recipe book | NOT PRESENT / NOT APPLICABLE | No applicable farming recipes |
+| Installed recipe viewers | NOT PRESENT | No JEI/EMI/REI integration installed |
+| Merchant/trade/custom compatibility UI | NOT PRESENT / NOT APPLICABLE | No applicable farming surface |
+| External viewers | BEST EFFORT | Shared `ItemStack` policy where used; no broad compatibility added |
+| Chat-link visible text | UNAVOIDABLE DISCLOSURE | Server-serialized visible component; hover remains viewer policy; no broad rewrite approved |
+| Pickup text | NOT PRESENT | Ordinary vanilla pickup path emits no identity text |
+| Advanced tooltip registry/components | PASSED approved debug boundary | Diagnostics may reveal registry/component identity only in advanced mode |
+| Formal profiling/packet benchmark | NOT EXECUTED / deferred | Structured practical and source review only |
+
+Rows reexecuted in M17 are not conflated with inherited evidence. The fresh combined matrix satisfies the remaining material acceptance row, and the owner has approved the Milestone 17 closeout.
+
+## Fresh combined runtime rows - 2026-08-02
+
+| Row | Classification | Fresh result/evidence |
+|---|---|---|
+| Two real viewers / one chest | PASSED | `M17Low` Farming 19 and `M17High` Farming 100 simultaneously rendered generic versus exact names from the same server stacks; no cross-view contamination |
+| Representative crop | PASSED | Corn denied below 30 with zero mutation/consumption/award/stat/success effects; high planted once with one award invocation and established success sound |
+| Representative flower | PASSED | Hyacinth denied below 30 with zero colour selection; high planted once with exactly one colour selection |
+| Open-UI gain | PASSED | Poppy generic at 19, exact at 20 on new revision without screen close/stack replacement, then planted |
+| Open-UI loss | PASSED | Exact at 100, generic at 19, new Corn denied; existing crop/flower and flower colour remained |
+| Grapes | PASSED | Concord and Wild Grape masked as `a brown seed` only for low; components unchanged; low Farming 0 planted Concord; `NOT_APPLICABLE` gate result; variety persisted |
+| Campion 10 | PASSED | 9 rejected, 10 planted, colour delta 0/1 |
+| Poppy 20 | PASSED | 19 rejected, 20 planted, colour delta 0/1 |
+| Hyacinth 30 | PASSED | 29 rejected, 30 planted, colour delta 0/1 |
+| Snowdrop 40 | PASSED | 39 rejected, 40 planted, colour delta 0/1 |
+| Lily 50 | PASSED | 49 rejected, 50 planted, colour delta 0/1 |
+| Foxglove 65 | PASSED | 64 rejected, 65 planted, colour delta 0/1 |
+| Orfluer 95 | PASSED | 94 rejected, 95 planted, colour delta 0/1 |
+| Poppy mastery | PASSED | 99+knife remained 6/no damage; 100+wrong tool remained 6/no damage; 100+knife reached 7/one damage/no output; colour retained; requalification required |
+| Creative | PASSED | Exact identity at effective 0, threshold bypass, no consumption, occupied/downstream rule retained, real-name search policy refreshed |
+| Operator 2 outside Creative | PASSED | Exact identity and threshold bypass; downstream rules retained; ordinary behavior returned after de-op |
+| `NOT_LOADED` | PASSED | Generic client policy; live planting denied, count 1, no mutation |
+| `LOADING` | PASSED | Generic client policy; live planting denied, count 1, no mutation |
+| `UNAVAILABLE` | PASSED | Generic client policy; live planting denied, count 1, no mutation |
+| `AVAILABLE` | PASSED | Exact 30 update took effect immediately and Corn planted |
+| Stale revision | PASSED | Intentionally stale real `SkillSyncPayload` did not replace revision 38; next accepted respawn sync advanced to 39 |
+| Reconnect epoch | PASSED | Both clients reset to revision -1/`NOT_LOADED`, observed `LOADING`, then accepted new epoch revisions |
+| Respawn | PASSED | Real client respawn request followed by authoritative revision 39 |
+| Dimension change | PASSED | Nether/Overworld transfer completed with authoritative current state |
+| Server restart | PASSED | Both clients reconnected; saved crop, Poppy stage/colour, chest, and Concord variety loaded |
+| Resource reload | PASSED | Low client reload completed successfully at unchanged revision 21; generic Poppy presentation retained |
+| UI surfaces | PASSED / documented boundary | Inventory/hotbar stack, shared container, normal/advanced tooltip, narration, dropped labels, Creative/admin/search policy; chat visible text remains unavoidable while viewer-local hover stays masked; absent recipe/viewer surfaces classified above |
+| Stack/save/network audit | PASSED | IDs, counts, component maps, grape custom data, custom-name absence, and chest component hash retained; no saved eligibility/presentation; no client skill authority |
+| Protected flower | PASSED | Ordinary attempt left protected Creative Poppy state/colour unchanged, no damage/output |
+| M11 model/resources | PASSED | 49 canonical models, 49 base, 49 masks, 0 separate pass models, 0 third textures; dedicated load and client reload safe |
+
+Fresh ignored evidence paths: `build/m16-live-runtime/run/m17-server/m17-evidence/server.txt`, `build/m16-live-runtime/run/m17-client-low/m17-evidence/client-low.txt`, `build/m16-live-runtime/run/m17-client-high/m17-evidence/client-high.txt`, the associated `logs/latest.log`, and `build/m16-live-runtime/m17-*-process*.log`. Runtime evidence is ignored and untracked.
 
 ## Milestone 16 focused coverage
 
@@ -163,7 +246,7 @@ Environment: a new ignored isolated runtime used a disposable saved world, one d
 | Save/restart/reconnect | Existing Poppy persistent state and Potato identity/stage/progress survived restart; clients reconnected | PASS |
 | Milestone 16 boundary | No player-specific seed names, brown-seed presentation, tooltip, narration, hover, or new UI packet | PASS - scoped source/diff audit |
 
-Those critical rows are closed by the final pass below. The remaining packet-per-species, adjacent-target held-click, complete environment matrix, formal-video, and owner-world rows are optional. Milestone 16 remains unstarted.
+Those critical rows are closed by the final pass below. The remaining packet-per-species, adjacent-target held-click, complete environment matrix, formal-video, and owner-world rows are optional. At the time of this historical Milestone 15 continuation, Milestone 16 remained unstarted; it was subsequently completed and approved.
 
 ## Final critical runtime closure - 2026-08-01
 
@@ -197,4 +280,4 @@ Environment: the ignored isolated runtime used a disposable Temperate fixture at
 
 The complete automated suite remains 13 suites / 97 tests / 0 failures / 0 errors / 0 skipped. The placeholder generator check remains 182 files plus the ledger, and `git diff --check` remains clean apart from line-ending/inaccessible-global-ignore warnings. No new regression test was added because no production defect was found.
 
-Milestone 15 is **Validated, awaiting owner approval**.
+This historical pass left Milestone 15 validated and awaiting approval; Milestone 15 was subsequently approved and committed as recorded at the top-level feature status.
