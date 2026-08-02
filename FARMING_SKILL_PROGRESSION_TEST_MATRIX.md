@@ -1,7 +1,7 @@
 # Farming Skill Progression Test Matrix
 
-Milestone: 15 - Server-Authoritative Cultivation Gate
-Status: Validated, awaiting owner approval
+Milestone: 16 - Player-Specific Seed Identification and UI
+Status: Approved
 
 | Area | Required evidence | Automated coverage | Current result |
 |---|---|---|---|
@@ -28,20 +28,87 @@ Status: Validated, awaiting owner approval
 | Flowers | All seven below/exact thresholds; denial before snapshot, colour RNG, mutation, consumption, and feedback | Gate iteration plus `FlowerLifecycleTest` selector/mutation counters | PASS - focused suite and live server matrix |
 | Vanilla boundary | No native planting interception/gating | Source boundary assertion and scoped diff audit | PASS - focused suite and real vanilla farmland packet |
 | Grape boundary | Crop metadata 80; existing grape planting/NBT/names untouched and active gate returns `NOT_APPLICABLE` | Exact reconciliation and source boundary assertion | PASS - focused suite and live existing farming-block transaction |
-| Seed names | No name, tooltip, narration, or `a brown seed` implementation | Source boundary assertion and scoped diff audit | PASS - focused suite |
+| Seed names | Viewer-local generic names below requirement and exact names at/above it | All 74 mappings plus category and sentinel assertions | PASS - Milestone 16 focused suite |
 | Failure side effects | No seed loss, target mutation, crop/flower initialization, colour roll, Farming award, success sound, or fallback | Flower transaction counters plus source-order audit | PASS - focused suite |
 | Feedback | Localized action-bar failure; generic unidentified material and current/required values; no species leak | Translation JSON parsing and key/category assertions | PASS - focused suite |
-| UI/sync | Denial resync only; no player-specific item naming, tooltip, narration, hover text, or new skill packet | Scoped diff audit | PASS - focused suite |
+| UI/sync | Viewer-specific name/tooltip/narration/container/Creative/search/drop-label projection from authoritative state | Pure surface matrix, client mixin/source boundary, revision refresh | PASS automated and corrected two-client live UI |
 | One-item stack | Denial evaluation and production branch contain no shrink/durability mutation | One-item policy assertion plus source-order audit | PASS - automated and real one-item success/repeat packets |
 | Both hands/repeated clicks | Denial consumes the interaction without mutation; success reuses existing occupancy/atomic transaction guards | Source-order audit plus flower contention transaction | PASS - real main/off combinations and rapid repeat packets |
 | Multiplayer differing skills | Identical definition is evaluated independently from each current server skill; flower contention has one winner | Independent-subject policy test plus two-planter transaction test | PASS - real two-client separate targets and same-target orderings |
 | Skill gain/loss | Every attempt reads a fresh server snapshot; the same definition changes eligibility without stack metadata | Repeated evaluation at 0/84/85/100 plus load-state lifecycle inspection | PASS - focused suite |
 | Save/reconnect | No eligibility is persisted to items/plants; login resets state to loading and logout clears state | Source inspection and existing save/load regressions | PASS - automated plus disposable-world restart/reconnect |
 | Saves | No requirement field in NBT/components or migration | Scoped diff audit and compatibility analysis | PASS - inspection |
-| Network | No packet or synchronization change | Scoped diff audit | PASS - inspection |
+| Network | Versioned skill state, revision ordering, bypass, lifecycle resync, reconnect reset | Client projection tests and source inspection | PASS automated plus live gain/loss, stale revision, dimension, respawn, and restart/reconnect |
 | Farming/flower regressions | Existing compile/resource/test suite | Full Gradle validation | PASS - clean full suite |
 | Placeholder integrity | Corrective Milestone 11 generator check remains non-writing | `generate_flower_placeholders.py --check` | PASS - 182 files plus ledger |
 | Whitespace | Repository diff check | `git diff --check` | PASS |
+
+## Milestone 16 focused coverage
+
+| Area | Required evidence | Current result |
+|---|---|---|
+| Complete policy coverage | All 74 approved species have an explicit mapping; 68 custom planting items are masked and six native compatibility rows are explicitly outside scope | PASS automated |
+| Inclusive identification | Below requirement generic; exact and above requirement identified | PASS for all 74 definitions, with excluded native rows asserted separately |
+| Material categories | Custom crop seeds, flower seeds, grape varieties, fail-closed planting material, and native boundary use approved policy | PASS automated |
+| Grapes | Every variety remains one Grapes requirement at 80; below uses `a brown seed`; exact identifies; stack data unchanged | PASS automated plus live Wild Grape/Cabernet Sauvignon two-viewer UI |
+| Poppy | Ordinary identity threshold 20 remains independent of stage-7 mastery 100 | PASS automated |
+| Per-viewer behavior | Same logical stack can be generic for one viewer and exact for another | PASS pure test and live two-client inventory/shared-chest/drop-label UI |
+| Dynamic refresh | Current skill is evaluated per snapshot; gain can reveal without reconnect; stale revisions are ignored | PASS automated and live 0 -> 20 -> 100 -> 19 open-container sequence |
+| Load failure | NOT_LOADED, LOADING, and UNAVAILABLE hide identity even when the carried numeric value is high | PASS automated |
+| Creative/operator | Server-supplied identification bypass reveals exact identity in every state | PASS automated and live Creative plus op2 outside Creative |
+| Passive privacy | Generic name, tooltip, and narration carry no exact requirement or current Farming value | PASS automated policy assertions |
+| UI surfaces | Inventory, hotbar, off-hand, containers, dropped label, pickup/chat hover, Creative inventory/search, recipe/compatibility surfaces share one policy | PASS supported live surfaces; pickup text NOT PRESENT; serialized chat-link text UNAVOIDABLE DISCLOSURE |
+| Advanced/debug boundary | Unidentified normal tooltip is generic-only; advanced retains registry/component diagnostics | PASS source inspection; live advanced-tooltip review pending |
+| Creative search refresh | Accepted revision rebuilds search trees and refreshes an open Creative search | PASS live actual Search tab query for `orfluer` returned `Orfluer Seeds` |
+| Item integrity | Presentation does not write components, NBT, name, count, variety, or requirement to the stack | PASS component-equivalence test and source audit |
+| Connection lifecycle | Atomic immutable snapshots; stale packet rejection; new-session revision epoch reset | PASS automated |
+| Dedicated-server boundary | Client mixins/accessor/event bridge remain in client-only packages/configuration | PASS compile/source audit and isolated dedicated bootstrap |
+| Vanilla compatibility | Six native routes receive no identity, gate, or recipe behavior under DECISION-012 | PASS automated/source audit |
+| Recipes/viewers | No farming recipe/viewer behavior is added because no applicable farming recipes exist | PASS scoped audit; external viewers documented best effort |
+| Existing gameplay | Cultivation gate, grape placement, flower lifecycle/color/protection, save data, acquisition, and economy remain unchanged | PASS source/focused regressions and complete 105-test suite |
+
+## Milestone 16 focused test command
+
+~~~text
+.\gradlew.bat test --tests com.seggellion.britannia_mod.farming.FarmingSkillIdentificationTest --tests com.seggellion.britannia_mod.farming.FarmingSkillRequirementTest --console=plain --no-configuration-cache
+~~~
+
+The focused Milestone 16 selection passes 15 tests. The material live acceptance rows are closed by the two-client pass below.
+
+## Milestone 16 live UI validation - 2026-08-01
+
+Environment: ignored `build/m16-live-runtime`, one dedicated NeoForge server, two real clients (`M16Low`/`M16High`), one disposable world, server-only ephemeral skill assignments, and production client sync/presentation code. No owner world or tracked runtime evidence was used. First-pass evidence is retained with `pass1` names; corrected-pass and restart evidence is in the current ignored server/client evidence files.
+
+| Live area | Evidence | Result |
+|---|---|---|
+| Equivalent inventories | Carrot, Potato, Corn, Rice, Nightshade, Apple, seven flowers, two grape varieties, identical counts/components/off-hand | PASS - low generic by threshold; high exact; server signatures equal |
+| Shared chest | Same Corn, Poppy, Wild Grape, Cabernet Sauvignon slots open on both clients | PASS - viewer-isolated names; server slots unchanged before/after |
+| Open-UI gain/loss | Farming 0 -> 20 -> 100 -> 19 while `ContainerScreen` remained open | PASS - immediate names/tooltips/narration; no replacement or mutation |
+| Load states | Connection `NOT_LOADED`; live `LOADING`; real API failure `UNAVAILABLE`; harness `AVAILABLE` | PASS - generic fail closed; available uses current value |
+| Stale packet | Accepted revision 12 followed by deliberate revision 11/value 100 | PASS - client remained revision 12/value 19 |
+| Dimension/respawn | Overworld -> Nether -> Overworld; real death and client respawn packet | PASS - authoritative revisions 19/20/21 and correct presentation |
+| Server restart/reconnect | Stop/restart while both clients remained open | PASS - each reset to NOT_LOADED/-1, then accepted new epoch LOADING/AVAILABLE |
+| Resource reload | Actual `reloadResourcePacks()` on both clients | PASS - `failure=null`; snapshot and localized identities retained |
+| Narration | `GameNarrator.sayNow` invoked with actual projected Poppy component on revisions | PASS - generic/exact/generic follows visual state; no raw key |
+| Creative/search | Farming 0 Creative bypass; actual Search tab query `orfluer`; return to Survival | PASS - `Orfluer Seeds` found; Survival generic restored |
+| Operator | Permission level 2+ outside Creative, then de-op | PASS - exact while bypass true; ordinary policy restored |
+| Grapes | Wild Grape and Cabernet Sauvignon custom-data stacks | PASS - low `a brown seed`; high exact name/variety tooltip; data unchanged |
+| All flowers | Campion, Poppy, Hyacinth, Snowdrop, Lily, Foxglove, Orfluer below and above live; exact thresholds automated | PASS - low generic, high/exact real; zero tooltip/narration leak |
+| 68-item rendered audit | Real client hover-name and normal-tooltip components at fail-closed/available revisions | PASS - 68 maskable, seven flowers, zero ordinary species leaks |
+| Dropped labels | Intentionally visible Poppy entity name; source stack had no custom name | PASS after correction - low generic, high exact; crop/flower/grapes likewise masked |
+| Pickup | Equivalent Poppy entities collected | NOT PRESENT - vanilla ordinary pickup emitted no textual message/overlay |
+| Chat link | Shared `ItemStack.getDisplayName()` link | UNAVOIDABLE DISCLOSURE - visible component serialized as `[Poppy Seeds]`; hover stack remains client-policy/component preserving; no broad rewrite approved |
+| Recipes/viewers | Vanilla farming recipes, guidebook, custom menu, merchant farming trade, JEI/EMI/REI | NOT PRESENT / NOT APPLICABLE; global ItemStack path covered by chest/Creative |
+| Stack equality | Registry ID, class, count, components/custom data, grape variety, custom-name state before/after | PASS - no presentation mutation or viewer cross-contamination |
+| Cultivation security | Locally forced identity concept at low; forced generic concept at high | PASS - Corn/Poppy low denied, high eligible; Grapes NOT_APPLICABLE |
+| Client/cache/performance | Rapid revisions, container, hotbar/off-hand, search, reload, transitions, many hover resolves | PASS structured observation - no stale stack name, frame packet, rebuild loop, exception, or visible stall |
+| Dedicated isolation | Disposable dedicated-server boot and 74/67/7/74 bootstrap | PASS - no M16 client classloading failure; only established unrelated warnings |
+
+Defect/correction: the first run proved that the newly implemented login, logout, and dropped-label methods were absent from `ClientModSetup` event registration. The minimal production correction registers those existing handlers. `FarmingSkillIdentificationTest` now asserts all three registrations. The focused suite, full 14-suite/105-test run, placeholder check, and corrected two-client scenario pass. Temporary skill hooks, drivers, runtime identity exemption, and custom run configurations were removed after evidence capture.
+
+Known architecture outcomes: ordinary unnamed item entities have no vanilla visible label; the deliberately visible entity path now masks per viewer. Ordinary pickup has no textual identity surface. Server-composed chat-link visible text is fixed before receipt and is documented as an approved `UNAVOIDABLE DISCLOSURE`; broad shared-component packet rewriting was not added. No applicable recipe/merchant/guidebook/custom farming menu or external recipe viewer is installed.
+
+Milestone 16 is **Approved**.
 
 ## Milestone 15 focused test command
 

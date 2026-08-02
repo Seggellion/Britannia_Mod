@@ -184,7 +184,7 @@ class FarmingSkillRequirementTest {
     }
 
     @Test
-    void milestoneFifteenKeepsGrapeAndViewerBehaviorOutOfScope() throws IOException {
+    void milestoneSixteenAddsViewerPolicyWithoutChangingGrapePlanting() throws IOException {
         String grapes = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/item/GrapeSeedsItem.java"));
         assertFalse(grapes.contains("FarmingCultivationGate"));
@@ -199,6 +199,13 @@ class FarmingSkillRequirementTest {
         assertTrue(flowerPlanting.contains("FarmingCultivationGate.evaluateResolved("));
         assertFalse(farmingBlock.contains("a brown seed"));
         assertFalse(flowerPlanting.contains("a brown seed"));
+
+        String presentation = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/farming/FarmingPlantingItemPresentation.java"));
+        String categories = Files.readString(PROJECT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/farming/FarmingPlantingMaterialCategory.java"));
+        assertTrue(categories.contains("GRAPES(\"item.britannia_mod.unidentified_grape_seed\")"));
+        assertTrue(presentation.contains("identificationBypass"));
 
         String commonSetup = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/ModEventHandler.java"));

@@ -576,6 +576,9 @@ public class ClientModSetup {
             NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
             NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
             NeoForge.EVENT_BUS.addListener(ClientEventHandler::onBlockRightClick);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientLogin);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientLogout);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onRenderNameTag);
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);

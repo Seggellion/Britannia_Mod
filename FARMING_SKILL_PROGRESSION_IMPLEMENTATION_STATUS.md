@@ -1,11 +1,12 @@
 # Farming Skill Progression Implementation Status
 
-Milestone: 15 - Server-Authoritative Cultivation Gate
+Milestone: 16 - Player-Specific Seed Identification and UI
 Branch: `Farming`
 Milestone 14 status: Approved
 Milestone 14 commit: `ddc488aa6a423a125510bea1a6556117e9ca6d0e` (`feat(farming): add approved crop skill requirements`)
 Milestone 15 status: Approved
-Milestone 16 status: In progress
+Milestone 15 commit: `7db9d1d549640d1389f11aa8416e5e3d2fe325d2` (`feat(farming): gate planting by farming skill`)
+Milestone 16 status: Approved
 Milestone 12 commit: `ca696c602ea9fe47b7a8ec30069ba17bc180d5cf` (`docs(farming): inventory plantable content and skill integration points`)
 Milestone 13 commit: `922cc766c34628dd4cd86d49cec01eaeeb91eb4e` (`docs(farming): approve crop skill progression`)
 
@@ -43,15 +44,15 @@ The test reconciliation parses `FARMING_CONTENT_MASTER_CATALOG.md` and `FARMING_
 
 ## Save and network compatibility
 
-The requirement is immutable definition metadata. It is not written to crop, flower, tree, seed-item, or planted-state NBT and is not sent in a packet. Existing worlds already persist species identity and therefore resolve the current definition automatically. No save migration or legacy requirement fallback is needed. A future approved threshold change would change future eligibility without rewriting existing plantings. This follows approved DECISION-010 exactly: "Gate only new planting; existing crops continue growing, receiving care, and being harvested. Existing protection rules continue independently." No network change is required.
+The requirement remains immutable definition metadata and is not written to crop, flower, tree, seed-item, or planted-state NBT. Existing worlds already persist species identity and therefore resolve the current definition automatically; no save migration or legacy requirement fallback is needed. Milestone 16 extends the existing server-to-client skill snapshot with a wire version, load state, monotonic per-session revision, and Creative/operator identification-bypass bit. The client stores each snapshot atomically, rejects stale revisions, and clears the connection epoch on login/logout. Identity remains viewer-local derived presentation, never item data.
 
 ## Special boundaries
 
 - Ordinary Poppy identification/cultivation metadata is Farming 20. The existing stage-7 mastery constant remains Farming 100 plus stage 6, an approved skinning knife, and mutation authorization. Neither value derives from the other.
 - Native vanilla planting behavior remains untouched.
-- The existing grape system remains untouched. The approved future localized under-skilled presentation `a brown seed` is not implemented.
+- The existing grape variety, NBT/component, planting, rendering, and harvesting system remains untouched. Milestone 16 projects the localized under-skilled name `a brown seed` without mutating the stack.
 - Acquisition, recipes, merchants, natural generation, loot, Rails/economy, and pricing remain deferred.
-- Milestone 16 viewer-specific identification and Milestone 17 final regression/closeout remain deferred and unstarted.
+- Milestone 17 final regression/closeout remains deferred and unstarted.
 
 ## Milestone 15 cultivation gate
 
@@ -63,16 +64,52 @@ The ordinary-crop gate is in `FarmingBlock.tryPlantSeed` immediately after the h
 
 The flower gate is in `FlowerPlantingService.execute` after registered seed/definition and target validation and before the soil snapshot and the only random colour-selection call. A denial therefore cannot replace the block, create or initialize the flower block entity, roll a colour, consume a seed, play the success sound, or write persistent state. Existing successful flower rollback and contention behavior remains intact.
 
-Grape planting remains outside both active gates. Grapes retains Farming 80 metadata, but the established farming-block, grape-item, vine, variety, component/NBT, rendering, naming, and harvesting behavior is unchanged. The approved `a brown seed` presentation remains deferred to Milestone 16.
+Grape planting remains outside both active gates. Grapes retains Farming 80 metadata, and the established farming-block, grape-item, vine, variety, component/NBT, rendering, and harvesting behavior is unchanged. Milestone 16 changes only the viewer-local projected name below Farming 80 to `a brown seed`.
 
 Denials are server-originated localized action-bar messages. Insufficient-skill messages use only `Unidentified Seeds`, `Unidentified Flower Seeds`, or `Unidentified Planting Material` plus current and required Farming values. They do not expose a species identity. The server consumes the interaction and explicitly rebroadcasts inventory/menu and target-block state on denial, preventing fallback placement and client prediction drift.
 
+## Milestone 16 player-specific identification
+
+`FarmingPlantingItemPresentation` is the single pure identity policy. It resolves the current authoritative species requirement on demand, compares the current synchronized viewer Farming value inclusively, applies the approved Creative/operator bypass, and returns either the existing exact name or the approved localized generic presentation. It does not cache learned identity and never writes to an `ItemStack`.
+
+The approved categories are `Unidentified Seeds` for ordinary custom crop seeds (including seed-named Potato and Yam), `Unidentified Flower Seeds` for the seven flower seeds, and exact localized `a brown seed` for every grape variety below Farming 80. `Unidentified Planting Material` is the fail-closed category for a future unresolved/ambiguous planting material. The six cataloged native vanilla compatibility rows remain explicit `NATIVE_VANILLA_OUTSIDE_SCOPE` mappings under DECISION-012; no vanilla item identity, planting, or recipe behavior is added.
+
+A client-only `ItemStack` mixin projects the viewer-correct name through the shared hover/display-name path used by inventory, hotbar, off-hand, containers, pickup/chat hover, narration, Creative inventory, and Creative search. Unidentified tooltips are reduced to the generic name; advanced mode retains only the approved registry/component diagnostics boundary. A client name-tag event applies the same policy to custom dropped-item labels. Creative search trees and an open Creative search result are refreshed on each accepted snapshot revision. Recipe-viewer integration remains best effort because the repository has no applicable farming recipes.
+
+`SkillSyncPayload` is versioned and carries `NOT_LOADED`/`LOADING`/`AVAILABLE`/`UNAVAILABLE`, a monotonic revision, an explicit identification-bypass bit, and the authoritative skill map only when available. Login publishes `LOADING` before the asynchronous fetch; load success, failure, skill gain/admin set, respawn, dimension change, and game-mode change publish fresh snapshots. The client applies each snapshot atomically, rejects duplicate/stale revisions, resets on connection boundaries, and fails closed until authoritative data arrives. This presentation pipeline is client-only; dedicated-server common classloading does not reference Minecraft client classes.
+
+Identification is evaluated per viewer and per render/query. Two players can see different names for the same logical stack; a skill gain reveals the exact name without reconnecting or rewriting components. The implementation does not alter cultivation eligibility, flower lifecycle/protection/color persistence, Poppy stage-7 mastery, grape variety data, existing plant behavior, saves, acquisition, recipes, merchants, or economy.
+
+### Milestone 16 live validation - 2026-08-01
+
+An ignored disposable copy under `build/m16-live-runtime` ran one NeoForge 21.1.72 / Minecraft 1.21.1 dedicated server, two separate real clients (`M16Low` and `M16High`), and a disposable `m16-world`. No owner world was opened or copied. The server assigned explicit ephemeral Farming snapshots; clients consumed the production `SkillSyncPayload`, `ClientSkillTable`, ItemStack mixin, tooltip, narration, Creative-search refresh, and name-tag event paths. The same server stacks, counts, components, grape variety data, and lack of custom stack names were captured before and after viewer presentation.
+
+- At Farming 0 versus 100, equivalent Carrot, Potato, Corn, Rice, Nightshade, Apple, all seven flower, and two grape-variety stacks produced different approved names per viewer. The low client showed generic names except the approved Farming-0 Carrot identity; the high client showed existing exact names. Wild Grape and Cabernet Sauvignon both rendered `a brown seed` for the low client while retaining their distinct `GrapeVariety` custom data.
+- Both clients opened the same chest simultaneously. Corn, Poppy, Wild Grape, and Cabernet Sauvignon were generic for the low viewer and exact for the high viewer. Farming 0 -> 20 -> 100 -> 19 revisions updated that still-open `ContainerScreen` without stack replacement; names and narration followed the current value, and server chest signatures were unchanged before and after.
+- Live `LOADING`, API-failure `UNAVAILABLE`, explicit `AVAILABLE`, connection-boundary `NOT_LOADED`, and a deliberately old revision were exercised. All non-authoritative states failed closed. The client retained accepted revision 12 when stale revision 11 arrived. Dimension transitions generated revisions 19/20, respawn generated revision 21, and an actual stopped/restarted server caused both still-running clients to reset to `NOT_LOADED` revision `-1` before accepting the new epoch's LOADING/AVAILABLE revisions.
+- `reloadResourcePacks()` completed on both clients with `failure=null`; the synchronized snapshots and viewer-correct inventory, chest, grape, tooltip, and narration components remained correct with no raw localization key or Farming presentation exception.
+- Creative at Farming 0 synchronized `bypass=true`; the actual Creative Search tab found `Orfluer Seeds` by `orfluer`. Returning to Survival restored generic names. Operator level 2+ outside Creative synchronized the same approved identity bypass, and de-op restored ordinary policy.
+- The live rendered-component audit evaluated all 68 maskable custom planting items and all seven flowers in fail-closed and available states. It reported zero ordinary species leaks in name/normal-tooltip components. Narration was invoked with the actual projected Poppy component at each revision. Advanced registry/component diagnostics remain the approved debug-only disclosure.
+- The first run reproduced one production defect: `onClientLogin`, `onClientLogout`, and `onRenderNameTag` existed but were not registered by `ClientModSetup`, so a low-skill custom dropped Poppy label remained exact. The narrow correction registers those three existing handlers. A deterministic integration-boundary assertion was added to `FarmingSkillIdentificationTest`. The corrected two-client run rendered the same custom-named entity as `Unidentified Flower Seeds` for `M16Low` and `Poppy Seeds` for `M16High`; the source stack remained unnamed and component-identical. It also masked ordinary dropped crop, flower, and both grape-variety labels.
+- Vanilla has no textual pickup message for this ordinary pickup path; both equivalent Poppy entities were collected and no text/overlay was emitted. This surface is `NOT PRESENT`, not silently counted as viewer-specific text. A normal shared ItemStack chat link serializes the server-composed visible text `[Poppy Seeds]`; the hover stack remains component-preserving and uses the client ItemStack tooltip policy, but the already-serialized visible text is an `UNAVOIDABLE DISCLOSURE` under the approved no-broad-packet-rewrite fallback.
+- Vanilla recipe-book farming entries, farming recipe ingredient/results, applicable farming merchant trades, guidebooks, custom farming menus, and JEI/EMI/REI were absent. Those surfaces are `NOT PRESENT` or `NOT APPLICABLE`; no third-party integration was added. The shared chest is the representative supported container UI.
+- A forced-identified low-skill presentation could not affect authority: Poppy and Corn evaluated `INSUFFICIENT_SKILL`. A forced-generic qualified presentation could not remove authority: both evaluated `ELIGIBLE`. Grapes remained `NOT_APPLICABLE` to the gate. Existing Milestone 15 live/automated evidence continues to cover successful grape variety planting, native vanilla planting, and existing planted crop/flower behavior after skill loss.
+- Inventory/hotbar/off-hand/container movement, repeated revision rendering, Creative search, resource reload, dimension transitions, respawn, and reconnect showed no stack component/name/count mutation, viewer cross-contamination, search rebuild loop, packet-per-tooltip behavior, tooltip/narrator exception, or visible presentation stall. Skill packets occurred only at lifecycle/authoritative update triggers.
+
+Runtime evidence remains ignored and untracked in `build/m16-live-runtime/run/server/m16-evidence-pass1`, `build/m16-live-runtime/run/server/m16-evidence`, `build/m16-live-runtime/run/client-low/m16-client-evidence-pass1.txt`, `build/m16-live-runtime/run/client-low/m16-client-evidence.txt`, and the equivalent `client-high` files. Screenshots are in the two ignored client `screenshots` directories. Disposable skill hooks, drivers, identity exemptions, and custom run configurations were removed after capture; none entered production source. The only production correction is the three missing existing-handler registrations plus its regression assertion.
+
 ## Working-tree boundary
 
-Milestone 14 is owner-approved and isolated in `ddc488aa6a423a125510bea1a6556117e9ca6d0e`. Milestone 15 changes remain intentionally unstaged and uncommitted. Pre-existing Corrective Milestone 11 changes remain present and preserved. No `.claude/` file was modified.
+Milestone 14 is owner-approved and isolated in `ddc488aa6a423a125510bea1a6556117e9ca6d0e`. Milestone 15 is isolated in `7db9d1d549640d1389f11aa8416e5e3d2fe325d2`. Milestone 16 changes remain intentionally unstaged and uncommitted. Pre-existing Corrective Milestone 11 changes remain present and preserved. No `.claude/` file was modified.
 
 ## Validation result
 
+- Milestone 16 focused identification/requirement/packet selection: PASS, 15 tests.
+- Complete repository suite with Milestone 16: PASS, 14 suites and 105 tests with zero failures, errors, or skips.
+- Milestone 16 dedicated-server/common bootstrap: PASS. It validated 74 species, 67 crops, seven flowers, and 74 planting items without loading the client-only presentation mixins; the pre-existing `TitleScreenBackgroundMixin` dedicated-dist warning, missing optional development config warning, and empty GameTest-harness `No test functions were given!` message remain unchanged, and Gradle completed successfully.
+- Milestone 16 client startup smoke: PASS to completed resource/model loading, OpenAL startup, and render-thread atlas creation with no farming-presentation mixin or accessor error. The process was stopped before entering a world. Existing unrelated asset/model warnings remain.
+- Corrective Milestone 11 non-writing placeholder check after Milestone 16: PASS, 182 generated files plus hash ledger.
+- Milestone 16 two-client visual/runtime matrix: PASS after one corrected handler-registration defect. Equivalent-stack viewer isolation, shared chest, open-UI gain/loss, all four load states, stale revision, dimension/respawn/reconnect/server restart, resource reload, narration component, Creative/operator bypass and search, two grape varieties, all seven flowers, 68-item leakage audit, stack equality, dropped labels, pickup-path accounting, chat-link fallback, and server-authority regression were executed in ignored runtimes.
 - Milestone 14 focused proposal/catalog/runtime reconciliation: PASS.
 - Milestone 15 focused gate/flower transaction suite: PASS, 27 tests across four suites.
 - Complete farming and flower suite after the validation correction: PASS, 13 suites and 97 tests with zero failures, errors, or skips.
@@ -105,7 +142,7 @@ Newly executed live coverage:
 
 No additional Milestone 15 production defect was reproduced in this continuation, so no production Java/resource correction was made. Temporary hooks, drivers, endpoint, custom run definitions, and compiled harness classes were removed after log capture.
 
-Those rows were the inputs to the final critical closure pass below. Milestone 16 identity/naming/UI work remains unstarted.
+Those rows were the inputs to the final critical closure pass below. That historical Milestone 15 statement predates the uncommitted Milestone 16 implementation described above.
 
 ### Final critical runtime closure pass - 2026-08-01
 
@@ -127,4 +164,4 @@ No Milestone 15 production defect was reproduced, so no production Java, resourc
 
 Optional rows not executed are every remaining species through individual real packets, held-click movement across adjacent targets, a full environment matrix, formal video capture, and owner-world testing. They are not critical because the 74-species policy matrix, representative packets, lifecycle closure, mastery triplet, downstream separation, full automated suite, and two-client agreement pass.
 
-Milestone 15 is **Approved**. Milestone 16 is **In progress**.
+Milestone 15 is **Approved**. Milestone 16 is **Approved**.

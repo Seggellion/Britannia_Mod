@@ -796,7 +796,11 @@
     "message.britannia_mod.farming.cultivation.insufficient.material": "Unidentified Planting Material requires Farming %2$s to plant (current: %1$s).",
     "message.britannia_mod.farming.cultivation.skill_unavailable": "Farming skill data is unavailable; planting is blocked.",
     "message.britannia_mod.farming.cultivation.automation_blocked": "Automated planting requires a trusted player skill identity.",
-    "message.britannia_mod.farming.cultivation.unresolved": "This planting material cannot be verified; planting is blocked."
+    "message.britannia_mod.farming.cultivation.unresolved": "This planting material cannot be verified; planting is blocked.",
+    "item.britannia_mod.unidentified_seeds": "Unidentified Seeds",
+    "item.britannia_mod.unidentified_flower_seeds": "Unidentified Flower Seeds",
+    "item.britannia_mod.unidentified_planting_material": "Unidentified Planting Material",
+    "item.britannia_mod.unidentified_grape_seed": "a brown seed"
 
 
 }

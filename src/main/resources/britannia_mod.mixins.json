@@ -10,9 +10,10 @@
     "PlayerSleepMixin"
   ],
   "client": [
+    "client.CreativeModeInventoryScreenAccessor",
+    "client.ItemStackFarmingPresentationMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   }
-  }
-  
+}
