@@ -25,7 +25,7 @@ This verification must use a new clean dedicated-server world. Do not reuse the 
 | Field | Value |
 | --- | --- |
 | Date | 2026-07-15 to 2026-07-16 |
-| Tester | Dustin Hill |
+| Tester | Seggellion |
 | Clean world name | `m4_auth_hardened_verification_4` for Sections A-C; `m4_auth_hardened_pending_verification` for Section D |
 | Credential source | `SERVER_FILE` |
 | Diagnostic fingerprint | Eight-hex redacted diagnostic recorded; no credential value recorded |
@@ -63,7 +63,7 @@ This verification must use a new clean dedicated-server world. Do not reuse the 
 | Field | Value |
 | --- | --- |
 | Date | 2026-07-15 to 2026-07-16 |
-| Tester | Dustin Hill |
+| Tester | Seggellion |
 | Minecraft/NeoForge build | Minecraft 1.21.1; NeoForge 21.1.72; Britannia 0.1.7k |
 | Server type | Local dedicated server, loopback only |
 | Result | PASS — ACCEPTED DESIGN VARIANCE |
@@ -88,7 +88,7 @@ This verification must use a new clean dedicated-server world. Do not reuse the 
 | Field | Value |
 | --- | --- |
 | Date | 2026-07-16 |
-| Tester | Dustin Hill |
+| Tester | Seggellion |
 | Minecraft/NeoForge build | Minecraft 1.21.1; NeoForge 21.1.72; Britannia 0.1.7k |
 | Server type | Local dedicated server, loopback only |
 | Result | PASS |
@@ -115,7 +115,7 @@ This verification must use a new clean dedicated-server world. Do not reuse the 
 | Field | Value |
 | --- | --- |
 | Date | 2026-07-16 |
-| Tester | Dustin Hill |
+| Tester | Seggellion |
 | Minecraft/NeoForge build | Minecraft 1.21.1; NeoForge 21.1.72; Britannia 0.1.7k |
 | Server type | Local dedicated server, loopback only |
 | Exact production WorldEdit version | WorldEdit 7.3.8+6939-7d32b45 |
@@ -141,7 +141,7 @@ This verification must use a new clean dedicated-server world. Do not reuse the 
 | Field | Value |
 | --- | --- |
 | Date | 2026-07-16 |
-| Tester | Dustin Hill |
+| Tester | Seggellion |
 | Minecraft/NeoForge build | Minecraft 1.21.1; NeoForge 21.1.72; Britannia 0.1.7k |
 | Server type | Local dedicated server, loopback only |
 | Result | PASS |
@@ -155,6 +155,6 @@ This verification must use a new clean dedicated-server world. Do not reuse the 
 | All required sections passed | YES |
 | Documented exception accepted | YES |
 | Exception details | Section A live stale-menu Save was unreachable because permission loss closed the menu. This safely prevented unauthorized mutation; direct handler rejection is automated. The block is invisible and untargetable in Adventure mode but visible and targetable in Creative mode; server-side configuration remains permission-authorized. |
-| Reviewer | Dustin Hill |
+| Reviewer | Seggellion |
 | Review date | 2026-07-16 |
 | Merge authorization | NOT PERFORMED; this closeout authorizes only the selective commits and expressly prohibits merge or push |
