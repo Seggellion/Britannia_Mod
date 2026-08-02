@@ -1,0 +1,42 @@
+# Shrine and Monolith Open Questions
+
+Settled decisions from the authoritative design and playbook are intentionally omitted. No unresolved product question prevents the architecture/discovery work of Milestone 1, but the baseline build issue is an engineering gate that must be acknowledged.
+
+## 1. When will the completed banner branch be integrated?
+
+- **Unresolved issue:** The safe banner planner/executor/footprint/lifecycle implementation is present only on local branch `banners-dyetub`, not on `patch-18` or `shrines-monoliths`. It is unknown whether shrine/monolith work should expect that branch to land first.
+- **Why inspection did not answer it:** Git history proves the implementations are on different branch lines but contains no integration plan or ordering decision.
+- **Evidence inspected:** `git branch --all --contains 4cd7aec`; `git ls-tree -r banners-dyetub`; banner placement, structure, block entity, and test sources via `git show`; current branch tree and merge-base inspection.
+- **Blocks Milestone 1:** **No.** Milestone 1 can specify a repository-native contract without merging or copying banner code. It does affect whether later implementation adapts an integrated primitive or independently introduces one.
+- **Smallest owner decision required:** Confirm whether `banners-dyetub` is expected to merge before shrine/monolith implementation begins.
+
+## 2. What exact administrator predicate should gate shrine/monolith decorator actions?
+
+- **Unresolved issue:** The approved feature is administrator-controlled, but `InteriorDecoratorToolItem` performs no administrator check. Other code uses creative mode and/or permission level 2 in several places without a single decorator authorization service.
+- **Why inspection did not answer it:** Existing call sites are inconsistent: some target blocks require creative, some exclude only spectators/adventure, and the tool's own rotations/styles have no permission gate.
+- **Evidence inspected:** `item/InteriorDecoratorToolItem.java`; all `INTERIOR_DECORATOR_TOOL` references; permission checks in spawn blocks and command handlers; `structure/StructureProtectionHandler.java`.
+- **Blocks Milestone 1:** **No.** It blocks the later decorator-interaction milestone, not the initial structure contract.
+- **Smallest owner decision required:** Choose one predicate: creative-only, permission-level-2-only, or creative-or-permission-level-2.
+
+## 3. Where are the monolith models and textures, and which names are approved?
+
+- **Unresolved issue:** The design requires model-varying monolith variants and a `+16`-voxel render correction, but no supplied monolith asset is present. Authored coordinates, lowest-Y values, variant count, stable names, and provisional names therefore cannot be verified.
+- **Why inspection did not answer it:** Searches of resource, content, documentation, model, texture, GeckoLib, and Blockbench locations found no monolith asset or metadata outside the specifications.
+- **Evidence inspected:** `src/main/resources/assets/britannia_mod`; `content`; all `*.bbmodel`, `*.geo.json`, texture, localization, and monolith-name searches; both root specifications.
+- **Blocks Milestone 1:** **No.** It blocks asset integration and visual acceptance in later milestones.
+- **Smallest owner decision required:** Supply the asset package and a mapping from each file to either an approved stable display/variant name or an explicit `unnamed/provisional` status.
+
+## 4. How should the unmodified clean-build failure be cleared?
+
+- **Unresolved issue:** The initial `test` task passed, but `clean build` failed in `:neoFormPatch` with `Patch directory not found`; subsequent builds reconstructed an incomplete Minecraft compile classpath and failed on missing `net.minecraft`/client classes. A cache-disabled retry reproduced the missing-class failure.
+- **Why inspection did not answer it:** No shrine/monolith files existed during these runs, source control showed no build-script change, and Milestone 0 forbids unrelated build-system repair. The failure arose only after the clean deleted prior generated NeoForm state.
+- **Evidence inspected:** exact baseline Gradle outputs; `git status`; `git diff`; `build.gradle`; wrapper/toolchain versions; clean dry-run and ignored/tracked-path checks.
+- **Blocks Milestone 1:** **Conditionally yes.** Design documentation can proceed, but a milestone that requires a passing clean build cannot be accepted until the environment/NeoGradle generated state is repaired or the baseline failure is formally waived.
+- **Smallest owner decision required:** Authorize a separate build-environment/cache repair investigation, or explicitly accept this captured baseline failure for Milestone 1 while keeping source changes independently verified.
+
+## Confirmed non-questions
+
+- Shrine dimensions, occupied cells, family behavior, and nine identities are settled.
+- Monolith dimensions, occupied cells, family behavior, and the positive sixteen-voxel render correction are settled.
+- Collision/render independence and per-cell `0..16` bounds are settled.
+- Cross-family conversion is forbidden and is not open for interpretation.
