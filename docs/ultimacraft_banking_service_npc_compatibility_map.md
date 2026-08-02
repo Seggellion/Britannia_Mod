@@ -418,6 +418,38 @@ design pressure to resolve until a future milestone gives these models
 an actual mutation path; that path will inform the right answer rather
 than this being guessed in advance.
 
+### ADR-025: `Shard#client_secret` has no rotation path today — a compromised secret has no graceful remedy
+
+Date: 2026-08-01. Status: Human-approved (not Codex-inferred).
+
+Recorded here as a cross-reference for a NeoForge-side reader; the full
+detail lives on the Rails side, in `docs/server_authentication.md`
+(Milestone 14 Security Slice 1's Decision 5) and
+`docs/known_environment_baseline.md` §3.3 (`ultimacraft-website`
+repository). `Shard#client_secret` is a single credential per shard with
+no previous-value, grace-period, or expiry concept — Security Slice 1
+added real HMAC request signing and Redis-backed replay protection
+keyed by this same secret, but deliberately did not add rotation
+support, since that needs schema this model does not have today.
+
+Stated plainly: the only current remedy for a shard operator who
+suspects their `client_secret` has leaked is to regenerate it directly.
+That immediately breaks every Minecraft server on that shard — there is
+no overlap window — until each is manually reconfigured with the new
+value, per the existing "Rotation and coordinated deployment" runbook
+(Rails `docs/server_authentication.md`). Confirmed empirically, not
+assumed, that this remedy at least behaves predictably: a dedicated test
+rotated a shard's secret mid-session and proved the old secret is
+rejected on the very next request, the new one works immediately with
+no propagation delay, and a signature computed against the old secret
+never validates again — nothing in the new signature-verification layer
+caches or holds a stale copy of the secret anywhere.
+
+A future slice should implement the grace-period overlap already
+decided in Security Slice 1's Decision 5 (recommended 24 hours) once
+`Shard` has the schema support (a previous-secret value and its own
+expiry, or a credential-history table) to make it possible.
+
 ## 5. Authority and extension matrix
 
 | Domain | Current authority | Verified current representation | Extension rule |
