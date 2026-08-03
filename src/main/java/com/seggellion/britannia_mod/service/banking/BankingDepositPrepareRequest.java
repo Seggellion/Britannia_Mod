@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.service.banking;
 
+import com.seggellion.britannia_mod.bank.item.BankItemIdentity;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -16,7 +18,8 @@ public record BankingDepositPrepareRequest(
     int schemaVersion,
     byte[] payload,
     String fingerprint,
-    double weight
+    double weight,
+    BankItemIdentity identity
 ) {
     public BankingDepositPrepareRequest {
         Objects.requireNonNull(playerUuid, "playerUuid");
@@ -28,7 +31,24 @@ public record BankingDepositPrepareRequest(
         Objects.requireNonNull(fingerprint, "fingerprint");
         if (fingerprint.isBlank()) throw new IllegalArgumentException("fingerprint must not be blank");
         if (weight < 0.0 || !Double.isFinite(weight)) throw new IllegalArgumentException("weight must be finite and non-negative");
+        // Never null, so no caller downstream has to null-check before asking what it holds --
+        // "no identity resolved" is BankItemIdentity.EMPTY, which serializes to nothing at all.
+        if (identity == null) identity = BankItemIdentity.EMPTY;
         payload = payload.clone();
+    }
+
+    /**
+     * Milestone 17 convenience for the many existing call sites (and GameTests) that predate item
+     * identity: builds exactly the v1 request they always built.
+     */
+    public static BankingDepositPrepareRequest withoutIdentity(
+            UUID playerUuid, UUID worldNpcPublicId, String idempotencyKey,
+            int schemaVersion, byte[] payload, String fingerprint, double weight
+    ) {
+        return new BankingDepositPrepareRequest(
+                playerUuid, worldNpcPublicId, idempotencyKey, schemaVersion, payload, fingerprint, weight,
+                BankItemIdentity.EMPTY
+        );
     }
 
     @Override

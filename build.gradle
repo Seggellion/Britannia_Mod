@@ -77,6 +77,16 @@ runs {
 
     configureEach {
         systemProperty "forge.logging.markers", "REGISTRIES"
+        // Milestone 17: emit bank item identity in development runs. Set on every run
+        // configuration rather than just one, because the deposit envelope is built
+        // server-side -- setting this on the client alone does nothing when a dedicated
+        // server is in play.
+        //
+        // Safe to commit: this block configures gradle's own dev runs only and has no effect
+        // on a built jar, which keeps BankItemEnvelopeVersion's compiled-in default of 1. Dev
+        // runs point at a local Rails that has Milestone 16; a production build must not
+        // assume the instance it is pointed at does.
+        systemProperty "britannia.bank.item_envelope_version", "2"
         logging.captureStandardOutput(LogLevel.DEBUG)
     }
 }

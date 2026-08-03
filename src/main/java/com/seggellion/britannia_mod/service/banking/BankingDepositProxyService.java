@@ -3,8 +3,9 @@ package com.seggellion.britannia_mod.service.banking;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.bank.item.BankItemCodec;
 import com.seggellion.britannia_mod.bank.item.BankItemEligibility;
+import com.seggellion.britannia_mod.bank.item.BankItemEnvelopeVersion;
 import com.seggellion.britannia_mod.bank.item.BankItemFingerprint;
-import com.seggellion.britannia_mod.bank.item.BankItemSchemaVersion;
+import com.seggellion.britannia_mod.bank.item.BankItemIdentity;
 import com.seggellion.britannia_mod.bank.item.BankItemWeight;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
@@ -230,9 +231,21 @@ public final class BankingDepositProxyService {
         }
 
         MinecraftServer server = player.server;
+        // Milestone 17. Two separate versions, deliberately: the payload carries
+        // BankItemSchemaVersion inside itself (unchanged -- the payload format did not change),
+        // while the envelope around it carries BankItemEnvelopeVersion, which is what moves to 2
+        // when this build is configured to send identity. See BankItemEnvelopeVersion for why
+        // collapsing these back into one constant would strand items on older clients.
+        //
+        // Identity comes from capture.snapshot() -- the exact stack the payload, fingerprint and
+        // weight were all computed from -- so count cannot disagree with what was weighed.
+        BankItemIdentity identity = BankItemEnvelopeVersion.emitsIdentity()
+                ? BankItemIdentity.resolve(capture.snapshot())
+                : BankItemIdentity.EMPTY;
         BankingDepositPrepareRequest prepareRequest = new BankingDepositPrepareRequest(
                 player.getUUID(), resolved.worldNpcPublicId(), UUID.randomUUID().toString(),
-                BankItemSchemaVersion.CURRENT, capture.payload(), capture.fingerprint(), capture.weight()
+                BankItemEnvelopeVersion.emitted(), capture.payload(), capture.fingerprint(), capture.weight(),
+                identity
         );
 
         final CompletableFuture<BankingDepositPrepareResult> prepareFuture;

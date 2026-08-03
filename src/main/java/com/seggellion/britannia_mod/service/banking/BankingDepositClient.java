@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.service.banking;
 
 import com.google.gson.JsonObject;
+import com.seggellion.britannia_mod.bank.item.BankItemIdentity;
 import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.auth.ServerCredentials;
@@ -134,12 +135,31 @@ public final class BankingDepositClient implements BankingDepositClientPort {
         }
     }
 
+    /**
+     * Exposes the exact bytes {@link #serializePrepare} puts on the wire, so envelope
+     * construction can be asserted key-by-key rather than inferred. Worth a seam: Rails refuses
+     * an envelope carrying an unknown key outright, so a single wrong or stray key here does not
+     * degrade -- it breaks every deposit on every shard running this build.
+     */
+    public static byte[] serializePrepareForTesting(BankingDepositPrepareRequest request) {
+        return serializePrepare(request);
+    }
+
     private static byte[] serializePrepare(BankingDepositPrepareRequest request) {
         JsonObject item = new JsonObject();
         item.addProperty("schema_version", request.schemaVersion());
         item.addProperty("payload", Base64.getEncoder().encodeToString(request.payload()));
         item.addProperty("fingerprint", request.fingerprint());
         item.addProperty("weight", request.weight());
+        // Milestone 17: identity keys sit beside the payload, never inside it -- the payload
+        // stays opaque to Rails. Each is written only when it resolved to something Rails will
+        // accept, because omitting a key is the only way to say "no value": Rails rejects an
+        // empty display_name and a zero count rather than treating either as an absence. That
+        // also means a v1 envelope is byte-identical to what this method has always produced.
+        BankItemIdentity identity = request.identity();
+        if (identity.displayName() != null) item.addProperty("display_name", identity.displayName());
+        if (identity.itemKey() != null) item.addProperty("item_key", identity.itemKey());
+        if (identity.count() != null) item.addProperty("count", identity.count());
 
         JsonObject payload = new JsonObject();
         payload.addProperty("player_uuid", request.playerUuid().toString());
