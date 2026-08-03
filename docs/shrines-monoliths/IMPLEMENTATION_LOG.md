@@ -491,3 +491,123 @@ Milestone 3 only. Do not begin it.
 - Focused structure suite, full repository suite, and clean build all pass. In-game placement
   remains unperformed because this Codex environment has no reliable gameplay input mechanism.
 - Milestone 3 was not started.
+
+## 2026-08-03 - Milestone 3: Shrine Persistence, Whole-Structure Lifecycle, and Integrity
+
+### Isolation, commit, and branch state
+
+- Shared repository (read-only): `C:\projects\britannia\mod\Britannia_Mod`.
+- Independent clone: `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+- Starting branch: `shrines-monoliths`.
+- Starting commit: `e963de2fbf641cb7b686c3676ad45d605c6c9eee`.
+- Clone-local integration reference: `origin/patch-18` at `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+- Starting merge base: `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+- Starting divergence (`origin/patch-18...shrines-monoliths`, left/right): `0 4`.
+- Starting isolated worktree: clean.
+- Shared-repository starting state: branch `shrines-monoliths`, HEAD `bf42b16b818b80a3303c78e21c5f9ec75602fd25`, modified `ModConfig.java`, and untracked `.claude/` plus unrelated root documents. It was inspected read-only and never used as a build/edit target.
+- At the final read-only check, the shared repository had independently moved to branch `banking`, HEAD `f94b42ebe9ec38443e51ce7ca4325e810b3c4253`, with the same modified `ModConfig.java`, `.claude/`, and unrelated root documents plus two banking specifications. This concurrent shared state was neither caused nor altered by Milestone 3.
+- Ending commit: the single Milestone 3 commit `feat(structures): persist and protect multiblock shrines`; its immutable full hash is recorded in the final report because a commit cannot contain its own hash.
+- No push, transfer, merge, rebase, reset, stash, branch switch, network fetch, or shared-repository mutation occurred.
+
+### Files changed
+
+- `BritanniaMod.java`, `DataComponentRegistry.java`, `LargeStructureRegistry.java`: register the shrine instance component and bounded integrity events without changing the one-anchor/one-part/one-anchor-entity/one-item content topology.
+- `structure/item/ShrineItem.java`, `ShrineItemState.java`, `ShrineItemStateAccess.java`, `ShrineItemTransfer.java`: versioned configured item state, validation, raw-stack defaulting, and exact placed-state recovery.
+- `structure/multiblock/PlacedStructureState.java`, `PlacedStructureStatus.java`, `LargeStructureAnchorBlockEntity.java`: versioned persistence, typed load status, synchronization, and authoritative placed footprint.
+- `LargeStructureAnchorBlock.java`, `LargeStructurePartBlock.java`: centralized break/explosion/external-replacement/pick behavior, empty vanilla loot path, immovable piston reaction, and dry non-waterloggable cells.
+- `ShrinePlacementPlanner.java`, `ShrinePlacementService.java`: configured-item planning and placement reentrancy guard.
+- `structure/lifecycle/ShrineRemovalCause.java`, `ShrineLifecycleService.java`, `ShrineIntegrityService.java`, `ShrineIntegrityHandler.java`: whole-structure lifecycle, exact configured drop, loaded-chunk integrity repair/orphan handling, bounded scheduling, and bounded diagnostics.
+- Six focused test classes plus `ShrineLifecycleTestWorld` and the existing registration helper: persistence, component, placement, lifecycle, integrity, and milestone-scope coverage.
+- `PROJECT_FACTS.md` and this log: only newly proven Milestone 3 facts and evidence.
+
+### Persistence and item schemas
+
+- Schema version is `1` for both placed state and item state.
+- Anchor NBT has root key `shrine_state` containing `schema_version` (int), `family_id` (string), `variant_id` (string), `facing` (lower-case direction string), and `placed_footprint` (ordered list). Each footprint entry is a compound with integer keys `x`, `y`, and `z`.
+- The saved ordered footprint is authoritative for the placed instance. Integrity, teardown, and repair use it; later catalogue changes cannot add, move, or resize existing cells.
+- Block-state `FACING` is authoritative. Persisted `facing` is validation-only; a mismatch is structurally invalid and fails closed.
+- Missing family and variant IDs are preserved in decoded state with typed `MISSING_FAMILY_DEFINITION` or `MISSING_VARIANT_DEFINITION` status. They are not silently substituted.
+- Malformed state and unsupported future schema produce typed failure status, no configured item, no fabricated default identity, and conservative cleanup behavior.
+- Item component ID is `britannia_mod:shrine_instance_state`. Its schema fields are `schema_version`, `family_id`, and `variant_id`; facing and footprint remain placed-anchor concerns.
+- `ShrineItemState.CODEC` uses `RecordCodecBuilder`; `STREAM_CODEC` explicitly writes VarInt schema and UTF family/variant IDs. `DataComponentType` registers both persistent and network codecs.
+- A raw `/give @s britannia_mod:shrine` stack has no component and intentionally resolves to `shrine`/`honesty`. A configured stack retains exact family/variant IDs. Placement rejects unknown or non-shrine catalogue content safely.
+- Actual NBT disk save/load, update-tag creation/application, packet application, component codec, component stream codec, and full `ItemStack` persistent codec are tested. A full `ItemStack` network stream is not claimed because the plain-JUnit built-in item registry is not a synchronized connection registry.
+
+### Lifecycle and integrity policy
+
+- `ShrineLifecycleService` is the sole cleanup/drop/pick authority. Both blocks return empty vanilla loot lists, preventing a second loot path.
+- Survival `onDestroyedByPlayer` resolves anchor membership, removes matching persisted cells with suppressed drops, and calls `Block.popResource` exactly once with the configured shrine stack. `playerDestroy` is a no-op.
+- Creative uses the same complete teardown path and produces zero items. Invalid fragments remove only the selected shrine cell with zero drops.
+- Explosion policy is complete matching-cell cleanup with zero drops. Every affected callback converges on the same guarded lifecycle service.
+- External replacement policy preserves the newly installed unrelated block, removes only other still-matching persisted cells, and produces no drop.
+- Pick block resolves either anchor or part to the already-loaded synchronized anchor state and returns the same configured family/variant item without mutation or force-loading. Invalid membership returns empty.
+- Reentrancy keys use level object identity (`==`, identity hash) plus anchor `BlockPos`. Placement and removal guards are distinct sets and always clear in `finally`; recursive removal and duplicate drops are suppressed.
+- `ShrineIntegrityHandler` queues each loaded chunk and its immediate chunk neighbors in insertion order so a newly loaded empty footprint chunk rechecks an adjacent anchor. It processes at most 64 candidate chunks globally per server tick, caps each level at 4,096 pending chunks, removes level queues on unload, obtains only `getChunkNow`, and scans only already-loaded cells. No ticket or force-load API is used.
+- A part whose candidate anchor chunk is unavailable is deferred. A part is removed as a definitive orphan only after the candidate anchor chunk is loaded and valid membership is absent.
+- Missing parts repair only when every persisted target chunk is loaded and the cell is replaceable with no block entity. Repair recreates the expected part from the persisted offset and synchronizes the anchor.
+- An obstruction is never overwritten. It is preserved while the remaining still-matching shrine cells are removed with zero drop. Failed/racing repair releases the placement guard before cleanup.
+- Anchor and part piston reaction is `BLOCK`. Both cells are non-waterloggable, expose empty fluid state, cannot be fluid-replaced, and cannot silently split through fluid placement.
+- Placement/repair flags are `Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS`. Lifecycle removal flags are `Block.UPDATE_ALL_IMMEDIATE | Block.UPDATE_SUPPRESS_DROPS`. Anchor synchronization uses `Block.UPDATE_CLIENTS`.
+
+### Exact commands and results
+
+All build commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+```text
+.\gradlew.bat compileJava --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: exit `0`; 42.2 seconds; 26 tasks (1 executed, 25 up-to-date). The two known warnings remained: missing Javadoc on a Mixin `@Overwrite` and deprecated-for-removal `Item.initializeClient`.
+
+```text
+.\gradlew.bat test --tests <six exact Milestone 3 classes> --no-daemon --no-configuration-cache --stacktrace
+```
+
+Final result: exit `0`; 53.3 seconds; 6 classes, 47 tests, 0 failures, 0 errors, 0 skipped; 30 tasks (3 executed, 27 up-to-date). The exact classes were `LargeStructurePersistenceTest`, `ShrineItemStateTest`, `ShrineLifecycleServiceTest`, `ShrineIntegrityServiceTest`, `ShrineConfiguredPlacementTest`, and `MilestoneThreePolicyAndScopeTest`. It emitted only the two known production warnings plus a test deprecation note.
+
+```text
+.\gradlew.bat test --tests 'com.seggellion.britannia_mod.structure.*' --no-daemon --no-configuration-cache --stacktrace
+```
+
+Final result: exit `0`; 30.7 seconds; 16 classes, 121 tests, 0 failures, 0 errors, 0 skipped; 30 tasks (1 executed, 29 up-to-date).
+
+```text
+.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace
+```
+
+Final result: exit `0`; 26.5 seconds; 16 classes, 121 tests, 0 failures, 0 errors, 0 skipped; 30 tasks (1 executed, 29 up-to-date).
+
+```text
+git ls-files -- build .gradle run runs logs src/generated/resources
+.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: no build/cache/run/log/generated path was tracked before clean. Final clean build exit `0`; 1 minute 32.4 seconds; 16 classes, 121 tests from cache, 0 failures, 0 errors, 0 skipped; 36 tasks (6 executed, 20 from cache, 10 up-to-date). Both production JARs were produced.
+
+```text
+jar tf build\libs\Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar
+jar tf build\libs\Britannia_Mod_shrines_m2_codex-0.1.7k.jar
+```
+
+Result: both JARs contain the persistence, item-component, lifecycle, integrity, anchor/part, placement classes and diagnostic blockstate/item-model resources. Both contain zero test/MilestoneThree classes, zero shrine/monolith renderer classes, zero final shrine/monolith texture/geo/animation assets, and zero monolith placement classes. `InteriorDecoratorToolItem` is present only as unchanged pre-existing production content.
+
+### Automated, simulated, and manual coverage
+
+- Actual registered blocks, item, block-entity type, and data-component type are exercised in plain JUnit after repository-pattern registry bootstrap.
+- Actual `CompoundTag`, holder lookup, block-entity save/load/update-tag/packet-application, persistent codec, stream codec, block states, reverse transforms, `ItemStack`, piston reaction, shapes, and fluid APIs are exercised.
+- Lifecycle and integrity world mutation use the production services through a narrow deterministic `WorldAccess` adapter. It simulates loaded/unloaded chunks, replacement, failure, recursion, drops, and synchronization; it is not a real `ServerLevel` or GameTest.
+- Reflection is limited to constructing the actual clientbound block-entity packet for a detached block entity; application uses the inherited production `onDataPacket` path. Static scope tests inspect source/registration boundaries where a live runtime is unnecessary.
+- No `@GameTest` implementation exists and Milestone 3 did not manufacture a new framework. No client, dedicated server, multiplayer, data-generation, or live-world task was introduced.
+- Manual checks performed: complete source/API/JAR/scope inspection and exact Git isolation/ancestry/status checks.
+- Manual interaction checks not performed: all 19 requested in-game steps (obtain/place/save/reload/break/drop/re-place/creative/pick/repair/obstruct/chunk boundary/piston/fluid), because reliable client control was unavailable. Startup logs were not treated as gameplay evidence.
+
+### Known limitations and Milestone 4 deferrals
+
+- Live `ServerLevel`, client-server synchronization, save-file reload, player break, explosion, piston, fluid, and cross-chunk behavior remain unverified in-world despite API-level and adapter coverage.
+- Full `ItemStack` network encoding through a synchronized registry connection remains unverified; the registered component stream codec itself round-trips.
+- No final shrine block-entity renderer, geometry, texture, or variant rendering was added. No Interior Decorator integration/cycling, monolith item/placement/renderer/cycling, recipe, command, NPC, or cross-family conversion was added.
+- No design deviation was introduced.
+
+### Next permitted milestone
+
+Milestone 4 only. Do not begin it.

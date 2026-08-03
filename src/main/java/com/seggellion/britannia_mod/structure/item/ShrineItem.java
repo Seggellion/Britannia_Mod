@@ -1,27 +1,29 @@
 package com.seggellion.britannia_mod.structure.item;
 
-import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitions;
-import com.seggellion.britannia_mod.structure.definition.StructureIdentity.FamilyId;
-import com.seggellion.britannia_mod.structure.definition.StructureIdentity.VariantId;
 import com.seggellion.britannia_mod.structure.placement.ShrinePlacementService;
+import java.util.Objects;
+import java.util.function.Supplier;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 
-/** Family placement item configured to the approved diagnostic Honesty shrine. */
+/** One shared shrine item; absent component state resolves to the approved Honesty default. */
 public final class ShrineItem extends Item {
-    private static final VariantId DIAGNOSTIC_VARIANT = new VariantId("honesty");
+    private final Supplier<DataComponentType<ShrineItemState>> componentType;
 
     public ShrineItem(Properties properties) {
+        this(properties, com.seggellion.britannia_mod.registry.DataComponentRegistry
+                .SHRINE_INSTANCE_STATE::get);
+    }
+
+    public ShrineItem(Properties properties, Supplier<DataComponentType<ShrineItemState>> componentType) {
         super(properties);
+        this.componentType = Objects.requireNonNull(componentType, "componentType");
     }
 
-    public FamilyId familyId() {
-        return ShrineMonolithDefinitions.SHRINE;
-    }
-
-    public VariantId variantId() {
-        return DIAGNOSTIC_VARIANT;
+    public ShrineItemStateAccess stateAccess() {
+        return new ShrineItemStateAccess(this, componentType.get());
     }
 
     @Override

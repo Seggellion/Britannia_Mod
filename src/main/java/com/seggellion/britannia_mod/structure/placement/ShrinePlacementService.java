@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.structure.placement;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
 import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.lifecycle.ShrineLifecycleService;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructurePartBlock;
 import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
@@ -108,8 +109,6 @@ public final class ShrinePlacementService {
         ShrinePlacementPlanningResult planning = ShrinePlacementPlanner.plan(
                 item,
                 stack,
-                item.familyId(),
-                item.variantId(),
                 context.getClickedPos(),
                 context.getClickedFace(),
                 outwardFacing,
@@ -122,8 +121,9 @@ public final class ShrinePlacementService {
         }
 
         ShrinePlacementPlan plan = planning.plan().orElseThrow();
-        ShrinePlacementFailure result = ShrinePlacementExecutor.execute(
-                plan, mutation(level, player), stack, player.hasInfiniteMaterials());
+        ShrinePlacementFailure result = ShrineLifecycleService.duringPlacement(
+                level, plan.anchorPosition(), () -> ShrinePlacementExecutor.execute(
+                        plan, mutation(level, player), stack, player.hasInfiniteMaterials()));
         if (result != ShrinePlacementFailure.NONE) {
             feedback(player, result);
             return InteractionResult.FAIL;

@@ -30,6 +30,47 @@ public final class ShrinePlacementPlanner {
     private ShrinePlacementPlanner() {
     }
 
+    /** Production path: configured item state is decoded and validated before any world query. */
+    public static ShrinePlacementPlanningResult plan(
+            ShrineItem item,
+            ItemStack stack,
+            BlockPos clickedPosition,
+            Direction clickedFace,
+            Direction outwardFacing,
+            LargeStructureAnchorBlock anchorBlock,
+            LargeStructurePartBlock partBlock,
+            ShrinePlacementWorld world) {
+        return plan(item, stack, clickedPosition, clickedFace, outwardFacing,
+                anchorBlock, partBlock, world, ShrineMonolithDefinitions.catalogue());
+    }
+
+    static ShrinePlacementPlanningResult plan(
+            ShrineItem item,
+            ItemStack stack,
+            BlockPos clickedPosition,
+            Direction clickedFace,
+            Direction outwardFacing,
+            LargeStructureAnchorBlock anchorBlock,
+            LargeStructurePartBlock partBlock,
+            ShrinePlacementWorld world,
+            StructureCatalogue catalogue) {
+        var validation = item.stateAccess().validateForPlacement(stack, catalogue);
+        if (!validation.valid()) {
+            return fail(switch (validation.status()) {
+                case INVALID_ITEM -> ShrinePlacementFailure.INVALID_ITEM;
+                case UNSUPPORTED_FAMILY -> ShrinePlacementFailure.UNSUPPORTED_FAMILY;
+                case FAMILY_MISSING -> ShrinePlacementFailure.FAMILY_MISSING;
+                case VARIANT_MISSING -> ShrinePlacementFailure.VARIANT_MISSING;
+                case VARIANT_DISABLED -> ShrinePlacementFailure.VARIANT_DISABLED;
+                case INCOMPATIBLE_VARIANT -> ShrinePlacementFailure.INCOMPATIBLE_VARIANT;
+                case VALID -> throw new IllegalStateException("Valid item state must be present");
+            });
+        }
+        var state = validation.state().orElseThrow();
+        return plan(item, stack, state.familyId(), state.variantId(), clickedPosition, clickedFace,
+                outwardFacing, anchorBlock, partBlock, world, catalogue);
+    }
+
     public static ShrinePlacementPlanningResult plan(
             ShrineItem item,
             ItemStack stack,

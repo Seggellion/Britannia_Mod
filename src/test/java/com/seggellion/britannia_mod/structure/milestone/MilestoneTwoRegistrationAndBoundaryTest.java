@@ -59,7 +59,7 @@ class MilestoneTwoRegistrationAndBoundaryTest {
     }
 
     @Test
-    void noMilestoneThreeOrLaterBehaviorWasAdded() throws Exception {
+    void noMilestoneFourOrLaterBehaviorWasAdded() throws Exception {
         Set<Path> folders = Set.of(
                 MAIN.resolve("structure/multiblock"),
                 MAIN.resolve("structure/placement"),
@@ -71,8 +71,6 @@ class MilestoneTwoRegistrationAndBoundaryTest {
                     assertFalse(source.contains("net.minecraft.client"), path.toString());
                     assertFalse(source.contains("BlockEntityRenderer"), path.toString());
                     assertFalse(source.contains("InteriorDecorator"), path.toString());
-                    assertFalse(source.contains("saveAdditional"), path.toString());
-                    assertFalse(source.contains("loadAdditional"), path.toString());
                     assertFalse(source.contains("recipe"), path.toString());
                 }
             }
