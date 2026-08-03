@@ -46,3 +46,37 @@ Confirmed directly by reading every packet handler, not inferred: `BankScreen` (
 This is real but deliberate, not an oversight this milestone's own priority-2 pass fixed: unlike proximity re-validation (which had an existing, portable pattern — `BankingProxyService.resolve()`'s double-check — ported into all five gap flows this same milestone), there is no existing server-side "screen session" mechanism for banking to extend. `ServiceNpcSpawnPayloadHandler.validateSession` (`network/payload/ServiceNpcSpawnPayloadHandler.java`) proves the *pattern* is known and buildable elsewhere in this codebase (real `player.containerMenu instanceof X` + ownership + `stillValid` checks, for spawn-point configuration) — but porting it to banking would mean converting `BankScreen` from a plain client `Screen` into a real server-tracked `AbstractContainerMenu`, a genuine architectural change, not a targeted fix. Recorded here rather than silently fixed or silently ignored, per this milestone's own instruction not to invent a new context-checking mechanism where none already exists.
 
 Practical exposure is narrower than it sounds: the mutation itself still requires a real, live, in-range, capability-matching teller (now re-checked twice per flow, not once) and a real matching item/currency amount already in the player's own inventory — this gap only means the intended UX flow (open screen, select item, click deposit) is not the *only* path to a legitimate-looking mutation, not that an attacker can act on someone else's account or fabricate value from nothing.
+
+### 2.4 Client-side metrics are structured log lines, not a metrics pipeline (Milestone 14 metrics slice, 2026-08-03)
+
+Recorded as a decision with its evidence, so a later session does not "discover" the absence of
+a client-side metrics pipeline and build one reflexively.
+
+Rails gained real counters this milestone (`Api::MetricsStore`, Redis-backed, fed by
+`ActiveSupport::Notifications`). NeoForge deliberately did not, and needed no code change at all:
+its equivalent events were already instrumented as logfmt-style structured lines, and there is
+nothing to send metrics to.
+
+Both halves of that were verified directly rather than assumed:
+
+- **No collector exists.** A search of the entire mod source for any metrics or telemetry client
+  -- Prometheus, StatsD, Micrometer, OpenTelemetry, or a bespoke sink -- returns nothing, and
+  `RailsApiUrlResolver.Endpoint` has no metrics endpoint to post to. Building a client-side
+  aggregator would mean accumulating counters in memory that no operator could ever read, lost on
+  every server restart.
+- **The events the checklist names are already logged**, in the shape an operator would grep:
+  - poll attempts and outcomes -- `WorldStateSyncPoller`: `World state sync poll attempted
+    from_version={}`, `poll failed code={} from_version={}`
+  - delta application results -- `World state sync poll applied and committed to_version={}`,
+    `apply rejected reason={} from_version={} to_version={}`
+  - receipt resolution -- `BankTransferReconciliationService`: `Startup reconciliation confirm for
+    operation {} completed: {}`
+  - forced-save failures -- three call sites, all logging the operation and the taken recovery
+    branch
+
+The asymmetry is intentional. Rails is a long-lived process with a shared Redis and an admin UI,
+so counters there are both cheap and readable. A Minecraft server is a single process whose logs
+are already the operator's primary interface and already ship wherever that operator collects
+them. If a real collector is ever provisioned, the natural move is to add an endpoint and a
+client mirroring `ServiceNpcStalePostReportClient`, and to feed it from these same log points --
+not to retrofit a parallel in-memory metrics system first.
