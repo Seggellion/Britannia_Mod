@@ -474,7 +474,11 @@ public final class BankScreen extends Screen {
                 if (selected) {
                     graphics.fill(withdrawPanelX, rowY, withdrawPanelX + panelWidth, rowY + ROW_H, 0x33FFFFFF);
                 }
-                String label = "Stored item -- " + formatWeight(item.weight()) + " stones";
+                // Milestone 18: what the item actually is, in place of the "Stored item" literal
+                // every row used to share. The weight suffix and the width truncation below are
+                // untouched -- BankItemSummary#describe supplies the name and the stack count,
+                // and falls back to that same literal for a row Rails has no name for.
+                String label = item.describe() + " -- " + formatWeight(item.weight()) + " stones";
                 if (font.width(label) > panelWidth - 6) {
                     label = font.substrByWidth(Component.literal(label), panelWidth - 6).getString() + "...";
                 }

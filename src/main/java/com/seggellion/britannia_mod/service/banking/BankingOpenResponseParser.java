@@ -29,6 +29,8 @@ public final class BankingOpenResponseParser {
      * plausibly reach this many available items in one page.
      */
     private static final int MAX_BANK_ITEMS = 10_000;
+    /** Mirrors the bound Rails itself enforces on display_name (docs/banking_item_transfer.md). */
+    private static final int MAX_BANK_ITEM_NAME_LENGTH = 255;
 
     private BankingOpenResponseParser() {
     }
@@ -101,9 +103,34 @@ public final class BankingOpenResponseParser {
             UUID publicId = requiredUuid(item, "public_id");
             double weight = requiredNumber(item, "weight");
             if (weight < 0) fail("invalid_bank_item_weight");
-            items.add(new BankItemSummary(publicId, weight));
+            // Milestone 18: identity, when Rails has it. An absent key is the normal case, not an
+            // error -- Rails omits these entirely for a row deposited before item identity
+            // existed, and will keep doing so for every deposit a pre-Milestone-17 client makes.
+            // A malformed value degrades to absent rather than failing the whole response: a name
+            // is a courtesy, and losing the player's entire account view over one would be a far
+            // worse trade than showing the fallback.
+            items.add(new BankItemSummary(publicId, weight, lenientName(item), lenientCount(item)));
         }
         return items;
+    }
+
+    /** Bounded here as well as by Rails -- this client does not assume it is talking to a Rails it trusts. */
+    private static String lenientName(JsonObject item) {
+        JsonElement element = item.get("display_name");
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
+            return null;
+        }
+        String value = element.getAsString();
+        return value.length() > MAX_BANK_ITEM_NAME_LENGTH ? value.substring(0, MAX_BANK_ITEM_NAME_LENGTH) : value;
+    }
+
+    private static Integer lenientCount(JsonObject item) {
+        JsonElement element = item.get("count");
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isNumber()) {
+            return null;
+        }
+        int value = element.getAsInt();
+        return value >= 1 ? value : null;
     }
 
     private static BankingOpenAccount parseAccount(JsonObject account) throws ProtocolException {

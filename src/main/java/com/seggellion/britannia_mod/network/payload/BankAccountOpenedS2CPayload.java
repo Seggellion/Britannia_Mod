@@ -57,6 +57,12 @@ public record BankAccountOpenedS2CPayload(
     private static final Set<String> SUPPORTED_TELLER_GENDERS = Set.of("male", "female");
     /** Mirrors {@link BankingOpenResponseParser}'s own defensive bound on the same list. */
     private static final int MAX_BANK_ITEMS = 10_000;
+    /**
+     * Room for Rails' own 255-character display_name bound once encoded as UTF-8, where a single
+     * character can occupy four bytes. Deliberately larger than MAX_NAME_BYTES, which bounds
+     * names this mod resolves itself rather than ones a third-party shard supplied.
+     */
+    private static final int MAX_ITEM_NAME_BYTES = 1024;
 
     public BankAccountOpenedS2CPayload {
         bankItems = List.copyOf(bankItems);
@@ -146,6 +152,17 @@ public record BankAccountOpenedS2CPayload(
         for (BankItemSummary item : payload.bankItems) {
             buffer.writeUUID(item.publicId());
             buffer.writeDouble(item.weight());
+            // Milestone 18. Both optional, both flagged, mirroring how cityDisplayName above
+            // distinguishes "absent" from "empty" -- a row with no stored name must arrive at the
+            // client as no name, so it falls back rather than rendering a blank line.
+            buffer.writeBoolean(item.displayName() != null);
+            if (item.displayName() != null) {
+                ServiceNpcSpawnPayloadCodec.writeUtf(buffer, item.displayName(), MAX_ITEM_NAME_BYTES);
+            }
+            buffer.writeBoolean(item.count() != null);
+            if (item.count() != null) {
+                buffer.writeVarInt(item.count());
+            }
         }
     }
 
@@ -166,7 +183,10 @@ public record BankAccountOpenedS2CPayload(
         for (int i = 0; i < bankItemCount; i++) {
             UUID publicId = buffer.readUUID();
             double weight = buffer.readDouble();
-            bankItems.add(new BankItemSummary(publicId, weight));
+            String displayName = buffer.readBoolean()
+                    ? ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_ITEM_NAME_BYTES) : null;
+            Integer count = buffer.readBoolean() ? buffer.readVarInt() : null;
+            bankItems.add(new BankItemSummary(publicId, weight, displayName, count));
         }
 
         return new BankAccountOpenedS2CPayload(
