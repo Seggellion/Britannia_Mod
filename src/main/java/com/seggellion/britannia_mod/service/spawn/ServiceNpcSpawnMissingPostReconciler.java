@@ -49,13 +49,35 @@ public final class ServiceNpcSpawnMissingPostReconciler {
         Presence check(ServiceNpcSpawnAcknowledgedRegistration snapshot);
     }
 
+    /**
+     * Where a confirmed missing post is reported onward. Injected exactly like {@link
+     * PresenceProbe} so this class keeps its "no network or disk I/O on the tick thread"
+     * property: the production implementation hands the report to an off-thread executor and
+     * returns immediately, and a test can supply a plain collector.
+     */
+    @FunctionalInterface
+    public interface StalePostReporter {
+        void report(ServiceNpcSpawnMissingPostReport report);
+    }
+
+    private static final StalePostReporter NO_REPORTING = report -> { };
+
     private final PresenceProbe probe;
+    private final StalePostReporter reporter;
     private final LongSupplier clock;
     private final long startedAtEpochMillis;
     private final Map<UUID, Long> suspectedMissingSinceEpochMillis = new HashMap<>();
     private int cursorIndex;
 
+    /** Detection only, with nothing reported onward -- the shape every existing caller used. */
     public ServiceNpcSpawnMissingPostReconciler(PresenceProbe probe, LongSupplier clock) {
+        this(probe, NO_REPORTING, clock);
+    }
+
+    public ServiceNpcSpawnMissingPostReconciler(
+            PresenceProbe probe, StalePostReporter reporter, LongSupplier clock
+    ) {
+        this.reporter = Objects.requireNonNull(reporter, "reporter");
         this.probe = Objects.requireNonNull(probe, "probe");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.startedAtEpochMillis = Math.max(0L, clock.getAsLong());
@@ -108,14 +130,29 @@ public final class ServiceNpcSpawnMissingPostReconciler {
         }
         if (now - firstMissingAt < MIN_OBSERVATION_INTERVAL_MILLIS) return;
 
-        if (data.recordMissingPostReport(new ServiceNpcSpawnMissingPostReport(
-                spawnPointId, snapshot.shardName(), snapshot.location(), snapshot.revision(), now
-        ))) {
+        // Carry the FIRST confirmation's timestamp forward rather than stamping each
+        // re-confirmation with the current time. Two reasons: "missing since" should answer when
+        // this post was first confirmed gone, not when it was last re-checked; and the onward
+        // report's identity is derived from that timestamp, so a moving value would make every
+        // re-confirmation look like a brand-new observation instead of the same standing one.
+        ServiceNpcSpawnMissingPostReport existing = data.findMissingPostReport(spawnPointId);
+        long firstConfirmedAt = existing != null ? existing.detectedAtEpochMillis() : now;
+        ServiceNpcSpawnMissingPostReport report = new ServiceNpcSpawnMissingPostReport(
+                spawnPointId, snapshot.shardName(), snapshot.location(), snapshot.revision(), firstConfirmedAt
+        );
+        if (data.recordMissingPostReport(report) && existing == null) {
             LOGGER.warn(
                 "Service NPC spawn post confirmed missing after sustained absence uuid={} location={} revision={}",
                 spawnPointId, snapshot.location(), snapshot.revision()
             );
         }
+
+        // Reported on every confirmation, not only the first. The reconciler re-enters its
+        // suspicion window after each one, so a still-missing post naturally re-reports about
+        // once per observation interval -- which is what makes a report that could not be
+        // delivered (Rails down, executor saturated) simply arrive on a later cycle instead of
+        // needing retry machinery here. The receiving side collapses repeats onto one record.
+        reporter.report(report);
         suspectedMissingSinceEpochMillis.remove(spawnPointId);
     }
 

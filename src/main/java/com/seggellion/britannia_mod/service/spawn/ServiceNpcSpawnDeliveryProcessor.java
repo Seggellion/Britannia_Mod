@@ -59,7 +59,8 @@ public final class ServiceNpcSpawnDeliveryProcessor {
         this.clock = Objects.requireNonNull(clock, "clock");
         this.controlledShardName = controlledShardName;
         this.missingPostReconciler = new ServiceNpcSpawnMissingPostReconciler(
-            ServiceNpcSpawnMissingPostReconciler.realProbe(server), clock
+            ServiceNpcSpawnMissingPostReconciler.realProbe(server),
+            report -> ServiceNpcStalePostReportClient.report(server, report), clock
         );
     }
 

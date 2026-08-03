@@ -210,6 +210,7 @@ public final class RailsApiUrlResolver {
         ORE_VEINS("ore_veins", "shard"),
         SHARD_USER_ADJUST_STATS("shard_users/:user_id/adjust_stats"),
         SERVICE_NPC_SPAWN_OPERATIONS("service_npc_spawn_operations"),
+        SERVICE_NPC_STALE_POST_REPORTS("service_npc_stale_post_reports"),
         WORLD_STATE_CHANGES("world_state_changes/:shard", "from_version"),
         BANKING_OPEN("banking/open"),
         BANKING_DEPOSIT_PREPARE("banking/deposit/prepare"),
