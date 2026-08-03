@@ -1,8 +1,10 @@
 package com.seggellion.britannia_mod.structure.placement;
 
 import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitions;
+import com.seggellion.britannia_mod.structure.definition.StructureCatalogue;
 import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Family;
 import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Variant;
+import com.seggellion.britannia_mod.structure.definition.StructureDefinitionValidator;
 import com.seggellion.britannia_mod.structure.definition.StructureGeometry.LocalOffset;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.FamilyId;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.VariantId;
@@ -15,10 +17,12 @@ import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
 import com.seggellion.britannia_mod.structure.multiblock.StructureCell;
 import com.seggellion.britannia_mod.structure.multiblock.StructureCellRole;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Ordered, mutation-free construction of the complete diagnostic shrine transaction. */
@@ -37,26 +41,41 @@ public final class ShrinePlacementPlanner {
             LargeStructureAnchorBlock anchorBlock,
             LargeStructurePartBlock partBlock,
             ShrinePlacementWorld world) {
+        return plan(item, stack, familyId, variantId, clickedPosition, clickedFace, outwardFacing,
+                anchorBlock, partBlock, world, ShrineMonolithDefinitions.catalogue());
+    }
+
+    static ShrinePlacementPlanningResult plan(
+            ShrineItem item,
+            ItemStack stack,
+            FamilyId familyId,
+            VariantId variantId,
+            BlockPos clickedPosition,
+            Direction clickedFace,
+            Direction outwardFacing,
+            LargeStructureAnchorBlock anchorBlock,
+            LargeStructurePartBlock partBlock,
+            ShrinePlacementWorld world,
+            StructureCatalogue catalogue) {
         if (stack.getItem() != item) {
             return fail(ShrinePlacementFailure.INVALID_ITEM);
         }
         if (!familyId.equals(ShrineMonolithDefinitions.SHRINE)) {
             return fail(ShrinePlacementFailure.UNSUPPORTED_FAMILY);
         }
-        Family family = ShrineMonolithDefinitions.catalogue().family(familyId).orElse(null);
+        Family family = catalogue.family(familyId).orElse(null);
         if (family == null) {
             return fail(ShrinePlacementFailure.FAMILY_MISSING);
         }
-        Variant variant = ShrineMonolithDefinitions.catalogue().variant(familyId, variantId).orElse(null);
+        Variant variant = catalogue.variant(familyId, variantId).orElse(null);
         if (variant == null) {
             return fail(ShrinePlacementFailure.VARIANT_MISSING);
         }
-        if (!variant.enabled() || !variant.playerFacing()) {
+        if (!variant.enabled()) {
             return fail(ShrinePlacementFailure.VARIANT_DISABLED);
         }
-        if (!variant.familyId().equals(family.id())
-                || !variant.dimensions().equals(family.dimensions())
-                || !variant.footprint().equals(family.footprint())
+        if (!variant.playerFacing()
+                || !StructureDefinitionValidator.compatible(family, variant)
                 || family.footprint().size() != 4) {
             return fail(ShrinePlacementFailure.INCOMPATIBLE_VARIANT);
         }
@@ -87,6 +106,10 @@ public final class ShrinePlacementPlanner {
                     offset.equals(LocalOffset.ANCHOR) ? StructureCellRole.ANCHOR : StructureCellRole.PART,
                     placedState));
         }
+        if (new HashSet<>(projections.stream().map(CellProjection::offset).toList()).size() != 4
+                || new HashSet<>(projections.stream().map(CellProjection::worldPosition).toList()).size() != 4) {
+            return fail(ShrinePlacementFailure.INCOMPATIBLE_VARIANT);
+        }
 
         for (CellProjection cell : projections) {
             if (!world.inWorldBounds(cell.worldPosition())) {
@@ -99,6 +122,43 @@ public final class ShrinePlacementPlanner {
             }
         }
 
+        for (CellProjection cell : projections) {
+            if (!world.targetReplaceable(cell.worldPosition())) {
+                return fail(ShrinePlacementFailure.TARGET_OCCUPIED);
+            }
+        }
+        for (CellProjection cell : projections) {
+            if (world.unrelatedLargeStructureCell(cell.worldPosition())) {
+                return fail(ShrinePlacementFailure.UNRELATED_STRUCTURE_CELL);
+            }
+        }
+
+        List<BlockPos> authorizedPositions = new ArrayList<>(projections.size());
+        boolean allAuthorized = true;
+        for (CellProjection cell : projections) {
+            boolean authorized = world.placementAllowed(cell.worldPosition(), outwardFacing, stack);
+            allAuthorized &= authorized;
+            if (authorized) {
+                authorizedPositions.add(cell.worldPosition());
+            }
+        }
+        if (!allAuthorized) {
+            return fail(ShrinePlacementFailure.PROTECTED_PLACEMENT);
+        }
+        for (CellProjection cell : projections) {
+            if (cell.role() == StructureCellRole.PART && !world.canEncodePart(cell.placedState())) {
+                return fail(ShrinePlacementFailure.PART_STATE_ENCODING_FAILURE);
+            }
+        }
+        if (!world.canCreateAnchorBlockEntity(anchorState)) {
+            return fail(ShrinePlacementFailure.BLOCK_ENTITY_CREATION_FAILURE);
+        }
+
+        PlacedStructureState state = new PlacedStructureState(
+                family.id(), variant.id(), outwardFacing, family.footprint());
+        if (!world.canInitializeAnchor(anchorState, state)) {
+            return fail(ShrinePlacementFailure.ANCHOR_INITIALIZATION_FAILURE);
+        }
         List<StructureCell> cells = projections.stream()
                 .map(cell -> new StructureCell(
                         cell.offset(),
@@ -107,32 +167,19 @@ public final class ShrinePlacementPlanner {
                         world.blockState(cell.worldPosition()),
                         cell.placedState()))
                 .toList();
-        for (StructureCell cell : cells) {
-            if (world.unrelatedLargeStructureCell(cell.worldPosition())) {
-                return fail(ShrinePlacementFailure.UNRELATED_STRUCTURE_CELL);
-            }
-            if (!world.targetReplaceable(cell.worldPosition())) {
-                return fail(ShrinePlacementFailure.TARGET_OCCUPIED);
-            }
-        }
-        for (StructureCell cell : cells) {
-            if (!world.placementAllowed(cell.worldPosition(), outwardFacing, stack)) {
-                return fail(ShrinePlacementFailure.PROTECTED_PLACEMENT);
-            }
-        }
-        if (!world.canCreateAnchorBlockEntity(anchorState)) {
-            return fail(ShrinePlacementFailure.BLOCK_ENTITY_CREATION_FAILURE);
-        }
-        for (StructureCell cell : cells) {
-            if (cell.role() == StructureCellRole.PART && !world.canEncodePart(cell.placedState())) {
-                return fail(ShrinePlacementFailure.PART_STATE_ENCODING_FAILURE);
-            }
-        }
-
-        PlacedStructureState state = new PlacedStructureState(
-                family.id(), variant.id(), outwardFacing, family.footprint());
+        List<ChunkPos> requiredChunks = cells.stream()
+                .map(cell -> new ChunkPos(cell.worldPosition()))
+                .distinct()
+                .toList();
         return ShrinePlacementPlanningResult.success(
-                new ShrinePlacementPlan(anchorPosition, anchorState, state, cells));
+                new ShrinePlacementPlan(
+                        anchorPosition,
+                        anchorState,
+                        state,
+                        cells,
+                        requiredChunks,
+                        authorizedPositions,
+                        true));
     }
 
     public static BlockPos worldPosition(

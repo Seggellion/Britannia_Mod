@@ -15,6 +15,8 @@ import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -68,17 +70,14 @@ class LargeStructurePartAndShapeTest {
 
     @Test
     void anchorAndEveryPartShapeStayInsideTheirSingleCell() {
-        assertUnitCell(anchor.defaultBlockState().getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
-        assertUnitCell(anchor.defaultBlockState()
-                .getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
+        assertCollisionProfile(anchor.defaultBlockState());
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             for (LocalOffset offset : java.util.List.of(
                     new LocalOffset(1, 0, 0),
                     new LocalOffset(0, 0, 1),
                     new LocalOffset(2, 2, 1))) {
                 var state = part.stateFor(facing, offset);
-                assertUnitCell(state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
-                assertUnitCell(state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
+                assertCollisionProfile(state);
             }
         }
     }
@@ -104,5 +103,20 @@ class LargeStructurePartAndShapeTest {
         assertEquals(1.0, bounds.maxX);
         assertEquals(1.0, bounds.maxY);
         assertEquals(1.0, bounds.maxZ);
+    }
+
+    private static void assertCollisionProfile(net.minecraft.world.level.block.state.BlockState state) {
+        assertUnitCell(state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
+        assertUnitCell(state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
+        assertUnitCell(state.getVisualShape(
+                EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty()).bounds());
+        assertUnitCell(state.getOcclusionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds());
+        assertFalse(state.canOcclude());
+        assertFalse(state.canBeReplaced());
+        assertFalse(state.isPathfindable(PathComputationType.LAND));
+        for (Direction direction : Direction.values()) {
+            assertEquals(true, state.isFaceSturdy(
+                    EmptyBlockGetter.INSTANCE, BlockPos.ZERO, direction));
+        }
     }
 }

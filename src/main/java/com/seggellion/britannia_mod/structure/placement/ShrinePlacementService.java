@@ -87,6 +87,15 @@ public final class ShrinePlacementService {
             }
 
             @Override
+            public boolean canInitializeAnchor(BlockState anchorState, PlacedStructureState state) {
+                BlockEntity candidate = LargeStructureRegistry.LARGE_STRUCTURE.get()
+                        .create(BlockPos.ZERO, anchorState);
+                return candidate instanceof LargeStructureAnchorBlockEntity anchor
+                        && anchor.initialize(state)
+                        && anchor.placedState().equals(Optional.of(state));
+            }
+
+            @Override
             public boolean canEncodePart(BlockState partState) {
                 return partState.getBlock() instanceof LargeStructurePartBlock
                         && partState.hasProperty(LargeStructurePartBlock.FACING)
@@ -177,12 +186,15 @@ public final class ShrinePlacementService {
                 for (int index = plan.cells().size() - 1; index >= 0; index--) {
                     StructureCell cell = plan.cells().get(index);
                     BlockState current = level.getBlockState(cell.worldPosition());
-                    if (!current.equals(cell.placedState()) && !current.equals(cell.originalState())) {
+                    ShrineRollbackOwnership.Action action = ShrineRollbackOwnership.classify(
+                            current, cell.originalState(), cell.placedState());
+                    if (action == ShrineRollbackOwnership.Action.PRESERVE_UNRELATED) {
                         restored = false;
-                        continue;
+                    } else if (action == ShrineRollbackOwnership.Action.RESTORE_ORIGINAL) {
+                        boolean set = level.setBlock(cell.worldPosition(), cell.originalState(), flags);
+                        restored &= set || level.getBlockState(cell.worldPosition())
+                                .equals(cell.originalState());
                     }
-                    boolean set = level.setBlock(cell.worldPosition(), cell.originalState(), flags);
-                    restored &= set || level.getBlockState(cell.worldPosition()).equals(cell.originalState());
                 }
                 for (StructureCell cell : plan.cells()) {
                     restored &= level.getBlockState(cell.worldPosition()).equals(cell.originalState());

@@ -2,9 +2,13 @@ package com.seggellion.britannia_mod.structure.placement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitions;
+import com.seggellion.britannia_mod.structure.definition.StructureCatalogue;
+import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Family;
+import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Variant;
 import com.seggellion.britannia_mod.structure.definition.StructureGeometry.LocalOffset;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.FamilyId;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.VariantId;
@@ -13,12 +17,15 @@ import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlo
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructurePartBlock;
 import com.seggellion.britannia_mod.structure.multiblock.StructureCellRole;
 import com.seggellion.britannia_mod.structure.testsupport.MilestoneTwoRegisteredTestContent;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -66,8 +73,31 @@ class ShrinePlacementPlannerTest {
                 assertEquals(cell.offset(), LargeStructurePartBlock.localOffset(cell.placedState()));
             });
             assertEquals(4, world.originalStateReads.size());
+            assertEquals(plan.cells().stream().map(cell -> cell.worldPosition()).toList(),
+                    plan.authorizedPositions());
+            assertEquals(4, world.placementChecks.size());
+            assertTrue(plan.anchorInitializationValidated());
             assertEquals(0, world.mutations);
         }
+    }
+
+    @Test
+    void planRetainsImmutableOrderedTargetsChunksAuthorizationAndInitializationEvidence() {
+        ShrinePlacementPlan plan = plan(new ItemStack(item), ShrineMonolithDefinitions.SHRINE,
+                new VariantId("honesty"), new BlockPos(15, 69, 15), Direction.UP, Direction.WEST,
+                new FakeWorld()).plan().orElseThrow();
+
+        assertEquals(4, plan.requiredChunks().size());
+        assertEquals(plan.cells().stream().map(cell -> new ChunkPos(cell.worldPosition())).toList(),
+                plan.requiredChunks());
+        assertEquals(plan.cells().stream().map(cell -> cell.offset()).toList(),
+                plan.placedStructure().footprint());
+        assertEquals(4, new HashSet<>(plan.cells().stream()
+                .map(cell -> cell.worldPosition()).toList()).size());
+        assertThrows(UnsupportedOperationException.class, () -> plan.cells().clear());
+        assertThrows(UnsupportedOperationException.class, () -> plan.requiredChunks().clear());
+        assertThrows(UnsupportedOperationException.class, () -> plan.authorizedPositions().clear());
+        assertThrows(UnsupportedOperationException.class, () -> plan.placedStructure().footprint().clear());
     }
 
     @Test
@@ -94,6 +124,43 @@ class ShrinePlacementPlannerTest {
     }
 
     @Test
+    void missingFamilyAndDisabledVariantAreRejectedByInjectedValidatedCatalogues() {
+        StructureCatalogue empty = StructureCatalogue.build(List.of()).catalogue().orElseThrow();
+        FakeWorld missingWorld = new FakeWorld();
+        assertEquals(ShrinePlacementFailure.FAMILY_MISSING,
+                ShrinePlacementPlanner.plan(
+                        item, new ItemStack(item), ShrineMonolithDefinitions.SHRINE,
+                        new VariantId("honesty"), BlockPos.ZERO, Direction.UP, Direction.NORTH,
+                        anchor, part, missingWorld, empty).failure());
+        assertTrue(missingWorld.originalStateReads.isEmpty());
+
+        Family builtIn = ShrineMonolithDefinitions.catalogue()
+                .family(ShrineMonolithDefinitions.SHRINE).orElseThrow();
+        Variant enabled = builtIn.variants().getFirst();
+        Variant source = builtIn.variants().get(1);
+        Variant disabled = new Variant(
+                source.id(), source.familyId(), source.displayName(), source.dimensions(),
+                source.footprint(), source.placementMode(), source.collisionProfile(),
+                source.renderOrigin(), source.renderOffsetVoxels(), source.model(), source.texture(),
+                source.cyclePosition(), false, source.playerFacing(), source.contentStatus());
+        Family family = new Family(
+                builtIn.id(), builtIn.displayName(), builtIn.dimensions(), builtIn.footprint(),
+                builtIn.anchorOffset(), builtIn.placementMode(), builtIn.collisionProfile(),
+                builtIn.renderOrigin(), builtIn.renderOffsetVoxels(), builtIn.geometryMode(),
+                builtIn.sharedGeometry(), builtIn.defaultVariant(), builtIn.contentStatus(),
+                List.of(enabled, disabled));
+        StructureCatalogue catalogue = StructureCatalogue.build(List.of(family))
+                .catalogue().orElseThrow();
+        FakeWorld disabledWorld = new FakeWorld();
+        assertEquals(ShrinePlacementFailure.VARIANT_DISABLED,
+                ShrinePlacementPlanner.plan(
+                        item, new ItemStack(item), ShrineMonolithDefinitions.SHRINE,
+                        disabled.id(), BlockPos.ZERO, Direction.UP, Direction.NORTH,
+                        anchor, part, disabledWorld, catalogue).failure());
+        assertTrue(disabledWorld.originalStateReads.isEmpty());
+    }
+
+    @Test
     void everyWorldAndPreflightFailureChangesNothingAndConsumesNothing() {
         assertWorldFailure(world -> world.inBounds = false, ShrinePlacementFailure.WORLD_BOUND_FAILURE);
         assertWorldFailure(world -> world.loaded = false, ShrinePlacementFailure.REQUIRED_CHUNK_UNLOADED);
@@ -102,8 +169,50 @@ class ShrinePlacementPlannerTest {
         assertWorldFailure(world -> world.allowed = false, ShrinePlacementFailure.PROTECTED_PLACEMENT);
         assertWorldFailure(world -> world.canCreate = false,
                 ShrinePlacementFailure.BLOCK_ENTITY_CREATION_FAILURE);
+        assertWorldFailure(world -> world.canInitialize = false,
+                ShrinePlacementFailure.ANCHOR_INITIALIZATION_FAILURE);
         assertWorldFailure(world -> world.canEncode = false,
                 ShrinePlacementFailure.PART_STATE_ENCODING_FAILURE);
+    }
+
+    @Test
+    void protectionChecksEveryTargetForAllowedAndDeniedPlacement() {
+        FakeWorld allowed = new FakeWorld();
+        ShrinePlacementPlan plan = plan(new ItemStack(item), ShrineMonolithDefinitions.SHRINE,
+                new VariantId("honesty"), BlockPos.ZERO, Direction.UP, Direction.NORTH, allowed)
+                .plan().orElseThrow();
+        assertEquals(plan.authorizedPositions(), allowed.placementChecks);
+
+        FakeWorld denied = new FakeWorld();
+        denied.deniedAuthorizationCall = 2;
+        ItemStack stack = new ItemStack(item);
+        assertEquals(ShrinePlacementFailure.PROTECTED_PLACEMENT,
+                plan(stack, ShrineMonolithDefinitions.SHRINE, new VariantId("honesty"),
+                        BlockPos.ZERO, Direction.UP, Direction.NORTH, denied).failure());
+        assertEquals(4, denied.placementChecks.size());
+        assertEquals(1, stack.getCount());
+        assertTrue(denied.originalStateReads.isEmpty());
+        assertEquals(0, denied.mutations);
+    }
+
+    @Test
+    void crossChunkPlanRejectsAnyUnloadedRequiredChunkWithoutMutationOrConsumption() {
+        BlockPos clicked = new BlockPos(15, 69, 15);
+        FakeWorld allLoaded = new FakeWorld();
+        ShrinePlacementPlan plan = plan(new ItemStack(item), ShrineMonolithDefinitions.SHRINE,
+                new VariantId("honesty"), clicked, Direction.UP, Direction.WEST, allLoaded)
+                .plan().orElseThrow();
+        assertEquals(4, plan.requiredChunks().size());
+
+        FakeWorld oneUnloaded = new FakeWorld();
+        oneUnloaded.unloadedChunks.add(plan.requiredChunks().getLast());
+        ItemStack stack = new ItemStack(item);
+        assertEquals(ShrinePlacementFailure.REQUIRED_CHUNK_UNLOADED,
+                plan(stack, ShrineMonolithDefinitions.SHRINE, new VariantId("honesty"),
+                        clicked, Direction.UP, Direction.WEST, oneUnloaded).failure());
+        assertEquals(1, stack.getCount());
+        assertTrue(oneUnloaded.originalStateReads.isEmpty());
+        assertEquals(0, oneUnloaded.mutations);
     }
 
     @Test
@@ -161,9 +270,13 @@ class ShrinePlacementPlannerTest {
         boolean unrelated;
         boolean allowed = true;
         boolean canCreate = true;
+        boolean canInitialize = true;
         boolean canEncode = true;
+        int deniedAuthorizationCall = -1;
         int mutations;
         final Set<BlockPos> originalStateReads = new HashSet<>();
+        final Set<ChunkPos> unloadedChunks = new HashSet<>();
+        final List<BlockPos> placementChecks = new ArrayList<>();
 
         @Override
         public BlockState blockState(BlockPos pos) {
@@ -173,10 +286,20 @@ class ShrinePlacementPlannerTest {
 
         @Override public boolean targetReplaceable(BlockPos pos) { return replaceable; }
         @Override public boolean inWorldBounds(BlockPos pos) { return inBounds; }
-        @Override public boolean chunkLoaded(BlockPos pos) { return loaded; }
+        @Override public boolean chunkLoaded(BlockPos pos) {
+            return loaded && !unloadedChunks.contains(new ChunkPos(pos));
+        }
         @Override public boolean unrelatedLargeStructureCell(BlockPos pos) { return unrelated; }
-        @Override public boolean placementAllowed(BlockPos pos, Direction facing, ItemStack stack) { return allowed; }
+        @Override public boolean placementAllowed(BlockPos pos, Direction facing, ItemStack stack) {
+            placementChecks.add(pos.immutable());
+            return allowed && placementChecks.size() != deniedAuthorizationCall;
+        }
         @Override public boolean canCreateAnchorBlockEntity(BlockState state) { return canCreate; }
+        @Override public boolean canInitializeAnchor(
+                BlockState anchorState,
+                com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState state) {
+            return canInitialize;
+        }
         @Override public boolean canEncodePart(BlockState state) { return canEncode; }
     }
 }

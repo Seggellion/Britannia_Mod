@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
 
 /** Read-only world boundary used to prove placement planning has no mutation side effects. */
 public interface ShrinePlacementWorld {
@@ -20,6 +21,8 @@ public interface ShrinePlacementWorld {
     boolean placementAllowed(BlockPos pos, Direction facing, ItemStack stack);
 
     boolean canCreateAnchorBlockEntity(BlockState anchorState);
+
+    boolean canInitializeAnchor(BlockState anchorState, PlacedStructureState state);
 
     boolean canEncodePart(BlockState partState);
 }

@@ -473,3 +473,21 @@ Not performed:
 ### Next permitted milestone
 
 Milestone 3 only. Do not begin it.
+
+## 2026-08-03 - Corrective Milestone 2 Evidence Audit
+
+- Kept `82a4730ac250045bc24bcf3677a2f3958c785f45` immutable and added one narrow
+  corrective commit; no squash, rebase, merge, push, or shared-repository mutation occurred.
+- Made required chunks, per-cell authorization, and anchor-initialization preflight evidence
+  explicit and immutable in `ShrinePlacementPlan`.
+- Required protection checks for all four cells even when one is denied, and added typed
+  anchor-initialization rejection before original-state capture or mutation.
+- Made rollback ownership explicit: transaction-owned cells restore, already-original cells
+  remain untouched, and unrelated replacements are preserved while returning the typed
+  incomplete-rollback failure.
+- Added exact cross-chunk loaded/unloaded, all-cell protection, plan-immutability, reverse
+  resolution, rollback-ownership, full collision-profile, and registered-stair adjacency tests.
+- Final automated inventory: 10 test classes, 74 tests, 0 failures, 0 errors, 0 skipped.
+- Focused structure suite, full repository suite, and clean build all pass. In-game placement
+  remains unperformed because this Codex environment has no reliable gameplay input mechanism.
+- Milestone 3 was not started.

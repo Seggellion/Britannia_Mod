@@ -135,7 +135,7 @@ Verified repository fact: no current-branch implementation provides all of ancho
 
 | Classification | Finding | Evidence |
 | --- | --- | --- |
-| Verified repository fact | Milestone 2 retains JUnit Jupiter 5.10.2 and expands the shrine/monolith suite to eight test classes and 66 test methods: 48 definition tests plus 18 placement, rollback, part-encoding, shape, registration, and milestone-boundary tests. | `build.gradle`; `src/test/java/com/seggellion/britannia_mod/structure`; JUnit XML results |
+| Verified repository fact | The corrective Milestone 2 audit retains JUnit Jupiter 5.10.2 and expands the shrine/monolith suite to ten test classes and 74 test methods: 48 definition tests plus 26 placement, rollback, part-encoding, shape, adjacency, registration, and milestone-boundary tests. | `build.gradle`; `src/test/java/com/seggellion/britannia_mod/structure`; JUnit XML results |
 | Verified repository fact | Client/server runs set `neoforge.enabledGameTestNamespaces=britannia_mod`, but no `@GameTest` implementation exists on this branch. | `build.gradle`; GameTest symbol search |
 | Verified repository fact | The current branch now has plain-JUnit multiblock placement/rollback tests and production-JAR inspection evidence. It still has no GameTest, client test suite, dedicated-server startup test, Interior Decorator test, or CI workflow. | source/docs/`.github` searches; Milestone 2 results |
 | Verified repository fact | The unintegrated `banners-dyetub` branch has JUnit/contract coverage, including dedicated-server-safety and production/release contract tests; those tests are not available to the active branch. | `git ls-tree banners-dyetub -- src/test`; banner branch build files |

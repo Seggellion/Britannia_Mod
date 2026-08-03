@@ -31,12 +31,12 @@ public final class MilestoneTwoRegisteredTestContent {
                 BuiltInRegistries.BLOCK,
                 id("m2_test_large_structure_anchor"),
                 new LargeStructureAnchorBlock(
-                        BlockBehaviour.Properties.of().pushReaction(PushReaction.BLOCK)));
+                        BlockBehaviour.Properties.of().noOcclusion().pushReaction(PushReaction.BLOCK)));
         part = Registry.register(
                 BuiltInRegistries.BLOCK,
                 id("m2_test_large_structure_part"),
                 new LargeStructurePartBlock(
-                        BlockBehaviour.Properties.of().pushReaction(PushReaction.BLOCK)));
+                        BlockBehaviour.Properties.of().noOcclusion().pushReaction(PushReaction.BLOCK)));
         shrine = Registry.register(
                 BuiltInRegistries.ITEM,
                 id("m2_test_shrine"),

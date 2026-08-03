@@ -57,6 +57,7 @@ class ShrinePlacementExecutorTest {
         assertEquals(1, mutation.synchronizations);
         assertEquals(1, mutation.effects);
         assertEquals(0, mutation.drops);
+        assertEquals(4, plan.requiredChunks().size());
     }
 
     @Test
@@ -116,6 +117,17 @@ class ShrinePlacementExecutorTest {
     }
 
     @Test
+    void reverseAnchorResolutionFailureRollsBackBeforeConsumptionAndSuccessEffects() {
+        ItemStack stack = new ItemStack(item);
+        FakeMutation mutation = new FakeMutation();
+        mutation.failReverseResolutionIndex = 3;
+        assertEquals(ShrinePlacementFailure.FINAL_VERIFICATION_FAILURE,
+                ShrinePlacementExecutor.execute(plan, mutation, stack, false));
+        assertRolledBack(stack, mutation);
+        assertEquals(1, mutation.reverseResolutionChecks);
+    }
+
+    @Test
     void rollbackFailureIsExplicitAndStillDoesNotConsumeOrPlaySuccessEffects() {
         ItemStack stack = new ItemStack(item);
         FakeMutation mutation = new FakeMutation();
@@ -141,6 +153,7 @@ class ShrinePlacementExecutorTest {
             implements ShrinePlacementMutation, ShrinePlacementMutation.StateTarget {
         int failPlacementIndex = -1;
         int failVerificationIndex = -1;
+        int failReverseResolutionIndex = -1;
         boolean entityPresent = true;
         boolean assign = true;
         boolean reportMismatch;
@@ -152,6 +165,7 @@ class ShrinePlacementExecutorTest {
         int synchronizations;
         int effects;
         int drops;
+        int reverseResolutionChecks;
         final List<Integer> placedIndexes = new ArrayList<>();
         Optional<PlacedStructureState> storedState = Optional.empty();
 
@@ -195,7 +209,14 @@ class ShrinePlacementExecutorTest {
 
         @Override
         public boolean verifyCell(ShrinePlacementPlan ignored, StructureCell cell) {
-            return plan.cells().indexOf(cell) != failVerificationIndex;
+            int index = plan.cells().indexOf(cell);
+            if (index == failReverseResolutionIndex) {
+                reverseResolutionChecks++;
+                return LargeStructurePartBlock.anchorPosition(
+                        cell.worldPosition().relative(Direction.EAST), cell.placedState())
+                        .equals(plan.anchorPosition());
+            }
+            return index != failVerificationIndex;
         }
 
         @Override
