@@ -614,7 +614,15 @@
     "item.britannia_mod.cooked_chicken_breast": "Cooked Chicken Breast",
     "item.britannia_mod.cooked_chicken_wing": "Cooked Chicken Wing",
     "item.britannia_mod.beef_ribs": "Beef Ribs",
-    "item.britannia_mod.beef_brisket": "Beef Brisket"
+    "item.britannia_mod.beef_brisket": "Beef Brisket",
+    "item.britannia_mod.shrine": "Diagnostic Shrine",
+    "message.britannia_mod.shrine.placement.floor_required": "Shrines must be placed on the top of a block.",
+    "message.britannia_mod.shrine.placement.out_of_bounds": "The complete shrine would be outside the world bounds.",
+    "message.britannia_mod.shrine.placement.chunk_unloaded": "Every shrine cell must be in an already loaded chunk.",
+    "message.britannia_mod.shrine.placement.target_occupied": "The complete shrine footprint must be clear.",
+    "message.britannia_mod.shrine.placement.protected": "You cannot place a shrine here.",
+    "message.britannia_mod.shrine.placement.invalid_configuration": "This shrine configuration is unavailable.",
+    "message.britannia_mod.shrine.placement.failed_safely": "Shrine placement failed without changing the world."
 
 
 }

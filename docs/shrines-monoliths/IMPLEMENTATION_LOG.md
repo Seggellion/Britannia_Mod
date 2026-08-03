@@ -346,3 +346,130 @@ The pre-existing modified `.gitignore` and untracked `.claude/`, `CyberSecurity_
 ### Next permitted milestone
 
 Milestone 2 only. Do not begin it.
+
+## 2026-08-03 - Milestone 2: Anchor, Parts, and Atomic Diagnostic Shrine Placement
+
+### Isolation, commit, and branch state
+
+- Shared repository (read-only): `C:\projects\britannia\mod\Britannia_Mod`.
+- Independent clone: `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+- Clone creation: `git clone --local --no-hardlinks C:\projects\britannia\mod\Britannia_Mod C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+- The clone has its own `.git` directory and common directory at the clone root; it is not a linked worktree.
+- Starting branch: `shrines-monoliths`, tracking the local-clone `origin/shrines-monoliths`.
+- Starting commit: `bf42b16b818b80a3303c78e21c5f9ec75602fd25`.
+- Integration branch: clone-local `origin/patch-18` at `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+- Starting merge base: `62df1dc97c5113a86f9c0f258cb90538f31efe89`.
+- Starting divergence (`origin/patch-18...shrines-monoliths`, left/right): `0 2` (zero behind, two ahead).
+- Starting isolated working tree: clean (`## shrines-monoliths...origin/shrines-monoliths`).
+- Ending commit: the single Milestone 2 commit `feat(structures): add atomic multiblock shrine placement`; its full immutable hash is recorded in the final report.
+- No switch, merge, rebase, reset, stash, clean, network fetch, push, or origin change was performed against the shared repository.
+
+### Files changed
+
+- `BritanniaMod.java`: registers the isolated large-structure deferred registers.
+- `registry/LargeStructureRegistry.java`: registers exactly one anchor, one part, one anchor block entity, and one shrine item; it registers no anchor/part `BlockItem` and no monolith item.
+- `structure/item/ShrineItem.java`: family placement item configured to the approved Honesty diagnostic variant and routed to server placement.
+- `structure/multiblock/`: cell role/cell records, immutable in-memory placed state, invisible cell-bounded anchor and part blocks, full future part-offset encoding, deterministic reverse anchor lookup, and the anchor-only block entity.
+- `structure/placement/`: typed failures, immutable plan/result, read-only world boundary, mutation boundary, planner, executor, and live server adapter.
+- `assets/britannia_mod/blockstates/large_structure_*.json`: invisible diagnostic air-model blockstates for anchor and parts.
+- `assets/britannia_mod/models/item/shrine.json`: diagnostic vanilla-stone item presentation; no shrine artwork was fabricated.
+- `assets/britannia_mod/lang/en_us.json`: diagnostic item name and concise placement failure feedback.
+- `src/test/java/com/seggellion/britannia_mod/structure/{placement,multiblock,milestone,testsupport}`: 18 Milestone 2 tests in four test classes plus the repository-pattern test registration helper.
+- `docs/shrines-monoliths/PROJECT_FACTS.md` and this log: verified current architecture and evidence.
+
+### Architecture and behavior
+
+- The existing Milestone 1 facing convention remains authoritative. The live floor placement derives an outward facing opposite the player's horizontal direction, then delegates every world position to `StructureTransform`.
+- Planning is mutation-free. It validates the actual shrine item; family and variant catalogue entries; top-face floor placement; all four world-border/build-height positions; all required already-loaded chunks; unrelated structure occupancy; replaceability; `mayInteract`/`mayUseItemAt`; anchor block-entity compatibility; and every encoded part state.
+- The immutable plan owns one anchor plus three parts in the catalogue's deterministic `y/z/x` order and captures exact original/expected block states for rollback.
+- Execution places the anchor, initializes its in-memory authoritative family/variant/facing/footprint state, places three parts, verifies every block and reverse part-to-anchor relation, synchronizes the anchor, emits success effects, and only then consumes one survival item. Creative consumes zero.
+- Any failed mutation restores cells in reverse order with `UPDATE_SUPPRESS_DROPS`. Rollback does not overwrite an unexpected unrelated replacement detected during the transaction.
+- Part state supports the complete future ranges `x=0..2`, `y=0..2`, `z=0..1`, but this milestone plans only the four shrine offsets. Parts have no block entity and no family/variant state.
+- Anchor and part selection/collision shapes are exactly one local cell (`0..16` voxels on every axis). Adjacent perimeter positions are not reserved or inspected as occupied cells.
+- Presentation is intentionally diagnostic: structure blocks render invisibly and the item reuses vanilla stone. No final shrine texture/model, block-entity renderer, monolith placement, Interior Decorator integration, persistence codec, configured drops, or lifecycle repair was added.
+
+### Exact commands and results
+
+Shared-repository read-only validation before cloning:
+
+```text
+git -C C:\projects\britannia\mod\Britannia_Mod rev-parse --show-toplevel
+git -C C:\projects\britannia\mod\Britannia_Mod branch --show-current
+git -C C:\projects\britannia\mod\Britannia_Mod rev-parse HEAD
+git -C C:\projects\britannia\mod\Britannia_Mod status --short --branch
+git -C C:\projects\britannia\mod\Britannia_Mod rev-parse shrines-monoliths
+git -C C:\projects\britannia\mod\Britannia_Mod rev-parse patch-18
+git -C C:\projects\britannia\mod\Britannia_Mod merge-base shrines-monoliths patch-18
+git -C C:\projects\britannia\mod\Britannia_Mod rev-list --left-right --count patch-18...shrines-monoliths
+```
+
+Result: the required branch tips, merge base, and `0 2` divergence matched. The shared tree had a pre-existing modified `ModConfig.java` plus untracked `.claude/` and unrelated root documents; none was copied or modified.
+
+```text
+.\gradlew.bat compileJava --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: exit `0`; `BUILD SUCCESSFUL in 2m 8s`; 26 actionable tasks. Only the two known pre-existing compiler warnings remained.
+
+The first focused run failed at `compileTestJava` because a test used an impossible direct `instanceof EntityBlock` check on a final class. The assertion was corrected to reflection without weakening behavior. Two subsequent focused attempts exposed the repository's plain-JUnit bootstrap requirements (`Not bootstrapped`, then `Registry is already frozen`). The test helper was aligned with the proven banner sequence: version detection, vanilla bootstrap, NeoForge `GameData.unfreezeData()`, and explicit registration of test-only blocks/item. Production code was unchanged by these harness corrections.
+
+```text
+.\gradlew.bat test --tests 'com.seggellion.britannia_mod.structure.placement.*' --tests 'com.seggellion.britannia_mod.structure.multiblock.*' --tests 'com.seggellion.britannia_mod.structure.milestone.*' --no-daemon --no-configuration-cache --stacktrace
+```
+
+Final focused result: exit `0`; `BUILD SUCCESSFUL in 28s`; 4 classes, 18 tests, 0 failures, 0 errors, 0 skipped.
+
+```text
+.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: exit `0`; `BUILD SUCCESSFUL in 33s`; 8 classes, 66 tests, 0 failures, 0 errors, 0 skipped.
+
+```text
+.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace
+```
+
+Result: exit `0`; `BUILD SUCCESSFUL in 2m 13s`; 36 actionable tasks (8 executed, 19 from cache, 9 up-to-date). Production normal and `-all` JARs were created.
+
+```text
+jar tf build\libs\Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar
+jar tf build\libs\Britannia_Mod_shrines_m2_codex-0.1.7k.jar
+```
+
+Result: both JARs contain the new registry, item, multiblock and placement classes plus both diagnostic blockstates and the shrine item model. No milestone-specific renderer or anchor/part item model was added.
+
+### Automated coverage
+
+- Exact four-cell shrine plans for every horizontal facing and reverse part-to-anchor resolution.
+- Wrong item, monolith family, missing variant, invalid clicked face/facing, world bounds, unloaded chunk, unrelated structure, occupied target, protection denial, block-entity incompatibility, and part-encoding failures remain non-mutating and non-consuming.
+- Survival and creative consumption behavior.
+- Failure injection at every anchor/part write, every final verification cell, missing block entity, rejected/mismatched/throwing state assignment, synchronization, and rollback failure.
+- Exactly four successful cell mutations, zero transaction drops, and success effects only after complete verification.
+- Full future part-offset encoding for four facings (68 non-anchor state/facing combinations), invalid offset rejection, cell-bounded selection/collision shapes, immovable blocks, and no part block entity/authoritative state.
+- Registration counts, no anchor/part `BlockItem`, server authority, no chunk force-load path, drop-suppressed rollback, diagnostic resources, and explicit later-milestone exclusions.
+
+### Manual checks
+
+Performed:
+
+- Read both authoritative root specifications and all three project documents completely.
+- Inspected the approved Milestone 1 commit, current registration/block-entity/item/protection conventions, and the unintegrated banner planner/executor patterns without switching branches.
+- Verified isolated clone branch, ancestry, clean start, independent Git metadata, and production JAR contents.
+
+Not performed:
+
+- In-game shrine placement, stair ring, client launch, dedicated-server launch, multiplayer, reload, break/drop, or visual review.
+- The diagnostic item is obtainable through the normal registry (`/give`) but no interactive client was launched during this automated milestone run.
+- Persistence, whole-structure break/lifecycle, pick block, explosions, orphan/repair, final rendering, and decorator cycling belong to later milestones and were not tested or claimed.
+
+### Known limitations and deviations
+
+- The placed family/variant/facing/footprint state is intentionally in-memory only. Save/load and item reconstruction begin in Milestone 3.
+- Breaking cells does not yet perform whole-structure teardown or configured drops; full lifecycle behavior is explicitly excluded from Milestone 2.
+- The diagnostic structure is invisible and no shrine artwork or final asset path exists in the repository.
+- No manual game validation was performed, so live stair adjacency and interaction remain unverified despite pure shape/plan coverage.
+- No design deviation was introduced.
+
+### Next permitted milestone
+
+Milestone 3 only. Do not begin it.
