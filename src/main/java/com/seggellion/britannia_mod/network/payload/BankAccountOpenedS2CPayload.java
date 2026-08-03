@@ -17,7 +17,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -32,6 +34,7 @@ import java.util.UUID;
  */
 public record BankAccountOpenedS2CPayload(
         String tellerName,
+        String tellerGender,
         int entityId,
         @Nullable String cityDisplayName,
         int weightLimit,
@@ -43,6 +46,15 @@ public record BankAccountOpenedS2CPayload(
 ) implements CustomPacketPayload {
     private static final int MAX_NAME_BYTES = 128;
     private static final String FALLBACK_TELLER_NAME = "the teller";
+    /**
+     * Matches PortraitDownloader's own treatment of an absent gender: it lowercases whatever it
+     * is given and substitutes this when the value is null or empty, so sending it explicitly
+     * keeps the portrait path this payload produces identical to the one that class would build
+     * on its own. Only the two genders Rails itself constrains world_npcs.gender_key to are
+     * forwarded; anything else degrades to this rather than becoming part of a request URL.
+     */
+    private static final String FALLBACK_TELLER_GENDER = "unknown";
+    private static final Set<String> SUPPORTED_TELLER_GENDERS = Set.of("male", "female");
     /** Mirrors {@link BankingOpenResponseParser}'s own defensive bound on the same list. */
     private static final int MAX_BANK_ITEMS = 10_000;
 
@@ -70,6 +82,7 @@ public record BankAccountOpenedS2CPayload(
         Objects.requireNonNull(bankItems, "bankItems");
         return new BankAccountOpenedS2CPayload(
                 resolveTellerName(teller),
+                resolveTellerGender(teller),
                 teller.getId(),
                 resolveCityDisplayName(account.cityPublicId()),
                 account.weightLimit(),
@@ -87,6 +100,21 @@ public record BankAccountOpenedS2CPayload(
         return isBounded(personal) ? personal : FALLBACK_TELLER_NAME;
     }
 
+    /**
+     * The reconciler assigns this from Rails' own world_npcs.gender_key when it materializes the
+     * entity (ServiceNpcAssignmentReconciler#186-187, alongside the personal name this class
+     * already forwards), so a correctly-staffed teller always carries a real value here. The
+     * allow-list still applies: this string becomes a path segment in PortraitDownloader's
+     * request URL, and an entity whose gender was never reconciled would otherwise put an
+     * arbitrary synched value into it.
+     */
+    private static String resolveTellerGender(ServiceNpcEntity teller) {
+        String gender = teller.getGender();
+        if (gender == null) return FALLBACK_TELLER_GENDER;
+        String normalized = gender.trim().toLowerCase(Locale.ROOT);
+        return SUPPORTED_TELLER_GENDERS.contains(normalized) ? normalized : FALLBACK_TELLER_GENDER;
+    }
+
     @Nullable
     private static String resolveCityDisplayName(@Nullable UUID cityPublicId) {
         if (cityPublicId == null) return null;
@@ -101,6 +129,7 @@ public record BankAccountOpenedS2CPayload(
 
     private static void encode(FriendlyByteBuf buffer, BankAccountOpenedS2CPayload payload) {
         ServiceNpcSpawnPayloadCodec.writeUtf(buffer, payload.tellerName, MAX_NAME_BYTES);
+        ServiceNpcSpawnPayloadCodec.writeUtf(buffer, payload.tellerGender, MAX_NAME_BYTES);
         ByteBufCodecs.VAR_INT.encode(buffer, payload.entityId);
         buffer.writeBoolean(payload.cityDisplayName != null);
         if (payload.cityDisplayName != null) {
@@ -122,6 +151,7 @@ public record BankAccountOpenedS2CPayload(
 
     private static BankAccountOpenedS2CPayload decode(FriendlyByteBuf buffer) {
         String tellerName = ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_NAME_BYTES);
+        String tellerGender = ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_NAME_BYTES);
         int entityId = ByteBufCodecs.VAR_INT.decode(buffer);
         String cityDisplayName = buffer.readBoolean() ? ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_NAME_BYTES) : null;
         int weightLimit = buffer.readVarInt();
@@ -140,8 +170,8 @@ public record BankAccountOpenedS2CPayload(
         }
 
         return new BankAccountOpenedS2CPayload(
-                tellerName, entityId, cityDisplayName, weightLimit, currentWeight, goldBalance, silverBalance, copperBalance,
-                bankItems
+                tellerName, tellerGender, entityId, cityDisplayName, weightLimit, currentWeight, goldBalance, silverBalance,
+                copperBalance, bankItems
         );
     }
 

@@ -150,7 +150,7 @@ public final class BankScreen extends Screen {
         this.account = Objects.requireNonNull(account, "account");
         this.bankItems = account.bankItems();
         this.headerView = new DialogueViewModel(
-                account.tellerName(), "unknown", "", "", "Here is your account.", "bank", false, List.of()
+                account.tellerName(), account.tellerGender(), "", "", "Here is your account.", "bank", false, List.of()
         );
     }
 
