@@ -102,7 +102,7 @@ public final class BankMainScreen extends Screen implements BankingScreen {
 
         Minecraft minecraft = Minecraft.getInstance();
         switch (destination) {
-            case BANK_BOX -> minecraft.setScreen(BankPlaceholderScreen.bankBox());
+            case BANK_BOX -> minecraft.setScreen(new BankBoxScreen());
             case BALANCE -> minecraft.setScreen(new BankBalanceScreen());
             // Milestone 7 rebuilt this on the session, so it no longer needs a snapshot passed
             // in -- it reads the same live state every other banking screen does.

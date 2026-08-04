@@ -1,7 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
 import com.seggellion.britannia_mod.component.BankChequeData;
-import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -29,8 +28,14 @@ public class BankChequeItem extends Item {
         BankChequeData data = stack.get(DataComponentRegistry.BANK_CHEQUE_DATA.get());
         if (data == null) return;
 
-        long gold = data.displayAmount() / CoinConversion.COPPER_PER_GOLD;
-        tooltip.add(Component.literal(gold + " gold").withStyle(ChatFormatting.GOLD));
+        // Milestone 8c: displayAmount is a coin count of the cheque's own denomination, so it is
+        // shown as written. It used to be divided out of a copper value, which was right only for
+        // gold -- a 500-silver cheque read as "5 gold".
+        tooltip.add(Component.translatable(
+                "item.britannia_mod.bank_cheque.amount",
+                String.format(java.util.Locale.ROOT, "%,d", data.displayAmount()),
+                Component.translatable("screen.britannia_mod.bank.cheque.denomination." + data.currencyKey())
+        ).withStyle(ChatFormatting.GOLD));
         if (!data.issuerText().isBlank()) {
             tooltip.add(Component.literal("Issued by " + data.issuerText()).withStyle(ChatFormatting.GRAY));
         }

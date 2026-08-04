@@ -72,8 +72,17 @@ class BankTranslationKeysTest {
         keys.add(BankNavigation.greetingKey("Britain"));
         keys.add("screen.britannia_mod.bank.main.title");
         keys.add("screen.britannia_mod.bank.action.back");
-        keys.add("screen.britannia_mod.bank.placeholder.bank_box.title");
-        keys.add("screen.britannia_mod.bank.placeholder.bank_box.body");
+
+        // Milestone 9: the Bank Box shell.
+        keys.add("screen.britannia_mod.bank.box.title");
+        keys.add("screen.britannia_mod.bank.box.weight");
+        keys.add("screen.britannia_mod.bank.box.inventory_label");
+        keys.add("screen.britannia_mod.bank.box.amount_label");
+        keys.add("screen.britannia_mod.bank.box.withdraw.gold");
+        keys.add("screen.britannia_mod.bank.box.withdraw.silver");
+        keys.add("screen.britannia_mod.bank.box.withdraw.copper");
+        keys.add("screen.britannia_mod.bank.box.withdraw_item");
+        keys.add("screen.britannia_mod.bank.box.withdraw_item.pending");
 
         // Milestone 5: the Balance screen. Both plural forms of all three denominations, because
         // a missing ".one" only shows up on an account holding exactly one coin -- which is
@@ -95,6 +104,9 @@ class BankTranslationKeysTest {
         keys.add("screen.britannia_mod.bank.cheque.context");
         keys.add("screen.britannia_mod.bank.cheque.confirm");
         keys.add("screen.britannia_mod.bank.cheque.confirm.pending");
+        // Milestone 8c: the cheque item itself, which had no name and no model before.
+        keys.add("item.britannia_mod.bank_cheque");
+        keys.add("item.britannia_mod.bank_cheque.amount");
         for (BankBalanceCopy.Denomination denomination : BankBalanceCopy.Denomination.values()) {
             keys.add("screen.britannia_mod.bank.cheque.denomination." + denomination.keySegment());
         }
@@ -135,6 +147,15 @@ class BankTranslationKeysTest {
         assertFalse(language.has("screen.britannia_mod.bank.placeholder.balance.body"));
         // Milestone 6b: the notice explaining why Deposit All Coins was disabled.
         assertFalse(language.has("screen.britannia_mod.bank.balance.deposit_all_unavailable"));
+        // Milestone 9: the Bank Box placeholder screen, replaced by the real shell.
+        assertFalse(language.has("screen.britannia_mod.bank.placeholder.bank_box.title"));
+        assertFalse(language.has("screen.britannia_mod.bank.placeholder.bank_box.body"));
+    }
+
+    @Test
+    void theWeightLineCarriesItsTwoArguments() throws IOException {
+        assertEquals(2, countPlaceholders(
+                language().get("screen.britannia_mod.bank.box.weight").getAsString()));
     }
 
     @Test

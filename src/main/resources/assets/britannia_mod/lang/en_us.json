@@ -643,8 +643,15 @@
     "screen.britannia_mod.bank.action.balance": "Balance",
     "screen.britannia_mod.bank.action.create_cheque": "Create Cheque",
     "screen.britannia_mod.bank.action.back": "Back",
-    "screen.britannia_mod.bank.placeholder.bank_box.title": "Bank Box",
-    "screen.britannia_mod.bank.placeholder.bank_box.body": "The teller gestures toward the vault door. \"The vault is being refitted, and is not ready for thee yet. Return shortly.\"",
+    "screen.britannia_mod.bank.box.title": "Bank Box",
+    "screen.britannia_mod.bank.box.weight": "Stored: %s / %s stones",
+    "screen.britannia_mod.bank.box.inventory_label": "Thy pack",
+    "screen.britannia_mod.bank.box.amount_label": "Amount",
+    "screen.britannia_mod.bank.box.withdraw.gold": "Gold",
+    "screen.britannia_mod.bank.box.withdraw.silver": "Silver",
+    "screen.britannia_mod.bank.box.withdraw.copper": "Copper",
+    "screen.britannia_mod.bank.box.withdraw_item": "Withdraw",
+    "screen.britannia_mod.bank.box.withdraw_item.pending": "Withdrawing...",
 
     "screen.britannia_mod.bank.balance.title": "Balance",
     "screen.britannia_mod.bank.balance.body": "The teller runs a finger down the ledger. \"Thy account holds %s, %s, and %s.\"",
@@ -665,6 +672,9 @@
     "screen.britannia_mod.bank.cheque.denomination.silver": "Silver",
     "screen.britannia_mod.bank.cheque.denomination.copper": "Copper",
     "screen.britannia_mod.bank.cheque.context": "On deposit: %s. The smallest cheque in this coin is %s.",
+    "item.britannia_mod.bank_cheque": "Bank Cheque",
+    "item.britannia_mod.bank_cheque.amount": "%s %s",
+
     "screen.britannia_mod.bank.cheque.confirm": "Write Cheque",
     "screen.britannia_mod.bank.cheque.confirm.pending": "Writing..."
 }

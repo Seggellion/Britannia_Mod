@@ -33,28 +33,41 @@ public final class BankStatusPresenter {
     /** How prominently a status reads. See the class docs on why this is more than a colour. */
     public enum Severity {
         /** Neutral context. Not an outcome. */
-        INFORMATIONAL(0xFF111111, 0, false),
+        INFORMATIONAL(0xFF111111, 0xFFE8DCC8, 0, false),
         /** The player's input cannot be sent yet. Recoverable by editing the form. */
-        VALIDATION(0xFFB8860B, 2, false),
+        VALIDATION(0xFFB8860B, 0xFFD9B052, 2, false),
         /** The operation completed. */
-        SUCCESS(0xFF2E7D32, 2, false),
+        SUCCESS(0xFF2E7D32, 0xFF6FBF73, 2, false),
         /** The server declined. Nothing happened; the player may try something else. */
-        REJECTION(0xFFAA4444, 3, false),
+        REJECTION(0xFFAA4444, 0xFFD07070, 3, false),
         /** Something is wrong that only staff can resolve. The player must not retry. */
-        RECONCILIATION(0xFF8B0000, 5, true);
+        RECONCILIATION(0xFF8B0000, 0xFFE05555, 5, true);
 
         private final int color;
+        private final int colorOnDark;
         private final int markerWidth;
         private final boolean bold;
 
-        Severity(int color, int markerWidth, boolean bold) {
+        Severity(int color, int colorOnDark, int markerWidth, boolean bold) {
             this.color = color;
+            this.colorOnDark = colorOnDark;
             this.markerWidth = markerWidth;
             this.bold = bold;
         }
 
+        /** For parchment and other light grounds -- the dialogue family's screens. */
         public int color() {
             return color;
+        }
+
+        /**
+         * For the Bank Box's dark panel. The parchment palette was chosen against a light ground
+         * -- {@link #INFORMATIONAL}'s near-black would simply vanish on a dark one, and the
+         * others lose most of their contrast. Same hues, lifted; the marker and bold signals are
+         * unchanged, so severity still does not depend on colour alone (design §16).
+         */
+        public int colorOnDark() {
+            return colorOnDark;
         }
 
         /** Width of the marker bar drawn left of the text. Zero draws none. */

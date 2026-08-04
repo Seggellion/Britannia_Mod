@@ -1,7 +1,6 @@
 package com.seggellion.britannia_mod.client.screen.bank;
 
 import com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination;
-import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.service.banking.BankingChequeIssuanceProxyService;
 
 import javax.annotation.Nullable;
@@ -15,21 +14,17 @@ import java.util.Objects;
  * and enables its Confirm button when this says the form is valid; it makes no judgement of its
  * own.
  *
- * <h2>The floor is a coin count; the ceiling is a value</h2>
- * <b>The smallest cheque is {@value #MIN_UNITS} coins of whichever denomination funds it</b> --
- * 500 gold, 500 silver, or 500 copper (owner decision, superseding the value-denominated floor
- * recorded on 2026-08-03; see design §12.3.1). One sentence a player can hold in their head,
- * rather than a copper figure they must convert.
+ * <h2>Coins all the way through -- there is no conversion here</h2>
+ * <b>A cheque is between {@value #MIN_UNITS} and {@value #MAX_UNITS} coins of one denomination</b>,
+ * the same two numbers for gold, silver and copper. What the player types is what is sent, what is
+ * stored, and what redemption pays back (Milestone 8c, ADR-027).
  *
- * <p>Gold is unchanged by this: 500 gold has always been the floor, because 500 gold is exactly
- * the 5 000 000 copper the previous absolute rule required. Only silver and copper gain lower
- * floors, and neither denomination existed before this epic.
- *
- * <p><b>The ceiling stays value-denominated, and that is structural rather than a policy choice.</b>
- * A cheque's amount is stored and debited as an int32 copper value, so the real limit is
- * {@link #MAX_COPPER}; a flat coin count would let a copper cheque overflow the column it lives
- * in. {@link #maximumIn} therefore differs per denomination -- 100 000 gold, 10 000 000 silver,
- * 1 000 000 000 copper -- because that is what fits.
+ * <p>There used to be a copper conversion in this class, and the ceiling used to differ per
+ * denomination because of it: the amount was a copper <i>value</i>, so five million gold needed
+ * 50 000 000 000 and did not fit the column. Making the amount a coin count removed both the
+ * conversion and the ceiling. Nothing in the cheque path multiplies by a denomination any more,
+ * which is the point -- a conversion that exists is a conversion that can be applied twice, or
+ * in the wrong direction.
  *
  * <h2>What it does not do</h2>
  * No packet, and no authority. Milestone 7 sends nothing at all; Milestone 8b adds the request.
@@ -38,33 +33,13 @@ import java.util.Objects;
  */
 public final class BankChequeForm {
 
-    /**
-     * The smallest cheque, counted in coins of the selected denomination -- not in value.
-     *
-     * <p>Milestone 8a must teach Rails the same rule. Its {@code BankCheque::MIN_AMOUNT} is
-     * currently an absolute 5 000 000 copper, which happens to equal 500 gold and so already
-     * agrees for gold, but would reject a 500-silver or 500-copper cheque. Nothing is sent until
-     * 8b, so the two cannot disagree in flight; 8a is where Rails' floor becomes
-     * denomination-aware and its absolute floor drops to the smallest legal cheque.
-     */
+    /** The smallest cheque, counted in coins of the selected denomination. Mirrors Rails' {@code BankCheque::MIN_AMOUNT}. */
     public static final int MIN_UNITS = 500;
 
-    /**
-     * The largest cheque by value. Structural: the amount is stored and debited as an int32
-     * copper column, so this is a capacity limit rather than a product decision.
-     */
-    public static final int MAX_COPPER = BankingChequeIssuanceProxyService.MAX_AMOUNT_COPPER;
+    /** The largest cheque, in the same coins. Reachable in every denomination. Mirrors Rails' {@code BankCheque::MAX_AMOUNT}. */
+    public static final int MAX_UNITS = BankingChequeIssuanceProxyService.MAX_COIN_COUNT;
 
     private BankChequeForm() {
-    }
-
-    /** How many copper one unit of {@code denomination} is worth. */
-    public static int copperPerUnit(Denomination denomination) {
-        return switch (denomination) {
-            case GOLD -> CoinConversion.COPPER_PER_GOLD;
-            case SILVER -> CoinConversion.COPPER_PER_SILVER;
-            case COPPER -> 1;
-        };
     }
 
     /**
@@ -77,30 +52,33 @@ public final class BankChequeForm {
         return MIN_UNITS;
     }
 
-    /** The largest cheque expressible in {@code denomination}. */
+    /** The largest cheque in {@code denomination} -- the same {@value #MAX_UNITS} coins for all three. */
     public static int maximumIn(Denomination denomination) {
-        return MAX_COPPER / copperPerUnit(denomination);
+        Objects.requireNonNull(denomination, "denomination");
+        return MAX_UNITS;
     }
 
     /**
      * The outcome of validating the form.
      *
-     * <p>{@code copperAmount} is meaningful only when {@link #valid()}. It is what Milestone 8b
-     * will send, already converted out of the player's chosen denomination -- the request carries
-     * a copper value plus the funding denomination, never the raw typed number.
+     * <p>{@code amount} is the coin count, meaningful only when {@link #valid()}. It is exactly
+     * what the player typed and exactly what gets sent -- there is deliberately no second,
+     * converted figure alongside it. The previous version of this record carried both a copper
+     * value and the typed number, and the screen picking the wrong one is precisely the class of
+     * mistake Milestone 8c exists to remove.
      */
-    public record Validation(@Nullable BankStatusPresenter.Status error, int copperAmount, int enteredAmount) {
+    public record Validation(@Nullable BankStatusPresenter.Status error, int amount) {
 
         public boolean valid() {
             return error == null;
         }
 
-        static Validation ok(int copperAmount, int enteredAmount) {
-            return new Validation(null, copperAmount, enteredAmount);
+        static Validation ok(int amount) {
+            return new Validation(null, amount);
         }
 
         static Validation rejected(BankStatusPresenter.Status error) {
-            return new Validation(Objects.requireNonNull(error, "error"), 0, 0);
+            return new Validation(Objects.requireNonNull(error, "error"), 0);
         }
     }
 
@@ -155,16 +133,12 @@ public final class BankChequeForm {
             return Validation.rejected(BankStatusPresenter.INVALID_AMOUNT);
         }
 
-        // The floor is a coin count, so it is checked against what the player typed rather than
-        // against the converted value -- that is the whole point of the rule.
+        // Both bounds are coin counts and so is what the player typed, so this is the whole of
+        // the range check. No conversion, no per-denomination special case.
         if (entered < MIN_UNITS) {
             return Validation.rejected(BankStatusPresenter.AMOUNT_BELOW_MINIMUM);
         }
-
-        long copper = entered * (long) copperPerUnit(denomination);
-        // The ceiling is a value, and is checked on the long before any narrowing so an amount
-        // that would overflow int is caught here rather than wrapping into a plausible small one.
-        if (copper > MAX_COPPER) {
+        if (entered > maximumIn(denomination)) {
             return Validation.rejected(BankStatusPresenter.AMOUNT_TOO_LARGE);
         }
 
@@ -172,7 +146,7 @@ public final class BankChequeForm {
             return Validation.rejected(BankStatusPresenter.INSUFFICIENT_BALANCE);
         }
 
-        return Validation.ok((int) copper, (int) entered);
+        return Validation.ok((int) entered);
     }
 
     /**

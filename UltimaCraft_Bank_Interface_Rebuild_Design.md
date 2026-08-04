@@ -839,17 +839,34 @@ selected denomination's copper unit"; and carry a denomination on the issuance p
 > floor was never a decision of this epic — it is `BankCheque::MIN_AMOUNT` from ADR-018/ADR-019,
 > written when cheques were gold-only and it simply meant "500 gold".
 
-**The smallest cheque is 500 coins of whichever denomination funds it.** 500 gold, 500 silver, or
-500 copper. One sentence a player can hold in their head.
+**A cheque is between 500 and 5 000 000 coins of whichever denomination funds it.** The same two
+numbers for gold, silver and copper. One rule, no conversion.
 
-**Gold is unaffected.** 500 gold has always been the floor, because 500 gold *is* 5 000 000
-copper. Only silver and copper gain reachable floors, and neither denomination existed before this
+> **Revised twice, and the second revision matters.** The first pass kept the ceiling
+> value-denominated while making the floor a coin count, which left an inconsistent rule — a coin
+> count at the bottom and a copper value at the top. The owner corrected it: *"Just use a static
+> 500 coins minimum and 5,000,000 coins maximum."* Both bounds are now coin counts.
+
+**Gold is unaffected at the floor.** 500 gold has always been the minimum, because 500 gold *is*
+5 000 000 copper. Only silver and copper gain reachable floors, and neither existed before this
 epic — so nothing that has ever shipped changes behaviour.
 
-**The ceiling stays value-denominated, and that is structural rather than policy.** A cheque's
-amount is stored and debited as an int32 copper column, so `MAX_AMOUNT` (1 000 000 000 copper)
-is a capacity limit. The maximum therefore differs per denomination — 100 000 gold, 10 000 000
-silver, 1 000 000 000 copper — because that is what fits.
+**One denomination cannot reach the ceiling, and this is a storage limit rather than a policy
+choice.** The amount is stored and debited as an int32 copper column bounded by `MAX_AMOUNT`
+(1 000 000 000 copper). Five million coins is 5 000 000 copper or 500 000 000 copper — both fit —
+but 50 000 000 000 copper in gold, which does not. Effective maxima:
+
+| Denomination | Maximum | Limited by |
+| --- | --- | --- |
+| Gold | 100 000 | storage |
+| Silver | 5 000 000 | the rule |
+| Copper | 5 000 000 | the rule |
+
+**Raising gold to the full five million is a Rails change, not a client one**, and it is not
+small: `bank_cheques.amount` and every column it is added to would need to become a bigint, and
+`MAX_AMOUNT` would need to rise fiftyfold. It is recorded here as a known limit rather than
+silently applied — a player typing 5 000 000 gold gets an honest "too large" before anything is
+sent, not a wrapped value.
 
 Consequences for Milestone 8a:
 

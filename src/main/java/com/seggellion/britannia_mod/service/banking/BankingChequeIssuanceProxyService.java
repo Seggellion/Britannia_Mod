@@ -7,7 +7,6 @@ import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipts;
 import com.seggellion.britannia_mod.component.BankChequeData;
-import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
@@ -99,17 +98,12 @@ public final class BankingChequeIssuanceProxyService {
     public static final int MIN_COIN_COUNT = 500;
 
     /**
-     * The absolute copper floor, which is now only a sanity bound -- the smallest legal cheque is
-     * 500 copper. The denomination-aware rule above is the real check, exactly as it is on the
-     * Rails side.
+     * The largest cheque, in the same coins. Milestone 8c (ADR-027) made the amount a coin count
+     * rather than a copper value, which is what lets all three denominations reach this -- the old
+     * per-denomination ceiling existed only because five million gold needed 50,000,000,000 copper.
      */
-    public static final int MIN_AMOUNT_COPPER = MIN_COIN_COUNT;
+    public static final int MAX_COIN_COUNT = 5_000_000;
 
-    /**
-     * ADR-018/ADR-019: 100,000 gold-equivalent. Unchanged by Milestone 8b, and structural rather
-     * than policy -- the amount is stored and debited as an int32 copper column.
-     */
-    public static final int MAX_AMOUNT_COPPER = 100_000 * CoinConversion.COPPER_PER_GOLD;
 
     private static BankingChequeIssuanceClientPort client = new BankingChequeIssuanceClient();
 
@@ -142,29 +136,29 @@ public final class BankingChequeIssuanceProxyService {
     /**
      * The full cheque issuance sequence -- the one and only production entry point.
      *
-     * @param amountCopper the cheque's value, always in copper
+     * @param amountCoins the cheque's value, always in copper
      * @param currencyKey  which balance funds it. Milestone 8b: this <b>never rescales</b>
-     *                     {@code amountCopper} -- 5,000,000 copper funded from gold debits 500
+     *                     {@code amountCoins} -- 5,000,000 copper funded from gold debits 500
      *                     gold, and the same 5,000,000 funded from copper debits 5,000,000 copper.
      *                     See docs/banking_bank_cheque_issuance.md, which calls this out as the
      *                     one part of the contract that is easy to get backwards.
      */
     public static CompletableFuture<BankingChequeIssuanceResult> triggerChequeIssuance(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
+            ServerPlayer player, ServiceNpcEntity teller, int amountCoins, String currencyKey
     ) {
         UUID playerId = player.getUUID();
         if (!IN_FLIGHT.add(playerId)) {
             return CompletableFuture.completedFuture(new BankingChequeIssuanceResult.LocalFailure("cheque_issuance_already_in_flight"));
         }
-        return prepareAndConfirmInternal(player, teller, amountCopper, currencyKey)
+        return prepareAndConfirmInternal(player, teller, amountCoins, currencyKey)
                 .thenCompose(outcome -> continueToDelivery(player, teller, outcome))
                 .whenComplete((result, error) -> IN_FLIGHT.remove(playerId));
     }
 
     public static CompletableFuture<BankingChequeIssuanceResult> triggerChequeIssuanceForTesting(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
+            ServerPlayer player, ServiceNpcEntity teller, int amountCoins, String currencyKey
     ) {
-        return triggerChequeIssuance(player, teller, amountCopper, currencyKey);
+        return triggerChequeIssuance(player, teller, amountCoins, currencyKey);
     }
 
     /**
@@ -176,13 +170,13 @@ public final class BankingChequeIssuanceProxyService {
      * {@link #resetInFlightTrackingForTesting()} afterward to simulate the process restarting.
      */
     public static CompletableFuture<PrepareAndConfirmOutcome> prepareAndConfirmForTesting(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
+            ServerPlayer player, ServiceNpcEntity teller, int amountCoins, String currencyKey
     ) {
         UUID playerId = player.getUUID();
         if (!IN_FLIGHT.add(playerId)) {
             return CompletableFuture.completedFuture(new PrepareAndConfirmOutcome.LocalFailure("cheque_issuance_already_in_flight"));
         }
-        return prepareAndConfirmInternal(player, teller, amountCopper, currencyKey).whenComplete((outcome, error) -> {
+        return prepareAndConfirmInternal(player, teller, amountCoins, currencyKey).whenComplete((outcome, error) -> {
             if (error != null || !(outcome instanceof PrepareAndConfirmOutcome.Confirmed)) {
                 IN_FLIGHT.remove(playerId);
             }
@@ -197,13 +191,19 @@ public final class BankingChequeIssuanceProxyService {
      * abort-and-restore path in isolation). Does not touch {@link #IN_FLIGHT} itself.
      */
     public static CompletableFuture<BankingChequeIssuanceResult> deliverForTesting(
-            ServerPlayer player, UUID operationPublicId, UUID chequePublicId, int amountCopper
+            ServerPlayer player, UUID operationPublicId, UUID chequePublicId, int amountCoins
     ) {
         CompletableFuture<BankingChequeIssuanceResult> result = new CompletableFuture<>();
         // null teller, matching resumeConfirmChequeIssuance's own real production caller: this
         // is a crash-recovery/resume-shaped entry point, not a live interaction, so there is no
         // live teller to re-check proximity against -- see attemptDelivery's own docs.
-        attemptDelivery(player.server, player, null, operationPublicId, chequePublicId, amountCopper, result);
+        // The receipt does not record which balance funded the cheque, so a resume cannot know
+        // it. Gold is the safe default: it is what every cheque was before Milestone 8b, and the
+        // key is presentation only -- a resumed silver cheque may carry the gold tint, but its
+        // identity, value and redemption are unaffected. Recording it would mean a receipt schema
+        // bump, which strands every pending receipt on upgrade for a colour.
+        attemptDelivery(player.server, player, null, operationPublicId, chequePublicId, amountCoins,
+                BankChequeData.DEFAULT_CURRENCY_KEY, result);
         return result;
     }
 
@@ -252,7 +252,9 @@ public final class BankingChequeIssuanceProxyService {
                     }
                     // null teller: this is the server-startup reconciliation resume path, not a
                     // live interaction -- see attemptDelivery's own docs.
-                    attemptDelivery(server, player, null, operationPublicId, confirmed.chequePublicId(), confirmed.amount(), result);
+                    // Gold default on resume -- see deliverForTesting for why.
+                    attemptDelivery(server, player, null, operationPublicId, confirmed.chequePublicId(), confirmed.amount(),
+                            BankChequeData.DEFAULT_CURRENCY_KEY, result);
                 }
                 case BankingChequeIssuanceConfirmResult.ReconciliationRequired ignored ->
                         result.complete(escalateAndReport(server, operationPublicId));
@@ -273,7 +275,8 @@ public final class BankingChequeIssuanceProxyService {
         return switch (outcome) {
             case PrepareAndConfirmOutcome.Confirmed confirmed -> {
                 CompletableFuture<BankingChequeIssuanceResult> result = new CompletableFuture<>();
-                attemptDelivery(player.server, player, teller, confirmed.operationPublicId(), confirmed.chequePublicId(), confirmed.amount(), result);
+                attemptDelivery(player.server, player, teller, confirmed.operationPublicId(), confirmed.chequePublicId(),
+                        confirmed.amount(), confirmed.currencyKey(), result);
                 yield result;
             }
             case PrepareAndConfirmOutcome.ReconciliationRequired reconciliationRequired ->
@@ -292,29 +295,23 @@ public final class BankingChequeIssuanceProxyService {
     // ---- Steps 1-4: local checks, prepare, write receipt, confirm ----
 
     private static CompletableFuture<PrepareAndConfirmOutcome> prepareAndConfirmInternal(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
+            ServerPlayer player, ServiceNpcEntity teller, int amountCoins, String currencyKey
     ) {
         BankingProxyService.ResolvedTeller resolved = BankingProxyService.resolve(player, teller);
         if (resolved == null) {
             return CompletableFuture.completedFuture(new PrepareAndConfirmOutcome.LocalFailure("teller_not_resolved"));
         }
 
-        // Milestone 8b: the funding denomination decides the unit, so an unsupported key is
-        // rejected here rather than reaching Rails as an amount validated against the wrong one.
-        Integer unit = CurrencyItemRegistry.copperUnitFor(currencyKey).orElse(null);
-        if (unit == null) {
+        // An unsupported denomination is refused here rather than sent for Rails to reject.
+        if (CurrencyItemRegistry.copperUnitFor(currencyKey).isEmpty()) {
             return CompletableFuture.completedFuture(
                     new PrepareAndConfirmOutcome.RejectedLocally(BankingChequeIssuanceLocalRejectionReason.INVALID_AMOUNT));
         }
 
-        // The same three rules Rails' own validator applies, in the same order: storable range,
-        // whole multiple of the funding denomination's unit, and at least MIN_COIN_COUNT coins of
-        // it. Checking the coin count rather than the copper value is the whole point of the
-        // revised floor -- 500 copper and 500 gold are both legal, and 10 gold is not.
-        boolean outOfRange = amountCopper < MIN_AMOUNT_COPPER || amountCopper > MAX_AMOUNT_COPPER;
-        boolean notWholeCoins = amountCopper % unit != 0;
-        boolean belowFloor = amountCopper / unit < MIN_COIN_COUNT;
-        if (outOfRange || notWholeCoins || belowFloor) {
+        // Milestone 8c (ADR-027): the amount IS the coin count, so this is the whole check. The
+        // unit-multiple rule that used to sit here went with the copper representation -- once an
+        // amount counts coins there is no unit for it to be a multiple of.
+        if (amountCoins < MIN_COIN_COUNT || amountCoins > MAX_COIN_COUNT) {
             return CompletableFuture.completedFuture(
                     new PrepareAndConfirmOutcome.RejectedLocally(BankingChequeIssuanceLocalRejectionReason.INVALID_AMOUNT));
         }
@@ -328,7 +325,7 @@ public final class BankingChequeIssuanceProxyService {
 
         MinecraftServer server = player.server;
         BankingChequeIssuancePrepareRequest prepareRequest = new BankingChequeIssuancePrepareRequest(
-                player.getUUID(), resolved.worldNpcPublicId(), UUID.randomUUID().toString(), amountCopper, currencyKey
+                player.getUUID(), resolved.worldNpcPublicId(), UUID.randomUUID().toString(), amountCoins, currencyKey
         );
 
         final CompletableFuture<BankingChequeIssuancePrepareResult> prepareFuture;
@@ -354,7 +351,7 @@ public final class BankingChequeIssuanceProxyService {
                 case BankingChequeIssuancePrepareResult.LocalFailure failure ->
                         outcome.complete(new PrepareAndConfirmOutcome.LocalFailure(failure.safeCode()));
                 case BankingChequeIssuancePrepareResult.Success success ->
-                        writeReceiptAndConfirm(server, player, amountCopper, success.operationPublicId(), outcome);
+                        writeReceiptAndConfirm(server, player, amountCoins, success.operationPublicId(), currencyKey, outcome);
             }
         }));
         return outcome;
@@ -366,13 +363,13 @@ public final class BankingChequeIssuanceProxyService {
      * rather than after insertion.
      */
     private static void writeReceiptAndConfirm(
-            MinecraftServer server, ServerPlayer player, int amountCopper, UUID operationPublicId,
+            MinecraftServer server, ServerPlayer player, int amountCoins, UUID operationPublicId, String currencyKey,
             CompletableFuture<PrepareAndConfirmOutcome> outcome
     ) {
         ServerLevel level = player.serverLevel();
         BankTransferReceiptStore.RecordOutcome recordOutcome = BankTransferReceipts.record(
                 level, operationPublicId, player.getUUID(), BankTransferOperationType.CHEQUE_ISSUANCE,
-                null, (long) amountCopper, null, System.currentTimeMillis()
+                null, (long) amountCoins, null, System.currentTimeMillis()
         );
         if (recordOutcome == BankTransferReceiptStore.RecordOutcome.READ_ONLY_SCHEMA) {
             LOGGER.error(
@@ -399,7 +396,7 @@ public final class BankingChequeIssuanceProxyService {
             }
             switch (confirmResult) {
                 case BankingChequeIssuanceConfirmResult.Confirmed confirmed ->
-                        outcome.complete(new PrepareAndConfirmOutcome.Confirmed(operationPublicId, confirmed.chequePublicId(), confirmed.amount()));
+                        outcome.complete(new PrepareAndConfirmOutcome.Confirmed(operationPublicId, confirmed.chequePublicId(), confirmed.amount(), currencyKey));
                 case BankingChequeIssuanceConfirmResult.ReconciliationRequired ignored -> {
                     escalateAndReport(server, operationPublicId);
                     outcome.complete(new PrepareAndConfirmOutcome.ReconciliationRequired(operationPublicId));
@@ -440,7 +437,7 @@ public final class BankingChequeIssuanceProxyService {
      */
     private static void attemptDelivery(
             MinecraftServer server, ServerPlayer player, @Nullable ServiceNpcEntity teller,
-            UUID operationPublicId, UUID chequePublicId, int amountCopper,
+            UUID operationPublicId, UUID chequePublicId, int amountCoins, String currencyKey,
             CompletableFuture<BankingChequeIssuanceResult> result
     ) {
         if (teller != null && BankingProxyService.resolve(player, teller) == null) {
@@ -448,7 +445,7 @@ public final class BankingChequeIssuanceProxyService {
                     "Cheque issuance {} confirmed but the teller is no longer live/in range for delivery; "
                             + "receipt remains pending for a later delivery attempt", operationPublicId
             );
-            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCopper));
+            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCoins));
             return;
         }
 
@@ -461,11 +458,11 @@ public final class BankingChequeIssuanceProxyService {
                     "Cheque issuance {} confirmed but the player's inventory has no room for delivery; "
                             + "receipt remains pending for a later delivery attempt", operationPublicId
             );
-            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCopper));
+            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCoins));
             return;
         }
 
-        ItemStack cheque = buildChequeStack(chequePublicId, amountCopper, player);
+        ItemStack cheque = buildChequeStack(chequePublicId, amountCoins, currencyKey, player);
         ItemStack toInsert = cheque.copy();
         player.getInventory().add(toInsert);
         player.inventoryMenu.broadcastChanges();
@@ -480,7 +477,7 @@ public final class BankingChequeIssuanceProxyService {
                     "banking cheque issuance insertion left a nonzero leftover for operation {} despite a passing capacity pre-check",
                     operationPublicId
             );
-            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCopper));
+            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCoins));
             return;
         }
 
@@ -495,13 +492,13 @@ public final class BankingChequeIssuanceProxyService {
                     "Forced save failed after inserting cheque {} for operation {}; the insertion was backed out "
                             + "and the receipt remains pending for a later delivery attempt", chequePublicId, operationPublicId
             );
-            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCopper));
+            result.complete(new BankingChequeIssuanceResult.PendingDelivery(operationPublicId, chequePublicId, amountCoins));
             return;
         }
 
         ServerLevel level = player.serverLevel();
         BankTransferReceipts.resolve(level, operationPublicId);
-        result.complete(new BankingChequeIssuanceResult.Confirmed(operationPublicId, chequePublicId, amountCopper));
+        result.complete(new BankingChequeIssuanceResult.Confirmed(operationPublicId, chequePublicId, amountCoins));
     }
 
     private static BankingChequeIssuanceResult escalateAndReport(MinecraftServer server, UUID operationPublicId) {
@@ -529,10 +526,10 @@ public final class BankingChequeIssuanceProxyService {
         return BankingWithdrawalProxyService.hasSufficientCapacity(player.getInventory(), probe);
     }
 
-    private static ItemStack buildChequeStack(UUID chequePublicId, long amountCopper, ServerPlayer issuedBy) {
+    private static ItemStack buildChequeStack(UUID chequePublicId, long amountCoins, String currencyKey, ServerPlayer issuedBy) {
         ItemStack stack = new ItemStack(ItemRegistry.BANK_CHEQUE.get());
         String issuerText = "Britannia Bank";
-        stack.set(DataComponentRegistry.BANK_CHEQUE_DATA.get(), new BankChequeData(chequePublicId, amountCopper, issuerText));
+        stack.set(DataComponentRegistry.BANK_CHEQUE_DATA.get(), new BankChequeData(chequePublicId, amountCoins, issuerText, currencyKey));
         return stack;
     }
 
@@ -570,7 +567,7 @@ public final class BankingChequeIssuanceProxyService {
             PrepareAndConfirmOutcome.LocalFailure {
 
         /** Confirm succeeded: the real cheque exists on Rails. Delivery was NOT attempted. */
-        record Confirmed(UUID operationPublicId, UUID chequePublicId, int amount) implements PrepareAndConfirmOutcome {
+        record Confirmed(UUID operationPublicId, UUID chequePublicId, int amount, String currencyKey) implements PrepareAndConfirmOutcome {
         }
 
         record ReconciliationRequired(UUID operationPublicId) implements PrepareAndConfirmOutcome {

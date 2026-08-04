@@ -130,6 +130,31 @@ class BankStatusPresenterTest {
     }
 
     @Test
+    void everyDarkGroundColourIsActuallyReadableOnADarkGround() {
+        // The Bank Box renders status on a near-black panel. The parchment palette was chosen
+        // against a light ground -- INFORMATIONAL is 0x111111 there and would simply vanish.
+        for (BankStatusPresenter.Severity severity : BankStatusPresenter.Severity.values()) {
+            int rgb = severity.colorOnDark() & 0xFFFFFF;
+            int brightness = ((rgb >> 16) & 0xFF) + ((rgb >> 8) & 0xFF) + (rgb & 0xFF);
+            assertTrue(brightness >= 300,
+                    severity + "'s dark-ground colour is too dark to read: " + Integer.toHexString(rgb));
+        }
+    }
+
+    @Test
+    void darkGroundColoursStayDistinctFromEachOther() {
+        // Same requirement the light palette carries: two severities sharing a colour would make
+        // the marker and bold flags the only difference, which §16 permits but the palette should
+        // not lean on.
+        Set<Integer> colours = new HashSet<>();
+        for (BankStatusPresenter.Severity severity : BankStatusPresenter.Severity.values()) {
+            colours.add(severity.colorOnDark());
+        }
+        assertEquals(BankStatusPresenter.Severity.values().length, colours.size(),
+                "two severities share a dark-ground colour");
+    }
+
+    @Test
     void returnsNullForNoPayload() {
         assertNull(BankStatusPresenter.forResult(null));
     }

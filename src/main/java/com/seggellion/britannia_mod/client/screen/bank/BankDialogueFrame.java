@@ -129,12 +129,60 @@ public final class BankDialogueFrame {
             BankDialogueLayout layout,
             @Nullable BankStatusPresenter.Status status
     ) {
+        renderStatus(graphics, font, layout.statusX(), layout.statusY(), layout.statusMaxWidth(), status);
+    }
+
+    /**
+     * The same status rendering, positioned directly.
+     *
+     * <p>Milestone 9: the Bank Box is not a dialogue screen and has no {@link BankDialogueLayout},
+     * but every banking screen should report an outcome the same way -- same severity marker, same
+     * wrapping, same weight. Taking the three values this actually reads is better than
+     * fabricating a layout record around them.
+     */
+    public static void renderStatus(
+            GuiGraphics graphics,
+            Font font,
+            int statusX,
+            int statusY,
+            int statusMaxWidth,
+            @Nullable BankStatusPresenter.Status status
+    ) {
+        renderStatus(graphics, font, statusX, statusY, statusMaxWidth, status, false);
+    }
+
+    /**
+     * The same status rendering against a dark ground -- the Bank Box's panel. Only the palette
+     * changes ({@link BankStatusPresenter.Severity#colorOnDark()}); marker, bold and wrapping are
+     * identical, so an outcome reads the same way on every banking screen.
+     */
+    public static void renderStatusOnDark(
+            GuiGraphics graphics,
+            Font font,
+            int statusX,
+            int statusY,
+            int statusMaxWidth,
+            @Nullable BankStatusPresenter.Status status
+    ) {
+        renderStatus(graphics, font, statusX, statusY, statusMaxWidth, status, true);
+    }
+
+    private static void renderStatus(
+            GuiGraphics graphics,
+            Font font,
+            int statusX,
+            int statusY,
+            int statusMaxWidth,
+            @Nullable BankStatusPresenter.Status status,
+            boolean onDark
+    ) {
         if (status == null) return;
 
         BankStatusPresenter.Severity severity = status.severity();
+        int color = onDark ? severity.colorOnDark() : severity.color();
         int markerWidth = severity.markerWidth();
-        int textX = layout.statusX() + (markerWidth > 0 ? markerWidth + 4 : 0);
-        int textWidth = Math.max(1, layout.statusMaxWidth() - (textX - layout.statusX()));
+        int textX = statusX + (markerWidth > 0 ? markerWidth + 4 : 0);
+        int textWidth = Math.max(1, statusMaxWidth - (textX - statusX));
 
         Component message = Component.translatable(status.translationKey());
         if (severity.bold()) message = message.copy().withStyle(style -> style.withBold(true));
@@ -144,15 +192,15 @@ public final class BankDialogueFrame {
         if (markerWidth > 0) {
             int markerHeight = Math.max(font.lineHeight, lines.size() * font.lineHeight);
             graphics.fill(
-                    layout.statusX(), layout.statusY(),
-                    layout.statusX() + markerWidth, layout.statusY() + markerHeight,
-                    severity.color()
+                    statusX, statusY,
+                    statusX + markerWidth, statusY + markerHeight,
+                    color
             );
         }
 
-        int y = layout.statusY();
+        int y = statusY;
         for (net.minecraft.util.FormattedCharSequence line : lines) {
-            graphics.drawString(font, line, textX, y, severity.color(), false);
+            graphics.drawString(font, line, textX, y, color, false);
             y += font.lineHeight;
         }
     }

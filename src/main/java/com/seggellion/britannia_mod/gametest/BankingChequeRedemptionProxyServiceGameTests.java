@@ -638,7 +638,8 @@ public final class BankingChequeRedemptionProxyServiceGameTests {
 
     private static ItemStack buildChequeStack(UUID chequePublicId, long displayAmountCopper) {
         ItemStack stack = new ItemStack(ItemRegistry.BANK_CHEQUE.get());
-        stack.set(DataComponentRegistry.BANK_CHEQUE_DATA.get(), new BankChequeData(chequePublicId, displayAmountCopper, "Britannia Bank"));
+        stack.set(DataComponentRegistry.BANK_CHEQUE_DATA.get(),
+                new BankChequeData(chequePublicId, displayAmountCopper, "Britannia Bank", BankChequeData.DEFAULT_CURRENCY_KEY));
         return stack;
     }
 

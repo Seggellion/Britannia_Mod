@@ -214,7 +214,11 @@ cross-references below).
 
 ### ADR-012: Bank cheques carry one authoritative monetary value, not a gold-only or per-currency amount
 
-Date: 2026-07-19. Status: Human-approved (not Codex-inferred).
+Date: 2026-07-19. Status: **Reversed by ADR-027 (2026-08-03).** Retained here
+as the record of what was decided and why, not as current design. A cheque is
+no longer a currency-agnostic value that converts into a coin mix at
+redemption; it is a fixed number of coins of one named denomination and never
+converts. Read ADR-027 before relying on anything below.
 
 Bank cheques (Milestone 11) carry a single authoritative monetary value in
 Rails, not separate per-currency amounts and not a gold-only restriction.
@@ -452,10 +456,14 @@ expiry, or a credential-history table) to make it possible.
 
 ### ADR-026: The minimum cheque is 500 coins of the funding denomination, superseding the floor half of ADR-018/ADR-019
 
-Date: 2026-08-03. Status: Human-approved (not Codex-inferred).
-Supersedes: the *floor* of ADR-018, and ADR-019's expression of that
-floor in copper. Both remain in force for the ceiling, which this entry
-does not touch.
+Date: 2026-08-03. Status: **Superseded by ADR-027 the same day.** Its floor
+survives verbatim -- 500 coins -- but its central asymmetry does not: ADR-027
+makes the *ceiling* a coin count too, so the "floor is a coin count, ceiling
+is a value" split this entry records no longer exists. Retained as the record
+of how the floor became a coin count, and of the reasoning ADR-027 then
+carried to its conclusion.
+Superseded: the *floor* of ADR-018, and ADR-019's expression of that
+floor in copper.
 
 **The smallest cheque is 500 coins of whichever denomination funds it**
 — 500 gold, 500 silver, or 500 copper. One sentence a player can hold in
@@ -506,6 +514,78 @@ request knows the denomination; `BankCheque::MIN_AMOUNT` drops from
 rule survives unchanged in substance and is now per-denomination: it
 guards the debit arithmetic against silent truncation, independently of
 the floor. Full contract: Rails `docs/banking_bank_cheque_issuance.md`.
+
+### ADR-027: A cheque is a fixed number of coins of one denomination and never converts — reversing ADR-012
+
+Date: 2026-08-03. Status: Human-approved (not Codex-inferred).
+Reverses: ADR-012. Supersedes: the bounds half of ADR-018, ADR-019 and
+ADR-026.
+
+**A cheque is a fixed number of coins of one named denomination. It never
+converts, and it never carries a mix. 500 copper in, 500 copper out.**
+
+- Bounds: **500 to 5,000,000 coins**, identically for gold, silver and copper.
+- Issuance debits exactly that many coins from that denomination's balance.
+- Redemption credits exactly that many coins to that denomination's balance.
+
+Issuance and redemption are exact inverses. That property is the entry.
+
+**What was wrong.** ADR-012 made a cheque a currency-agnostic *value*:
+`bank_cheques.amount` was one copper integer with no denomination, and
+redemption split it into a gold/silver/copper mix by `divmod`. Under that
+design a cheque returned what was put into it only for gold, which is the
+identity case — 500 gold *is* 5,000,000 copper, and splitting 5,000,000
+copper gives back 500 gold. Silver and copper did not survive the round
+trip:
+
+| Written | Debited | Stored | Redeemed as |
+| --- | --- | --- | --- |
+| 500 gold | 500 gold | 5,000,000 | 500 gold |
+| 500 silver | 500 silver | 50,000 | **5 gold** |
+| 500 copper | 500 copper | 500 | **5 silver** |
+
+The conversion predates this epic; the exposure does not. Cheques were
+gold-only by ADR-012's own design, so the conversion had nothing to convert
+and nobody noticed. Milestone 8a made silver and copper funding reachable,
+which turned a dormant property into a live one: a player writing a copper
+cheque would have lost 99% of it.
+
+**Why this reverses ADR-012 rather than narrowing it.** ADR-026 already
+narrowed ADR-012 once, keeping the cheque currency-agnostic at rest while
+giving only the *funding instruction* a denomination. That split is precisely
+what made the defect possible: the instrument knew a number but not what the
+number counted. Narrowing it a second time would have preserved the same
+mismatch in a smaller box. `bank_cheques` gains a `currency_key` column, the
+cheque carries its own denomination, and `BankCheque#coin_mix` /
+`.coin_mix_for` are deleted rather than left unused — a leftover method that
+splits a value is exactly how this would come back.
+
+**This removes an int32 problem rather than creating one.** ADR-018/ADR-019's
+ceiling of 1,000,000,000 was never a product decision; it was the capacity of
+a column holding a copper value, which is why it bought 100,000 gold but
+1,000,000,000 copper, and why ADR-026 had to leave the ceiling
+value-denominated while making the floor a coin count. As a coin count,
+5,000,000 fits the same int32 column in every denomination. Both bounds are
+now product decisions, they are the same two numbers everywhere, and gold
+reaches the ceiling for the first time.
+
+**It is a breaking contract change, and the only one in this epic.** The
+request shape is unchanged — `{ amount, currency_key }` — but `amount` means
+coins rather than copper, so a pre-8c client would issue a cheque 10,000×
+too large. That is acceptable for exactly one reason, confirmed by the owner:
+**Milestone 8a was never deployed**, so no client sends `currency_key` and no
+silver or copper cheque has ever existed. **No compatibility shim was added,
+deliberately** — 5,000,000 is a legal request under both meanings, so no
+heuristic can tell them apart, and guessing would be guessing about a
+player's money. Playbook §1.1 rule 2 still binds: Rails ships first.
+
+Implemented by Milestone 8c (Rails, `ultimacraft-website`), whose migration
+converts every existing row (`currency_key = 'gold'`, `amount = amount /
+10,000`) and asserts the precondition that makes that exact, aborting loudly
+on any row that violates it. Full contract: Rails
+`docs/banking_bank_cheque_issuance.md` and
+`docs/banking_bank_cheque_redemption.md`. The NeoForge half — coin counts on
+the form, the request and the tooltip — follows this and is separate.
 
 ## 5. Authority and extension matrix
 

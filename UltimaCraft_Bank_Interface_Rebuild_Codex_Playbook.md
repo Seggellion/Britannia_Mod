@@ -703,11 +703,24 @@ Verified 2026-08-03 and deliberately out of scope:
    today — gold. Mixed client versions are permanent (§1.1 rule 3), and older clients will keep
    sending the current shape indefinitely.
 
-## 8a.1 Amount bounds: settled — the floor is a coin count
+## 8a.1 Amount bounds: settled — both bounds are coin counts
 
-**Owner decision, revised. Do not reopen.** The smallest cheque is **500 coins of whichever
-denomination funds it** — 500 gold, 500 silver, or 500 copper. The ceiling stays a value:
-`MAX_AMOUNT`, 1 000 000 000 copper.
+**Owner decision, revised twice. Do not reopen.** A cheque is **between 500 and 5 000 000 coins of
+whichever denomination funds it** — the same two numbers for all three.
+
+> The first revision made only the floor a coin count and left the ceiling value-denominated,
+> which is an inconsistent rule. The owner corrected it to a flat 5 000 000-coin maximum.
+
+**Gold cannot reach the ceiling**, because five million gold is 50 000 000 000 copper and the
+amount column holds 1 000 000 000. Its effective maximum is 100 000 coins. That is a storage
+limit; lifting it needs a bigint column and a fiftyfold `MAX_AMOUNT` rise on the Rails side, which
+is its own piece of work and is **not** part of this milestone.
+
+**Rails follow-up (not blocking):** add a `MAX_COIN_COUNT` of 5 000 000 to
+`ChequePayloadValidator` alongside the existing `MIN_COIN_COUNT`. Rails currently caps only by
+`MAX_AMOUNT`, so it would accept 10 000 000 silver where the client stops at 5 000 000. The client
+being stricter is safe — it cannot produce a request Rails rejects — but the two should state the
+same rule.
 
 > An earlier decision kept the pre-existing absolute floor, which made the minimum cost 500 gold /
 > 50 000 silver / 5 000 000 copper. The owner revised it after seeing the built form. See design

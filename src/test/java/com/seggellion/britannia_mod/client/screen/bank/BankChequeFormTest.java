@@ -87,10 +87,24 @@ class BankChequeFormTest {
 
     @Test
     void rejectsOverflowWithoutWrappingIntoAPlausibleSmallNumber() {
-        // Parsed as long precisely so this reports as "too large" rather than "not a number", and
-        // so the copper conversion cannot wrap: 300000 gold is 3e9 copper, past int range.
-        assertEquals(BankStatusPresenter.AMOUNT_TOO_LARGE, validate("300000", Denomination.GOLD, RICH).error());
+        // Parsed as long so a value past int range reports as "too large" rather than wrapping
+        // into a plausible small one.
         assertEquals(BankStatusPresenter.AMOUNT_TOO_LARGE, validate("9999999999", Denomination.COPPER, RICH).error());
+        assertEquals(BankStatusPresenter.AMOUNT_TOO_LARGE, validate("2147483648", Denomination.GOLD, RICH).error());
+    }
+
+    @Test
+    void acceptsAmountsThatTheOldCopperRuleWouldHaveRefused() {
+        // 300,000 gold was 3,000,000,000 copper -- past int range under the old representation and
+        // rejected. As a coin count it is comfortably inside the range, which is the point of 8c.
+        assertTrue(validate("300000", Denomination.GOLD, RICH).valid());
+        assertEquals(300_000, validate("300000", Denomination.GOLD, RICH).amount());
+    }
+
+    @Test
+    void rejectsAnAmountBeyondLongRangeAsTooLarge() {
+        assertEquals(BankStatusPresenter.AMOUNT_TOO_LARGE,
+                validate("99999999999999999999999", Denomination.COPPER, RICH).error());
     }
 
     // ---------- Value-denominated bounds ----------
@@ -107,21 +121,17 @@ class BankChequeFormTest {
 
     @Test
     void goldsFloorIsUnchangedByTheRevision() {
-        // 500 gold was the floor under the old value-denominated rule too, because 500 gold is
-        // exactly 5,000,000 copper. Only silver and copper move.
+        // 500 gold was the floor under the old value-denominated rule too. Only silver and copper moved.
         assertTrue(validate("500", Denomination.GOLD, RICH).valid());
-        assertEquals(5_000_000, validate("500", Denomination.GOLD, RICH).copperAmount());
+        assertEquals(500, validate("500", Denomination.GOLD, RICH).amount());
         assertEquals(BankStatusPresenter.AMOUNT_BELOW_MINIMUM, validate("499", Denomination.GOLD, RICH).error());
     }
 
     @Test
     void silverAndCopperNowHaveReachableFloors() {
-        // Under the previous rule these needed 50,000 silver and 5,000,000 copper.
+        // Under the original rule these needed 50,000 silver and 5,000,000 copper.
         assertTrue(validate("500", Denomination.SILVER, RICH).valid());
-        assertEquals(50_000, validate("500", Denomination.SILVER, RICH).copperAmount());
-
         assertTrue(validate("500", Denomination.COPPER, RICH).valid());
-        assertEquals(500, validate("500", Denomination.COPPER, RICH).copperAmount());
     }
 
     @Test
@@ -130,8 +140,7 @@ class BankChequeFormTest {
             int minimum = BankChequeForm.minimumIn(denomination);
             BankChequeForm.Validation validation = validate(String.valueOf(minimum), denomination, RICH);
             assertTrue(validation.valid(), denomination + " should accept its exact minimum");
-            assertEquals(minimum * BankChequeForm.copperPerUnit(denomination), validation.copperAmount(),
-                    denomination + "'s minimum should convert to its own coin value");
+            assertEquals(minimum, validation.amount(), denomination + " must send the typed coin count unchanged");
         }
     }
 
@@ -160,7 +169,7 @@ class BankChequeFormTest {
             int maximum = BankChequeForm.maximumIn(denomination);
             BankChequeForm.Validation validation = validate(String.valueOf(maximum), denomination, RICH);
             assertTrue(validation.valid(), denomination + " should accept its exact maximum");
-            assertEquals(BankChequeForm.MAX_COPPER, validation.copperAmount());
+            assertEquals(maximum, validation.amount(), denomination + " must send the typed coin count unchanged");
         }
     }
 
@@ -182,28 +191,35 @@ class BankChequeFormTest {
     // ---------- Conversion ----------
 
     @Test
-    void convertsTheTypedAmountOutOfItsDenominationIntoCopper() {
-        assertEquals(5_000_000, validate("500", Denomination.GOLD, RICH).copperAmount());
-        assertEquals(5_000_000, validate("50000", Denomination.SILVER, RICH).copperAmount());
-        assertEquals(5_000_000, validate("5000000", Denomination.COPPER, RICH).copperAmount());
+    void sendsTheTypedCoinCountWithoutConverting() {
+        // The whole of Milestone 8c in one assertion: 500 is 500, whichever coin it is.
+        for (Denomination denomination : Denomination.values()) {
+            assertEquals(500, validate("500", denomination, RICH).amount(), denomination.name());
+        }
     }
 
     @Test
-    void theCeilingStaysAValueLimitBecauseTheColumnRequiresIt() {
-        // Unlike the floor, this is not a policy choice: the amount is an int32 copper column, so
-        // a flat coin count would let a copper cheque overflow what it is stored in.
-        assertEquals(100_000, BankChequeForm.maximumIn(Denomination.GOLD));
-        assertEquals(10_000_000, BankChequeForm.maximumIn(Denomination.SILVER));
-        assertEquals(1_000_000_000, BankChequeForm.maximumIn(Denomination.COPPER));
+    void theCeilingIsFiveMillionCoinsInEveryDenomination() {
+        // Milestone 8c: the amount is a coin count, so nothing caps one denomination below another.
+        for (Denomination denomination : Denomination.values()) {
+            assertEquals(BankChequeForm.MAX_UNITS, BankChequeForm.maximumIn(denomination), denomination.name());
+        }
+        assertEquals(5_000_000, BankChequeForm.MAX_UNITS);
+    }
+
+    @Test
+    void everyDenominationAcceptsFiveMillionCoins() {
+        // Gold could not reach this before 8c: five million gold was 50,000,000,000 copper.
+        for (Denomination denomination : Denomination.values()) {
+            assertTrue(validate("5000000", denomination, RICH).valid(), denomination.name());
+        }
     }
 
     @Test
     void keepsTheTypedNumberAlongsideTheConvertedValue() {
         // Milestone 8b sends the copper value and the denomination; the entered number is what
         // the player should keep seeing in the box.
-        BankChequeForm.Validation validation = validate("600", Denomination.GOLD, RICH);
-        assertEquals(600, validation.enteredAmount());
-        assertEquals(6_000_000, validation.copperAmount());
+        assertEquals(600, validate("600", Denomination.GOLD, RICH).amount());
     }
 
     // ---------- Affordability ----------
@@ -259,7 +275,6 @@ class BankChequeFormTest {
     void anInvalidFormNeverCarriesASpendableAmount() {
         BankChequeForm.Validation validation = validate("abc", Denomination.GOLD, RICH);
         assertFalse(validation.valid());
-        assertEquals(0, validation.copperAmount());
-        assertEquals(0, validation.enteredAmount());
+        assertEquals(0, validation.amount());
     }
 }

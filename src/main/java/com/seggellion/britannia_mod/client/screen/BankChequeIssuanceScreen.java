@@ -113,7 +113,7 @@ public final class BankChequeIssuanceScreen extends Screen implements BankingScr
                 font, layout.formX(), layout.formY(), AMOUNT_BOX_WIDTH, BankDialogueLayout.FORM_ROW_HEIGHT,
                 Component.translatable("screen.britannia_mod.bank.cheque.amount_label")
         );
-        // Long enough for the largest copper cheque (1,000,000,000) and nothing beyond it.
+        // Long enough for the largest cheque (5,000,000 coins) and nothing beyond it.
         amountBox.setMaxLength(10);
         amountBox.setValue(carried);
         amountBox.setResponder(ignored -> revalidate(ClientBankingSession.active()));
@@ -217,7 +217,7 @@ public final class BankChequeIssuanceScreen extends Screen implements BankingScr
         if (!session.beginPending(BankTransferResultS2CPayload.Operation.CHEQUE_ISSUANCE)) return;
 
         ClientNetworkHandler.sendToServer(new BankChequeIssuanceRequestC2SPayload(
-                session.tellerEntityId(), validation.copperAmount(), currencyKeyOf(selected)
+                session.tellerEntityId(), validation.amount(), currencyKeyOf(selected)
         ));
         revalidate(session);
     }
