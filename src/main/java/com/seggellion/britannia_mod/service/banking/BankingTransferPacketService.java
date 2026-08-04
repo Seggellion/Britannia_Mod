@@ -302,12 +302,34 @@ public final class BankingTransferPacketService {
                                 player, BankTransferResultS2CPayload.Operation.DEPOSIT,
                                 BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
                         );
+                        // An empty purse, caught locally before any network call.
+                        case BankingDepositAllCoinsResult.RejectedLocally ignored -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                BankTransferResultS2CPayload.Kind.NOTHING_TO_DEPOSIT
+                        );
+                        // Rails' own answer to the same two questions. NO_COINS reaches here only
+                        // from a client that skipped the local check; the balance ceiling is
+                        // genuinely only knowable server-side.
+                        case BankingDepositAllCoinsResult.Rejected rejected -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                depositAllCoinsKindFor(rejected.outcome())
+                        );
                         default -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.DEPOSIT,
                                 BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
                         );
                     }
                 }));
+    }
+
+    private static BankTransferResultS2CPayload.Kind depositAllCoinsKindFor(BankingTransferOutcome outcome) {
+        return switch (outcome) {
+            case NO_COINS -> BankTransferResultS2CPayload.Kind.NOTHING_TO_DEPOSIT;
+            case BALANCE_CAPACITY_EXCEEDED -> BankTransferResultS2CPayload.Kind.BALANCE_CAPACITY_EXCEEDED;
+            // Every shared teller/account outcome falls through, for the same reason cheque
+            // redemption's mapping does: they assert nothing about the sweep itself.
+            default -> BankTransferResultS2CPayload.Kind.CLEAN_REJECTION;
+        };
     }
 
     /**

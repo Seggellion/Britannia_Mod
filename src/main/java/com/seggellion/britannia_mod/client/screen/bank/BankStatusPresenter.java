@@ -102,6 +102,11 @@ public final class BankStatusPresenter {
             case CHEQUE_ALREADY_REDEEMED -> new Status(ROOT + "cheque_already_redeemed", Severity.REJECTION);
             case CHEQUE_CANCELLED -> new Status(ROOT + "cheque_cancelled", Severity.REJECTION);
             case CHEQUE_VOIDED -> new Status(ROOT + "cheque_voided", Severity.REJECTION);
+            // Nothing failed and nobody refused the player -- their purse was empty. Rendering
+            // this as a rejection would tell them their bank turned them away.
+            case NOTHING_TO_DEPOSIT -> new Status(ROOT + "nothing_to_deposit", Severity.INFORMATIONAL);
+            // A refusal, but an actionable one: withdraw or spend and the deposit will fit.
+            case BALANCE_CAPACITY_EXCEEDED -> new Status(ROOT + "balance_capacity_exceeded", Severity.REJECTION);
         };
     }
 
@@ -122,6 +127,16 @@ public final class BankStatusPresenter {
     public static final Status EMPTY_AMOUNT = new Status(ROOT + "empty_amount", Severity.VALIDATION);
     public static final Status INVALID_AMOUNT = new Status(ROOT + "invalid_amount", Severity.VALIDATION);
     public static final Status AMOUNT_TOO_LARGE = new Status(ROOT + "amount_too_large", Severity.VALIDATION);
+    /**
+     * Milestone 7: the entered amount is a valid number but below the cheque minimum.
+     *
+     * <p>Its own message rather than sharing {@link #INVALID_AMOUNT}, because the number is not
+     * invalid -- it is simply too small, and the player needs to be told what "too small" is in
+     * the denomination they picked. The bounds are value-denominated, so the floor is 500 gold but
+     * 5 000 000 copper (design §12.3.1); a message that did not name the figure would be
+     * unactionable.
+     */
+    public static final Status AMOUNT_BELOW_MINIMUM = new Status(ROOT + "amount_below_minimum", Severity.VALIDATION);
     public static final Status NO_DENOMINATION_SELECTED = new Status(ROOT + "no_denomination_selected", Severity.VALIDATION);
     public static final Status INSUFFICIENT_BALANCE = new Status(ROOT + "insufficient_balance", Severity.VALIDATION);
     public static final Status NOTHING_SELECTED = new Status(ROOT + "nothing_selected", Severity.INFORMATIONAL);

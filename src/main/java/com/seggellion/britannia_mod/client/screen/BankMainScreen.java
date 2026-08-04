@@ -104,10 +104,9 @@ public final class BankMainScreen extends Screen implements BankingScreen {
         switch (destination) {
             case BANK_BOX -> minecraft.setScreen(BankPlaceholderScreen.bankBox());
             case BALANCE -> minecraft.setScreen(new BankBalanceScreen());
-            // The real screen, not a placeholder: cheque issuance already works end to end, and
-            // routing it at a placeholder would take a working feature away from players for the
-            // three milestones until Milestone 7 rebuilds its presentation.
-            case CREATE_CHEQUE -> minecraft.setScreen(new BankChequeIssuanceScreen(session.snapshot()));
+            // Milestone 7 rebuilt this on the session, so it no longer needs a snapshot passed
+            // in -- it reads the same live state every other banking screen does.
+            case CREATE_CHEQUE -> minecraft.setScreen(new BankChequeIssuanceScreen());
         }
     }
 

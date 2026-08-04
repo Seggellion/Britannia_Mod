@@ -7,6 +7,9 @@ import com.seggellion.britannia_mod.client.screen.bank.BankDialogueLayout;
 import com.seggellion.britannia_mod.client.screen.bank.BankStatusPresenter;
 import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
 import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
+import com.seggellion.britannia_mod.network.ClientNetworkHandler;
+import com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -40,6 +43,8 @@ public final class BankBalanceScreen extends Screen implements BankingScreen {
 
     @Nullable
     private BankDialogueLayout layout;
+    @Nullable
+    private BankActionButton depositAllButton;
     private Component body = Component.empty();
 
     public BankBalanceScreen() {
@@ -66,16 +71,47 @@ public final class BankBalanceScreen extends Screen implements BankingScreen {
                 ignored -> returnToMain()
         ));
 
-        Component depositAll = Component.translatable("screen.britannia_mod.bank.action.deposit_all_coins");
-        BankActionButton depositAllButton = BankActionButton.create(
+        depositAllButton = BankActionButton.create(
                 layout.buttonX(), layout.buttonY(DEPOSIT_ALL_INDEX), layout.buttonWidth(), layout.buttonHeight(),
-                depositAll, Component.translatable("screen.britannia_mod.bank.action.deposit_all_coins.pending"),
-                // Milestone 6 replaces this with the real request. Left as a no-op rather than
-                // omitted so the layout, focus order and wording are all owner-reviewable now.
-                ignored -> { }
+                Component.translatable("screen.britannia_mod.bank.action.deposit_all_coins"),
+                Component.translatable("screen.britannia_mod.bank.action.deposit_all_coins.pending"),
+                ignored -> depositAllCoins()
         );
-        depositAllButton.active = false;
         addRenderableWidget(depositAllButton);
+        refreshButtonStates(session);
+    }
+
+    /**
+     * Milestone 6b: one press, one request, and nothing computed locally.
+     *
+     * <p>The packet carries the teller's entity id and no amounts -- the server sweeps the live
+     * inventory itself. Nothing is removed from the player's inventory here, and no balance is
+     * adjusted: this screen learns what happened only from the refresh push or the result.
+     *
+     * <p>The pending lock is claimed <b>before</b> the packet goes out, and a failed claim sends
+     * nothing. That is what makes a double-click one deposit rather than two, and it is a
+     * session-level lock rather than a screen-level flag so navigating away mid-request cannot
+     * shake it off (design §10.9).
+     */
+    private void depositAllCoins() {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (session == null) return;
+        if (!session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT)) return;
+
+        ClientNetworkHandler.sendToServer(new BankDepositAllCoinsRequestC2SPayload(session.tellerEntityId()));
+        refreshButtonStates(session);
+    }
+
+    /**
+     * Mirrors the session's lock onto the button. Called from {@code render} as well as {@code
+     * init}, because the lock is released by a packet arriving rather than by anything this
+     * screen does -- a result or a refresh can land on any tick.
+     */
+    private void refreshButtonStates(ClientBankingSession session) {
+        if (depositAllButton == null) return;
+        boolean pending = session.isMutationPending();
+        depositAllButton.setPending(pending);
+        depositAllButton.active = !pending;
     }
 
     /** Rebuilt on every render so the numbers follow the session rather than the constructor. */
@@ -138,11 +174,8 @@ public final class BankBalanceScreen extends Screen implements BankingScreen {
                 graphics, font, layout, session.tellerName(), session.tellerGender(), body
         );
 
-        BankStatusPresenter.Status status = BankStatusPresenter.forResult(session.lastResult());
-        // A real outcome always wins; the Deposit All Coins notice fills the gap when there is none.
-        BankDialogueFrame.renderStatus(
-                graphics, font, layout, status != null ? status : BankBalanceCopy.DEPOSIT_ALL_UNAVAILABLE
-        );
+        refreshButtonStates(session);
+        BankDialogueFrame.renderStatus(graphics, font, layout, BankStatusPresenter.forResult(session.lastResult()));
     }
 
     @Override

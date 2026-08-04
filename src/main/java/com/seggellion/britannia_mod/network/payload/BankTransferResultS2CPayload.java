@@ -24,6 +24,11 @@ import java.util.Objects;
  * success signal, matching Slice 3a's own requirement ("refresh... rather than requiring the
  * player to close and reopen") rather than a separate banner layered on top of stale data.
  *
+ * <p><b>Both enums are encoded by ordinal</b> ({@code writeEnum}/{@code readEnum}), so new
+ * constants must always be <b>appended</b>, never inserted. A client running an older build of
+ * this mod against a newer server would fail to decode an unknown ordinal, which is the mixed-
+ * version case §1.1 rule 3 keeps in view even for a packet whose two ends are both NeoForge.
+ *
  * <p>Carries only a closed, pre-written outcome pair -- never a raw server-side message string
  * -- mirroring {@code BankingProxyService}'s own {@code REJECTED_MESSAGE}/{@code
  * SERVICE_UNAVAILABLE_MESSAGE} constants: the client selects its own diegetic wording for
@@ -62,7 +67,26 @@ public record BankTransferResultS2CPayload(Operation operation, Kind kind) imple
         /** Milestone 11 NeoForge Slice 2 (Operation.CHEQUE_REDEMPTION only): the cheque was cancelled. */
         CHEQUE_CANCELLED,
         /** Milestone 11 NeoForge Slice 2 (Operation.CHEQUE_REDEMPTION only): the cheque was voided. */
-        CHEQUE_VOIDED
+        CHEQUE_VOIDED,
+        /**
+         * Bank interface rebuild, Milestone 6b: a Deposit All Coins sweep found no coins.
+         *
+         * <p>Its own kind rather than {@link #CLEAN_REJECTION} because nothing was rejected and
+         * nothing went wrong -- the player's purse was simply empty. Design §15 lists "nothing to
+         * deposit" as its own outcome category for exactly this reason: "there was nothing to
+         * give" and "the teller will not take it" are different sentences, and collapsing them
+         * tells a player their bank is refusing them when it is not.
+         */
+        NOTHING_TO_DEPOSIT,
+        /**
+         * Bank interface rebuild, Milestone 6b: crediting the sweep would push a denomination's
+         * balance past what the account can hold. Design §15's "insufficient bank capacity",
+         * applied to currency.
+         *
+         * <p>Distinct from {@link #CLEAN_REJECTION} because it is actionable: the player can
+         * withdraw or spend and try again, which a generic refusal would not tell them.
+         */
+        BALANCE_CAPACITY_EXCEEDED
     }
 
     public static final ResourceLocation TYPE_ID =

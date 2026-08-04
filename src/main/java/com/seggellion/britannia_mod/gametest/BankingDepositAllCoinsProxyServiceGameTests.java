@@ -416,7 +416,98 @@ public final class BankingDepositAllCoinsProxyServiceGameTests {
         }
     }
 
+    // ---------- Milestone 6b-ii: what the client is actually told ----------
+
+    /**
+     * The whole point of 6b-ii's result vocabulary: "thy purse was empty" must not arrive as the
+     * teller refusing the player. Exercised through the real packet handler, not the proxy
+     * service, because the mapping being tested lives in the handler.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void anEmptyPurseReportsNothingToDepositRatherThanACleanRejection(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeResultSender resultSender = new FakeResultSender();
+        com.seggellion.britannia_mod.service.banking.BankingTransferPacketService
+                .useResultSenderForTesting(resultSender);
+        BankingDepositAllCoinsProxyService.useClientForTesting(new FakeClient());
+
+        try {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleDepositAllCoins(
+                    player,
+                    new com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload(teller.getId())
+            );
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected exactly one result, got " + resultSender.calls);
+                var sent = resultSender.calls.get(0);
+                check(sent.kind() == com.seggellion.britannia_mod.network.payload
+                                .BankTransferResultS2CPayload.Kind.NOTHING_TO_DEPOSIT,
+                        "expected NOTHING_TO_DEPOSIT, got " + sent.kind());
+            });
+        } finally {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.resetResultSenderForTesting();
+            BankingDepositAllCoinsProxyService.resetClientForTesting();
+            BankingDepositAllCoinsProxyService.resetInFlightTrackingForTesting();
+        }
+    }
+
+    /** A Rails balance-ceiling refusal keeps its own identity too, rather than flattening. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aBalanceCeilingRefusalKeepsItsOwnKind(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(0, new ItemStack(ItemRegistry.GOLD_COIN.get(), 9));
+
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingDepositAllCoinsPrepareResult.Rejected(
+                        com.seggellion.britannia_mod.service.banking.BankingTransferOutcome.BALANCE_CAPACITY_EXCEEDED, false));
+        BankingDepositAllCoinsProxyService.useClientForTesting(fake);
+
+        FakeResultSender resultSender = new FakeResultSender();
+        com.seggellion.britannia_mod.service.banking.BankingTransferPacketService
+                .useResultSenderForTesting(resultSender);
+
+        try {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleDepositAllCoins(
+                    player,
+                    new com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload(teller.getId())
+            );
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected exactly one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == com.seggellion.britannia_mod.network.payload
+                                .BankTransferResultS2CPayload.Kind.BALANCE_CAPACITY_EXCEEDED,
+                        "expected BALANCE_CAPACITY_EXCEEDED, got " + resultSender.calls.get(0).kind());
+                check(player.getInventory().getItem(0).getCount() == 9, "nothing may be destroyed on a refusal");
+            });
+        } finally {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.resetResultSenderForTesting();
+            BankingDepositAllCoinsProxyService.resetClientForTesting();
+            BankingDepositAllCoinsProxyService.resetInFlightTrackingForTesting();
+        }
+    }
+
     // ---------- Helpers ----------
+
+    private static final class FakeResultSender
+            implements com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.ResultSender {
+        final List<com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload> calls =
+                new CopyOnWriteArrayList<>();
+
+        @Override
+        public void send(
+                ServerPlayer player,
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation operation,
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Kind kind
+        ) {
+            calls.add(new com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload(operation, kind));
+        }
+    }
 
     private static ServerPlayer freshPlayer(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();

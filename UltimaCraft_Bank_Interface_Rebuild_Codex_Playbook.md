@@ -703,24 +703,35 @@ Verified 2026-08-03 and deliberately out of scope:
    today — gold. Mixed client versions are permanent (§1.1 rule 3), and older clients will keep
    sending the current shape indefinitely.
 
-## 8a.1 Amount bounds: settled — absolute, unchanged
+## 8a.1 Amount bounds: settled — the floor is a coin count
 
-**Owner decision, 2026-08-03. Do not reopen.** `BankCheque::MIN_AMOUNT` stays 5 000 000 copper and
-`MAX_AMOUNT` stays 1 000 000 000 (ADR-018/ADR-019). They bound the cheque's **value**, not the
-number of coins in the selected denomination. Per-denomination bounds were considered and
-rejected.
+**Owner decision, revised. Do not reopen.** The smallest cheque is **500 coins of whichever
+denomination funds it** — 500 gold, 500 silver, or 500 copper. The ceiling stays a value:
+`MAX_AMOUNT`, 1 000 000 000 copper.
 
-In practice the minimum costs 500 gold, 50 000 silver, or 5 000 000 copper. Gold stays the
-ordinary denomination; silver and copper funding works but needs an account holding that much
-value in those balances. That is intended.
+> An earlier decision kept the pre-existing absolute floor, which made the minimum cost 500 gold /
+> 50 000 silver / 5 000 000 copper. The owner revised it after seeing the built form. See design
+> §12.3.1 for the full history — including that the absolute floor was never this epic's choice,
+> but ADR-018/ADR-019's, from when cheques were gold-only.
 
-**Therefore this milestone changes no bounds constant.** Two things still follow from it:
+**Gold is unaffected**: 500 gold *is* 5 000 000 copper, so the floor gold has always had is the
+floor it keeps. Only silver and copper change, and neither has ever shipped.
 
-- The denomination unit-multiple rule is still enforced per denomination — it guards the debit
-  arithmetic against silent truncation, not the floor. At these magnitudes it is satisfied
-  trivially, which is fine; it must still be present and tested.
-- Record the decision as an ADR alongside ADR-018/ADR-019, stating that the bounds are
-  value-denominated. The next person to read `MIN_AMOUNT` next to a copper cheque will otherwise
+**Required work in this milestone:**
+
+- Enforce the floor **per denomination, against the coin count**:
+  `amount / unit(currency_key) >= 500`. Not against the copper value.
+- **Lower `BankCheque::MIN_AMOUNT` from 5 000 000 to 500** — the smallest legal cheque is now a
+  500-copper one. It stays a model-level sanity floor; the denomination-aware rule belongs in
+  `ChequePayloadValidator`.
+- Leave `MAX_AMOUNT` alone. It is an int32 capacity limit, not a policy.
+- Keep the denomination unit-multiple rule: it guards the debit arithmetic against silent
+  truncation, independently of the floor.
+- Record the revised rule as an ADR superseding the bounds half of ADR-018/ADR-019.
+
+**Test the floor in all three denominations at its exact edge**, and specifically that a
+500-copper cheque is accepted — that is the case the old absolute floor rejected, and the one most
+likely to be broken by a partial change. The next person to read `MIN_AMOUNT` next to a copper cheque will otherwise
   read it as a bug.
 
 ## Tests

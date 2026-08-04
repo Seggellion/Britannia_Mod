@@ -410,14 +410,11 @@ private static MutableComponent uoMessage(String text) {
             // cutover above routes every account payload to BankMainScreen, which reads the
             // result off the session instead. Kept only until Milestone 19 deletes the class, so
             // that the retirement is one removal rather than two.
+            //
+            // Milestone 7 removed the sibling branch that pushed results into
+            // BankChequeIssuanceScreen: that screen now reads lastResult off the session while
+            // rendering, like every rebuilt screen, so there is nothing left to hand it.
             if (mc.screen instanceof BankScreen screen) {
-                screen.acceptTransferResult(payload);
-            } else if (mc.screen instanceof com.seggellion.britannia_mod.client.screen.BankChequeIssuanceScreen screen) {
-                // Milestone 11 NeoForge Slice 1: a cheque issuance's CLEAN_REJECTION/
-                // PENDING_DELIVERY result arrives while the player is still looking at the
-                // create-cheque screen, not BankScreen (a clean CONFIRMED never reaches here at
-                // all -- see this payload's own class docs -- it refreshes back to BankScreen
-                // via a fresh BankAccountOpenedS2CPayload instead).
                 screen.acceptTransferResult(payload);
             }
         });

@@ -110,15 +110,4 @@ class BankBalanceCopyTest {
         }
     }
 
-    // ---------- The temporary Milestone 6 notice ----------
-
-    @Test
-    void marksTheDepositAllNoticeAsInformationalNotAFailure() {
-        // Nothing has gone wrong -- the feature simply is not built yet. Rendering it as a
-        // rejection would read as the teller refusing the player.
-        assertEquals(
-                BankStatusPresenter.Severity.INFORMATIONAL,
-                BankBalanceCopy.DEPOSIT_ALL_UNAVAILABLE.severity()
-        );
-    }
 }

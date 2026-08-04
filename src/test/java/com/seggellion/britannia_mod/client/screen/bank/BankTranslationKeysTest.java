@@ -58,7 +58,8 @@ class BankTranslationKeysTest {
                 BankStatusPresenter.NO_DENOMINATION_SELECTED,
                 BankStatusPresenter.INSUFFICIENT_BALANCE,
                 BankStatusPresenter.NOTHING_SELECTED,
-                BankStatusPresenter.EMPTY_VAULT
+                BankStatusPresenter.EMPTY_VAULT,
+                BankStatusPresenter.AMOUNT_BELOW_MINIMUM
         }) {
             keys.add(status.translationKey());
         }
@@ -83,12 +84,30 @@ class BankTranslationKeysTest {
         }
         keys.add(BankBalanceCopy.bodyKey(3, 47, 92));
         keys.add(BankBalanceCopy.bodyKey(0, 0, 0));
-        keys.add(BankBalanceCopy.DEPOSIT_ALL_UNAVAILABLE.translationKey());
         keys.add("screen.britannia_mod.bank.balance.title");
         keys.add("screen.britannia_mod.bank.action.deposit_all_coins");
         keys.add("screen.britannia_mod.bank.action.deposit_all_coins.pending");
 
+        // Milestone 7: the Create Cheque form.
+        keys.add("screen.britannia_mod.bank.cheque.title");
+        keys.add("screen.britannia_mod.bank.cheque.prompt");
+        keys.add("screen.britannia_mod.bank.cheque.amount_label");
+        keys.add("screen.britannia_mod.bank.cheque.context");
+        keys.add("screen.britannia_mod.bank.cheque.confirm");
+        keys.add("screen.britannia_mod.bank.cheque.confirm.pending");
+        for (BankBalanceCopy.Denomination denomination : BankBalanceCopy.Denomination.values()) {
+            keys.add("screen.britannia_mod.bank.cheque.denomination." + denomination.keySegment());
+        }
+
         return new ArrayList<>(keys);
+    }
+
+    @Test
+    void theChequeContextLineCarriesItsTwoArguments() throws IOException {
+        // The balance phrase and the denomination's own minimum. A miscount throws inside
+        // Component.translatable at render time, not at compile time.
+        assertEquals(2, countPlaceholders(
+                language().get("screen.britannia_mod.bank.cheque.context").getAsString()));
     }
 
     @Test
@@ -107,12 +126,15 @@ class BankTranslationKeysTest {
     }
 
     @Test
-    void theRetiredBalancePlaceholderStringsAreGone() throws IOException {
-        // Milestone 5 replaced the placeholder with the real screen. Leaving its copy behind would
-        // be dead weight that reads as a live feature to the next person editing this file.
+    void retiredPlaceholderStringsAreGone() throws IOException {
+        // Each of these was replaced by the real thing. Leaving the copy behind would be dead
+        // weight that reads as a live feature to the next person editing this file.
         JsonObject language = language();
+        // Milestone 5: the Balance placeholder screen.
         assertFalse(language.has("screen.britannia_mod.bank.placeholder.balance.title"));
         assertFalse(language.has("screen.britannia_mod.bank.placeholder.balance.body"));
+        // Milestone 6b: the notice explaining why Deposit All Coins was disabled.
+        assertFalse(language.has("screen.britannia_mod.bank.balance.deposit_all_unavailable"));
     }
 
     @Test

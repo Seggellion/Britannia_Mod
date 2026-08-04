@@ -286,7 +286,10 @@ public final class BankScreen extends Screen {
 
     private void onChecksPressed() {
         if (depositPending || withdrawalPending) return;
-        Minecraft.getInstance().setScreen(new com.seggellion.britannia_mod.client.screen.BankChequeIssuanceScreen(account));
+        // Milestone 7: the cheque screen reads the shared session rather than a captured payload,
+        // so it takes no argument now. This whole screen has been unreachable since the Milestone
+        // 4 cutover and is deleted at Milestone 19; the call is kept compiling, not kept working.
+        Minecraft.getInstance().setScreen(new com.seggellion.britannia_mod.client.screen.BankChequeIssuanceScreen());
     }
 
     // ---------- Deposit action ----------
@@ -351,6 +354,11 @@ public final class BankScreen extends Screen {
             case CHEQUE_ALREADY_REDEEMED -> CHEQUE_ALREADY_REDEEMED_MESSAGE;
             case CHEQUE_CANCELLED -> CHEQUE_CANCELLED_MESSAGE;
             case CHEQUE_VOIDED -> CHEQUE_VOIDED_MESSAGE;
+            // Milestone 6b: unreachable here. This screen has been unreachable itself since the
+            // Milestone 4 cutover, and Deposit All Coins only ever existed on BankBalanceScreen,
+            // which renders these properly through BankStatusPresenter. Present solely to keep
+            // this switch exhaustive until Milestone 19 deletes the class.
+            case NOTHING_TO_DEPOSIT, BALANCE_CAPACITY_EXCEEDED -> CLEAN_REJECTION_MESSAGE;
         };
         refreshButtonStates();
     }

@@ -77,6 +77,39 @@ class BankStatusPresenterTest {
     }
 
     @Test
+    void doesNotPresentAnEmptyPurseAsARefusal() {
+        BankStatusPresenter.Status status =
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.NOTHING_TO_DEPOSIT);
+
+        // Nothing failed and nobody refused the player -- they simply had no coins. Design §15
+        // lists this as its own category precisely so it does not read as the bank turning them
+        // away, which is what CLEAN_REJECTION's wording says.
+        assertEquals(BankStatusPresenter.Severity.INFORMATIONAL, status.severity());
+        assertNotEquals(
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.CLEAN_REJECTION).translationKey(),
+                status.translationKey()
+        );
+    }
+
+    @Test
+    void presentsABalanceCeilingAsItsOwnActionableRefusal() {
+        BankStatusPresenter.Status status =
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.BALANCE_CAPACITY_EXCEEDED);
+
+        // A refusal, but one the player can do something about -- withdraw or spend, then retry.
+        // A generic rejection would not tell them that.
+        assertEquals(BankStatusPresenter.Severity.REJECTION, status.severity());
+        assertNotEquals(
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.CLEAN_REJECTION).translationKey(),
+                status.translationKey()
+        );
+        assertNotEquals(
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.NOTHING_TO_DEPOSIT).translationKey(),
+                status.translationKey()
+        );
+    }
+
+    @Test
     void keepsTheFourChequeOutcomesDistinctFromEachOther() {
         Set<String> keys = new HashSet<>();
         for (Kind kind : new Kind[]{

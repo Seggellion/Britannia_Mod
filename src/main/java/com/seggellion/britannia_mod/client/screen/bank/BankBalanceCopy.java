@@ -67,13 +67,4 @@ public final class BankBalanceCopy {
         return String.format(Locale.ROOT, "%,d", amount);
     }
 
-    /**
-     * Shown while Deposit All Coins exists but cannot yet do anything. Playbook Milestone 5 allows
-     * the button to stay disabled until Milestone 6 and asks that the placeholder be clear; a
-     * disabled button alone says "not now" without saying why.
-     *
-     * <p><b>Delete at Milestone 6</b>, along with the key in {@code en_us.json}.
-     */
-    public static final BankStatusPresenter.Status DEPOSIT_ALL_UNAVAILABLE =
-            new BankStatusPresenter.Status(ROOT + "deposit_all_unavailable", BankStatusPresenter.Severity.INFORMATIONAL);
 }

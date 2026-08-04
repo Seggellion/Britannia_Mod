@@ -830,28 +830,38 @@ those four call sites from the gold column to the keyed column, reusing the mech
 selected denomination's copper unit"; and carry a denomination on the issuance packet. No
 `bank_cheques` schema change. No change to redemption.
 
-**Amount bounds: absolute, unchanged (owner-decided 2026-08-03).**
-`BankCheque::MIN_AMOUNT` stays 5 000 000 copper and `MAX_AMOUNT` stays 1 000 000 000
-(ADR-018/ADR-019), applied to the cheque's **value**, not to the count of coins in the selected
-denomination. Per-denomination bounds were considered and rejected by the owner.
+**Amount bounds: the floor is a coin count, the ceiling is a value (owner-decided, revised).**
 
-What that means in play:
+> **Revision history, because this changed once.** An earlier decision on 2026-08-03 kept the
+> pre-existing absolute floor, making the minimum cost 500 gold / 50 000 silver / 5 000 000
+> copper. The owner revised that after seeing it in the built interface: *"it should be 500 coins,
+> and not a value of 500 gold."* This section records the revised rule. The original absolute
+> floor was never a decision of this epic — it is `BankCheque::MIN_AMOUNT` from ADR-018/ADR-019,
+> written when cheques were gold-only and it simply meant "500 gold".
 
-| Funding denomination | Coins required to reach the minimum |
-| --- | --- |
-| Gold | 500 |
-| Silver | 50 000 |
-| Copper | 5 000 000 |
+**The smallest cheque is 500 coins of whichever denomination funds it.** 500 gold, 500 silver, or
+500 copper. One sentence a player can hold in their head.
 
-Gold therefore remains the ordinary denomination for a cheque. Silver and copper funding is
-genuinely available, but only to an account holding that much value in those balances. **This is
-the intended outcome, not an oversight** — the bounds express what a cheque is worth, and a cheque
-does not become a smaller instrument because it was funded from a smaller coin.
+**Gold is unaffected.** 500 gold has always been the floor, because 500 gold *is* 5 000 000
+copper. Only silver and copper gain reachable floors, and neither denomination existed before this
+epic — so nothing that has ever shipped changes behaviour.
 
-Two consequences for Milestone 8a: `MIN_AMOUNT`/`MAX_AMOUNT` need no change at all, and the
-denomination unit-multiple rule is satisfied trivially at these magnitudes (5 000 000 is already a
-whole multiple of 10 000, 100 and 1). The rule is still enforced per denomination, because it
-guards the debit arithmetic rather than the floor.
+**The ceiling stays value-denominated, and that is structural rather than policy.** A cheque's
+amount is stored and debited as an int32 copper column, so `MAX_AMOUNT` (1 000 000 000 copper)
+is a capacity limit. The maximum therefore differs per denomination — 100 000 gold, 10 000 000
+silver, 1 000 000 000 copper — because that is what fits.
+
+Consequences for Milestone 8a:
+
+- **`ChequePayloadValidator` must enforce the floor per denomination**, against the coin count
+  rather than the copper value: `amount / unit(currency_key) >= 500`.
+- **`BankCheque::MIN_AMOUNT` must drop** from 5 000 000 to 500 — the smallest legal cheque, which
+  is now a 500-copper one. It remains a model-level sanity floor; the denomination-aware rule
+  lives in the validator.
+- `MAX_AMOUNT` is unchanged.
+- The unit-multiple rule is still enforced per denomination, because it guards the debit
+  arithmetic rather than the floor.
+- Record the revised rule as an ADR superseding the bounds half of ADR-018/ADR-019.
 
 **Consequence for the epic:** this is the second new Rails contract, not the first. See §11.5 and
 §14.2, both corrected, and the new Milestones 8a/8b in the playbook.

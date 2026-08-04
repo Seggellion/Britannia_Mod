@@ -628,10 +628,13 @@
     "screen.britannia_mod.bank.status.empty_amount": "Enter an amount.",
     "screen.britannia_mod.bank.status.invalid_amount": "Enter a whole number greater than zero.",
     "screen.britannia_mod.bank.status.amount_too_large": "That amount is larger than the teller will handle.",
+    "screen.britannia_mod.bank.status.amount_below_minimum": "That is below the smallest cheque the teller will write.",
     "screen.britannia_mod.bank.status.no_denomination_selected": "Choose gold, silver, or copper.",
     "screen.britannia_mod.bank.status.insufficient_balance": "You do not have enough on deposit for that amount.",
     "screen.britannia_mod.bank.status.nothing_selected": "Select an item first.",
     "screen.britannia_mod.bank.status.empty_vault": "The vault is empty.",
+    "screen.britannia_mod.bank.status.nothing_to_deposit": "The teller glances at thy purse and smiles. \"Thou hast no coin about thee to deposit.\"",
+    "screen.britannia_mod.bank.status.balance_capacity_exceeded": "The teller sets down the quill. \"Thy account cannot hold that much of one coin. Withdraw some first, and I shall take the rest.\"",
 
     "screen.britannia_mod.bank.main.title": "Bank",
     "screen.britannia_mod.bank.main.greeting": "%s bows slightly. \"Welcome. How may I serve thee this day?\"",
@@ -652,7 +655,16 @@
     "screen.britannia_mod.bank.balance.silver.many": "%s silver coins",
     "screen.britannia_mod.bank.balance.copper.one": "%s copper coin",
     "screen.britannia_mod.bank.balance.copper.many": "%s copper coins",
-    "screen.britannia_mod.bank.balance.deposit_all_unavailable": "The teller cannot yet take a purse all at once. Deposit coins one stack at a time for now.",
     "screen.britannia_mod.bank.action.deposit_all_coins": "Deposit All Coins",
-    "screen.britannia_mod.bank.action.deposit_all_coins.pending": "Depositing..."
+    "screen.britannia_mod.bank.action.deposit_all_coins.pending": "Depositing...",
+
+    "screen.britannia_mod.bank.cheque.title": "Create Cheque",
+    "screen.britannia_mod.bank.cheque.prompt": "The teller uncaps an inkwell. \"A cheque, then. Name the coin and the sum, and I shall write it out.\"",
+    "screen.britannia_mod.bank.cheque.amount_label": "Amount",
+    "screen.britannia_mod.bank.cheque.denomination.gold": "Gold",
+    "screen.britannia_mod.bank.cheque.denomination.silver": "Silver",
+    "screen.britannia_mod.bank.cheque.denomination.copper": "Copper",
+    "screen.britannia_mod.bank.cheque.context": "On deposit: %s. The smallest cheque in this coin is %s.",
+    "screen.britannia_mod.bank.cheque.confirm": "Write Cheque",
+    "screen.britannia_mod.bank.cheque.confirm.pending": "Writing..."
 }
