@@ -1,8 +1,22 @@
 # Shrine and Monolith Open Questions
 
-No critical architecture, schema, security, saved-state, compatibility, or merge-package decision remains unresolved for conditional code review and a separately owner-authorized merge.
+## Corrective Milestone 9A owner recheck remains open
 
-The missing live-validation evidence is not an unanswered owner decision. On 2026-08-04 the project owner approved proceeding to Milestone 10 without the prescribed two-authenticated-client Milestone 9 session, limited to final audit and conditional merge-readiness preparation. The unperformed checks are not complete and remain individually `UNVERIFIED` in `MERGE_READINESS.md`; the full matrix remains mandatory in `POST_MERGE_VALIDATION.md` before production promotion unless the owner issues a separate explicit release-risk waiver.
+- The owner must visually confirm that the corrected shrine stays centered inside an eight-oak-stair
+  frame for North, East, South, and West, with no penetration, empty side, thin stripe, overlap, or
+  z-fighting artifact. Parsed geometry and envelope tests are not GPU-render evidence.
+- The owner must confirm that the existing Britannia Decorative & Graveyard Creative tab now shows
+  exactly one `britannia_mod:shrine` entry, that it places `shrine/honesty`, and that no anchor, part,
+  or monolith item was exposed.
+- A remaining live GPU concern is texture blending at the stepped geometry and stair boundary. The
+  corrected one-model-voxel horizontal inset and non-intersecting envelope remove the proven
+  perimeter-cell overlap mathematically, but only the prescribed owner recheck can close the visual
+  result.
+- Milestone 10 remains suspended until that evidence is supplied and separately accepted.
+
+No critical architecture, schema, security, saved-state, or compatibility decision is otherwise unresolved.
+
+The missing Milestone 9 multiplayer evidence is not an unanswered owner decision. On 2026-08-04 the project owner approved proceeding without the prescribed two-authenticated-client session. Corrective Milestone 9A supersedes that progression only for the new shrine visual and Creative-tab owner recheck above.
 
 ## Non-critical follow-up: final monolith content
 

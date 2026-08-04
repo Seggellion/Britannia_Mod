@@ -17,6 +17,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import com.seggellion.britannia_mod.structure.HouseStyle;
+import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.ShrineItemStateAccess;
 
 
 public class CreativeTabRegistry {
@@ -259,6 +261,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SERPENT_SHIELD_ITEM.get());
                 safeAccept(output, ItemRegistry.ANKH_ITEM.get());
                 safeAccept(output, ItemRegistry.PENTAGRAM_ITEM.get());
+                output.accept(shrineCreativeStack(LargeStructureRegistry.SHRINE.get()));
                 safeAccept(output, ItemRegistry.ROPE_ITEM.get());
 
                 // Graveyard items
@@ -437,6 +440,11 @@ public class CreativeTabRegistry {
         } else {
             System.err.println("Warning: Attempted to add a null item to the creative tab.");
         }
+    }
+
+    /** Explicit default component for the single shared shrine entry in the existing decor tab. */
+    public static ItemStack shrineCreativeStack(ShrineItem shrine) {
+        return shrine.stateAccess().configuredStack(ShrineItemStateAccess.defaultState());
     }
 
 

@@ -1,7 +1,10 @@
 package com.seggellion.britannia_mod.structure.multiblock;
 
 import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitions;
+import com.seggellion.britannia_mod.structure.definition.StructureGeometry.LocalOffset;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.FamilyId;
+import com.seggellion.britannia_mod.structure.definition.StructureTransform;
+import com.seggellion.britannia_mod.structure.definition.StructureTransform.WorldPosition;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -10,6 +13,7 @@ import net.minecraft.world.phys.AABB;
 
 /** Pure, documented transform contract shared by renderer bounds and focused tests. */
 public final class ShrineRenderTransform {
+    public static final double MODEL_VOXELS_PER_BLOCK = 16.0;
     public static final double TOLERANCE = 1.0 / 128.0;
     public static final AABB ALL_FACINGS_LOCAL_BOUNDS = new AABB(
             -1.0 - TOLERANCE, -TOLERANCE, -1.0 - TOLERANCE,
@@ -57,5 +61,72 @@ public final class ShrineRenderTransform {
                 .map(PlacedStructureState::familyId)
                 .map(ShrineRenderTransform::renderOffsetBlocks)
                 .orElse(0.0);
+    }
+
+    /**
+     * Converts unrotated Bedrock JSON cube bounds to GeckoLib renderer coordinates.
+     * GeckoLib mirrors Bedrock X and converts all model voxels to Minecraft blocks.
+     */
+    public static AABB geckoRendererBounds(AABB bedrockModelVoxelBounds) {
+        return new AABB(
+                -bedrockModelVoxelBounds.maxX / MODEL_VOXELS_PER_BLOCK,
+                bedrockModelVoxelBounds.minY / MODEL_VOXELS_PER_BLOCK,
+                bedrockModelVoxelBounds.minZ / MODEL_VOXELS_PER_BLOCK,
+                -bedrockModelVoxelBounds.minX / MODEL_VOXELS_PER_BLOCK,
+                bedrockModelVoxelBounds.maxY / MODEL_VOXELS_PER_BLOCK,
+                bedrockModelVoxelBounds.maxZ / MODEL_VOXELS_PER_BLOCK);
+    }
+
+    /** Mirrors GeoBlockRenderer's anchor-center translation followed by its +Y facing rotation. */
+    public static AABB renderedShrineEnvelope(
+            BlockPos anchor, Direction facing, AABB bedrockModelVoxelBounds) {
+        AABB rendererBounds = geckoRendererBounds(bedrockModelVoxelBounds);
+        double radians = Math.toRadians(yRotationDegrees(facing));
+        double cosine = Math.cos(radians);
+        double sine = Math.sin(radians);
+        double minX = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+        for (double x : new double[] {rendererBounds.minX, rendererBounds.maxX}) {
+            for (double z : new double[] {rendererBounds.minZ, rendererBounds.maxZ}) {
+                double rotatedX = cosine * x + sine * z;
+                double rotatedZ = -sine * x + cosine * z;
+                minX = Math.min(minX, rotatedX);
+                minZ = Math.min(minZ, rotatedZ);
+                maxX = Math.max(maxX, rotatedX);
+                maxZ = Math.max(maxZ, rotatedZ);
+            }
+        }
+        return new AABB(
+                minX + anchor.getX() + 0.5,
+                rendererBounds.minY + anchor.getY(),
+                minZ + anchor.getZ() + 0.5,
+                maxX + anchor.getX() + 0.5,
+                rendererBounds.maxY + anchor.getY(),
+                maxZ + anchor.getZ() + 0.5);
+    }
+
+    /** Exact world-cell union for the four-cell shrine footprint at one facing. */
+    public static AABB occupiedShrineFootprintEnvelope(BlockPos anchor, Direction facing) {
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        double maxZ = Double.NEGATIVE_INFINITY;
+        for (LocalOffset offset : ShrineMonolithDefinitions.catalogue()
+                .family(ShrineMonolithDefinitions.SHRINE).orElseThrow().footprint()) {
+            WorldPosition cell = StructureTransform.worldPosition(
+                    new WorldPosition(anchor.getX(), anchor.getY(), anchor.getZ()),
+                    LargeStructurePartBlock.horizontalFacing(facing), offset);
+            minX = Math.min(minX, cell.x());
+            minY = Math.min(minY, cell.y());
+            minZ = Math.min(minZ, cell.z());
+            maxX = Math.max(maxX, cell.x() + 1.0);
+            maxY = Math.max(maxY, cell.y() + 1.0);
+            maxZ = Math.max(maxZ, cell.z() + 1.0);
+        }
+        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 }

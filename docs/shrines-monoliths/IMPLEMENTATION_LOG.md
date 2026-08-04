@@ -1228,3 +1228,164 @@ All commands ran in the isolated clone.
 - `MERGE_READINESS.md` records `CONDITIONAL MERGE READINESS`; code review and a separately owner-authorized non-destructive repository-standard merge/PR may proceed. Production promotion remains blocked by `POST_MERGE_VALIDATION.md` unless separately waived.
 - `UNVERIFIED`: every authenticated-client, two-client, live gameplay, live adjacency, live horizon/duplicate-render, client-log, and dense-scene performance criterion listed individually in `MERGE_READINESS.md` and carried into `POST_MERGE_VALIDATION.md`.
 - No merge, push, fetch, transfer, release, deployment, tag, or live promotion was performed.
+## 2026-08-04 - Corrective Milestone 9A: Shrine Render-Footprint Alignment and Creative-Tab Exposure
+
+### Authorization, state, and live defect
+
+- Work was performed only in `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex` on
+  `shrines-monoliths`, beginning clean at owner-authorized latest milestone commit
+  `51c83c82d50c8467f06606bbec60eefcb82c758b`. The prompt's earlier
+  `c69057dc1b2a961f73b7c8b87ae7bc30d7a41c43` expectation was explicitly superseded by the owner.
+- Starting merge base with `origin/patch-18` was
+  `62df1dc97c5113a86f9c0f258cb90538f31efe89`; divergence was `0/14` from
+  `origin/patch-18` and `0/12` from `origin/shrines-monoliths` (behind/ahead).
+- The shared repository was captured read-only before work on unrelated dirty branch `banking` at
+  `4018ec88097f3ab4776a9a16498fe098ae3f02ab`. No shared content was synchronized or mutated.
+- Owner screenshot evidence reports correct four logical cells, correct cell-bounded collision, and
+  valid adjacent oak stairs, but a shrine presentation shifted toward one side, an unintentionally
+  empty portion of the 2 by 2 opening, stair penetration, and thin right-side striping/overlap.
+  This entry does not claim the screenshot is visually resolved without the owner recheck.
+- Ending commit is the one commit containing this entry with subject
+  `fix(shrines): align geometry and expose creative item`; its full hash is reported externally
+  because a commit cannot contain its own hash without changing that hash or amending history.
+
+### Root cause and narrow correction
+
+- The old shared model had three cubes: `[-24,0,-8] + [32,4,32]`,
+  `[-20,4,-4] + [24,6,24]`, and `[-16,10,0] + [16,6,16]`; union X `[-24,8]`,
+  Y `[0,16]`, Z `[-8,24]`, root pivot `[0,0,0]`, no child bone, cube pivot,
+  rotation, or inflate, and box UV origins `[0,0]`, `[32,32]`, `[64,64]`.
+- GeckoLib 4.6.6 converts Bedrock X using `-(originX + sizeX) / 16 .. -originX / 16`.
+  The old raw X center `-8` therefore became renderer X `+0.5` block. GeckoLib then translated
+  the model by `(0.5,0,0.5)` to the anchor cell center and rotated around that point. The intended
+  lower-front-left anchor contract needs renderer center `(-0.5,+0.5)`, so the old model was
+  displaced by exactly one block: North `+X`, East `+Z`, South `-X`, West `-Z`.
+- Renderer translation, scale `1`, pivot, North/East/South/West rotations `0/-90/180/90`, shrine
+  render offset `0`, and finite all-facing bounds were correct. `ShrineRenderer` was not changed.
+- Corrected cubes are `[-7,0,-7] + [30,4,30]`, `[-4,4,-4] + [24,6,24]`, and
+  `[0,10,0] + [16,6,16]`; union X/Z `[-7,23]`, Y `[0,16]`. The new raw X center `+8`
+  becomes renderer X `-0.5`; Z remains `+0.5`. The 30-voxel base is symmetrically inset one model
+  voxel from all four footprint edges, spans `1.875 x 1.875` blocks, and preserves the stepped
+  silhouette, texture identities, UV safety, and one-block height.
+- Old shrine geometry SHA-256 was
+  `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0`; new is
+  `05C52F184101C5AA62EEE515EB3BB285975FAAE2744EAC3381512000F0EEE62E`.
+- Striping diagnosis: there was exactly one dynamic anchor renderer and no anchor/part baked
+  geometry, part renderer, duplicate cube, zero/negative cube, rotation, or inflate. The proven
+  one-block model displacement put dynamic faces inside the neighboring stair cells, allowing
+  depth-overlapping stair/model surfaces at the reported right edge. Corrected envelopes have
+  one-voxel clearance and do not touch any stair cell. Final GPU confirmation remains owner-only.
+
+### Exact world envelopes and invariants
+
+All values below are blocks relative to the anchor position; vertical range is always `[0,1]`.
+
+| Facing | occupiedFootprintEnvelope X/Z | old rendered X/Z | corrected rendered X/Z |
+| --- | --- | --- | --- |
+| North | X `[-1,1]`, Z `[0,2]` | X `[0,2]`, Z `[0,2]` | X `[-15/16,15/16]`, Z `[1/16,31/16]` |
+| East | X `[-1,1]`, Z `[-1,1]` | X `[-1,1]`, Z `[0,2]` | X `[-15/16,15/16]`, Z `[-15/16,15/16]` |
+| South | X `[0,2]`, Z `[-1,1]` | X `[-1,1]`, Z `[-1,1]` | X `[1/16,31/16]`, Z `[-15/16,15/16]` |
+| West | X `[0,2]`, Z `[0,2]` | X `[0,2]`, Z `[-1,1]` | X `[1/16,31/16]`, Z `[1/16,31/16]` |
+
+- The production transform helper derives the exact four-cell envelope from the authoritative
+  footprint and converts/rotates the parsed Bedrock bounds according to GeckoLib's actual convention.
+- For every facing, horizontal centers match exactly, all four exterior clearances are `1/16` block,
+  and no corrected AABB intersects any of the eight perimeter block AABBs.
+- The stair regression installs eight actual registered oak-stair states around every facing,
+  including top/bottom, straight, inner, and outer controls. All nine shrine variants retain the
+  same geometry and leave the stair-state snapshot unchanged. Existing disk/update-tag/packet and
+  adjacency-phase tests continue to cover save/load and cycling state invariance.
+- Anchor/part `SOLID_CELL` collision, selection, occlusion, support, replaceability, piston/fluid
+  behavior, four-cell shrine placement, eighteen-cell monolith placement, persistence, lifecycle,
+  integrity, drops, pick block, cycling, authorization, synchronization, and schemas were unchanged.
+
+### Creative-tab integration
+
+- Existing tab: `britannia_mod:britannia_decor_tab` (Decorative & Graveyard); no new tab.
+- `CreativeTabRegistry` accepts exactly one stack returned by
+  `shrineCreativeStack(LargeStructureRegistry.SHRINE.get())` near the existing Ankh/Pentagram entries.
+- The helper uses the existing item-state API:
+  `configuredStack(ShrineItemStateAccess.defaultState())`. The explicit state is schema `1`,
+  family `shrine`, variant `honesty`; it validates directly without server-default fallback and enters
+  the existing placement path.
+- Registry count is unchanged: one `britannia_mod:shrine` and one monolith item. No shrine-variant,
+  anchor, part, or monolith Creative entry; no recipe or survival-acquisition change.
+
+### Protected assets before and after
+
+Only the shared shrine geometry changed. These SHA-256 values were identical before/after and match
+both production JARs:
+
+- Shrine fallback geometry `460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781`;
+  animation `F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E`;
+  item model `829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985`.
+- Shrine textures: Honesty `D35747568A37960736C20F8359F55043B19739FC7D1FAB34144F8F971C36BCCC`;
+  Compassion `79160E8AF141E4395A64D64439F7FBF0C2170D78073A136E6CBEF8A130FC87BC`;
+  Valor `A748C870317998F911AC328960685F4B41AE8330635DC839F35D27EC6ACA4A1F`;
+  Justice `5F01D14F16870EBA66C6A4C3E2F19C919E403A5DCDDC12037904285C825B1B8B`;
+  Sacrifice `E4C56B44DC44C749DB10E2D34824DCF0079774FAAF9C2368330CC57036B4EEC4`;
+  Honor `ADC2A67CFA7476D4C1D18A7C49E9F1937D552099FCFE9F1D3C821B832135D381`;
+  Spirituality `D50CF726BD459C85313A9173E708C49C3ADC72559D0EABC9458FDFED8FF05CF1`;
+  Humility `E201645E5D9058E28022B22904114E09823E736DDE8021D2E4DA2CE9E558AC8A`;
+  Chaos `D8B2FDEB4158BBF86A053CDD383E532569F4DDDAEFF178D2472F5ABC2507EDC3`.
+- Monolith existing/alternate geometry
+  `0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C` /
+  `B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC`;
+  textures `FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4` /
+  `E320B72F2D0B9429D07DD4E62D264535760797AE6D1F9DD047C082B6736A2C4A`;
+  animation `D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530`;
+  item model `E48339859F7AA66BBC08246B8BC65AC1827E28241509518F9884A854739A2BED`.
+
+### Validation and packaging
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+- First focused compile attempt exceeded the initial tool timeout: exit `124`, 124.0 seconds. The
+  immediate completed run exposed one test-only count assumption (`5` tab-register call sites versus
+  five holders plus the event-bus registration): exit `1`, 35.1 seconds, 7 methods, one failure,
+  zero errors/skips. The assertion was narrowed to the five actual tab holders; production was unchanged.
+- Final corrective class:
+  `gradlew test --tests "...CorrectiveMilestoneNineARenderAlignmentTest" ...`; exit `0`, 39.8 seconds,
+  1 class / 7 methods / at least 109 explicit new loop cases, zero failures/errors/skips; 30 tasks,
+  2 executed and 28 up-to-date.
+- Focused corrective/content/hash command (corrective class, `MilestoneEightContentReportTest`, and
+  `InteriorDecoratorMilestoneFiveScopeTest`): exit `0`, 39.1 seconds, 3 classes / 14 methods,
+  zero failures/errors/skips; 30 tasks, 2 executed and 28 up-to-date.
+- Structure suite: `gradlew test --tests "com.seggellion.britannia_mod.structure.*" ...`; exit `0`,
+  41.4 seconds, 33 classes / 207 methods, zero failures/errors/skips; 30 tasks, 1 executed and
+  29 up-to-date. Existing 275,936 Milestone 8 matrix cases plus 109 explicit new cases give at least
+  276,045 counted logical cases, excluding other looped tests.
+- Full suite: `gradlew test ...`; exit `0`, 39.1 seconds, 33 classes / 207 methods, zero
+  failures/errors/skips; 30 tasks, 1 executed and 29 up-to-date.
+- Before clean, tracked generated files were absent. Untracked root `logs` and ignored `.gradle`,
+  `build`, `run`, and `runs` were reproducible current-session outputs; `clean` targets only `build`.
+  `gradlew clean build ...`; exit `0`, 160.6 seconds (`BUILD SUCCESSFUL in 2m 40s`),
+  36 tasks: 7 executed, 20 from cache, 9 up-to-date; tests restored from cache, 33 classes / 207 methods.
+- `git diff --check`: exit `0`; only Git's existing Windows LF-to-CRLF notices appeared.
+- Dedicated server: RCON was disabled for the run; an isolated temporary Gradle input-forwarding
+  init script allowed normal console `stop`. `Done (3.205s)`, all dimensions saved, Gradle exit `0`,
+  82.6 seconds / `BUILD SUCCESSFUL in 1m 19s`, 32 tasks (1 executed, 31 up-to-date). Established
+  dev-only refmap/TitleScreen-dist, missing config, asset-union, offline-mode, HTTP-service, and
+  repetitive chest/barrel diagnostics remained; no shrine/monolith resource error appeared.
+- Development client: reached Britannia resource reload, OpenAL/sound startup, and the
+  4096-block-atlas marker in 73.9 seconds; the exact hidden process tree was then terminated because
+  no interactive control was exposed. Existing unrelated missing-model/texture and legacy GeckoLib
+  animation-expression diagnostics remained; no shrine/monolith missing/parse diagnostic appeared.
+  This is startup/resource/class-loading evidence, not normal exit, gameplay, or visual proof.
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,247,428 bytes, 4,688 entries,
+  SHA-256 `2BA6B94641671411244C4FE9B41FACACCDC8955D04B8642735A63EC0AD9C2079`.
+- Deployable JAR `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,819,066 bytes, 4,692 entries,
+  SHA-256 `496E8A41669B5EDEBAAFE5816D16C9361440382076F9A7DBE8001FBF5D5FB98E`.
+  Each contains 107 structure class entries, one `ShrineRenderer`, zero part renderer/test entries,
+  one corrected shrine geometry, nine shrine textures, two monolith geometries/textures, one Creative
+  tab class, and all 19 protected resources with zero missing/mismatch. Packaged geometry hash is the
+  corrected `05C52F...E62E`.
+
+### Owner recheck and milestone boundary
+
+`OWNER VISUAL RECHECK REQUIRED`: open the existing Decorative & Graveyard tab; verify exactly one
+shrine and no anchor/part entry; place it and verify Honesty; surround all four cells with eight oak
+stairs; verify centered fit, no stair penetration, empty side, stripe, overlap, or z-fighting; repeat
+North/East/South/West; cycle Honesty, Compassion, and Chaos and verify identical geometry; verify
+collision; save/reload and verify alignment persists. Creative exposure and every GPU-dependent visual
+claim remain pending until owner evidence. Milestone 10 was not begun or resumed.

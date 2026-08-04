@@ -7,7 +7,13 @@ They remain intentionally replaceable development art rather than a permanent fi
 
 - `assets/britannia_mod/geo/shrine.geo.json` is a static GeckoLib placeholder altar.
 - It is authored facing North, with Y up and the anchor at the lower front-left occupied cell.
-- Model extents are X `[-24, 8]`, Y `[0, 16]`, Z `[-8, 24]` model units.
+- Corrective Milestone 9A aligns the geometry with the lower-front-left anchor after GeckoLib's
+  Bedrock-X mirroring. Model extents are X `[-7, 23]`, Y `[0, 16]`, Z `[-7, 23]` model units.
+- The 30 by 30 model-voxel base leaves a symmetric one-voxel inset from the four horizontal
+  footprint edges. Its effective presentation is 1.875 by 1.875 blocks, centered in the logical
+  2 by 2 footprint for all four facings.
+- Pre-correction SHA-256 was `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0`;
+  corrected SHA-256 is `05C52F184101C5AA62EEE515EB3BB285975FAAE2744EAC3381512000F0EEE62E`.
 - GeckoLib translates to the anchor cell center before rotating: North `0`, East `-90`, South `180`, West `90` degrees around +Y.
 - `assets/britannia_mod/geo/shrine_missing.geo.json` is a bounded diagnostic cube, not shrine art.
 
