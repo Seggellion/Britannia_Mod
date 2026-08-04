@@ -24,8 +24,8 @@ import java.util.Objects;
  * as an emptied vault, which is precisely the misreading the item-identity program was written to
  * fix.
  *
- * <p><b>Delete both factory methods as their milestones land:</b> {@link #balance()} at Milestone
- * 5, {@link #bankBox()} at Milestone 9. When both are gone, delete this class.
+ * <p><b>Delete each factory as its milestone lands.</b> The Balance one went at Milestone 5; only
+ * {@link #bankBox()} remains, and when Milestone 9 removes it, delete this class.
  *
  * <p>It deposits nothing, withdraws nothing and sends no packet. Back returns to the hub; Escape
  * closes banking.
@@ -44,19 +44,15 @@ public final class BankPlaceholderScreen extends Screen implements BankingScreen
         this.body = Objects.requireNonNull(body, "body");
     }
 
-    /** Remove at Milestone 9, when the real Bank Box screen exists. */
+    /**
+     * Remove at Milestone 9, when the real Bank Box screen exists -- and delete this whole class
+     * with it. The Balance factory that stood beside this one was removed at Milestone 5, when
+     * {@code BankBalanceScreen} replaced it; this is the last one left.
+     */
     public static BankPlaceholderScreen bankBox() {
         return new BankPlaceholderScreen(
                 Component.translatable("screen.britannia_mod.bank.placeholder.bank_box.title"),
                 Component.translatable("screen.britannia_mod.bank.placeholder.bank_box.body")
-        );
-    }
-
-    /** Remove at Milestone 5, when the real Balance screen exists. */
-    public static BankPlaceholderScreen balance() {
-        return new BankPlaceholderScreen(
-                Component.translatable("screen.britannia_mod.bank.placeholder.balance.title"),
-                Component.translatable("screen.britannia_mod.bank.placeholder.balance.body")
         );
     }
 

@@ -642,6 +642,17 @@
     "screen.britannia_mod.bank.action.back": "Back",
     "screen.britannia_mod.bank.placeholder.bank_box.title": "Bank Box",
     "screen.britannia_mod.bank.placeholder.bank_box.body": "The teller gestures toward the vault door. \"The vault is being refitted, and is not ready for thee yet. Return shortly.\"",
-    "screen.britannia_mod.bank.placeholder.balance.title": "Balance",
-    "screen.britannia_mod.bank.placeholder.balance.body": "The teller turns a page of the ledger. \"The accounting is not yet in order. Return shortly.\""
+
+    "screen.britannia_mod.bank.balance.title": "Balance",
+    "screen.britannia_mod.bank.balance.body": "The teller runs a finger down the ledger. \"Thy account holds %s, %s, and %s.\"",
+    "screen.britannia_mod.bank.balance.body_empty": "The teller runs a finger down the ledger. \"Thy account holds not a single coin.\"",
+    "screen.britannia_mod.bank.balance.gold.one": "%s gold coin",
+    "screen.britannia_mod.bank.balance.gold.many": "%s gold coins",
+    "screen.britannia_mod.bank.balance.silver.one": "%s silver coin",
+    "screen.britannia_mod.bank.balance.silver.many": "%s silver coins",
+    "screen.britannia_mod.bank.balance.copper.one": "%s copper coin",
+    "screen.britannia_mod.bank.balance.copper.many": "%s copper coins",
+    "screen.britannia_mod.bank.balance.deposit_all_unavailable": "The teller cannot yet take a purse all at once. Deposit coins one stack at a time for now.",
+    "screen.britannia_mod.bank.action.deposit_all_coins": "Deposit All Coins",
+    "screen.britannia_mod.bank.action.deposit_all_coins.pending": "Depositing..."
 }
