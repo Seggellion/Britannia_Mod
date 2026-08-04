@@ -450,6 +450,63 @@ decided in Security Slice 1's Decision 5 (recommended 24 hours) once
 `Shard` has the schema support (a previous-secret value and its own
 expiry, or a credential-history table) to make it possible.
 
+### ADR-026: The minimum cheque is 500 coins of the funding denomination, superseding the floor half of ADR-018/ADR-019
+
+Date: 2026-08-03. Status: Human-approved (not Codex-inferred).
+Supersedes: the *floor* of ADR-018, and ADR-019's expression of that
+floor in copper. Both remain in force for the ceiling, which this entry
+does not touch.
+
+**The smallest cheque is 500 coins of whichever denomination funds it**
+— 500 gold, 500 silver, or 500 copper. One sentence a player can hold in
+their head, in whichever denomination they are looking at.
+
+ADR-018 approved "500 to 100,000 gold-equivalent value" and ADR-019
+resolved that into 5,000,000 to 1,000,000,000 copper. Both were written
+when cheque issuance was gold-only, where "500 gold" and "5,000,000
+copper" were the same statement and the distinction between a coin count
+and a value could not arise. Design §12.3.1's owner decision to fund
+cheques from any of the three denominations made it arise. An earlier
+pass through that decision kept the absolute copper floor, which would
+have made the minimum cheque cost 500 gold / 50,000 silver / 5,000,000
+copper — the same price in three different labels, and a silver or
+copper option no player would ever use. The owner revised it after
+seeing it in the built interface: *"it should be 500 coins, and not a
+value of 500 gold."*
+
+**Gold is unaffected.** 500 gold *is* 5,000,000 copper, so the floor
+gold has always had is the floor it keeps. Only silver and copper gain
+reachable floors, and neither denomination existed for cheques before
+this epic — so nothing that has ever shipped changes behaviour.
+
+**The ceiling stays value-denominated, and that asymmetry is structural
+rather than an inconsistency.** A cheque's amount is stored and debited
+as an int32 copper column, so ADR-018's 100,000-gold maximum
+(1,000,000,000 copper) is a capacity limit on that column, not a policy
+about how many coins a cheque may be worth. The maximum therefore
+differs per denomination — 100,000 gold, 10,000,000 silver, 1,000,000,000
+copper — because that is what fits. The floor is a product decision and
+scales with the denomination; the ceiling is a storage fact and does not.
+
+**ADR-012 is narrowed, not reversed.** A cheque remains
+currency-agnostic *at rest*: `bank_cheques.amount` is still one copper
+integer, there is still no `currency_key` column on that table, and
+redemption still splits the stored value by `BankCheque#coin_mix`
+knowing nothing about what funded it. Only the *funding instruction* —
+which balance the issuance debits — gains a denomination, and it lives
+on the issuing operation for as long as that operation is in flight.
+
+Implemented by Milestone 8a (Rails, `ultimacraft-website`): the
+denomination-aware floor `amount / unit(currency_key) >= 500` lives in
+`BankTransferOperations::ChequePayloadValidator`, because only the
+request knows the denomination; `BankCheque::MIN_AMOUNT` drops from
+5,000,000 to 500 as a model-level sanity floor, mirrored by the
+`bank_cheques_approved_amount_range` check constraint;
+`BankCheque::MAX_AMOUNT` is unchanged. The separate whole-coin-multiple
+rule survives unchanged in substance and is now per-denomination: it
+guards the debit arithmetic against silent truncation, independently of
+the floor. Full contract: Rails `docs/banking_bank_cheque_issuance.md`.
+
 ## 5. Authority and extension matrix
 
 | Domain | Current authority | Verified current representation | Extension rule |

@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.bank.currency;
 
+import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -69,6 +70,24 @@ public final class CurrencyItemRegistry {
     /** True exactly when {@link #currencyKeyOf(ItemStack)} would return a key. */
     public static boolean isCurrencyStack(ItemStack stack) {
         return currencyKeyOf(stack).isPresent();
+    }
+
+    /**
+     * How many copper one coin of {@code currencyKey} is worth, or empty for an unsupported key.
+     *
+     * <p>Bank interface rebuild, Milestone 8b. Mirrors Rails'
+     * {@code ChequePayloadValidator::COPPER_UNITS} exactly, and for the same reason it exists
+     * there: a cheque's {@code amount} is always copper while its {@code currency_key} names the
+     * balance that funds it, so converting between "500 coins" and "5,000,000 copper" needs one
+     * agreed table on each side. Both derive from the same canonical ratios
+     * ({@link com.seggellion.britannia_mod.economy.CoinConversion}), so the unit this approves an
+     * amount against is the unit Rails later divides by.
+     */
+    public static Optional<Integer> copperUnitFor(String currencyKey) {
+        if (GOLD_KEY.equals(currencyKey)) return Optional.of(CoinConversion.COPPER_PER_GOLD);
+        if (SILVER_KEY.equals(currencyKey)) return Optional.of(CoinConversion.COPPER_PER_SILVER);
+        if (COPPER_KEY.equals(currencyKey)) return Optional.of(1);
+        return Optional.empty();
     }
 
     /**

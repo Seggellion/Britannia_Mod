@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.client.screen;
 
+import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.client.screen.bank.BankActionButton;
 import com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy;
 import com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination;
@@ -9,6 +10,9 @@ import com.seggellion.britannia_mod.client.screen.bank.BankDialogueLayout;
 import com.seggellion.britannia_mod.client.screen.bank.BankStatusPresenter;
 import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
 import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
+import com.seggellion.britannia_mod.network.ClientNetworkHandler;
+import com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -149,10 +153,7 @@ public final class BankChequeIssuanceScreen extends Screen implements BankingScr
                 layout.buttonX(), layout.buttonY(CONFIRM_INDEX), layout.buttonWidth(), layout.buttonHeight(),
                 Component.translatable("screen.britannia_mod.bank.cheque.confirm"),
                 Component.translatable("screen.britannia_mod.bank.cheque.confirm.pending"),
-                // Milestone 8b sends the request. Deliberately inert here: Rails cannot accept a
-                // denomination until 8a ships, and emitting one early is the exact failure mode
-                // Playbook §1.1 rule 2 exists to prevent.
-                ignored -> { }
+                ignored -> writeCheque()
         );
         addRenderableWidget(confirmButton);
     }
@@ -187,6 +188,47 @@ public final class BankChequeIssuanceScreen extends Screen implements BankingScr
             entry.getValue().active = entry.getKey() != selected && !pending;
         }
         amountBox.setEditable(!pending);
+    }
+
+    /**
+     * Milestone 8b: one press, one request.
+     *
+     * <p>Revalidates rather than trusting the button's enabled state -- the balance can have
+     * changed under a valid form since the last frame, and a stale enabled button is not
+     * authority. The pending lock is claimed before the packet goes out and a failed claim sends
+     * nothing, so a double-click issues one cheque.
+     *
+     * <p>What travels is the copper value and the funding denomination. The denomination comes
+     * from this screen's own selection and never from the response: Rails deliberately does not
+     * echo {@code currency_key} back (Milestone 8a decision 3), so there would be nothing to read
+     * even if trusting an echo were a good idea.
+     */
+    private void writeCheque() {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (session == null) return;
+
+        BankChequeForm.Validation validation = BankChequeForm.validate(
+                amountBox == null ? "" : amountBox.getValue(), selected, BankChequeForm.balanceOf(session, selected)
+        );
+        if (!validation.valid()) {
+            validationStatus = validation.error();
+            return;
+        }
+        if (!session.beginPending(BankTransferResultS2CPayload.Operation.CHEQUE_ISSUANCE)) return;
+
+        ClientNetworkHandler.sendToServer(new BankChequeIssuanceRequestC2SPayload(
+                session.tellerEntityId(), validation.copperAmount(), currencyKeyOf(selected)
+        ));
+        revalidate(session);
+    }
+
+    /** The wire key for a denomination -- the same three keys every currency contract uses. */
+    private static String currencyKeyOf(Denomination denomination) {
+        return switch (denomination) {
+            case GOLD -> CurrencyItemRegistry.GOLD_KEY;
+            case SILVER -> CurrencyItemRegistry.SILVER_KEY;
+            case COPPER -> CurrencyItemRegistry.COPPER_KEY;
+        };
     }
 
     private void returnToMain() {

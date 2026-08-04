@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.service.banking;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
@@ -87,9 +88,27 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class BankingChequeIssuanceProxyService {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    /** ADR-018/ADR-019: 500 gold-equivalent, expressed in the canonical copper unit. */
-    public static final int MIN_AMOUNT_COPPER = 500 * CoinConversion.COPPER_PER_GOLD;
-    /** ADR-018/ADR-019: 100,000 gold-equivalent, expressed in the canonical copper unit. */
+    /**
+     * The smallest cheque, counted in coins of whichever denomination funds it -- mirrors Rails'
+     * {@code ChequePayloadValidator::MIN_COIN_COUNT}.
+     *
+     * <p>Milestone 8b, superseding ADR-018/ADR-019's absolute floor: 500 gold, 500 silver or 500
+     * copper, rather than a flat 5,000,000-copper value that cost 500 gold but 5,000,000 copper
+     * for the same instrument. See ADR-026 and design §12.3.1.
+     */
+    public static final int MIN_COIN_COUNT = 500;
+
+    /**
+     * The absolute copper floor, which is now only a sanity bound -- the smallest legal cheque is
+     * 500 copper. The denomination-aware rule above is the real check, exactly as it is on the
+     * Rails side.
+     */
+    public static final int MIN_AMOUNT_COPPER = MIN_COIN_COUNT;
+
+    /**
+     * ADR-018/ADR-019: 100,000 gold-equivalent. Unchanged by Milestone 8b, and structural rather
+     * than policy -- the amount is stored and debited as an int32 copper column.
+     */
     public static final int MAX_AMOUNT_COPPER = 100_000 * CoinConversion.COPPER_PER_GOLD;
 
     private static BankingChequeIssuanceClientPort client = new BankingChequeIssuanceClient();
@@ -120,23 +139,32 @@ public final class BankingChequeIssuanceProxyService {
         return IN_FLIGHT.contains(playerId);
     }
 
-    /** The full cheque issuance sequence -- the one and only production entry point. */
+    /**
+     * The full cheque issuance sequence -- the one and only production entry point.
+     *
+     * @param amountCopper the cheque's value, always in copper
+     * @param currencyKey  which balance funds it. Milestone 8b: this <b>never rescales</b>
+     *                     {@code amountCopper} -- 5,000,000 copper funded from gold debits 500
+     *                     gold, and the same 5,000,000 funded from copper debits 5,000,000 copper.
+     *                     See docs/banking_bank_cheque_issuance.md, which calls this out as the
+     *                     one part of the contract that is easy to get backwards.
+     */
     public static CompletableFuture<BankingChequeIssuanceResult> triggerChequeIssuance(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper
+            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
     ) {
         UUID playerId = player.getUUID();
         if (!IN_FLIGHT.add(playerId)) {
             return CompletableFuture.completedFuture(new BankingChequeIssuanceResult.LocalFailure("cheque_issuance_already_in_flight"));
         }
-        return prepareAndConfirmInternal(player, teller, amountCopper)
+        return prepareAndConfirmInternal(player, teller, amountCopper, currencyKey)
                 .thenCompose(outcome -> continueToDelivery(player, teller, outcome))
                 .whenComplete((result, error) -> IN_FLIGHT.remove(playerId));
     }
 
     public static CompletableFuture<BankingChequeIssuanceResult> triggerChequeIssuanceForTesting(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper
+            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
     ) {
-        return triggerChequeIssuance(player, teller, amountCopper);
+        return triggerChequeIssuance(player, teller, amountCopper, currencyKey);
     }
 
     /**
@@ -148,13 +176,13 @@ public final class BankingChequeIssuanceProxyService {
      * {@link #resetInFlightTrackingForTesting()} afterward to simulate the process restarting.
      */
     public static CompletableFuture<PrepareAndConfirmOutcome> prepareAndConfirmForTesting(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper
+            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
     ) {
         UUID playerId = player.getUUID();
         if (!IN_FLIGHT.add(playerId)) {
             return CompletableFuture.completedFuture(new PrepareAndConfirmOutcome.LocalFailure("cheque_issuance_already_in_flight"));
         }
-        return prepareAndConfirmInternal(player, teller, amountCopper).whenComplete((outcome, error) -> {
+        return prepareAndConfirmInternal(player, teller, amountCopper, currencyKey).whenComplete((outcome, error) -> {
             if (error != null || !(outcome instanceof PrepareAndConfirmOutcome.Confirmed)) {
                 IN_FLIGHT.remove(playerId);
             }
@@ -264,14 +292,29 @@ public final class BankingChequeIssuanceProxyService {
     // ---- Steps 1-4: local checks, prepare, write receipt, confirm ----
 
     private static CompletableFuture<PrepareAndConfirmOutcome> prepareAndConfirmInternal(
-            ServerPlayer player, ServiceNpcEntity teller, int amountCopper
+            ServerPlayer player, ServiceNpcEntity teller, int amountCopper, String currencyKey
     ) {
         BankingProxyService.ResolvedTeller resolved = BankingProxyService.resolve(player, teller);
         if (resolved == null) {
             return CompletableFuture.completedFuture(new PrepareAndConfirmOutcome.LocalFailure("teller_not_resolved"));
         }
 
-        if (amountCopper < MIN_AMOUNT_COPPER || amountCopper > MAX_AMOUNT_COPPER || amountCopper % CoinConversion.COPPER_PER_GOLD != 0) {
+        // Milestone 8b: the funding denomination decides the unit, so an unsupported key is
+        // rejected here rather than reaching Rails as an amount validated against the wrong one.
+        Integer unit = CurrencyItemRegistry.copperUnitFor(currencyKey).orElse(null);
+        if (unit == null) {
+            return CompletableFuture.completedFuture(
+                    new PrepareAndConfirmOutcome.RejectedLocally(BankingChequeIssuanceLocalRejectionReason.INVALID_AMOUNT));
+        }
+
+        // The same three rules Rails' own validator applies, in the same order: storable range,
+        // whole multiple of the funding denomination's unit, and at least MIN_COIN_COUNT coins of
+        // it. Checking the coin count rather than the copper value is the whole point of the
+        // revised floor -- 500 copper and 500 gold are both legal, and 10 gold is not.
+        boolean outOfRange = amountCopper < MIN_AMOUNT_COPPER || amountCopper > MAX_AMOUNT_COPPER;
+        boolean notWholeCoins = amountCopper % unit != 0;
+        boolean belowFloor = amountCopper / unit < MIN_COIN_COUNT;
+        if (outOfRange || notWholeCoins || belowFloor) {
             return CompletableFuture.completedFuture(
                     new PrepareAndConfirmOutcome.RejectedLocally(BankingChequeIssuanceLocalRejectionReason.INVALID_AMOUNT));
         }
@@ -285,7 +328,7 @@ public final class BankingChequeIssuanceProxyService {
 
         MinecraftServer server = player.server;
         BankingChequeIssuancePrepareRequest prepareRequest = new BankingChequeIssuancePrepareRequest(
-                player.getUUID(), resolved.worldNpcPublicId(), UUID.randomUUID().toString(), amountCopper
+                player.getUUID(), resolved.worldNpcPublicId(), UUID.randomUUID().toString(), amountCopper, currencyKey
         );
 
         final CompletableFuture<BankingChequeIssuancePrepareResult> prepareFuture;

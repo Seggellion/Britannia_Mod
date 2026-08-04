@@ -346,7 +346,7 @@ public final class BankingTransferPacketService {
         if (teller == null) return;
 
         MinecraftServer server = player.server;
-        BankingChequeIssuanceProxyService.triggerChequeIssuance(player, teller, payload.amount())
+        BankingChequeIssuanceProxyService.triggerChequeIssuance(player, teller, payload.amount(), payload.currencyKey())
                 .whenComplete((result, error) -> server.execute(() -> {
                     if (error != null || result == null) {
                         LOGGER.warn("banking cheque issuance trigger for {} completed exceptionally", player.getStringUUID(), error);

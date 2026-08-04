@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 
 /**
  * "The player says they want to issue a cheque for this much, through this teller" -- nothing
@@ -27,7 +28,11 @@ import com.seggellion.britannia_mod.BritanniaMod;
  * BankCurrencyWithdrawalRequestC2SPayload}'s own established "reject malformed values during
  * decode" precedent.
  */
-public record BankChequeIssuanceRequestC2SPayload(int entityId, int amount) implements CustomPacketPayload {
+public record BankChequeIssuanceRequestC2SPayload(int entityId, int amount, String currencyKey)
+        implements CustomPacketPayload {
+    /** Comfortably past {@code "silver"}, and short enough that a hostile value costs nothing. */
+    private static final int MAX_CURRENCY_KEY_LENGTH = 16;
+
     public static final ResourceLocation TYPE_ID =
             ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "bank_cheque_issuance_request");
     public static final Type<BankChequeIssuanceRequestC2SPayload> TYPE = new Type<>(TYPE_ID);
@@ -38,7 +43,15 @@ public record BankChequeIssuanceRequestC2SPayload(int entityId, int amount) impl
             int entityId = ByteBufCodecs.VAR_INT.decode(buf);
             int amount = ByteBufCodecs.VAR_INT.decode(buf);
             if (amount <= 0) throw new IllegalArgumentException("Invalid cheque issuance amount");
-            return new BankChequeIssuanceRequestC2SPayload(entityId, amount);
+            // Bounded before it is read as a key: an unbounded readUtf from a modified client is a
+            // memory cost the server pays before any validation, so the length cap comes first and
+            // the value is checked against the supported set immediately after. Same
+            // reject-malformed-values-during-decode precedent the amount check above follows.
+            String currencyKey = buf.readUtf(MAX_CURRENCY_KEY_LENGTH);
+            if (CurrencyItemRegistry.copperUnitFor(currencyKey).isEmpty()) {
+                throw new IllegalArgumentException("Invalid cheque issuance currency key");
+            }
+            return new BankChequeIssuanceRequestC2SPayload(entityId, amount, currencyKey);
         }
 
         @Override
@@ -46,6 +59,7 @@ public record BankChequeIssuanceRequestC2SPayload(int entityId, int amount) impl
             if (payload.amount <= 0) throw new IllegalArgumentException("Invalid cheque issuance amount");
             ByteBufCodecs.VAR_INT.encode(buf, payload.entityId);
             ByteBufCodecs.VAR_INT.encode(buf, payload.amount);
+            buf.writeUtf(payload.currencyKey, MAX_CURRENCY_KEY_LENGTH);
         }
     };
 

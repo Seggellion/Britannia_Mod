@@ -137,6 +137,10 @@ public final class BankingChequeIssuanceClient implements BankingChequeIssuanceC
     private static byte[] serializePrepare(BankingChequeIssuancePrepareRequest request) {
         JsonObject cheque = new JsonObject();
         cheque.addProperty("amount", request.amount());
+        // Milestone 8b. Optional on Rails' side so pre-8a clients keep working, always sent here
+        // so "gold" is never confused with a dropped field. The envelope is strict, so this must
+        // not ship before 8a is deployed -- Playbook §1.1 rule 2.
+        cheque.addProperty("currency_key", request.currencyKey());
 
         JsonObject payload = new JsonObject();
         payload.addProperty("player_uuid", request.playerUuid().toString());

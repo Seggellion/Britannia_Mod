@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.gametest;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipt;
@@ -8,6 +9,7 @@ import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStatus;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipts;
 import com.seggellion.britannia_mod.component.BankChequeData;
+import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
@@ -84,7 +86,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone(), "cheque issuance did not complete");
@@ -129,7 +131,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER - 10_000);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER - 10_000, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone(), "cheque issuance did not complete");
@@ -160,7 +162,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone(), "cheque issuance did not complete");
@@ -220,7 +222,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone(), "the operation must complete even when the forced save throws internally");
@@ -278,7 +280,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             // The player walks far out of interaction range while confirm is still in flight --
             // by the time it resolves, delivery must re-resolve the teller and find it gone.
@@ -340,7 +342,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceProxyService.PrepareAndConfirmOutcome> future =
-                    BankingChequeIssuanceProxyService.prepareAndConfirmForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.prepareAndConfirmForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone(), "prepareAndConfirm did not complete");
@@ -468,7 +470,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceProxyService.PrepareAndConfirmOutcome> prepared =
-                    BankingChequeIssuanceProxyService.prepareAndConfirmForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.prepareAndConfirmForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(prepared.isDone(), "prepareAndConfirm did not complete");
@@ -521,7 +523,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone() && future.join() instanceof BankingChequeIssuanceResult.Confirmed,
@@ -562,7 +564,7 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> future =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             helper.succeedWhen(() -> {
                 check(future.isDone(), "cheque issuance did not complete");
@@ -603,11 +605,11 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
 
         try {
             CompletableFuture<BankingChequeIssuanceResult> first =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
             check(BankingChequeIssuanceProxyService.isInFlightForTesting(player.getUUID()), "must be marked in-flight while prepare is pending");
 
             CompletableFuture<BankingChequeIssuanceResult> second =
-                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER);
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(player, teller, SAMPLE_AMOUNT_COPPER, CurrencyItemRegistry.GOLD_KEY);
 
             check(prepareDispatchCount.get() == 1, "a repeat trigger dispatched a second prepare call (count=" + prepareDispatchCount.get() + ")");
             check(second.isDone() && second.join() instanceof BankingChequeIssuanceResult.LocalFailure,
@@ -704,6 +706,194 @@ public final class BankingChequeIssuanceProxyServiceGameTests {
         npc.setWorldNpcPublicId(UUID.randomUUID());
         npc.setServiceNpcTypeKey(BANK_TYPE_KEY);
         return npc;
+    }
+
+    // ---------- Milestone 8b: funding denomination ----------
+
+    /**
+     * The contract's easiest thing to get backwards: {@code currency_key} names the balance, it
+     * does not rescale {@code amount}. 50,000 copper funded from silver is 500 silver -- the
+     * amount on the wire stays 50,000, and it is the key that says which column pays.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aSilverFundedChequeSendsTheCopperValueUnscaledWithItsOwnKey(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        int fiveHundredSilverInCopper = 500 * CoinConversion.COPPER_PER_SILVER;
+        UUID operationId = UUID.randomUUID();
+        UUID chequeId = UUID.randomUUID();
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> CompletableFuture.completedFuture(new BankingChequeIssuancePrepareResult.Success(operationId));
+        fake.confirmBehavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeIssuanceConfirmResult.Confirmed(chequeId, fiveHundredSilverInCopper));
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingChequeIssuanceResult> future =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, fiveHundredSilverInCopper, CurrencyItemRegistry.SILVER_KEY);
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "cheque issuance did not complete");
+                check(future.join() instanceof BankingChequeIssuanceResult.Confirmed, "expected Confirmed, got " + future.join());
+                check(fake.prepareRequests.size() == 1, "expected exactly one prepare request");
+                check(fake.prepareRequests.get(0).amount() == fiveHundredSilverInCopper,
+                        "the amount must stay in copper and unscaled, got " + fake.prepareRequests.get(0).amount());
+                check(CurrencyItemRegistry.SILVER_KEY.equals(fake.prepareRequests.get(0).currencyKey()),
+                        "wrong funding denomination sent");
+            });
+        } finally {
+            cleanUpIssuance();
+        }
+    }
+
+    /** The case the previous absolute floor rejected outright: a 500-copper cheque is now legal. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void fiveHundredCopperIsNowTheSmallestLegalCopperCheque(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeClient fake = new FakeClient();
+        fake.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeIssuancePrepareResult.Success(UUID.randomUUID()));
+        fake.confirmBehavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeIssuanceConfirmResult.Confirmed(UUID.randomUUID(), 500));
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingChequeIssuanceResult> future =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, 500, CurrencyItemRegistry.COPPER_KEY);
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "cheque issuance did not complete");
+                check(future.join() instanceof BankingChequeIssuanceResult.Confirmed,
+                        "500 copper must be accepted, got " + future.join());
+            });
+        } finally {
+            cleanUpIssuance();
+        }
+    }
+
+    /** The floor is a coin count, so 499 of any denomination is refused before any Rails call. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void oneCoinBelowTheFloorIsRefusedLocallyInEveryDenomination(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeClient fake = new FakeClient();
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingChequeIssuanceResult> gold =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, 499 * CoinConversion.COPPER_PER_GOLD, CurrencyItemRegistry.GOLD_KEY);
+            BankingChequeIssuanceProxyService.resetInFlightTrackingForTesting();
+            CompletableFuture<BankingChequeIssuanceResult> copper =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, 499, CurrencyItemRegistry.COPPER_KEY);
+
+            helper.succeedWhen(() -> {
+                check(gold.isDone() && copper.isDone(), "both should have been refused immediately");
+                check(gold.join() instanceof BankingChequeIssuanceResult.RejectedLocally, "499 gold must be refused");
+                check(copper.join() instanceof BankingChequeIssuanceResult.RejectedLocally, "499 copper must be refused");
+                check(fake.prepareRequests.isEmpty(), "a below-floor amount must never reach Rails");
+            });
+        } finally {
+            cleanUpIssuance();
+        }
+    }
+
+    /**
+     * 10 gold is a sensible-looking number that is nowhere near 500 coins. It must be refused for
+     * being too small, and refused locally -- not sent for Rails to reject.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aSensibleButBelowFloorGoldAmountNeverReachesRails(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeClient fake = new FakeClient();
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingChequeIssuanceResult> future =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, 10 * CoinConversion.COPPER_PER_GOLD, CurrencyItemRegistry.GOLD_KEY);
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "should have been refused immediately");
+                check(future.join() instanceof BankingChequeIssuanceResult.RejectedLocally,
+                        "10 gold must be refused as below the floor, got " + future.join());
+                check(fake.prepareRequests.isEmpty(), "must never reach Rails");
+            });
+        } finally {
+            cleanUpIssuance();
+        }
+    }
+
+    /** An amount that is not a whole number of the funding coin is refused. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void anAmountThatIsNotWholeCoinsOfItsDenominationIsRefused(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeClient fake = new FakeClient();
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            // 5,000,001 copper is 500.0001 gold -- above the floor, but not whole gold coins.
+            CompletableFuture<BankingChequeIssuanceResult> future =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, SAMPLE_AMOUNT_COPPER + 1, CurrencyItemRegistry.GOLD_KEY);
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "should have been refused immediately");
+                check(future.join() instanceof BankingChequeIssuanceResult.RejectedLocally,
+                        "a fractional gold amount must be refused, got " + future.join());
+                check(fake.prepareRequests.isEmpty(), "must never reach Rails");
+            });
+        } finally {
+            cleanUpIssuance();
+        }
+    }
+
+    /** An unsupported key is refused here rather than validated against the wrong unit downstream. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void anUnsupportedCurrencyKeyIsRefusedLocally(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeClient fake = new FakeClient();
+        BankingChequeIssuanceProxyService.useClientForTesting(fake);
+
+        try {
+            CompletableFuture<BankingChequeIssuanceResult> future =
+                    BankingChequeIssuanceProxyService.triggerChequeIssuanceForTesting(
+                            player, teller, SAMPLE_AMOUNT_COPPER, "platinum");
+
+            helper.succeedWhen(() -> {
+                check(future.isDone(), "should have been refused immediately");
+                check(future.join() instanceof BankingChequeIssuanceResult.RejectedLocally,
+                        "an unsupported key must be refused, got " + future.join());
+                check(fake.prepareRequests.isEmpty(), "must never reach Rails");
+            });
+        } finally {
+            cleanUpIssuance();
+        }
+    }
+
+    private static void cleanUpIssuance() {
+        BankingChequeIssuanceProxyService.resetClientForTesting();
+        BankingChequeIssuanceProxyService.resetInFlightTrackingForTesting();
+        ServiceNpcRegistryCache.clear();
     }
 
     private static void check(boolean condition, String message) {
