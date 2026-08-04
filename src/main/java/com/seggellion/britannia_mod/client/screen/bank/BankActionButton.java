@@ -18,7 +18,7 @@ import java.util.Objects;
  *
  * <p>They are distinguished two ways, neither of them colour (design §16): the label swaps to a
  * caller-supplied pending label, and a small marker is drawn at the leading edge. {@code
- * BankScreen} does the label half of this today ("Depositing..."); this keeps that and adds the
+ * BankScreen} did the label half of this ("Depositing..."); this keeps that and adds the
  * marker, which survives translation into a language where the two labels happen to look alike.
  */
 public final class BankActionButton extends Button {

@@ -43,7 +43,6 @@ import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
 
 import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
-import com.seggellion.britannia_mod.client.screen.BankScreen;
 import com.seggellion.britannia_mod.client.screen.BankMainScreen;
 import com.seggellion.britannia_mod.client.screen.bank.BankNavigation;
 import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
@@ -397,34 +396,20 @@ private static MutableComponent uoMessage(String text) {
     }
 
     /**
-     * Milestone 9 Slice 3a: a clean-rejection or reconciliation-required outcome for an
-     * in-flight deposit/withdrawal. A clean confirm never reaches this handler at all -- see
-     * {@code BankTransferResultS2CPayload}'s own docs for why the account/bank_items refresh
-     * (a fresh {@link BankAccountOpenedS2CPayload}, handled just above) is the success signal
-     * instead. If {@code BankScreen} is no longer the open screen (the player closed it while
-     * the request was in flight), this is silently dropped -- there is nothing left to update.
+     * A clean-rejection, reconciliation-required, or other non-success outcome for an in-flight
+     * banking mutation. A clean confirm never reaches this handler at all -- see {@code
+     * BankTransferResultS2CPayload}'s own docs for why the account/bank_items refresh (a fresh
+     * {@link BankAccountOpenedS2CPayload}, handled just above) is the success signal instead.
+     *
+     * <p>Milestone 19: this handler no longer touches any screen. Every rebuilt screen reads the
+     * outcome off {@link ClientBankingSession} while rendering, so recording it there is the
+     * whole job -- and a result that arrives after the player closed banking is dropped by the
+     * session itself rather than by a screen check here (design §5.3).
      */
     public static void handleBankTransferResult(
             com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload payload, IPayloadContext ctx
     ) {
-        ctx.enqueueWork(() -> {
-            // Milestone 2: release the shared mutation lock and record the outcome first. Returns
-            // false when banking was closed while the request was in flight, in which case there
-            // is nothing to release and nothing to show -- see ClientBankingSession's own docs.
-            ClientBankingSession.applyTransferResult(payload);
-            Minecraft mc = Minecraft.getInstance();
-            // Milestone 4: this branch is dead. Nothing constructs BankScreen any more -- the
-            // cutover above routes every account payload to BankMainScreen, which reads the
-            // result off the session instead. Kept only until Milestone 19 deletes the class, so
-            // that the retirement is one removal rather than two.
-            //
-            // Milestone 7 removed the sibling branch that pushed results into
-            // BankChequeIssuanceScreen: that screen now reads lastResult off the session while
-            // rendering, like every rebuilt screen, so there is nothing left to hand it.
-            if (mc.screen instanceof BankScreen screen) {
-                screen.acceptTransferResult(payload);
-            }
-        });
+        ctx.enqueueWork(() -> ClientBankingSession.applyTransferResult(payload));
     }
 
     public static void handleQuestGiverSpawnScreen(QuestGiverSpawnScreenS2CPayload payload, IPayloadContext ctx) {

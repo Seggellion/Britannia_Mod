@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * simultaneously the capture AND the revalidation: there is no earlier server-side capture for
  * it to have possibly drifted from. (The CLIENT side still keeps its own, separate, purely
  * cosmetic capture at double-click-select time, for the confirmation status message -- see
- * {@code BankScreen}'s own docs -- but that captured value is never sent to or trusted by the
+ * the retired legacy screen's own docs -- but that captured value is never sent to or trusted by the
  * server, exactly like every other selection reference in this mod's trust model.) The display
  * amount ({@link BankChequeData#displayAmount()}) is never read here at all: the credited value
  * is entirely Rails-determined from the cheque's own stored record, and the redeem request

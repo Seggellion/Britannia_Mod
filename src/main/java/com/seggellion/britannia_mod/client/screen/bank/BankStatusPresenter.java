@@ -10,10 +10,11 @@ import java.util.Objects;
  * Milestone 3: the single place that decides what a banking outcome says and how loudly.
  *
  * <h2>What this replaces</h2>
- * Six {@code Component.literal} constants on {@code BankScreen} and four more on {@code
+ * Six {@code Component.literal} constants on the legacy screen and four more on {@code
  * BankChequeIssuanceScreen}, with the two screens disagreeing about what {@code PENDING_DELIVERY}
- * means -- the cheque screen has a real message for it, the bank screen renders it as a rejection.
- * Design §15 wants one vocabulary across four screens, and §17 wants all of it translatable.
+ * meant -- the cheque screen had a real message for it, the bank screen rendered it as a
+ * rejection. Design §15 wants one vocabulary across four screens, and §17 wants all of it
+ * translatable.
  *
  * <h2>Severity is not just colour</h2>
  * Design §16 requires that colour never be the only indicator of state. Each {@link Severity}
@@ -108,8 +109,8 @@ public final class BankStatusPresenter {
             case CLEAN_REJECTION -> new Status(ROOT + "clean_rejection", Severity.REJECTION);
             case RECONCILIATION_REQUIRED -> new Status(ROOT + "reconciliation_required", Severity.RECONCILIATION);
             // Nothing was rejected: Rails confirmed and the item is simply not in hand yet, and a
-            // retry resolves it. BankScreen renders this as a rejection today, which is wrong in
-            // both directions -- it alarms the player and it hides that the cheque is real.
+            // retry resolves it. The legacy screen rendered this as a rejection, which was wrong
+            // in both directions -- it alarmed the player and hid that the cheque was real.
             case PENDING_DELIVERY -> new Status(ROOT + "pending_delivery", Severity.INFORMATIONAL);
             case CHEQUE_NOT_FOUND -> new Status(ROOT + "cheque_not_found", Severity.REJECTION);
             case CHEQUE_ALREADY_REDEEMED -> new Status(ROOT + "cheque_already_redeemed", Severity.REJECTION);

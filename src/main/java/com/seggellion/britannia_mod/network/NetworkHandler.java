@@ -562,7 +562,7 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
-// Milestone 9 Slice 3a: real deposit/withdrawal triggers from BankScreen
+// Milestone 9 Slice 3a: real deposit/withdrawal triggers from the Bank Box screen
 registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload.TYPE,
     com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload.STREAM_CODEC,
@@ -589,7 +589,7 @@ registrar.playToClient(
         : (p, c) -> {}
 );
 
-// Milestone 10 Slice 2: real currency withdrawal trigger from BankScreen
+// Milestone 10 Slice 2: real currency withdrawal trigger from the Bank Box screen
 registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload.TYPE,
     com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload.STREAM_CODEC,

@@ -84,7 +84,7 @@ class BankStatusPresenterTest {
         for (Kind kind : Kind.values()) {
             keys.add(BankStatusPresenter.forResult(Operation.CHEQUE_REDEMPTION, kind).translationKey());
         }
-        // Milestone 0 §3.5: BankScreen collapses PENDING_DELIVERY and all four cheque kinds onto
+        // Milestone 0 §3.5: the legacy screen collapsed PENDING_DELIVERY and all four cheque kinds onto
         // the clean-rejection message. Distinct keys is the fix, and this is its guard.
         assertEquals(Kind.values().length, keys.size(), "two kinds share one message");
     }
@@ -117,7 +117,7 @@ class BankStatusPresenterTest {
         BankStatusPresenter.Status status =
                 BankStatusPresenter.forResult(Operation.CHEQUE_ISSUANCE, Kind.PENDING_DELIVERY);
 
-        // Rails already confirmed; the cheque is real and a retry delivers it. BankScreen renders
+        // Rails already confirmed; the cheque is real and a retry delivers it. The legacy screen rendered
         // this as a rejection today, which both alarms the player and hides that nothing failed.
         assertEquals(BankStatusPresenter.Severity.INFORMATIONAL, status.severity());
         assertNotEquals(

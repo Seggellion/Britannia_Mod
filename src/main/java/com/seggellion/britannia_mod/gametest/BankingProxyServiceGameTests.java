@@ -524,7 +524,7 @@ public final class BankingProxyServiceGameTests {
     }
 
     // ---------- Slice B: session-invalidation is checked once, at completion time ----------
-    // Decision (see BankScreen's class doc): this screen is a plain, static one-shot
+    // Decision (recorded by the retired legacy screen): this screen is a plain, static one-shot
     // snapshot with no ongoing server-side validity check once open, matching
     // QuestDecisionScreen's own real production mechanism exactly. The one and only gate is
     // the existing revalidation in handle()'s completion callback -- these tests prove that

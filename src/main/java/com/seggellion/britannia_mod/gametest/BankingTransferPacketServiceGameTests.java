@@ -803,7 +803,7 @@ public final class BankingTransferPacketServiceGameTests {
 
         try {
             // A modified client could send this slot index regardless of any client-side eligibility
-            // display -- BankScreen's own graying-out is a UX nicety only, never the real boundary.
+            // display -- the client's own graying-out is a UX nicety only, never the real boundary.
             BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
 
             check(resultSender.calls.size() == 1, "expected exactly one rejection result");

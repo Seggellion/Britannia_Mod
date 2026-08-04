@@ -12,7 +12,7 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import java.util.Objects;
 
 /**
- * Tells {@code BankScreen} how a just-triggered deposit/withdrawal ended, for the two outcomes
+ * Tells the client how a just-triggered banking mutation ended, for the outcomes
  * that leave the same screen instance on-screen needing to update in place: a clean rejection
  * (nothing happened; re-enable selection) or {@code RECONCILIATION_REQUIRED} (something
  * happened that Rails itself can no longer auto-resolve; a visibly more serious message).

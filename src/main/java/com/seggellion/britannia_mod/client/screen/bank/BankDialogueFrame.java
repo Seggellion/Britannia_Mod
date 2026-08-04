@@ -104,7 +104,7 @@ public final class BankDialogueFrame {
      *
      * <p>Two passes are unavoidable: the wrap width depends on the layout and the layout depends
      * on the line count. Callers should compute a provisional layout with a line count of 1, ask
-     * this, then recompute. {@code BankScreen} already does exactly this dance with
+     * this, then recompute. the legacy screen already did exactly this dance with
      * {@code DialogueLayout}.
      */
     public static int bodyLineCount(Font font, Component body, int maxWidth) {
@@ -119,7 +119,7 @@ public final class BankDialogueFrame {
      * which matters most here -- a reconciliation warning that reads like an ordinary rejection is
      * the one status in this system with real consequences for getting wrong.
      *
-     * <p>The text wraps. The single unwrapped {@code drawString} in {@code BankScreen} runs the
+     * <p>The text wraps. The single unwrapped {@code drawString} the legacy screen used ran the
      * ~150-character reconciliation message off the right edge of the screen at most widths, which
      * Milestone 0 §3.5 recorded as the most visible defect in the current UI.
      */

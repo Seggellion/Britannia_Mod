@@ -190,7 +190,7 @@ public final class BankingProxyService {
             // the chunk-load reconciler (or the player themselves) while the HTTP call
             // was in flight; never apply a result to a stale teller/player pairing. This
             // is also this design's one and only session-validity check for the Bank
-            // Screen (see BankScreen's own class doc): once this passes and the screen
+            // Screen: once this passes and the screen
             // opens, nothing continues to validate the session afterward.
             Entity current = player.serverLevel().getEntity(entityUuid);
             if (!(current instanceof ServiceNpcEntity teller) || !current.isAlive()

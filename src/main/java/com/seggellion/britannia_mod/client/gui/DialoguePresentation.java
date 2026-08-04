@@ -44,11 +44,11 @@ public final class DialoguePresentation {
      * Bank interface rebuild, Milestone 3: the same UO styling applied to a component that already
      * exists, rather than to a raw {@link String}.
      *
-     * <p>The {@code String} overload above is the reason banking UI is untranslatable today: every
-     * label in {@code BankScreen} and {@code BankChequeIssuanceScreen} reaches the screen through
-     * it, and it can only produce a {@link Component#literal}. A {@link Component#translatable}
-     * has nowhere to go. This overload is that hole filled -- it takes whatever the caller built,
-     * translatable or not, and only adds the font style.
+     * <p>The {@code String} overload above was the reason banking UI was untranslatable: every
+     * label on the legacy bank screen reached it as a {@link String}, and it can only produce a
+     * {@link Component#literal} -- a {@link Component#translatable} had nowhere to go. This
+     * overload is that hole filled: it takes whatever the caller built, translatable or not, and
+     * only adds the font style. Every rebuilt banking screen uses it.
      *
      * <p>Additive on purpose. Every existing caller keeps the {@code String} overload and is
      * unaffected, and {@code DialogueViewModel} -- which is all-{@code String} and shared with the
