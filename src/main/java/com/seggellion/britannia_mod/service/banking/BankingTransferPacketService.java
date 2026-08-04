@@ -227,6 +227,19 @@ public final class BankingTransferPacketService {
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
                                 BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
                         );
+                        // Milestone 15: an insufficient-capacity abort gets its own kind. The
+                        // server side of this was always right -- pre-check before any receipt,
+                        // Rails reservation cancelled, nothing created or lost -- but it reported
+                        // as the generic rejection, indistinguishable from a dead teller (the
+                        // Milestone 0 §3.4 finding). The other abort reasons stay generic: a
+                        // decode failure or fingerprint mismatch asserts nothing the player can
+                        // act on.
+                        case BankingWithdrawalResult.Aborted aborted -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                aborted.reason() == BankingWithdrawalAbortReason.INSUFFICIENT_CAPACITY
+                                        ? BankTransferResultS2CPayload.Kind.INVENTORY_FULL
+                                        : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
                         default -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
                                 BankTransferResultS2CPayload.Kind.CLEAN_REJECTION

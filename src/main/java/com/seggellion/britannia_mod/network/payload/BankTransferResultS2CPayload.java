@@ -86,7 +86,20 @@ public record BankTransferResultS2CPayload(Operation operation, Kind kind) imple
          * <p>Distinct from {@link #CLEAN_REJECTION} because it is actionable: the player can
          * withdraw or spend and try again, which a generic refusal would not tell them.
          */
-        BALANCE_CAPACITY_EXCEEDED
+        BALANCE_CAPACITY_EXCEEDED,
+        /**
+         * Bank interface rebuild, Milestone 15: a withdrawal was refused because the player's
+         * inventory has no room -- design §15's "player inventory full", the category Milestone 0
+         * §3.4 found being flattened into {@link #CLEAN_REJECTION}.
+         *
+         * <p>The server handles this case impeccably -- the capacity pre-check runs before any
+         * receipt is written, Rails' reservation is cancelled, nothing is created or lost -- and
+         * then told the player the teller "can't complete that right now", which is
+         * indistinguishable from a dead teller or a stale item. It is the most actionable
+         * rejection in the whole system: drop something and press the button again. Appended,
+         * never inserted -- both enums travel by ordinal.
+         */
+        INVENTORY_FULL
     }
 
     public static final ResourceLocation TYPE_ID =

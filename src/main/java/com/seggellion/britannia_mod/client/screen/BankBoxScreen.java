@@ -95,6 +95,9 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     /** Milestone 12. Rebuilt with the layout on every init, so a resize cancels by construction. */
     @Nullable
     private com.seggellion.britannia_mod.client.screen.bank.BankDragController drag;
+    /** Milestone 15: live once something is selected. */
+    @Nullable
+    private BankActionButton withdrawButton;
 
     private BankGridScroll scroll = BankGridScroll.TOP;
 
@@ -175,16 +178,51 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 ignored -> returnToMain()
         ));
 
-        BankActionButton withdraw = BankActionButton.create(
+        withdrawButton = BankActionButton.create(
                 layout.withdrawX(), layout.withdrawY(), layout.actionWidth(), BankBoxLayout.ROW_HEIGHT,
                 Component.translatable("screen.britannia_mod.bank.box.withdraw_item"),
                 Component.translatable("screen.britannia_mod.bank.box.withdraw_item.pending"),
-                ignored -> { }
+                ignored -> sendWithdrawal()
         );
-        // Milestone 15 makes this live, and it will stay disabled until something is selected --
-        // there is no selection yet because there is nothing in the grid to select.
-        withdraw.active = false;
-        addRenderableWidget(withdraw);
+        withdrawButton.active = false;
+        addRenderableWidget(withdrawButton);
+    }
+
+    /**
+     * Milestone 15: one press, one request, referencing the selection's public id -- never a grid
+     * position (design §9.6). The same shape as every mutation before it: the session lock is
+     * claimed before the packet goes out, a failed claim sends nothing, and what happens next
+     * arrives as a refresh push (the item gone from the vault, in the pack) or a result payload
+     * -- including {@code INVENTORY_FULL}, this milestone's own new kind, when the pack has no
+     * room. The selection itself needs no cleanup here: the session drops it when a refresh no
+     * longer holds the item, which is also what makes a duplicate press structurally moot -- by
+     * the time the lock releases on success, there is nothing selected to re-send.
+     */
+    private void sendWithdrawal() {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (session == null || session.selectedStoredItem() == null) return;
+        if (!session.beginPending(
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL)) {
+            return;
+        }
+        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
+                new com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload(
+                        session.tellerEntityId(), session.selectedStoredItem()));
+        refreshWithdrawState(session);
+    }
+
+    /**
+     * Mirrors the session onto the button: active only with a live selection and no pending
+     * mutation. Runs from {@code render} because both inputs change from packets, not from
+     * anything this screen does.
+     */
+    private void refreshWithdrawState(ClientBankingSession session) {
+        if (withdrawButton == null) return;
+        boolean pending = session.isMutationPending();
+        withdrawButton.setPending(pending
+                && session.pendingOperation()
+                        == com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL);
+        withdrawButton.active = !pending && session.selectedStoredItem() != null;
     }
 
     private void returnToMain() {
@@ -275,6 +313,8 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 graphics, font, layout.contentLeft(), layout.statusY(), layout.statusMaxWidth(),
                 BankStatusPresenter.forResult(session.lastResult())
         );
+
+        refreshWithdrawState(session);
 
         // Milestone 12: the source-changed watchdog runs every frame, and the drag visuals draw
         // last so the ghost rides above everything. Tooltips are suppressed while dragging --

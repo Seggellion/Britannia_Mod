@@ -359,6 +359,9 @@ public final class BankScreen extends Screen {
             // which renders these properly through BankStatusPresenter. Present solely to keep
             // this switch exhaustive until Milestone 19 deletes the class.
             case NOTHING_TO_DEPOSIT, BALANCE_CAPACITY_EXCEEDED -> CLEAN_REJECTION_MESSAGE;
+            // Milestone 15: likewise unreachable here -- this screen has been dead since the
+            // Milestone 4 cutover. Exhaustiveness only, until Milestone 19 deletes the class.
+            case INVENTORY_FULL -> CLEAN_REJECTION_MESSAGE;
         };
         refreshButtonStates();
     }

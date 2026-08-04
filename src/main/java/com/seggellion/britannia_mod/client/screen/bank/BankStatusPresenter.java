@@ -120,6 +120,8 @@ public final class BankStatusPresenter {
             case NOTHING_TO_DEPOSIT -> new Status(ROOT + "nothing_to_deposit", Severity.INFORMATIONAL);
             // A refusal, but an actionable one: withdraw or spend and the deposit will fit.
             case BALANCE_CAPACITY_EXCEEDED -> new Status(ROOT + "balance_capacity_exceeded", Severity.REJECTION);
+            // Milestone 15: the most actionable rejection there is -- drop something, try again.
+            case INVENTORY_FULL -> new Status(ROOT + "inventory_full", Severity.REJECTION);
         };
     }
 

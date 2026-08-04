@@ -635,6 +635,7 @@
     "screen.britannia_mod.bank.status.empty_vault": "The vault is empty.",
     "screen.britannia_mod.bank.status.nothing_to_deposit": "The teller glances at thy purse and smiles. \"Thou hast no coin about thee to deposit.\"",
     "screen.britannia_mod.bank.status.balance_capacity_exceeded": "The teller sets down the quill. \"Thy account cannot hold that much of one coin. Withdraw some first, and I shall take the rest.\"",
+    "screen.britannia_mod.bank.status.inventory_full": "The teller looks over the counter. \"Thy pack is full -- make room, and I shall hand it over.\"",
 
     "screen.britannia_mod.bank.main.title": "Bank",
     "screen.britannia_mod.bank.main.greeting": "%s bows slightly. \"Welcome. How may I serve thee this day?\"",

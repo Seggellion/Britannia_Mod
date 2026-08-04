@@ -160,6 +160,69 @@ public final class BankingTransferPacketServiceGameTests {
         }
     }
 
+    // ---------- Milestone 15: a full inventory is its own readable outcome ----------
+
+    /**
+     * The Milestone 0 §3.4 finding, closed. The server's handling was always right -- capacity
+     * pre-check before any receipt, Rails reservation cancelled, nothing created or lost -- but
+     * the abort reported as the generic CLEAN_REJECTION, indistinguishable from a dead teller.
+     * It now reaches the client as INVENTORY_FULL: the most actionable rejection in the system.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void inventoryFullWithdrawalReportsItsOwnKindAndCancelsTheReservation(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        HolderLookup.Provider registries = player.registryAccess();
+
+        // Every main slot holds a full stack of something the withdrawn diamond cannot merge
+        // into, so hasSufficientCapacity's real arithmetic refuses -- no stubbed verdicts.
+        for (int slot = 0; slot < 36; slot++) {
+            player.getInventory().setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+        }
+
+        ItemStack original = new ItemStack(Items.DIAMOND, 5);
+        byte[] payload = BankItemCodec.serialize(original.copy(), registries);
+        String fingerprint = BankItemFingerprint.fingerprint(original, registries);
+        double weight = BankItemWeight.resolve(original);
+
+        UUID operationId = UUID.randomUUID();
+        UUID bankItemId = UUID.randomUUID();
+        FakeWithdrawalClient withdrawalClient = new FakeWithdrawalClient();
+        withdrawalClient.prepareBehavior = () -> CompletableFuture.completedFuture(new BankingWithdrawalPrepareResult.Success(
+                operationId, bankItemId, BankItemSchemaVersion.CURRENT, payload, fingerprint, weight));
+        withdrawalClient.cancelBehavior = () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        BankingWithdrawalProxyService.useClientForTesting(withdrawalClient);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        wireOpenRefresh(new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 2));
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleWithdrawal(
+                    player, new BankWithdrawalRequestC2SPayload(teller.getId(), bankItemId));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected exactly one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.INVENTORY_FULL,
+                        "expected INVENTORY_FULL, got " + resultSender.calls.get(0).kind());
+                check(resultSender.calls.get(0).operation() == BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                        "wrong operation");
+                check(!refreshed.get(), "nothing changed, so nothing may refresh");
+                check(withdrawalClient.cancelRequests.size() == 1,
+                        "Rails' reservation must be released by exactly one cancel");
+                check(player.getInventory().getItem(0).getItem() == Items.COBBLESTONE,
+                        "the player's inventory must be untouched");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
     // ---------- Clean rejection sends the result payload, never a refresh ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
@@ -680,6 +743,8 @@ public final class BankingTransferPacketServiceGameTests {
                 () -> { throw new IllegalStateException("confirm() was not expected to be called in this test"); };
         java.util.function.Supplier<CompletableFuture<BankingCancelResult>> cancelBehavior =
                 () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        /** Milestone 15: the inventory-full test asserts the reservation is released exactly once. */
+        final List<BankingOperationRequest> cancelRequests = new CopyOnWriteArrayList<>();
 
         @Override
         public CompletableFuture<BankingWithdrawalPrepareResult> prepareWithdrawal(
@@ -695,6 +760,7 @@ public final class BankingTransferPacketServiceGameTests {
 
         @Override
         public CompletableFuture<BankingCancelResult> cancel(MinecraftServer server, BankingOperationRequest request) {
+            cancelRequests.add(request);
             return cancelBehavior.get();
         }
     }
