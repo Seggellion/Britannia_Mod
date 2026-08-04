@@ -44,6 +44,7 @@ import com.seggellion.britannia_mod.quest.network.QuestModels;
 
 import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
 import com.seggellion.britannia_mod.client.screen.BankScreen;
+import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -361,9 +362,21 @@ private static MutableComponent uoMessage(String text) {
         });
     }
 
-    // Milestone 7 Slice B: real Bank Screen (replaces Slice A's chat-message placeholder)
+    /**
+     * Milestone 7 Slice B: real Bank Screen (replaces Slice A's chat-message placeholder).
+     *
+     * <p>Bank interface rebuild, Milestone 2: this payload is both the {@code bank.open} result
+     * and the post-mutation refresh push, so it now feeds {@link ClientBankingSession} -- the
+     * state that outlives any one screen. The {@code setScreen} call below is deliberately left
+     * as it was: the rebuilt screens do not exist yet, and Milestone 4 is where this repoints at
+     * {@code BankMainScreen} and stops rebuilding the screen on every refresh. Until then this is
+     * behaviour-neutral, and the session is populated and testable ahead of anything reading it.
+     */
     public static void handleBankAccountOpened(BankAccountOpenedS2CPayload payload, IPayloadContext ctx) {
-        ctx.enqueueWork(() -> Minecraft.getInstance().setScreen(new BankScreen(payload)));
+        ctx.enqueueWork(() -> {
+            ClientBankingSession.applyAccountOpened(payload);
+            Minecraft.getInstance().setScreen(new BankScreen(payload));
+        });
     }
 
     /**
@@ -378,6 +391,10 @@ private static MutableComponent uoMessage(String text) {
             com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload payload, IPayloadContext ctx
     ) {
         ctx.enqueueWork(() -> {
+            // Milestone 2: release the shared mutation lock and record the outcome first. Returns
+            // false when banking was closed while the request was in flight, in which case there
+            // is nothing to release and nothing to show -- see ClientBankingSession's own docs.
+            ClientBankingSession.applyTransferResult(payload);
             Minecraft mc = Minecraft.getInstance();
             if (mc.screen instanceof BankScreen screen) {
                 screen.acceptTransferResult(payload);

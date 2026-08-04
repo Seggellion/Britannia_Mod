@@ -7,11 +7,24 @@
 **Primary baseline:** `com.seggellion.britannia_mod.client.gui.BankScreen`  
 **Revised:** 2026-08-03, against NeoForge `banking` @ `f94b42e` and Rails `banking` @ `1267195`
 
-> **Note on the baseline path.** An earlier draft named
-> `com.seggellion.britannia_mod.client.screen.BankScreen`. That class does not exist. The screen
-> being replaced is `client.gui.BankScreen`. The packages are genuinely split and this is not a
-> typo to normalize away: `BankChequeIssuanceScreen` really does live in `client.screen`, while
-> `BankScreen` lives in `client.gui`. Verify the package before importing either.
+> **Note on the baseline path (corrected 2026-08-03).** The screen being replaced is the one whose
+> **file** is `src/main/java/com/seggellion/britannia_mod/client/gui/BankScreen.java`. Its
+> **package** is `com.seggellion.britannia_mod.client.screen` — declared on line 1 of that file,
+> and imported that way by `ClientNetworkHandler`.
+>
+> **Path and package diverge here, and the package is what matters.** An earlier draft of this
+> document named `client.screen.BankScreen` and a later one "corrected" it to `client.gui`; the
+> first was right about the package and wrong about where to find the file. Both `BankScreen` and
+> `BankChequeIssuanceScreen` are in package `client.screen`.
+>
+> This is not isolated. Of the 21 files under `client/gui/`, 13 declare `client.screen`, 6 declare
+> `client.gui`, one declares `client.gui.screen`, and one declares no package on its first line.
+> `DialoguePresentation` — which every dialogue screen depends on — is another `client/gui/` file
+> in package `client.screen`, which is why `BankScreen` uses it with no import.
+>
+> **The rule: read the `package` line, never the directory.** New screens in this epic are placed
+> so the two agree (`client/screen/`, package `client.screen`). Normalizing the pre-existing
+> divergence across the rest of the client tree is explicitly out of scope.
 
 > **Note on this revision.** Sections 4.7, 6.2, 9.5, 11.5, 14.2 and 17.1 were corrected after the
 > item-identity program (Milestones 15–19) shipped. That program changed facts this document was
@@ -27,8 +40,11 @@
 > all three.** This adds the epic's second new Rails contract; §11.5 and §14.2 are corrected
 > accordingly, and the playbook gains Milestones 8a/8b.
 >
-> The report's other proposed correction — the baseline **package** named in the note below — is
-> still awaiting owner approval and has deliberately **not** been applied here.
+> The report's other proposed correction — the baseline **package** named in the note below — was
+> approved by the owner on 2026-08-03 and **has been applied**.
+>
+> The cheque amount bounds question raised by §12.3.1 was also settled that day: **absolute bounds
+> retained, unchanged.** See §12.3.1 and Playbook §8a.1.
 
 ---
 
@@ -814,13 +830,28 @@ those four call sites from the gold column to the keyed column, reusing the mech
 selected denomination's copper unit"; and carry a denomination on the issuance packet. No
 `bank_cheques` schema change. No change to redemption.
 
-**One product decision remains open and must be settled before the Rails half is built.**
-`BankCheque::MIN_AMOUNT` is 5 000 000 copper — 500 gold — with `MAX_AMOUNT` at 1 000 000 000
-(ADR-018/ADR-019). Applied unchanged to a copper-denominated cheque, the minimum becomes five
-million copper coins, which makes copper and silver cheques unusable in practice. Either the
-bounds become per-denomination, or they stay absolute and the low denominations exist only
-nominally. **This is a product policy question, not an implementation detail, and the design does
-not presume an answer.**
+**Amount bounds: absolute, unchanged (owner-decided 2026-08-03).**
+`BankCheque::MIN_AMOUNT` stays 5 000 000 copper and `MAX_AMOUNT` stays 1 000 000 000
+(ADR-018/ADR-019), applied to the cheque's **value**, not to the count of coins in the selected
+denomination. Per-denomination bounds were considered and rejected by the owner.
+
+What that means in play:
+
+| Funding denomination | Coins required to reach the minimum |
+| --- | --- |
+| Gold | 500 |
+| Silver | 50 000 |
+| Copper | 5 000 000 |
+
+Gold therefore remains the ordinary denomination for a cheque. Silver and copper funding is
+genuinely available, but only to an account holding that much value in those balances. **This is
+the intended outcome, not an oversight** — the bounds express what a cheque is worth, and a cheque
+does not become a smaller instrument because it was funded from a smaller coin.
+
+Two consequences for Milestone 8a: `MIN_AMOUNT`/`MAX_AMOUNT` need no change at all, and the
+denomination unit-multiple rule is satisfied trivially at these magnitudes (5 000 000 is already a
+whole multiple of 10 000, 100 and 1). The rule is still enforced per denomination, because it
+guards the debit arithmetic rather than the floor.
 
 **Consequence for the epic:** this is the second new Rails contract, not the first. See §11.5 and
 §14.2, both corrected, and the new Milestones 8a/8b in the playbook.

@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.client.screen;
 
+import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
 import com.seggellion.britannia_mod.economy.CoinConversion;
 import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
@@ -200,8 +201,16 @@ public final class BankChequeIssuanceScreen extends Screen {
         return false;
     }
 
+    /**
+     * Bank interface rebuild, Milestone 2: same session teardown as {@code BankScreen#onClose}.
+     * Not reached by this screen's own Escape handling, which currently routes to {@link
+     * #onCancelPressed} and returns to {@code BankScreen} -- design §5.2 requires Escape to close
+     * banking rather than act as Back, and Milestone 7 is where that is corrected. This covers
+     * vanilla's own close path in the meantime, so the session cannot outlive the interaction.
+     */
     @Override
     public void onClose() {
+        ClientBankingSession.close();
         Minecraft.getInstance().setScreen(null);
     }
 }

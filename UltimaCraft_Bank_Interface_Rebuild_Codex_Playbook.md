@@ -703,21 +703,25 @@ Verified 2026-08-03 and deliberately out of scope:
    today — gold. Mixed client versions are permanent (§1.1 rule 3), and older clients will keep
    sending the current shape indefinitely.
 
-## 8a.1 Required product decision: amount bounds
+## 8a.1 Amount bounds: settled — absolute, unchanged
 
-`BankCheque::MIN_AMOUNT` is 5 000 000 copper — 500 gold — and `MAX_AMOUNT` is 1 000 000 000
-(ADR-018/ADR-019). Applied unchanged to a copper cheque, the minimum is five million copper coins,
-which makes silver and copper cheques unusable in practice.
+**Owner decision, 2026-08-03. Do not reopen.** `BankCheque::MIN_AMOUNT` stays 5 000 000 copper and
+`MAX_AMOUNT` stays 1 000 000 000 (ADR-018/ADR-019). They bound the cheque's **value**, not the
+number of coins in the selected denomination. Per-denomination bounds were considered and
+rejected.
 
-**Obtain an explicit owner decision before writing code.** Options:
+In practice the minimum costs 500 gold, 50 000 silver, or 5 000 000 copper. Gold stays the
+ordinary denomination; silver and copper funding works but needs an account holding that much
+value in those balances. That is intended.
 
-- **per-denomination bounds** — each denomination gets its own min/max, so a copper cheque has a
-  copper-scaled floor;
-- **absolute bounds retained** — the floor stays 5 000 000 copper of value regardless of funding
-  denomination, and the low denominations exist only nominally;
-- **revised absolute bounds** — one floor, lowered enough to make all three usable.
+**Therefore this milestone changes no bounds constant.** Two things still follow from it:
 
-Record the choice as a new ADR alongside ADR-018/ADR-019. Do not infer it from the code.
+- The denomination unit-multiple rule is still enforced per denomination — it guards the debit
+  arithmetic against silent truncation, not the floor. At these magnitudes it is satisfied
+  trivially, which is fine; it must still be present and tested.
+- Record the decision as an ADR alongside ADR-018/ADR-019, stating that the bounds are
+  value-denominated. The next person to read `MIN_AMOUNT` next to a copper cheque will otherwise
+  read it as a bug.
 
 ## Tests
 
@@ -725,7 +729,8 @@ Cover, per denomination:
 
 - valid issuance from each of gold, silver, copper;
 - amount not a whole multiple of the denomination unit;
-- amount below minimum and above maximum, under the bounds policy chosen in §8a.1;
+- amount below `MIN_AMOUNT` and above `MAX_AMOUNT`, for each denomination — the bounds are
+  value-denominated and identical across all three (§8a.1);
 - insufficient balance in the selected denomination while another denomination holds enough;
 - reservation released on cancel;
 - reservation released on expire;

@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
+import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
 import com.seggellion.britannia_mod.bank.item.BankItemEligibility;
 import com.seggellion.britannia_mod.component.BankChequeData;
 import com.seggellion.britannia_mod.dialogue.DialogueLayout;
@@ -646,8 +647,19 @@ public final class BankScreen extends Screen {
         return false;
     }
 
+    /**
+     * Bank interface rebuild, Milestone 2: closing the screen ends the banking interaction, so the
+     * shared session goes with it. Only reached when banking genuinely closes (Escape, or vanilla's
+     * own close path) -- navigating to the cheque screen uses {@code setScreen} directly, which
+     * calls {@code removed()} rather than this, so a navigation does not drop the session.
+     *
+     * <p>Any request already in flight is deliberately not cancelled (design §5.3): its result
+     * arrives to no session and is dropped rather than fabricated into an outcome. The next
+     * {@code bank.open} shows whatever actually happened.
+     */
     @Override
     public void onClose() {
+        ClientBankingSession.close();
         Minecraft.getInstance().setScreen(null);
     }
 }
