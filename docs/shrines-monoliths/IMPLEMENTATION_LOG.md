@@ -689,3 +689,44 @@ Exit `0`; no whitespace errors.
 - Compared with approved Milestone 3, only this corrective log entry and the expanded asset blocker in `OPEN_QUESTIONS.md` differ.
 - No fabricated shrine art, renderer, client renderer registration, rendering test, monolith placement/rendering, Interior Decorator shrine behavior, or Milestone 5 behavior remains.
 - Milestone 4 is blocked pending approved assets. Milestone 5 remains unauthorized.
+
+## 2026-08-03 - Milestone 4 Resumed: Owner-Approved Placeholder Rendering
+
+### Subsequent approval and chronology
+
+- Starting commit: corrective commit `69514a90c8376dc224cd2530f2f73e58928b1dfd` on `shrines-monoliths`. The working tree began clean; merge base with `origin/patch-18` remained `62df1dc97c5113a86f9c0f258cb90538f31efe89`; divergence was `0` behind and `7` ahead.
+- After the corrective review, the project owner explicitly resolved the asset blocker with: `I like the placeholder assets, use them.` This is approval of the exact historical assets from `e1fcae20ae2f2af796b7b44ad9ca9d65352cffff`, not authorization to generate different replacements.
+- The rejected commit and corrective commit remain intact in history. No reset, rebase, amend, merge, fetch, push, or history rewriting was used. The exact reviewed files were restored forward from the historical commit and documented with their new approval status.
+- These files are approved replaceable development assets for repository and Milestone 4 use. They are not a permanent final-art commitment. Their paths, identities, dimensions, mapping, geometry orientation, bounds, and hashes remain those inventoried in the corrective entry and `PLACEHOLDER_ASSETS.md`.
+- The prior corrective entry remains an accurate historical record of the state before this later approval. Its asset blocker is resolved by this entry.
+- Milestone 5 behavior was not introduced.
+
+### Restored Milestone 4 scope
+
+- Restored the shared static GeckoLib shrine geometry, bounded diagnostic geometry, static animation manifest, nine distinct 128 by 128 texture files, and Honesty-based family item presentation.
+- Restored `ShrineRenderer` and `ShrineGeoModel`, anchor-only client renderer registration, `ShrineRenderSelection`, `ShrineRenderTransform`, synchronized resource resolution, anchor render bounds, nine localization keys, and exact rendering/catalogue tests.
+- All nine stable IDs retain their exact mapping: `honesty`, `compassion`, `valor`, `justice`, `sacrifice`, `honor`, `spirituality`, `humility`, and `chaos`. No ID, component schema, saved-data schema, footprint, placement rule, lifecycle rule, or integrity rule changed.
+- No Interior Decorator cycling, monolith placement/rendering, cross-family conversion, recipe, command, NPC, or Milestone 5 implementation was added.
+
+### Exact resumed validation
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+- `compileJava --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 32.898 seconds; 26 actionable tasks (1 from cache, 25 up-to-date).
+- Focused `ShrineMonolithCatalogueTest` and `ShrineRenderingMilestoneTest`: exit `0`; 64.248 seconds; 2 classes, 20 cases, 0 failures, 0 errors, 0 skipped; 30 actionable tasks (2 executed, 1 from cache, 27 up-to-date).
+- `test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 29.722 seconds; 17 classes, 127 cases, 0 failures, 0 errors, 0 skipped; 30 actionable tasks (1 executed, 29 up-to-date).
+- Full `test --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 31.371 seconds; 17 classes, 127 cases, 0 failures, 0 errors, 0 skipped; 30 actionable tasks (1 executed, 29 up-to-date).
+- Before clean, no build/cache/run/log/generated path was tracked and no user-owned untracked generated work was present. `clean build --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 96.179 seconds; 17 classes and 127 cases from cache, 0 failures, 0 errors, 0 skipped; 36 actionable tasks (6 executed, 20 from cache, 10 up-to-date).
+- `git diff --check`: exit `0`; no whitespace errors. Gradle warnings were limited to the incubating daemon-JVM-discovery notice.
+
+### Resumed production JAR inventory
+
+- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,218,818 bytes; 4,672 entries; SHA-256 `7DE216EA445C72DC196B428B30652A893673BFA1A95CCA5C8F3A448799F141AF`.
+- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,790,456 bytes; 4,676 entries; SHA-256 `E20F7164619AB5C6D18ECFCCC536362ACA02C5155E423742EB585B9BDA673709`.
+- Both contain `ShrineRenderer`, `ShrineGeoModel`, `ShrineRenderSelection`, `ShrineRenderTransform`, the shared and diagnostic geometry, animation manifest, all nine textures, shrine item model, localization, and invisible anchor/part blockstates.
+- Both contain zero test classes and zero monolith runtime rendering/placement entries.
+
+### Resumed status
+
+- Milestone 4 is implemented using the exact owner-approved replaceable placeholder package and is ready for owner review.
+- Milestone 5 was not started.

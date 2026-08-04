@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-/** Production identity catalogue. It intentionally claims no concrete client resource paths. */
+/** Production identity catalogue. Shrine client resources are temporary development placeholders. */
 public final class ShrineMonolithDefinitions {
     public static final FamilyId SHRINE = new FamilyId("shrine");
     public static final FamilyId MONOLITH = new FamilyId("monolith");
@@ -28,9 +28,8 @@ public final class ShrineMonolithDefinitions {
     public static final VoxelOffset SHRINE_RENDER_OFFSET = new VoxelOffset(0, 0, 0);
     public static final VoxelOffset MONOLITH_RENDER_OFFSET = new VoxelOffset(0, 16, 0);
 
-    private static final ClientResource SHRINE_GEOMETRY = ClientResource.unavailable(
-            "shrine_shared_geometry",
-            "No approved shrine model path is present in the repository");
+    private static final ClientResource SHRINE_GEOMETRY = ClientResource.available(
+            "shrine_shared_geometry", "britannia_mod", "geo/shrine.geo.json");
 
     private static final StructureCatalogue CATALOGUE = createCatalogue();
 
@@ -59,7 +58,8 @@ public final class ShrineMonolithDefinitions {
             variants.add(new Variant(
                     new VariantId(id),
                     SHRINE,
-                    DisplayName.unresolved(id, names[cyclePosition]),
+                    DisplayName.resolved(
+                            id, "structure.britannia_mod.shrine." + id, names[cyclePosition]),
                     SHRINE_DIMENSIONS,
                     footprint,
                     PlacementMode.FLOOR_ORIENTED,
@@ -67,9 +67,9 @@ public final class ShrineMonolithDefinitions {
                     RenderOrigin.ANCHOR_LOWER_FRONT_LEFT,
                     SHRINE_RENDER_OFFSET,
                     SHRINE_GEOMETRY,
-                    ClientResource.unavailable(
+                    ClientResource.available(
                             "shrine_texture_" + id,
-                            "Approved logical shrine identity has no verified texture path"),
+                            "britannia_mod", "textures/block/shrine/" + id + ".png"),
                     cyclePosition,
                     true,
                     true,
