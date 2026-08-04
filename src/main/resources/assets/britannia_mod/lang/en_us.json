@@ -616,6 +616,8 @@
     "item.britannia_mod.beef_ribs": "Beef Ribs",
     "item.britannia_mod.beef_brisket": "Beef Brisket",
     "item.britannia_mod.shrine": "Shrine",
+    "item.britannia_mod.monolith": "Diagnostic Monolith (Provisional)",
+    "structure.britannia_mod.monolith.diagnostic_missing_content": "Diagnostic Monolith (Provisional)",
     "structure.britannia_mod.shrine.honesty": "Honesty Shrine",
     "structure.britannia_mod.shrine.compassion": "Compassion Shrine",
     "structure.britannia_mod.shrine.valor": "Valor Shrine",
@@ -632,6 +634,13 @@
     "message.britannia_mod.shrine.placement.protected": "You cannot place a shrine here.",
     "message.britannia_mod.shrine.placement.invalid_configuration": "This shrine configuration is unavailable.",
     "message.britannia_mod.shrine.placement.failed_safely": "Shrine placement failed without changing the world.",
+    "message.britannia_mod.monolith.placement.floor_required": "Monoliths must be placed on the top of a block.",
+    "message.britannia_mod.monolith.placement.out_of_bounds": "The complete monolith would be outside the world bounds.",
+    "message.britannia_mod.monolith.placement.chunk_unloaded": "Every monolith cell must be in an already loaded chunk.",
+    "message.britannia_mod.monolith.placement.target_occupied": "The complete monolith footprint must be clear.",
+    "message.britannia_mod.monolith.placement.protected": "You cannot place a monolith here.",
+    "message.britannia_mod.monolith.placement.invalid_configuration": "This monolith configuration is unavailable.",
+    "message.britannia_mod.monolith.placement.failed_safely": "Monolith placement failed without changing the world.",
     "message.britannia_mod.shrine.decorator.selected": "Selected shrine: %s"
 
 

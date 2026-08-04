@@ -8,7 +8,7 @@ import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlo
 import java.util.Objects;
 import java.util.Optional;
 
-/** Pure lookup result; renderer resolution never mutates authoritative shrine state. */
+/** Pure family-aware lookup result; renderer resolution never mutates authoritative state. */
 public record ShrineRenderSelection(
         FamilyId familyId,
         VariantId variantId,
@@ -41,7 +41,7 @@ public record ShrineRenderSelection(
     public static ShrineRenderSelection resolve(FamilyId familyId, VariantId variantId) {
         var catalogue = ShrineMonolithDefinitions.catalogue();
         var family = catalogue.family(familyId);
-        if (family.isEmpty() || !familyId.equals(ShrineMonolithDefinitions.SHRINE)) {
+        if (family.isEmpty()) {
             return new ShrineRenderSelection(
                     familyId, variantId, Optional.empty(), Optional.empty(), Status.UNKNOWN_FAMILY);
         }

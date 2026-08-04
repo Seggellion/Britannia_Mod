@@ -2,7 +2,7 @@ package com.seggellion.britannia_mod.structure.placement;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
-import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.ConfiguredStructureItem;
 import com.seggellion.britannia_mod.structure.lifecycle.ShrineLifecycleService;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructurePartBlock;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import org.slf4j.Logger;
 
-/** Live server adapter for diagnostic shrine preflight, transaction, and rollback. */
+/** Live server adapter shared by configured shrine and monolith placement. */
 public final class ShrinePlacementService {
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -39,7 +39,7 @@ public final class ShrinePlacementService {
         }
         if (!(context.getLevel() instanceof ServerLevel level)
                 || context.getPlayer() == null
-                || !(context.getItemInHand().getItem() instanceof ShrineItem item)) {
+                || !(context.getItemInHand().getItem() instanceof ConfiguredStructureItem item)) {
             return InteractionResult.FAIL;
         }
         Player player = context.getPlayer();
@@ -116,7 +116,7 @@ public final class ShrinePlacementService {
                 LargeStructureRegistry.LARGE_STRUCTURE_PART.get(),
                 world);
         if (!planning.successful()) {
-            feedback(player, planning.failure());
+            feedback(player, item, planning.failure());
             return InteractionResult.FAIL;
         }
 
@@ -125,7 +125,7 @@ public final class ShrinePlacementService {
                 level, plan.anchorPosition(), () -> ShrinePlacementExecutor.execute(
                         plan, mutation(level, player), stack, player.hasInfiniteMaterials()));
         if (result != ShrinePlacementFailure.NONE) {
-            feedback(player, result);
+            feedback(player, item, result);
             return InteractionResult.FAIL;
         }
         return InteractionResult.SUCCESS;
@@ -222,7 +222,8 @@ public final class ShrinePlacementService {
         };
     }
 
-    private static void feedback(Player player, ShrinePlacementFailure failure) {
+    private static void feedback(
+            Player player, ConfiguredStructureItem item, ShrinePlacementFailure failure) {
         String suffix = switch (failure) {
             case INVALID_CLICKED_FACE, INVALID_FACING -> "floor_required";
             case WORLD_BOUND_FAILURE -> "out_of_bounds";
@@ -233,7 +234,7 @@ public final class ShrinePlacementService {
                     INCOMPATIBLE_VARIANT, PART_STATE_ENCODING_FAILURE -> "invalid_configuration";
             default -> "failed_safely";
         };
-        player.displayClientMessage(
-                Component.translatable("message.britannia_mod.shrine.placement." + suffix), true);
+        player.displayClientMessage(Component.translatable(
+                "message.britannia_mod." + item.familyId().value() + ".placement." + suffix), true);
     }
 }

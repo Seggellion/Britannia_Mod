@@ -10,7 +10,7 @@ import com.seggellion.britannia_mod.structure.definition.StructureIdentity.Famil
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.VariantId;
 import com.seggellion.britannia_mod.structure.definition.StructureTransform;
 import com.seggellion.britannia_mod.structure.definition.StructureTransform.WorldPosition;
-import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.ConfiguredStructureItem;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlock;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructurePartBlock;
 import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
@@ -25,14 +25,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Ordered, mutation-free construction of the complete diagnostic shrine transaction. */
+/** Ordered, mutation-free construction of a complete configured large-structure transaction. */
 public final class ShrinePlacementPlanner {
     private ShrinePlacementPlanner() {
     }
 
     /** Production path: configured item state is decoded and validated before any world query. */
     public static ShrinePlacementPlanningResult plan(
-            ShrineItem item,
+            ConfiguredStructureItem item,
             ItemStack stack,
             BlockPos clickedPosition,
             Direction clickedFace,
@@ -45,7 +45,7 @@ public final class ShrinePlacementPlanner {
     }
 
     static ShrinePlacementPlanningResult plan(
-            ShrineItem item,
+            ConfiguredStructureItem item,
             ItemStack stack,
             BlockPos clickedPosition,
             Direction clickedFace,
@@ -72,7 +72,7 @@ public final class ShrinePlacementPlanner {
     }
 
     public static ShrinePlacementPlanningResult plan(
-            ShrineItem item,
+            ConfiguredStructureItem item,
             ItemStack stack,
             FamilyId familyId,
             VariantId variantId,
@@ -87,7 +87,7 @@ public final class ShrinePlacementPlanner {
     }
 
     static ShrinePlacementPlanningResult plan(
-            ShrineItem item,
+            ConfiguredStructureItem item,
             ItemStack stack,
             FamilyId familyId,
             VariantId variantId,
@@ -101,7 +101,7 @@ public final class ShrinePlacementPlanner {
         if (stack.getItem() != item) {
             return fail(ShrinePlacementFailure.INVALID_ITEM);
         }
-        if (!familyId.equals(ShrineMonolithDefinitions.SHRINE)) {
+        if (!familyId.equals(item.familyId())) {
             return fail(ShrinePlacementFailure.UNSUPPORTED_FAMILY);
         }
         Family family = catalogue.family(familyId).orElse(null);
@@ -117,7 +117,7 @@ public final class ShrinePlacementPlanner {
         }
         if (!variant.playerFacing()
                 || !StructureDefinitionValidator.compatible(family, variant)
-                || family.footprint().size() != 4) {
+                || family.footprint().size() != item.expectedCells()) {
             return fail(ShrinePlacementFailure.INCOMPATIBLE_VARIANT);
         }
         if (clickedFace != Direction.UP) {
@@ -147,8 +147,10 @@ public final class ShrinePlacementPlanner {
                     offset.equals(LocalOffset.ANCHOR) ? StructureCellRole.ANCHOR : StructureCellRole.PART,
                     placedState));
         }
-        if (new HashSet<>(projections.stream().map(CellProjection::offset).toList()).size() != 4
-                || new HashSet<>(projections.stream().map(CellProjection::worldPosition).toList()).size() != 4) {
+        if (new HashSet<>(projections.stream().map(CellProjection::offset).toList()).size()
+                    != item.expectedCells()
+                || new HashSet<>(projections.stream().map(CellProjection::worldPosition).toList()).size()
+                    != item.expectedCells()) {
             return fail(ShrinePlacementFailure.INCOMPATIBLE_VARIANT);
         }
 

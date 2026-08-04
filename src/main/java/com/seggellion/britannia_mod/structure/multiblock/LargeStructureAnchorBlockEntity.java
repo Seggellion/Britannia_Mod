@@ -27,7 +27,7 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-/** Common-side authoritative owner of one persisted logical shrine. */
+/** Common-side authoritative owner of one persisted logical shrine or monolith. */
 public final class LargeStructureAnchorBlockEntity extends BlockEntity implements GeoBlockEntity {
     public static final String STATE_TAG = "shrine_state";
     private static final int MAX_LOAD_DIAGNOSTICS = 1024;
@@ -111,7 +111,7 @@ public final class LargeStructureAnchorBlockEntity extends BlockEntity implement
     }
 
     public AABB getRenderBoundingBox() {
-        return ShrineRenderTransform.worldBounds(worldPosition);
+        return ShrineRenderTransform.worldBounds(worldPosition, placedState);
     }
 
     @Override
@@ -201,7 +201,8 @@ public final class LargeStructureAnchorBlockEntity extends BlockEntity implement
                 || !state.contains("placed_footprint", Tag.TAG_LIST)) {
             return PlacedStructureStatus.MALFORMED;
         }
-        if (state.getList("placed_footprint", Tag.TAG_COMPOUND).size() != 4) {
+        int footprintSize = state.getList("placed_footprint", Tag.TAG_COMPOUND).size();
+        if (footprintSize != 4 && footprintSize != 18) {
             return PlacedStructureStatus.STRUCTURALLY_INVALID;
         }
         return PlacedStructureStatus.VALID;

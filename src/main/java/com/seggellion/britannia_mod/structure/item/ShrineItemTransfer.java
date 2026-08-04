@@ -8,7 +8,7 @@ public final class ShrineItemTransfer {
     private ShrineItemTransfer() {
     }
 
-    public static ItemStack fromPlacedState(ShrineItem item, PlacedStructureState state) {
+    public static ItemStack fromPlacedState(ConfiguredStructureItem item, PlacedStructureState state) {
         return item.stateAccess().configuredStack(new ShrineItemState(
                 state.schemaVersion(), state.familyId(), state.variantId()));
     }

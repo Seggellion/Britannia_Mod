@@ -97,22 +97,25 @@ public final class ShrineMonolithDefinitions {
         Variant diagnostic = new Variant(
                 new VariantId("diagnostic_missing_content"),
                 MONOLITH,
-                DisplayName.unresolved("diagnostic_missing_content", "Monolith content unavailable"),
+                DisplayName.resolved(
+                        "diagnostic_missing_content",
+                        "structure.britannia_mod.monolith.diagnostic_missing_content",
+                        "Diagnostic Monolith (Provisional)"),
                 MONOLITH_DIMENSIONS,
                 footprint,
                 PlacementMode.FLOOR_ORIENTED,
                 CollisionProfile.CELL_BOUNDED,
                 RenderOrigin.ANCHOR_LOWER_FRONT_LEFT,
                 MONOLITH_RENDER_OFFSET,
-                ClientResource.unavailable(
-                        "monolith_model_unavailable",
-                        "No supplied monolith model exists; diagnostic identity is non-player-facing"),
-                ClientResource.unavailable(
-                        "monolith_texture_unavailable",
-                        "No supplied monolith texture exists; diagnostic identity is non-player-facing"),
+                ClientResource.available(
+                        "monolith_diagnostic_geometry",
+                        "britannia_mod", "geo/monolith_diagnostic.geo.json"),
+                ClientResource.available(
+                        "monolith_diagnostic_texture",
+                        "britannia_mod", "textures/block/monolith/diagnostic_stone.png"),
                 0,
                 true,
-                false,
+                true,
                 ContentStatus.PROVISIONAL);
         return new Family(
                 MONOLITH,

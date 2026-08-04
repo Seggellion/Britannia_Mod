@@ -74,7 +74,8 @@ class InteriorDecoratorMilestoneFiveScopeTest {
         try (var files = Files.walk(Path.of("src/main"))) {
             var paths = files.filter(Files::isRegularFile).map(Path::toString).toList();
             assertFalse(paths.stream().anyMatch(path -> path.contains("MilestoneSix")));
-            assertFalse(paths.stream().anyMatch(path -> path.contains("monolith") && path.endsWith(".java")));
+            assertFalse(paths.stream().anyMatch(path -> path.contains("MonolithVariantCycle")
+                    || path.contains("MonolithCycleService")));
             assertFalse(paths.stream().anyMatch(path -> path.contains("recipes") && path.contains("shrine")));
         }
     }

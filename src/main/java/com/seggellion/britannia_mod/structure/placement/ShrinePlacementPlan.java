@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.ChunkPos;
 
-/** Immutable four-cell transaction for the diagnostic shrine. */
+/** Immutable shared transaction for a four-cell shrine or eighteen-cell monolith. */
 public record ShrinePlacementPlan(
         BlockPos anchorPosition,
         BlockState anchorBlockState,
@@ -28,19 +28,22 @@ public record ShrinePlacementPlan(
         authorizedPositions = Objects.requireNonNull(authorizedPositions, "authorizedPositions").stream()
                 .map(BlockPos::immutable)
                 .toList();
-        if (cells.size() != 4
+        int expectedCells = placedStructure.footprint().size();
+        if ((expectedCells != 4 && expectedCells != 18)
+                || cells.size() != expectedCells
                 || cells.getFirst().role() != StructureCellRole.ANCHOR
                 || !cells.getFirst().worldPosition().equals(anchorPosition)
                 || !cells.getFirst().placedState().equals(anchorBlockState)) {
-            throw new IllegalArgumentException("A Milestone 2 shrine plan requires one anchor and three parts");
+            throw new IllegalArgumentException(
+                    "A large-structure plan requires one anchor and every persisted footprint cell");
         }
         if (cells.stream().filter(cell -> cell.role() == StructureCellRole.ANCHOR).count() != 1) {
             throw new IllegalArgumentException("A shrine plan must contain exactly one anchor");
         }
         if (!cells.stream().map(StructureCell::offset).toList().equals(placedStructure.footprint())
-                || new HashSet<>(cells.stream().map(StructureCell::offset).toList()).size() != 4
-                || new HashSet<>(cells.stream().map(StructureCell::worldPosition).toList()).size() != 4) {
-            throw new IllegalArgumentException("Shrine offsets and world targets must be ordered and unique");
+                || new HashSet<>(cells.stream().map(StructureCell::offset).toList()).size() != expectedCells
+                || new HashSet<>(cells.stream().map(StructureCell::worldPosition).toList()).size() != expectedCells) {
+            throw new IllegalArgumentException("Structure offsets and world targets must be ordered and unique");
         }
         List<BlockPos> plannedPositions = cells.stream().map(StructureCell::worldPosition).toList();
         if (!authorizedPositions.equals(plannedPositions)) {

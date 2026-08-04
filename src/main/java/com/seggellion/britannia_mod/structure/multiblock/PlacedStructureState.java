@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.Direction;
 
-/** Schema-versioned, anchor-owned logical shrine instance and exact ordered placed footprint. */
+/** Schema-versioned, anchor-owned logical structure instance and exact ordered placed footprint. */
 public record PlacedStructureState(
         int schemaVersion,
         FamilyId familyId,
@@ -41,7 +41,7 @@ public record PlacedStructureState(
             ID_CODEC.fieldOf("family_id").forGetter(Decoded::familyId),
             ID_CODEC.fieldOf("variant_id").forGetter(Decoded::variantId),
             HORIZONTAL_FACING_CODEC.fieldOf("facing").forGetter(Decoded::facing),
-            OFFSET_CODEC.listOf(4, 4).fieldOf("placed_footprint").forGetter(Decoded::footprint)
+            OFFSET_CODEC.listOf(4, 18).fieldOf("placed_footprint").forGetter(Decoded::footprint)
     ).apply(instance, Decoded::new));
     public static final Codec<PlacedStructureState> CODEC = RAW_CODEC.flatXmap(
             PlacedStructureState::decode, state -> DataResult.success(Decoded.from(state)));
@@ -79,11 +79,12 @@ public record PlacedStructureState(
     }
 
     private static void validateFootprint(List<LocalOffset> footprint) {
-        if (footprint.size() != 4 || !footprint.getFirst().equals(LocalOffset.ANCHOR)
+        if ((footprint.size() != 4 && footprint.size() != 18)
+                || !footprint.getFirst().equals(LocalOffset.ANCHOR)
                 || footprint.stream().filter(LocalOffset.ANCHOR::equals).count() != 1
                 || new HashSet<>(footprint).size() != footprint.size()) {
             throw new IllegalArgumentException(
-                    "Placed shrine footprint must contain exactly four ordered unique cells beginning with anchor");
+                    "Placed structure footprint must contain four or eighteen ordered unique cells beginning with anchor");
         }
         for (LocalOffset offset : footprint) {
             Objects.requireNonNull(offset, "footprint offset");

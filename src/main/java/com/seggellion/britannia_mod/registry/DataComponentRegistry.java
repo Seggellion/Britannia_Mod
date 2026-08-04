@@ -24,6 +24,10 @@ public class DataComponentRegistry {
             SHRINE_INSTANCE_STATE = DATA_COMPONENT_TYPES.register(
                     "shrine_instance_state", DataComponentRegistry::createShrineInstanceStateType);
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShrineItemState>>
+            MONOLITH_INSTANCE_STATE = DATA_COMPONENT_TYPES.register(
+                    "monolith_instance_state", DataComponentRegistry::createShrineInstanceStateType);
+
     public static DataComponentType<ShrineItemState> createShrineInstanceStateType() {
         return DataComponentType.<ShrineItemState>builder()
                 .persistent(ShrineItemState.CODEC)

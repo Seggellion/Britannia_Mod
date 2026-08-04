@@ -824,3 +824,75 @@ All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`
 - Mutation behavior is deeply exercised through the actual production service with deterministic adapters and real persisted/packet state, but no live `ServerPlayer`/`ServerLevel`, GameTest, two-client session, in-world click, save-file reload, or GPU visual validation occurred.
 - Client startup proves registration, resource parsing, and class loading only. It does not close the known Milestone 4 live-render/resource-reload limitation.
 - Milestone 6 remains explicitly deferred. The next milestone is permitted only after separate owner approval.
+
+## 2026-08-03 - Milestone 6: Atomic Monolith Placement and Positive-Y Render Offset
+
+### Asset gate, owner override, and isolation
+
+- Original prerequisite result: repository and historical asset searches found no owner-approved monolith geometry or texture, so implementation initially stopped at the mandatory asset gate. That blocker is retained as project chronology rather than erased.
+- Owner override: the project owner accepted the blocker report and explicitly authorized creation of exactly one provisional diagnostic package for family `monolith`, stable variant `diagnostic_missing_content`. The authorization is provisional implementation content only, not final art and not permission for a second variant or Milestone 7.
+- Starting commit: `4900136b1a82f477fc02eac8d963e19d8b94e5e6` on `shrines-monoliths`; starting tree clean; merge base with `origin/patch-18` `62df1dc97c5113a86f9c0f258cb90538f31efe89`; divergence `0` behind / `9` ahead of `origin/patch-18` and `0` behind / `7` ahead of `origin/shrines-monoliths`.
+- Ending commit: the single commit containing this entry, subject `feat(monoliths): add offset multiblock placement`. Its immutable hash is recorded in the final report because a commit cannot truthfully contain its own hash without amendment.
+- All work ran only in `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`. The shared repository was initially inspected read-only on branch `banking`, HEAD `e7ca8f14a72884a69f5c9193edbc9f749df99ccf`, with unrelated existing banking/untracked work. The final read-only observation found the same `banking` branch at concurrently advanced HEAD `aa419df6dbe8f4111b6e71ec05eb09a345a734b8` with expanded banking work. None of those concurrent changes was synchronized. The shared repository was not switched, built, cleaned, edited, staged, committed, reset, stashed, merged, rebased, fetched, or pushed by this milestone.
+
+### Provisional diagnostic package
+
+- `assets/britannia_mod/geo/monolith_diagnostic.geo.json`: static GeckoLib geometry, 1,007 bytes, SHA-256 `0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C`.
+- `assets/britannia_mod/textures/block/monolith/diagnostic_stone.png`: ImageGen-origin neutral diagnostic stone, deterministically reduced to one fully opaque 32 by 32 PNG, 2,034 bytes, SHA-256 `FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4`. It contains no text, shrine texture, virtue symbol, ankh, person, third-party image, or alternate palette.
+- `assets/britannia_mod/animations/monolith.animation.json`: required empty static GeckoLib resource, 84 bytes, SHA-256 `D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530`.
+- `assets/britannia_mod/models/item/monolith.json`: vanilla `minecraft:block/stone` presentation, 40 bytes, SHA-256 `E48339859F7AA66BBC08246B8BC65AC1827E28241509518F9884A854739A2BED`; no separate icon exists.
+- Exact authored cube bounds are X `[-8,40]`, Y `[-16,32]`, Z `[-8,24]` model voxels. Origin contract is lower front-left anchor; local X viewer-right, Y up, Z away; pivot `[0,-16,0]`; default forward North with the front rib at negative Z. Texture box UVs originate at `[0,0]` on the 32 by 32 image.
+- The negative-sixteen authored base deliberately requires one positive-sixteen-voxel visual correction. `ShrineRenderer.preRender` applies `[0,+1,0]` blocks only when `isReRender` is false; neither geometry, anchor, cells, persisted offsets, collision, nor selection add a second correction. Post-translation Y is `[0,48]` voxels.
+- GeckoLib's established anchor rotation remains North `0`, East `-90`, South `180`, West `90` degrees around positive Y. Finite all-facing monolith bounds are X/Z `[-2,3]` and Y `[0,3]` blocks, with the existing `1/128` tolerance.
+- `ShrineMonolithDefinitions` honestly activates exactly `monolith/diagnostic_missing_content`, status `PROVISIONAL`, enabled and player-facing, with the exact geometry/texture paths. No second runtime monolith variant exists.
+
+### Shared framework implementation
+
+- `ConfiguredStructureItem` generalizes the existing configured item boundary while `ShrineItem` preserves `shrine/honesty` and new `MonolithItem` owns `monolith/diagnostic_missing_content`. Registry ID `britannia_mod:monolith` and synchronized component `britannia_mod:monolith_instance_state` are each registered exactly once. The existing shrine item/component IDs and schema fields are unchanged.
+- The immutable planner now accepts an item's exact family and footprint count. The monolith deterministic footprint order is Y layers bottom-to-top, then local Z front-to-back, then local X left-to-right: one anchor plus seventeen parts. It captures all eighteen original and expected states, exact required chunks, and eighteen placement-authorized positions before mutation.
+- Local-to-world mappings at anchor `(ax,ay,az)` remain centralized: North `(ax-x,ay+y,az+z)`, East `(ax-z,ay+y,az-x)`, South `(ax+x,ay+y,az-z)`, West `(ax+z,ay+y,az+x)`. Reverse part-to-anchor resolution uses the same transform and stored facing/offset.
+- The existing `ShrinePlacementExecutor`, transaction owner, rollback ownership, placement guard, lifecycle service, integrity scheduler, anchor block, part block, and anchor block entity are reused. No monolith-specific block/entity/transaction/lifecycle/integrity duplicate exists.
+- `PlacedStructureState` retains schema version `1`, NBT key `shrine_state`, family/variant/facing fields, and ordered footprint field; it now admits exactly four or eighteen cells and rejects all other sizes, duplicate offsets, missing/duplicate anchor, non-horizontal facing, malformed, and future state.
+- Survival consumes one configured monolith only after all eighteen placements, anchor initialization, seventeen part placements, verification, and synchronization succeed. Creative consumes zero. Any injected cell mutation or verification failure restores all owned cells in reverse order with drops suppressed and preserves unrelated replacements.
+- The existing lifecycle owns anchor/part resolution, configured pick block, survival one-drop teardown, creative zero-drop teardown, explosion/external replacement, orphan handling, unloaded-anchor deferral, all seventeen missing-part repairs, obstruction preservation, reentrancy, piston blocking, fluid rejection, and cell-local full-block collision/selection. Parts remain invisible, entity-free, and renderer-free.
+- The one existing anchor renderer and model selector now resolve either family. Shrine rendering remains at zero correction and unchanged bounds; monolith rendering uses its per-variant geometry/texture and the one positive-Y correction. Missing resources continue through the bounded diagnostic fallback.
+
+### Scope and regression protection
+
+- No monolith Interior Decorator dispatch, variant cycling, cross-family conversion, recipe, command, packet, NPC, rail, website, second geometry, second texture, second animation, part renderer, part block entity, separate anchor/part registration, collision expansion, or selection expansion was added.
+- All thirteen existing shrine assets were hashed before and after; every byte count and SHA-256 remained identical: animation `F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E`; shared geometry `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0`; diagnostic geometry `460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781`; item model `829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985`; Chaos `D8B2FDEB4158BBF86A053CDD383E532569F4DDDAEFF178D2472F5ABC2507EDC3`; Compassion `79160E8AF141E4395A64D64439F7FBF0C2170D78073A136E6CBEF8A130FC87BC`; Honesty `D35747568A37960736C20F8359F55043B19739FC7D1FAB34144F8F971C36BCCC`; Honor `ADC2A67CFA7476D4C1D18A7C49E9F1937D552099FCFE9F1D3C821B832135D381`; Humility `E201645E5D9058E28022B22904114E09823E736DDE8021D2E4DA2CE9E558AC8A`; Justice `5F01D14F16870EBA66C6A4C3E2F19C919E403A5DCDDC12037904285C825B1B8B`; Sacrifice `E4C56B44DC44C749DB10E2D34824DCF0079774FAAF9C2368330CC57036B4EEC4`; Spirituality `D50CF726BD459C85313A9173E708C49C3ADC72559D0EABC9458FDFED8FF05CF1`; Valor `A748C870317998F911AC328960685F4B41AE8330635DC839F35D27EC6ACA4A1F`.
+- Existing shrine placement, persistence, lifecycle, cycling order/transaction, localization keys, texture mapping, shared geometry, renderer architecture, item presentation, and four-cell behavior remain covered and green.
+
+### Automated validation
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+- Initial `compileJava`: exit `0`, 56 seconds, 26 tasks (1 executed, 25 up-to-date). Known warnings: missing Javadoc on a Mixin `@Overwrite` and deprecated-for-removal `Item.initializeClient`; general deprecation/unchecked notes remained. The first test compile found one test-only nested-type reference and was corrected; final `compileTestJava` exited `0` in 32.3 seconds (1 executed, 28 up-to-date).
+- Focused planner/executor/lifecycle/render/persistence command: final exit `0`, 43.1 seconds, 5 classes / 26 methods, zero failures/errors/skips, 30 tasks (2 executed, 28 up-to-date). One earlier assertion called the explicit-ID planner overload while expecting component decoding; the test was corrected to exercise the production overload without changing implementation.
+- Focused `MonolithItemStateTest`: exit `0`, 76.2 seconds, 1 class / 3 methods, zero failures/errors/skips, 30 tasks (3 executed, 27 up-to-date); recompilation emitted only the two known production warnings and one existing test deprecation note.
+- `test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`: final exit `0`, 33.4 seconds, 25 classes / 169 methods, zero failures/errors/skips, 30 tasks (1 executed, 29 up-to-date). An earlier structure run exposed one stale pre-activation `playerFacing=false` assertion; the assertion was updated to the owner-authorized definition and the suite rerun.
+- `test --no-daemon --no-configuration-cache --stacktrace`: exit `0`, 34.7 seconds, 25 classes / 169 methods, zero failures/errors/skips, 30 tasks (1 executed, 29 up-to-date).
+- Before clean, `git clean -ndX` listed only generated `.gradle`, `build`, `run`, and `runs`. Twelve untracked logs created by this Milestone 6 session were path-verified under the isolated `logs` directory and removed explicitly; no user-owned or unrelated work was a clean target.
+- `clean build --no-daemon --no-configuration-cache --stacktrace`: exit `0`, 106.8 seconds, 25 classes / 169 methods from cache, zero failures/errors/skips, 36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- Final import-only cleanup verification, `build --no-daemon --no-configuration-cache --stacktrace`: exit `0`, 78.5 seconds, 25 classes / 169 methods, zero failures/errors/skips, 35 tasks (4 executed, 31 up-to-date); it rebuilt both production JARs from the final source and emitted only the two known production warnings.
+- Final `git diff --check`: exit `0`; no whitespace errors. Git repeatedly warned that the sandbox could not read the user's global ignore file; repository status and explicit staging were unaffected.
+
+### Runtime smoke validation
+
+- Dedicated server command: `runServer -Pdev --no-daemon --no-configuration-cache --stacktrace`. It loaded Britannia `0.1.7k` and GeckoLib `4.6.6`, reached `Done (4.456s)`, started RCON, accepted loopback `stop`, logged `Stopping server`, `Saving players`, `Saving worlds`, saves for overworld/end/nether, `All dimensions are saved`, stopped RCON, and ended `BUILD SUCCESSFUL in 3m 48s`.
+- Dedicated-server diagnostics were the established unrelated client `TitleScreen` dist-cleaner message and missing `britannia_mod.properties` warning; registries and world startup still completed. No new client-only monolith class loaded on the dedicated server.
+- Development client command: `runClient -Pdev --no-daemon --no-configuration-cache --stacktrace`. It loaded Britannia, GeckoLib, Minecraft, and NeoForge; initialized Britannia; reloaded `mod/britannia_mod`; created the block and GUI atlases; and logged no missing/parse error naming `monolith_diagnostic` or `diagnostic_stone`. The exact isolated client process tree was then terminated after startup verification.
+- The client log retains many pre-existing unrelated invalid/missing models, textures, sounds, animation expressions, and the default missing config warning. The smoke proves startup and resource/class loading, not gameplay appearance.
+- In-world placement, two-facing visual inspection, live save/reload, two-client observation, resource reload, and actual visual horizon alignment were not performed. They remain explicitly `UNVERIFIED`.
+
+### Production JAR inspection
+
+- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,240,626 bytes; 4,686 entries; SHA-256 `913519964498FC0BE932F37D02CD71508B76A081C8090086EBE6355E8B7CB0E7`.
+- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,812,264 bytes; 4,690 entries; SHA-256 `10E236A3FB8BC5665E717CB97A5B3E692EFC65A824CD03585C04A31967B87795`.
+- Each contains 47 production classes below shared structure placement/lifecycle/multiblock/item packages, including `ConfiguredStructureItem`, `MonolithItem`, the shared planner/executor, lifecycle/integrity services, one anchor/part/entity, and one shared renderer/model selector. Each contains zero test/fixture entries and zero monolith cycle/decorator entries.
+- Each contains exactly one monolith PNG and one monolith geometry plus the single animation and vanilla-backed item model. Hashing each resource from inside each JAR reproduced the four source SHA-256 values above, proving the complete provisional package is in both production artifacts.
+
+### Status
+
+- Milestone 6 is complete subject to owner review. The provisional package remains explicitly replaceable only with later owner approval.
+- Milestone 7 was not started and remains blocked on owner-approved additional monolith variants/assets.

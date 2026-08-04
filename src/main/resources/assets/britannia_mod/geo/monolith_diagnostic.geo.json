@@ -1,0 +1,43 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.britannia_mod.monolith_diagnostic",
+        "texture_width": 32,
+        "texture_height": 32,
+        "visible_bounds_width": 4,
+        "visible_bounds_height": 4,
+        "visible_bounds_offset": [1, 0, 0.5]
+      },
+      "bones": [
+        {
+          "name": "monolith",
+          "pivot": [0, -16, 0],
+          "cubes": [
+            {
+              "origin": [-8, -16, -8],
+              "size": [48, 8, 32],
+              "uv": [0, 0]
+            },
+            {
+              "origin": [-4, -8, -4],
+              "size": [40, 36, 24],
+              "uv": [0, 0]
+            },
+            {
+              "origin": [-6, 28, -6],
+              "size": [44, 4, 28],
+              "uv": [0, 0]
+            },
+            {
+              "origin": [12, -4, -6],
+              "size": [8, 24, 2],
+              "uv": [0, 0]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

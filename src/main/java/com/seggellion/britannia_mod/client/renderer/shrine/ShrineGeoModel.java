@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.client.renderer.shrine;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitions;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.ResourceId;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
 import com.seggellion.britannia_mod.structure.render.ShrineRenderSelection;
@@ -16,6 +17,7 @@ import software.bernie.geckolib.model.GeoModel;
 public final class ShrineGeoModel extends GeoModel<LargeStructureAnchorBlockEntity> {
     static final ResourceLocation DIAGNOSTIC_GEOMETRY = id("geo/shrine_missing.geo.json");
     static final ResourceLocation STATIC_ANIMATION = id("animations/shrine.animation.json");
+    static final ResourceLocation MONOLITH_STATIC_ANIMATION = id("animations/monolith.animation.json");
     private static final int MAX_DIAGNOSTICS = 128;
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<String, Boolean> DIAGNOSTICS = new LinkedHashMap<>();
@@ -25,14 +27,14 @@ public final class ShrineGeoModel extends GeoModel<LargeStructureAnchorBlockEnti
         ShrineRenderSelection selection = ShrineRenderSelection.resolve(anchor);
         if (selection.status() != ShrineRenderSelection.Status.READY) {
             diagnostic("state:model:" + selection.familyId().value() + ":" + selection.variantId().value(),
-                    "Using diagnostic shrine model for {}:{} ({})",
+                    "Using diagnostic large-structure model for {}:{} ({})",
                     selection.familyId().value(), selection.variantId().value(), selection.status());
             return DIAGNOSTIC_GEOMETRY;
         }
         ResourceLocation requested = location(selection.geometry().orElseThrow().location().orElseThrow());
         if (!exists(requested)) {
             diagnostic("missing:model:" + requested,
-                    "Shrine geometry resource {} is missing; using bounded diagnostic geometry", requested);
+                    "Large-structure geometry resource {} is missing; using bounded diagnostic geometry", requested);
             return DIAGNOSTIC_GEOMETRY;
         }
         return requested;
@@ -43,14 +45,14 @@ public final class ShrineGeoModel extends GeoModel<LargeStructureAnchorBlockEnti
         ShrineRenderSelection selection = ShrineRenderSelection.resolve(anchor);
         if (selection.status() != ShrineRenderSelection.Status.READY) {
             diagnostic("state:texture:" + selection.familyId().value() + ":" + selection.variantId().value(),
-                    "Using missing-texture diagnostic for shrine {}:{} ({})",
+                    "Using missing-texture diagnostic for structure {}:{} ({})",
                     selection.familyId().value(), selection.variantId().value(), selection.status());
             return MissingTextureAtlasSprite.getLocation();
         }
         ResourceLocation requested = location(selection.texture().orElseThrow().location().orElseThrow());
         if (!exists(requested)) {
             diagnostic("missing:texture:" + requested,
-                    "Shrine texture resource {} is missing; using missing-texture diagnostic", requested);
+                    "Large-structure texture resource {} is missing; using missing-texture diagnostic", requested);
             return MissingTextureAtlasSprite.getLocation();
         }
         return requested;
@@ -58,7 +60,10 @@ public final class ShrineGeoModel extends GeoModel<LargeStructureAnchorBlockEnti
 
     @Override
     public ResourceLocation getAnimationResource(LargeStructureAnchorBlockEntity anchor) {
-        return STATIC_ANIMATION;
+        return anchor.placedState()
+                .filter(state -> state.familyId().equals(ShrineMonolithDefinitions.MONOLITH))
+                .map(ignored -> MONOLITH_STATIC_ANIMATION)
+                .orElse(STATIC_ANIMATION);
     }
 
     static synchronized int diagnosticKeyCount() {

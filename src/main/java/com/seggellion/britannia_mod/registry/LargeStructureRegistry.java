@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.MonolithItem;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlock;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructurePartBlock;
@@ -17,7 +18,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** Shared shrine registration: one anchor, one part, one anchor entity, and one configured family item. */
+/** Shared structure registration: one anchor, one part, one anchor entity, and two family items. */
 public final class LargeStructureRegistry {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(Registries.BLOCK, BritanniaMod.MODID);
@@ -40,6 +41,10 @@ public final class LargeStructureRegistry {
     public static final DeferredHolder<Item, ShrineItem> SHRINE = ITEMS.register(
             "shrine", () -> new ShrineItem(
                     new Item.Properties().stacksTo(1), DataComponentRegistry.SHRINE_INSTANCE_STATE::get));
+
+    public static final DeferredHolder<Item, MonolithItem> MONOLITH = ITEMS.register(
+            "monolith", () -> new MonolithItem(
+                    new Item.Properties().stacksTo(1), DataComponentRegistry.MONOLITH_INSTANCE_STATE::get));
 
     private LargeStructureRegistry() {
     }

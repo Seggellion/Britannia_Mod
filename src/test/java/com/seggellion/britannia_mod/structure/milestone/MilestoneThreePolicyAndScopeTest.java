@@ -118,8 +118,7 @@ class MilestoneThreePolicyAndScopeTest {
         assertFalse(Files.exists(MAIN.resolve("structure/renderer")));
         String registry = Files.readString(MAIN.resolve("registry/LargeStructureRegistry.java"));
         assertFalse(registry.contains("BlockItem"));
-        assertFalse(registry.contains("MONOLITH"));
-        assertFalse(registry.contains("\"monolith\""));
+        assertEquals(1, count(registry, "ITEMS\\.register\\(\\s*\"monolith\""));
     }
 
     @Test

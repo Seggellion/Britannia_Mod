@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
 import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitions;
 import com.seggellion.britannia_mod.structure.definition.StructureGeometry.LocalOffset;
-import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.ConfiguredStructureItem;
 import com.seggellion.britannia_mod.structure.item.ShrineItemTransfer;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlock;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
@@ -270,7 +270,7 @@ public final class ShrineLifecycleService {
                 || !ShrinePlacementPlanner.worldPosition(anchorPos, facing, offset).equals(sourcePos)) {
             return ItemStack.EMPTY;
         }
-        return ShrineItemTransfer.fromPlacedState((ShrineItem) LargeStructureRegistry.SHRINE.get(), state);
+        return configuredItem(state);
     }
 
     public static ItemStack pick(WorldAccess world, BlockPos sourcePos, BlockState sourceState) {
@@ -350,7 +350,7 @@ public final class ShrineLifecycleService {
                 return LargeStructureRegistry.LARGE_STRUCTURE_PART.get().stateFor(facing, offset);
             }
             @Override public ItemStack configuredItem(PlacedStructureState state) {
-                return ShrineItemTransfer.fromPlacedState((ShrineItem) LargeStructureRegistry.SHRINE.get(), state);
+                return ShrineLifecycleService.configuredItem(state);
             }
             @Override public void drop(BlockPos pos, ItemStack stack) { Block.popResource(level, pos, stack); }
             @Override public void synchronizeAnchor(BlockPos pos) {
@@ -363,10 +363,24 @@ public final class ShrineLifecycleService {
 
     private static boolean validAnchor(AnchorSnapshot anchor) {
         PlacedStructureState state = anchor.state();
-        return state.familyId().equals(ShrineMonolithDefinitions.SHRINE)
+        int expectedCells = state.familyId().equals(ShrineMonolithDefinitions.SHRINE) ? 4
+                : state.familyId().equals(ShrineMonolithDefinitions.MONOLITH) ? 18 : -1;
+        return state.footprint().size() == expectedCells
                 && PlacedStructureState.isStructurallyValidFootprint(state.footprint())
                 && anchor.blockState().hasProperty(LargeStructureAnchorBlock.FACING)
                 && anchor.blockState().getValue(LargeStructureAnchorBlock.FACING) == state.facing();
+    }
+
+    private static ItemStack configuredItem(PlacedStructureState state) {
+        ConfiguredStructureItem item;
+        if (state.familyId().equals(ShrineMonolithDefinitions.SHRINE)) {
+            item = LargeStructureRegistry.SHRINE.get();
+        } else if (state.familyId().equals(ShrineMonolithDefinitions.MONOLITH)) {
+            item = LargeStructureRegistry.MONOLITH.get();
+        } else {
+            return ItemStack.EMPTY;
+        }
+        return ShrineItemTransfer.fromPlacedState(item, state);
     }
 
     private static RemovalResult removeInvalidSource(

@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.structure.testsupport;
 
 import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.MonolithItem;
 import com.seggellion.britannia_mod.structure.item.ShrineItemState;
 import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlock;
@@ -23,7 +24,9 @@ public final class MilestoneTwoRegisteredTestContent {
     private static LargeStructureAnchorBlock anchor;
     private static LargeStructurePartBlock part;
     private static ShrineItem shrine;
+    private static MonolithItem monolith;
     private static DataComponentType<ShrineItemState> component;
+    private static DataComponentType<ShrineItemState> monolithComponent;
     private static BlockEntityType<LargeStructureAnchorBlockEntity> blockEntityType;
 
     private MilestoneTwoRegisteredTestContent() {
@@ -37,6 +40,10 @@ public final class MilestoneTwoRegisteredTestContent {
         component = Registry.register(
                 BuiltInRegistries.DATA_COMPONENT_TYPE,
                 id("m3_test_shrine_instance_state"),
+                DataComponentRegistry.createShrineInstanceStateType());
+        monolithComponent = Registry.register(
+                BuiltInRegistries.DATA_COMPONENT_TYPE,
+                id("m6_test_monolith_instance_state"),
                 DataComponentRegistry.createShrineInstanceStateType());
         anchor = Registry.register(
                 BuiltInRegistries.BLOCK,
@@ -59,6 +66,10 @@ public final class MilestoneTwoRegisteredTestContent {
                 BuiltInRegistries.ITEM,
                 id("m2_test_shrine"),
                 new ShrineItem(new Item.Properties().stacksTo(1), () -> component));
+        monolith = Registry.register(
+                BuiltInRegistries.ITEM,
+                id("m6_test_monolith"),
+                new MonolithItem(new Item.Properties().stacksTo(1), () -> monolithComponent));
     }
 
     public static LargeStructureAnchorBlock anchor() {
@@ -74,6 +85,16 @@ public final class MilestoneTwoRegisteredTestContent {
     public static ShrineItem shrine() {
         ensureRegistered();
         return shrine;
+    }
+
+    public static MonolithItem monolith() {
+        ensureRegistered();
+        return monolith;
+    }
+
+    public static DataComponentType<ShrineItemState> monolithComponent() {
+        ensureRegistered();
+        return monolithComponent;
     }
 
     public static DataComponentType<ShrineItemState> component() {

@@ -15,12 +15,13 @@ class MilestoneTwoRegistrationAndBoundaryTest {
     private static final Path RESOURCES = Path.of("src/main/resources/assets/britannia_mod");
 
     @Test
-    void exactlyOneAnchorPartEntityAndShrineItemAreRegisteredWithoutBlockItems() throws Exception {
+    void exactlyOneAnchorPartEntityAndTwoFamilyItemsAreRegisteredWithoutBlockItems() throws Exception {
         String registry = Files.readString(MAIN.resolve("registry/LargeStructureRegistry.java"));
         assertEquals(1, count(registry, "BLOCKS\\.register\\(\"large_structure_anchor\""));
         assertEquals(1, count(registry, "BLOCKS\\.register\\(\"large_structure_part\""));
         assertEquals(1, count(registry, "BLOCK_ENTITIES\\.register\\(\"large_structure\""));
         assertEquals(1, count(registry, "ITEMS\\.register\\(\\s*\"shrine\""));
+        assertEquals(1, count(registry, "ITEMS\\.register\\(\\s*\"monolith\""));
         assertTrue(registry.contains("LargeStructureAnchorBlockEntity::new, LARGE_STRUCTURE_ANCHOR.get()"));
         assertFalse(registry.contains("BlockItem"));
         assertEquals(1, count(registry, "pushReaction\\(PushReaction\\.BLOCK\\)"));
@@ -59,7 +60,7 @@ class MilestoneTwoRegistrationAndBoundaryTest {
     }
 
     @Test
-    void noMilestoneFourOrLaterBehaviorWasAdded() throws Exception {
+    void sharedCommonFrameworkStillContainsNoClientRendererOrDecoratorImplementation() throws Exception {
         Set<Path> folders = Set.of(
                 MAIN.resolve("structure/multiblock"),
                 MAIN.resolve("structure/placement"),
@@ -76,8 +77,7 @@ class MilestoneTwoRegistrationAndBoundaryTest {
             }
         }
         String registry = Files.readString(MAIN.resolve("registry/LargeStructureRegistry.java"));
-        assertFalse(registry.contains("MONOLITH"));
-        assertFalse(registry.contains("\"monolith\""));
+        assertEquals(1, count(registry, "ITEMS\\.register\\(\\s*\"monolith\""));
         assertFalse(Files.exists(MAIN.resolve("structure/renderer")));
     }
 

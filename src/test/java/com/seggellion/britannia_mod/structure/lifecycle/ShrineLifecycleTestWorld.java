@@ -40,10 +40,23 @@ final class ShrineLifecycleTestWorld implements WorldAccess {
     RemovalResult recursiveResult;
 
     AnchorSnapshot placeShrine(BlockPos anchorPos, Direction facing, String variant) {
+        return place(anchorPos, facing, ShrineMonolithDefinitions.SHRINE, variant);
+    }
+
+    AnchorSnapshot placeMonolith(BlockPos anchorPos, Direction facing) {
+        return place(anchorPos, facing, ShrineMonolithDefinitions.MONOLITH,
+                "diagnostic_missing_content");
+    }
+
+    private AnchorSnapshot place(
+            BlockPos anchorPos,
+            Direction facing,
+            com.seggellion.britannia_mod.structure.definition.StructureIdentity.FamilyId familyId,
+            String variant) {
         var footprint = ShrineMonolithDefinitions.catalogue()
-                .family(ShrineMonolithDefinitions.SHRINE).orElseThrow().footprint();
+                .family(familyId).orElseThrow().footprint();
         PlacedStructureState state = new PlacedStructureState(
-                ShrineMonolithDefinitions.SHRINE, new VariantId(variant), facing, footprint);
+                familyId, new VariantId(variant), facing, footprint);
         BlockState anchorState = MilestoneTwoRegisteredTestContent.anchor().defaultBlockState()
                 .setValue(LargeStructureAnchorBlock.FACING, facing);
         AnchorSnapshot snapshot = new AnchorSnapshot(anchorPos, anchorState, state);
@@ -118,7 +131,10 @@ final class ShrineLifecycleTestWorld implements WorldAccess {
         return MilestoneTwoRegisteredTestContent.part().stateFor(facing, offset);
     }
     @Override public ItemStack configuredItem(PlacedStructureState state) {
-        return ShrineItemTransfer.fromPlacedState(MilestoneTwoRegisteredTestContent.shrine(), state);
+        return ShrineItemTransfer.fromPlacedState(
+                state.familyId().equals(ShrineMonolithDefinitions.MONOLITH)
+                        ? MilestoneTwoRegisteredTestContent.monolith()
+                        : MilestoneTwoRegisteredTestContent.shrine(), state);
     }
     @Override public void drop(BlockPos pos, ItemStack stack) { drops.add(stack.copy()); }
     @Override public void synchronizeAnchor(BlockPos pos) { synchronizations++; }

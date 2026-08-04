@@ -56,13 +56,14 @@ class ShrineMonolithCatalogueTest {
     }
 
     @Test
-    void productionMonolithPlaceholderIsDiagnosticProvisionalAndNonPlayerFacing() {
+    void productionMonolithPlaceholderIsDiagnosticProvisionalAndPlayerFacing() {
         Variant diagnostic = DefinitionFixtures.monolith().variants().getFirst();
         assertEquals("diagnostic_missing_content", diagnostic.id().value());
         assertEquals(ContentStatus.PROVISIONAL, diagnostic.contentStatus());
-        assertFalse(diagnostic.playerFacing());
-        assertEquals(ResourceAvailability.UNAVAILABLE, diagnostic.model().availability());
-        assertEquals(ResourceAvailability.UNAVAILABLE, diagnostic.texture().availability());
+        assertEquals(ResourceAvailability.AVAILABLE, diagnostic.model().availability());
+        assertEquals(ResourceAvailability.AVAILABLE, diagnostic.texture().availability());
+        assertTrue(diagnostic.enabled());
+        assertTrue(diagnostic.playerFacing());
     }
 
     @Test
@@ -147,7 +148,7 @@ class ShrineMonolithCatalogueTest {
 
         var monolith = DefinitionFixtures.monolith();
         assertTrue(monolith.sharedGeometry().isEmpty());
-        assertTrue(monolith.variants().stream().allMatch(variant -> variant.model().location().isEmpty()));
-        assertTrue(monolith.variants().stream().allMatch(variant -> variant.texture().location().isEmpty()));
+        assertTrue(monolith.variants().stream().allMatch(variant -> variant.model().location().isPresent()));
+        assertTrue(monolith.variants().stream().allMatch(variant -> variant.texture().location().isPresent()));
     }
 }
