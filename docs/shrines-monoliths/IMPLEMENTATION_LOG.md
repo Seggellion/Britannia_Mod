@@ -1161,3 +1161,70 @@ All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`
 - `UNVERIFIED` by explicit owner-approved limitation: both-client runtime/version evidence, concurrent authentication, and every dependent live Phase 1-12 outcome listed above.
 - `FAIL`: none. `UNVERIFIED` does not mean `PASS` and must not be cited as gameplay evidence.
 - Milestone 9 is documented as accepted with explicit limitations by project-owner override. Milestone 10 requires separate authorization and was not begun.
+
+## 2026-08-04 - Milestone 10: Final Audit and Conditional Merge Readiness
+
+### Authorization and decision record
+
+- Starting/audited source commit: `c69057dc1b2a961f73b7c8b87ae7bc30d7a41c43` (`docs(structures): record live validation evidence`) on clean branch `shrines-monoliths` in `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+- Isolated `origin/patch-18` and shared local `patch-18` both resolved to the approved target `62df1dc97c5113a86f9c0f258cb90538f31efe89`, also the merge base. Starting divergence was 0 behind / 13 ahead of `origin/patch-18` and 0 behind / 11 ahead of `origin/shrines-monoliths`.
+- The shared repository remained read-only on its unrelated dirty `banking` state. No shared branch switch, modification, build, clean, stage, commit, reset, stash, merge, or rebase occurred.
+- Decision: proceed to Milestone 10 without the prescribed two-authenticated-client Milestone 9 session.
+- Status: approved.
+- Date: 2026-08-04.
+- Scope: final audit and conditional merge-readiness preparation only.
+- Reason: the owner accepts the missing Milestone 9 live evidence as an explicit limitation and authorizes the final audit to proceed.
+- Implementation consequence: every unperformed live check remains `UNVERIFIED`; merge readiness remains conditional; no multiplayer or live-gameplay claim may be made; the complete deferred matrix remains in `POST_MERGE_VALIDATION.md`.
+- Documents affected: this log, `OPEN_QUESTIONS.md`, `MERGE_READINESS.md`, and `POST_MERGE_VALIDATION.md`.
+- Follow-up validation: a controlled two-distinct-authenticated-client session using the exact release-candidate JAR before production promotion unless separately waived by the owner.
+- The single ending documentation commit is `docs(structures): complete merge-readiness audit`; its full hash is recorded in the final report because a commit cannot embed its own hash without amendment.
+
+### History and path audit
+
+- Audited all thirteen commits from merge base through Milestone 9. Full hashes, subjects, milestone association, and per-commit file counts are in `MERGE_READINESS.md`.
+- Confirmed no merge commit, duplicate rebase implementation, unrelated banking content, direct `patch-18` project commit, destructive history operation, or root-spec deletion. The original Milestone 4 implementation, transparent revert, and owner-approved restoration remain visible and reachable.
+- Full feature diff: 112 paths, 15,390 insertions, 3 deletions; 106 added, 6 modified, 0 deleted, 0 renamed; 47 production Java, 35 test Java, 22 main resources, 5 project documents, 2 authoritative root specifications, and 1 build file.
+- Every path is classified in `MERGE_READINESS.md`; unrelated count is zero. `git diff --check` for the historical range identifies only intentional Markdown hard-break trailing spaces in the two authoritative root specifications. Milestone 10 worktree and staged documentation diffs are whitespace-clean.
+
+### Architecture, schema, security, and content audit
+
+- Registrations remain exact: one `britannia_mod:large_structure_anchor`, one `britannia_mod:large_structure_part`, one anchor-only `britannia_mod:large_structure` block entity type, zero part entities, `britannia_mod:shrine`, `britannia_mod:monolith`, zero ordinary anchor/part BlockItems, reused `britannia_mod:interior_decorator_tool`, one anchor renderer, and zero part renderers.
+- One logical object owns each four-cell shrine or eighteen-cell monolith. Parts contain only facing/local offset and no complete family, variant, footprint, drop, entity, or complete-render ownership.
+- `SOLID_CELL`, cell-bounded shape, non-waterloggable/fluid rejection, piston `BLOCK`, persisted-footprint authority, no force-loading, per-cell protection, atomic reverse-order ownership-aware rollback, centralized lifecycle/drop/pick/explosion, obstruction preservation, bounded integrity, and no global scan all remain supported by production source and tests.
+- Shrine rendering remains shared-geometry/texture-selection only; monolith rendering selects distinct model/texture pairs; both use visual-only `[0,16,0]` voxels exactly once; parts do not render; fallback is bounded and identity-preserving.
+- Interior Decorator cycling remains logical-server authoritative, creative-or-permission-level-2, catalogue validated, same-family only, `variant_id` only, and transactional. The client cannot submit arbitrary IDs, resources, footprints, or offsets.
+- Item and placed schemas remain version 1. Components are `britannia_mod:shrine_instance_state` and `britannia_mod:monolith_instance_state`; placed NBT is under `shrine_state`; exact keys/codec/update paths and closed-failure behavior are documented in `MERGE_READINESS.md`.
+- No shrine/monolith registry ID existed at the merge base, so no prior-feature alias or migration is required. The pre-existing Interior Decorator is reused.
+- Value-suppressed committed-history and current-tree scans found no secret assignment, RCON password, authentication/launcher token, credential, world, raw log, server configuration, EULA, backup, or JAR in the feature history.
+- Catalogue remains exactly nine shrine and two owner-approved provisional monolith variants. `CONTENT_REPORT.json` remains deterministic. The protected inventory is 19 files (13 shrine and 6 monolith), not 20; all 19 source hashes remain identical to the pre-M10 record and match packaged entries.
+
+### Automated validation
+
+All commands ran in the isolated clone.
+
+- Focused command: `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.hardening.*" --tests "com.seggellion.britannia_mod.structure.milestone.*" --tests "com.seggellion.britannia_mod.structure.item.*" --no-daemon --no-configuration-cache --stacktrace`; exit 0; 46.1 seconds (`BUILD SUCCESSFUL in 45s`); 9 classes / 39 JUnit methods, zero failures/errors/skips; 30 tasks, test executed and 29 up-to-date. This freshly exercised deterministic content/hash, diagnostics, collision/adjacency, scope/registration, and item codec/stream-codec coverage.
+- Required structure suite: `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`; exit 0; 33.7 seconds (`BUILD SUCCESSFUL in 32s`); 32 classes / 200 methods, zero failures/errors/skips; test from cache, 29 tasks up-to-date.
+- Full suite: `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`; exit 0; 29.8 seconds (`BUILD SUCCESSFUL in 29s`); 32 classes / 200 methods, zero failures/errors/skips; test from cache, 29 tasks up-to-date.
+- The test runs created only untracked `logs/debug.log` and `logs/latest.log`; preflight proved they did not exist before the run. Their resolved directory was inside the isolated clone and they were removed before clean. No user-owned generated/untracked work was a clean target.
+- Clean build: `.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace`; exit 0; 178.4 seconds (`BUILD SUCCESSFUL in 2m 57s`); 36 tasks: 6 executed, 16 from cache, 14 up-to-date; 32 classes / 200 methods, zero failures/errors/skips.
+- Gradle's daemon-JVM-discovery notice remains incubating. No new compile/test failure or warning attributable to this feature appeared.
+
+### Production JAR and exact runtime evidence
+
+- Thin JAR: `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`, 22,245,612 bytes, 4,688 entries, SHA-256 `B5C8B223FA7BF79460CB3541B9C24205B5CF2D05433242E2B90198FE22BBAB51`.
+- Deployable JarJar artifact: `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`, 22,817,250 bytes, 4,692 entries, manifest `Manifest-Version: 1.0`, SHA-256 `5F1619DBBD50FDD35875ACC8D5CCC610F05DCBB6ECEF4F136A8471392C42B04A`.
+- The deployable JAR contains 107 structure-class entries, nine shrine textures, two monolith geometries, two monolith textures, both structure animations/item models/localization, one anchor renderer, zero tests/fixtures, and zero part renderer. All 19 protected source/package hashes match.
+- Fresh external topology: `C:\projects\britannia\validation\shrines-monoliths-m10` with `artifacts`, `server`, and `evidence`; no Git working tree. Source build, artifact, and server copies match the exact SHA-256, and the server has exactly one Britannia JAR.
+- A fresh NeoForge 21.1.72 server with `online-mode=true` loaded Britannia 0.1.7k and GeckoLib 4.6.6, reached `Done (9.226s)`, received normal console `stop`, exited 0 after 42.4 seconds, and saved players, worlds, overworld, End, Nether, and all dimensions. No shrine/monolith/large-structure or registry error appeared.
+- The established baseline `TitleScreen` invalid-dedicated-dist mixin diagnostic, first-run FML correction, missing optional `britannia_mod.properties`, union-schema warnings, and barrel warning remain. They are not structure regressions and are disclosed in the risk register.
+- Development client `runClient -Pdev --no-daemon --no-configuration-cache --stacktrace` reached `mod/britannia_mod` reload, OpenAL, block atlas, and GUI atlas after 52.6 seconds with zero shrine/monolith resource error. Its exact hidden process tree was then terminated. This is class-loading/resource-registration evidence only, not gameplay or a normal client-exit result.
+- Sanitized summaries remain outside Git at `C:\projects\britannia\validation\shrines-monoliths-m10\evidence`. Raw logs, world, configuration, EULA, installer, and JAR copies were not committed.
+
+### Merge analysis, documents, and disposition
+
+- Git 2.50.1 three-tree `git merge-tree` simulated source `c69057dc1b2a961f73b7c8b87ae7bc30d7a41c43` into target/base `62df1dc97c5113a86f9c0f258cb90538f31efe89`; exit 0; no conflict marker, `both modified` path, or predicted textual conflict. Target has zero post-base paths.
+- Semantic review remains required for `build.gradle`, common/client registration, components, large-structure registry, Interior Decorator interaction, lifecycle/persistence, and localization. No target-side banner or banking overlap exists at the exact audited target.
+- Created `MERGE_READINESS.md`, `ROLLBACK_PLAN.md`, and `POST_MERGE_VALIDATION.md`; updated verified facts, open-question disposition, and this log. No production, test, build, registration, schema, resource, model, texture, localization, asset, or runtime behavior file changed.
+- `MERGE_READINESS.md` records `CONDITIONAL MERGE READINESS`; code review and a separately owner-authorized non-destructive repository-standard merge/PR may proceed. Production promotion remains blocked by `POST_MERGE_VALIDATION.md` unless separately waived.
+- `UNVERIFIED`: every authenticated-client, two-client, live gameplay, live adjacency, live horizon/duplicate-render, client-log, and dense-scene performance criterion listed individually in `MERGE_READINESS.md` and carried into `POST_MERGE_VALIDATION.md`.
+- No merge, push, fetch, transfer, release, deployment, tag, or live promotion was performed.

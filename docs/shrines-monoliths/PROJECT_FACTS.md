@@ -89,6 +89,22 @@ These are inspections only; none was changed or selected for reuse in Milestone 
 
 Verified repository fact: Milestone 6 extends the Milestone 3 contract without duplicating it. The same anchor ownership, persisted footprint, preflight, atomic placement, rollback, centralized teardown/drop/pick/explosion/piston/fluid policy, unloaded-chunk deferral, orphan handling, loaded-cell repair, bounded scheduling/diagnostics, and reentrancy protection now support exact four-cell shrines and eighteen-cell monoliths.
 
+## Milestone 10 verified audit facts
+
+| Classification | Finding | Evidence |
+| --- | --- | --- |
+| Verified repository fact | The audited source/evidence tip is `c69057dc1b2a961f73b7c8b87ae7bc30d7a41c43` on `shrines-monoliths`; isolated and shared `patch-18` both resolve to `62df1dc97c5113a86f9c0f258cb90538f31efe89`, also the merge base. | Milestone 10 preflight and integration-tip gate |
+| Verified repository fact | The feature history has thirteen non-merge commits after the merge base, including the transparent Milestone 4 implementation, revert, and owner-approved restoration. | `git rev-list`; `git log --reverse` |
+| Verified repository fact | The full feature diff has 112 paths: 106 added, 6 modified, 0 deleted, 0 renamed; 47 production Java, 35 test Java, 22 main resources, 5 project documents, 2 root specifications, and 1 build file. No path is unrelated. | complete changed-path classification in `MERGE_READINESS.md` |
+| Verified repository fact | Registration counts are one anchor block, one part block, one anchor-only block entity type, zero part block entities, one shrine item, one monolith item, zero ordinary anchor/part BlockItems, one reused Interior Decorator, one anchor renderer and zero part renderers. | registry/client source; registration/scope tests |
+| Verified repository fact | Item and placed state use schema version 1. Item keys are `schema_version`, `family_id`, and `variant_id`; placed state is under `shrine_state` and adds `facing` plus ordered `placed_footprint` offsets `x`, `y`, `z`. | codec and persistence source/tests |
+| Verified repository fact | No shrine or monolith registry ID existed at the merge base; the Interior Decorator ID predates the feature. No alias or migration is required for a prior shrine/monolith implementation. | merge-base `git grep`; current registration audit |
+| Verified repository fact | The final catalogue remains nine shrine variants and two owner-approved provisional monolith variants; collision is `SOLID_CELL`; footprint sizes are 4 and 18; both monolith render offsets are `[0,16,0]` voxels. | definitions; deterministic content report/tests |
+| Verified repository fact | The protected structure-asset inventory is 19 files (13 shrine, 6 monolith), not 20. All source hashes match the pre-M10 inventory and packaged JAR entries. | `MERGE_READINESS.md`; source/JAR hash comparison |
+| Verified repository fact | The Milestone 10 deployable JAR is `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`, 22,817,250 bytes, 4,692 entries, manifest `Manifest-Version: 1.0`, SHA-256 `5F1619DBBD50FDD35875ACC8D5CCC610F05DCBB6ECEF4F136A8471392C42B04A`. | clean build and JAR inspection |
+| Verified repository fact | That exact hash reached `Done (9.226s)` on a fresh online-mode NeoForge 21.1.72 server, received a normal console stop, exited 0, and saved overworld, End, Nether and all dimensions. This is server-startup evidence only. | external sanitized Milestone 10 server summary |
+| Approved owner decision | On 2026-08-04 the owner authorized Milestone 10 and conditional merge-readiness preparation without the prescribed two-authenticated-client Milestone 9 session. Every unperformed live check remains `UNVERIFIED`; no multiplayer or live-gameplay claim is established. | owner authorization; `MERGE_READINESS.md`; `POST_MERGE_VALIDATION.md` |
+
 ### Completed banner feature on another local branch
 
 | Classification | Finding | Evidence |
