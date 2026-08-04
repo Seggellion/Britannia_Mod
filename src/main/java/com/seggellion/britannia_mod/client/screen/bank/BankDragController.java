@@ -187,9 +187,23 @@ public final class BankDragController {
         return true;
     }
 
-    /** Milestone 13's seam: the handoff is done (packet sent, or in 12, simply acknowledged). */
+    /** Milestone 13's seam: the handoff is done (packet sent, or refused and dropped). */
     public void completeHandoff() {
         if (phase == Phase.HANDOFF) reset();
+    }
+
+    /**
+     * Milestone 13: design §10.6's release-time re-check -- "verify the source slot still
+     * contains a compatible live stack" -- as a question the armed handoff can answer.
+     *
+     * <p>The per-frame watchdog already killed any gesture whose source changed <i>while
+     * dragging</i>, but the release itself is an instant the watchdog does not cover: the frame
+     * between the last tick and the mouse-up. Only the code deciding whether to send should ask
+     * this, and only in {@link Phase#HANDOFF}; anywhere else the answer is meaningless and
+     * {@code false} refuses safely.
+     */
+    public boolean handoffSourceUnchanged(@Nullable String currentSourceSnapshot) {
+        return phase == Phase.HANDOFF && Objects.equals(sourceSnapshot, currentSourceSnapshot);
     }
 
     // ---------- Queries ----------

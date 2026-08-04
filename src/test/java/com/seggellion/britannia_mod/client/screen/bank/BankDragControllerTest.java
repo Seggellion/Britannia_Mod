@@ -228,6 +228,32 @@ class BankDragControllerTest {
         assertEquals(State.DRAGGING_OVER_VALID, controller.state());
     }
 
+    // ---------- Milestone 13: the release-time re-check ----------
+
+    @Test
+    void anArmedHandoffKnowsWhetherItsSourceIsStillIntact() {
+        press();
+        dragTo(150, 120);
+        controller.onRelease(150, 120);
+
+        assertTrue(controller.handoffSourceUnchanged(SNAPSHOT));
+        assertFalse(controller.handoffSourceUnchanged("minecraft:diamond x3"),
+                "a shrunk stack in the final frame must refuse the send");
+        assertFalse(controller.handoffSourceUnchanged(null),
+                "an emptied slot in the final frame must refuse the send");
+    }
+
+    @Test
+    void theSourceQuestionRefusesOutsideAHandoff() {
+        // Anywhere but HANDOFF the answer is meaningless, and false is the answer that cannot
+        // cause a send.
+        assertFalse(controller.handoffSourceUnchanged(SNAPSHOT), "idle");
+        press();
+        assertFalse(controller.handoffSourceUnchanged(SNAPSHOT), "pressed");
+        dragTo(150, 120);
+        assertFalse(controller.handoffSourceUnchanged(SNAPSHOT), "dragging");
+    }
+
     @Test
     void aFreshControllerAfterResizeIsIdleByConstruction() {
         // Resize re-inits the screen, which rebuilds layout and controller together -- the

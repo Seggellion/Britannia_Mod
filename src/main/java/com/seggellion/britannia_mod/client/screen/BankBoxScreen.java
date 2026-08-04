@@ -463,6 +463,53 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    /**
+     * Milestone 13: the armed handoff becomes the deposit -- or is safely dropped.
+     *
+     * <p>Order matters and each step earns its place (design §10.6):
+     * <ol>
+     *   <li><b>Release-time re-check.</b> The per-frame watchdog covered the drag; this covers
+     *       the final frame. The live stack must still be exactly what was pressed, and still
+     *       depositable. Any mismatch drops the handoff and sends nothing -- the player keeps
+     *       their items and nothing pretends otherwise.</li>
+     *   <li><b>The session lock is claimed before the packet goes out</b>, and a failed claim
+     *       sends nothing -- the same one-press-one-request rule every other mutation uses,
+     *       and the second half of duplicate protection (the machine's single-handoff rule is
+     *       the first).</li>
+     *   <li><b>The packet is the same {@code BankDepositRequestC2SPayload} the legacy screen
+     *       sends</b>: teller entity id and the live slot index, nothing else. Milestone 0 §3.3
+     *       established the consequence -- the server routes item, coin and cheque deposits from
+     *       the live slot itself, so the drag inherits all three routes and every validation
+     *       unchanged. No local removal, no local balance change; what happens next arrives as a
+     *       refresh push or a result payload, exactly like every other operation.</li>
+     * </ol>
+     */
+    private void sendDragDeposit() {
+        ClientBankingSession session = ClientBankingSession.active();
+        int slot = drag.sourceSlot();
+        if (session == null || slot < 0) {
+            drag.completeHandoff();
+            return;
+        }
+
+        net.minecraft.world.item.ItemStack live = Minecraft.getInstance().player.getInventory().getItem(slot);
+        boolean stillSameStack = drag.handoffSourceUnchanged(sourceSnapshot(slot));
+        if (live.isEmpty() || !stillSameStack || !BankDepositHint.isDepositable(live)) {
+            drag.completeHandoff();
+            return;
+        }
+        if (!session.beginPending(
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.DEPOSIT)) {
+            drag.completeHandoff();
+            return;
+        }
+
+        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
+                new com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload(
+                        session.tellerEntityId(), slot));
+        drag.completeHandoff();
+    }
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (button == 0 && drag != null && drag.isGestureLive()) {
@@ -479,10 +526,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                     drag.onRelease(mouseX, mouseY);
             switch (outcome) {
                 case DROPPED_ON_BANK -> {
-                    // Milestone 12 goes no further, by its own restrictions: no packet, no local
-                    // removal. The handoff state exists and was reached -- Milestone 13 replaces
-                    // this line with the deposit request and the pending flow.
-                    drag.completeHandoff();
+                    sendDragDeposit();
                     return true;
                 }
                 case CANCELLED, CLICK -> {
