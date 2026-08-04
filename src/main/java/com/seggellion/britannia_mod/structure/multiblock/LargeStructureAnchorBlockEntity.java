@@ -20,14 +20,20 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 /** Common-side authoritative owner of one persisted logical shrine. */
-public final class LargeStructureAnchorBlockEntity extends BlockEntity {
+public final class LargeStructureAnchorBlockEntity extends BlockEntity implements GeoBlockEntity {
     public static final String STATE_TAG = "shrine_state";
     private static final int MAX_LOAD_DIAGNOSTICS = 1024;
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<String, Boolean> LOAD_DIAGNOSTICS = new LinkedHashMap<>();
+    private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
 
     private Optional<PlacedStructureState> placedState = Optional.empty();
     private PlacedStructureStatus structuralStatus = PlacedStructureStatus.UNINITIALIZED;
@@ -78,6 +84,20 @@ public final class LargeStructureAnchorBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return animationCache;
+    }
+
+    @Override
+    public void registerControllers(ControllerRegistrar controllers) {
+        // The shared placeholder shrine geometry is static.
+    }
+
+    public AABB getRenderBoundingBox() {
+        return ShrineRenderTransform.worldBounds(worldPosition);
     }
 
     @Override
