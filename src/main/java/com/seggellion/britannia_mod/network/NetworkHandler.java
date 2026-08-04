@@ -600,6 +600,17 @@ registrar.playToServer(
     })
 );
 
+// Bank interface rebuild, Milestone 6b: Deposit All Coins, from the Bank Balance Screen.
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleDepositAllCoins(p, payload);
+        }
+    })
+);
+
 // Milestone 11 NeoForge Slice 1: real cheque issuance trigger from BankChequeIssuanceScreen
 registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload.TYPE,

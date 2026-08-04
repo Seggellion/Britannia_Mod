@@ -111,6 +111,34 @@ public final class BankingTransferResponseParser {
     }
 
     /**
+     * Milestone 6b: {@code banking/currency/deposit/all/prepare}'s response, parsed exactly like
+     * {@link #parseCurrencyDepositPrepare}'s.
+     *
+     * <p>The response echoes {@code gold_amount}/{@code silver_amount}/{@code copper_amount}, and
+     * none of them are read -- the same only-what-callers-need policy every prepare parser here
+     * follows. The proxy holds the totals from its own sweep and would not trust an echo over its
+     * own observation anyway, so parsing them would create a second source of truth for no gain.
+     */
+    public static BankingDepositAllCoinsPrepareResult parseDepositAllCoinsPrepare(int status, byte[] body) {
+        final Envelope envelope;
+        try {
+            envelope = parseEnvelope(status, body);
+        } catch (EnvelopeFailure failure) {
+            return new BankingDepositAllCoinsPrepareResult.TransportFailure(failure.safeCode());
+        }
+        if (envelope.outcome != BankingTransferOutcome.PREPARED) {
+            return new BankingDepositAllCoinsPrepareResult.Rejected(envelope.outcome, envelope.retryable);
+        }
+
+        try {
+            UUID operationPublicId = requiredUuid(requiredObject(envelope.root, "operation"), "public_id");
+            return new BankingDepositAllCoinsPrepareResult.Success(operationPublicId);
+        } catch (ProtocolException malformed) {
+            return new BankingDepositAllCoinsPrepareResult.TransportFailure("malformed_protocol_response");
+        }
+    }
+
+    /**
      * Milestone 10 Slice 2: {@code banking/currency/withdrawal/prepare}'s response carries only
      * the {@code operation} object -- no {@code bank_item}, ever, exactly mirroring {@link
      * #parseCurrencyDepositPrepare}'s own reasoning (the caller already knows the denomination

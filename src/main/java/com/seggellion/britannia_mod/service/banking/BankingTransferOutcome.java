@@ -77,6 +77,27 @@ public enum BankingTransferOutcome {
     CHEQUE_ALREADY_REDEEMED,
     CHEQUE_CANCELLED,
     CHEQUE_VOIDED,
+    /**
+     * Bank interface rebuild, Milestone 6a/6b: a Deposit All Coins sweep found nothing. Rails
+     * answers this as a clean 422 <em>before any operation row exists</em> -- nothing created,
+     * nothing changed, never a confirmable operation that credits zero
+     * (docs/banking_bulk_currency_deposit.md, "The no-coins result").
+     *
+     * <p>NeoForge may skip the call when its own sweep comes up empty, and does; this exists
+     * because it must not <em>have</em> to, and because a modified client can send the request
+     * regardless.
+     */
+    NO_COINS,
+    /**
+     * Bank interface rebuild, Milestone 6a/6b: crediting a swept total would push that
+     * denomination's balance past what its int32 column can hold.
+     *
+     * <p>Deliberately distinct from {@link #INSUFFICIENT_BALANCE}, which is the opposite problem
+     * on the withdrawal side. Rails checks this at prepare as a courtesy, under the account row
+     * lock, so the common case is caught <em>before</em> NeoForge destroys anything -- the
+     * authoritative guard is the column itself at confirm time.
+     */
+    BALANCE_CAPACITY_EXCEEDED,
     SERVICE_UNAVAILABLE;
 
     @Nullable
@@ -102,7 +123,10 @@ public enum BankingTransferOutcome {
                  OPERATION_NOT_FOUND, INVALID_TRANSITION, RECONCILIATION_REQUIRED,
                  ITEM_NOT_FOUND, ITEM_NOT_AVAILABLE,
                  UNSUPPORTED_CURRENCY_KEY, INVALID_AMOUNT, INSUFFICIENT_BALANCE, INVALID_CHEQUE_AMOUNT,
-                 CHEQUE_NOT_FOUND, CHEQUE_ALREADY_REDEEMED, CHEQUE_CANCELLED, CHEQUE_VOIDED -> 422;
+                 CHEQUE_NOT_FOUND, CHEQUE_ALREADY_REDEEMED, CHEQUE_CANCELLED, CHEQUE_VOIDED,
+                 // Milestone 6a: both are 422 clean rejections, raised before any operation row
+                 // exists (docs/banking_bulk_currency_deposit.md, "Outcomes").
+                 NO_COINS, BALANCE_CAPACITY_EXCEEDED -> 422;
             case SERVICE_UNAVAILABLE -> 503;
         };
     }

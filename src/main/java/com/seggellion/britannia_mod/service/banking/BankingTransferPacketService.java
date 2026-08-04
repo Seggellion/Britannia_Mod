@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
@@ -261,6 +262,48 @@ public final class BankingTransferPacketService {
                         );
                         default -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                    }
+                }));
+    }
+
+    /**
+     * Bank interface rebuild, Milestone 6b: Deposit All Coins' production entry point.
+     *
+     * <p>The packet carries only a teller entity id, so unlike {@link #handleDeposit} there is no
+     * routing decision to make and nothing client-supplied to distrust beyond the teller
+     * reference {@link #resolveTeller} already re-validates. The sweep itself happens inside
+     * {@link BankingDepositAllCoinsProxyService}, against the live inventory.
+     *
+     * <p>Reported on the {@code Operation.DEPOSIT} channel, like the single-stack currency
+     * deposit it generalises. A {@code NO_COINS} sweep is a real, readable outcome rather than a
+     * silent no-op -- Milestone 6b's client half gives it its own message, because "nothing
+     * happened" and "the teller refused you" must not look alike.
+     */
+    public static void handleDepositAllCoins(ServerPlayer player, BankDepositAllCoinsRequestC2SPayload payload) {
+        ServiceNpcEntity teller = resolveTeller(player, payload.entityId());
+        if (teller == null) return;
+
+        MinecraftServer server = player.server;
+        BankingDepositAllCoinsProxyService.triggerDepositAllCoins(player, teller)
+                .whenComplete((result, error) -> server.execute(() -> {
+                    if (error != null || result == null) {
+                        LOGGER.warn("banking deposit-all-coins trigger for {} completed exceptionally", player.getStringUUID(), error);
+                        resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        return;
+                    }
+                    switch (result) {
+                        case BankingDepositAllCoinsResult.Confirmed ignored -> refreshAccount(player, teller);
+                        case BankingDepositAllCoinsResult.ReconciliationRequired ignored -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
+                        );
+                        default -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
                                 BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
                         );
                     }

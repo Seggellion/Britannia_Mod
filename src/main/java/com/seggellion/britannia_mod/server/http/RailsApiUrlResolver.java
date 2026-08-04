@@ -216,6 +216,7 @@ public final class RailsApiUrlResolver {
         BANKING_DEPOSIT_PREPARE("banking/deposit/prepare"),
         BANKING_WITHDRAWAL_PREPARE("banking/withdrawal/prepare"),
         BANKING_CURRENCY_DEPOSIT_PREPARE("banking/currency/deposit/prepare"),
+        BANKING_CURRENCY_DEPOSIT_ALL_PREPARE("banking/currency/deposit/all/prepare"),
         BANKING_CURRENCY_WITHDRAWAL_PREPARE("banking/currency/withdrawal/prepare"),
         BANKING_CHEQUE_ISSUANCE_PREPARE("banking/cheque/issue/prepare"),
         BANKING_CHEQUE_REDEEM("banking/cheque/redeem"),

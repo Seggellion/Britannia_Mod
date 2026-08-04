@@ -190,6 +190,16 @@ public final class BankTransferReconciliationService {
                     ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
                 }
             }
+            // Bank interface rebuild, Milestone 6b: a Deposit All Coins sweep. Its own case
+            // rather than another discriminator inside DEPOSIT, because unlike the item/currency
+            // split above there is nothing in the receipt's shape to discriminate on -- a bulk
+            // receipt is currency-shaped, exactly like a single-denomination one. The operation
+            // type is what tells them apart, which is why BULK_CURRENCY_DEPOSIT exists at all.
+            // Its currencyAmount is the sweep's total copper value and is deliberately not read:
+            // resume only re-sends confirm, and Rails already holds the three real amounts.
+            case BULK_CURRENCY_DEPOSIT -> BankingDepositAllCoinsProxyService.resumeConfirmDepositAllCoins(
+                    server, receipt.playerUuid(), receipt.operationId()
+            ).whenComplete((result, error) -> logOutcome(receipt.operationId(), result, error));
             // Milestone 10 Slice 2: a WITHDRAWAL receipt is either an item withdrawal or a
             // currency withdrawal, discriminated the same way DEPOSIT already is above --
             // exactly one of itemPayload or currencyAmount is ever present. A currency
