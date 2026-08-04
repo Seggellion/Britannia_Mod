@@ -362,6 +362,7 @@ public final class BankScreen extends Screen {
             // Milestone 15: likewise unreachable here -- this screen has been dead since the
             // Milestone 4 cutover. Exhaustiveness only, until Milestone 19 deletes the class.
             case INVENTORY_FULL -> CLEAN_REJECTION_MESSAGE;
+            case INSUFFICIENT_BALANCE -> CLEAN_REJECTION_MESSAGE;
         };
         refreshButtonStates();
     }

@@ -78,7 +78,13 @@ public record BankBoxLayout(
     public static final int HOTBAR_GAP = 4;
     public static final int ROW_HEIGHT = 20;
     public static final int ROW_GAP = 4;
-    /** Wide enough for "Silver"/"Copper" on a third of it -- 84 truncated them to "Silve"/"pper". */
+    /**
+     * In the wide arrangement the three denomination buttons are stacked as full-width rows, not
+     * placed side by side: a third of any credible column is too narrow for "Copper" (108/3 with
+     * gaps is ~33px against the label's ~46px), and the column is a vertical stack everywhere
+     * else -- amount, Back and Withdraw are already full-width rows. Compact mode keeps them side
+     * by side because there they share the full content width, where a third genuinely fits.
+     */
     public static final int CONTROL_COLUMN_WIDTH = 108;
 
     private static final int GRID_WIDTH = COLUMNS * BankGridGeometry.DEFAULT_CELL_PITCH;
@@ -225,15 +231,16 @@ public record BankBoxLayout(
             actionWidth = (contentWidth - ROW_GAP) / 2;
             y += ROW_HEIGHT;
         } else {
-            // A column beside the chest, top-aligned with the bank grid.
+            // A column beside the chest, top-aligned with the bank grid. Every control is a
+            // full-width row, the denominations included (see CONTROL_COLUMN_WIDTH's docs).
             int columnX = contentLeft + contentWidth + SECTION_GAP;
             amountBoxX = columnX;
             amountBoxY = bankGrid.top();
             amountBoxWidth = CONTROL_COLUMN_WIDTH;
             denominationY = amountBoxY + ROW_HEIGHT + ROW_GAP;
-            denominationWidth = (CONTROL_COLUMN_WIDTH - (ROW_GAP * 2)) / 3;
+            denominationWidth = CONTROL_COLUMN_WIDTH;
             actionX = columnX;
-            backY = denominationY + ROW_HEIGHT + ROW_GAP;
+            backY = denominationY + ((ROW_HEIGHT + ROW_GAP) * 3);
             withdrawY = backY + ROW_HEIGHT + ROW_GAP;
             actionWidth = CONTROL_COLUMN_WIDTH;
         }
@@ -266,10 +273,17 @@ public record BankBoxLayout(
         return chestLeft + chestWidth;
     }
 
-    /** Left edge of denomination button {@code index}, 0..2. */
+    /** Left edge of denomination button {@code index}, 0..2 -- side by side when compact. */
     public int denominationX(int index) {
-        int start = compact ? amountBoxX + amountBoxWidth + ROW_GAP : actionX;
-        return start + (index * (denominationWidth + ROW_GAP));
+        if (compact) {
+            return amountBoxX + amountBoxWidth + ROW_GAP + (index * (denominationWidth + ROW_GAP));
+        }
+        return actionX;
+    }
+
+    /** Top edge of denomination button {@code index}, 0..2 -- stacked when wide. */
+    public int denominationY(int index) {
+        return compact ? denominationY : denominationY + (index * (ROW_HEIGHT + ROW_GAP));
     }
 
     /** Back sits left of Withdraw when compact, and above it otherwise. */

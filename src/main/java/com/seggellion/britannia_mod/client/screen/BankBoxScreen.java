@@ -98,6 +98,9 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     /** Milestone 15: live once something is selected. */
     @Nullable
     private BankActionButton withdrawButton;
+    /** Milestone 16: keyed by denomination so each judges its own affordability. */
+    private final java.util.EnumMap<com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination, Button> currencyButtons =
+            new java.util.EnumMap<>(com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination.class);
 
     private BankGridScroll scroll = BankGridScroll.TOP;
 
@@ -152,22 +155,72 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         );
         amountBox.setMaxLength(10);
         amountBox.setValue(carried);
-        // Milestone 16 makes currency withdrawal live. Editable now so the field's size and
-        // position are reviewable, but nothing reads it yet.
-        amountBox.setEditable(false);
         addRenderableWidget(amountBox);
 
+        // Milestone 16: live. One field, three send buttons -- pressing Gold withdraws the typed
+        // amount of gold, the legacy screen's own idiom. Each button judges affordability against
+        // its OWN denomination's balance, so the three can legitimately disagree: 800 typed with
+        // 900 silver and 3 gold lights Silver and not Gold.
+        currencyButtons.clear();
+        com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination[] denominations =
+                com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination.values();
         String[] keys = {CurrencyItemRegistry.GOLD_KEY, CurrencyItemRegistry.SILVER_KEY, CurrencyItemRegistry.COPPER_KEY};
         for (int index = 0; index < keys.length; index++) {
+            final String wireKey = keys[index];
+            final com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination denomination =
+                    denominations[index];
             Button button = Button.builder(
-                            Component.translatable("screen.britannia_mod.bank.box.withdraw." + keys[index]),
-                            ignored -> { }
+                            Component.translatable("screen.britannia_mod.bank.box.withdraw." + wireKey),
+                            ignored -> sendCurrencyWithdrawal(wireKey, denomination)
                     )
-                    .bounds(layout.denominationX(index), layout.denominationY(), layout.denominationWidth(), BankBoxLayout.ROW_HEIGHT)
+                    .bounds(layout.denominationX(index), layout.denominationY(index), layout.denominationWidth(), BankBoxLayout.ROW_HEIGHT)
                     .build();
             button.active = false;
+            currencyButtons.put(denomination, button);
             addRenderableWidget(button);
         }
+    }
+
+    /**
+     * Milestone 16: the last dead controls come alive, in the shape every mutation before them
+     * established -- revalidate at press rather than trusting the button's enabled state, claim
+     * the session lock before the packet, send the existing payload unchanged, and let the
+     * refresh push or the result payload say what happened. Currency withdrawal deliberately does
+     * not touch the bank-grid selection (design §9.7): coins are a balance, not a stored item.
+     */
+    private void sendCurrencyWithdrawal(
+            String wireKey, com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination denomination
+    ) {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (session == null || amountBox == null) return;
+
+        com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm.Validation validation =
+                com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm.validate(
+                        amountBox.getValue(),
+                        com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm
+                                .balanceOf(session, denomination));
+        if (!validation.valid()) return;
+        if (!session.beginPending(
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL)) {
+            return;
+        }
+        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
+                new com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload(
+                        session.tellerEntityId(), wireKey, validation.amount()));
+    }
+
+    /** Per-denomination affordability plus the global pending lock, mirrored every frame. */
+    private void refreshCurrencyButtons(ClientBankingSession session) {
+        if (amountBox == null) return;
+        boolean pending = session.isMutationPending();
+        for (var entry : currencyButtons.entrySet()) {
+            entry.getValue().active = !pending
+                    && com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm.validate(
+                            amountBox.getValue(),
+                            com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm
+                                    .balanceOf(session, entry.getKey())).valid();
+        }
+        amountBox.setEditable(!pending);
     }
 
     private void buildActions() {
@@ -209,6 +262,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 new com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload(
                         session.tellerEntityId(), session.selectedStoredItem()));
         refreshWithdrawState(session);
+        refreshCurrencyButtons(session);
     }
 
     /**
@@ -315,6 +369,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         );
 
         refreshWithdrawState(session);
+        refreshCurrencyButtons(session);
 
         // Milestone 12: the source-changed watchdog runs every frame, and the drag visuals draw
         // last so the ghost rides above everything. Tooltips are suppressed while dragging --

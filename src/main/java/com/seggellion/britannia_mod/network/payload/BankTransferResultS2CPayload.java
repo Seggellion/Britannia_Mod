@@ -99,7 +99,16 @@ public record BankTransferResultS2CPayload(Operation operation, Kind kind) imple
          * rejection in the whole system: drop something and press the button again. Appended,
          * never inserted -- both enums travel by ordinal.
          */
-        INVENTORY_FULL
+        INVENTORY_FULL,
+        /**
+         * Bank interface rebuild, Milestone 16: the account's balance in the requested
+         * denomination cannot cover the withdrawal. Design §15's "insufficient balance" as a
+         * server truth -- until now it existed only as the client's own pre-check against a
+         * possibly-stale snapshot (the Milestone 0 §4.2 note), and the real refusal arrived as
+         * the generic rejection. A modified client that skips the pre-check now gets the same
+         * readable answer an honest one shows itself.
+         */
+        INSUFFICIENT_BALANCE
     }
 
     public static final ResourceLocation TYPE_ID =

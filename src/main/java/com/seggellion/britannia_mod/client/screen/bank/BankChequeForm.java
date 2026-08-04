@@ -101,32 +101,21 @@ public final class BankChequeForm {
             return Validation.rejected(BankStatusPresenter.NO_DENOMINATION_SELECTED);
         }
 
-        String trimmed = rawAmount.trim();
-        if (trimmed.isEmpty()) {
+        if (BankAmountInput.isBlank(rawAmount)) {
             return Validation.rejected(BankStatusPresenter.EMPTY_AMOUNT);
         }
 
-        // ASCII digits only, checked before parsing rather than left to Long.parseLong.
-        //
-        // parseLong accepts any Unicode decimal digit -- it routes through Character.digit -- so
-        // Arabic-Indic "٥٠٠" parses happily as 500, as would a string mixing scripts. The value
-        // would even be right, but a field whose accepted input depends on which digit systems
-        // the JDK recognises is not a contract anyone can reason about, and it silently differs
-        // from the plain-ASCII amounts every other banking field takes. Being explicit costs three
-        // lines and makes "what may I type here" answerable.
-        if (!isAsciiDigits(trimmed)) {
+        // Milestone 16 extracted the digit rules into BankAmountInput, shared with the currency
+        // controls -- one definition of "what may I type here". See that class for why ASCII-only
+        // and why past-long-range reads as too large rather than malformed.
+        Long parsed = BankAmountInput.parse(rawAmount);
+        if (parsed == null) {
             return Validation.rejected(BankStatusPresenter.INVALID_AMOUNT);
         }
-
-        final long entered;
-        try {
-            // Parsed as long so that a value above int range reports as too large rather than
-            // as malformed -- "1000000000000" is a number, just not one we can issue.
-            entered = Long.parseLong(trimmed);
-        } catch (NumberFormatException notANumber) {
-            // Reachable for a run of digits too long for a long, which isAsciiDigits allows.
+        if (parsed == BankAmountInput.TOO_LARGE) {
             return Validation.rejected(BankStatusPresenter.AMOUNT_TOO_LARGE);
         }
+        final long entered = parsed;
 
         // Zero and negative are the same message: an amount has to be a positive count of coins.
         if (entered <= 0L) {
@@ -147,21 +136,6 @@ public final class BankChequeForm {
         }
 
         return Validation.ok((int) entered);
-    }
-
-    /**
-     * True for a non-empty run of {@code '0'}–{@code '9'} and nothing else -- no sign, no
-     * separators, no other digit systems. A leading {@code '-'} therefore fails here rather than
-     * parsing to a negative, which is why the zero-or-negative check below it only ever has to
-     * catch a literal zero.
-     */
-    private static boolean isAsciiDigits(String value) {
-        if (value.isEmpty()) return false;
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c < '0' || c > '9') return false;
-        }
-        return true;
     }
 
     /** The account's balance in {@code denomination}, read from the session. */

@@ -279,6 +279,29 @@ public final class BankingTransferPacketService {
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
                                 BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
                         );
+                        // Milestone 16: the two refusals a player can act on keep their identity,
+                        // exactly as Milestone 15 did for the item path. Everything else stays
+                        // generic -- it asserts nothing actionable.
+                        case BankingCurrencyWithdrawalResult.Rejected rejected -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                rejected.outcome() == BankingTransferOutcome.INSUFFICIENT_BALANCE
+                                        ? BankTransferResultS2CPayload.Kind.INSUFFICIENT_BALANCE
+                                        : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        case BankingCurrencyWithdrawalResult.Aborted aborted -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                aborted.reason() == BankingCurrencyWithdrawalAbortReason.INSUFFICIENT_CAPACITY
+                                        ? BankTransferResultS2CPayload.Kind.INVENTORY_FULL
+                                        : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        // A full pack is normally caught by the pre-prepare local check, not the
+                        // post-prepare abort; both are the same fact and must read the same.
+                        case BankingCurrencyWithdrawalResult.RejectedLocally rejectedLocally -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                rejectedLocally.reason() == BankingCurrencyWithdrawalLocalRejectionReason.INSUFFICIENT_CAPACITY
+                                        ? BankTransferResultS2CPayload.Kind.INVENTORY_FULL
+                                        : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
                         default -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
                                 BankTransferResultS2CPayload.Kind.CLEAN_REJECTION

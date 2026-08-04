@@ -202,6 +202,20 @@ class BankStatusPresenterTest {
         }) {
             keys.add(status.translationKey());
         }
-        assertEquals(fromResults + 7, keys.size(), "a client status collided with a server one");
+        // +6, not +7: the wire INSUFFICIENT_BALANCE and the client pre-check status deliberately
+        // share one sentence (Milestone 16) -- one message for one fact, whichever side caught it
+        // first. Every other client status must stay collision-free.
+        assertEquals(fromResults + 6, keys.size(), "an unintended key collision between client and server statuses");
+    }
+
+    @Test
+    void theWireInsufficientBalanceSharesTheSentenceButNotTheSeverity() {
+        // The client pre-check is VALIDATION -- fix the form and try again. The server's answer is
+        // a real REJECTION: the request was made and refused. Same words, different weight.
+        BankStatusPresenter.Status wire =
+                BankStatusPresenter.forResult(Operation.WITHDRAWAL, Kind.INSUFFICIENT_BALANCE);
+        assertEquals(BankStatusPresenter.INSUFFICIENT_BALANCE.translationKey(), wire.translationKey());
+        assertEquals(BankStatusPresenter.Severity.REJECTION, wire.severity());
+        assertEquals(BankStatusPresenter.Severity.VALIDATION, BankStatusPresenter.INSUFFICIENT_BALANCE.severity());
     }
 }

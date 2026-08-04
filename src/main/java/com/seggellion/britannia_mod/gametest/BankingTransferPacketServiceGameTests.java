@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.bank.item.BankItemFingerprint;
 import com.seggellion.britannia_mod.bank.item.BankItemSchemaVersion;
 import com.seggellion.britannia_mod.bank.item.BankItemWeight;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
@@ -18,6 +19,9 @@ import com.seggellion.britannia_mod.quest.network.QuestModels;
 import com.seggellion.britannia_mod.service.banking.BankingCancelResult;
 import com.seggellion.britannia_mod.service.banking.BankingConfirmResult;
 import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositClientPort;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyWithdrawalClientPort;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyWithdrawalPrepareResult;
+import com.seggellion.britannia_mod.service.banking.BankingCurrencyWithdrawalProxyService;
 import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositPrepareRequest;
 import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositPrepareResult;
 import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositProxyService;
@@ -220,6 +224,162 @@ public final class BankingTransferPacketServiceGameTests {
         } catch (RuntimeException | Error propagate) {
             cleanUp();
             throw propagate;
+        }
+    }
+
+    // ---------- Milestone 16: currency withdrawal's two actionable refusals ----------
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void currencyWithdrawalInsufficientBalanceReportsItsOwnKind(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        FakeCurrencyWithdrawalClient client = new FakeCurrencyWithdrawalClient();
+        client.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingCurrencyWithdrawalPrepareResult.Rejected(BankingTransferOutcome.INSUFFICIENT_BALANCE, false));
+        BankingCurrencyWithdrawalProxyService.useClientForTesting(client);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleCurrencyWithdrawal(
+                    player, new BankCurrencyWithdrawalRequestC2SPayload(teller.getId(), "gold", 500));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.INSUFFICIENT_BALANCE,
+                        "expected INSUFFICIENT_BALANCE, got " + resultSender.calls.get(0).kind());
+                check(!refreshed.get(), "a refusal must not refresh");
+                cleanUpCurrencyWithdrawal();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUpCurrencyWithdrawal();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void currencyWithdrawalIntoAFullPackReportsInventoryFullWithoutARoundTrip(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        for (int slot = 0; slot < 36; slot++) {
+            player.getInventory().setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+        }
+
+        // The local pre-check must catch this before prepare is ever called; the fake's default
+        // throwing behaviours are the assertion that no round trip was spent.
+        FakeCurrencyWithdrawalClient client = new FakeCurrencyWithdrawalClient();
+        BankingCurrencyWithdrawalProxyService.useClientForTesting(client);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleCurrencyWithdrawal(
+                    player, new BankCurrencyWithdrawalRequestC2SPayload(teller.getId(), "copper", 40));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.INVENTORY_FULL,
+                        "expected INVENTORY_FULL, got " + resultSender.calls.get(0).kind());
+                check(client.cancelRequests.isEmpty(), "nothing was prepared, so nothing should be cancelled");
+                check(player.getInventory().getItem(0).getItem() == Items.COBBLESTONE,
+                        "the player's inventory must be untouched");
+                check(!refreshed.get(), "a refusal must not refresh");
+                cleanUpCurrencyWithdrawal();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUpCurrencyWithdrawal();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void currencyWithdrawalLosingCapacityMidFlightCancelsAndReportsInventoryFull(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        // The race the second capacity check exists for: the pack has room when prepare leaves,
+        // and none by the time the coins come back. Holding the prepare future open makes the
+        // ordering deterministic -- the fill below is guaranteed to land between the two checks.
+        CompletableFuture<BankingCurrencyWithdrawalPrepareResult> pendingPrepare = new CompletableFuture<>();
+        FakeCurrencyWithdrawalClient client = new FakeCurrencyWithdrawalClient();
+        client.prepareBehavior = () -> pendingPrepare;
+        client.cancelBehavior = () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        BankingCurrencyWithdrawalProxyService.useClientForTesting(client);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleCurrencyWithdrawal(
+                    player, new BankCurrencyWithdrawalRequestC2SPayload(teller.getId(), "copper", 40));
+
+            for (int slot = 0; slot < 36; slot++) {
+                player.getInventory().setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+            }
+            pendingPrepare.complete(new BankingCurrencyWithdrawalPrepareResult.Success(UUID.randomUUID()));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.INVENTORY_FULL,
+                        "expected INVENTORY_FULL, got " + resultSender.calls.get(0).kind());
+                check(client.cancelRequests.size() == 1,
+                        "the reservation must be cancelled exactly once, got " + client.cancelRequests.size());
+                check(player.getInventory().getItem(0).getItem() == Items.COBBLESTONE,
+                        "the player's inventory must be untouched");
+                check(!refreshed.get(), "an aborted withdrawal must not refresh");
+                cleanUpCurrencyWithdrawal();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUpCurrencyWithdrawal();
+            throw propagate;
+        }
+    }
+
+    private static void cleanUpCurrencyWithdrawal() {
+        BankingCurrencyWithdrawalProxyService.resetClientForTesting();
+        BankingCurrencyWithdrawalProxyService.resetInFlightTrackingForTesting();
+        BankingTransferPacketService.resetResultSenderForTesting();
+        BankingProxyService.resetAccountScreenSenderForTesting();
+        ServiceNpcRegistryCache.clear();
+    }
+
+    private static final class FakeCurrencyWithdrawalClient implements BankingCurrencyWithdrawalClientPort {
+        java.util.function.Supplier<CompletableFuture<BankingCurrencyWithdrawalPrepareResult>> prepareBehavior =
+                () -> { throw new IllegalStateException("prepareCurrencyWithdrawal() was not expected in this test"); };
+        java.util.function.Supplier<CompletableFuture<BankingConfirmResult>> confirmBehavior =
+                () -> { throw new IllegalStateException("confirm() was not expected in this test"); };
+        java.util.function.Supplier<CompletableFuture<BankingCancelResult>> cancelBehavior =
+                () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        final List<BankingOperationRequest> cancelRequests = new CopyOnWriteArrayList<>();
+
+        @Override
+        public CompletableFuture<BankingCurrencyWithdrawalPrepareResult> prepareCurrencyWithdrawal(
+                MinecraftServer server, com.seggellion.britannia_mod.service.banking.BankingCurrencyWithdrawalPrepareRequest request
+        ) {
+            return prepareBehavior.get();
+        }
+
+        @Override
+        public CompletableFuture<BankingConfirmResult> confirm(MinecraftServer server, BankingOperationRequest request) {
+            return confirmBehavior.get();
+        }
+
+        @Override
+        public CompletableFuture<BankingCancelResult> cancel(MinecraftServer server, BankingOperationRequest request) {
+            cancelRequests.add(request);
+            return cancelBehavior.get();
         }
     }
 

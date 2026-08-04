@@ -20,18 +20,22 @@ import com.seggellion.britannia_mod.component.BankChequeData;
  */
 public final class BankChequeTint {
 
+    // All four are full ARGB with an opaque alpha byte: 1.21's ItemRenderer reads the tint's
+    // alpha and passes it to the vertex consumer, so a bare 0xRRGGBB renders the layer at
+    // alpha 0 -- an invisible item, not an untinted one.
+
     /** Warm yellow. */
-    public static final int GOLD = 0xFFD24A;
+    public static final int GOLD = 0xFFFFD24A;
     /** Neutral grey, deliberately lighter than the parchment so it reads as metal rather than dirt. */
-    public static final int SILVER = 0xC8CDD4;
+    public static final int SILVER = 0xFFC8CDD4;
     /** Orange-brown. */
-    public static final int COPPER = 0xC87A3C;
+    public static final int COPPER = 0xFFC87A3C;
 
     /**
-     * White, which multiplies to leave the texture untouched. Used for a key that is not one of
-     * the three -- an untinted cheque is a better failure than a black one.
+     * Opaque white, which multiplies to leave the texture untouched. Used for a key that is not
+     * one of the three -- an untinted cheque is a better failure than a black one.
      */
-    public static final int UNTINTED = 0xFFFFFF;
+    public static final int UNTINTED = 0xFFFFFFFF;
 
     private BankChequeTint() {
     }

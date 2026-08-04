@@ -122,6 +122,10 @@ public final class BankStatusPresenter {
             case BALANCE_CAPACITY_EXCEEDED -> new Status(ROOT + "balance_capacity_exceeded", Severity.REJECTION);
             // Milestone 15: the most actionable rejection there is -- drop something, try again.
             case INVENTORY_FULL -> new Status(ROOT + "inventory_full", Severity.REJECTION);
+            // Milestone 16: the server truth behind what was previously only a client pre-check.
+            // Deliberately the same sentence as the client-side INSUFFICIENT_BALANCE status --
+            // the player should read one message for one fact, whichever side caught it first.
+            case INSUFFICIENT_BALANCE -> new Status(ROOT + "insufficient_balance", Severity.REJECTION);
         };
     }
 

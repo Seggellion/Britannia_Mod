@@ -112,7 +112,7 @@ public class ClientOnlyItemRegistry {
         // that funded it, so gold, silver and copper cheques are told apart at a glance. The
         // mapping lives in BankChequeTint so it can be tested; this only wires it up.
         event.register((stack, layer) -> {
-            if (layer != 0) return 0xFFFFFF;
+            if (layer != 0) return BankChequeTint.UNTINTED;
             return BankChequeTint.forData(stack.get(DataComponentRegistry.BANK_CHEQUE_DATA.get()));
         }, ItemRegistry.BANK_CHEQUE.get());
     }

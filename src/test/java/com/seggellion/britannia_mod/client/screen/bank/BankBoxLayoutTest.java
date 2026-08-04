@@ -208,15 +208,42 @@ class BankBoxLayoutTest {
 
     @Test
     void keepsTheThreeDenominationButtonsSeparatedAndInsideThePanel() {
+        // Side by side across the content width when compact; stacked as full-width rows in the
+        // wide column, where a third of 108px cannot hold "Copper" without truncating it.
         for (int width : new int[]{W_1920_SCALE_2, W_1280_SCALE_2, W_1280_SCALE_3, W_1024_SCALE_4}) {
             BankBoxLayout l = layout(width, 400, 40);
-            for (int i = 0; i < 2; i++) {
-                assertTrue(l.denominationX(i) + l.denominationWidth() <= l.denominationX(i + 1),
-                        "denomination buttons overlap at width " + width);
+            if (l.compact()) {
+                for (int i = 0; i < 2; i++) {
+                    assertTrue(l.denominationX(i) + l.denominationWidth() <= l.denominationX(i + 1),
+                            "denomination buttons overlap at width " + width);
+                }
+            } else {
+                assertEquals(BankBoxLayout.CONTROL_COLUMN_WIDTH, l.denominationWidth(),
+                        "wide-mode denominations are full column rows at width " + width);
+                for (int i = 0; i < 2; i++) {
+                    assertTrue(l.denominationY(i) + BankBoxLayout.ROW_HEIGHT <= l.denominationY(i + 1),
+                            "stacked denomination buttons overlap at width " + width);
+                }
             }
             assertTrue(l.denominationX(2) + l.denominationWidth() <= l.panelRight(),
                     "denomination buttons past the panel at width " + width);
             assertTrue(l.denominationWidth() > 0, "zero-width denomination button at " + width);
+        }
+    }
+
+    @Test
+    void theWideControlColumnNeverOutgrowsThePanel() {
+        // The stacked denominations made the column six rows tall; the panel's height is set by
+        // the grids, so the column must fit under it at the tightest wide screens too.
+        for (int width = 180; width <= 1200; width += 4) {
+            for (int height = 200; height <= 700; height += 20) {
+                BankBoxLayout l = layout(width, height, 40);
+                if (l.compact()) continue;
+                assertTrue(l.withdrawY() + BankBoxLayout.ROW_HEIGHT <= l.panelBottom(),
+                        "control column past the panel at " + width + "x" + height);
+                assertTrue(l.denominationY(2) + BankBoxLayout.ROW_HEIGHT <= l.backY(),
+                        "denominations ran into Back at " + width + "x" + height);
+            }
         }
     }
 

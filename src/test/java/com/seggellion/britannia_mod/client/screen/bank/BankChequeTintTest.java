@@ -61,18 +61,20 @@ class BankChequeTintTest {
 
     @Test
     void anUnknownKeyLeavesTheArtworkUntintedRatherThanBlack() {
-        // White multiplies to leave the texture as drawn. A zero would render the cheque black,
-        // which looks like a rendering fault rather than an unrecognised denomination.
-        assertEquals(0xFFFFFF, BankChequeTint.forCurrencyKey("platinum"));
+        // Opaque white multiplies to leave the texture as drawn. A zero would render the cheque
+        // black, which looks like a rendering fault rather than an unrecognised denomination.
+        assertEquals(0xFFFFFFFF, BankChequeTint.forCurrencyKey("platinum"));
         assertNotEquals(0, BankChequeTint.forCurrencyKey("platinum"));
     }
 
     @Test
-    void everyTintIsOpaqueRgbWithNoStrayAlpha() {
-        // An ItemColor's return value is read as 0xRRGGBB; a stray high byte would multiply the
-        // texture by an unintended alpha.
+    void everyTintCarriesAnOpaqueAlphaByte() {
+        // 1.21's ItemRenderer reads FastColor.ARGB32.alpha(tint) and hands it to the vertex
+        // consumer, so a bare 0xRRGGBB draws the layer at alpha 0 -- an INVISIBLE cheque. This
+        // test's previous version asserted the exact opposite and enforced that bug; the first
+        // in-game issuance delivered a cheque nobody could see.
         for (int tint : new int[]{BankChequeTint.GOLD, BankChequeTint.SILVER, BankChequeTint.COPPER, BankChequeTint.UNTINTED}) {
-            assertEquals(0, tint >>> 24, "unexpected high byte in " + Integer.toHexString(tint));
+            assertEquals(0xFF, tint >>> 24, "non-opaque alpha in " + Integer.toHexString(tint));
         }
     }
 }
