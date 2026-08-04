@@ -380,11 +380,18 @@ private static MutableComponent uoMessage(String text) {
      */
     public static void handleBankAccountOpened(BankAccountOpenedS2CPayload payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
-            ClientBankingSession.applyAccountOpened(payload);
             Minecraft minecraft = Minecraft.getInstance();
             boolean bankingOpen = minecraft.screen instanceof BankingScreen;
-            if (BankNavigation.refreshRoute(bankingOpen) == BankNavigation.RefreshRoute.OPEN_MAIN) {
-                minecraft.setScreen(new BankMainScreen());
+            switch (BankNavigation.refreshRoute(bankingOpen, payload.refresh())) {
+                // Milestone 17: a late refresh after the player closed banking. Not applied to
+                // the session either -- that would resurrect a session for an interaction the
+                // player ended, and the next genuine open re-fetches everything anyway.
+                case DISCARD -> { }
+                case OPEN_MAIN -> {
+                    ClientBankingSession.applyAccountOpened(payload);
+                    minecraft.setScreen(new BankMainScreen());
+                }
+                case KEEP_CURRENT -> ClientBankingSession.applyAccountOpened(payload);
             }
         });
     }

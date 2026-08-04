@@ -220,6 +220,7 @@ public final class RailsApiUrlResolver {
         BANKING_CURRENCY_WITHDRAWAL_PREPARE("banking/currency/withdrawal/prepare"),
         BANKING_CHEQUE_ISSUANCE_PREPARE("banking/cheque/issue/prepare"),
         BANKING_CHEQUE_REDEEM("banking/cheque/redeem"),
+        BANKING_CHEQUE_REDEEM_STORED("banking/cheque/redeem_stored"),
         BANKING_CONFIRM("banking/confirm"),
         BANKING_CANCEL("banking/cancel"),
         CITY_FOOD_AND_WOOD_SUPPLY("cities/:city/food_and_wood_supply"),

@@ -11,11 +11,13 @@ import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
 import com.seggellion.britannia_mod.quest.QuestRewardService;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
+import com.seggellion.britannia_mod.service.banking.BankItemSummary;
 import com.seggellion.britannia_mod.service.banking.BankingCancelResult;
 import com.seggellion.britannia_mod.service.banking.BankingConfirmResult;
 import com.seggellion.britannia_mod.service.banking.BankingCurrencyDepositClientPort;
@@ -383,6 +385,194 @@ public final class BankingTransferPacketServiceGameTests {
         }
     }
 
+    // ---------- Milestone 17: the remaining refusals with a real answer ----------
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void depositOfACoinHiddenInAContainerReportsIneligibleItem(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        // Top-level identity routes this to the ITEM path (a container holding coins is not a
+        // coin stack -- the router's own documented boundary); the eligibility check then finds
+        // the nested coin. The throwing fake proves the refusal spends no round trip.
+        ItemStack shulker = new ItemStack(Items.SHULKER_BOX);
+        shulker.set(net.minecraft.core.component.DataComponents.CONTAINER,
+                net.minecraft.world.item.component.ItemContainerContents.fromItems(
+                        List.of(new ItemStack(ItemRegistry.GOLD_COIN.get(), 3))));
+        player.getInventory().setItem(SLOT, shulker);
+
+        BankingDepositProxyService.useClientForTesting(new FakeDepositClient());
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.INELIGIBLE_ITEM,
+                        "expected INELIGIBLE_ITEM, got " + resultSender.calls.get(0).kind());
+                check(player.getInventory().getItem(SLOT).getItem() == Items.SHULKER_BOX,
+                        "a refused item must stay in the slot");
+                check(!refreshed.get(), "a refusal must not refresh");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void depositRefusedForVaultWeightReportsBankCapacityExceeded(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        FakeDepositClient depositClient = new FakeDepositClient();
+        depositClient.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingDepositPrepareResult.Rejected(BankingTransferOutcome.CAPACITY_EXCEEDED, false));
+        BankingDepositProxyService.useClientForTesting(depositClient);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.BANK_CAPACITY_EXCEEDED,
+                        "expected BANK_CAPACITY_EXCEEDED, got " + resultSender.calls.get(0).kind());
+                check(player.getInventory().getItem(SLOT).getItem() == Items.DIAMOND,
+                        "a prepare rejection must leave the item in the slot");
+                check(!refreshed.get(), "a refusal must not refresh");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void withdrawalOfAnAlreadyGoneItemReportsStoredItemUnavailable(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        // The Milestone 18 concurrency case in miniature: the public id was real when this
+        // client's grid drew it, and Rails says it is already gone.
+        FakeWithdrawalClient withdrawalClient = new FakeWithdrawalClient();
+        withdrawalClient.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingWithdrawalPrepareResult.Rejected(BankingTransferOutcome.ITEM_NOT_FOUND, false));
+        BankingWithdrawalProxyService.useClientForTesting(withdrawalClient);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleWithdrawal(
+                    player, new BankWithdrawalRequestC2SPayload(teller.getId(), UUID.randomUUID()));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.STORED_ITEM_UNAVAILABLE,
+                        "expected STORED_ITEM_UNAVAILABLE, got " + resultSender.calls.get(0).kind());
+                check(!refreshed.get(), "a refusal must not refresh");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    // ---------- Milestone 17: the payload knows why it was sent ----------
+
+    /** Records the five-argument production form, which the four-argument lambdas cannot see. */
+    private static final class RefreshFlagRecordingSender implements BankingProxyService.AccountScreenSender {
+        final List<Boolean> flags = new CopyOnWriteArrayList<>();
+
+        @Override
+        public void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account,
+                         List<BankItemSummary> bankItems) {
+            throw new IllegalStateException("production always calls the five-argument form");
+        }
+
+        @Override
+        public void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account,
+                         List<BankItemSummary> bankItems, boolean refresh) {
+            flags.add(refresh);
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aConfirmedMutationsRefreshIsFlaggedAsARefresh(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        FakeDepositClient depositClient = new FakeDepositClient();
+        depositClient.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingDepositPrepareResult.Success(UUID.randomUUID(), UUID.randomUUID()));
+        depositClient.confirmBehavior = () -> CompletableFuture.completedFuture(new BankingConfirmResult.Confirmed());
+        BankingDepositProxyService.useClientForTesting(depositClient);
+
+        wireOpenRefresh(new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 5.0, 0, 0, 0, 2));
+        RefreshFlagRecordingSender sender = new RefreshFlagRecordingSender();
+        BankingProxyService.useAccountScreenSenderForTesting(sender);
+        BankingTransferPacketService.useResultSenderForTesting(new FakeResultSender());
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            helper.succeedWhen(() -> {
+                check(sender.flags.size() == 1, "expected one account push, got " + sender.flags);
+                check(sender.flags.get(0), "a post-mutation push must be flagged refresh=true, or a client"
+                        + " that closed banking mid-flight will have the interface re-open uninvited");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aGenuineBankOpenIsNotFlaggedAsARefresh(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        wireOpenRefresh(new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 2));
+        RefreshFlagRecordingSender sender = new RefreshFlagRecordingSender();
+        BankingProxyService.useAccountScreenSenderForTesting(sender);
+
+        try {
+            BankingProxyService.handle(player, teller);
+
+            helper.succeedWhen(() -> {
+                check(sender.flags.size() == 1, "expected one account push, got " + sender.flags);
+                check(!sender.flags.get(0), "a player-initiated open must be flagged refresh=false,"
+                        + " or banking would never open at all");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
     // ---------- Clean rejection sends the result payload, never a refresh ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
@@ -448,9 +638,11 @@ public final class BankingTransferPacketServiceGameTests {
             // display -- BankScreen's own graying-out is a UX nicety only, never the real boundary.
             BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
 
-            check(resultSender.calls.size() == 1, "expected exactly one clean-rejection result");
-            check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.CLEAN_REJECTION,
-                    "an ineligible (quest-bound) item must be cleanly rejected, not silently accepted");
+            check(resultSender.calls.size() == 1, "expected exactly one rejection result");
+            // Milestone 17: the refusal keeps its identity now -- INELIGIBLE_ITEM, not the
+            // generic rejection. The test's actual claim is unchanged: rejected, never accepted.
+            check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.INELIGIBLE_ITEM,
+                    "an ineligible (quest-bound) item must be rejected as INELIGIBLE_ITEM, not silently accepted");
             check(depositClient.prepareRequests.isEmpty(), "prepare must never be called for an ineligible item -- rejected locally first");
             check(!player.getInventory().getItem(SLOT).isEmpty(),
                     "the ineligible item must remain untouched in the player's inventory");
@@ -613,9 +805,12 @@ public final class BankingTransferPacketServiceGameTests {
                     player, new BankWithdrawalRequestC2SPayload(teller.getId(), UUID.randomUUID()));
 
             helper.succeedWhen(() -> {
-                check(resultSender.calls.size() == 1, "expected exactly one clean-rejection result");
-                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.CLEAN_REJECTION,
-                        "an unknown bank item public id must be cleanly rejected: " + resultSender.calls.get(0).kind());
+                check(resultSender.calls.size() == 1, "expected exactly one rejection result");
+                // Milestone 17: ITEM_NOT_FOUND now keeps its identity as STORED_ITEM_UNAVAILABLE
+                // rather than the generic rejection. The test's actual claim is unchanged:
+                // rejected by Rails' own guarantee, nothing conjured.
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.STORED_ITEM_UNAVAILABLE,
+                        "an unknown bank item public id must reject as STORED_ITEM_UNAVAILABLE: " + resultSender.calls.get(0).kind());
                 check(player.getInventory().isEmpty(), "no item must have been conjured for an unknown bank item id");
                 cleanUp();
             });

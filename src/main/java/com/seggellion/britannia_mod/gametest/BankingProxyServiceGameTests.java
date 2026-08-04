@@ -394,7 +394,7 @@ public final class BankingProxyServiceGameTests {
         ));
         AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
         BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) ->
-                sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems)));
+                sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems, false)));
 
         ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
         npc.setPersonalName("Aldric the Banker");
@@ -440,7 +440,7 @@ public final class BankingProxyServiceGameTests {
             ));
             AtomicReference<BankAccountOpenedS2CPayload> sent = new AtomicReference<>();
             BankingProxyService.useAccountScreenSenderForTesting((player, teller, sentAccount, sentBankItems) ->
-                    sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems)));
+                    sent.set(BankAccountOpenedS2CPayload.create(teller, sentAccount, sentBankItems, false)));
 
             ServiceNpcEntity npc = spawnBankTeller(helper, new BlockPos(1, 1, 1));
             npc.setPersonalName("Isolde the Banker");

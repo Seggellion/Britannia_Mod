@@ -363,6 +363,8 @@ public final class BankScreen extends Screen {
             // Milestone 4 cutover. Exhaustiveness only, until Milestone 19 deletes the class.
             case INVENTORY_FULL -> CLEAN_REJECTION_MESSAGE;
             case INSUFFICIENT_BALANCE -> CLEAN_REJECTION_MESSAGE;
+            // Milestone 17: likewise -- exhaustiveness only, until Milestone 19 deletes the class.
+            case INELIGIBLE_ITEM, BANK_CAPACITY_EXCEEDED, STORED_ITEM_UNAVAILABLE -> CLEAN_REJECTION_MESSAGE;
         };
         refreshButtonStates();
     }

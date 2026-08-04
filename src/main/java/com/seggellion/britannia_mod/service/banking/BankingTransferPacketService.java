@@ -4,12 +4,13 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.network.payload.BankChequeIssuanceRequestC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BankChequeRedemptionRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankCurrencyWithdrawalRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload;
+import com.seggellion.britannia_mod.network.payload.BankStoredChequeRedemptionRequestC2SPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload;
-import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -62,17 +63,18 @@ public final class BankingTransferPacketService {
     }
 
     /**
-     * Milestone 11 Slice 2: one deposit packet, THREE protocols -- the routing decision is made
-     * HERE, server-side, from the live slot's own contents, never from anything the client
-     * claimed. A bare coin stack ({@link CurrencyItemRegistry#isCurrencyStack}: top-level item
-     * identity only -- a container holding coins is not a coin stack) routes to the currency
-     * balance protocol; a {@link ItemRegistry#BANK_CHEQUE} stack routes to cheque redemption
-     * (ADR-016: deposit-shaped, the same double-click-to-select-then-Deposit gesture currency
-     * already uses -- see {@code BankScreen}'s own docs); everything else takes the Milestone 9
-     * item path unchanged. The item path's own {@code CURRENCY} eligibility rejection is
-     * deliberately untouched underneath: if a coin stack (or a cheque) ever reached it directly
-     * (it cannot through this router), it still rejects cleanly -- the redirect lives in this
-     * dispatch layer, not in a weakened eligibility rule.
+     * Milestone 11 Slice 2, amended by the Milestone 17 gate corrective: one deposit packet,
+     * TWO protocols -- the routing decision is made HERE, server-side, from the live slot's own
+     * contents, never from anything the client claimed. A bare coin stack ({@link
+     * CurrencyItemRegistry#isCurrencyStack}: top-level item identity only -- a container holding
+     * coins is not a coin stack) routes to the currency balance protocol; everything else,
+     * <b>cheques now included</b>, takes the Milestone 9 item path. Cheques routed to redemption
+     * here originally (ADR-016); the owner overrode that at the Milestone 17 gate so players can
+     * store cheques in the Bank Box -- cashing arrives via {@link
+     * BankChequeRedemptionRequestC2SPayload} instead, an explicit gesture. The item path's own
+     * {@code CURRENCY} eligibility rejection is deliberately untouched underneath: if a coin
+     * stack ever reached it directly (it cannot through this router), it still rejects cleanly
+     * -- the redirect lives in this dispatch layer, not in a weakened eligibility rule.
      *
      * <p>The slot is read here purely to pick a protocol; whichever proxy service receives the
      * dispatch re-reads and re-validates the slot from scratch as its own step 1, so a swap
@@ -88,10 +90,10 @@ public final class BankingTransferPacketService {
             handleCurrencyDeposit(player, teller, payload.slotIndex());
             return;
         }
-        if (!liveSlot.isEmpty() && liveSlot.getItem() == ItemRegistry.BANK_CHEQUE.get()) {
-            handleChequeRedemption(player, teller, payload.slotIndex());
-            return;
-        }
+        // Milestone 17 gate corrective (owner override of ADR-016): a deposited cheque is
+        // STORED like any other item, never auto-cashed. Cashing is its own deliberate gesture
+        // now, arriving via BankChequeRedemptionRequestC2SPayload -- intent travels in the
+        // packet, because it can no longer be inferred from the slot's contents.
 
         MinecraftServer server = player.server;
         BankingDepositProxyService.triggerDeposit(player, teller, payload.slotIndex())
@@ -109,6 +111,24 @@ public final class BankingTransferPacketService {
                         case BankingDepositResult.ReconciliationRequired ignored -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.DEPOSIT,
                                 BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED
+                        );
+                        // Milestone 17: the two deposit refusals with a real answer keep their
+                        // identity. An eligibility rejection means "the bank will not keep that",
+                        // whatever the specific rule -- naming the rule (quest-bound, nested
+                        // currency, foreign origin) would leak mechanism without adding action.
+                        // EMPTY_SLOT is a stale view, not a verdict about an item, so it stays
+                        // generic.
+                        case BankingDepositResult.RejectedLocally rejectedLocally -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                rejectedLocally.reason() == BankingDepositLocalRejectionReason.EMPTY_SLOT
+                                        ? BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                                        : BankTransferResultS2CPayload.Kind.INELIGIBLE_ITEM
+                        );
+                        case BankingDepositResult.Rejected rejected -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.DEPOSIT,
+                                rejected.outcome() == BankingTransferOutcome.CAPACITY_EXCEEDED
+                                        ? BankTransferResultS2CPayload.Kind.BANK_CAPACITY_EXCEEDED
+                                        : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
                         );
                         default -> resultSender.send(
                                 player, BankTransferResultS2CPayload.Operation.DEPOSIT,
@@ -152,14 +172,27 @@ public final class BankingTransferPacketService {
     }
 
     /**
-     * Milestone 11 NeoForge Slice 2: bank cheque redemption's own production entry point, the
-     * cheque side of {@link #handleDeposit}'s routing. Unlike every other dispatch method here,
-     * a {@code Rejected} result is not folded uniformly into {@code CLEAN_REJECTION} -- Codex
-     * Prompt 11's own "clearly render invalid/redeemed/cancelled outcomes" requirement means the
-     * four cheque-specific outcomes each map to their own distinct {@link
-     * BankTransferResultS2CPayload.Kind}, so {@code BankScreen} can show a specific, honest
-     * message rather than one generic "something went wrong" line for what are, in practice,
-     * the most common outcomes this endpoint actually returns.
+     * Milestone 17 gate corrective: cheque redemption's packet entry point. Since the owner's
+     * ADR-016 override, this is the ONLY road to cashing a cheque -- the deposit packet stores
+     * cheques like any item. The proxy re-reads the live slot and rejects locally if it is not
+     * actually a cheque, so a modified client aiming this at a diamond gets a clean rejection.
+     */
+    public static void handleChequeRedemption(ServerPlayer player, BankChequeRedemptionRequestC2SPayload payload) {
+        ServiceNpcEntity teller = resolveTeller(player, payload.entityId());
+        if (teller == null) return;
+        handleChequeRedemption(player, teller, payload.slotIndex());
+    }
+
+    /**
+     * Milestone 11 NeoForge Slice 2: bank cheque redemption's production flow. Originally the
+     * cheque side of {@link #handleDeposit}'s routing (ADR-016); since the Milestone 17 gate
+     * corrective it is reached only through the explicit redemption packet above. Unlike every
+     * other dispatch method here, a {@code Rejected} result is not folded uniformly into
+     * {@code CLEAN_REJECTION} -- Codex Prompt 11's own "clearly render
+     * invalid/redeemed/cancelled outcomes" requirement means the four cheque-specific outcomes
+     * each map to their own distinct {@link BankTransferResultS2CPayload.Kind}, so the client
+     * can show a specific, honest message rather than one generic "something went wrong" line
+     * for what are, in practice, the most common outcomes this endpoint actually returns.
      */
     public static void handleChequeRedemption(ServerPlayer player, ServiceNpcEntity teller, int slotIndex) {
         MinecraftServer server = player.server;
@@ -186,6 +219,49 @@ public final class BankingTransferPacketService {
                 }));
     }
 
+    /**
+     * Cashing a cheque already stored in the vault -- the third of the three cheque paths
+     * (docs/banking_bank_cheque_stored_redemption.md), reported on the same {@code
+     * CHEQUE_REDEMPTION} channel as the pack-side one because to a player it is the same event.
+     *
+     * <p>Reuses {@link #chequeRedemptionKindFor} wholesale: Rails' own doc states this endpoint
+     * introduces no new outcome string, and the two outcomes it adds to that path's vocabulary --
+     * {@code ITEM_NOT_FOUND} (the row is gone or was never this account's) and {@code
+     * BALANCE_CAPACITY_EXCEEDED} -- already have their own named kinds from Milestones 17 and 6b.
+     */
+    public static void handleStoredChequeRedemption(
+            ServerPlayer player, BankStoredChequeRedemptionRequestC2SPayload payload
+    ) {
+        ServiceNpcEntity teller = resolveTeller(player, payload.entityId());
+        if (teller == null) return;
+
+        MinecraftServer server = player.server;
+        BankingStoredChequeRedemptionProxyService
+                .triggerStoredChequeRedemption(player, teller, payload.bankItemPublicId())
+                .whenComplete((result, error) -> server.execute(() -> {
+                    if (error != null || result == null) {
+                        LOGGER.warn("banking stored cheque redemption for {} completed exceptionally",
+                                player.getStringUUID(), error);
+                        resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        return;
+                    }
+                    switch (result) {
+                        case BankingChequeRedemptionResult.Confirmed ignored -> refreshAccount(player, teller);
+                        case BankingChequeRedemptionResult.Rejected rejected -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                                chequeRedemptionKindFor(rejected.outcome())
+                        );
+                        default -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                                BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                    }
+                }));
+    }
+
     private static BankTransferResultS2CPayload.Kind chequeRedemptionKindFor(BankingTransferOutcome outcome) {
         return switch (outcome) {
             case CHEQUE_NOT_FOUND -> BankTransferResultS2CPayload.Kind.CHEQUE_NOT_FOUND;
@@ -198,6 +274,12 @@ public final class BankingTransferPacketService {
             // it to "I can't complete that right now" tells a player to shrug at the one outcome
             // that needs staff. It keeps its severity.
             case RECONCILIATION_REQUIRED -> BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED;
+            // The two outcomes stored redemption adds to this path's vocabulary. Neither is
+            // reachable from the pack-side endpoint (it names a cheque, not a vault row, and has
+            // no ceiling guard), so both arrive only from redeem_stored -- and both already have
+            // a named kind that says the right thing: the row is gone, or the balance is full.
+            case ITEM_NOT_FOUND, ITEM_NOT_AVAILABLE -> BankTransferResultS2CPayload.Kind.STORED_ITEM_UNAVAILABLE;
+            case BALANCE_CAPACITY_EXCEEDED -> BankTransferResultS2CPayload.Kind.BALANCE_CAPACITY_EXCEEDED;
             // Every shared teller/account outcome (PLAYER_NOT_FOUND, TELLER_NOT_ASSIGNED, ...)
             // falls through here -- see BankingChequeRedemptionProxyService's own docs for why
             // these are deliberately NOT rendered as one of the four cheque-specific messages
@@ -238,6 +320,17 @@ public final class BankingTransferPacketService {
                                 player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
                                 aborted.reason() == BankingWithdrawalAbortReason.INSUFFICIENT_CAPACITY
                                         ? BankTransferResultS2CPayload.Kind.INVENTORY_FULL
+                                        : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
+                        );
+                        // Milestone 17: an item already gone (withdrawn seconds ago by another
+                        // client on the same account -- the Milestone 18 concurrency case) says
+                        // so, instead of reading like the teller refused the player. Every other
+                        // Rails outcome stays generic.
+                        case BankingWithdrawalResult.Rejected rejected -> resultSender.send(
+                                player, BankTransferResultS2CPayload.Operation.WITHDRAWAL,
+                                rejected.outcome() == BankingTransferOutcome.ITEM_NOT_FOUND
+                                        || rejected.outcome() == BankingTransferOutcome.ITEM_NOT_AVAILABLE
+                                        ? BankTransferResultS2CPayload.Kind.STORED_ITEM_UNAVAILABLE
                                         : BankTransferResultS2CPayload.Kind.CLEAN_REJECTION
                         );
                         default -> resultSender.send(
@@ -438,6 +531,8 @@ public final class BankingTransferPacketService {
      * to close and reopen" without trusting any locally-computed delta.
      */
     private static void refreshAccount(ServerPlayer player, ServiceNpcEntity teller) {
-        BankingProxyService.handle(player, teller);
+        // Milestone 17: flagged as a refresh so a client that closed banking mid-flight discards
+        // it instead of having the interface re-open uninvited (the BankNavigation D9 note).
+        BankingProxyService.handle(player, teller, BankingProxyService.OpenPurpose.REFRESH);
     }
 }

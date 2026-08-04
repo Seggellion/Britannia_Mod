@@ -15,7 +15,7 @@ class BankAccountOpenedS2CPayloadTest {
     @Test
     void roundTripsWithACityDisplayName() {
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, List.of()
+                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -23,9 +23,22 @@ class BankAccountOpenedS2CPayloadTest {
     }
 
     @Test
+    void roundTripsTheRefreshFlag() {
+        // Milestone 17: the one bit that stops a late refresh re-opening a dismissed interface.
+        BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
+                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(), true
+        );
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
+        BankAccountOpenedS2CPayload decoded = BankAccountOpenedS2CPayload.STREAM_CODEC.decode(buffer);
+        assertEquals(payload, decoded);
+        assertEquals(true, decoded.refresh());
+    }
+
+    @Test
     void roundTripsWithNoCityDisplayNameForGlobalMode() {
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "male", 42, null, 250, 0.0, 0, 0, 0, List.of()
+                "Aldric", "male", 42, null, 250, 0.0, 0, 0, 0, List.of(), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -39,7 +52,7 @@ class BankAccountOpenedS2CPayloadTest {
         BankItemSummary first = BankItemSummary.withoutIdentity(UUID.randomUUID(), 2.5);
         BankItemSummary second = BankItemSummary.withoutIdentity(UUID.randomUUID(), 0.0);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(first, second)
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(first, second), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -49,13 +62,42 @@ class BankAccountOpenedS2CPayloadTest {
         assertEquals(42, decoded.entityId());
     }
 
+    // ---------- The stored-cheque link across the wire ----------
+
+    @Test
+    void roundTripsTheChequeLinkInAllThreeStates() {
+        BankItemSummary cashable = new BankItemSummary(UUID.randomUUID(), 1.0, "Bank Cheque", 1, null, true);
+        BankItemSummary spent = new BankItemSummary(UUID.randomUUID(), 1.0, "Bank Cheque", 1, null, false);
+        BankItemSummary ordinary = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, "Diamond", 5, null);
+        BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(cashable, spent, ordinary), false
+        );
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
+
+        List<BankItemSummary> decoded = BankAccountOpenedS2CPayload.STREAM_CODEC.decode(buffer).bankItems();
+        assertEquals(Boolean.TRUE, decoded.get(0).chequeRedeemable());
+        assertEquals(Boolean.FALSE, decoded.get(1).chequeRedeemable());
+        // The distinction that matters: "Rails said no" and "Rails said nothing" must not
+        // collapse into each other on the wire, because only one of them can ever become true.
+        assertNull(decoded.get(2).chequeRedeemable(), "an ordinary item must arrive with no link at all");
+        assertEquals(payload, BankAccountOpenedS2CPayload.STREAM_CODEC.decode(
+                encodeFresh(payload)), "the whole payload must survive intact");
+    }
+
+    private static FriendlyByteBuf encodeFresh(BankAccountOpenedS2CPayload payload) {
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
+        return buffer;
+    }
+
     // ---------- Milestone 18: item identity across the wire ----------
 
     @Test
     void roundTripsItemIdentityIntact() {
-        BankItemSummary named = new BankItemSummary(UUID.randomUUID(), 2.5, "Gilded Arrow", 64, "minecraft:arrow");
+        BankItemSummary named = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 2.5, "Gilded Arrow", 64, "minecraft:arrow");
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(named)
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(named), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -70,9 +112,9 @@ class BankAccountOpenedS2CPayloadTest {
 
     @Test
     void anAbsentItemKeySurvivesTheWireAsAbsent() {
-        BankItemSummary keyless = new BankItemSummary(UUID.randomUUID(), 1.0, "Old Deposit", 3, null);
+        BankItemSummary keyless = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, "Old Deposit", 3, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(keyless)
+                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(keyless), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -90,7 +132,7 @@ class BankAccountOpenedS2CPayloadTest {
     void roundTripsAnItemWithNoIdentityAsStillHavingNone() {
         BankItemSummary nameless = BankItemSummary.withoutIdentity(UUID.randomUUID(), 2.5);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(nameless)
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(nameless), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -103,10 +145,10 @@ class BankAccountOpenedS2CPayloadTest {
 
     @Test
     void roundTripsItemsWhoseIdentityIsOnlyPartlyKnown() {
-        BankItemSummary nameOnly = new BankItemSummary(UUID.randomUUID(), 1.0, "Solitary Ledger", null, null);
-        BankItemSummary countOnly = new BankItemSummary(UUID.randomUUID(), 1.0, null, 12, null);
+        BankItemSummary nameOnly = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, "Solitary Ledger", null, null);
+        BankItemSummary countOnly = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, null, 12, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(nameOnly, countOnly)
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(nameOnly, countOnly), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -121,9 +163,9 @@ class BankAccountOpenedS2CPayloadTest {
     @Test
     void roundTripsAMultiByteNameWithoutTruncatingIt() {
         String name = "鉄の剣 §cCursed";
-        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, name, 1, null);
+        BankItemSummary item = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, name, 1, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(item)
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(item), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -138,9 +180,9 @@ class BankAccountOpenedS2CPayloadTest {
     @Test
     void roundTripsANameAtRailsOwnLengthLimit() {
         String name = "𝕬".repeat(255);
-        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, name, null, null);
+        BankItemSummary item = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, name, null, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
-                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(item)
+                "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(item), false
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
@@ -150,7 +192,7 @@ class BankAccountOpenedS2CPayloadTest {
 
     @Test
     void treatsABlankNameAndANonPositiveCountAsNoIdentityAtAll() {
-        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, "   ", 0, "  ");
+        BankItemSummary item = BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, "   ", 0, "  ");
         assertNull(item.displayName());
         assertNull(item.count());
         // Milestone 10: a blank key canonicalizes to absent, same rule as the name.

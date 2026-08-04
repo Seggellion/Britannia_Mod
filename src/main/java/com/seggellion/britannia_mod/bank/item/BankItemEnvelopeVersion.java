@@ -52,6 +52,19 @@ public final class BankItemEnvelopeVersion {
     /** Adds the optional display_name / item_key / count keys. Requires Rails Milestone 16. */
     public static final int V2_WITH_IDENTITY = 2;
 
+    /**
+     * Adds the optional {@code cheque_public_id} key, which links a stored bank item to the
+     * cheque inside its opaque payload so a stored cheque can be cashed from the vault. Requires
+     * the Rails stored-redemption change (docs/banking_bank_cheque_stored_redemption.md).
+     *
+     * <p>Gated for exactly the reason v2 is: the key is sent only on cheque deposits, so against
+     * a Rails without it the blast radius is every cheque deposit on that shard refused outright
+     * with {@code UNEXPECTED_FIELD}. Ordinary deposits would be unaffected, which makes it
+     * <em>worse</em> to leave ungated, not better -- a failure that hits one item type is the
+     * kind that reaches production unnoticed.
+     */
+    public static final int V3_WITH_CHEQUE_LINK = 3;
+
     public static final String SYSTEM_PROPERTY = "britannia.bank.item_envelope_version";
 
     private static final int CONFIGURED = readConfigured();
@@ -72,8 +85,20 @@ public final class BankItemEnvelopeVersion {
         return CONFIGURED >= V2_WITH_IDENTITY;
     }
 
+    /**
+     * Whether the cheque link belongs in the envelope -- the same single-question rule
+     * {@link #emitsIdentity} follows. A build that omits it still deposits cheques perfectly;
+     * they simply store as ordinary items that cannot be cashed from the vault, which is the
+     * documented legacy-row story (withdraw it and cash it from the pack).
+     */
+    public static boolean emitsChequeLink() {
+        return CONFIGURED >= V3_WITH_CHEQUE_LINK;
+    }
+
     public static boolean isSupported(int version) {
-        return version == V1_WITHOUT_IDENTITY || version == V2_WITH_IDENTITY;
+        return version == V1_WITHOUT_IDENTITY
+                || version == V2_WITH_IDENTITY
+                || version == V3_WITH_CHEQUE_LINK;
     }
 
     /**

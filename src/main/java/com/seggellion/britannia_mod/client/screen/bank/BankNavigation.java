@@ -44,31 +44,51 @@ public final class BankNavigation {
         /** Banking is not on screen: open it at the Main screen. */
         OPEN_MAIN,
         /** The player is already in banking: leave their screen mounted, it re-reads the session. */
-        KEEP_CURRENT
+        KEEP_CURRENT,
+        /**
+         * Milestone 17: a late refresh after the player closed banking. Dropped entirely -- do
+         * not apply it to a session (there is none worth having) and above all do not open a
+         * screen the player just dismissed. The next genuine open re-fetches everything.
+         */
+        DISCARD
     }
 
     /**
-     * The Milestone 1 D9 rule, entire.
+     * The Milestone 1 D9 rule, now complete.
      *
      * <p>Before this, the client consumed every account payload with
      * {@code setScreen(new BankScreen(payload))}, which is why a successful transaction discarded
      * grid selection, scroll position and a half-typed amount, and would have thrown a player out
      * of the Bank Box mid-drag once one existed.
      *
-     * <p>A {@code bank.open} result and a post-mutation refresh are the same payload and cannot be
-     * told apart client-side, so this keys off the only thing that distinguishes the two
-     * situations that matter: whether banking is already on screen.
-     *
-     * <p>One consequence is worth naming. If a request is still in flight when the player presses
-     * Escape, the refresh that follows finds no banking screen and re-opens Main -- the interface
-     * reappears after they dismissed it. That is exactly what happens today (the legacy handler
-     * called {@code setScreen} unconditionally), so it is preserved here rather than quietly
-     * changed. Design §5.3 and Playbook Milestone 17 own "safe behaviour when a screen is closed
-     * before result arrival"; suppressing it correctly needs to distinguish a first open from a
-     * late refresh, which this payload does not currently allow.
+     * <p>The D9 note used to record one wart here: a request still in flight when the player
+     * pressed Escape produced a refresh that found no banking screen and re-opened Main -- the
+     * interface reappeared after they dismissed it. The payload could not distinguish a first
+     * open from a late refresh, so the wart was preserved rather than guessed at. Milestone 17
+     * gave the payload that one bit ({@code refresh}, stamped by the server, which alone knows
+     * which flow built it), and the wart is closed: a refresh with banking closed is
+     * {@link RefreshRoute#DISCARD}ED, exactly design §5.3's "the client must not invent state
+     * after closing" applied to the success path. The ordered connection makes this safe against
+     * the close-then-immediately-reopen race -- the late refresh (flagged) is discarded, the new
+     * {@code bank.open} (unflagged) opens.
      */
-    public static RefreshRoute refreshRoute(boolean bankingScreenOpen) {
-        return bankingScreenOpen ? RefreshRoute.KEEP_CURRENT : RefreshRoute.OPEN_MAIN;
+    public static RefreshRoute refreshRoute(boolean bankingScreenOpen, boolean refresh) {
+        if (bankingScreenOpen) return RefreshRoute.KEEP_CURRENT;
+        return refresh ? RefreshRoute.DISCARD : RefreshRoute.OPEN_MAIN;
+    }
+
+    /**
+     * Milestone 17, design §15.2's third clearing rule: navigating drops the status line. A
+     * message describes the outcome of something done on the screen the player is leaving;
+     * carrying it onto the next screen shows it beside controls it never referred to. Called by
+     * every banking screen's navigation handler (Main's three destinations, each sub-screen's
+     * Back) before the switch. The other two clearing rules already live where they belong --
+     * {@code beginPending} and {@code applyAccountOpened}.
+     */
+    public static void beginNavigation(@Nullable ClientBankingSession session) {
+        if (session != null) {
+            session.clearLastResult();
+        }
     }
 
     /**

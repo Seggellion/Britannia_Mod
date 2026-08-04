@@ -39,7 +39,7 @@ class BankBoxSelectionTest {
 
     private static ClientBankingSession openWith(List<BankItemSummary> items) {
         return ClientBankingSession.applyAccountOpened(new BankAccountOpenedS2CPayload(
-                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, items
+                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, items, false
         ));
     }
 

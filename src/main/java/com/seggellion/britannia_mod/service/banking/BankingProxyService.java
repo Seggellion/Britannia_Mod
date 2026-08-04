@@ -92,19 +92,59 @@ public final class BankingProxyService {
     @FunctionalInterface
     public interface AccountScreenSender {
         void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account, java.util.List<BankItemSummary> bankItems);
+
+        /**
+         * Milestone 17: the production path always calls this five-argument form so the payload
+         * can carry {@code refresh}. Defaulted onto the four-argument method above so the many
+         * existing test lambdas -- which do not care about the flag -- keep compiling unchanged;
+         * a test that wants to observe the flag implements the interface fully.
+         */
+        default void send(
+                ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account,
+                java.util.List<BankItemSummary> bankItems, boolean refresh
+        ) {
+            send(player, teller, account, bankItems);
+        }
     }
 
-    private static AccountScreenSender accountScreenSender = BankAccountOpenedS2CPayload::send;
+    /** Why a {@code bank.open} fetch is running -- Milestone 17's one-bit answer to D9's note. */
+    public enum OpenPurpose {
+        /** The player interacted with a teller: banking may open if it is not on screen. */
+        OPEN,
+        /** A confirmed mutation is re-fetching: the client must never open a screen for this. */
+        REFRESH
+    }
+
+    private static final AccountScreenSender PRODUCTION_SENDER = new AccountScreenSender() {
+        @Override
+        public void send(ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account, java.util.List<BankItemSummary> bankItems) {
+            send(player, teller, account, bankItems, false);
+        }
+
+        @Override
+        public void send(
+                ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account,
+                java.util.List<BankItemSummary> bankItems, boolean refresh
+        ) {
+            BankAccountOpenedS2CPayload.send(player, teller, account, bankItems, refresh);
+        }
+    };
+
+    private static AccountScreenSender accountScreenSender = PRODUCTION_SENDER;
 
     public static void useAccountScreenSenderForTesting(AccountScreenSender testSender) {
         accountScreenSender = testSender;
     }
 
     public static void resetAccountScreenSenderForTesting() {
-        accountScreenSender = BankAccountOpenedS2CPayload::send;
+        accountScreenSender = PRODUCTION_SENDER;
     }
 
     public static void handle(ServerPlayer player, ServiceNpcEntity entity) {
+        handle(player, entity, OpenPurpose.OPEN);
+    }
+
+    public static void handle(ServerPlayer player, ServiceNpcEntity entity, OpenPurpose purpose) {
         ResolvedTeller resolved = resolve(player, entity);
         if (resolved == null) return;
 
@@ -134,7 +174,7 @@ public final class BankingProxyService {
         } catch (RuntimeException submissionFailure) {
             IN_FLIGHT.remove(connectedPlayerId);
             LOGGER.warn("banking/open submission threw synchronously for {}", connectedPlayerId, submissionFailure);
-            applyResult(player, null, new BankingOpenClientResult.TransportFailure("synchronous_submission_failure"));
+            applyResult(player, null, new BankingOpenClientResult.TransportFailure("synchronous_submission_failure"), purpose);
             return;
         }
 
@@ -142,7 +182,7 @@ public final class BankingProxyService {
             IN_FLIGHT.remove(connectedPlayerId);
             if (server.getPlayerList().getPlayer(connectedPlayerId) != player) return;
             if (failure != null || result == null) {
-                applyResult(player, null, new BankingOpenClientResult.TransportFailure("unexpected_client_error"));
+                applyResult(player, null, new BankingOpenClientResult.TransportFailure("unexpected_client_error"), purpose);
                 return;
             }
 
@@ -158,7 +198,7 @@ public final class BankingProxyService {
                 LOGGER.info("Discarding banking/open result: teller {} is no longer live/in range", entityUuid);
                 return;
             }
-            applyResult(player, teller, result);
+            applyResult(player, teller, result, purpose);
         }));
     }
 
@@ -191,12 +231,26 @@ public final class BankingProxyService {
      * {@link BankingOpenOutcome} wire name or transport code is ever shown to a player),
      * per this milestone's explicit requirement.
      */
-    private static void applyResult(ServerPlayer player, @Nullable ServiceNpcEntity teller, BankingOpenClientResult result) {
-        LOGGER.info("banking/open result for {}: {}", player.getStringUUID(), result);
+    private static void applyResult(
+            ServerPlayer player, @Nullable ServiceNpcEntity teller, BankingOpenClientResult result, OpenPurpose purpose
+    ) {
+        // Milestone 17: outcome and shape only, never the account's contents. A Success used to
+        // be logged whole -- balances and the full item list -- which is exactly the "private
+        // account data" the playbook's logging rule names. Failures carry no account data and
+        // stay logged in full.
+        if (result instanceof BankingOpenClientResult.Success success) {
+            LOGGER.info(
+                    "banking/open result for {}: Success[bankItems={}] purpose={}",
+                    player.getStringUUID(), success.bankItems().size(), purpose
+            );
+        } else {
+            LOGGER.info("banking/open result for {}: {} purpose={}", player.getStringUUID(), result, purpose);
+        }
         switch (result) {
             case BankingOpenClientResult.Success success ->
                     accountScreenSender.send(
-                            player, Objects.requireNonNull(teller, "teller"), success.account(), success.bankItems()
+                            player, Objects.requireNonNull(teller, "teller"), success.account(), success.bankItems(),
+                            purpose == OpenPurpose.REFRESH
                     );
             case BankingOpenClientResult.Rejected ignored ->
                     player.displayClientMessage(Component.literal(REJECTED_MESSAGE), false);

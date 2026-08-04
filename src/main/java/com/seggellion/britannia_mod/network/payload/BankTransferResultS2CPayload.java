@@ -108,7 +108,28 @@ public record BankTransferResultS2CPayload(Operation operation, Kind kind) imple
          * the generic rejection. A modified client that skips the pre-check now gets the same
          * readable answer an honest one shows itself.
          */
-        INSUFFICIENT_BALANCE
+        INSUFFICIENT_BALANCE,
+        /**
+         * Bank interface rebuild, Milestone 17: the deposited item is one the bank refuses on
+         * principle -- currency nested in a container, a quest-bound item, an unrecognised mod
+         * origin. Design §15's "ineligible item". Actionable in the negative: stop trying, no
+         * amount of retrying or making room changes the answer.
+         */
+        INELIGIBLE_ITEM,
+        /**
+         * Bank interface rebuild, Milestone 17: the vault's weight limit cannot absorb the
+         * deposited item. Design §15's "insufficient bank capacity" -- the deposit-side sibling
+         * of {@link #INVENTORY_FULL}, and just as actionable: withdraw something and retry.
+         * Distinct from {@link #BALANCE_CAPACITY_EXCEEDED}, which is the coin-count ceiling.
+         */
+        BANK_CAPACITY_EXCEEDED,
+        /**
+         * Bank interface rebuild, Milestone 17: the stored item named by the withdrawal no
+         * longer exists in the account -- most plausibly withdrawn moments ago by another client
+         * holding the same account open. Design §15's "stored item no longer available". Nothing
+         * to act on: the refresh shows the truth.
+         */
+        STORED_ITEM_UNAVAILABLE
     }
 
     public static final ResourceLocation TYPE_ID =

@@ -126,6 +126,17 @@ public final class BankStatusPresenter {
             // Deliberately the same sentence as the client-side INSUFFICIENT_BALANCE status --
             // the player should read one message for one fact, whichever side caught it first.
             case INSUFFICIENT_BALANCE -> new Status(ROOT + "insufficient_balance", Severity.REJECTION);
+            // Milestone 17: the bank will not keep this item, whatever the specific rule. A
+            // refusal on principle -- retrying changes nothing, which is itself the actionable
+            // information.
+            case INELIGIBLE_ITEM -> new Status(ROOT + "ineligible_item", Severity.REJECTION);
+            // Milestone 17: the vault's weight ceiling. INVENTORY_FULL's deposit-side sibling,
+            // equally actionable: withdraw something first.
+            case BANK_CAPACITY_EXCEEDED -> new Status(ROOT + "bank_capacity_exceeded", Severity.REJECTION);
+            // Milestone 17: the item is already gone -- most plausibly withdrawn moments ago from
+            // another client. Informational like NOTHING_TO_DEPOSIT: nobody refused the player,
+            // there is nothing to fix, and the refreshed vault is the answer.
+            case STORED_ITEM_UNAVAILABLE -> new Status(ROOT + "stored_item_unavailable", Severity.INFORMATIONAL);
         };
     }
 
@@ -133,6 +144,22 @@ public final class BankStatusPresenter {
     @Nullable
     public static Status forResult(@Nullable BankTransferResultS2CPayload payload) {
         return payload == null ? null : forResult(payload.operation(), payload.kind());
+    }
+
+    /**
+     * Milestone 17: everything a screen's status line should currently say, in one question.
+     * The last server result wins; with none, a request that has been in flight past {@link
+     * ClientBankingSession#UNCERTAIN_AFTER_MILLIS} shows {@link #UNCERTAIN} -- the playbook's
+     * "pending state always resolves or transitions to an explicit uncertain state". The lock
+     * stays held (nothing client-side can cancel an in-flight request, design §5.3); what
+     * changes is only that the silence itself is named for the player.
+     */
+    @Nullable
+    public static Status statusFor(@Nullable ClientBankingSession session) {
+        if (session == null) return null;
+        Status result = forResult(session.lastResult());
+        if (result != null) return result;
+        return session.isPendingUncertain() ? UNCERTAIN : null;
     }
 
     // ---------- Client-side validation and context ----------
@@ -160,4 +187,11 @@ public final class BankStatusPresenter {
     public static final Status INSUFFICIENT_BALANCE = new Status(ROOT + "insufficient_balance", Severity.VALIDATION);
     public static final Status NOTHING_SELECTED = new Status(ROOT + "nothing_selected", Severity.INFORMATIONAL);
     public static final Status EMPTY_VAULT = new Status(ROOT + "empty_vault", Severity.INFORMATIONAL);
+    /**
+     * Milestone 17: a request has been in flight long enough that silence needs naming -- design
+     * §15's "connection or timeout uncertainty". Client-side by nature: it describes the absence
+     * of an answer, so no wire kind can ever carry it. INFORMATIONAL, not a rejection -- nothing
+     * was refused, and the honest content is "the truth arrives with the next refresh".
+     */
+    public static final Status UNCERTAIN = new Status(ROOT + "uncertain", Severity.INFORMATIONAL);
 }

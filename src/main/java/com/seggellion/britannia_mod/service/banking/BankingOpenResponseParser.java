@@ -109,7 +109,8 @@ public final class BankingOpenResponseParser {
             // A malformed value degrades to absent rather than failing the whole response: a name
             // is a courtesy, and losing the player's entire account view over one would be a far
             // worse trade than showing the fallback.
-            items.add(new BankItemSummary(publicId, weight, lenientName(item), lenientCount(item), lenientItemKey(item)));
+            items.add(new BankItemSummary(publicId, weight, lenientName(item), lenientCount(item), lenientItemKey(item),
+                    lenientChequeRedeemable(item)));
         }
         return items;
     }
@@ -151,6 +152,23 @@ public final class BankingOpenResponseParser {
         }
         String value = element.getAsString();
         return value.length() > MAX_BANK_ITEM_NAME_LENGTH ? null : value;
+    }
+
+    /**
+     * Whether this stored row is a cheque that can be cashed from the vault right now.
+     *
+     * <p>Three-valued on purpose, and the same lenient rule as its siblings: {@code null} means
+     * "Rails said nothing", which is every ordinary item and every row deposited before the link
+     * existed. Only an explicit {@code true} offers the gesture -- a missing or malformed value
+     * must never light up an action that would then fail, which is the dishonest affordance this
+     * epic has removed everywhere else.
+     */
+    private static Boolean lenientChequeRedeemable(JsonObject item) {
+        JsonElement element = item.get("cheque_redeemable");
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isBoolean()) {
+            return null;
+        }
+        return element.getAsBoolean();
     }
 
     private static BankingOpenAccount parseAccount(JsonObject account) throws ProtocolException {

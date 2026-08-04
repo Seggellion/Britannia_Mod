@@ -59,7 +59,8 @@ class BankTranslationKeysTest {
                 BankStatusPresenter.INSUFFICIENT_BALANCE,
                 BankStatusPresenter.NOTHING_SELECTED,
                 BankStatusPresenter.EMPTY_VAULT,
-                BankStatusPresenter.AMOUNT_BELOW_MINIMUM
+                BankStatusPresenter.AMOUNT_BELOW_MINIMUM,
+                BankStatusPresenter.UNCERTAIN
         }) {
             keys.add(status.translationKey());
         }
@@ -86,6 +87,9 @@ class BankTranslationKeysTest {
         keys.add("screen.britannia_mod.bank.box.unknown_item");
         keys.add("screen.britannia_mod.bank.box.tooltip_weight");
         keys.add("screen.britannia_mod.bank.box.cannot_bank");
+        // Milestone 17 gate corrective: the cheque's two-gesture tooltip.
+        keys.add("screen.britannia_mod.bank.box.cheque_hint");
+        keys.add("screen.britannia_mod.bank.box.stored_cheque_hint");
 
         // Milestone 5: the Balance screen. Both plural forms of all three denominations, because
         // a missing ".one" only shows up on an account holding exactly one coin -- which is

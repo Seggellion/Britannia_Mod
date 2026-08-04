@@ -25,7 +25,15 @@ import java.util.UUID;
  * separate decision about the contract, not a drive-by here.
  */
 public record BankItemSummary(
-        UUID publicId, double weight, @Nullable String displayName, @Nullable Integer count, @Nullable String itemKey
+        UUID publicId, double weight, @Nullable String displayName, @Nullable Integer count, @Nullable String itemKey,
+        /*
+         * Whether this row is a cheque that can be cashed from the vault right now. Three-valued
+         * and independently optional like the rest: null is "Rails said nothing" -- every
+         * ordinary item, and every cheque stored before the link existed. Only TRUE means the
+         * gesture is real; FALSE means Rails knows about the cheque and it is spent, cancelled,
+         * voided, or dangling.
+         */
+        @Nullable Boolean chequeRedeemable
 ) {
 
     /** What a row with no stored name has always read as. Unchanged, so nothing regresses. */
@@ -49,7 +57,19 @@ public record BankItemSummary(
 
     /** The pre-Milestone-18 shape, for callers that have no identity to carry. */
     public static BankItemSummary withoutIdentity(UUID publicId, double weight) {
-        return new BankItemSummary(publicId, weight, null, null, null);
+        return new BankItemSummary(publicId, weight, null, null, null, null);
+    }
+
+    /** The identity-carrying shape from before the cheque link existed. */
+    public static BankItemSummary withoutChequeLink(
+            UUID publicId, double weight, @Nullable String displayName, @Nullable Integer count, @Nullable String itemKey
+    ) {
+        return new BankItemSummary(publicId, weight, displayName, count, itemKey, null);
+    }
+
+    /** Only an explicit {@code true} is cashable -- absence and malformed both mean "no". */
+    public boolean isChequeRedeemable() {
+        return Boolean.TRUE.equals(chequeRedeemable);
     }
 
     /**

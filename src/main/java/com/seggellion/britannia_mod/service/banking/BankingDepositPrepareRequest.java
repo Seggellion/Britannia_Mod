@@ -19,7 +19,15 @@ public record BankingDepositPrepareRequest(
     byte[] payload,
     String fingerprint,
     double weight,
-    BankItemIdentity identity
+    BankItemIdentity identity,
+    /*
+     * The cheque inside the opaque payload, when the deposited stack is one -- null for every
+     * ordinary item, and null for a cheque when this build does not emit the link. Rails stores
+     * it verbatim and uses it to answer "can this stored row be cashed?"; it is the only way the
+     * link can exist at all, because the payload is opaque to Rails and decoding it requires
+     * withdrawing the item first.
+     */
+    @javax.annotation.Nullable UUID chequePublicId
 ) {
     public BankingDepositPrepareRequest {
         Objects.requireNonNull(playerUuid, "playerUuid");
@@ -47,7 +55,18 @@ public record BankingDepositPrepareRequest(
     ) {
         return new BankingDepositPrepareRequest(
                 playerUuid, worldNpcPublicId, idempotencyKey, schemaVersion, payload, fingerprint, weight,
-                BankItemIdentity.EMPTY
+                BankItemIdentity.EMPTY, null
+        );
+    }
+
+    /** The v2 shape: identity, no cheque link. Keeps every pre-v3 call site building exactly it. */
+    public static BankingDepositPrepareRequest withoutChequeLink(
+            UUID playerUuid, UUID worldNpcPublicId, String idempotencyKey,
+            int schemaVersion, byte[] payload, String fingerprint, double weight, BankItemIdentity identity
+    ) {
+        return new BankingDepositPrepareRequest(
+                playerUuid, worldNpcPublicId, idempotencyKey, schemaVersion, payload, fingerprint, weight,
+                identity, null
         );
     }
 

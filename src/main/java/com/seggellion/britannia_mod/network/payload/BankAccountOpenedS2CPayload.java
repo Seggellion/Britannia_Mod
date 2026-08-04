@@ -42,7 +42,15 @@ public record BankAccountOpenedS2CPayload(
         int goldBalance,
         int silverBalance,
         int copperBalance,
-        List<BankItemSummary> bankItems
+        List<BankItemSummary> bankItems,
+        /*
+         * Milestone 17: whether this payload is a post-mutation refresh (true) or a genuine
+         * bank.open the player initiated (false). The two are otherwise indistinguishable, which
+         * is why a refresh arriving after the player closed banking used to re-open the interface
+         * uninvited -- the BankNavigation D9 note. Only the server knows which flow built the
+         * payload, so the flag travels with it.
+         */
+        boolean refresh
 ) implements CustomPacketPayload {
     private static final int MAX_NAME_BYTES = 128;
     private static final String FALLBACK_TELLER_NAME = "the teller";
@@ -75,13 +83,14 @@ public record BankAccountOpenedS2CPayload(
             StreamCodec.of(BankAccountOpenedS2CPayload::encode, BankAccountOpenedS2CPayload::decode);
 
     public static void send(
-            ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account, List<BankItemSummary> bankItems
+            ServerPlayer player, ServiceNpcEntity teller, BankingOpenAccount account, List<BankItemSummary> bankItems,
+            boolean refresh
     ) {
-        PacketDistributor.sendToPlayer(player, create(teller, account, bankItems));
+        PacketDistributor.sendToPlayer(player, create(teller, account, bankItems, refresh));
     }
 
     public static BankAccountOpenedS2CPayload create(
-            ServiceNpcEntity teller, BankingOpenAccount account, List<BankItemSummary> bankItems
+            ServiceNpcEntity teller, BankingOpenAccount account, List<BankItemSummary> bankItems, boolean refresh
     ) {
         Objects.requireNonNull(teller, "teller");
         Objects.requireNonNull(account, "account");
@@ -96,7 +105,8 @@ public record BankAccountOpenedS2CPayload(
                 account.goldBalance(),
                 account.silverBalance(),
                 account.copperBalance(),
-                bankItems
+                bankItems,
+                refresh
         );
     }
 
@@ -169,7 +179,15 @@ public record BankAccountOpenedS2CPayload(
             if (item.itemKey() != null) {
                 ServiceNpcSpawnPayloadCodec.writeUtf(buffer, item.itemKey(), MAX_ITEM_NAME_BYTES);
             }
+            // The stored-cheque link: three-valued, so flagged like every other optional field.
+            // Absent means "not a cashable cheque", which is every ordinary item.
+            buffer.writeBoolean(item.chequeRedeemable() != null);
+            if (item.chequeRedeemable() != null) {
+                buffer.writeBoolean(item.chequeRedeemable());
+            }
         }
+
+        buffer.writeBoolean(payload.refresh);
     }
 
     private static BankAccountOpenedS2CPayload decode(FriendlyByteBuf buffer) {
@@ -194,12 +212,15 @@ public record BankAccountOpenedS2CPayload(
             Integer count = buffer.readBoolean() ? buffer.readVarInt() : null;
             String itemKey = buffer.readBoolean()
                     ? ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_ITEM_NAME_BYTES) : null;
-            bankItems.add(new BankItemSummary(publicId, weight, displayName, count, itemKey));
+            Boolean chequeRedeemable = buffer.readBoolean() ? buffer.readBoolean() : null;
+            bankItems.add(new BankItemSummary(publicId, weight, displayName, count, itemKey, chequeRedeemable));
         }
+
+        boolean refresh = buffer.readBoolean();
 
         return new BankAccountOpenedS2CPayload(
                 tellerName, tellerGender, entityId, cityDisplayName, weightLimit, currentWeight, goldBalance, silverBalance,
-                copperBalance, bankItems
+                copperBalance, bankItems, refresh
         );
     }
 

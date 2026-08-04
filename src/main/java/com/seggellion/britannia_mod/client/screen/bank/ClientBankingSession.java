@@ -96,6 +96,20 @@ public final class ClientBankingSession {
     private BankTransferResultS2CPayload.Operation pending;
 
     /**
+     * Milestone 17: when {@link #pending} was claimed, so silence can be named. After this many
+     * milliseconds without an answer the screens show {@link BankStatusPresenter#UNCERTAIN}
+     * rather than an indefinitely mute pending state. Ten seconds sits comfortably past the
+     * server's own Rails transport timeouts -- an answer that has not arrived by then is not
+     * merely slow.
+     */
+    public static final long UNCERTAIN_AFTER_MILLIS = 10_000L;
+
+    private long pendingSinceMillis;
+
+    /** Test seam for {@link #isPendingUncertain} -- wall-clock by default. */
+    private static java.util.function.LongSupplier clock = System::currentTimeMillis;
+
+    /**
      * The last non-success outcome, kept so a screen can render it. A confirmed mutation never
      * produces one of these -- success arrives as a refresh push instead (see {@code
      * BankTransferResultS2CPayload}'s own class docs), which is why {@link #applyAccountOpened}
@@ -293,9 +307,20 @@ public final class ClientBankingSession {
         Objects.requireNonNull(operation, "operation");
         if (pending != null) return false;
         pending = operation;
+        pendingSinceMillis = clock.getAsLong();
         // Design §15.2: the previous outcome stops being relevant the moment a new one starts.
         lastResult = null;
         return true;
+    }
+
+    /**
+     * Whether the in-flight request has gone unanswered past {@link #UNCERTAIN_AFTER_MILLIS}.
+     * Only ever names the silence -- the lock stays held, because nothing client-side can cancel
+     * a request that may still land (design §5.3). Escape remains available throughout, and the
+     * next {@code bank.open} shows the truth either way.
+     */
+    public boolean isPendingUncertain() {
+        return pending != null && clock.getAsLong() - pendingSinceMillis >= UNCERTAIN_AFTER_MILLIS;
     }
 
     /**
@@ -325,5 +350,11 @@ public final class ClientBankingSession {
      */
     public static void resetForTesting() {
         active = null;
+        clock = System::currentTimeMillis;
+    }
+
+    /** Substitutes the {@link #isPendingUncertain} clock. Undone by {@link #resetForTesting}. */
+    public static void useClockForTesting(java.util.function.LongSupplier testClock) {
+        clock = Objects.requireNonNull(testClock, "testClock");
     }
 }

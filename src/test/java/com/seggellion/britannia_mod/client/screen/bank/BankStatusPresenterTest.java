@@ -1,8 +1,10 @@
 package com.seggellion.britannia_mod.client.screen.bank;
 
+import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Kind;
 import com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -14,6 +16,54 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BankStatusPresenterTest {
+
+    @AfterEach
+    void resetSession() {
+        ClientBankingSession.resetForTesting();
+    }
+
+    private static ClientBankingSession sessionWithClock(long[] now) {
+        ClientBankingSession.useClockForTesting(() -> now[0]);
+        return ClientBankingSession.applyAccountOpened(new BankAccountOpenedS2CPayload(
+                "Aldric", "male", 42, null, 250, 0.0, 0, 0, 0, java.util.List.of(), false
+        ));
+    }
+
+    // ---------- Milestone 17: statusFor -- one question for the whole status line ----------
+
+    @Test
+    void statusForShowsNothingForAQuietSessionAndNoSession() {
+        long[] now = {0L};
+        assertNull(BankStatusPresenter.statusFor(null));
+        assertNull(BankStatusPresenter.statusFor(sessionWithClock(now)));
+    }
+
+    @Test
+    void statusForNamesLongSilenceAsUncertain() {
+        long[] now = {0L};
+        ClientBankingSession session = sessionWithClock(now);
+        session.beginPending(Operation.DEPOSIT);
+
+        assertNull(BankStatusPresenter.statusFor(session), "patience first -- pending is not yet a status");
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS;
+        assertEquals(BankStatusPresenter.UNCERTAIN, BankStatusPresenter.statusFor(session));
+    }
+
+    @Test
+    void statusForPrefersARealResultOverTheSilence() {
+        long[] now = {0L};
+        ClientBankingSession session = sessionWithClock(now);
+        session.beginPending(Operation.DEPOSIT);
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS * 2;
+        ClientBankingSession.applyTransferResult(
+                new BankTransferResultS2CPayload(Operation.DEPOSIT, Kind.INVENTORY_FULL));
+
+        BankStatusPresenter.Status status = BankStatusPresenter.statusFor(session);
+        assertEquals(
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.INVENTORY_FULL), status,
+                "an answer, however late, replaces the uncertainty"
+        );
+    }
 
     @Test
     void mapsEveryOperationAndKindPairWithoutFallingThrough() {
@@ -195,17 +245,51 @@ class BankStatusPresenterTest {
                 BankStatusPresenter.EMPTY_AMOUNT,
                 BankStatusPresenter.INVALID_AMOUNT,
                 BankStatusPresenter.AMOUNT_TOO_LARGE,
+                BankStatusPresenter.AMOUNT_BELOW_MINIMUM,
                 BankStatusPresenter.NO_DENOMINATION_SELECTED,
                 BankStatusPresenter.INSUFFICIENT_BALANCE,
                 BankStatusPresenter.NOTHING_SELECTED,
-                BankStatusPresenter.EMPTY_VAULT
+                BankStatusPresenter.EMPTY_VAULT,
+                BankStatusPresenter.UNCERTAIN
         }) {
             keys.add(status.translationKey());
         }
-        // +6, not +7: the wire INSUFFICIENT_BALANCE and the client pre-check status deliberately
+        // +8, not +9: the wire INSUFFICIENT_BALANCE and the client pre-check status deliberately
         // share one sentence (Milestone 16) -- one message for one fact, whichever side caught it
         // first. Every other client status must stay collision-free.
-        assertEquals(fromResults + 6, keys.size(), "an unintended key collision between client and server statuses");
+        assertEquals(fromResults + 8, keys.size(), "an unintended key collision between client and server statuses");
+    }
+
+    @Test
+    void theTwoCapacityCeilingsAndTheFullPackStayDistinct() {
+        // Three different facts -- the coin-count ceiling, the vault's weight ceiling, and the
+        // player's own pack -- that would be genuinely misleading collapsed into one message.
+        Set<String> keys = new HashSet<>();
+        keys.add(BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.BALANCE_CAPACITY_EXCEEDED).translationKey());
+        keys.add(BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.BANK_CAPACITY_EXCEEDED).translationKey());
+        keys.add(BankStatusPresenter.forResult(Operation.WITHDRAWAL, Kind.INVENTORY_FULL).translationKey());
+        assertEquals(3, keys.size());
+    }
+
+    @Test
+    void anAlreadyGoneItemReadsAsInformationRatherThanRefusal() {
+        // Nobody refused the player and nothing is theirs to fix -- the item left the vault from
+        // another client, and the refreshed grid is the answer. Same reasoning that made
+        // NOTHING_TO_DEPOSIT informational at Milestone 6b.
+        BankStatusPresenter.Status status =
+                BankStatusPresenter.forResult(Operation.WITHDRAWAL, Kind.STORED_ITEM_UNAVAILABLE);
+        assertEquals(BankStatusPresenter.Severity.INFORMATIONAL, status.severity());
+    }
+
+    @Test
+    void anIneligibleItemIsARejectionWithItsOwnSentence() {
+        BankStatusPresenter.Status status =
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.INELIGIBLE_ITEM);
+        assertEquals(BankStatusPresenter.Severity.REJECTION, status.severity());
+        assertNotEquals(
+                BankStatusPresenter.forResult(Operation.DEPOSIT, Kind.CLEAN_REJECTION).translationKey(),
+                status.translationKey()
+        );
     }
 
     @Test

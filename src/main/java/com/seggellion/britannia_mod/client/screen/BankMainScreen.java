@@ -101,6 +101,7 @@ public final class BankMainScreen extends Screen implements BankingScreen {
         if (session == null || !BankNavigation.canOpen(destination, session)) return;
 
         Minecraft minecraft = Minecraft.getInstance();
+        BankNavigation.beginNavigation(session);
         switch (destination) {
             case BANK_BOX -> minecraft.setScreen(new BankBoxScreen());
             case BALANCE -> minecraft.setScreen(new BankBalanceScreen());
@@ -121,7 +122,7 @@ public final class BankMainScreen extends Screen implements BankingScreen {
                 graphics, font, layout, session.tellerName(), session.tellerGender(), greeting
         );
         BankDialogueFrame.renderStatus(
-                graphics, font, layout, BankStatusPresenter.forResult(session.lastResult())
+                graphics, font, layout, BankStatusPresenter.statusFor(session)
         );
     }
 

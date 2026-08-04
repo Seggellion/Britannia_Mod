@@ -95,6 +95,16 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     /** Milestone 12. Rebuilt with the layout on every init, so a resize cancels by construction. */
     @Nullable
     private com.seggellion.britannia_mod.client.screen.bank.BankDragController drag;
+    /** Milestone 17 gate corrective: double-click on a pack cheque cashes it. */
+    private final com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick chequeDoubleClick =
+            new com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick();
+    /**
+     * The vault's own tracker, separate from the pack's so the two grids cannot complete one
+     * another's gesture -- a click in the pack followed by one in the vault is two first presses,
+     * which is what a player means by it.
+     */
+    private final com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick vaultChequeDoubleClick =
+            new com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick();
     /** Milestone 15: live once something is selected. */
     @Nullable
     private BankActionButton withdrawButton;
@@ -280,6 +290,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     }
 
     private void returnToMain() {
+        com.seggellion.britannia_mod.client.screen.bank.BankNavigation.beginNavigation(ClientBankingSession.active());
         Minecraft.getInstance().setScreen(new BankMainScreen());
     }
 
@@ -365,7 +376,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
 
         BankDialogueFrame.renderStatusOnDark(
                 graphics, font, layout.contentLeft(), layout.statusY(), layout.statusMaxWidth(),
-                BankStatusPresenter.forResult(session.lastResult())
+                BankStatusPresenter.statusFor(session)
         );
 
         refreshWithdrawState(session);
@@ -504,6 +515,12 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 lines.add(Component.translatable(
                                 "screen.britannia_mod.bank.box.tooltip_weight", formatWeight(summary.weight()))
                         .withStyle(net.minecraft.ChatFormatting.GRAY));
+                // Offered only when Rails says this row is cashable right now, so the hint and
+                // the gesture can never disagree.
+                if (summary.isChequeRedeemable()) {
+                    lines.add(Component.translatable("screen.britannia_mod.bank.box.stored_cheque_hint")
+                            .withStyle(net.minecraft.ChatFormatting.GRAY));
+                }
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             }
             return;
@@ -525,6 +542,11 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
             lines.add(Component.translatable("screen.britannia_mod.bank.box.cannot_bank")
                     .withStyle(net.minecraft.ChatFormatting.GRAY));
         }
+        // Milestone 17 gate corrective: a cheque has two gestures now, so the tooltip names both.
+        if (stack.getItem() == com.seggellion.britannia_mod.registry.ItemRegistry.BANK_CHEQUE.get()) {
+            lines.add(Component.translatable("screen.britannia_mod.bank.box.cheque_hint")
+                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
         graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
     }
 
@@ -537,6 +559,12 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         ClientBankingSession session = ClientBankingSession.active();
         if (button == 0 && session != null && layout != null) {
+            // Cashing a cheque that is already in the vault: the same double-click, on the other
+            // grid. Checked before selection so the completing press cashes rather than merely
+            // re-selecting; the FIRST press falls through and selects as usual, which is what
+            // makes the gesture discoverable rather than a hidden shortcut.
+            if (registerVaultChequeClick(session, mouseX, mouseY)) return true;
+
             BankBoxSelection.Result result =
                     BankBoxSelection.handleClick(session, layout.bankGrid(), scroll, mouseX, mouseY);
             if (result != BankBoxSelection.Result.OUTSIDE) return true;
@@ -544,10 +572,26 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
             // Milestone 12: a press on a player stack arms a potential drag. Released under the
             // threshold it is a click, and inventory clicks still do nothing -- consistent with
             // Milestone 11.
+            //
+            // Milestone 17 gate corrective, the one exception: a DOUBLE-click on a pack cheque
+            // cashes it. Checked before the drag arms, so the completing press sends the
+            // redemption instead of starting a second gesture. A single press on a cheque still
+            // arms the drag as usual -- dragging it to the vault STORES it now (owner's ADR-016
+            // override); cashing is only ever this deliberate second click.
             int slot = inventorySlotAt(mouseX, mouseY);
             if (slot >= 0 && drag != null) {
                 net.minecraft.world.item.ItemStack stack =
                         Minecraft.getInstance().player.getInventory().getItem(slot);
+                boolean cheque = !stack.isEmpty()
+                        && stack.getItem() == com.seggellion.britannia_mod.registry.ItemRegistry.BANK_CHEQUE.get();
+                if (cheque) {
+                    if (chequeDoubleClick.register(slot, System.currentTimeMillis())) {
+                        sendChequeRedemption(slot);
+                        return true;
+                    }
+                } else {
+                    chequeDoubleClick.reset();
+                }
                 if (!stack.isEmpty() && drag.onPress(
                         slot, BankDepositHint.isDepositable(stack), sourceSnapshot(slot),
                         mouseX, mouseY, session.isMutationPending())) {
@@ -605,10 +649,89 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         drag.completeHandoff();
     }
 
+    /**
+     * Feeds a bank-grid press to the vault tracker, and cashes when it completes a double-click.
+     *
+     * @return whether the event was consumed by a cashing gesture
+     */
+    private boolean registerVaultChequeClick(ClientBankingSession session, double mouseX, double mouseY) {
+        Integer cell = layout.bankGrid().cellIndexAt(mouseX, mouseY);
+        if (cell == null || session.isMutationPending()) {
+            return false;
+        }
+        int itemIndex = scroll.itemIndexFor(cell, BankBoxLayout.COLUMNS, session.bankItems().size());
+        if (itemIndex < 0) {
+            vaultChequeDoubleClick.reset();
+            return false;
+        }
+        com.seggellion.britannia_mod.service.banking.BankItemSummary summary = session.bankItems().get(itemIndex);
+        // Only an item Rails says is cashable right now offers the gesture. A spent, cancelled,
+        // voided or legacy (unlinked) cheque is an ordinary stored item here -- offering a click
+        // that would then fail is the dishonest affordance this epic removed everywhere else.
+        if (!summary.isChequeRedeemable()) {
+            vaultChequeDoubleClick.reset();
+            return false;
+        }
+        if (!vaultChequeDoubleClick.register(cell, System.currentTimeMillis())) {
+            return false;
+        }
+        sendStoredChequeRedemption(summary.publicId());
+        return true;
+    }
+
+    /**
+     * Cashing a stored cheque: the vault row's own public id, never a grid position (design
+     * §9.6), because a refresh can reorder the vault between the two clicks and this action
+     * destroys value. Lock first, packet second, and the refresh push tells the player what
+     * happened -- the row leaves the grid and the balance rises in one snapshot.
+     */
+    private void sendStoredChequeRedemption(java.util.UUID bankItemPublicId) {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (session == null) return;
+        if (!session.beginPending(
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION)) {
+            return;
+        }
+        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
+                new com.seggellion.britannia_mod.network.payload.BankStoredChequeRedemptionRequestC2SPayload(
+                        session.tellerEntityId(), bankItemPublicId));
+    }
+
+    /**
+     * Milestone 17 gate corrective: the explicit cashing request. Same shape as every other
+     * mutation -- revalidate the live slot, claim the session lock before the packet, send a
+     * selection reference only, and let the refresh push or the result payload say what
+     * happened. The server re-reads the slot and rejects locally if it is not actually a
+     * cheque, so this pre-check is UX, never the boundary.
+     */
+    private void sendChequeRedemption(int slot) {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (session == null) return;
+
+        net.minecraft.world.item.ItemStack live = Minecraft.getInstance().player.getInventory().getItem(slot);
+        if (live.isEmpty()
+                || live.getItem() != com.seggellion.britannia_mod.registry.ItemRegistry.BANK_CHEQUE.get()) {
+            return;
+        }
+        if (!session.beginPending(
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION)) {
+            return;
+        }
+
+        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
+                new com.seggellion.britannia_mod.network.payload.BankChequeRedemptionRequestC2SPayload(
+                        session.tellerEntityId(), slot));
+    }
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (button == 0 && drag != null && drag.isGestureLive()) {
             drag.onMove(mouseX, mouseY);
+            // Once the gesture is genuinely a drag (past the 4px threshold, not mouse jitter),
+            // it stops being a potential first click of a double-click.
+            if (drag.isDragging()) {
+                chequeDoubleClick.reset();
+            }
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);

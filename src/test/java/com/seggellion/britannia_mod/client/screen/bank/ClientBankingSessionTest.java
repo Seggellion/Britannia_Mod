@@ -44,7 +44,7 @@ class ClientBankingSessionTest {
 
     private static BankAccountOpenedS2CPayload account(int entityId, List<BankItemSummary> items) {
         return new BankAccountOpenedS2CPayload(
-                "Aldric", "male", entityId, "Britain", 250, 12.5, 3, 47, 92, items
+                "Aldric", "male", entityId, "Britain", 250, 12.5, 3, 47, 92, items, false
         );
     }
 
@@ -89,7 +89,7 @@ class ClientBankingSessionTest {
     @Test
     void carriesAbsentCityDisplayNameAsNullForGlobalMode() {
         ClientBankingSession session = ClientBankingSession.applyAccountOpened(
-                new BankAccountOpenedS2CPayload("Aldric", "female", TELLER, null, 250, 0.0, 0, 0, 0, List.of())
+                new BankAccountOpenedS2CPayload("Aldric", "female", TELLER, null, 250, 0.0, 0, 0, 0, List.of(), false)
         );
         assertNull(session.cityDisplayName());
     }
@@ -138,7 +138,7 @@ class ClientBankingSessionTest {
         ClientBankingSession session = ClientBankingSession.applyAccountOpened(account(TELLER, List.of(item(first))));
 
         ClientBankingSession.applyAccountOpened(new BankAccountOpenedS2CPayload(
-                "Aldric", "male", TELLER, "Britain", 250, 40.0, 9, 8, 7, List.of(item(second))
+                "Aldric", "male", TELLER, "Britain", 250, 40.0, 9, 8, 7, List.of(item(second)), false
         ));
 
         // Every value comes from the newest snapshot; nothing is merged from the previous one.
@@ -342,5 +342,77 @@ class ClientBankingSessionTest {
     void closeIsSafeWhenNothingIsOpen() {
         ClientBankingSession.close();
         assertFalse(ClientBankingSession.isOpen());
+    }
+
+    // ---------- Milestone 17: silence past the threshold is named, never left mute ----------
+
+    @Test
+    void aFreshRequestIsNotUncertain() {
+        long[] now = {1_000_000L};
+        ClientBankingSession.useClockForTesting(() -> now[0]);
+        ClientBankingSession session = ClientBankingSession.applyAccountOpened(account(TELLER));
+
+        session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT);
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS - 1;
+        assertFalse(session.isPendingUncertain(), "one millisecond short of the threshold");
+    }
+
+    @Test
+    void silencePastTheThresholdBecomesUncertain() {
+        long[] now = {1_000_000L};
+        ClientBankingSession.useClockForTesting(() -> now[0]);
+        ClientBankingSession session = ClientBankingSession.applyAccountOpened(account(TELLER));
+
+        session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT);
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS;
+        assertTrue(session.isPendingUncertain());
+        // The lock is NOT released -- nothing client-side can cancel an in-flight request
+        // (design §5.3). Only the silence is named.
+        assertTrue(session.isMutationPending());
+    }
+
+    @Test
+    void anAnswerEndsTheUncertaintyHoweverLateItComes() {
+        long[] now = {1_000_000L};
+        ClientBankingSession.useClockForTesting(() -> now[0]);
+        ClientBankingSession session = ClientBankingSession.applyAccountOpened(account(TELLER));
+
+        session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT);
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS * 3;
+        assertTrue(session.isPendingUncertain());
+
+        ClientBankingSession.applyTransferResult(rejection());
+        assertFalse(session.isPendingUncertain(), "a result resolves the pending state entirely");
+        assertFalse(session.isMutationPending());
+    }
+
+    @Test
+    void aRefreshEndsTheUncertaintyToo() {
+        long[] now = {1_000_000L};
+        ClientBankingSession.useClockForTesting(() -> now[0]);
+        ClientBankingSession session = ClientBankingSession.applyAccountOpened(account(TELLER));
+
+        session.beginPending(BankTransferResultS2CPayload.Operation.WITHDRAWAL);
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS * 2;
+        assertTrue(session.isPendingUncertain());
+
+        ClientBankingSession.applyAccountOpened(account(TELLER));
+        assertFalse(session.isPendingUncertain());
+        assertFalse(session.isMutationPending());
+    }
+
+    @Test
+    void aSecondRequestStartsItsOwnClock() {
+        long[] now = {1_000_000L};
+        ClientBankingSession.useClockForTesting(() -> now[0]);
+        ClientBankingSession session = ClientBankingSession.applyAccountOpened(account(TELLER));
+
+        session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT);
+        now[0] += ClientBankingSession.UNCERTAIN_AFTER_MILLIS * 2;
+        ClientBankingSession.applyTransferResult(rejection());
+
+        // The old request's long silence must not bleed into the new request's patience.
+        session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT);
+        assertFalse(session.isPendingUncertain());
     }
 }

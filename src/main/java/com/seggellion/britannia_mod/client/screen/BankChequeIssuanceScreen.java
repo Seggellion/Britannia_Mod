@@ -6,6 +6,7 @@ import com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy;
 import com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination;
 import com.seggellion.britannia_mod.client.screen.bank.BankChequeForm;
 import com.seggellion.britannia_mod.client.screen.bank.BankDialogueFrame;
+import com.seggellion.britannia_mod.client.screen.bank.BankNavigation;
 import com.seggellion.britannia_mod.client.screen.bank.BankDialogueLayout;
 import com.seggellion.britannia_mod.client.screen.bank.BankStatusPresenter;
 import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
@@ -232,6 +233,7 @@ public final class BankChequeIssuanceScreen extends Screen implements BankingScr
     }
 
     private void returnToMain() {
+        BankNavigation.beginNavigation(ClientBankingSession.active());
         Minecraft.getInstance().setScreen(new BankMainScreen());
     }
 
@@ -255,10 +257,10 @@ public final class BankChequeIssuanceScreen extends Screen implements BankingScr
         renderSelectedBalance(graphics, session);
 
         // A live validation problem is the more useful thing to show while typing; a server
-        // outcome takes the slot once there is nothing to fix.
+        // outcome (or Milestone 17's named silence) takes the slot once there is nothing to fix.
         BankStatusPresenter.Status status = validationStatus != null
                 ? validationStatus
-                : BankStatusPresenter.forResult(session.lastResult());
+                : BankStatusPresenter.statusFor(session);
         BankDialogueFrame.renderStatus(graphics, font, layout, status);
     }
 

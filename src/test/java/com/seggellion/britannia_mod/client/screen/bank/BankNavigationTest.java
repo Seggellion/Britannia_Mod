@@ -34,30 +34,64 @@ class BankNavigationTest {
 
     private static ClientBankingSession openSession(String city) {
         return ClientBankingSession.applyAccountOpened(new BankAccountOpenedS2CPayload(
-                "Aldric", "male", TELLER, city, 250, 12.5, 3, 47, 92, List.of()
+                "Aldric", "male", TELLER, city, 250, 12.5, 3, 47, 92, List.of(), false
         ));
     }
 
     // ---------- The refresh cutover ----------
 
     @Test
-    void opensTheMainScreenWhenBankingIsNotAlreadyOnScreen() {
+    void opensTheMainScreenForAGenuineOpenWhenBankingIsNotOnScreen() {
         // The first bank.open of an interaction: nothing banking-related is mounted.
-        assertEquals(BankNavigation.RefreshRoute.OPEN_MAIN, BankNavigation.refreshRoute(false));
+        assertEquals(BankNavigation.RefreshRoute.OPEN_MAIN, BankNavigation.refreshRoute(false, false));
     }
 
     @Test
     void leavesTheCurrentScreenMountedWhenBankingIsAlreadyOpen() {
         // The whole point of Milestone 2 and 4 together: a refresh must not rebuild the screen,
         // because rebuilding discards selection, scroll position and half-typed input -- and once
-        // the Bank Box exists, would eject the player mid-drag.
-        assertEquals(BankNavigation.RefreshRoute.KEEP_CURRENT, BankNavigation.refreshRoute(true));
+        // the Bank Box exists, would eject the player mid-drag. True for both payload purposes:
+        // a re-interact while banking is open behaves as a refresh-in-place too.
+        assertEquals(BankNavigation.RefreshRoute.KEEP_CURRENT, BankNavigation.refreshRoute(true, false));
+        assertEquals(BankNavigation.RefreshRoute.KEEP_CURRENT, BankNavigation.refreshRoute(true, true));
     }
 
     @Test
-    void theTwoRoutesAreTheOnlyOutcomes() {
-        assertEquals(2, BankNavigation.RefreshRoute.values().length);
-        assertNotEquals(BankNavigation.refreshRoute(true), BankNavigation.refreshRoute(false));
+    void discardsALateRefreshAfterThePlayerClosedBanking() {
+        // The D9 wart, closed at Milestone 17: Escape during a pending request used to make the
+        // interface reappear when the confirm's refresh arrived. A refresh-flagged payload with
+        // banking closed is dropped -- design §5.3's "the client must not invent state after
+        // closing", applied to the success path.
+        assertEquals(BankNavigation.RefreshRoute.DISCARD, BankNavigation.refreshRoute(false, true));
+    }
+
+    @Test
+    void theThreeRoutesAreTheOnlyOutcomes() {
+        assertEquals(3, BankNavigation.RefreshRoute.values().length);
+        assertNotEquals(BankNavigation.refreshRoute(true, false), BankNavigation.refreshRoute(false, false));
+        assertNotEquals(BankNavigation.refreshRoute(false, false), BankNavigation.refreshRoute(false, true));
+    }
+
+    // ---------- Navigation clears the status line (design §15.2, third rule) ----------
+
+    @Test
+    void navigatingDropsTheLastResult() {
+        ClientBankingSession session = openSession("Britain");
+        ClientBankingSession.applyTransferResult(new BankTransferResultS2CPayload(
+                BankTransferResultS2CPayload.Operation.DEPOSIT,
+                BankTransferResultS2CPayload.Kind.INVENTORY_FULL
+        ));
+        assertTrue(session.lastResult() != null, "arrange: a result is showing");
+
+        // A message describes the outcome of something done on the screen the player is leaving;
+        // carrying it onto the next screen shows it beside controls it never referred to.
+        BankNavigation.beginNavigation(session);
+        assertEquals(null, session.lastResult());
+    }
+
+    @Test
+    void navigatingWithoutASessionIsANoOp() {
+        BankNavigation.beginNavigation(null);
     }
 
     // ---------- Destination availability ----------

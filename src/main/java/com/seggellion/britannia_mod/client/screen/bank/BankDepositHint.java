@@ -10,10 +10,12 @@ import net.minecraft.world.item.ItemStack;
  * shading hint on the Bank Box's player grid, and nothing more.
  *
  * <p>The disjunction mirrors {@code BankingTransferPacketService.handleDeposit}'s routing order
- * exactly: a bare coin stack goes to the currency protocol, a cheque to redemption, everything
- * else through {@link BankItemEligibility}. The legacy {@code BankScreen.isDepositable} carried
- * the same three checks privately; that screen dies at Milestone 19, and Milestone 13's drag
- * engine needs this same answer, so it lives here once.
+ * exactly: a bare coin stack goes to the currency protocol, everything else through {@link
+ * BankItemEligibility}. A cheque is depositable too -- since the Milestone 17 gate corrective
+ * that means STORED, not cashed (the explicit cheque arm below predates the override and is now
+ * merely a fast path; a cheque passes {@code checkEligible} anyway). The legacy {@code
+ * BankScreen.isDepositable} carried the same checks privately; that screen dies at Milestone
+ * 19, and Milestone 13's drag engine needs this same answer, so it lives here once.
  *
  * <p><b>UX only, never a boundary.</b> A modified client that ignores the shading and sends an
  * ineligible slot is rejected by the server's own already-tested path -- the same trust model

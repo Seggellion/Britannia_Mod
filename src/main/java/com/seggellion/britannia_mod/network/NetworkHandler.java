@@ -600,6 +600,29 @@ registrar.playToServer(
     })
 );
 
+// Milestone 17 gate corrective: explicit cheque redemption (double-click in the Bank Box's
+// pack grid). The deposit packet stores cheques like any item now; cashing is this request.
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankChequeRedemptionRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankChequeRedemptionRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleChequeRedemption(p, payload);
+        }
+    })
+);
+
+// Cashing a cheque that is stored in the vault (double-click in the Bank Box grid).
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.BankStoredChequeRedemptionRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.BankStoredChequeRedemptionRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.banking.BankingTransferPacketService.handleStoredChequeRedemption(p, payload);
+        }
+    })
+);
+
 // Bank interface rebuild, Milestone 6b: Deposit All Coins, from the Bank Balance Screen.
 registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.BankDepositAllCoinsRequestC2SPayload.TYPE,

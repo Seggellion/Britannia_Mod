@@ -160,6 +160,12 @@ public final class BankingDepositClient implements BankingDepositClientPort {
         if (identity.displayName() != null) item.addProperty("display_name", identity.displayName());
         if (identity.itemKey() != null) item.addProperty("item_key", identity.itemKey());
         if (identity.count() != null) item.addProperty("count", identity.count());
+        // Envelope v3: the cheque link, written by the same omit-to-say-absent rule. Only the
+        // proxy decides whether it is present at all (stack is a cheque AND the build emits it),
+        // so this stays a plain write of whatever the request carries.
+        if (request.chequePublicId() != null) {
+            item.addProperty("cheque_public_id", request.chequePublicId().toString());
+        }
 
         JsonObject payload = new JsonObject();
         payload.addProperty("player_uuid", request.playerUuid().toString());

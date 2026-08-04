@@ -30,7 +30,7 @@ public final class BankItemIconGameTests {
     }
 
     private static BankItemSummary summary(String itemKey, Integer count) {
-        return new BankItemSummary(UUID.randomUUID(), 1.0, null, count, itemKey);
+        return BankItemSummary.withoutChequeLink(UUID.randomUUID(), 1.0, null, count, itemKey);
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 20)

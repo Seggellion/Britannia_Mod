@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.client.screen;
 import com.seggellion.britannia_mod.client.screen.bank.BankActionButton;
 import com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy;
 import com.seggellion.britannia_mod.client.screen.bank.BankDialogueFrame;
+import com.seggellion.britannia_mod.client.screen.bank.BankNavigation;
 import com.seggellion.britannia_mod.client.screen.bank.BankDialogueLayout;
 import com.seggellion.britannia_mod.client.screen.bank.BankStatusPresenter;
 import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
@@ -148,6 +149,7 @@ public final class BankBalanceScreen extends Screen implements BankingScreen {
     }
 
     private void returnToMain() {
+        BankNavigation.beginNavigation(ClientBankingSession.active());
         Minecraft.getInstance().setScreen(new BankMainScreen());
     }
 
@@ -175,7 +177,7 @@ public final class BankBalanceScreen extends Screen implements BankingScreen {
         );
 
         refreshButtonStates(session);
-        BankDialogueFrame.renderStatus(graphics, font, layout, BankStatusPresenter.forResult(session.lastResult()));
+        BankDialogueFrame.renderStatus(graphics, font, layout, BankStatusPresenter.statusFor(session));
     }
 
     @Override

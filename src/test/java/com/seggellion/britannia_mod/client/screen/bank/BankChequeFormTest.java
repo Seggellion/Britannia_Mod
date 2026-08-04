@@ -258,7 +258,7 @@ class BankChequeFormTest {
     @Test
     void readsEachDenominationsBalanceFromTheSession() {
         ClientBankingSession session = ClientBankingSession.applyAccountOpened(new BankAccountOpenedS2CPayload(
-                "Aldric", "male", 42, "Britain", 250, 0.0, 3, 47, 92, List.of()
+                "Aldric", "male", 42, "Britain", 250, 0.0, 3, 47, 92, List.of(), false
         ));
 
         assertEquals(3, BankChequeForm.balanceOf(session, Denomination.GOLD));

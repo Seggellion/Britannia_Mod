@@ -127,19 +127,53 @@ public final class BankDragDepositRoutingGameTests {
     // ---------- Category 5: bank cheque ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
-    public static void aChequeEntersRedemptionNeverStorage(GameTestHelper helper) {
+    public static void aDepositedChequeIsStoredNeverAutoCashed(GameTestHelper helper) {
+        // Milestone 17 gate corrective (owner override of ADR-016): this test asserted the exact
+        // opposite until now. Dragging a cheque to the vault STORES it -- players keep cheques
+        // in bank boxes -- and cashing is only ever the explicit double-click packet below.
+        Rig rig = Rig.install(helper);
+        rig.player.getInventory().setItem(SLOT, chequeStack(UUID.randomUUID()));
+        rig.item.prepareBehavior = () -> CompletableFuture.completedFuture(
+                new BankingDepositPrepareResult.Success(UUID.randomUUID(), UUID.randomUUID()));
+        rig.item.confirmBehavior = () -> CompletableFuture.completedFuture(new BankingConfirmResult.Confirmed());
+
+        rig.deposit(helper, () -> {
+            check(rig.item.prepares.size() == 1, "a deposited cheque must be stored as an ordinary bank item");
+            check(rig.cheque.redeems.isEmpty(), "a deposited cheque must NEVER be auto-cashed");
+            check(rig.currency.prepares.isEmpty(), "a cheque is not a coin stack");
+            check(rig.refreshed.get(), "a confirmed deposit refreshes the account");
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aDoubleClickedChequeEntersRedemptionThroughItsOwnPacket(GameTestHelper helper) {
         Rig rig = Rig.install(helper);
         UUID chequeId = UUID.randomUUID();
         rig.player.getInventory().setItem(SLOT, chequeStack(chequeId));
         rig.cheque.redeemBehavior = () -> CompletableFuture.completedFuture(
                 new BankingChequeRedemptionResult.Confirmed(chequeId));
 
-        rig.deposit(helper, () -> {
+        rig.redeem(helper, () -> {
             check(rig.cheque.redeems.size() == 1, "redemption must be engaged exactly once");
             check(chequeId.equals(rig.cheque.redeems.get(0).chequePublicId()), "the real cheque id must travel");
-            check(rig.item.prepares.isEmpty(), "a cheque must never be stored as an ordinary bank item");
+            check(rig.item.prepares.isEmpty(), "cashing must never store the cheque");
             check(rig.currency.prepares.isEmpty(), "a cheque is not a coin stack");
             check(rig.refreshed.get(), "a successful redemption refreshes the account");
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void theRedemptionPacketAimedAtANonChequeRejectsCleanlyAndDisposesNothing(GameTestHelper helper) {
+        // A modified client can aim the new packet anywhere; the proxy re-reads the live slot.
+        Rig rig = Rig.install(helper);
+        rig.player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        rig.redeem(helper, () -> {
+            check(rig.cheque.redeems.isEmpty(), "no Rails call for a slot that is not a cheque");
+            check(rig.item.prepares.isEmpty() && rig.currency.prepares.isEmpty(), "no other protocol touched");
+            check(rig.results.sawExactly(BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                    BankTransferResultS2CPayload.Kind.CLEAN_REJECTION), "one clean rejection reaches the client");
+            check(!rig.player.getInventory().getItem(SLOT).isEmpty(), "the diamond stays with the player");
         });
     }
 
@@ -160,8 +194,10 @@ public final class BankDragDepositRoutingGameTests {
             check(rig.currency.prepares.isEmpty(), "contents must never route the container to currency");
             check(rig.cheque.redeems.isEmpty(), "nor to redemption");
             check(rig.item.prepares.isEmpty(), "the item path rejects it locally, before any Rails call");
+            // Milestone 17: the refusal keeps its identity -- INELIGIBLE_ITEM, not the generic
+            // rejection. The routing claim above is unchanged.
             check(rig.results.sawExactly(BankTransferResultS2CPayload.Operation.DEPOSIT,
-                    BankTransferResultS2CPayload.Kind.CLEAN_REJECTION), "one clean rejection reaches the client");
+                    BankTransferResultS2CPayload.Kind.INELIGIBLE_ITEM), "one ineligible-item rejection reaches the client");
             check(!rig.player.getInventory().getItem(SLOT).isEmpty(), "the shulker stays with the player");
         });
     }
@@ -184,8 +220,9 @@ public final class BankDragDepositRoutingGameTests {
         rig.deposit(helper, () -> {
             check(rig.item.prepares.isEmpty(), "rejected locally, before any Rails call");
             check(rig.currency.prepares.isEmpty() && rig.cheque.redeems.isEmpty(), "no other protocol touched");
+            // Milestone 17: quest-bound is an eligibility refusal, so it reads INELIGIBLE_ITEM now.
             check(rig.results.sawExactly(BankTransferResultS2CPayload.Operation.DEPOSIT,
-                    BankTransferResultS2CPayload.Kind.CLEAN_REJECTION), "one clean rejection reaches the client");
+                    BankTransferResultS2CPayload.Kind.INELIGIBLE_ITEM), "one ineligible-item rejection reaches the client");
             check(!rig.player.getInventory().getItem(SLOT).isEmpty(), "the item stays with the player");
         });
     }
@@ -226,7 +263,7 @@ public final class BankDragDepositRoutingGameTests {
         rig.cheque.redeemBehavior = () -> CompletableFuture.completedFuture(
                 new BankingChequeRedemptionResult.Rejected(BankingTransferOutcome.RECONCILIATION_REQUIRED, false));
 
-        rig.deposit(helper, () -> check(
+        rig.redeem(helper, () -> check(
                 rig.results.sawExactly(BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
                         BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED),
                 "reconciliation must never soften into an ordinary rejection: " + rig.results.calls));
@@ -240,11 +277,75 @@ public final class BankDragDepositRoutingGameTests {
         rig.cheque.redeemBehavior = () -> CompletableFuture.completedFuture(
                 new BankingChequeRedemptionResult.Rejected(railsOutcome, false));
 
-        rig.deposit(helper, () -> {
+        rig.redeem(helper, () -> {
             check(rig.results.sawExactly(BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION, expectedKind),
                     "expected " + expectedKind + ", got " + rig.results.calls);
             check(!rig.refreshed.get(), "a rejected redemption must not refresh as though something changed");
         });
+    }
+
+    // ---------- Cashing a cheque that is already in the vault ----------
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aStoredChequeIsCashedByItsRowIdAndRefreshesTheAccount(GameTestHelper helper) {
+        Rig rig = Rig.install(helper);
+        UUID bankItemId = UUID.randomUUID();
+        UUID chequeId = UUID.randomUUID();
+        rig.storedCheque.behavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeRedemptionResult.Confirmed(chequeId));
+
+        rig.redeemStored(helper, bankItemId, () -> {
+            check(rig.storedCheque.requests.size() == 1, "the stored endpoint must be called exactly once");
+            check(bankItemId.equals(rig.storedCheque.requests.get(0).bankItemPublicId()),
+                    "the VAULT ROW's id must travel, never a grid position");
+            check(rig.cheque.redeems.isEmpty(), "the pack-side endpoint must never be involved");
+            check(rig.item.prepares.isEmpty() && rig.currency.prepares.isEmpty(), "no other protocol touched");
+            check(rig.refreshed.get(), "a cashed cheque refreshes -- the row leaves the vault and the balance rises");
+            check(rig.results.calls.isEmpty(), "a clean success sends no result payload; the refresh is the signal");
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aStoredRowThatIsGoneReportsStoredItemUnavailable(GameTestHelper helper) {
+        // Rails' answer when the row was already cashed, withdrawn, or never belonged to this
+        // account -- the replay case, since stored redemption has no idempotency token.
+        Rig rig = Rig.install(helper);
+        rig.storedCheque.behavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeRedemptionResult.Rejected(BankingTransferOutcome.ITEM_NOT_FOUND, false));
+
+        rig.redeemStored(helper, UUID.randomUUID(), () -> {
+            check(rig.results.sawExactly(BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                    BankTransferResultS2CPayload.Kind.STORED_ITEM_UNAVAILABLE),
+                    "expected STORED_ITEM_UNAVAILABLE, got " + rig.results.calls);
+            check(!rig.refreshed.get(), "a refusal must not refresh");
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aLegacyStoredChequeWithNoLinkReportsChequeNotFound(GameTestHelper helper) {
+        // A cheque stored before the link existed. Rails cannot backfill it, so this is the
+        // correct answer rather than a bug -- the player withdraws it and cashes it from the pack.
+        Rig rig = Rig.install(helper);
+        rig.storedCheque.behavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeRedemptionResult.Rejected(BankingTransferOutcome.CHEQUE_NOT_FOUND, false));
+
+        rig.redeemStored(helper, UUID.randomUUID(), () -> check(
+                rig.results.sawExactly(BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                        BankTransferResultS2CPayload.Kind.CHEQUE_NOT_FOUND),
+                "expected CHEQUE_NOT_FOUND, got " + rig.results.calls));
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aFullBalanceRefusesTheStoredCashingWithItsOwnKind(GameTestHelper helper) {
+        // The ceiling guard that exists only on this endpoint (the pack-side one 503s instead).
+        Rig rig = Rig.install(helper);
+        rig.storedCheque.behavior = () -> CompletableFuture.completedFuture(
+                new BankingChequeRedemptionResult.Rejected(BankingTransferOutcome.BALANCE_CAPACITY_EXCEEDED, false));
+
+        rig.redeemStored(helper, UUID.randomUUID(), () -> check(
+                rig.results.sawExactly(BankTransferResultS2CPayload.Operation.CHEQUE_REDEMPTION,
+                        BankTransferResultS2CPayload.Kind.BALANCE_CAPACITY_EXCEEDED),
+                "expected BALANCE_CAPACITY_EXCEEDED, got " + rig.results.calls));
     }
 
     // ---------- Rig ----------
@@ -263,6 +364,7 @@ public final class BankDragDepositRoutingGameTests {
         final FakeItemClient item = new FakeItemClient();
         final FakeCurrencyClient currency = new FakeCurrencyClient();
         final FakeChequeClient cheque = new FakeChequeClient();
+        final FakeStoredChequeClient storedCheque = new FakeStoredChequeClient();
         final FakeResultSender results = new FakeResultSender();
         final AtomicBoolean refreshed = new AtomicBoolean(false);
 
@@ -291,6 +393,8 @@ public final class BankDragDepositRoutingGameTests {
             BankingDepositProxyService.useClientForTesting(rig.item);
             BankingCurrencyDepositProxyService.useClientForTesting(rig.currency);
             BankingChequeRedemptionProxyService.useClientForTesting(rig.cheque);
+            com.seggellion.britannia_mod.service.banking.BankingStoredChequeRedemptionProxyService
+                    .useClientForTesting(rig.storedCheque);
             BankingTransferPacketService.useResultSenderForTesting(rig.results);
             // The refresh push re-runs bank.open's real fetch, so the open client is faked too --
             // otherwise a confirmed route stalls on a network call and "refreshed" never fires.
@@ -325,7 +429,46 @@ public final class BankDragDepositRoutingGameTests {
             }
         }
 
+        /**
+         * Milestone 17 gate corrective: sends the double-click's exact packet -- the explicit
+         * redemption request that replaced the deposit packet's automatic cheque routing.
+         */
+        void redeem(GameTestHelper helper, Runnable assertions) {
+            try {
+                BankingTransferPacketService.handleChequeRedemption(
+                        player, new com.seggellion.britannia_mod.network.payload.BankChequeRedemptionRequestC2SPayload(
+                                teller.getId(), SLOT));
+                helper.succeedWhen(() -> {
+                    assertions.run();
+                    tearDown();
+                });
+            } catch (RuntimeException | Error propagate) {
+                tearDown();
+                throw propagate;
+            }
+        }
+
+        /** Sends the vault double-click's exact packet, naming the stored row by public id. */
+        void redeemStored(GameTestHelper helper, UUID bankItemPublicId, Runnable assertions) {
+            try {
+                BankingTransferPacketService.handleStoredChequeRedemption(
+                        player, new com.seggellion.britannia_mod.network.payload
+                                .BankStoredChequeRedemptionRequestC2SPayload(teller.getId(), bankItemPublicId));
+                helper.succeedWhen(() -> {
+                    assertions.run();
+                    tearDown();
+                });
+            } catch (RuntimeException | Error propagate) {
+                tearDown();
+                throw propagate;
+            }
+        }
+
         private void tearDown() {
+            com.seggellion.britannia_mod.service.banking.BankingStoredChequeRedemptionProxyService
+                    .resetClientForTesting();
+            com.seggellion.britannia_mod.service.banking.BankingStoredChequeRedemptionProxyService
+                    .resetInFlightTrackingForTesting();
             BankingDepositProxyService.resetClientForTesting();
             BankingDepositProxyService.resetInFlightTrackingForTesting();
             BankingCurrencyDepositProxyService.resetClientForTesting();
@@ -415,6 +558,22 @@ public final class BankDragDepositRoutingGameTests {
                 MinecraftServer server, BankingChequeRedemptionRequest request) {
             redeems.add(request);
             return redeemBehavior.get();
+        }
+    }
+
+    private static final class FakeStoredChequeClient
+            implements com.seggellion.britannia_mod.service.banking.BankingStoredChequeRedemptionClientPort {
+        java.util.function.Supplier<CompletableFuture<BankingChequeRedemptionResult>> behavior =
+                () -> { throw new IllegalStateException("stored redemption was not expected in this test"); };
+        final List<com.seggellion.britannia_mod.service.banking.BankingStoredChequeRedemptionRequest> requests =
+                new CopyOnWriteArrayList<>();
+
+        @Override
+        public CompletableFuture<BankingChequeRedemptionResult> redeemStored(
+                MinecraftServer server,
+                com.seggellion.britannia_mod.service.banking.BankingStoredChequeRedemptionRequest request) {
+            requests.add(request);
+            return behavior.get();
         }
     }
 

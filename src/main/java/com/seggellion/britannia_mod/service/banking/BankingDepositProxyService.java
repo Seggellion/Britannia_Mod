@@ -11,13 +11,18 @@ import com.seggellion.britannia_mod.bank.transfer.BankTransferOperationType;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceiptStore;
 import com.seggellion.britannia_mod.bank.transfer.BankTransferReceipts;
+import com.seggellion.britannia_mod.component.BankChequeData;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.registry.DataComponentRegistry;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 import java.util.Set;
 import java.util.UUID;
@@ -242,10 +247,16 @@ public final class BankingDepositProxyService {
         BankItemIdentity identity = BankItemEnvelopeVersion.emitsIdentity()
                 ? BankItemIdentity.resolve(capture.snapshot())
                 : BankItemIdentity.EMPTY;
+        // Envelope v3: link a deposited cheque to its own row so it can be cashed from the vault
+        // later. Read from the same capture snapshot everything else was computed from, so the
+        // link cannot name a cheque other than the one actually being stored.
+        UUID chequePublicId = BankItemEnvelopeVersion.emitsChequeLink()
+                ? resolveChequeLink(capture.snapshot())
+                : null;
         BankingDepositPrepareRequest prepareRequest = new BankingDepositPrepareRequest(
                 player.getUUID(), resolved.worldNpcPublicId(), UUID.randomUUID().toString(),
                 BankItemEnvelopeVersion.emitted(), capture.payload(), capture.fingerprint(), capture.weight(),
-                identity
+                identity, chequePublicId
         );
 
         final CompletableFuture<BankingDepositPrepareResult> prepareFuture;
@@ -501,6 +512,21 @@ public final class BankingDepositProxyService {
         String fingerprint = BankItemFingerprint.fingerprint(snapshot, registries);
         double weight = BankItemWeight.resolve(snapshot);
         return new LocalCapture(snapshot, payload, fingerprint, weight);
+    }
+
+    /**
+     * The cheque id carried by {@code stack}, or {@code null} if it is not a cheque or carries no
+     * readable cheque data. Never throws and never rejects a deposit: a cheque whose component is
+     * missing or malformed still stores perfectly well as an ordinary item -- it simply cannot be
+     * cashed from the vault afterwards, which is exactly the legacy-row story.
+     */
+    @Nullable
+    private static UUID resolveChequeLink(ItemStack stack) {
+        if (stack == null || stack.isEmpty() || stack.getItem() != ItemRegistry.BANK_CHEQUE.get()) {
+            return null;
+        }
+        BankChequeData data = stack.get(DataComponentRegistry.BANK_CHEQUE_DATA.get());
+        return data == null ? null : data.chequeId();
     }
 
     private static BankingDepositLocalRejectionReason mapIneligibilityReason(BankItemEligibility.IneligibilityReason reason) {

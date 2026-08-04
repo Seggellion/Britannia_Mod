@@ -207,21 +207,68 @@ public final class BankItemEnvelopeGameTests {
     @GameTest(template = TEMPLATE)
     public static void identityEmissionIsOffUnlessDeliberatelyTurnedOn(GameTestHelper helper) {
         // Rails-side acceptance ships first, always. A build that has not been told the target
-        // Rails instance has Milestone 16 must keep emitting v1.
-        boolean explicitlyEnabled = "2".equals(System.getProperty(BankItemEnvelopeVersion.SYSTEM_PROPERTY));
-        check(BankItemEnvelopeVersion.emitsIdentity() == explicitlyEnabled,
-                "identity emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY + " and default to off");
-        check(BankItemEnvelopeVersion.emitted() == (explicitlyEnabled ? 2 : 1),
+        // Rails instance has the matching Rails milestone must keep emitting the older envelope.
+        String configured = System.getProperty(BankItemEnvelopeVersion.SYSTEM_PROPERTY);
+        int expected = BankItemEnvelopeVersion.isSupported(parseOrZero(configured))
+                ? parseOrZero(configured)
+                : BankItemEnvelopeVersion.V1_WITHOUT_IDENTITY;
+
+        check(BankItemEnvelopeVersion.emitted() == expected,
                 "emitted envelope version disagrees with the configured one");
+        check(BankItemEnvelopeVersion.emitsIdentity() == (expected >= BankItemEnvelopeVersion.V2_WITH_IDENTITY),
+                "identity emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY + " and default to off");
+        check(BankItemEnvelopeVersion.emitsChequeLink() == (expected >= BankItemEnvelopeVersion.V3_WITH_CHEQUE_LINK),
+                "cheque-link emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY + " and default to off");
+        helper.succeed();
+    }
+
+    private static int parseOrZero(String raw) {
+        if (raw == null || raw.isBlank()) return 0;
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException notANumber) {
+            return 0;
+        }
+    }
+
+    // ---------- Envelope v3: the cheque link ----------
+
+    @GameTest(template = TEMPLATE)
+    public static void theChequeLinkIsWrittenOnlyWhenTheRequestCarriesOne(GameTestHelper helper) {
+        UUID chequeId = UUID.randomUUID();
+        JsonObject linked = envelopeItem(
+                BankItemEnvelopeVersion.V3_WITH_CHEQUE_LINK, BankItemIdentity.EMPTY, chequeId);
+        check(chequeId.toString().equals(linked.get("cheque_public_id").getAsString()),
+                "the cheque id must travel verbatim");
+
+        JsonObject unlinked = envelopeItem(
+                BankItemEnvelopeVersion.V3_WITH_CHEQUE_LINK, BankItemIdentity.EMPTY, null);
+        check(!unlinked.has("cheque_public_id"),
+                "an ordinary item must not carry the key at all -- omission is how absence is said");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void anUnlinkedV3EnvelopeCarriesExactlyTheOriginalFourKeys(GameTestHelper helper) {
+        // The version gate lives in the proxy, so a request built without a link produces
+        // exactly the four original keys whatever version it names.
+        JsonObject item = envelopeItem(
+                BankItemEnvelopeVersion.V3_WITH_CHEQUE_LINK, BankItemIdentity.EMPTY, null);
+        check(item.keySet().equals(Set.of("schema_version", "payload", "fingerprint", "weight")),
+                "unexpected keys on an unlinked v3 envelope: " + item.keySet());
         helper.succeed();
     }
 
     // ---------- Helpers ----------
 
     private static JsonObject envelopeItem(int envelopeVersion, BankItemIdentity identity) {
+        return envelopeItem(envelopeVersion, identity, null);
+    }
+
+    private static JsonObject envelopeItem(int envelopeVersion, BankItemIdentity identity, UUID chequePublicId) {
         BankingDepositPrepareRequest request = new BankingDepositPrepareRequest(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID().toString(),
-                envelopeVersion, new byte[]{1, 2, 3, 4}, "a".repeat(64), 1.5, identity
+                envelopeVersion, new byte[]{1, 2, 3, 4}, "a".repeat(64), 1.5, identity, chequePublicId
         );
         String json = new String(BankingDepositClient.serializePrepareForTesting(request), StandardCharsets.UTF_8);
         return JsonParser.parseString(json).getAsJsonObject().getAsJsonObject("item");
