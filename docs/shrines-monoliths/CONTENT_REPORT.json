@@ -92,7 +92,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "BF7C657E85198EB58A82E6466DFCBAFD74E45B3201B9F24000BD553B84744855",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -148,7 +148,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "F4A03F885EBF68B0C060450F72EDCFE3D2D48825E030C3A31951F826FBA627CD",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -204,7 +204,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "2482D99690D718C3D0B06E919118408BE965179C0A878F2924F396EBBA186CF9",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -260,7 +260,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "50531DACCE0ECB3A513714EC3036C44C96092A787F93854375EDC47904A2BFC3",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -316,7 +316,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "E9D3FA485A24BC1237B20CE2287F3E7BD93E8792C4BF44C8DA742C25992427DC",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -372,7 +372,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "723898577D80867D40B4BBF9DADCDCC759446740722F4F496264E88D1826AF36",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -428,7 +428,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "C4394FF25C3EF14DAE11EEDB5D2DF3BD0787608E82602712314AF32565A3CA4A",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -484,7 +484,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "B8136CE1C9637D1B1A5F6E0738B9698F34854C88F796BD6FC63DB2F955C1688C",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },
@@ -540,7 +540,7 @@
           "animation_resource": "animations/shrine.animation.json",
           "resource_availability": "AVAILABLE",
           "resource_sha256": {
-            "geometry": "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+            "geometry": "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
             "texture": "9365AB11463B1442FEE89D131AA0197A38E7F5FE513102E44182D2B1595F4702",
             "animation": "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E"
           },

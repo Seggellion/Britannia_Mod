@@ -78,26 +78,38 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
     void correctedJsonIsFourSquareFlatShrineWithGraniteRimAndSafeFaceUvs() throws IOException {
         Geometry geometry = readGeometry();
         assertEquals("geometry.britannia_mod.shrine", geometry.identifier());
-        assertEquals(new AABB(-7, 0, -7, 23, 10, 23), geometry.bounds());
+        assertEquals(new AABB(-7, 0, -7, 23, 15, 23), geometry.bounds());
         assertEquals(List.of(0.0, 0.0, 0.0), geometry.rootPivot());
         assertEquals(8, geometry.cubes().size());
         assertEquals(30.0, geometry.bounds().getXsize());
         assertEquals(30.0, geometry.bounds().getZsize());
-        assertEquals(10.0, geometry.bounds().getYsize());
+        assertEquals(15.0, geometry.bounds().getYsize());
 
-        assertEquals(Set.of(
+        Set<List<Double>> surfaceOrigins = Set.of(
                 List.of(-5.0, 0.0, -5.0), List.of(8.0, 0.0, -5.0),
-                List.of(-5.0, 0.0, 8.0), List.of(8.0, 0.0, 8.0)),
+                List.of(-5.0, 0.0, 8.0), List.of(8.0, 0.0, 8.0));
+        assertEquals(surfaceOrigins,
                 geometry.cubes().stream()
-                        .filter(cube -> cube.size().equals(List.of(13.0, 9.0, 13.0)))
+                        .filter(cube -> cube.size().equals(List.of(13.0, 14.0, 13.0)))
                         .map(Cube::origin).collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of(
                 List.of(-7.0, 0.0, -7.0), List.of(-7.0, 0.0, 21.0),
                 List.of(-7.0, 0.0, -5.0), List.of(21.0, 0.0, -5.0)),
                 geometry.cubes().stream()
-                        .filter(cube -> cube.size().equals(List.of(30.0, 10.0, 2.0))
-                                || cube.size().equals(List.of(2.0, 10.0, 26.0)))
+                        .filter(cube -> cube.size().equals(List.of(30.0, 15.0, 2.0))
+                                || cube.size().equals(List.of(2.0, 15.0, 26.0)))
                         .map(Cube::origin).collect(java.util.stream.Collectors.toSet()));
+
+        Map<List<Double>, List<Double>> correctedTopUvOrigins = Map.of(
+                List.of(-5.0, 0.0, -5.0), List.of(0.0, 64.0),
+                List.of(8.0, 0.0, -5.0), List.of(64.0, 64.0),
+                List.of(-5.0, 0.0, 8.0), List.of(0.0, 0.0),
+                List.of(8.0, 0.0, 8.0), List.of(64.0, 0.0));
+        geometry.cubes().stream().filter(cube -> surfaceOrigins.contains(cube.origin()))
+                .forEach(cube -> {
+                    assertEquals(correctedTopUvOrigins.get(cube.origin()), cube.uv().get("up").origin());
+                    assertEquals(List.of(64.0, 64.0), cube.uv().get("up").size());
+                });
 
         Set<String> boxes = new HashSet<>();
         for (Cube cube : geometry.cubes()) {
@@ -138,13 +150,13 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
             assertEquals(centerZ(occupied), centerZ(rendered), EPSILON);
             assertEquals(1.875, rendered.getXsize(), EPSILON);
             assertEquals(1.875, rendered.getZsize(), EPSILON);
-            assertEquals(0.625, rendered.getYsize(), EPSILON);
+            assertEquals(0.9375, rendered.getYsize(), EPSILON);
             assertEquals(1.0 / 16.0, rendered.minX - occupied.minX, EPSILON);
             assertEquals(1.0 / 16.0, occupied.maxX - rendered.maxX, EPSILON);
             assertEquals(1.0 / 16.0, rendered.minZ - occupied.minZ, EPSILON);
             assertEquals(1.0 / 16.0, occupied.maxZ - rendered.maxZ, EPSILON);
             assertEquals(ANCHOR.getY(), rendered.minY, EPSILON);
-            assertEquals(ANCHOR.getY() + 0.625, rendered.maxY, EPSILON);
+            assertEquals(ANCHOR.getY() + 0.9375, rendered.maxY, EPSILON);
             assertEquals(0.0, ShrineRenderTransform.renderOffsetBlocks(
                     ShrineMonolithDefinitions.SHRINE), EPSILON);
             assertTrue(contains(ShrineRenderTransform.worldBounds(ANCHOR), rendered));
@@ -243,7 +255,7 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
         for (var entry : expected.entrySet()) {
             assertEquals(entry.getValue(), sha256(RESOURCES.resolve(entry.getKey())), entry.getKey());
         }
-        assertEquals("3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC",
+        assertEquals("374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
                 sha256(GEOMETRY));
     }
 

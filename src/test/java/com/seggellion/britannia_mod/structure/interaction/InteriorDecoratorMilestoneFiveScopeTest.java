@@ -51,7 +51,7 @@ class InteriorDecoratorMilestoneFiveScopeTest {
     void currentOwnerApprovedShrineAssetsHaveExpectedHashes() throws Exception {
         Map<String, String> expected = new LinkedHashMap<>();
         expected.put("animations/shrine.animation.json", "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E");
-        expected.put("geo/shrine.geo.json", "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC");
+        expected.put("geo/shrine.geo.json", "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51");
         expected.put("geo/shrine_missing.geo.json", "460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781");
         expected.put("models/item/shrine.json", "829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985");
         expected.put("textures/block/shrine/chaos.png", "9365AB11463B1442FEE89D131AA0197A38E7F5FE513102E44182D2B1595F4702");

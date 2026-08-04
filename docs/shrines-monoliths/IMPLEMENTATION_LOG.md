@@ -1431,3 +1431,30 @@ claim remain pending until owner evidence. Milestone 10 was not begun or resumed
 - `git diff --check` passes; only Git's existing Windows LF-to-CRLF notices appear. Live GPU
   appearance remains unverified pending the owner recheck in `OPEN_QUESTIONS.md`. Milestone 10
   remains suspended.
+
+## 2026-08-04 — Owner visual follow-up: UV row and height correction
+
+- Starting HEAD: `257155c1dbf494074e9881992b8e50eb3ed85826` (`fix(shrines): restore flat model and creative entries`).
+- Owner screenshot evidence showed the Honesty hand split across the wrong world rows: the source texture's upper 64-pixel half appeared in the lower two cells and the lower half appeared in the upper two cells. This was a top-face UV row-wrap error, not a texture-file defect.
+- The surface cubes at raw Z `-5` now select V `64..128`; the cubes at raw Z `8` select V `0..64`. U remains `0..64` / `64..128`, so the correction moves the assembled image upward by one whole 2 x 2 cell row without editing, regenerating, recoloring, or renaming any PNG.
+- Per owner direction, the four center cubes change from `13 x 9 x 13` to `13 x 14 x 13`; the four granite rim cubes change from heights `10` to `15`. Raw bounds are now X/Z `[-7,23]`, Y `[0,15]`; horizontal alignment and one-voxel perimeter clearance remain unchanged.
+- Geometry SHA-256 changes from `3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC` to `374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51`. All ten owner-supplied PNGs remain byte-identical.
+- No renderer, material-layer, Creative-tab, placement, collision, persistence, lifecycle, integrity, cycling, schema, monolith, or Milestone 10 behavior is changed. Live GPU confirmation remains owner-only.
+- Focused geometry/content/hash command (corrective renderer class, Milestone 5 scope/hash class,
+  and deterministic content report): exit `0`, 86.0 seconds (`BUILD SUCCESSFUL in 1m 25s`),
+  3 classes / 15 methods, zero failures/errors/skips; 30 tasks (3 executed, 27 up-to-date).
+- Full suite: `gradlew test --no-daemon --no-configuration-cache --stacktrace`; exit `0`,
+  56.1 seconds (`BUILD SUCCESSFUL in 55s`), 33 classes / 208 methods, zero
+  failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, untracked `logs/` and the owner `textures/block/shrine/old/` backup were preserved;
+  Gradle `clean` targeted only reproducible `build/`. `gradlew clean build --no-daemon
+  --no-configuration-cache --stacktrace` exited `0` in 134.2 seconds (`BUILD SUCCESSFUL in
+  2m 13s`), 36 tasks (6 executed, 20 from cache, 10 up-to-date); cached test results remain
+  33 classes / 208 methods, zero failures/errors/skips.
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 21,988,615 bytes, 4,690 entries,
+  SHA-256 `5CCB101B1EB685D673CF18A1D78AEE617205666C62D4E9EDE2CB1D9C4FE0E8C1`.
+  Deployable `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,560,253 bytes, 4,694 entries,
+  SHA-256 `E294FF418A94C407B46C0B020DB953D612B4C88EF5950D31D0807CBFC5C633D1`.
+  Both contain 107 structure classes, one `ShrineRenderer`, one `ShrineGraniteRenderLayer`, one
+  shrine geometry, ten shrine textures, zero `old/` entries, and zero test entries. The packaged
+  geometry SHA-256 exactly matches the corrected source hash `374E8455...AB51` in both artifacts.

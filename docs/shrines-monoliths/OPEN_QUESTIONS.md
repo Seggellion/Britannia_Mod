@@ -2,10 +2,11 @@
 
 ## Post-Milestone 9A owner recheck remains open
 
-- The owner must visually confirm that the shrine is a low, flat four-square surface with the supplied
-  black granite exterior rim, stays centered inside an eight-oak-stair frame for North, East, South,
-  and West, and has no penetration, empty side, thin stripe, overlap, or z-fighting artifact. Parsed
-  geometry and envelope tests are not GPU-render evidence.
+- The owner must visually confirm that all four texture quadrants form one correctly oriented symbol
+  with no row wrap or seam displacement, that the inner surface reaches 14 model voxels and the
+  supplied black granite exterior reaches 15, and that the shrine stays centered inside an
+  eight-oak-stair frame for North, East, South, and West with no penetration, empty side, thin stripe,
+  overlap, or z-fighting artifact. Parsed geometry and envelope tests are not GPU-render evidence.
 - The owner must confirm that the existing Britannia Decorative & Graveyard Creative tab now shows
   exactly one `britannia_mod:shrine` entry and one `britannia_mod:monolith` entry, that they place
   `shrine/honesty` and `monolith/diagnostic_missing_content`, and that no anchor or part item is exposed.
