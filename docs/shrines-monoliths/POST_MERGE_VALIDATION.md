@@ -4,6 +4,11 @@ This checklist must pass before production promotion unless the project owner is
 
 A merge into patch-18 does not itself establish runtime validation.
 
+The refreshed pre-merge production/evidence tip is
+`b26165350227e6d46cfde3af91ff738a42e48c11`. The exact merged candidate must also contain the later
+documentation-only refreshed audit commit. Do not reuse the original Milestone 10 JAR or any earlier
+corrective build as release evidence.
+
 ## Exact candidate and topology
 
 - [ ] Build the exact merged production `-all.jar` from the reviewed merge commit.
@@ -20,6 +25,15 @@ A merge into patch-18 does not itself establish runtime validation.
 - [ ] Client A observes Client B and Client B observes Client A.
 - [ ] Each client places a shrine and monolith in all required facings.
 - [ ] Both clients observe one anchor-owned render and the same occupied cells.
+- [ ] For every shrine facing, confirm the four 64 by 64 texture quadrants assemble one correctly
+      oriented symbol with no row wrap or seam displacement.
+- [ ] Confirm the shrine inner surface reaches 14 model voxels, the granite rim reaches 15, and the
+      separate granite material pass has no seam or z-fighting artifact.
+- [ ] Confirm the 30 by 30 model-voxel shrine presentation remains centered inside the prescribed
+      eight-stair frame with no penetration, empty side, stripe, overlap, or boundary artifact.
+- [ ] Confirm the Decorative & Graveyard tab exposes exactly one configured shrine and one configured
+      monolith, resolving to `shrine/honesty` and `monolith/diagnostic_missing_content`, with no anchor
+      or part item exposed.
 - [ ] Authorized shrine cycling covers all nine variants and wraps deterministically.
 - [ ] Authorized monolith cycling covers both variants and wraps deterministically.
 - [ ] Cycling works when the Interior Decorator targets either anchor or part.

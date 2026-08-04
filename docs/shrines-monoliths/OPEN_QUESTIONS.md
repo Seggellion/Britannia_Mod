@@ -1,25 +1,26 @@
 # Shrine and Monolith Open Questions
 
-## Post-Milestone 9A owner recheck remains open
+## No unresolved critical owner decision
 
-- The owner must visually confirm that all four texture quadrants form one correctly oriented symbol
-  with no row wrap or seam displacement, that the inner surface reaches 14 model voxels and the
-  supplied black granite exterior reaches 15, and that the shrine stays centered inside an
-  eight-oak-stair frame for North, East, South, and West with no penetration, empty side, thin stripe,
-  overlap, or z-fighting artifact. Parsed geometry and envelope tests are not GPU-render evidence.
-- The owner must confirm that the existing Britannia Decorative & Graveyard Creative tab now shows
-  exactly one `britannia_mod:shrine` entry and one `britannia_mod:monolith` entry, that they place
-  `shrine/honesty` and `monolith/diagnostic_missing_content`, and that no anchor or part item is exposed.
-- A remaining live GPU concern is the seam between the virtue surface and separate granite material
-  pass, plus the shrine/stair boundary. The
-  corrected one-model-voxel horizontal inset and non-intersecting envelope remove the proven
-  perimeter-cell overlap mathematically, but only the prescribed owner recheck can close the visual
-  result.
-- Milestone 10 remains suspended until that evidence is supplied and separately accepted.
+On 2026-08-04 the owner accepted the corrected shrine result with `Excellent. Commit. Move to next
+step in this project.` That decision approves the committed UV-row and 14/15-voxel profile correction
+at `b26165350227e6d46cfde3af91ff738a42e48c11` and authorizes the refreshed Milestone 10 audit. It
+does not convert checks that were not demonstrated into passing evidence.
 
-No critical architecture, schema, security, saved-state, or compatibility decision is otherwise unresolved.
+The following remain explicit release-validation items rather than unanswered design decisions:
 
-The missing Milestone 9 multiplayer evidence is not an unanswered owner decision. On 2026-08-04 the project owner approved proceeding without the prescribed two-authenticated-client session. The later owner geometry and Creative-tab correction supersedes the prior visual and Creative recheck wording above without claiming live GPU evidence.
+- North/East/South/West GPU review of the complete symbol, virtue/granite seam, stair boundary, and
+  absence of penetration, empty sides, stripes, overlap, or z-fighting.
+- Representative variant cycling, collision, save/reload, and exact Creative-tab contents in a live
+  game, including the absence of anchor and part items.
+- The two-authenticated-client and dependent live matrix already waived for conditional audit by the
+  owner. Every unperformed item remains `UNVERIFIED` in `POST_MERGE_VALIDATION.md`.
+
+Headless geometry, registered-state, package, and server-startup evidence supports conditional review
+but is not substituted for those live checks. There is no unresolved critical architecture, schema,
+security, saved-state, compatibility, or content-selection decision. Milestone 10 is authorized to
+proceed conditionally; production promotion remains gated by the post-merge checklist unless the owner
+issues a separate explicit release-risk waiver.
 
 ## Non-critical follow-up: final monolith content
 

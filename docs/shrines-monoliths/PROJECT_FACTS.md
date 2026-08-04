@@ -89,7 +89,10 @@ These are inspections only; none was changed or selected for reuse in Milestone 
 
 Verified repository fact: Milestone 6 extends the Milestone 3 contract without duplicating it. The same anchor ownership, persisted footprint, preflight, atomic placement, rollback, centralized teardown/drop/pick/explosion/piston/fluid policy, unloaded-chunk deferral, orphan handling, loaded-cell repair, bounded scheduling/diagnostics, and reentrancy protection now support exact four-cell shrines and eighteen-cell monoliths.
 
-## Milestone 10 verified audit facts
+## Original Milestone 10 audit facts (historical)
+
+The following table records the original audit at `c69057d`. It is retained as chronology and is
+superseded for current merge-readiness purposes by the refreshed facts after corrective Milestone 9A.
 
 | Classification | Finding | Evidence |
 | --- | --- | --- |
@@ -207,4 +210,19 @@ Only evidence-backed unresolved matters are tracked in `docs/shrines-monoliths/O
 | Verified rendering scope | One anchor renderer remains and adds one bounded material layer that renders only the `granite_rim` bone with the owner-supplied granite texture. Anchor and parts retain invisible baked presentation; parts have no block entity or renderer. Collision, selection, placement, persistence, lifecycle, integrity, cycling, monolith rendering, and serialized schemas are unchanged. | `ShrineRenderer`; `ShrineGraniteRenderLayer`; existing Milestone 1-9 tests |
 | Verified Creative exposure | Existing `britannia_mod:britannia_decor_tab` is reused. It accepts exactly one explicitly configured `britannia_mod:shrine` stack resolving to `shrine/honesty` and exactly one explicitly configured `britannia_mod:monolith` stack resolving to `monolith/diagnostic_missing_content`. No new tab, item registration, variant entry, anchor/part item, or recipe exists. | `CreativeTabRegistry`; `LargeStructureRegistry`; corrective Creative test |
 | Verified assets | Owner-supplied shrine geometry, nine 128 x 128 virtue textures, and `granite.png` supersede the prior stepped/provisional visual set. The UV/height-corrected geometry SHA-256 is `374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51`; granite is `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`. The PNG files remain byte-identical during this follow-up. Exact per-variant hashes are enforced by tests and `CONTENT_REPORT.json`. The owner `old/` backup is excluded from packaged resources. | protected-asset tests; `CONTENT_REPORT.json`; `build.gradle` resource exclusion |
-| Explicitly pending | Headless parsing and registered stair-state checks do not prove the final GPU image. Owner confirmation for the reassembled symbol, 15-voxel granite rim, 14-voxel inner surface, four facings, representative variants, both Creative entries, collision, and save/reload remains required; Milestone 10 is suspended. | `OPEN_QUESTIONS.md`; owner visual follow-up implementation log |
+| Approved owner disposition | After the UV-row and 14/15-voxel correction, the owner responded `Excellent. Commit. Move to next step in this project.` The correction is accepted and refreshed Milestone 10 is authorized. | Owner instruction; commit `b26165350227e6d46cfde3af91ff738a42e48c11` |
+| Explicitly unverified | The owner acceptance does not establish the complete four-facing GPU, representative-variant, Creative-tab, collision, save/reload, authenticated-client, multiplayer, or performance matrix. Those checks remain `UNVERIFIED` release gates rather than unresolved design decisions. | `OPEN_QUESTIONS.md`; `POST_MERGE_VALIDATION.md` |
+
+## Refreshed Milestone 10 audit facts
+
+| Classification | Finding | Evidence |
+| --- | --- | --- |
+| Verified repository fact | The corrected production/evidence tip is `b26165350227e6d46cfde3af91ff738a42e48c11` on `shrines-monoliths`. `origin/patch-18` and the merge base remain `62df1dc97c5113a86f9c0f258cb90538f31efe89`; divergence is 0 behind / 17 ahead of `origin/patch-18` and 0 behind / 15 ahead of `origin/shrines-monoliths`. | refreshed preflight |
+| Verified repository fact | The transparent feature chronology contains 17 non-merge commits through the corrected tip, including the original audit and all three later corrective shrine commits. | `git log --reverse`; `MERGE_READINESS.md` |
+| Verified repository fact | The corrected feature range contains 119 paths: 112 added, 7 modified, 0 deleted, 0 renamed; 49 production Java, 36 test Java, 23 main resources, 8 project documents, 2 root specifications, and 1 build file. Unrelated count is zero. | exhaustive changed-path audit |
+| Verified repository fact | The protected package now contains 20 assets: 14 shrine resources including owner-supplied granite, and 6 monolith resources. Both production JARs contain every protected source byte with zero missing or mismatched entry. | source/JAR SHA-256 audit |
+| Verified repository fact | Focused audit tests pass 51/51 methods in 11 classes; the structure and full suites pass 208/208 methods in 33 classes with zero failures, errors, or skips. | refreshed Gradle/JUnit results |
+| Verified repository fact | The refreshed thin JAR is 21,988,615 bytes, 4,690 entries, SHA-256 `1AEF96104D311EAF463BC60E1845B7A4165EE87B381FE173192980049E806C11`. The deployable `-all.jar` is 22,560,253 bytes, 4,694 entries, SHA-256 `23DC141268A46E9E7BF1389A49B25405199AE3287624716F301F7AB824512C8A`; both manifests are `Manifest-Version: 1.0`. | clean build and JAR inspection |
+| Verified repository fact | The exact deployable hash was the only Britannia JAR on a fresh online-mode Java 21 / NeoForge 21.1.72 server, reached `Done (10.900s)`, received normal console `stop`, exited 0, saved overworld, End, Nether and all dimensions, and logged zero shrine/monolith structure error. | external refreshed server smoke |
+| Verified repository fact | Git 2.50.1 three-tree simulation of the corrected tip into unchanged `origin/patch-18` exited 0 with zero conflict marker or `both modified` path. No merge was performed. | refreshed `git merge-tree` audit |
+| Explicitly unverified | No new authenticated-client, two-client, complete live gameplay, all-facing GPU, reload, chunk, adjacency, horizon, client-log, or dense-scene performance evidence was created by the refresh. | owner limitation; `POST_MERGE_VALIDATION.md` |

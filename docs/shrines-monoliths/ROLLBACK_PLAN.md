@@ -2,7 +2,12 @@
 
 ## Scope and prerequisite
 
-This plan covers feature commits `b10efd3382f74bf8e1970588bcd0b57869c8771a` through `c69057dc1b2a961f73b7c8b87ae7bc30d7a41c43`, plus the Milestone 10 documentation commit identified in the final Milestone 10 report. It is an operational plan, not an instruction to rewrite feature history.
+This plan covers the complete transparent feature chronology from
+`b10efd3382f74bf8e1970588bcd0b57869c8771a` through the corrected production/evidence tip
+`b26165350227e6d46cfde3af91ff738a42e48c11`, plus both Milestone 10 documentation commits identified
+in the audit history. It includes the original rendering implementation/revert/restoration, the
+original conditional audit, and all three corrective Milestone 9A shrine commits. It is an operational
+plan, not an instruction to rewrite feature history.
 
 Rollback must first be rehearsed against a verified copy of the exact affected world and player data. A production rollback must not begin while the server is running or before a restorable backup has been independently verified.
 

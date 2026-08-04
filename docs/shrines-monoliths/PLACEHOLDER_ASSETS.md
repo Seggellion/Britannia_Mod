@@ -1,25 +1,35 @@
-# Provisional shrine and monolith assets
+# Owner-approved shrine and provisional monolith assets
 
-Following the corrective Milestone 4 review, the project owner explicitly approved these exact files for repository and Milestone 4 use on 2026-08-03: "I like the placeholder assets, use them."
-They remain intentionally replaceable development art rather than a permanent final-art commitment. Replacement must occur in place without changing stable variant IDs unless a later approved migration says otherwise.
+Following the corrective Milestone 4 review, the project owner approved the original provisional shrine
+files for repository use. Corrective Milestone 9A later replaced their visible geometry and nine virtue
+textures with owner-supplied files derived from `Shrine_old.json`; the owner separately approved the
+resulting flat model, granite exterior, corrected UV rows, and 14/15-voxel profile. The monolith files
+remain explicitly provisional development art. Future replacement must preserve stable IDs unless a
+separately approved migration says otherwise.
 
 ## Shared geometry
 
-- `assets/britannia_mod/geo/shrine.geo.json` is a static GeckoLib placeholder altar.
+- `assets/britannia_mod/geo/shrine.geo.json` is the current static owner-supplied GeckoLib shrine.
 - It is authored facing North, with Y up and the anchor at the lower front-left occupied cell.
 - Corrective Milestone 9A aligns the geometry with the lower-front-left anchor after GeckoLib's
-  Bedrock-X mirroring. Model extents are X `[-7, 23]`, Y `[0, 16]`, Z `[-7, 23]` model units.
+  Bedrock-X mirroring. Model extents are X `[-7, 23]`, Y `[0, 15]`, Z `[-7, 23]` model units.
 - The 30 by 30 model-voxel base leaves a symmetric one-voxel inset from the four horizontal
   footprint edges. Its effective presentation is 1.875 by 1.875 blocks, centered in the logical
   2 by 2 footprint for all four facings.
-- Pre-correction SHA-256 was `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0`;
-  corrected SHA-256 is `05C52F184101C5AA62EEE515EB3BB285975FAAE2744EAC3381512000F0EEE62E`.
+- Four equal `13 x 14 x 13` surface cubes sit one model voxel below four 15-voxel-high granite rim
+  pieces. Each 128 by 128 virtue top is divided into four exact 64 by 64 quadrants; the raw-Z UV rows
+  are intentionally swapped so the complete symbol is oriented correctly in world space.
+- Current SHA-256 is `374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51`.
 - GeckoLib translates to the anchor cell center before rotating: North `0`, East `-90`, South `180`, West `90` degrees around +Y.
+- `assets/britannia_mod/textures/block/shrine/granite.png` is the separate owner-supplied granite
+  material rendered only on the `granite_rim` bone; SHA-256 is
+  `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`.
 - `assets/britannia_mod/geo/shrine_missing.geo.json` is a bounded diagnostic cube, not shrine art.
 
 ## Variant textures
 
-The nine 128 by 128 PNG files under `assets/britannia_mod/textures/block/shrine/` were generated with OpenAI ImageGen for temporary development use:
+The nine 128 by 128 PNG files under `assets/britannia_mod/textures/block/shrine/` are the exact
+owner-supplied virtue textures installed during corrective Milestone 9A:
 
 - `honesty.png`
 - `compassion.png`
@@ -31,11 +41,16 @@ The nine 128 by 128 PNG files under `assets/britannia_mod/textures/block/shrine/
 - `humility.png`
 - `chaos.png`
 
-Each texture is mapped directly from its stable lowercase variant ID. Replacements must keep the same file names and dimensions unless the geometry manifest is intentionally updated at the same time.
+Each texture is mapped directly from its stable lowercase variant ID. Their exact hashes are recorded
+in `CONTENT_REPORT.json`. The later UV/height correction changed only `shrine.geo.json`; all ten
+owner-supplied shrine PNGs, including granite, remained byte-identical. Replacements must keep the same
+file names and dimensions unless geometry and content evidence are intentionally updated together.
 
 ## Item presentation
 
-There remains exactly one registered configured shrine item. Its generated item model uses the Honesty texture as a temporary family-level icon; this does not change or default the configured item component to Honesty.
+There remains exactly one registered configured shrine item. Its generated item model uses the current
+owner-supplied Honesty texture as the family-level icon; this does not change or default an arbitrary
+configured component because the Creative-tab stack is explicitly configured as `shrine/honesty`.
 
 ## Milestone 6 diagnostic monolith
 

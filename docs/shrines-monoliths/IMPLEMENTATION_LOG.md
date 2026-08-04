@@ -1458,3 +1458,116 @@ claim remain pending until owner evidence. Milestone 10 was not begun or resumed
   Both contain 107 structure classes, one `ShrineRenderer`, one `ShrineGraniteRenderLayer`, one
   shrine geometry, ten shrine textures, zero `old/` entries, and zero test entries. The packaged
   geometry SHA-256 exactly matches the corrected source hash `374E8455...AB51` in both artifacts.
+
+## 2026-08-04 - Refreshed Milestone 10: Corrected Merge-Readiness Audit
+
+### Authorization and preflight
+
+- The owner accepted the UV-row and 14/15-voxel correction with `Excellent. Commit. Move to next
+  step in this project.` The correction was committed as
+  `b26165350227e6d46cfde3af91ff738a42e48c11` (`fix(shrines): align texture and raise profile`).
+  That instruction authorizes this refreshed final audit but does not claim that unperformed live
+  checks passed.
+- Starting production/evidence tip: `b26165350227e6d46cfde3af91ff738a42e48c11` on
+  `shrines-monoliths` in
+  `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`. The only untracked paths were the
+  preserved `logs/` directory and owner-created `textures/block/shrine/old/` backup.
+- Merge base and `origin/patch-18` were
+  `62df1dc97c5113a86f9c0f258cb90538f31efe89`. Divergence was 0 behind / 17 ahead of
+  `origin/patch-18` and 0 behind / 15 ahead of `origin/shrines-monoliths`.
+- The shared repository was read-only on unrelated branch `banking`, commit
+  `e4875e53850106af16e0176ee78e98f7380d8710`, with its pre-existing modified banking/config files
+  and untracked project documents. No shared state was synchronized.
+- The one ending documentation commit has subject
+  `docs(structures): refresh corrected merge-readiness audit`; its full hash is reported externally
+  because a commit cannot contain its own hash without amendment.
+
+### History, scope, architecture, and content audit
+
+- The prior merge-readiness package was stale because it ended at Milestone 9 and predated the
+  original audit plus all three corrective Milestone 9A commits. The refreshed audit covers all 17
+  non-merge commits from the merge base through `b261653` and preserves the original Milestone 4
+  implementation/revert/restoration chronology.
+- The corrected feature range has 119 paths, 16,811 insertions and 3 deletions: 112 added, 7
+  modified, 0 deleted, 0 renamed. Exhaustive classification is 49 production Java, 36 test Java,
+  23 main resources, 8 project documents, 2 authoritative root specifications, and 1 build file;
+  unrelated count is zero.
+- Architecture, schema, lifecycle, authority, collision, chunk, rollback, and saved-footprint
+  conclusions remain unchanged. The refresh additionally audits the existing Decorative & Graveyard
+  tab's two configured family stacks, `ShrineGraniteRenderLayer`, owner-supplied granite material,
+  corrected four-quadrant shrine geometry, and the excluded untracked `old/` backup.
+- The protected asset inventory is now 20 files: 14 shrine resources including granite and 6
+  monolith resources. Exact current hashes are in `MERGE_READINESS.md`; all 20 match both production
+  JARs byte-for-byte with zero missing/mismatch. `CONTENT_REPORT.json` remains deterministic and its
+  current shrine geometry/texture hashes pass reconstruction tests.
+- Range `git diff --check` reports exactly ten historical Markdown hard-break diagnostics, all in
+  the two authoritative root specifications. No current documentation path is intentionally added to
+  that exception.
+
+### Refreshed automated and package validation
+
+- Focused command:
+  `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.hardening.*" --tests
+  "com.seggellion.britannia_mod.structure.milestone.*" --tests
+  "com.seggellion.britannia_mod.structure.item.*" --tests
+  "com.seggellion.britannia_mod.structure.render.CorrectiveMilestoneNineARenderAlignmentTest"
+  --tests
+  "com.seggellion.britannia_mod.structure.interaction.InteriorDecoratorMilestoneFiveScopeTest"
+  --no-daemon --no-configuration-cache --stacktrace`; exit 0 in 31.2 seconds (`BUILD SUCCESSFUL in
+  30s`), 11 classes / 51 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Required structure suite:
+  `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon
+  --no-configuration-cache --stacktrace`; exit 0 in 35.0 seconds (`BUILD SUCCESSFUL in 34s`),
+  33 classes / 208 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Full suite: `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`; exit 0 in
+  21.5 seconds (`BUILD SUCCESSFUL in 20s`), 33 classes / 208 methods, zero
+  failures/errors/skips; 30 tasks (1 from cache, 29 up-to-date).
+- Before clean, only preserved untracked `logs/` and the owner `old/` backup were present; Gradle
+  clean targeted reproducible `build/` only. `.\gradlew.bat clean build --no-daemon
+  --no-configuration-cache --stacktrace`; exit 0 in 122.3 seconds (`BUILD SUCCESSFUL in 2m 1s`),
+  36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 21,988,615 bytes, 4,690 entries,
+  manifest `Manifest-Version: 1.0`, SHA-256
+  `1AEF96104D311EAF463BC60E1845B7A4165EE87B381FE173192980049E806C11`.
+- Deployable JAR `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,560,253 bytes, 4,694
+  entries, manifest `Manifest-Version: 1.0`, SHA-256
+  `23DC141268A46E9E7BF1389A49B25405199AE3287624716F301F7AB824512C8A`.
+  Both contain 107 structure classes, one anchor renderer, one granite layer, one Creative-tab class,
+  ten shrine textures, two shrine geometries, two monolith textures/geometries, all 20 protected
+  assets, and zero part renderer, test, fixture, project-documentation, or `old/` entry. The
+  deployable JAR embeds GeckoLib 4.6.6 and NanoHTTPD 2.2.0 through JarJar.
+
+### Exact server and merge evidence
+
+- Fresh external validation directory:
+  `C:\projects\britannia\validation\shrines-monoliths-m10-refresh-b261653`; it is not a Git working
+  tree and contains exactly one Britannia JAR with the deployable hash. `online-mode=true`.
+- The first standalone launch selected the shell's legacy Java 8 and failed in 0.2 seconds before
+  NeoForge or the JAR loaded (`@user_jvm_args.txt` was treated as a class). The JAR hash was
+  unchanged. This failed prerequisite attempt is not counted as server evidence.
+- The configured Temurin Java 21.0.9 rerun loaded NeoForge 21.1.72, Britannia 0.1.7k, GeckoLib
+  4.6.6, and NanoHTTPD; reached `Done (10.900s)`; received console `stop`; exited 0 in 53.5
+  seconds; and saved overworld, End, Nether, and all dimensions. Before/after JAR hashes match and
+  the complete log has zero shrine/monolith/large-structure error. Existing `TitleScreen`
+  dedicated-dist, optional-config, first-run FML, union-schema, and barrel diagnostics remain the
+  disclosed unrelated baseline.
+- Git 2.50.1 three-tree `git merge-tree` simulated source `b261653` into unchanged target/base
+  `62df1dc97c5113a86f9c0f258cb90538f31efe89`; exit 0, 17,532 output lines, zero conflict marker,
+  zero `both modified` path, and zero target post-base path. No merge or index/worktree mutation
+  occurred.
+
+### Documentation and disposition
+
+- Refreshed `MERGE_READINESS.md`, `ROLLBACK_PLAN.md`, `POST_MERGE_VALIDATION.md`,
+  `PROJECT_FACTS.md`, `OPEN_QUESTIONS.md`, `PLACEHOLDER_ASSETS.md`, and this log. No production,
+  test, build, registry, resource, texture, model, localization, or saved-state file changed in this
+  refreshed audit.
+- `OPEN_QUESTIONS.md` now distinguishes settled owner decisions from release evidence. The owner's
+  acceptance authorizes conditional review; it does not establish complete all-facing GPU,
+  representative-variant, Creative-tab, collision, reload, authenticated-client, multiplayer, or
+  performance results.
+- Readiness remains `CONDITIONAL MERGE READINESS`. Every unperformed authenticated-client and
+  dependent live validation item remains individually `UNVERIFIED`; production promotion remains
+  blocked by `POST_MERGE_VALIDATION.md` unless the owner separately accepts that release risk.
+- No fetch, push, transfer, merge, rebase, reset, amend, stash, shared-repository mutation, release,
+  deployment, tag, or live promotion occurred.
