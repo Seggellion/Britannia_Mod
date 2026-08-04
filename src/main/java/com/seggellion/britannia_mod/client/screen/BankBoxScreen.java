@@ -3,7 +3,10 @@ package com.seggellion.britannia_mod.client.screen;
 import com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry;
 import com.seggellion.britannia_mod.client.screen.bank.BankActionButton;
 import com.seggellion.britannia_mod.client.screen.bank.BankBoxLayout;
+import com.seggellion.britannia_mod.client.screen.bank.BankBoxSelection;
+import com.seggellion.britannia_mod.client.screen.bank.BankDepositHint;
 import com.seggellion.britannia_mod.client.screen.bank.BankDialogueFrame;
+import com.seggellion.britannia_mod.client.screen.bank.BankItemIcon;
 import com.seggellion.britannia_mod.client.screen.bank.BankGridGeometry;
 import com.seggellion.britannia_mod.client.screen.bank.BankGridScroll;
 import com.seggellion.britannia_mod.client.screen.bank.BankStatusPresenter;
@@ -48,6 +51,9 @@ import java.util.Locale;
  */
 public final class BankBoxScreen extends Screen implements BankingScreen {
 
+    /** Vanilla inventory: slots 0-8 are the hotbar, 9-35 the three main rows. */
+    private static final int MAIN_INVENTORY_FIRST_SLOT = 9;
+
     /** The strongbox artwork behind the vault grid. */
     private static final net.minecraft.resources.ResourceLocation CHEST_TEXTURE =
             net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
@@ -86,6 +92,9 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     private BankBoxLayout layout;
     @Nullable
     private EditBox amountBox;
+    /** Milestone 12. Rebuilt with the layout on every init, so a resize cancels by construction. */
+    @Nullable
+    private com.seggellion.britannia_mod.client.screen.bank.BankDragController drag;
 
     private BankGridScroll scroll = BankGridScroll.TOP;
 
@@ -105,9 +114,31 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
 
         layout = BankBoxLayout.calculate(width, height, font.lineHeight, session.bankItems().size());
         scroll = scroll.reclamped(session.bankItems().size(), BankBoxLayout.COLUMNS, layout.bankGrid().rows());
+        drag = new com.seggellion.britannia_mod.client.screen.bank.BankDragController(layout.bankGrid());
 
         buildCurrencyControls();
         buildActions();
+    }
+
+    /**
+     * The opaque token {@code BankDragController.tick} compares each frame: registry id and
+     * count of whatever the source slot holds right now. Any change -- shrink, swap, empty --
+     * makes the token differ and kills the gesture before it can deposit the wrong thing.
+     */
+    @Nullable
+    private String sourceSnapshot(int slot) {
+        net.minecraft.world.item.ItemStack stack = Minecraft.getInstance().player.getInventory().getItem(slot);
+        if (stack.isEmpty()) return null;
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()) + " x" + stack.getCount();
+    }
+
+    /** The vanilla slot under the cursor across both player grids, or -1. */
+    private int inventorySlotAt(double mouseX, double mouseY) {
+        Integer mainCell = layout.inventoryGrid().cellIndexAt(mouseX, mouseY);
+        if (mainCell != null) return MAIN_INVENTORY_FIRST_SLOT + mainCell;
+        Integer hotbarCell = layout.hotbar().cellIndexAt(mouseX, mouseY);
+        if (hotbarCell != null) return hotbarCell;
+        return -1;
     }
 
     private void buildCurrencyControls() {
@@ -234,10 +265,235 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         drawCells(graphics, layout.inventoryGrid());
         drawCells(graphics, layout.hotbar());
 
+        // Milestone 11: the cells have contents now. Contents draw over the cell chrome, hover
+        // highlights over the contents (vanilla's own layering), tooltips last of all.
+        drawBankContents(graphics, session, mouseX, mouseY);
+        drawInventoryContents(graphics, layout.inventoryGrid(), MAIN_INVENTORY_FIRST_SLOT, mouseX, mouseY);
+        drawInventoryContents(graphics, layout.hotbar(), 0, mouseX, mouseY);
+
         BankDialogueFrame.renderStatusOnDark(
                 graphics, font, layout.contentLeft(), layout.statusY(), layout.statusMaxWidth(),
                 BankStatusPresenter.forResult(session.lastResult())
         );
+
+        // Milestone 12: the source-changed watchdog runs every frame, and the drag visuals draw
+        // last so the ghost rides above everything. Tooltips are suppressed while dragging --
+        // that is how "the tooltip does not obscure the carried item" is satisfied: it is not
+        // dodged, it is absent.
+        if (drag != null && drag.isGestureLive()) {
+            drag.tick(sourceSnapshot(drag.sourceSlot()));
+        }
+        if (drag != null && drag.isDragging()) {
+            renderDragVisuals(graphics, mouseX, mouseY);
+        } else {
+            renderHoverTooltip(graphics, session, mouseX, mouseY);
+        }
+    }
+
+    /**
+     * The gesture's four visual signals, none of them colour-only (design §16): the source cell
+     * is dimmed and outlined (shape), the bank grid gains a bright border while it is the valid
+     * target (shape), the ghost stack follows the cursor (motion), and an invalid hover marks the
+     * ghost with a cross (glyph).
+     */
+    private void renderDragVisuals(GuiGraphics graphics, int mouseX, int mouseY) {
+        int slot = drag.sourceSlot();
+        BankGridGeometry sourceGrid = slot >= MAIN_INVENTORY_FIRST_SLOT ? layout.inventoryGrid() : layout.hotbar();
+        int sourceCell = slot >= MAIN_INVENTORY_FIRST_SLOT ? slot - MAIN_INVENTORY_FIRST_SLOT : slot;
+        graphics.fill(sourceGrid.cellLeft(sourceCell), sourceGrid.cellTop(sourceCell),
+                sourceGrid.cellLeft(sourceCell) + sourceGrid.cellPitch(),
+                sourceGrid.cellTop(sourceCell) + sourceGrid.cellPitch(), 0x99101010);
+        graphics.renderOutline(sourceGrid.cellLeft(sourceCell), sourceGrid.cellTop(sourceCell),
+                sourceGrid.cellPitch(), sourceGrid.cellPitch(), 0xFFE9DCC3);
+
+        boolean overValid = drag.state()
+                == com.seggellion.britannia_mod.client.screen.bank.BankDragController.State.DRAGGING_OVER_VALID;
+        if (overValid) {
+            BankGridGeometry bank = layout.bankGrid();
+            graphics.renderOutline(bank.left() - 1, bank.top() - 1, bank.width() + 2, bank.height() + 2, 0xFFFFD24A);
+            graphics.fill(bank.left(), bank.top(), bank.right(), bank.bottom(), 0x2AFFD24A);
+        }
+
+        net.minecraft.world.item.ItemStack carried =
+                Minecraft.getInstance().player.getInventory().getItem(slot);
+        if (!carried.isEmpty()) {
+            // The whole live stack rides the cursor -- whole-stack deposits, design §10.2 --
+            // slightly offset so the cursor tip stays visible over the drop region.
+            int ghostX = mouseX - 8;
+            int ghostY = mouseY - 8;
+            graphics.renderItem(carried, ghostX, ghostY);
+            graphics.renderItemDecorations(font, carried, ghostX, ghostY);
+            if (!overValid) {
+                graphics.drawString(font, "✕", ghostX + 14, ghostY - 2, 0xFFFF5555, true);
+            }
+        }
+    }
+
+    /**
+     * The vault's contents: icon, count numeral, selection ring, hover highlight. Selection is
+     * matched by public id against the session -- never by cell index, so it stays on the same
+     * item when a refresh reorders the list underneath the view.
+     */
+    private void drawBankContents(GuiGraphics graphics, ClientBankingSession session, int mouseX, int mouseY) {
+        BankGridGeometry grid = layout.bankGrid();
+        java.util.List<com.seggellion.britannia_mod.service.banking.BankItemSummary> items = session.bankItems();
+        Integer hoverCell = grid.cellIndexAt(mouseX, mouseY);
+
+        for (int cell = 0; cell < grid.capacity(); cell++) {
+            int itemIndex = scroll.itemIndexFor(cell, BankBoxLayout.COLUMNS, items.size());
+            if (itemIndex < 0) continue;
+            com.seggellion.britannia_mod.service.banking.BankItemSummary summary = items.get(itemIndex);
+
+            boolean selected = summary.publicId().equals(session.selectedStoredItem());
+            if (selected) {
+                // A ring, not just a tint: shape carries the selected state for anyone who cannot
+                // rely on colour (design §16), and it survives any icon drawn inside it.
+                graphics.fill(grid.cellLeft(cell), grid.cellTop(cell),
+                        grid.cellLeft(cell) + grid.cellPitch(), grid.cellTop(cell) + grid.cellPitch(), 0x5FFFD24A);
+                graphics.renderOutline(grid.cellLeft(cell), grid.cellTop(cell),
+                        grid.cellPitch(), grid.cellPitch(), 0xFFFFD24A);
+            }
+
+            net.minecraft.world.item.ItemStack icon = BankItemIcon.iconFor(summary);
+            graphics.renderItem(icon, grid.iconLeft(cell), grid.iconTop(cell));
+            graphics.renderItemDecorations(font, icon, grid.iconLeft(cell), grid.iconTop(cell));
+        }
+
+        if (hoverCell != null) {
+            graphics.fill(grid.cellLeft(hoverCell), grid.cellTop(hoverCell),
+                    grid.cellLeft(hoverCell) + grid.cellPitch(), grid.cellTop(hoverCell) + grid.cellPitch(), 0x50FFFFFF);
+        }
+    }
+
+    /**
+     * One player grid: the live stacks, with ineligible ones dimmed. {@code firstSlot} maps cell
+     * 0 onto the vanilla inventory index -- 9 for the three main rows, 0 for the hotbar, the same
+     * split every container screen uses.
+     */
+    private void drawInventoryContents(GuiGraphics graphics, BankGridGeometry grid, int firstSlot, int mouseX, int mouseY) {
+        net.minecraft.world.entity.player.Inventory inventory = Minecraft.getInstance().player.getInventory();
+        Integer hoverCell = grid.cellIndexAt(mouseX, mouseY);
+
+        for (int cell = 0; cell < grid.capacity(); cell++) {
+            net.minecraft.world.item.ItemStack stack = inventory.getItem(firstSlot + cell);
+            if (stack.isEmpty()) continue;
+
+            graphics.renderItem(stack, grid.iconLeft(cell), grid.iconTop(cell));
+            graphics.renderItemDecorations(font, stack, grid.iconLeft(cell), grid.iconTop(cell));
+
+            if (!BankDepositHint.isDepositable(stack)) {
+                // Dimmed icon; the tooltip carries the words. Brightness plus text keeps the
+                // state readable without leaning on hue alone (design §16).
+                graphics.fill(grid.cellLeft(cell) + 1, grid.cellTop(cell) + 1,
+                        grid.cellLeft(cell) + grid.cellPitch() - 1, grid.cellTop(cell) + grid.cellPitch() - 1, 0x88101010);
+            }
+        }
+
+        if (hoverCell != null && !inventory.getItem(firstSlot + hoverCell).isEmpty()) {
+            graphics.fill(grid.cellLeft(hoverCell), grid.cellTop(hoverCell),
+                    grid.cellLeft(hoverCell) + grid.cellPitch(), grid.cellTop(hoverCell) + grid.cellPitch(), 0x50FFFFFF);
+        }
+    }
+
+    /** Exactly one tooltip, for whichever cell the cursor is over. */
+    private void renderHoverTooltip(GuiGraphics graphics, ClientBankingSession session, int mouseX, int mouseY) {
+        Integer bankCell = layout.bankGrid().cellIndexAt(mouseX, mouseY);
+        if (bankCell != null) {
+            int itemIndex = scroll.itemIndexFor(bankCell, BankBoxLayout.COLUMNS, session.bankItems().size());
+            if (itemIndex >= 0) {
+                com.seggellion.britannia_mod.service.banking.BankItemSummary summary = session.bankItems().get(itemIndex);
+                java.util.List<Component> lines = new java.util.ArrayList<>();
+                lines.add(summary.displayName() != null
+                        ? Component.literal(summary.displayName())
+                        : Component.translatable("screen.britannia_mod.bank.box.unknown_item"));
+                lines.add(Component.translatable(
+                                "screen.britannia_mod.bank.box.tooltip_weight", formatWeight(summary.weight()))
+                        .withStyle(net.minecraft.ChatFormatting.GRAY));
+                graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+            }
+            return;
+        }
+
+        renderInventoryTooltip(graphics, layout.inventoryGrid(), MAIN_INVENTORY_FIRST_SLOT, mouseX, mouseY);
+        renderInventoryTooltip(graphics, layout.hotbar(), 0, mouseX, mouseY);
+    }
+
+    private void renderInventoryTooltip(GuiGraphics graphics, BankGridGeometry grid, int firstSlot, int mouseX, int mouseY) {
+        Integer cell = grid.cellIndexAt(mouseX, mouseY);
+        if (cell == null) return;
+        net.minecraft.world.item.ItemStack stack =
+                Minecraft.getInstance().player.getInventory().getItem(firstSlot + cell);
+        if (stack.isEmpty()) return;
+
+        java.util.List<Component> lines = new java.util.ArrayList<>(getTooltipFromItem(Minecraft.getInstance(), stack));
+        if (!BankDepositHint.isDepositable(stack)) {
+            lines.add(Component.translatable("screen.britannia_mod.bank.box.cannot_bank")
+                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
+        graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+    }
+
+    /**
+     * Milestone 11: single-click selection, no timer anywhere. {@code BankBoxSelection} owns the
+     * semantics and is tested; this only routes the event. Inventory cells deliberately do
+     * nothing yet -- clicking a stack does not deposit until the drag engine lands (Milestone 13).
+     */
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        ClientBankingSession session = ClientBankingSession.active();
+        if (button == 0 && session != null && layout != null) {
+            BankBoxSelection.Result result =
+                    BankBoxSelection.handleClick(session, layout.bankGrid(), scroll, mouseX, mouseY);
+            if (result != BankBoxSelection.Result.OUTSIDE) return true;
+
+            // Milestone 12: a press on a player stack arms a potential drag. Released under the
+            // threshold it is a click, and inventory clicks still do nothing -- consistent with
+            // Milestone 11.
+            int slot = inventorySlotAt(mouseX, mouseY);
+            if (slot >= 0 && drag != null) {
+                net.minecraft.world.item.ItemStack stack =
+                        Minecraft.getInstance().player.getInventory().getItem(slot);
+                if (!stack.isEmpty() && drag.onPress(
+                        slot, BankDepositHint.isDepositable(stack), sourceSnapshot(slot),
+                        mouseX, mouseY, session.isMutationPending())) {
+                    return true;
+                }
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (button == 0 && drag != null && drag.isGestureLive()) {
+            drag.onMove(mouseX, mouseY);
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && drag != null) {
+            com.seggellion.britannia_mod.client.screen.bank.BankDragController.ReleaseOutcome outcome =
+                    drag.onRelease(mouseX, mouseY);
+            switch (outcome) {
+                case DROPPED_ON_BANK -> {
+                    // Milestone 12 goes no further, by its own restrictions: no packet, no local
+                    // removal. The handoff state exists and was reached -- Milestone 13 replaces
+                    // this line with the deposit request and the pending flow.
+                    drag.completeHandoff();
+                    return true;
+                }
+                case CANCELLED, CLICK -> {
+                    return true;
+                }
+                case NONE -> {
+                    // fall through to super
+                }
+            }
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     /**
@@ -281,10 +537,15 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
-    /** Design §5.2: Escape closes banking; Back is the only route to the hub. */
+    /**
+     * Escape belongs to the drag while one is live -- cancelling the gesture, not the screen
+     * (playbook Milestone 12's cancellation list). Otherwise design §5.2: Escape closes banking,
+     * and Back is the only route to the hub.
+     */
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            if (drag != null && drag.cancel()) return true;
             onClose();
             return true;
         }

@@ -83,6 +83,9 @@ class BankTranslationKeysTest {
         keys.add("screen.britannia_mod.bank.box.withdraw.copper");
         keys.add("screen.britannia_mod.bank.box.withdraw_item");
         keys.add("screen.britannia_mod.bank.box.withdraw_item.pending");
+        keys.add("screen.britannia_mod.bank.box.unknown_item");
+        keys.add("screen.britannia_mod.bank.box.tooltip_weight");
+        keys.add("screen.britannia_mod.bank.box.cannot_bank");
 
         // Milestone 5: the Balance screen. Both plural forms of all three denominations, because
         // a missing ".one" only shows up on an account holding exactly one coin -- which is

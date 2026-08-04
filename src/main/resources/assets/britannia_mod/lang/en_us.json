@@ -652,6 +652,9 @@
     "screen.britannia_mod.bank.box.withdraw.copper": "Copper",
     "screen.britannia_mod.bank.box.withdraw_item": "Withdraw",
     "screen.britannia_mod.bank.box.withdraw_item.pending": "Withdrawing...",
+    "screen.britannia_mod.bank.box.unknown_item": "Stored item",
+    "screen.britannia_mod.bank.box.tooltip_weight": "%s stones",
+    "screen.britannia_mod.bank.box.cannot_bank": "The bank will not take this.",
 
     "screen.britannia_mod.bank.balance.title": "Balance",
     "screen.britannia_mod.bank.balance.body": "The teller runs a finger down the ledger. \"Thy account holds %s, %s, and %s.\"",
