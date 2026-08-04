@@ -87,6 +87,16 @@ public final class StructureDefinitionValidator {
                         || family.sharedGeometry().filter(resource -> resource.equals(variant.model())).isPresent());
     }
 
+    /** Returns whether a selected runtime variant owns a concrete, syntactically valid resource. */
+    public static boolean usableClientResource(ClientResource resource) {
+        if (resource.availability() != ResourceAvailability.AVAILABLE || resource.location().isEmpty()) {
+            return false;
+        }
+        ResourceId location = resource.location().orElseThrow();
+        return RESOURCE_NAMESPACE.matcher(location.namespace()).matches()
+                && RESOURCE_PATH.matcher(location.path()).matches();
+    }
+
     private static void validateVariant(
             Family family, Variant variant, String location, List<DefinitionDiagnostic> diagnostics) {
         validateDimensions(variant.dimensions(), location, diagnostics);

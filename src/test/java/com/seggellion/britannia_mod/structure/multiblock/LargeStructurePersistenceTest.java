@@ -230,6 +230,41 @@ class LargeStructurePersistenceTest {
         assertEquals(footprint, packetReceiver.placedState().orElseThrow().footprint());
     }
 
+    @Test
+    void alternateMonolithSelectionPersistsThroughCompareAndSetDiskTagAndPacket() throws Exception {
+        List<LocalOffset> footprint = ShrineMonolithDefinitions.catalogue()
+                .family(ShrineMonolithDefinitions.MONOLITH).orElseThrow().footprint();
+        PlacedStructureState existing = new PlacedStructureState(
+                ShrineMonolithDefinitions.MONOLITH, new VariantId("diagnostic_missing_content"),
+                Direction.EAST, footprint);
+        PlacedStructureState alternate = new PlacedStructureState(
+                ShrineMonolithDefinitions.MONOLITH, new VariantId("diagnostic_alternate"),
+                Direction.EAST, footprint);
+        LargeStructureAnchorBlockEntity source = entity(Direction.EAST);
+        assertTrue(source.initialize(existing));
+        assertTrue(source.replacePlacedState(existing, alternate));
+
+        CompoundTag disk = source.saveWithoutMetadata(RegistryAccess.EMPTY);
+        LargeStructureAnchorBlockEntity diskReceiver = entity(Direction.EAST);
+        diskReceiver.loadWithComponents(disk, RegistryAccess.EMPTY);
+        assertEquals(alternate, diskReceiver.placedState().orElseThrow());
+
+        CompoundTag update = source.getUpdateTag(RegistryAccess.EMPTY);
+        LargeStructureAnchorBlockEntity tagReceiver = entity(Direction.EAST);
+        tagReceiver.handleUpdateTag(update, RegistryAccess.EMPTY);
+        assertEquals(alternate, tagReceiver.placedState().orElseThrow());
+
+        var constructor = ClientboundBlockEntityDataPacket.class.getDeclaredConstructor(
+                BlockPos.class, BlockEntityType.class, CompoundTag.class);
+        constructor.setAccessible(true);
+        ClientboundBlockEntityDataPacket packet = constructor.newInstance(
+                source.getBlockPos(), source.getType(), update.copy());
+        LargeStructureAnchorBlockEntity packetReceiver = entity(Direction.EAST);
+        packetReceiver.onDataPacket(null, packet, RegistryAccess.EMPTY);
+        assertEquals(alternate, packetReceiver.placedState().orElseThrow());
+        assertEquals(18, packetReceiver.placedState().orElseThrow().footprint().size());
+    }
+
     private static CompoundTag saved(PlacedStructureState state) {
         LargeStructureAnchorBlockEntity entity = entity(state.facing());
         assertTrue(entity.initialize(state));

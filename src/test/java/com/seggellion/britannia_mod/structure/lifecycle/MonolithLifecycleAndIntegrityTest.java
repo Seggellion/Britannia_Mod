@@ -87,6 +87,44 @@ class MonolithLifecycleAndIntegrityTest {
     }
 
     @Test
+    void anchorAndEveryBottomMiddleTopPartResolveForAllFourFacingsWithoutWrites() {
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            ShrineLifecycleTestWorld world = new ShrineLifecycleTestWorld();
+            var anchor = world.placeMonolith(ANCHOR, facing, "diagnostic_alternate");
+            for (LocalOffset offset : anchor.state().footprint()) {
+                BlockPos source = ShrinePlacementPlanner.worldPosition(ANCHOR, facing, offset);
+                var resolution = ShrineLifecycleService.resolve(world, source, world.blockState(source));
+                assertEquals(ShrineLifecycleService.ResolutionStatus.VALID, resolution.status(),
+                        facing + " " + offset);
+                assertEquals(ANCHOR, resolution.anchorPosition());
+                assertEquals(offset, resolution.sourceOffset());
+            }
+            assertTrue(world.writes.isEmpty());
+        }
+    }
+
+    @Test
+    void alternatePickAndSurvivalRecoveryPreserveConfiguredVariant() {
+        ShrineLifecycleTestWorld pickWorld = new ShrineLifecycleTestWorld();
+        pickWorld.placeMonolith(ANCHOR, Direction.SOUTH, "diagnostic_alternate");
+        LocalOffset top = new LocalOffset(2, 2, 1);
+        BlockPos source = ShrinePlacementPlanner.worldPosition(ANCHOR, Direction.SOUTH, top);
+        ShrineItemState picked = ShrineLifecycleService.pick(
+                pickWorld, source, pickWorld.blockState(source))
+                .get(MilestoneTwoRegisteredTestContent.monolithComponent());
+        assertEquals("diagnostic_alternate", picked.variantId().value());
+        assertEquals(18, pickWorld.shrineCellCount());
+
+        ShrineLifecycleTestWorld breakWorld = new ShrineLifecycleTestWorld();
+        breakWorld.placeMonolith(ANCHOR, Direction.SOUTH, "diagnostic_alternate");
+        ShrineLifecycleService.removeFrom(
+                breakWorld, source, breakWorld.blockState(source), ShrineRemovalCause.SURVIVAL_PLAYER);
+        ShrineItemState recovered = breakWorld.drops.getFirst()
+                .get(MilestoneTwoRegisteredTestContent.monolithComponent());
+        assertEquals("diagnostic_alternate", recovered.variantId().value());
+    }
+
+    @Test
     void unloadedChunksDeferAndObstructionsArePreservedWithoutDrops() {
         ShrineLifecycleTestWorld deferred = new ShrineLifecycleTestWorld();
         deferred.placeMonolith(ANCHOR, Direction.NORTH);

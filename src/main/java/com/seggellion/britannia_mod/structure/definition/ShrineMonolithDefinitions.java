@@ -117,6 +117,29 @@ public final class ShrineMonolithDefinitions {
                 true,
                 true,
                 ContentStatus.PROVISIONAL);
+        Variant alternate = new Variant(
+                new VariantId("diagnostic_alternate"),
+                MONOLITH,
+                DisplayName.resolved(
+                        "diagnostic_alternate",
+                        "structure.britannia_mod.monolith.diagnostic_alternate",
+                        "Diagnostic Monolith Alternate"),
+                MONOLITH_DIMENSIONS,
+                footprint,
+                PlacementMode.FLOOR_ORIENTED,
+                CollisionProfile.CELL_BOUNDED,
+                RenderOrigin.ANCHOR_LOWER_FRONT_LEFT,
+                MONOLITH_RENDER_OFFSET,
+                ClientResource.available(
+                        "monolith_diagnostic_alternate_geometry",
+                        "britannia_mod", "geo/monolith_diagnostic_alternate.geo.json"),
+                ClientResource.available(
+                        "monolith_diagnostic_alternate_texture",
+                        "britannia_mod", "textures/block/monolith/diagnostic_alternate_stone.png"),
+                1,
+                true,
+                true,
+                ContentStatus.PROVISIONAL);
         return new Family(
                 MONOLITH,
                 DisplayName.unresolved("monolith", "Monoliths"),
@@ -131,6 +154,6 @@ public final class ShrineMonolithDefinitions {
                 Optional.empty(),
                 Optional.of(diagnostic.id()),
                 ContentStatus.APPROVED,
-                List.of(diagnostic));
+                List.of(diagnostic, alternate));
     }
 }

@@ -13,7 +13,9 @@ import com.seggellion.britannia_mod.structure.lifecycle.ShrineLifecycleService.A
 import com.seggellion.britannia_mod.structure.lifecycle.ShrineLifecycleService.Resolution;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
 import com.seggellion.britannia_mod.structure.multiblock.PlacedStructureState;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -27,13 +29,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Server-authoritative, one-step shrine variant transaction. */
+/** Server-authoritative, one-step same-family shrine or monolith variant transaction. */
 public final class ShrineVariantCycleService {
     public enum Result {
         SUCCESS, WRONG_TOOL, CLIENT_SIDE, UNAUTHORIZED, NOT_A_STRUCTURE_CELL, INVALID_PART,
-        ANCHOR_CHUNK_UNAVAILABLE, ANCHOR_MISSING, ANCHOR_BLOCK_ENTITY_MISSING, FAMILY_NOT_SHRINE,
+        ANCHOR_CHUNK_UNAVAILABLE, ANCHOR_MISSING, ANCHOR_BLOCK_ENTITY_MISSING, FAMILY_NOT_SUPPORTED,
         CURRENT_VARIANT_MISSING, NO_ALTERNATE_ENABLED_VARIANT, INVALID_CYCLE_DEFINITION,
-        INCOMPATIBLE_NEXT_VARIANT, STATE_ASSIGNMENT_FAILED, SYNCHRONIZATION_FAILED, ROLLBACK_FAILED
+        INCOMPATIBLE_NEXT_VARIANT, INCOMPATIBLE_FOOTPRINT, INCOMPATIBLE_COLLISION_PROFILE,
+        INCOMPATIBLE_PLACEMENT_MODE, INCOMPATIBLE_RENDER_ORIGIN, INCOMPATIBLE_RENDER_OFFSET,
+        INVALID_MODEL_RESOURCE, INVALID_TEXTURE_RESOURCE,
+        STATE_ASSIGNMENT_FAILED, SYNCHRONIZATION_FAILED, ROLLBACK_FAILED
     }
 
     public record Target(Result result, BlockPos anchorPosition, Optional<PlacedStructureState> state) {
@@ -86,10 +91,12 @@ public final class ShrineVariantCycleService {
         Target target = mutation.resolve();
         if (target.result() != Result.SUCCESS) return target.result();
         PlacedStructureState previous = target.state().orElseThrow();
-        if (!previous.familyId().equals(ShrineMonolithDefinitions.SHRINE)) return Result.FAMILY_NOT_SHRINE;
+        if (!supportedFamily(previous)) return Result.FAMILY_NOT_SUPPORTED;
 
         Optional<Family> familyResult = mutation.family(previous);
-        if (familyResult.isEmpty()) return Result.FAMILY_NOT_SHRINE;
+        if (familyResult.isEmpty() || !familyResult.orElseThrow().id().equals(previous.familyId())) {
+            return Result.FAMILY_NOT_SUPPORTED;
+        }
         Family family = familyResult.orElseThrow();
         if (!validCycleDefinition(family)) return Result.INVALID_CYCLE_DEFINITION;
         Optional<Variant> current = family.variants().stream()
@@ -98,15 +105,16 @@ public final class ShrineVariantCycleService {
         if (current.isEmpty()) return Result.CURRENT_VARIANT_MISSING;
         Optional<Variant> next = StructureVariantCycler.next(family, previous.variantId());
         if (next.isEmpty() || next.orElseThrow().id().equals(previous.variantId())) {
+            Optional<Variant> incompatible = nextEnabledCandidate(family, current.orElseThrow());
+            if (incompatible.isPresent()) {
+                Optional<Result> failure = compatibilityFailure(family, incompatible.orElseThrow());
+                if (failure.isPresent()) return failure.orElseThrow();
+            }
             return Result.NO_ALTERNATE_ENABLED_VARIANT;
         }
         Variant selected = next.orElseThrow();
-        if (!selected.enabled()
-                || !selected.familyId().equals(ShrineMonolithDefinitions.SHRINE)
-                || !StructureDefinitionValidator.compatible(family, selected)
-                || family.sharedGeometry().filter(selected.model()::equals).isEmpty()) {
-            return Result.INCOMPATIBLE_NEXT_VARIANT;
-        }
+        Optional<Result> compatibilityFailure = compatibilityFailure(family, selected);
+        if (compatibilityFailure.isPresent()) return compatibilityFailure.orElseThrow();
 
         PlacedStructureState replacement = new PlacedStructureState(
                 previous.schemaVersion(), previous.familyId(), selected.id(),
@@ -155,6 +163,56 @@ public final class ShrineVariantCycleService {
             if (variant.cyclePosition() < 0 || !positions.add(variant.cyclePosition())) return false;
         }
         return true;
+    }
+
+    private static boolean supportedFamily(PlacedStructureState state) {
+        return state.familyId().equals(ShrineMonolithDefinitions.SHRINE)
+                || state.familyId().equals(ShrineMonolithDefinitions.MONOLITH);
+    }
+
+    private static Optional<Variant> nextEnabledCandidate(Family family, Variant current) {
+        List<Variant> enabled = family.variants().stream()
+                .filter(Variant::enabled)
+                .sorted(Comparator.comparingInt(Variant::cyclePosition))
+                .toList();
+        if (enabled.isEmpty()) return Optional.empty();
+        return enabled.stream()
+                .filter(candidate -> candidate.cyclePosition() > current.cyclePosition())
+                .findFirst()
+                .or(() -> enabled.stream().findFirst())
+                .filter(candidate -> !candidate.id().equals(current.id()));
+    }
+
+    private static Optional<Result> compatibilityFailure(Family family, Variant selected) {
+        if (!selected.enabled() || !selected.familyId().equals(family.id())) {
+            return Optional.of(Result.INCOMPATIBLE_NEXT_VARIANT);
+        }
+        if (!selected.dimensions().equals(family.dimensions())
+                || !selected.footprint().equals(family.footprint())) {
+            return Optional.of(Result.INCOMPATIBLE_FOOTPRINT);
+        }
+        if (selected.collisionProfile() != family.collisionProfile()) {
+            return Optional.of(Result.INCOMPATIBLE_COLLISION_PROFILE);
+        }
+        if (selected.placementMode() != family.placementMode()) {
+            return Optional.of(Result.INCOMPATIBLE_PLACEMENT_MODE);
+        }
+        if (selected.renderOrigin() != family.renderOrigin()) {
+            return Optional.of(Result.INCOMPATIBLE_RENDER_ORIGIN);
+        }
+        if (!selected.renderOffsetVoxels().equals(family.renderOffsetVoxels())) {
+            return Optional.of(Result.INCOMPATIBLE_RENDER_OFFSET);
+        }
+        if (!StructureDefinitionValidator.compatible(family, selected)) {
+            return Optional.of(Result.INCOMPATIBLE_NEXT_VARIANT);
+        }
+        if (!StructureDefinitionValidator.usableClientResource(selected.model())) {
+            return Optional.of(Result.INVALID_MODEL_RESOURCE);
+        }
+        if (!StructureDefinitionValidator.usableClientResource(selected.texture())) {
+            return Optional.of(Result.INVALID_TEXTURE_RESOURCE);
+        }
+        return Optional.empty();
     }
 
     private static Mutation liveMutation(
@@ -214,8 +272,10 @@ public final class ShrineVariantCycleService {
             @Override public void successFeedback(BlockPos position, Variant selected) {
                 level.playSound(null, position, SoundEvents.UI_STONECUTTER_SELECT_RECIPE,
                         SoundSource.BLOCKS, 1.0F, 1.0F);
+                String familyKey = selected.familyId().equals(ShrineMonolithDefinitions.MONOLITH)
+                        ? "monolith" : "shrine";
                 player.displayClientMessage(Component.translatable(
-                        "message.britannia_mod.shrine.decorator.selected",
+                        "message.britannia_mod." + familyKey + ".decorator.selected",
                         Component.translatable(selected.displayName().translationKey().orElseThrow())), true);
             }
         };

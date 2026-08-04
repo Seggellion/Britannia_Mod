@@ -6,7 +6,7 @@ import com.seggellion.britannia_mod.structure.definition.StructureIdentity.Varia
 import java.util.function.Supplier;
 import net.minecraft.core.component.DataComponentType;
 
-/** One configured monolith-family item for the sole provisional Milestone 6 variant. */
+/** One configured monolith-family item defaulting to the original provisional variant. */
 public final class MonolithItem extends ConfiguredStructureItem {
     public MonolithItem(Properties properties) {
         this(properties, DataComponentRegistry.MONOLITH_INSTANCE_STATE::get);

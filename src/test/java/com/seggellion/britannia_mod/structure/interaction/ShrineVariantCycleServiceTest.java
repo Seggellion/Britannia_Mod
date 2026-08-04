@@ -157,11 +157,11 @@ class ShrineVariantCycleServiceTest {
     }
 
     @Test
-    void nonShrineFamilyIsRejected() {
+    void unsupportedFamilyIsRejectedWithoutCrossFamilyConversion() {
         FakeMutation mutation = new FakeMutation(new PlacedStructureState(
-                new FamilyId("monolith"), new VariantId("diagnostic_missing_content"),
+                new FamilyId("unsupported"), new VariantId("diagnostic_missing_content"),
                 Direction.NORTH, state("honesty").footprint()));
-        assertEquals(Result.FAMILY_NOT_SHRINE, ShrineVariantCycleService.cycle(mutation));
+        assertEquals(Result.FAMILY_NOT_SUPPORTED, ShrineVariantCycleService.cycle(mutation));
         assertEquals(0, mutation.assignments);
     }
 

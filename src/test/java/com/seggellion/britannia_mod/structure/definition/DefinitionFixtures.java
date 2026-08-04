@@ -121,6 +121,9 @@ final class DefinitionFixtures {
 
     static Family twoModelMonolith() {
         Family family = monolith();
+        if (family.variants().size() >= 2) {
+            return family;
+        }
         Variant first = family.variants().getFirst();
         Variant second = withCyclePosition(
                 withModel(

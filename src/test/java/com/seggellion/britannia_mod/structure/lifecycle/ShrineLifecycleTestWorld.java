@@ -44,8 +44,12 @@ final class ShrineLifecycleTestWorld implements WorldAccess {
     }
 
     AnchorSnapshot placeMonolith(BlockPos anchorPos, Direction facing) {
+        return placeMonolith(anchorPos, facing, "diagnostic_missing_content");
+    }
+
+    AnchorSnapshot placeMonolith(BlockPos anchorPos, Direction facing, String variant) {
         return place(anchorPos, facing, ShrineMonolithDefinitions.MONOLITH,
-                "diagnostic_missing_content");
+                variant);
     }
 
     private AnchorSnapshot place(

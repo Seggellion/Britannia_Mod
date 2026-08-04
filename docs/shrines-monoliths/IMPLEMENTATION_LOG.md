@@ -896,3 +896,87 @@ All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`
 
 - Milestone 6 is complete subject to owner review. The provisional package remains explicitly replaceable only with later owner approval.
 - Milestone 7 was not started and remains blocked on owner-approved additional monolith variants/assets.
+
+## 2026-08-03 - Milestone 7: Monolith Model Variants and Interior Decorator Cycling
+
+### Authorization, isolation, and chronology
+
+- Milestone 6 commit `1c5bff67a961da93dea245ed9d05653f2f7bfeca` was approved. The owner then authorized exactly one additional provisional monolith variant, `diagnostic_alternate`, and the exact cycle `diagnostic_missing_content -> diagnostic_alternate -> diagnostic_missing_content`. Neither technical ID is final lore or artwork, and no third variant was authorized or added.
+- Starting clone: `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`, branch `shrines-monoliths`, clean HEAD `1c5bff67a961da93dea245ed9d05653f2f7bfeca`.
+- Merge base with clone-local `origin/patch-18`: `62df1dc97c5113a86f9c0f258cb90538f31efe89`. Starting divergence was `0` behind / `10` ahead of `origin/patch-18` and `0` behind / `8` ahead of `origin/shrines-monoliths`.
+- Shared repository was read-only. Its starting observed state was branch `banking`, HEAD `aa419df6dbe8f4111b6e71ec05eb09a345a734b8`, with unrelated banking modifications and untracked files. No shared branch, file, index, history, build output, or generated content was changed or synchronized.
+- Ending commit is the one commit containing this entry, subject `feat(monoliths): cycle model variants with decorator`. Its immutable full hash is recorded in the final report because a commit cannot contain its own hash without amendment.
+- No fetch, push, transfer, merge, rebase, reset, amend, stash, remote change, linked worktree, or history rewrite occurred. Milestone 8 was not begun.
+
+### Provisional alternate asset package
+
+- New geometry `assets/britannia_mod/geo/monolith_diagnostic_alternate.geo.json`: 1,145 bytes, SHA-256 `B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC`. It is a distinct five-cube stepped/tapered static monument with exact union X `[-8,40]`, Y `[-16,32]`, Z `[-8,24]` voxels, pivot `[0,-16,0]`, default North forward, and a negative-Z front ridge at origin `[10,-6,-6]`, size `[12,28,4]`.
+- New texture `assets/britannia_mod/textures/block/monolith/diagnostic_alternate_stone.png`: 1,900 bytes, SHA-256 `E320B72F2D0B9429D07DD4E62D264535760797AE6D1F9DD047C082B6736A2C4A`. It is a fully opaque 32 by 32 dark/cool layered-stone diagnostic generated from an OpenAI ImageGen raster and reduced deterministically. It contains no text, icon, shrine/virtue/ankh/human identity, copied decoration, or final lore.
+- The final ImageGen source was `C:\Users\dusti\.codex\generated_images\019fc9b3-b045-75a0-8d82-8e25a9fe1763\exec-f07925ea-55f7-4db6-93c2-5fb2bbf516ef.png`. The generation prompt requested a square seamless-style flat diffuse game texture of restrained dark cool layered stone with broad sediment/mineral variation and expressly prohibited text, runes, icons, symbols, shrine/virtue/ankh imagery, humans/faces, ornament, carved decoration, lore motifs, lighting, perspective, borders, and transparency.
+- No alternate animation or item model was technically required. Both monolith variants reuse unchanged `animations/monolith.animation.json`; the family retains unchanged vanilla-backed `models/item/monolith.json`.
+- Both models have the same measured extents, so the finite family render bounds did not expand: all-facing X/Z remain `[-2,3]`, Y `[0,3]` blocks plus `1/128` tolerance. Both require the same renderer-only `[0,+16,0]` voxel correction applied once.
+
+### Catalogue, transaction, and feedback
+
+- The production monolith family now contains exactly two enabled, player-facing, `PROVISIONAL` entries. Positions are numeric and unique: `diagnostic_missing_content` at `0`, `diagnostic_alternate` at `1`. Both own the exact ordered eighteen-cell `3 x 3 x 2` footprint, floor-oriented placement, cell-bounded collision, lower-front-left origin, and `[0,16,0]` render offset.
+- Resource selection remains `family_id + variant_id -> validated catalogue variant -> its model and texture`. Existing maps to `geo/monolith_diagnostic.geo.json` plus `textures/block/monolith/diagnostic_stone.png`; alternate maps to the two new paths. Missing IDs/resources retain the selected stable ID and use the established bounded diagnostic behavior; neither valid variant substitutes for the other.
+- `InteriorDecoratorToolItem` still owns one large-structure dispatch ahead of generic rotation and calls the existing `ShrineVariantCycleService`. No second tool, packet, dispatcher, anchor renderer, part renderer, block entity, or family-specific interaction path was introduced.
+- The shared service now admits only `shrine` and `monolith`, looks up the persisted family, validates cycle positions, resolves the next enabled compatible entry from catalogue order, classifies incompatible footprint/collision/placement/origin/offset or invalid model/texture failures, and changes only `variant_id` through the existing anchor compare-and-set boundary.
+- Success order remains immutable replacement, compare-and-set assignment, readback, `setChanged`/block update synchronization, readback, one existing stonecutter-selection sound, and one localized action-bar message. Monolith feedback key is `message.britannia_mod.monolith.decorator.selected` (`Selected monolith: %s`) using localized `structure.britannia_mod.monolith.diagnostic_alternate` or the existing identity.
+- Assignment or synchronization failure restores the complete previous placed state, verifies readback, attempts normal synchronization, emits no success feedback, and reports incomplete rollback explicitly. Retry advances exactly once.
+- Authorization remains the established logical-server predicate: server `ServerPlayer` creative mode or permission level 2 or higher. The client sends no desired ID, model, texture, cycle position, direction, geometry identity, offset, footprint, or step count.
+- Anchor and part resolution remains `ShrineLifecycleService.resolve`. It validates registered anchor/part state, loaded candidate anchor chunk, reverse transformed offset/facing, persisted footprint membership, expected part state, anchor entity, and authoritative state. It neither force-loads nor mutates.
+
+### State and scope invariants
+
+- Cycling preserves schema, family, ordered eighteen-cell footprint, anchor position/state, facing, all seventeen part states, offsets/world positions, placement/collision/origin policies, render offset, shapes/occlusion/support/piston/fluid behavior, held stacks, drops, lifecycle/integrity state, and chunk tickets. It calls no placement planner/executor/rollback, teardown, integrity repair, item reconstruction, or block replacement.
+- Shrine behavior remains unchanged: nine ordered texture variants, one shared geometry, existing authorization/resolution/synchronization/rollback/feedback, and byte-identical placeholder resources.
+- No reverse cycling, shift behavior, rotation, movement, resizing, variable footprint, cross-family conversion, third monolith, recipe, command, NPC, rails, website, broad rewrite, or Milestone 8 content exists.
+
+### Existing-asset hashes before and after
+
+Every before/after pair is identical:
+
+- Existing monolith geometry `0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C` (1,007); texture `FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4` (2,034); animation `D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530` (84); item model `E48339859F7AA66BBC08246B8BC65AC1827E28241509518F9884A854739A2BED` (40).
+- Shrine animation `F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E` (89); shared geometry `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0` (744); diagnostic geometry `460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781` (597); item model `829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985` (121).
+- Shrine textures: Honesty `D35747568A37960736C20F8359F55043B19739FC7D1FAB34144F8F971C36BCCC`; Compassion `79160E8AF141E4395A64D64439F7FBF0C2170D78073A136E6CBEF8A130FC87BC`; Valor `A748C870317998F911AC328960685F4B41AE8330635DC839F35D27EC6ACA4A1F`; Justice `5F01D14F16870EBA66C6A4C3E2F19C919E403A5DCDDC12037904285C825B1B8B`; Sacrifice `E4C56B44DC44C749DB10E2D34824DCF0079774FAAF9C2368330CC57036B4EEC4`; Honor `ADC2A67CFA7476D4C1D18A7C49E9F1937D552099FCFE9F1D3C821B832135D381`; Spirituality `D50CF726BD459C85313A9173E708C49C3ADC72559D0EABC9458FDFED8FF05CF1`; Humility `E201645E5D9058E28022B22904114E09823E736DDE8021D2E4DA2CE9E558AC8A`; Chaos `D8B2FDEB4158BBF86A053CDD383E532569F4DDDAEFF178D2472F5ABC2507EDC3`.
+
+### Automated coverage and requirement mapping
+
+- `MonolithVariantCycleServiceTest` (6 methods) covers requirements 19-27, 40-63, and 91-101 through exact two-way/wrap cycles, deterministic order independent of names/resources, disabled skipping, typed entry/target/compatibility/resource failures, complete immutable-field equality, assignment/synchronization rollback, failed rollback, retry, and feedback counts.
+- `MonolithMilestoneSevenRenderingTest` (5 methods) covers requirements 1-18 and 64-80: exact catalogue, resource/localization existence, distinct identities, geometry parsing/extents/pivot/front, opaque image/hash validation, both selections, stable unknown-ID fallback, and finite all-facing bounds with one offset.
+- `MonolithLifecycleAndIntegrityTest` (6 methods) exercises registered anchor/part states for all 18 offsets across all four horizontal facings (72 resolution cases), alternate pick and configured-drop recovery, lifecycle, repair, orphan, chunk, and collision/fluid regressions. This covers 28-39, 53-55, 62, and 89-90 where the adapter permits.
+- `LargeStructurePersistenceTest` (12 methods) uses the registered anchor entity, actual NBT/update tags, reflective construction of the actual clientbound block-entity packet, and packet application for both monolith variants, covering 81-88. It is packet-path evidence, not live multiplayer.
+- `MonolithMilestoneSevenScopeTest` (3 methods), existing `DecoratorAuthorizationTest`, `InteriorDecoratorMilestoneFiveScopeTest`, `ShrineVariantCycleServiceTest`, `ShrineRenderingMilestoneTest`, and all prior tests cover authorization, existing-tool reuse, common/client boundaries, no world-subsystem calls, shrine invariants, immutable assets, registration singularity, and exclusions 102-120.
+- Narrow mutation and world adapters exercise production services deterministically. Registered-state tests use actual registered blocks/items/components. Static inspection is limited to boundaries that are not reasonably instantiated in plain JUnit. No adapter or packet test is described as live gameplay or multiplayer.
+
+### Exact validation commands and results
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+- `compileJava compileTestJava --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 97.6 seconds; 29 tasks (3 executed, 26 up-to-date). The two established warnings remained: missing Javadoc on a Mixin `@Overwrite` and deprecated-for-removal `Item.initializeClient`; test deprecation and generic unchecked notes were unchanged.
+- First six-class focused run: exit `1`; 50.7 seconds; 45 methods, 2 test failures. It exposed test-only assumptions: an overly broad renderer-registration substring counted eleven repository renderers, and the first PNG conversion retained source alpha. The exact renderer assertion was narrowed and only the new texture was reconverted to fully opaque 24-bit PNG. Production cycling logic did not change.
+- Corrected six-class focused command covering monolith transaction/render/lifecycle/persistence/scope plus shrine-cycle regression: exit `0`; 73.2 seconds; 6 classes / 45 methods, zero failures/errors/skips; 30 tasks (3 executed, 27 up-to-date).
+- Focused catalogue/definition/authorization/shrine-render/Milestone-6-render/Milestone-7-render command: exit `0`; 23.3 seconds (`BUILD SUCCESSFUL in 22s`); 6 classes / 52 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- `test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 31.1 seconds (`BUILD SUCCESSFUL in 30s`); 28 classes / 186 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- `test --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 31.2 seconds (`BUILD SUCCESSFUL in 30s`); 28 classes / 186 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, no build/cache/run/log/generated path was tracked. `git clean -ndX` listed only `.gradle`, `build`, `run`, and `runs`; no user-owned or unrelated file was a Gradle clean target. `clean build --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 91.6 seconds (`BUILD SUCCESSFUL in 1m 30s`); 28 classes / 186 methods from cache, zero failures/errors/skips; 36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- Final `git diff --check`: result is recorded after documentation completion. Git's repeated inability to read the sandboxed global ignore file did not affect repository status or explicit staging.
+
+### Runtime validation
+
+- Dedicated server: `runServer -Pdev --no-daemon --no-configuration-cache --stacktrace` loaded Britannia `0.1.7k`, GeckoLib `4.6.6`, Minecraft, and NeoForge; reached `Done`; started RCON; accepted loopback `stop`; logged `Stopping server`, `Saving players`, `Saving worlds`, each dimension save, and `All dimensions are saved`; then Gradle exited `0` with `BUILD SUCCESSFUL in 2m 40s` (32 tasks: 1 executed, 1 from cache, 30 up-to-date). Established unrelated `TitleScreen` dist-cleaner and missing-config warnings remained; no client shrine/monolith renderer loaded as common code.
+- Development client: `runClient -Pdev --no-daemon --no-configuration-cache --stacktrace` loaded Britannia/GeckoLib, initialized OpenAL, and built the block and GUI atlases. Neither new nor existing monolith geometry/texture path appeared in missing/parse diagnostics. The exact hidden root process PID `18212` and its child tree were terminated after startup verification. This was not a normal client exit or gameplay session.
+- Live placement, decorator clicks from anchor/bottom/middle/top cells, two-facing appearance, horizon/culling/duplicate-render review, save-file reload, unauthorized/wrong-tool play, live pick/re-place, resource reload, and second-client observation were not performed. They remain `UNVERIFIED`; startup, transforms, adapters, and packet tests do not imply those manual results.
+
+### Production JAR inspection
+
+- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,245,489 bytes; 4,688 entries; SHA-256 `DA8C2FDDA0AB63B7056ECF7AF6B3B354F948B00508733BEB297F16583A261BA8`.
+- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,817,127 bytes; 4,692 entries; SHA-256 `40B0943E8AF5CC6DB61B6D2E668E8F3C3399EAF3E03DB4742FC7474E2FA1E45C`.
+- Both contain exactly the two monolith geometry paths and two monolith PNG paths, the one monolith animation, item model and localization, `ShrineVariantCycleService`, existing `InteriorDecoratorToolItem`, `ShrineGeoModel`, `ShrineRenderer`, all shrine resources, and all Milestone 1-6 production content. Source-to-JAR SHA-256 comparison covered all 19 existing/new provisional assets in each artifact with zero missing entries and zero mismatches.
+- Both contain zero test/fixture entries, zero third monolith resource, zero second decorator/renderer/block entity, zero reverse-cycle/cross-family implementation, and zero Milestone 8 content.
+
+### Status and next milestone
+
+- Milestone 7 implementation and automated/startup/package validation are complete subject to owner review. Manual live interaction, visual, save-file, and multiplayer checks are explicitly unverified.
+- Final monolith names/art/migration remain unresolved. The next permitted milestone is Milestone 8 only after separate owner approval. Milestone 8 was not started.

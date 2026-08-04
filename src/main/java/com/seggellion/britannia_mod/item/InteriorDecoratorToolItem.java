@@ -45,7 +45,7 @@ public class InteriorDecoratorToolItem extends Item {
 
         if (player == null) return InteractionResult.PASS;
 
-        // Shrine ownership must win over the generic horizontal-facing rotation below.
+        // Large-structure ownership must win over the generic horizontal-facing rotation below.
         if (state.is(LargeStructureRegistry.LARGE_STRUCTURE_ANCHOR.get())
                 || state.is(LargeStructureRegistry.LARGE_STRUCTURE_PART.get())) {
             if (level.isClientSide()) return InteractionResult.SUCCESS;

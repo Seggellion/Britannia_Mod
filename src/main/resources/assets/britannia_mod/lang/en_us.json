@@ -618,6 +618,7 @@
     "item.britannia_mod.shrine": "Shrine",
     "item.britannia_mod.monolith": "Diagnostic Monolith (Provisional)",
     "structure.britannia_mod.monolith.diagnostic_missing_content": "Diagnostic Monolith (Provisional)",
+    "structure.britannia_mod.monolith.diagnostic_alternate": "Diagnostic Monolith Alternate",
     "structure.britannia_mod.shrine.honesty": "Honesty Shrine",
     "structure.britannia_mod.shrine.compassion": "Compassion Shrine",
     "structure.britannia_mod.shrine.valor": "Valor Shrine",
@@ -641,7 +642,8 @@
     "message.britannia_mod.monolith.placement.protected": "You cannot place a monolith here.",
     "message.britannia_mod.monolith.placement.invalid_configuration": "This monolith configuration is unavailable.",
     "message.britannia_mod.monolith.placement.failed_safely": "Monolith placement failed without changing the world.",
-    "message.britannia_mod.shrine.decorator.selected": "Selected shrine: %s"
+    "message.britannia_mod.shrine.decorator.selected": "Selected shrine: %s",
+    "message.britannia_mod.monolith.decorator.selected": "Selected monolith: %s"
 
 
 }
