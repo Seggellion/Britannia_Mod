@@ -44,6 +44,9 @@ import com.seggellion.britannia_mod.quest.network.QuestModels;
 
 import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
 import com.seggellion.britannia_mod.client.screen.BankScreen;
+import com.seggellion.britannia_mod.client.screen.BankMainScreen;
+import com.seggellion.britannia_mod.client.screen.bank.BankNavigation;
+import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
 import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
 
 import net.minecraft.resources.ResourceLocation;
@@ -363,19 +366,26 @@ private static MutableComponent uoMessage(String text) {
     }
 
     /**
-     * Milestone 7 Slice B: real Bank Screen (replaces Slice A's chat-message placeholder).
+     * A {@code bank.open} result, or the refresh push that follows every confirmed mutation --
+     * the two are the same payload and cannot be told apart here.
      *
-     * <p>Bank interface rebuild, Milestone 2: this payload is both the {@code bank.open} result
-     * and the post-mutation refresh push, so it now feeds {@link ClientBankingSession} -- the
-     * state that outlives any one screen. The {@code setScreen} call below is deliberately left
-     * as it was: the rebuilt screens do not exist yet, and Milestone 4 is where this repoints at
-     * {@code BankMainScreen} and stops rebuilding the screen on every refresh. Until then this is
-     * behaviour-neutral, and the session is populated and testable ahead of anything reading it.
+     * <p><b>Bank interface rebuild, Milestone 4: this is the cutover.</b> It used to be
+     * {@code setScreen(new BankScreen(payload))} unconditionally, which rebuilt the whole screen
+     * on every refresh and threw away whatever the player had selected, scrolled to or typed. Now
+     * the payload updates {@link ClientBankingSession} and the screen is left alone if banking is
+     * already open -- screens read the session as they draw, so fresh state needs no rebuild.
+     *
+     * <p>{@link BankNavigation#refreshRoute} owns the decision so it can be tested without a
+     * client; see its docs for the one behaviour deliberately preserved rather than improved.
      */
     public static void handleBankAccountOpened(BankAccountOpenedS2CPayload payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             ClientBankingSession.applyAccountOpened(payload);
-            Minecraft.getInstance().setScreen(new BankScreen(payload));
+            Minecraft minecraft = Minecraft.getInstance();
+            boolean bankingOpen = minecraft.screen instanceof BankingScreen;
+            if (BankNavigation.refreshRoute(bankingOpen) == BankNavigation.RefreshRoute.OPEN_MAIN) {
+                minecraft.setScreen(new BankMainScreen());
+            }
         });
     }
 
@@ -396,6 +406,10 @@ private static MutableComponent uoMessage(String text) {
             // is nothing to release and nothing to show -- see ClientBankingSession's own docs.
             ClientBankingSession.applyTransferResult(payload);
             Minecraft mc = Minecraft.getInstance();
+            // Milestone 4: this branch is dead. Nothing constructs BankScreen any more -- the
+            // cutover above routes every account payload to BankMainScreen, which reads the
+            // result off the session instead. Kept only until Milestone 19 deletes the class, so
+            // that the retirement is one removal rather than two.
             if (mc.screen instanceof BankScreen screen) {
                 screen.acceptTransferResult(payload);
             } else if (mc.screen instanceof com.seggellion.britannia_mod.client.screen.BankChequeIssuanceScreen screen) {

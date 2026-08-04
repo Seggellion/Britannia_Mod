@@ -38,9 +38,14 @@ class BankTranslationKeysTest {
         return JsonParser.parseString(json).getAsJsonObject();
     }
 
-    /** Every key this milestone can put on screen. */
+    /**
+     * Every key the epic can put on screen so far. Extend this as milestones add screens -- it is
+     * the list Playbook §3.1's per-milestone translatability gate is checked against.
+     */
     private static List<String> allBankStatusKeys() {
         TreeSet<String> keys = new TreeSet<>();
+
+        // Milestone 3: server outcomes.
         for (Operation operation : Operation.values()) {
             for (Kind kind : Kind.values()) {
                 keys.add(BankStatusPresenter.forResult(operation, kind).translationKey());
@@ -57,7 +62,34 @@ class BankTranslationKeysTest {
         }) {
             keys.add(status.translationKey());
         }
+
+        // Milestone 4: the hub, its destinations, and the placeholders.
+        for (BankNavigation.Destination destination : BankNavigation.Destination.values()) {
+            keys.add(destination.labelKey());
+        }
+        keys.add(BankNavigation.greetingKey(null));
+        keys.add(BankNavigation.greetingKey("Britain"));
+        keys.add("screen.britannia_mod.bank.main.title");
+        keys.add("screen.britannia_mod.bank.action.back");
+        keys.add("screen.britannia_mod.bank.placeholder.bank_box.title");
+        keys.add("screen.britannia_mod.bank.placeholder.bank_box.body");
+        keys.add("screen.britannia_mod.bank.placeholder.balance.title");
+        keys.add("screen.britannia_mod.bank.placeholder.balance.body");
+
         return new ArrayList<>(keys);
+    }
+
+    @Test
+    void theGreetingsCarryTheFormatArgumentsTheScreenPasses() throws IOException {
+        JsonObject language = language();
+        // The city-less greeting takes the teller's name; the city one takes name then city.
+        // A mismatch here throws at render time inside Component.translatable, not at compile time.
+        assertEquals(1, countPlaceholders(language.get(BankNavigation.greetingKey(null)).getAsString()));
+        assertEquals(2, countPlaceholders(language.get(BankNavigation.greetingKey("Britain")).getAsString()));
+    }
+
+    private static int countPlaceholders(String value) {
+        return value.split("%s", -1).length - 1;
     }
 
     @Test

@@ -631,5 +631,17 @@
     "screen.britannia_mod.bank.status.no_denomination_selected": "Choose gold, silver, or copper.",
     "screen.britannia_mod.bank.status.insufficient_balance": "You do not have enough on deposit for that amount.",
     "screen.britannia_mod.bank.status.nothing_selected": "Select an item first.",
-    "screen.britannia_mod.bank.status.empty_vault": "The vault is empty."
+    "screen.britannia_mod.bank.status.empty_vault": "The vault is empty.",
+
+    "screen.britannia_mod.bank.main.title": "Bank",
+    "screen.britannia_mod.bank.main.greeting": "%s bows slightly. \"Welcome. How may I serve thee this day?\"",
+    "screen.britannia_mod.bank.main.greeting_city": "%s bows slightly. \"Welcome to the bank of %s. How may I serve thee this day?\"",
+    "screen.britannia_mod.bank.action.open_bank_box": "Open Bank Box",
+    "screen.britannia_mod.bank.action.balance": "Balance",
+    "screen.britannia_mod.bank.action.create_cheque": "Create Cheque",
+    "screen.britannia_mod.bank.action.back": "Back",
+    "screen.britannia_mod.bank.placeholder.bank_box.title": "Bank Box",
+    "screen.britannia_mod.bank.placeholder.bank_box.body": "The teller gestures toward the vault door. \"The vault is being refitted, and is not ready for thee yet. Return shortly.\"",
+    "screen.britannia_mod.bank.placeholder.balance.title": "Balance",
+    "screen.britannia_mod.bank.placeholder.balance.body": "The teller turns a page of the ledger. \"The accounting is not yet in order. Return shortly.\""
 }

@@ -119,9 +119,19 @@ public final class BankChequeIssuanceScreen extends Screen {
         ClientNetworkHandler.sendToServer(new BankChequeIssuanceRequestC2SPayload(account.entityId(), (int) amountCopper));
     }
 
+    /**
+     * Bank interface rebuild, Milestone 4: returns to {@code BankMainScreen}, not to the legacy
+     * {@code BankScreen}. The cutover made Main the hub, and leaving this pointed at the old
+     * combined screen would have kept a live route back into the interface this epic retires --
+     * exactly the "unreachable screen route" Milestone 19 is meant to find nothing of.
+     *
+     * <p>Escape still reaches here rather than closing banking, which design §5.2 forbids
+     * ("Escape does not act as Back"). That is pre-existing and belongs to Milestone 7's rebuild
+     * of this screen; it is left alone here so the cutover changes routing only.
+     */
     private void onCancelPressed() {
         if (issuancePending) return;
-        Minecraft.getInstance().setScreen(new BankScreen(account));
+        Minecraft.getInstance().setScreen(new BankMainScreen());
     }
 
     /**
