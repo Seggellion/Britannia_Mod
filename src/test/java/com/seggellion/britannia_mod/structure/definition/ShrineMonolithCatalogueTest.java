@@ -125,10 +125,7 @@ class ShrineMonolithCatalogueTest {
         assertEquals("shrine", honesty.familyId().value());
         assertEquals("honesty", honesty.id().value());
         assertEquals("shrine_texture_honesty", honesty.texture().logicalIdentity());
-        assertEquals(ResourceAvailability.AVAILABLE, honesty.model().availability());
-        assertEquals(ResourceAvailability.AVAILABLE, honesty.texture().availability());
-        assertEquals("geo/shrine.geo.json", honesty.model().location().orElseThrow().path());
-        assertEquals("textures/block/shrine/honesty.png", honesty.texture().location().orElseThrow().path());
+        assertTrue(honesty.texture().location().isEmpty());
     }
 
     @Test
@@ -139,15 +136,13 @@ class ShrineMonolithCatalogueTest {
     }
 
     @Test
-    void productionCatalogueMapsConcreteShrinePathsButKeepsMonolithUnavailable() {
-        var shrine = DefinitionFixtures.shrine();
-        assertTrue(shrine.sharedGeometry().orElseThrow().location().isPresent());
-        assertTrue(shrine.variants().stream().allMatch(variant -> variant.model().location().isPresent()));
-        assertTrue(shrine.variants().stream().allMatch(variant -> variant.texture().location().isPresent()));
-
-        var monolith = DefinitionFixtures.monolith();
-        assertTrue(monolith.sharedGeometry().isEmpty());
-        assertTrue(monolith.variants().stream().allMatch(variant -> variant.model().location().isEmpty()));
-        assertTrue(monolith.variants().stream().allMatch(variant -> variant.texture().location().isEmpty()));
+    void productionCatalogueIntroducesNoConcreteModelOrTexturePaths() {
+        for (var family : ShrineMonolithDefinitions.catalogue().families()) {
+            family.sharedGeometry().ifPresent(resource -> assertTrue(resource.location().isEmpty()));
+            for (Variant variant : family.variants()) {
+                assertTrue(variant.model().location().isEmpty());
+                assertTrue(variant.texture().location().isEmpty());
+            }
+        }
     }
 }

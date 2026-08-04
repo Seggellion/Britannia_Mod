@@ -46,12 +46,6 @@ public final class StructureIdentity {
         public static DisplayName unresolved(String logicalIdentity, String fallbackLabel) {
             return new DisplayName(logicalIdentity, Optional.empty(), fallbackLabel, DisplayResolution.UNRESOLVED);
         }
-
-        public static DisplayName resolved(
-                String logicalIdentity, String translationKey, String fallbackLabel) {
-            return new DisplayName(
-                    logicalIdentity, Optional.of(translationKey), fallbackLabel, DisplayResolution.RESOLVED);
-        }
     }
 
     public record ResourceId(String namespace, String path) {

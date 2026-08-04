@@ -25,7 +25,6 @@ import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRende
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
-import com.seggellion.britannia_mod.client.renderer.shrine.ShrineRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -51,7 +50,6 @@ import net.minecraft.client.renderer.entity.CatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
-import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
@@ -416,7 +414,6 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.WINE_BOTTLE_BE.get(), WineBottleBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(LargeStructureRegistry.LARGE_STRUCTURE.get(), ShrineRenderer::new);
         // Entity Renderers
       //  event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);

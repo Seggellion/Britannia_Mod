@@ -612,60 +612,80 @@ Result: both JARs contain the persistence, item-component, lifecycle, integrity,
 
 Milestone 4 only. Do not begin it.
 
-## 2026-08-03 - Milestone 4: Shrine Rendering and Texture Variants (Temporary Assets)
+## 2026-08-03 - Corrective Milestone 4 Review: Unapproved Rendering Reversal
 
-### Authorization, isolation, and scope
+### Decision and Git policy
 
-- Starting commit: `b863472940d073434490516df457c7e9ad7a6404` on `shrines-monoliths` in `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
-- Merge base with `origin/patch-18`: `62df1dc97c5113a86f9c0f258cb90538f31efe89`; starting divergence was `0 5`; working tree began clean.
-- The required approved-art inventory found no approved shrine model or nine-texture set, so the original asset gate stopped implementation. The owner then explicitly authorized generated placeholder images, models, and item presentation on 2026-08-03. This milestone uses that later authorization.
-- Placeholder authorization is not final-art approval. All generated resources are labeled temporary in `PLACEHOLDER_ASSETS.md`; in-game visual approval remains owner review required.
-- Work stayed in the independent clone. No fetch, push, transfer, merge, rebase, reset, stash, branch switch, remote change, worktree creation, or shared-repository mutation occurred.
-- The shared repository was inspected read-only. At the Milestone 4 start it was independently on `banking` at `f4daef91f3b967ce301ff04bf79bdfd98aeb761a` with unrelated banking work. At the final check it remained on `banking` but had independently advanced to `8030ef6ca891de59fa566b72f77ccfb9de8720ed`, with modified/untracked banking and unrelated milestone files. None were read into, synchronized with, or changed by this work.
-- Milestone 5 cycling, decorator authorization/mutation, monolith content/placement/rendering, recipes, commands, NPC work, rails, and website work were not introduced.
+- Starting HEAD and rejected commit: `e1fcae20ae2f2af796b7b44ad9ca9d65352cffff` (`feat(shrines): render approved texture variants`). Approved Milestone 3 remains `b863472940d073434490516df457c7e9ad7a6404`.
+- The commit was rejected because it bypassed the mandatory approved-asset inventory prerequisite and violated the explicit prohibition against new shrine art. Generated placeholders are not approved repository assets, regardless of a prior request to create temporary assets.
+- It was reversed transparently with `git revert --no-commit e1fcae20ae2f2af796b7b44ad9ca9d65352cffff`. The command applied without conflicts. No reset, rebase, amend, or other history rewriting occurred.
+- Corrective commit: the single commit containing this entry, with subject `revert(shrines): remove unapproved placeholder rendering`. Its exact full hash is recorded in the corrective report after commit creation. A Git commit cannot truthfully embed its own final hash in its tracked contents without changing that hash or amending history.
+- Milestone 5 remains unauthorized and was not begun.
 
-### Placeholder content manifest and provenance
+### Exact rejected generated assets
 
-- Shared static GeckoLib geometry: `assets/britannia_mod/geo/shrine.geo.json`; bounded missing-model diagnostic: `geo/shrine_missing.geo.json`; static empty animation manifest: `animations/shrine.animation.json`.
-- Nine distinct 128 by 128 PNGs generated with OpenAI ImageGen and visually inspected as source images: `textures/block/shrine/{honesty,compassion,valor,justice,sacrifice,honor,spirituality,humility,chaos}.png`.
-- The full-resolution generated originals remain outside the repository under `C:\Users\dusti\.codex\generated_images\019fc9b3-b045-75a0-8d82-8e25a9fe1763\`; repository copies were downscaled to 128 by 128 without renaming stable IDs.
-- Localization keys are `structure.britannia_mod.shrine.<variant_id>` for all nine IDs. The shared registered item key remains `item.britannia_mod.shrine`.
-- Exactly one configured shrine item remains registered. Its generated item model uses the Honesty PNG only as a temporary family icon; this does not alter the configured component or select Honesty at runtime.
-- No monolith art was generated.
+- Generated shared/static geometry: `src/main/resources/assets/britannia_mod/geo/shrine.geo.json` (718 bytes; Git blob `5eedc1025f41a0257cc1d2f85ea1b02ccc210fdb`).
+- Generated diagnostic geometry: `src/main/resources/assets/britannia_mod/geo/shrine_missing.geo.json` (573 bytes; Git blob `1526f21315639b7d4b16663901bd25bff871c3aa`).
+- Generated empty animation manifest: `src/main/resources/assets/britannia_mod/animations/shrine.animation.json` (84 bytes; Git blob `d5221b8fd85994074a5584358668f88e6bcf58f0`).
+- Generated PNGs: `textures/block/shrine/chaos.png` (40,569 bytes; blob `6f0a7c5a6545eb5a6d9fda3eae76ca1f85a065cf`), `compassion.png` (43,798; `409a4f6b62de4cf74c5fccbbf2f7d1298701ee6b`), `honesty.png` (43,834; `89f12346f0fbff48d8959e8d40a8eaa051bf3792`), `honor.png` (42,632; `15bf9d0786c715c1d513e1505a589c8737732802`), `humility.png` (33,789; `396d9b97f24b53b7751420f980c095b4901b2f4c`), `justice.png` (43,083; `450cd91610407f251e484f47f0d27f711043f1a7`), `sacrifice.png` (40,475; `3ed611fa945f76195c719a8d9179cbf4bda24b58`), `spirituality.png` (39,279; `a1cf5b31d2ab3f24a53ae054b742352a91d66db6`), and `valor.png` (37,300; `c94fbb556b3463c82af31212898768a3f777f533`). Their rejected `128 x 128` dimensions are not an approved production requirement.
+- Temporary Honesty family icon: the rejected version of `src/main/resources/assets/britannia_mod/models/item/shrine.json` pointed at `britannia_mod:block/shrine/honesty`. It is restored to the Milestone 2 diagnostic `minecraft:block/stone` presentation.
+- Rejected asset claims: `docs/shrines-monoliths/PLACEHOLDER_ASSETS.md` and the former Milestone 4 completion section of this log.
 
-### Renderer, selection, transform, and bounds
+### Files removed and restored
 
-- `ShrineRenderer` is the one anchor block-entity renderer and is registered only from the existing `Dist.CLIENT` `ClientModSetup.registerRenderers` event. The part block has no block entity and no renderer.
-- `LargeStructureAnchorBlockEntity` implements GeckoLib's common-side `GeoBlockEntity` interface with no animation controllers. Common structure packages import no Minecraft client renderer or GeckoLib renderer classes.
-- `ShrineRenderSelection` performs immutable catalogue lookup from synchronized stable family/variant IDs. It never uses display names or arbitrary client-provided paths and never mutates the block entity, catalogue, footprint, facing, collision, or world.
-- `ShrineGeoModel` selects the one shared geometry plus the exact variant texture. Unknown IDs or missing files retain the synchronized IDs and use a bounded diagnostic model and/or Minecraft missing-texture diagnostic; no other shrine variant is substituted. Unique diagnostics are capped at 128 keys and are re-evaluated through the current resource manager.
-- The placeholder is authored facing North with Y up. Model-unit extents are X `[-24,8]`, Y `[0,16]`, Z `[-8,24]`. GeckoLib first translates to the anchor cell center `(0.5,0,0.5)`, then rotates around positive Y: North `0`, East `-90`, South `180`, West `90` degrees. Shrine render offset remains `(0,0,0)`; the monolith `+16` Y correction is not applied.
-- The exact all-facing local renderer AABB is `[-1.0078125,-0.0078125,-1.0078125]` to `[2.0078125,1.0078125,2.0078125]`. The 1/128 tolerance is for culling only. Collision/selection remain the unchanged full-cell shapes owned by each of the four blocks.
-- Anchor and part baked blockstates still resolve to `minecraft:block/air`, preventing duplicate geometry and z-fighting.
+- Removed renderer/model-selection production classes: `ShrineGeoModel.java`, `ShrineRenderer.java`, `ShrineRenderTransform.java`, and `ShrineRenderSelection.java`.
+- Removed all generated geometry, animation, nine shrine PNGs, and `PLACEHOLDER_ASSETS.md` listed above.
+- Removed the rendering-only test `ShrineRenderingMilestoneTest.java`.
+- Restored `ClientModSetup.java` without shrine renderer registration; `ShrineMonolithDefinitions.java` with shared geometry and all nine textures explicitly unavailable; `StructureIdentity.java` without rendering-only resource resolution; and `LargeStructureAnchorBlockEntity.java` without GeckoLib/render-bound behavior.
+- Restored `en_us.json` without rejected visual localization, `models/item/shrine.json` to vanilla stone, and `ShrineMonolithCatalogueTest.java` to the approved unavailable-resource assertions.
+- Restored `PROJECT_FACTS.md` by removing claims that placeholder resources, a shrine renderer, or 127 rendering-era tests were approved repository facts.
+- Retained all nine stable shrine IDs, Milestone 1 definitions/transforms, Milestone 2 placement and diagnostic presentation, Milestone 3 persistence/item components/lifecycle/integrity behavior, and all existing Milestone 1-3 tests.
 
-### Validation evidence
+### Fresh asset search and current blocker
 
-All commands ran from the independent clone.
+- A read-only search covered the cleaned working tree, every local head and remote-tracking ref, committed resource directories, both authoritative root documents, and historical committed paths. No branch was switched and no candidate was copied.
+- The only shrine-named shared geometry or nine-texture set in any local ref is the rejected generated payload at `e1fcae20ae2f2af796b7b44ad9ca9d65352cffff`; it has explicit rejection evidence and is insufficient.
+- The committed `pillar`, `statue`, and `ankh` geometry/textures are unrelated assets with no shrine identity or approval evidence. Filenames were not treated as approval.
+- `OPEN_QUESTIONS.md` now records the exact evidence required for owner-supplied or owner-approved shared geometry, each of the nine texture mappings, and the shrine-family icon decision.
+- Current blocker: approved shared shrine geometry and approved, UV-compatible textures for `honesty`, `compassion`, `valor`, `justice`, `sacrifice`, `honor`, `spirituality`, `humility`, and `chaos` are unavailable. Resource availability remains explicit, with no variant substitution or fabricated path.
 
-- Final `compileJava`: exit 0 in 23 seconds; 26 tasks (1 executed, 25 up-to-date). Only the two pre-existing production warnings remained.
-- Focused catalogue/rendering tests: 2 classes, 20 tests, 0 failures/errors/skips; exit 0 in 20.9 seconds.
-- `test --tests "com.seggellion.britannia_mod.structure.*"`: 17 classes, 127 tests, 0 failures/errors/skips; exit 0 in 24 seconds.
-- Full `test`: 17 classes, 127 tests, 0 failures/errors/skips; exit 0 in 25 seconds.
-- `clean build`: exit 0 in 1 minute 25 seconds; 36 tasks (6 executed, 20 from cache, 10 up-to-date); tests restored from cache with the same 17/127/0 totals.
-- All touched blockstate, item-model, GeckoLib geometry/animation, and localization JSON files parsed successfully. All nine PNGs decode as 128 by 128 in production tests. `git diff --check` passed.
-- Dedicated server: Java 21.0.8, NeoForge 21.1.72, Minecraft 1.21.1, GeckoLib 4.6.6. `runServer` reached `Done (4.207s)`, localhost RCON supplied Minecraft's native `stop`, all dimensions saved, and Gradle reported `BUILD SUCCESSFUL in 43s`. The repository's pre-existing TitleScreen mixin emits a dedicated-dist warning but does not prevent startup; neither `ShrineRenderer` nor `ClientModSetup` loaded on the server.
-- Client startup and live resource reload were not run. Mathematical/resource/static validation is complete; actual GPU rendering is not claimed.
+### Exact validation commands and results
 
-### Production JAR inventory
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
 
-- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,218,805 bytes; 4,672 entries; SHA-256 `6FFFC7F9ABA670E6197AE4A0C197C6B36A69C5C5930AAD85574EB3F2B63B62F1`.
-- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,790,443 bytes; 4,676 entries; SHA-256 `1B86B6DF0DAAAE24D443A5750114DF9F1F3F3E370FA357F5AE306F428503F27D`.
-- Both contain `ShrineRenderer`, `ShrineGeoModel`, `ShrineRenderSelection`, `ShrineRenderTransform`, `ClientModSetup`, shared and diagnostic geometry, animation, all nine PNGs, localization, shrine item model, and invisible anchor/part blockstates.
-- Both contain zero test classes, zero monolith renderer/model/texture content, and no Milestone 5 shrine-cycling class.
+```text
+.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace
+```
 
-### Manual and deferred checks
+Exit `0`; 68.250 seconds; 16 test classes, 121 cases, 0 failures, 0 errors, 0 skipped. Gradle: 30 actionable tasks (2 executed, 2 from cache, 26 up-to-date). Warnings were limited to Gradle's incubating daemon-JVM-discovery notice.
 
-- Performed: visual inspection of all nine generated source textures; source/API/bytecode/resource/JAR/isolation review; dedicated-server startup and clean shutdown.
-- Not performed: actual in-game placement/render review, nine-variant GPU comparison, four-facing camera review, z-fighting/clipping/frustum review, save/reload visual review, live resource reload, stair-perimeter gameplay, or multiplayer review.
-- Status: implementation and automated packaging are complete, but actual rendered visual correctness is `OWNER REVIEW REQUIRED`. These placeholders must be replaced by the owner and must not be treated as approved final art.
-- No Milestone 5 behavior was started. The next permitted work is owner visual review/replacement of Milestone 4 assets; Milestone 5 remains gated by explicit approval.
+```text
+.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace
+```
+
+Exit `0`; 23.459 seconds; 16 test classes, 121 cases, 0 failures, 0 errors, 0 skipped. Gradle: 30 actionable tasks (1 executed, 29 up-to-date). The same daemon-JVM-discovery notice appeared.
+
+```text
+.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace
+```
+
+Before clean, no build/cache/run/log/generated path was tracked and no user-owned untracked work was present. Exit `0`; 81.598 seconds; 16 test classes and 121 cases restored from cache, with 0 failures, 0 errors, and 0 skipped. Gradle: 36 actionable tasks (6 executed, 20 from cache, 10 up-to-date). Four untracked logs generated by the validation runs were explicitly removed afterward; they are reproducible test output.
+
+```text
+git diff --check
+```
+
+Exit `0`; no whitespace errors.
+
+### Corrected production JARs
+
+- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 21,840,741 bytes; 4,652 entries; SHA-256 `3D4A0E50DCA75F631093A1333BC277A7EC7A4B779595FB36D6588BF7C949392F`.
+- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,412,379 bytes; 4,656 entries; SHA-256 `DDA97FE7A4FA13A7BEBDE8206CF5789DED5E2446660300BADA80443357CAFBFB`.
+- Each contains 96 shrine/structure production class entries: 32 definition, 17 placement, 12 lifecycle, 9 multiblock/persistence, and 6 item classes plus their nested/support entries. Each retains the configured `ShrineItem`, invisible anchor/part blockstates, and vanilla-stone diagnostic shrine item model.
+- Each contains zero test classes, zero rejected shrine renderer/helper classes, zero generated shrine geometry/animation/textures, zero temporary Honesty icon reference, and zero monolith runtime rendering/placement classes. `InteriorDecoratorToolItem` remains unchanged pre-existing content and has no shrine behavior.
+
+### Corrective status
+
+- Compared with approved Milestone 3, only this corrective log entry and the expanded asset blocker in `OPEN_QUESTIONS.md` differ.
+- No fabricated shrine art, renderer, client renderer registration, rendering test, monolith placement/rendering, Interior Decorator shrine behavior, or Milestone 5 behavior remains.
+- Milestone 4 is blocked pending approved assets. Milestone 5 remains unauthorized.
