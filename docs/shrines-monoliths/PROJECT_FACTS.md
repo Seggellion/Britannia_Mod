@@ -167,6 +167,15 @@ These are not repository facts or Milestone 0 implementation commitments.
 | Verified repository fact | Milestone 8 expands the structure/full suite to 32 classes and 200 JUnit methods. Its 14 focused methods include 275,936 explicit logical hardening cases; all structure and repository tests pass with zero failures, errors, or skips. | JUnit XML results; Milestone 8 implementation log |
 | Verified repository fact | Banner multiblock tests remain absent from the active branch but are present on local remote-tracking ref `origin/banners-dyetub`; they were inspected read-only and were not imported or claimed as executed. | active-tree inventory; `git ls-tree origin/banners-dyetub -- src/test` |
 
+## Milestone 9 limited-validation facts
+
+| Classification | Finding | Evidence |
+| --- | --- | --- |
+| Approved validation limitation | On 2026-08-04 the project owner explicitly waived the two-authenticated-client gate and every dependent live gameplay check for Milestone 9. Those results remain `UNVERIFIED`; the waiver authorizes milestone documentation and review but is not evidence that multiplayer, placement, lifecycle, reload, adjacency, visual, chunk, or performance behavior passed live. | Owner Milestone 9 limitation approval; Milestone 9 implementation log |
+| Verified repository fact | The repository's production `jarJar` artifact is the `-all.jar`: it embeds GeckoLib NeoForge 4.6.6 and NanoHTTPD, while the thin JAR lacks those embedded runtime dependencies. The final Milestone 9 clean build produced the 22,817,250-byte, 4,692-entry deployable JAR recorded in the implementation log, and all five source/artifact/server/client copies had the same SHA-256. | `build.gradle`; JAR manifests/JarJar metadata; external runtime manifests; final five-copy hash audit |
+| Verified repository fact | Limited Milestone 9 validation added no production, test, resource, or asset change. The final structure and full suites still contain 32 classes and 200 JUnit methods with zero failures/errors/skips; the clean build and focused deterministic content/resource validation pass. | final Milestone 9 Gradle output; JUnit XML; `MilestoneEightContentReportTest` |
+| Explicitly unverified | No authenticated client joined, no two-client session occurred, and no live Phase 1-12 gameplay evidence was collected. All two-client placement/cycling/tracking/reconnect/reload/lifecycle/chunk/adjacency/horizon/performance and client-log claims remain `UNVERIFIED` by owner-approved limitation. | external prerequisite reports; owner limitation approval; Milestone 9 implementation log |
+
 ## Unresolved questions
 
 Only evidence-backed unresolved matters are tracked in `docs/shrines-monoliths/OPEN_QUESTIONS.md`.

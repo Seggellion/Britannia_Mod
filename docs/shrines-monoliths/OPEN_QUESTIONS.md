@@ -32,9 +32,11 @@ Settled decisions from the authoritative design and playbook are intentionally o
 - Cross-family conversion is forbidden and is not open for interpretation.
 - The Milestone 0 NeoForm clean-build issue is resolved: NeoGradle's supply pipeline rebuilt the incomplete generated artifact, and the normal Milestone 1 clean production build passed.
 
-## 3. Which Milestone 8 checks still require live Milestone 9 validation?
+## 3. Which live checks remain unverified after the limited Milestone 9 acceptance?
 
 - **Unresolved issue:** Reliable interactive control was unavailable for the live stair/full-block/slab/wall/fence/attachment ring, actual save-world reload, visual overlap and duplicate-render review, two authenticated clients, and multiplayer observation.
 - **Automated evidence available:** All registered structure states, transform-derived occupancy/perimeters, registered vanilla neighbor states, persistence/update paths, collision mathematics, startup smokes, and production packaging pass. This evidence is deliberately not described as live placement or visual validation.
 - **Blocks Milestone 8:** **No.** The authorization explicitly permits these manual checks to remain `UNVERIFIED` when reliable interaction is unavailable, provided the exhaustive automated matrix passes.
-- **Blocks final live validation:** **Yes.** Carry the complete representative ring and multiplayer/save-world checks into Milestone 9 without inferring results from level-C/D evidence.
+- **Milestone 9 owner decision:** On 2026-08-04 the project owner explicitly waived the two-authenticated-client requirement and all dependent live checks for Milestone 9, required them to remain `UNVERIFIED`, and authorized a documentation-only evidence commit. This accepts the limitation; it does not convert missing evidence to a pass.
+- **Blocks limited Milestone 9 documentation:** **No.** The explicit owner decision resolves the milestone-process blocker.
+- **Blocks claims of live behavior:** **Yes.** Two-client placement/cycling, tracking/reconnect, save/reload, lifecycle/drop, chunk, live adjacency, horizon, dense-scene performance, and client-log outcomes remain unknown unless a future controlled session supplies evidence.

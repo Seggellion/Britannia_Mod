@@ -1086,3 +1086,78 @@ All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`
 - These checks are explicitly carried to Milestone 9. Registered-state collision mathematics, deterministic adapters, packet application, and startup smoke are not claimed as live gameplay, visual, save-world, or multiplayer evidence.
 - No new gameplay, content, art, recipe, command, NPC, rails, website, cross-family conversion, reverse cycling, rotation, resizing, performance rewrite, renderer, decorator, part entity/item, global scan, or Milestone 9 infrastructure was added.
 - Next permitted milestone: Milestone 9 only after separate owner approval. Do not begin it.
+
+## 2026-08-04 - Milestone 9: Limited Live-Validation Evidence
+
+### Authorization, limitation, and isolation
+
+- Approved Milestone 8/start commit: `a3b81edda57e441d1abdc95f7b2713567df05130` (`test(structures): harden collision and adjacency behavior`). The isolated clone began clean on `shrines-monoliths` at `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+- Merge base with `origin/patch-18`: `62df1dc97c5113a86f9c0f258cb90538f31efe89`; starting divergence was `0` behind / `12` ahead of `origin/patch-18` and `0` behind / `10` ahead of `origin/shrines-monoliths`.
+- The disposable topology is `C:\projects\britannia\validation\shrines-monoliths-m9`, with server, `client-a`, `client-b`, evidence, backups, and world `server\m9-world` outside every Git working tree.
+- The two-authenticated-client gate could not be satisfied: no authenticated client joined and no safe independent two-client control was available. On 2026-08-04 the project owner explicitly approved Milestone 9 with that gate and all dependent live-validation checks waived and recorded as `UNVERIFIED`.
+- The waiver changes milestone acceptance only. It is not gameplay evidence and does not convert any unperformed check to `PASS`.
+- Ending commit is the single documentation evidence commit containing this entry, subject `docs(structures): record live validation evidence`. Its full hash is recorded in the final report because a commit cannot embed its own hash without amendment.
+- The shared repository remained read-only on its unrelated dirty `banking` work. No fetch, push, transfer, merge, rebase, reset, amend, stash, remote change, linked worktree, or history rewrite occurred.
+
+### Runtime topology and exact artifact
+
+- Runtime versions: Minecraft `1.21.1`; NeoForge `21.1.72`; Java `21.0.9+10-LTS` by Eclipse Adoptium; Britannia `0.1.7k`; embedded GeckoLib `4.6.6`.
+- The repository-correct deployable artifact is `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`, selected because `build.gradle`'s `jarJar` output embeds `geckolib-neoforge-1.21.1-4.6.6.jar` and `nanohttpd-2.2.0.jar`; the thin JAR does not contain those dependencies.
+- Final deployable JAR: 22,817,250 bytes; 4,692 entries; SHA-256 `998CF12AC3BF0E4AA07E7558081EC361762913560A7C513B840D1C785BFD93E2`.
+- The source build, validation `artifacts`, server `mods`, Client A `mods`, and Client B `mods` copies independently produced that same hash. Each runtime `mods` directory contains exactly one Britannia JAR.
+- Server configuration remains private loopback `127.0.0.1:25585`, `online-mode=true`, `white-list=true`, `enforce-whitelist=true`, and RCON disabled. No router/public exposure or authentication material was used.
+- External evidence is preserved under `evidence\manifests\runtime-manifest.json`, `evidence\manifests\runtime-manifest-final-2026-08-04.json`, `evidence\checklists\OWNER_ACTION_SHEET.md`, and `evidence\log-summaries\server-startup-summary.md`. Runtime evidence is not committed.
+
+### Available runtime evidence
+
+- The clean production server previously loaded Minecraft `1.21.1`, NeoForge `21.1.72`, Britannia `0.1.7k`, and GeckoLib `4.6.6` from preflight artifact SHA-256 `DBB6B2E73F10FBF167590BB7C0CAB30837CB025007F95190410EB223B81E8601`, reached `Done (4.680s)`, received a normal console `stop`, exited `0`, and saved players, worlds, chunks, and all dimensions.
+- Its mod list contained Minecraft, NeoForge, Britannia, and GeckoLib. It found the exact Britannia `-all.jar` and its embedded GeckoLib/NanoHTTPD dependencies.
+- Existing non-structure diagnostics were the established dedicated-dist `TitleScreen` mixin error/warnings, first-run FML configuration correction, missing optional `britannia_mod.properties`, union-schema warnings, and missing barrel warning. No named shrine/monolith missing resource, renderer, synchronization, orphan, repair, or rollback error appeared during server-only startup.
+- This is server startup and packaging evidence only. It is not authenticated multiplayer, client rendering, gameplay, reload, adjacency, lifecycle, or performance evidence.
+- The final clean rebuild has identical source commit, size, entry inventory, and embedded content but a different archive hash (`998CF12A...93E2`) because it is a newly emitted JAR. That final JAR was copied to all four disposable destinations but was not launched; final-hash runtime startup is therefore also `UNVERIFIED` under the owner's limitation approval.
+
+### Explicitly unverified live phases
+
+- Phase 1: two distinct authenticated concurrent joins, client runtime/channel/resource agreement, and mutual in-world observation — `UNVERIFIED`.
+- Phase 2: two-way shrine/monolith placement, all facings, occupied-cell observation, collision/selection agreement, and anchor-only rendering — `UNVERIFIED`.
+- Phase 3: authorized and unauthorized anchor/part decorator cycling, all nine shrine variants, both monolith variants, wrap-around, and two-client synchronization — `UNVERIFIED`.
+- Phase 4: late tracking and both disconnect/reconnect directions — `UNVERIFIED`.
+- Phase 5: live save/reload, same-world server restart, resource reload, neighbor persistence, and live pick-block persistence — `UNVERIFIED`.
+- Phases 6-7: survival/creative lifecycle, exact drops, pick block, explosion, external replacement, repair/obstruction, piston, and fluid behavior — `UNVERIFIED`.
+- Phase 8: live cross-chunk placement, tracking, restart, lifecycle, repair, and unloaded-required-chunk rejection — `UNVERIFIED`.
+- Phase 9: actual-gameplay full-block, stair/corner, slab, wall, fence, and supported-attachment adjacency — `UNVERIFIED`.
+- Phase 10: both monolith models in all four facings, horizon/alignment/culling/duplicate-render views before and after cycle/reconnect/restart — `UNVERIFIED`.
+- Phase 11: 12-shrine/8-monolith dense-scene responsiveness, frame behavior, tick/memory behavior, and log volume — `UNVERIFIED`.
+- Phase 12: Client A and Client B logs, disconnect/resource-reload ranges, and live diagnostic boundedness — `UNVERIFIED`. Only the server-only startup log was available.
+- No live test-case ID received a `PASS` or `FAIL`, no world test-zone coordinates were assigned, and no screenshot or authenticated identity evidence was created.
+
+### Defects and scope
+
+- No live production defect could be discovered or reproduced because the live phases did not run. No production, test, resource, asset, schema, renderer, network, lifecycle, placement, collision, or content file changed.
+- No automated regression was added because no defect was corrected. All 19 protected owner-approved asset files remain unchanged, and the deterministic report continues to validate the exact nine shrine and two monolith variants.
+- No gameplay, content, art, recipe, command, NPC, Rails, website, cross-family conversion, reverse cycling, rotation, resizing, force-loading, renderer, decorator, part entity/item, telemetry, or Milestone 10 work was added.
+
+### Final automated validation
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex` after the owner limitation approval.
+
+- `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 39.3 seconds (`BUILD SUCCESSFUL in 38s`); 32 classes / 200 JUnit methods, zero failures/errors/skips; 30 tasks (1 from cache, 29 up-to-date).
+- `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 21.5 seconds (`BUILD SUCCESSFUL in 21s`); 32 classes / 200 JUnit methods, zero failures/errors/skips; 30 tasks (1 from cache, 29 up-to-date).
+- Before clean, no generated/cache/run/log path was tracked and no unrelated user-owned path was a clean target. `.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 139.1 seconds (`BUILD SUCCESSFUL in 2m 18s`); 32 classes / 200 methods from cache, zero failures/errors/skips; 36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.hardening.MilestoneEightContentReportTest" --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 37.2 seconds (`BUILD SUCCESSFUL in 36s`); focused deterministic catalogue/report/resource path/hash/localization validation passed; 30 tasks (1 executed, 29 up-to-date).
+- Final `git diff --check`, source status, staged scope, JAR resource inspection, and five-copy hashes are recorded after documentation completion.
+- Known build warning remains Gradle's incubating daemon-JVM discovery notice; no new compile or test failure occurred.
+
+### Final production package inspection
+
+- Thin `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,245,612 bytes; 4,688 entries; SHA-256 `45F71263DA9988C20CFE5E7A98E58EFEFD949E820FBC041285AB49F5D1672AF7`.
+- Deployable `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,817,250 bytes; 4,692 entries; SHA-256 `998CF12AC3BF0E4AA07E7558081EC361762913560A7C513B840D1C785BFD93E2`.
+- Each contains 107 structure-class entries, nine shrine textures, two monolith geometries, two monolith textures, both animations/item presentations, localization, one anchor/part architecture, one anchor renderer, and all Milestone 1-8 production content.
+- Each contains zero tests/fixtures, part renderer, part block entity, direct anchor/part item, third monolith variant, cross-family conversion, or Milestone 10 package. The deployable JAR's five copies match exactly.
+
+### Acceptance and next milestone
+
+- `PASS`: source/shared isolation; correct start state; clean deployable selection; final automated suites/build; deterministic content/resource validation; JAR contents; five matching hashes; private online-mode server configuration; clean production-server startup; no scope expansion; no push/transfer.
+- `UNVERIFIED` by explicit owner-approved limitation: both-client runtime/version evidence, concurrent authentication, and every dependent live Phase 1-12 outcome listed above.
+- `FAIL`: none. `UNVERIFIED` does not mean `PASS` and must not be cited as gameplay evidence.
+- Milestone 9 is documented as accepted with explicit limitations by project-owner override. Milestone 10 requires separate authorization and was not begun.
