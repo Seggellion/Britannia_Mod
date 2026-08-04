@@ -192,6 +192,12 @@ public final class BankingTransferPacketService {
             case CHEQUE_ALREADY_REDEEMED -> BankTransferResultS2CPayload.Kind.CHEQUE_ALREADY_REDEEMED;
             case CHEQUE_CANCELLED -> BankTransferResultS2CPayload.Kind.CHEQUE_CANCELLED;
             case CHEQUE_VOIDED -> BankTransferResultS2CPayload.Kind.CHEQUE_VOIDED;
+            // Milestone 14's verification found this falling into the default below. Redemption
+            // has no separate confirm, so Rails' reconciliation outcome arrives as an ordinary
+            // Rejected -- but by this point the physical cheque is already disposed, so softening
+            // it to "I can't complete that right now" tells a player to shrug at the one outcome
+            // that needs staff. It keeps its severity.
+            case RECONCILIATION_REQUIRED -> BankTransferResultS2CPayload.Kind.RECONCILIATION_REQUIRED;
             // Every shared teller/account outcome (PLAYER_NOT_FOUND, TELLER_NOT_ASSIGNED, ...)
             // falls through here -- see BankingChequeRedemptionProxyService's own docs for why
             // these are deliberately NOT rendered as one of the four cheque-specific messages
