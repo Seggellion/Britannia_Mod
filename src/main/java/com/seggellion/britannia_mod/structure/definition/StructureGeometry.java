@@ -37,7 +37,7 @@ public final class StructureGeometry {
     }
 
     public enum CollisionProfile {
-        CELL_BOUNDED
+        SOLID_CELL
     }
 
     public enum RenderOrigin {

@@ -155,6 +155,18 @@ These are not repository facts or Milestone 0 implementation commitments.
 4. Add an explicit placement-permission abstraction because current structure protection covers breaking, not a reusable per-cell placement check.
 5. Keep render transforms and per-cell collision/selection definitions independent; never derive shapes from model bounds.
 
+## Milestone 8 hardening facts
+
+| Classification | Finding | Evidence |
+| --- | --- | --- |
+| Approved product requirement | The first-release collision profile is named `SOLID_CELL`: every occupied anchor/part cell owns one full, local `0..16`-voxel solid cell and rendered geometry never determines physical behavior. | Owner Milestone 8 authorization; `StructureGeometry.CollisionProfile`; `MilestoneEightShapeAuditTest` |
+| Verified repository fact | The registered anchor has four horizontal-facing states and the registered part has all 72 representable `facing x local_x x local_y x local_z` states. Selection, collision, occlusion, visual, block-support, and all six face-occlusion shapes are full local cells for all 76 states; inherited interaction shape is empty; all six faces are sturdy; land/water/air pathfinding is false; replacement is false; piston reaction is `BLOCK`; fluid state is empty; neither block is waterloggable or fluid-replaceable. | `MilestoneEightShapeAuditTest`; resolved NeoForge 21.1.72 `BlockStateBase` API inspection |
+| Verified repository fact | The inherited fluid-replacement API previously returned true because `noOcclusion` makes the invisible cells non-solid for that fallback. Milestone 8 explicitly overrides only fluid replacement on the anchor and part to return false; shapes, registrations, state, placement, and assets are unchanged. | pre-fix focused test failures; `LargeStructureAnchorBlock.canBeReplaced`; `LargeStructurePartBlock.canBeReplaced` |
+| Verified repository fact | Every shrine facing occupies four cells with eight horizontal perimeter cells. Every monolith facing occupies eighteen cells; each of three layers has six occupied and ten perimeter cells, for thirty layer-specific perimeter positions. | transform-derived `MilestoneEightAdjacencyMatrixTest` |
+| Verified repository fact | The deterministic content report records exactly nine shrine and two monolith variants in catalogue order, including logical/content status, provisional asset status, footprints, `SOLID_CELL`, render offsets, exact resources, SHA-256 hashes, and validation results. | `docs/shrines-monoliths/CONTENT_REPORT.json`; `MilestoneEightContentReportTest` |
+| Verified repository fact | Milestone 8 expands the structure/full suite to 32 classes and 200 JUnit methods. Its 14 focused methods include 275,936 explicit logical hardening cases; all structure and repository tests pass with zero failures, errors, or skips. | JUnit XML results; Milestone 8 implementation log |
+| Verified repository fact | Banner multiblock tests remain absent from the active branch but are present on local remote-tracking ref `origin/banners-dyetub`; they were inspected read-only and were not imported or claimed as executed. | active-tree inventory; `git ls-tree origin/banners-dyetub -- src/test` |
+
 ## Unresolved questions
 
 Only evidence-backed unresolved matters are tracked in `docs/shrines-monoliths/OPEN_QUESTIONS.md`.

@@ -980,3 +980,109 @@ All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`
 
 - Milestone 7 implementation and automated/startup/package validation are complete subject to owner review. Manual live interaction, visual, save-file, and multiplayer checks are explicitly unverified.
 - Final monolith names/art/migration remain unresolved. The next permitted milestone is Milestone 8 only after separate owner approval. Milestone 8 was not started.
+
+## 2026-08-03 - Milestone 8: Collision, Adjacency, Content, and Regression Hardening
+
+### Authorization, isolation, and chronology
+
+- Approved Milestone 7/start commit: `0aa523ec86e483e230fc1c4d04e145d394ebf990` (`feat(monoliths): cycle model variants with decorator`). Worktree began clean on `shrines-monoliths` in `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+- Merge base with `origin/patch-18`: `62df1dc97c5113a86f9c0f258cb90538f31efe89`; starting divergence: `0` behind / `11` ahead of `origin/patch-18` and `0` behind / `9` ahead of `origin/shrines-monoliths`.
+- Shared repository was inspected read-only before work on branch `banking`, HEAD `aa419df6dbe8f4111b6e71ec05eb09a345a734b8`, with unrelated existing banking modifications/untracked files. It was never switched, edited, built, cleaned, staged, committed, synchronized, or used as input.
+- Ending commit is the single commit containing this entry, subject `test(structures): harden collision and adjacency behavior`. Its immutable full hash is recorded in the final report because a commit cannot embed its own hash without amendment.
+- No fetch, push, transfer, merge, rebase, reset, amend, stash, remote change, linked worktree, or history rewrite occurred. Milestone 9 was not begun.
+
+### Proven production corrections
+
+- The owner-approved final first-release profile is `SOLID_CELL`. Production behavior was already a full local cell, but the enum/catalogue still called it `CELL_BOUNDED`. The smallest semantic correction renames that only enum constant and all five built-in uses; no schema serializes this enum and no structure identity, footprint, asset, or world state changed.
+- A focused registered-state test proved `BlockState.canBeReplaced(Fluids.WATER)` returned `true`: the inherited fallback treats `.noOcclusion()` invisible cells as non-solid even though selection/collision are full cells. Anchor and part now explicitly override only fluid replacement to return `false`. They remain dry, non-waterloggable, and otherwise unchanged.
+- The first focused run also showed the inherited interaction shape is intentionally empty. The test was corrected to classify inherited empty interaction/face-occlusion shapes rather than changing production shapes.
+
+### Shape-method inventory and exact result
+
+- Resolved NeoForge `21.1.72` / Minecraft `1.21.1` `BlockBehaviour.BlockStateBase`, vanilla neighbor classes, `VoxelShape`, and `AABB` APIs were inspected from the mapped local classpath with Java 21 `javap`; no API was guessed.
+- Audited actual registered states: four anchor states (`north`, `east`, `south`, `west`) and all 72 part states (`4 facing x 3 local_x x 3 local_y x 2 local_z`), including the representable origin combination that `stateFor` deliberately rejects for normal part creation.
+- Explicit anchor/part overrides: selection `getShape` and collision `getCollisionShape` each return `Shapes.block()`, exactly one AABB `[0,0,0]..[1,1,1]` (`0..16` voxels).
+- Inherited results: occlusion, visual, block-support, and all six face-occlusion shapes are the same full local cell; interaction shape alone is empty. Empty shapes are permitted and every non-empty AABB was enumerated.
+- Every coordinate is finite, ordered, non-negative, at most `1.0`, and independent of facing/offset. NaN, infinity, reversed, negative, oversized, model-derived, renderer-derived, texture-derived, render-AABB-derived, and render-offset-derived coordinates are rejected.
+- All six `isFaceSturdy` results are `true`; land, water, and air `PathComputationType` results are all `false`; ordinary and fluid replaceability are false; piston reaction is `BLOCK`; fluid state is empty; neither class implements `SimpleWaterloggedBlock`.
+- Behavioral signatures are identical across every anchor/part state and all eleven catalogue variants. Static dependency inspection additionally proves shape classes import no client renderer/model/selection/bounds/offset code. Shrine extents, monolith extents, missing-resource selection, variant cycling, and `[0,+16,0]` visual correction therefore cannot affect physics.
+
+### Occupancy, perimeter, and adjacency matrix
+
+- Transform-derived shrine result for every facing and all nine variants: four occupied cells and eight unique horizontal perimeter cells.
+- Transform-derived monolith result for every facing and both variants: eighteen occupied cells; each Y layer contains six occupied cells and ten unique horizontal perimeter cells; all three layers produce thirty layer-specific perimeter positions.
+- Six state phases are covered: initial, one catalogue cycle, actual disk NBT save/load, actual update-tag application, actual reflected `ClientboundBlockEntityDataPacket` application, and missing-resource display fallback without authoritative-state mutation.
+- The registered-neighbor catalogue has 87 states: one full cube; all 40 oak stair combinations (`4 facing x 2 half x 5 shape`); three stone slabs; thirteen wall connection controls; six fence controls; eight gate controls; and sixteen wall button/lever/wall-torch/ladder controls.
+- Exterior slots are `9 x 4 x 8 = 288` shrine plus `2 x 4 x 30 = 240` monolith slots. `528 x 6 phases x 87 states = 275,616` neighbor install/collision/snapshot/remove cases. Adding 264 phase/occupancy cases, 40 explicit stair state cases, and 16 attachment cases yields 275,936 logical Milestone 8 cases across 14 focused JUnit methods.
+- Every neighbor uses a registered vanilla `BlockState`; world-translated neighbor collision never intersects any occupied cell collision. Install and removal modify only the simulated neighbor map; complete anchor state, block-entity `PlacedStructureState`, schema/family/variant/facing/ordered footprint, and every part state remain equal.
+- Stair straight/toward/away/parallel interpretations, top/bottom halves, and direct `INNER_LEFT`, `INNER_RIGHT`, `OUTER_LEFT`, `OUTER_RIGHT` registered-state shapes are all local. Corner shapes are evidence level C direct-state tests, not claimed live recomputation or placement.
+- Wall/fence toward/away/straight connection controls, fence gates, slabs, full blocks, and attachments are registered-state level C plus coordinate level D. Structure sturdy-face evidence proves the support side; no broad fake/real Level placement harness was introduced. Existing production placement/lifecycle adapters provide level B regression evidence. Level A live `BlockItem.place`/GameTest was unavailable; level E is used only for registration, renderer, logging, and side boundaries.
+
+### Content report and fixed inventory
+
+- `docs/shrines-monoliths/CONTENT_REPORT.json` is deterministic JSON schema version `1`, generated from the approved content commit `0aa523ec86e483e230fc1c4d04e145d394ebf990`; it has no timestamp and no filesystem-enumeration ordering.
+- Family order and variant cycle order come from the validated catalogue. Every family/variant entry records logical status separately from `OWNER_APPROVED_PROVISIONAL` asset status, exact dimensions/ordered footprint/count, default/enabled state, `SOLID_CELL`, render origin/offset, exact geometry/texture/animation paths and SHA-256 hashes, availability, validation status, and empty diagnostics.
+- Exact content: nine shrine variants (`honesty`, `compassion`, `valor`, `justice`, `sacrifice`, `honor`, `spirituality`, `humility`, `chaos`) and two provisional monolith variants (`diagnostic_missing_content`, `diagnostic_alternate`). No final lore/name, third variant, disablement, reorder, substitution, or content migration was added.
+- `MilestoneEightContentReportTest` reconstructs the report from the in-memory catalogue plus exact source resources and compares parsed JSON equality, paths, hashes, localization, uniqueness, mappings, defaults, offsets, and counts.
+
+### Protected assets before and after
+
+All 19 source byte counts and SHA-256 values are identical before/after and match both production JARs:
+
+- Shrine: animation `F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E` (89); shared geometry `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0` (744); fallback geometry `460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781` (597); item model `829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985` (121).
+- Shrine textures: Honesty `D35747568A37960736C20F8359F55043B19739FC7D1FAB34144F8F971C36BCCC`; Compassion `79160E8AF141E4395A64D64439F7FBF0C2170D78073A136E6CBEF8A130FC87BC`; Valor `A748C870317998F911AC328960685F4B41AE8330635DC839F35D27EC6ACA4A1F`; Justice `5F01D14F16870EBA66C6A4C3E2F19C919E403A5DCDDC12037904285C825B1B8B`; Sacrifice `E4C56B44DC44C749DB10E2D34824DCF0079774FAAF9C2368330CC57036B4EEC4`; Honor `ADC2A67CFA7476D4C1D18A7C49E9F1937D552099FCFE9F1D3C821B832135D381`; Spirituality `D50CF726BD459C85313A9173E708C49C3ADC72559D0EABC9458FDFED8FF05CF1`; Humility `E201645E5D9058E28022B22904114E09823E736DDE8021D2E4DA2CE9E558AC8A`; Chaos `D8B2FDEB4158BBF86A053CDD383E532569F4DDDAEFF178D2472F5ABC2507EDC3`.
+- Monolith: existing geometry `0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C` (1,007); alternate geometry `B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC` (1,145); existing texture `FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4` (2,034); alternate texture `E320B72F2D0B9429D07DD4E62D264535760797AE6D1F9DD047C082B6736A2C4A` (1,900); animation `D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530` (84); item model `E48339859F7AA66BBC08246B8BC65AC1827E28241509518F9884A854739A2BED` (40).
+
+### Diagnostic inventory and bounding policy
+
+| Path | Severity/code | Trigger/context | Bound and coverage |
+| --- | --- | --- | --- |
+| Definition validation | typed `DefinitionDiagnostic.Code` | duplicate/missing IDs, invalid footprint/resources/cycle; family/variant/location context | finite validation result; exhaustive definition tests |
+| Placed-state decode | `PlacedStructureStatus` plus WARN | malformed/future/invalid/missing definitions; anchor/status context | once per key, FIFO cap 1,024; persistence tests and M8 static cap audit |
+| Client model/texture fallback | WARN | selected family/variant/status or exact missing resource | once per key, FIFO cap 128, never state mutation; render tests and M8 missing-selection test |
+| Integrity orphan/obstruction/repair race | WARN | kind plus anchor/part position | once per kind/position, FIFO cap 1,024; repeated-diagnostic and lifecycle tests |
+| Integrity scheduler | intentionally silent | missing anchor chunk/loaded-cell deferral | 64 chunks/tick, 4,096 pending/level, removed on level unload, `getChunkNow` only; integrity tests and M8 scope audit |
+| Placement rollback | ERROR | incomplete rollback with complete position list | emitted only on exceptional failure; rollback ownership/failure tests |
+| Lifecycle exception | ERROR | removal anchor and cause plus exception | removal guard clears in `finally`; lifecycle failure/reentrancy/duplicate-drop tests |
+| Unauthorized decorator/invalid cycle/missing definition | typed result, intentionally silent | server-owned authorization/definition result | no logger and no client authorization details; authorization/cycle tests and M8 scope audit |
+| Duplicate lifecycle callback | intentionally silent guard | level identity plus anchor | in-progress set cleared in `finally`; duplicate callbacks produce at most one configured drop |
+
+No new logging was added. Missing-resource paths cannot log per frame for the same key; orphan/obstruction paths cannot log each tick for the same position; caches and queues are finite or lifecycle-cleared; logging does not mutate authoritative state.
+
+### Banner and side/registration boundaries
+
+- No banner multiblock source/test exists on active `shrines-monoliths`. Local remote-tracking ref `origin/banners-dyetub` at `5debcc1` contains the banner suite under `src/test/java/com/seggellion/britannia_mod/bannerdyeing/`; paths were inspected read-only with `git ls-tree`. It was not switched to, copied, imported, or run, so banner runtime regression is unavailable on this active branch.
+- Existing scope tests plus M8 checks retain one generic anchor, one generic part, one anchor block-entity type, two configured family items, no anchor/part `BlockItem`, no part block entity, one anchor renderer registration, no part renderer, and one Interior Decorator registration.
+- Common definition/placement/lifecycle/interaction code imports no `net.minecraft.client`; the client cannot submit arbitrary family/variant/resource/footprint/cycle-position/offset data. Fallback is display-only and same-family cycling remains server authoritative.
+
+### Exact automated commands and results
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+- Focused hardening: `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.hardening.*" --no-daemon --no-configuration-cache --stacktrace`; final exit `0`, 22.4 seconds, 4 classes / 14 methods, 275,936 logical cases, zero failures/errors/skips; 30 tasks (2 executed, 28 up-to-date). Three diagnostic red runs classified the inherited empty interaction shape, exposed inherited fluid-replaceability, and corrected the face-occlusion expectation from empty to the observed full-cell result; the final suite passed with the production correction described above.
+- Focused interaction/placement/lifecycle/render/multiblock/hardening command: exit `0`, 25.0 seconds, 23 classes / 127 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Structure suite: `.\gradlew.bat test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`; exit `0`, 23.6 seconds, 32 classes / 200 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Full suite: `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`; exit `0`, 21.8 seconds, 32 classes / 200 methods, zero failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, tracked generated paths were empty; dry inventory listed only ignored `.gradle`, `build`, `run`, and `runs`; untracked root `logs` contained only reproducible current-session test/runtime logs and was not a Gradle clean target. `.\gradlew.bat clean build --no-daemon --no-configuration-cache --stacktrace`: exit `0`, 165.7 seconds (`BUILD SUCCESSFUL in 2m 45s`); 32 classes / 200 methods from cache, zero failures/errors/skips; 36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- Known compile warnings remain unchanged: missing Javadoc on one Mixin `@Overwrite`, deprecated-for-removal `Item.initializeClient`, test deprecation, and generic deprecation/unchecked notes. Gradle's daemon-JVM-discovery notice remains incubating.
+
+### Runtime startup validation
+
+- Dedicated server: `.\gradlew.bat runServer -Pdev --no-daemon --no-configuration-cache --stacktrace`; loaded Britannia `0.1.7k`, GeckoLib `4.6.6`, Minecraft `1.21.1`, NeoForge `21.1.72`; reached `Done (1.369s)`; loopback RCON authenticated and issued `stop`; players/worlds/overworld/end/nether chunks saved and `All dimensions are saved`; Gradle exit `0`, `BUILD SUCCESSFUL in 1m 13s`, 32 tasks (1 executed, 1 from cache, 30 up-to-date).
+- Established unrelated diagnostics remain: development refmaps, `TitleScreen` dedicated-dist Mixin target, missing `britannia_mod.properties`, asset-union schema warnings, and repetitive Fishing Rod/barrel messages. No shrine/monolith missing-resource, catalogue, shape, content-report, or improper client-renderer diagnostic occurred on the server.
+- Development client: `.\gradlew.bat runClient -Pdev --no-daemon --no-configuration-cache --stacktrace`; loaded the mod list, Britannia client registration, `mod/britannia_mod` resources, OpenAL, sound engine, 4096 block atlas, GUI atlas, and other atlases. No missing/parse warning named shrine or either monolith resource. The exact hidden process tree was terminated after the startup marker because no interactive client control was exposed; this is startup/resource/class-loading evidence, not a normal client exit or gameplay result.
+
+### Production JAR inspection
+
+- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,245,612 bytes; 4,688 entries; SHA-256 `755EBE6448EF5553954D1BCE0625F2DA3FBC9AD265F36A09018EF3E99ACBD316`.
+- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,817,250 bytes; 4,692 entries; SHA-256 `D0E883B3B338B52B20943CDA3C85FE0D22DA703B5F4D1A8D8412E1FFC402DFFE`.
+- Each contains 107 structure-class entries, exactly one anchor class, one part class, one anchor entity, one shared `ShrineRenderer`, localization, nine shrine textures, two monolith geometries, two monolith textures, both animations/item presentations, and all prior production content. All 19 source-to-JAR resource comparisons have zero missing and zero mismatch.
+- Each contains zero test/fixture entries, zero part renderer, zero part entity, zero direct-use anchor/part item model, zero third monolith resource, zero cross-family conversion, and zero Milestone 9 harness/world. `CONTENT_REPORT.json` is intentionally project documentation and is not runtime-packaged.
+
+### Manual validation, limitations, and next milestone
+
+- Performed manually: complete specification/document/API/source/diff/Git/ref/JAR/log inspection; exact registered-state evidence classification; dedicated server and development client startup observation.
+- `UNVERIFIED`: live `BlockItem` placement, full representative stair/full-block/slab/wall/fence/attachment rings, actual neighbor recomputation in a real Level, visual collision/overlap, part duplicate-render observation, save-world reload, live cycling with neighbors, two authenticated clients, multiplayer observation, and normal client shutdown.
+- These checks are explicitly carried to Milestone 9. Registered-state collision mathematics, deterministic adapters, packet application, and startup smoke are not claimed as live gameplay, visual, save-world, or multiplayer evidence.
+- No new gameplay, content, art, recipe, command, NPC, rails, website, cross-family conversion, reverse cycling, rotation, resizing, performance rewrite, renderer, decorator, part entity/item, global scan, or Milestone 9 infrastructure was added.
+- Next permitted milestone: Milestone 9 only after separate owner approval. Do not begin it.
