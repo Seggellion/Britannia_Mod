@@ -51,7 +51,7 @@ class InteriorDecoratorMilestoneFiveScopeTest {
     void currentOwnerApprovedShrineAssetsHaveExpectedHashes() throws Exception {
         Map<String, String> expected = new LinkedHashMap<>();
         expected.put("animations/shrine.animation.json", "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E");
-        expected.put("geo/shrine.geo.json", "374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51");
+        expected.put("geo/shrine.geo.json", "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE");
         expected.put("geo/shrine_missing.geo.json", "460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781");
         expected.put("models/item/shrine.json", "829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985");
         expected.put("textures/block/shrine/chaos.png", "9365AB11463B1442FEE89D131AA0197A38E7F5FE513102E44182D2B1595F4702");
@@ -64,6 +64,7 @@ class InteriorDecoratorMilestoneFiveScopeTest {
         expected.put("textures/block/shrine/spirituality.png", "C4394FF25C3EF14DAE11EEDB5D2DF3BD0787608E82602712314AF32565A3CA4A");
         expected.put("textures/block/shrine/valor.png", "2482D99690D718C3D0B06E919118408BE965179C0A878F2924F396EBBA186CF9");
         expected.put("textures/block/shrine/granite.png", "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77");
+        expected.put("textures/block/shrine/light_granite.png", "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77");
         Path root = Path.of("src/main/resources/assets/britannia_mod");
         for (var asset : expected.entrySet()) {
             assertEquals(asset.getValue(), sha256(root.resolve(asset.getKey())), asset.getKey());

@@ -4,6 +4,15 @@
 
 `CONDITIONAL MERGE READINESS`
 
+`CURRENT WORKTREE HOLD`: the owner-reported post-audit gap correction and the later chaos-only
+`light_granite.png` rim-selection feature are implemented but not committed or visually rechecked.
+The correction expands the shrine presentation from 30 by 30 to 32 by 32 model voxels so it exactly
+reaches the four-cell footprint boundary. The new selector maps only `shrine/chaos` to the distinct
+light-granite resource path; its supplied bytes currently equal `granite.png`. Until the owner accepts
+the worktree result and it is committed, the audited tip/artifact/hash tables below remain the historical
+`b261653` snapshot and must not be used to merge the dirty worktree. After acceptance, refresh the
+source tip, artifact hashes, exact-JAR server evidence, and merge simulation before integration.
+
 Code review and an explicitly owner-authorized merge may proceed with the documented Milestone 9 limitations.
 
 Live promotion and production release remain blocked pending the deferred two-authenticated-client validation, unless the project owner later issues a separate explicit release-risk waiver.

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.client.renderer.shrine;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.seggellion.britannia_mod.structure.multiblock.LargeStructureAnchorBlockEntity;
+import com.seggellion.britannia_mod.structure.render.ShrineRimMaterialSelection;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -16,8 +17,6 @@ import software.bernie.geckolib.util.Color;
 public final class ShrineGraniteRenderLayer extends GeoRenderLayer<LargeStructureAnchorBlockEntity> {
     static final String SURFACE_BONE = "shrine_surface";
     static final String GRANITE_BONE = "granite_rim";
-    static final ResourceLocation GRANITE_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            "britannia_mod", "textures/block/shrine/granite.png");
 
     public ShrineGraniteRenderLayer(GeoRenderer<LargeStructureAnchorBlockEntity> renderer) {
         super(renderer);
@@ -45,7 +44,10 @@ public final class ShrineGraniteRenderLayer extends GeoRenderLayer<LargeStructur
         try {
             surface.setHidden(true);
             granite.setHidden(false);
-            RenderType graniteRenderType = RenderType.entityCutoutNoCull(GRANITE_TEXTURE);
+            var selected = ShrineRimMaterialSelection.textureFor(anchor);
+            ResourceLocation graniteTexture = ResourceLocation.fromNamespaceAndPath(
+                    selected.namespace(), selected.path());
+            RenderType graniteRenderType = RenderType.entityCutoutNoCull(graniteTexture);
             VertexConsumer graniteBuffer = bufferSource.getBuffer(graniteRenderType);
             getRenderer().reRender(model, poseStack, bufferSource, anchor,
                     graniteRenderType, graniteBuffer, partialTick, packedLight, packedOverlay,

@@ -12,6 +12,8 @@ import com.seggellion.britannia_mod.structure.definition.ShrineMonolithDefinitio
 import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Family;
 import com.seggellion.britannia_mod.structure.definition.StructureDefinition.Variant;
 import com.seggellion.britannia_mod.structure.definition.StructureIdentity.ClientResource;
+import com.seggellion.britannia_mod.structure.definition.StructureIdentity.ResourceId;
+import com.seggellion.britannia_mod.structure.render.ShrineRimMaterialSelection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -134,11 +136,19 @@ class MilestoneEightContentReportTest {
                 ? "animations/shrine.animation.json" : "animations/monolith.animation.json";
         json.addProperty("geometry_resource", resourcePath(variant.model()));
         json.addProperty("texture_resource", resourcePath(variant.texture()));
+        ResourceId rimTexture = null;
+        if (family.id().equals(ShrineMonolithDefinitions.SHRINE)) {
+            rimTexture = ShrineRimMaterialSelection.textureFor(family.id(), variant.id());
+            json.addProperty("rim_texture_resource", resourcePath(rimTexture));
+        }
         json.addProperty("animation_resource", animation);
         json.addProperty("resource_availability", "AVAILABLE");
         JsonObject hashes = new JsonObject();
         hashes.addProperty("geometry", sha256(ASSETS.resolve(resourcePath(variant.model()))));
         hashes.addProperty("texture", sha256(ASSETS.resolve(resourcePath(variant.texture()))));
+        if (rimTexture != null) {
+            hashes.addProperty("rim_texture", sha256(ASSETS.resolve(resourcePath(rimTexture))));
+        }
         hashes.addProperty("animation", sha256(ASSETS.resolve(animation)));
         json.add("resource_sha256", hashes);
         json.addProperty("validation_status", "VALID");
@@ -179,6 +189,11 @@ class MilestoneEightContentReportTest {
         var id = resource.location().orElseThrow();
         assertEquals("britannia_mod", id.namespace());
         return id.path();
+    }
+
+    private static String resourcePath(ResourceId resource) {
+        assertEquals("britannia_mod", resource.namespace());
+        return resource.path();
     }
 
     private static String sha256(Path path) throws Exception {

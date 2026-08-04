@@ -78,32 +78,32 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
     void correctedJsonIsFourSquareFlatShrineWithGraniteRimAndSafeFaceUvs() throws IOException {
         Geometry geometry = readGeometry();
         assertEquals("geometry.britannia_mod.shrine", geometry.identifier());
-        assertEquals(new AABB(-7, 0, -7, 23, 15, 23), geometry.bounds());
+        assertEquals(new AABB(-8, 0, -8, 24, 15, 24), geometry.bounds());
         assertEquals(List.of(0.0, 0.0, 0.0), geometry.rootPivot());
         assertEquals(8, geometry.cubes().size());
-        assertEquals(30.0, geometry.bounds().getXsize());
-        assertEquals(30.0, geometry.bounds().getZsize());
+        assertEquals(32.0, geometry.bounds().getXsize());
+        assertEquals(32.0, geometry.bounds().getZsize());
         assertEquals(15.0, geometry.bounds().getYsize());
 
         Set<List<Double>> surfaceOrigins = Set.of(
-                List.of(-5.0, 0.0, -5.0), List.of(8.0, 0.0, -5.0),
-                List.of(-5.0, 0.0, 8.0), List.of(8.0, 0.0, 8.0));
+                List.of(-6.0, 0.0, -6.0), List.of(8.0, 0.0, -6.0),
+                List.of(-6.0, 0.0, 8.0), List.of(8.0, 0.0, 8.0));
         assertEquals(surfaceOrigins,
                 geometry.cubes().stream()
-                        .filter(cube -> cube.size().equals(List.of(13.0, 14.0, 13.0)))
+                        .filter(cube -> cube.size().equals(List.of(14.0, 14.0, 14.0)))
                         .map(Cube::origin).collect(java.util.stream.Collectors.toSet()));
         assertEquals(Set.of(
-                List.of(-7.0, 0.0, -7.0), List.of(-7.0, 0.0, 21.0),
-                List.of(-7.0, 0.0, -5.0), List.of(21.0, 0.0, -5.0)),
+                List.of(-8.0, 0.0, -8.0), List.of(-8.0, 0.0, 22.0),
+                List.of(-8.0, 0.0, -6.0), List.of(22.0, 0.0, -6.0)),
                 geometry.cubes().stream()
-                        .filter(cube -> cube.size().equals(List.of(30.0, 15.0, 2.0))
-                                || cube.size().equals(List.of(2.0, 15.0, 26.0)))
+                        .filter(cube -> cube.size().equals(List.of(32.0, 15.0, 2.0))
+                                || cube.size().equals(List.of(2.0, 15.0, 28.0)))
                         .map(Cube::origin).collect(java.util.stream.Collectors.toSet()));
 
         Map<List<Double>, List<Double>> correctedTopUvOrigins = Map.of(
-                List.of(-5.0, 0.0, -5.0), List.of(0.0, 64.0),
-                List.of(8.0, 0.0, -5.0), List.of(64.0, 64.0),
-                List.of(-5.0, 0.0, 8.0), List.of(0.0, 0.0),
+                List.of(-6.0, 0.0, -6.0), List.of(0.0, 64.0),
+                List.of(8.0, 0.0, -6.0), List.of(64.0, 64.0),
+                List.of(-6.0, 0.0, 8.0), List.of(0.0, 0.0),
                 List.of(8.0, 0.0, 8.0), List.of(64.0, 0.0));
         geometry.cubes().stream().filter(cube -> surfaceOrigins.contains(cube.origin()))
                 .forEach(cube -> {
@@ -135,12 +135,20 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
             }
             assertTrue(boxes.add(cube.origin() + ":" + cube.size()), "No duplicate cube is allowed");
         }
+        List<AABB> cubeBounds = geometry.cubes().stream()
+                .map(CorrectiveMilestoneNineARenderAlignmentTest::cubeBounds).toList();
+        for (int first = 0; first < cubeBounds.size(); first++) {
+            for (int second = first + 1; second < cubeBounds.size(); second++) {
+                assertFalse(cubeBounds.get(first).intersects(cubeBounds.get(second)),
+                        "Cubes may meet at a face but must not overlap: " + first + "/" + second);
+            }
+        }
         assertEquals(2, geometry.boneCount());
         assertEquals(0, geometry.childBoneCount());
     }
 
     @Test
-    void everyFacingEnvelopeIsCenteredInsetAndContainedByItsFourCells() throws IOException {
+    void everyFacingEnvelopeIsCenteredFlushAndContainedByItsFourCells() throws IOException {
         AABB model = readGeometry().bounds();
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             AABB occupied = ShrineRenderTransform.occupiedShrineFootprintEnvelope(ANCHOR, facing);
@@ -148,13 +156,13 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
             assertTrue(contains(occupied, rendered), facing.toString());
             assertEquals(centerX(occupied), centerX(rendered), EPSILON);
             assertEquals(centerZ(occupied), centerZ(rendered), EPSILON);
-            assertEquals(1.875, rendered.getXsize(), EPSILON);
-            assertEquals(1.875, rendered.getZsize(), EPSILON);
+            assertEquals(2.0, rendered.getXsize(), EPSILON);
+            assertEquals(2.0, rendered.getZsize(), EPSILON);
             assertEquals(0.9375, rendered.getYsize(), EPSILON);
-            assertEquals(1.0 / 16.0, rendered.minX - occupied.minX, EPSILON);
-            assertEquals(1.0 / 16.0, occupied.maxX - rendered.maxX, EPSILON);
-            assertEquals(1.0 / 16.0, rendered.minZ - occupied.minZ, EPSILON);
-            assertEquals(1.0 / 16.0, occupied.maxZ - rendered.maxZ, EPSILON);
+            assertEquals(0.0, rendered.minX - occupied.minX, EPSILON);
+            assertEquals(0.0, occupied.maxX - rendered.maxX, EPSILON);
+            assertEquals(0.0, rendered.minZ - occupied.minZ, EPSILON);
+            assertEquals(0.0, occupied.maxZ - rendered.maxZ, EPSILON);
             assertEquals(ANCHOR.getY(), rendered.minY, EPSILON);
             assertEquals(ANCHOR.getY() + 0.9375, rendered.maxY, EPSILON);
             assertEquals(0.0, ShrineRenderTransform.renderOffsetBlocks(
@@ -164,7 +172,7 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
     }
 
     @Test
-    void correctedEnvelopeNeverTouchesAnyOfEightPerimeterStairCells() throws IOException {
+    void correctedEnvelopeMeetsFootprintBoundaryWithoutEnteringPerimeterStairCells() throws IOException {
         AABB model = readGeometry().bounds();
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             AABB rendered = ShrineRenderTransform.renderedShrineEnvelope(ANCHOR, facing, model);
@@ -223,7 +231,7 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
         assertTrue(renderer.contains("model.getBone(ShrineGraniteRenderLayer.GRANITE_BONE)"));
         assertTrue(layer.contains("SURFACE_BONE = \"shrine_surface\""));
         assertTrue(layer.contains("GRANITE_BONE = \"granite_rim\""));
-        assertTrue(layer.contains("textures/block/shrine/granite.png"));
+        assertTrue(layer.contains("ShrineRimMaterialSelection.textureFor(anchor)"));
         assertTrue(layer.contains("surface.setHidden(true)"));
         assertTrue(layer.contains("granite.setHidden(false)"));
         assertTrue(layer.contains("getRenderer().reRender("));
@@ -246,6 +254,7 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
                 Map.entry("textures/block/shrine/humility.png", "B8136CE1C9637D1B1A5F6E0738B9698F34854C88F796BD6FC63DB2F955C1688C"),
                 Map.entry("textures/block/shrine/chaos.png", "9365AB11463B1442FEE89D131AA0197A38E7F5FE513102E44182D2B1595F4702"),
                 Map.entry("textures/block/shrine/granite.png", "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77"),
+                Map.entry("textures/block/shrine/light_granite.png", "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77"),
                 Map.entry("geo/monolith_diagnostic.geo.json", "0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C"),
                 Map.entry("geo/monolith_diagnostic_alternate.geo.json", "B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC"),
                 Map.entry("textures/block/monolith/diagnostic_stone.png", "FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4"),
@@ -255,7 +264,7 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
         for (var entry : expected.entrySet()) {
             assertEquals(entry.getValue(), sha256(RESOURCES.resolve(entry.getKey())), entry.getKey());
         }
-        assertEquals("374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51",
+        assertEquals("DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
                 sha256(GEOMETRY));
     }
 
@@ -349,6 +358,14 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
                 Math.min(first.minX, second.minX), Math.min(first.minY, second.minY),
                 Math.min(first.minZ, second.minZ), Math.max(first.maxX, second.maxX),
                 Math.max(first.maxY, second.maxY), Math.max(first.maxZ, second.maxZ));
+    }
+
+    private static AABB cubeBounds(Cube cube) {
+        return new AABB(
+                cube.origin().get(0), cube.origin().get(1), cube.origin().get(2),
+                cube.origin().get(0) + cube.size().get(0),
+                cube.origin().get(1) + cube.size().get(1),
+                cube.origin().get(2) + cube.size().get(2));
     }
 
     private static boolean contains(AABB outer, AABB inner) {

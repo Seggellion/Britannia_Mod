@@ -29,8 +29,13 @@ corrective build as release evidence.
       oriented symbol with no row wrap or seam displacement.
 - [ ] Confirm the shrine inner surface reaches 14 model voxels, the granite rim reaches 15, and the
       separate granite material pass has no seam or z-fighting artifact.
-- [ ] Confirm the 30 by 30 model-voxel shrine presentation remains centered inside the prescribed
-      eight-stair frame with no penetration, empty side, stripe, overlap, or boundary artifact.
+- [ ] Confirm runtime resource selection maps only `shrine/chaos` to
+      `textures/block/shrine/light_granite.png` and maps the other eight variants to
+      `textures/block/shrine/granite.png`. The current files are byte-identical, so path/resource
+      evidence is required even if no visual difference is observable until distinct light content is supplied.
+- [ ] Confirm the 32 by 32 model-voxel shrine presentation remains centered and flush against the
+      prescribed eight-stair frame with no gap, penetration, empty side, stripe, overlap, or boundary
+      artifact.
 - [ ] Confirm the Decorative & Graveyard tab exposes exactly one configured shrine and one configured
       monolith, resolving to `shrine/honesty` and `monolith/diagnostic_missing_content`, with no anchor
       or part item exposed.

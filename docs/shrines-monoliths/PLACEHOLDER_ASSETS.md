@@ -12,18 +12,24 @@ separately approved migration says otherwise.
 - `assets/britannia_mod/geo/shrine.geo.json` is the current static owner-supplied GeckoLib shrine.
 - It is authored facing North, with Y up and the anchor at the lower front-left occupied cell.
 - Corrective Milestone 9A aligns the geometry with the lower-front-left anchor after GeckoLib's
-  Bedrock-X mirroring. Model extents are X `[-7, 23]`, Y `[0, 15]`, Z `[-7, 23]` model units.
-- The 30 by 30 model-voxel base leaves a symmetric one-voxel inset from the four horizontal
-  footprint edges. Its effective presentation is 1.875 by 1.875 blocks, centered in the logical
-  2 by 2 footprint for all four facings.
-- Four equal `13 x 14 x 13` surface cubes sit one model voxel below four 15-voxel-high granite rim
+  Bedrock-X mirroring. Model extents are X `[-8, 24]`, Y `[0, 15]`, Z `[-8, 24]` model units.
+- The 32 by 32 model-voxel base exactly fills the four horizontal footprint cells. Its effective
+  presentation is 2 by 2 blocks, centered in the logical 2 by 2 footprint for all four facings and
+  flush with—without entering—the adjacent perimeter-cell boundary.
+- Four equal `14 x 14 x 14` surface cubes sit one model voxel below four 15-voxel-high granite rim
   pieces. Each 128 by 128 virtue top is divided into four exact 64 by 64 quadrants; the raw-Z UV rows
   are intentionally swapped so the complete symbol is oriented correctly in world space.
-- Current SHA-256 is `374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51`.
+- Current SHA-256 is `DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE`.
 - GeckoLib translates to the anchor cell center before rotating: North `0`, East `-90`, South `180`, West `90` degrees around +Y.
 - `assets/britannia_mod/textures/block/shrine/granite.png` is the separate owner-supplied granite
   material rendered only on the `granite_rim` bone; SHA-256 is
   `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`.
+- `assets/britannia_mod/textures/block/shrine/light_granite.png` is the owner-supplied chaos-only
+  rim material. Runtime selection maps only `shrine/chaos` to this path; the other eight variants
+  retain `granite.png`. It is a 128 by 128 indexed PNG, 13,635 bytes, with SHA-256
+  `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`. It is currently
+  byte-identical to `granite.png`, so the distinct resource selection is testable but not yet
+  visually distinguishable. Neither file was generated, recolored, resized, or otherwise altered.
 - `assets/britannia_mod/geo/shrine_missing.geo.json` is a bounded diagnostic cube, not shrine art.
 
 ## Variant textures
@@ -42,8 +48,8 @@ owner-supplied virtue textures installed during corrective Milestone 9A:
 - `chaos.png`
 
 Each texture is mapped directly from its stable lowercase variant ID. Their exact hashes are recorded
-in `CONTENT_REPORT.json`. The later UV/height correction changed only `shrine.geo.json`; all ten
-owner-supplied shrine PNGs, including granite, remained byte-identical. Replacements must keep the same
+in `CONTENT_REPORT.json`. The later UV/height correction changed only `shrine.geo.json`; the current
+eleven shrine PNGs comprise nine virtue textures plus two rim materials. Replacements must keep the same
 file names and dimensions unless geometry and content evidence are intentionally updated together.
 
 ## Item presentation

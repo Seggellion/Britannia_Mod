@@ -1,5 +1,27 @@
 # Shrine and Monolith Open Questions
 
+## Flush-envelope owner recheck
+
+- Owner screenshots identified the former 30 by 30 model-voxel presentation's exact one-voxel gap
+  against adjacent stairs. The correction expands the complete exterior to 32 by 32 model voxels,
+  exactly matching the horizontal four-cell footprint boundary while preserving center, UV mapping,
+  14/15-voxel heights, and the two-voxel granite rim.
+- Owner recheck should confirm no visible gap on all four sides/facings and no new overlap,
+  z-fighting, texture seam, or entry into adjacent stair cells. Deterministic AABB tests prove exact
+  boundary equality and zero volumetric intersection but are not GPU evidence.
+
+## Chaos light-granite owner recheck
+
+- The requested resource rule is explicit: `shrine/chaos` uses
+  `textures/block/shrine/light_granite.png`; the other eight shrine variants use
+  `textures/block/shrine/granite.png`.
+- The supplied `light_granite.png` is a distinct path but currently byte-identical to
+  `granite.png` (128 by 128, 13,635 bytes, SHA-256
+  `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`). A visible difference
+  is therefore not expected until the owner supplies distinct approved content at the light path.
+- After distinct bytes are supplied, live cycling should confirm only Chaos changes rim appearance,
+  all eight other variants retain the original granite, and the surface/rim seam remains clean.
+
 ## No unresolved critical owner decision
 
 On 2026-08-04 the owner accepted the corrected shrine result with `Excellent. Commit. Move to next
@@ -9,8 +31,8 @@ does not convert checks that were not demonstrated into passing evidence.
 
 The following remain explicit release-validation items rather than unanswered design decisions:
 
-- North/East/South/West GPU review of the complete symbol, virtue/granite seam, stair boundary, and
-  absence of penetration, empty sides, stripes, overlap, or z-fighting.
+- North/East/South/West GPU review of the complete symbol, virtue/rim-material seam, stair boundary, and
+  absence of a gap, penetration, empty sides, stripes, overlap, or z-fighting.
 - Representative variant cycling, collision, save/reload, and exact Creative-tab contents in a live
   game, including the absence of anchor and part items.
 - The two-authenticated-client and dependent live matrix already waived for conditional audit by the

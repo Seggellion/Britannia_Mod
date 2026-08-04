@@ -1571,3 +1571,96 @@ claim remain pending until owner evidence. Milestone 10 was not begun or resumed
   blocked by `POST_MERGE_VALIDATION.md` unless the owner separately accepts that release risk.
 - No fetch, push, transfer, merge, rebase, reset, amend, stash, shared-repository mutation, release,
   deployment, tag, or live promotion occurred.
+
+## 2026-08-04 - Owner visual follow-up: flush shrine footprint envelope
+
+- Starting HEAD: `f4f18b8a19d66f10c6d8d4e2ba3b461eb5ca4eb9`
+  (`docs(structures): refresh corrected merge-readiness audit`) on `shrines-monoliths`; only the
+  preserved untracked `logs/` and owner `textures/block/shrine/old/` backup were present.
+- Owner screenshots showed a uniform one-model-voxel line between the granite exterior and adjacent
+  stairs. The defect exactly matched the intentional 30 by 30 model-voxel bounds `[-7,23]`: after
+  GeckoLib conversion and anchor translation, every facing stopped `1/16` block inside each edge of
+  the logical two-block-square footprint.
+- The correction expands the complete model symmetrically around its unchanged raw center at X/Z
+  `8`: raw bounds become `[-8,24]`, exactly 32 by 32 model voxels. Four surface quadrants change from
+  `13 x 14 x 13` to `14 x 14 x 14`, covering the inner `[-6,22]` square. The four granite pieces
+  remain 15 voxels high and 2 voxels thick, with horizontal pieces `32 x 15 x 2` and side pieces
+  `2 x 15 x 28`.
+- Exact effective horizontal bounds now equal the occupied four-cell envelope for every facing:
+  North X `[-1,1]` / Z `[0,2]`; East X/Z `[-1,1]`; South X `[0,2]` / Z `[-1,1]`; West X/Z
+  `[0,2]`, relative to the anchor. AABB boundary contact is exact and has zero volume, so no adjacent
+  perimeter stair cell is entered.
+- UV quadrant origins/sizes, corrected row orientation, 14-voxel surface height, 15-voxel granite
+  height, center/pivot, renderer/material architecture, placement, collision, state, lifecycle,
+  cycling, Creative exposure, monolith content, and schemas are unchanged. No PNG was edited.
+- Geometry SHA-256 changes from
+  `374E8455075B8EFFCDFE4E36432FB9254A112F777141D319F90B5545EA92AB51` to
+  `DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE`.
+- Focused geometry/hash/content command (corrective render alignment, Milestone 5 asset scope, and
+  deterministic content report): exit 0 in 82.7 seconds (`BUILD SUCCESSFUL in 1m 22s`), 3 classes /
+  15 methods, zero failures/errors/skips; 30 tasks (3 executed, 27 up-to-date).
+- After adding explicit pairwise proof that the eight cubes meet only at faces and never overlap,
+  the corrective render class was rerun: exit 0 in 28.2 seconds (`BUILD SUCCESSFUL in 27s`),
+  1 class / 8 methods, zero failures/errors/skips; 30 tasks (2 executed, 28 up-to-date).
+- Full suite: `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`; exit 0 in
+  23.5 seconds (`BUILD SUCCESSFUL in 23s`), 33 classes / 208 methods, zero
+  failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, only the preserved untracked `logs/` and owner `old/` backup were present; Gradle
+  clean targeted reproducible `build/`. `.\gradlew.bat clean build --no-daemon
+  --no-configuration-cache --stacktrace`; exit 0 in 86.8 seconds (`BUILD SUCCESSFUL in 1m 26s`),
+  36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 21,988,614 bytes, 4,690 entries,
+  SHA-256 `3C6F4F69F565E99981D583DE1597FFA2FB1033913B33412301515550B91B98E9`.
+  Deployable JAR `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,560,252 bytes, 4,694
+  entries, SHA-256 `CC9A778E658B9C4171FA29382B10C8F482DC6A2E165BD5E76B7D6DF152416489`.
+  Both package the exact new geometry hash, all 20 protected assets with zero missing/mismatch, ten
+  shrine PNGs, zero `old/` entry, and zero test entry. No tracked PNG differs from HEAD.
+- Live confirmation of no gap or visual boundary artifact remains owner-only; no commit was requested
+  in this correction turn.
+
+## 2026-08-04 - Chaos shrine light-granite rim selection
+
+- Starting HEAD remains `f4f18b8a19d66f10c6d8d4e2ba3b461eb5ca4eb9` on
+  `shrines-monoliths`. The preceding uncommitted flush-envelope correction, preserved `logs/`, and
+  owner `textures/block/shrine/old/` backup remain intact.
+- Per owner request, only synchronized `shrine/chaos` state selects
+  `textures/block/shrine/light_granite.png` for the `granite_rim` material layer. The other eight
+  shrine variants and every missing/non-shrine identity fail closed to the existing
+  `textures/block/shrine/granite.png` path.
+- `ShrineRimMaterialSelection` is a pure display selector over the already synchronized family and
+  variant identity. `ShrineGraniteRenderLayer` consumes its result; renderer registration, geometry,
+  main virtue texture selection, cycling order, placement, persistence, lifecycle, item components,
+  collision, monolith behavior, and serialized schemas are unchanged.
+- Owner-supplied `light_granite.png` is a 128 by 128 indexed PNG, 13,635 bytes, fully opaque, SHA-256
+  `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`. It is currently
+  byte-identical to `granite.png`; the runtime resource path differs correctly, but no visible color
+  difference can occur until distinct approved bytes replace the light file.
+- Deterministic content evidence now records `rim_texture_resource` and `rim_texture` hash for all
+  nine shrines: exactly one light mapping for Chaos and eight default-granite mappings. Monolith
+  report entries remain unchanged.
+- Focused command: `.\gradlew.bat test --tests
+  "com.seggellion.britannia_mod.structure.render.ShrineRimMaterialSelectionTest" --tests
+  "com.seggellion.britannia_mod.structure.render.CorrectiveMilestoneNineARenderAlignmentTest"
+  --tests
+  "com.seggellion.britannia_mod.structure.interaction.InteriorDecoratorMilestoneFiveScopeTest"
+  --tests
+  "com.seggellion.britannia_mod.structure.hardening.MilestoneEightContentReportTest" --no-daemon
+  --no-configuration-cache --stacktrace`; exit 0 in 68.4 seconds (`BUILD SUCCESSFUL in 1m 8s`),
+  4 classes / 18 methods, zero failures/errors/skips; 30 tasks (4 executed, 26 up-to-date).
+- Full suite: `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`; exit 0 in
+  21.5 seconds (`BUILD SUCCESSFUL in 21s`), 34 classes / 211 methods, zero
+  failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, the preserved untracked `logs/` and owner `old/` backup remained present. Clean
+  targeted only reproducible `build/`. `.\gradlew.bat clean build --no-daemon
+  --no-configuration-cache --stacktrace`; exit 0 in 80.5 seconds (`BUILD SUCCESSFUL in 1m 20s`),
+  36 tasks (6 executed, 20 from cache, 10 up-to-date). Existing compile warnings remain limited to
+  missing `@Overwrite` Javadoc, one deprecated removal-marked API, deprecation, and unchecked use.
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,004,118 bytes, 4,692 entries,
+  SHA-256 `CCBD232C39CE37EA539021C3D823E5AB567232899DC8F3D35E4711D229F23BCF`.
+  Deployable JAR `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,575,756 bytes, 4,696
+  entries, SHA-256 `6116E0CB74EF8614FF5E9628C169A62C57262A35CDDC7E78219271B4EB80DF2D`.
+  Both contain the selector class, the 13,635-byte light-granite resource, eleven shrine PNGs, and
+  all 21 protected assets with zero source/JAR mismatch; both contain zero `old/` entry and zero test
+  class.
+- No commit, push, transfer, merge, rebase, reset, amend, fetch, or shared-repository mutation was
+  performed.
