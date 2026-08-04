@@ -11,6 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 
+import javax.annotation.Nullable;
+
 import java.util.function.Consumer;
 
 public final class DialoguePresentation {
@@ -36,6 +38,24 @@ public final class DialoguePresentation {
 
     public static Component text(String value) {
         return Component.literal(value == null ? "" : value).withStyle(UO_STYLE);
+    }
+
+    /**
+     * Bank interface rebuild, Milestone 3: the same UO styling applied to a component that already
+     * exists, rather than to a raw {@link String}.
+     *
+     * <p>The {@code String} overload above is the reason banking UI is untranslatable today: every
+     * label in {@code BankScreen} and {@code BankChequeIssuanceScreen} reaches the screen through
+     * it, and it can only produce a {@link Component#literal}. A {@link Component#translatable}
+     * has nowhere to go. This overload is that hole filled -- it takes whatever the caller built,
+     * translatable or not, and only adds the font style.
+     *
+     * <p>Additive on purpose. Every existing caller keeps the {@code String} overload and is
+     * unaffected, and {@code DialogueViewModel} -- which is all-{@code String} and shared with the
+     * quest and service dialogue systems -- does not have to change for banking's sake.
+     */
+    public static Component text(@Nullable Component value) {
+        return value == null ? Component.empty().withStyle(UO_STYLE) : value.copy().withStyle(UO_STYLE);
     }
 
     public static Button optionButton(

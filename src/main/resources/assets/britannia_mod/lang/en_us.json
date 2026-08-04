@@ -616,7 +616,20 @@
     "item.britannia_mod.beef_ribs": "Beef Ribs",
     "item.britannia_mod.beef_brisket": "Beef Brisket",
     "block.britannia_mod.service_npc_spawn_block": "Service NPC Spawn Block",
-    "screen.britannia_mod.service_npc_spawn.title": "Service NPC Spawn Block"
+    "screen.britannia_mod.service_npc_spawn.title": "Service NPC Spawn Block",
 
-
+    "screen.britannia_mod.bank.status.clean_rejection": "The teller checks the ledger and shakes their head: \"I'm afraid I can't complete that right now.\"",
+    "screen.britannia_mod.bank.status.reconciliation_required": "Something has gone wrong with this transaction that requires staff attention. Please contact a server admin -- do not attempt this again until it is resolved.",
+    "screen.britannia_mod.bank.status.pending_delivery": "Your cheque was issued, but could not be delivered just now. It will be delivered automatically.",
+    "screen.britannia_mod.bank.status.cheque_not_found": "The teller inspects the cheque and frowns: \"I don't recognize this instrument at all.\"",
+    "screen.britannia_mod.bank.status.cheque_already_redeemed": "The teller checks the ledger: \"This cheque has already been redeemed.\"",
+    "screen.britannia_mod.bank.status.cheque_cancelled": "The teller checks the ledger: \"This cheque was cancelled and can no longer be redeemed.\"",
+    "screen.britannia_mod.bank.status.cheque_voided": "The teller checks the ledger: \"This cheque was voided and can no longer be redeemed.\"",
+    "screen.britannia_mod.bank.status.empty_amount": "Enter an amount.",
+    "screen.britannia_mod.bank.status.invalid_amount": "Enter a whole number greater than zero.",
+    "screen.britannia_mod.bank.status.amount_too_large": "That amount is larger than the teller will handle.",
+    "screen.britannia_mod.bank.status.no_denomination_selected": "Choose gold, silver, or copper.",
+    "screen.britannia_mod.bank.status.insufficient_balance": "You do not have enough on deposit for that amount.",
+    "screen.britannia_mod.bank.status.nothing_selected": "Select an item first.",
+    "screen.britannia_mod.bank.status.empty_vault": "The vault is empty."
 }

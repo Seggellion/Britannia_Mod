@@ -286,8 +286,11 @@ with a stated reason — not a speculative addition now.
 
 ### D13 — Localization strategy
 
-- **Key namespace:** `gui.britannia_mod.bank.*` — e.g. `gui.britannia_mod.bank.main.title`,
-  `gui.britannia_mod.bank.action.open_box`, `gui.britannia_mod.bank.status.reconciliation_required`.
+- **Key namespace:** ~~`gui.britannia_mod.bank.*`~~ → **`screen.britannia_mod.bank.*`**, corrected
+  during Milestone 3. The repository already has a precedent —
+  `screen.britannia_mod.service_npc_spawn.title` is the one existing screen key in `en_us.json` —
+  and following it beats inventing a second convention. E.g.
+  `screen.britannia_mod.bank.status.reconciliation_required`.
 - **Prerequisite: `DialoguePresentation.text(Component)` (D2), delivered in Milestone 3.** Without
   it every string funnels through a `String`→`literal` call and Playbook §3.1's per-milestone
   translatability gates cannot be met by Milestones 4, 5, 7, 9 or 11.
