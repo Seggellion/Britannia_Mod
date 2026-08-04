@@ -48,21 +48,22 @@ class InteriorDecoratorMilestoneFiveScopeTest {
     }
 
     @Test
-    void ownerApprovedPlaceholderAssetsRetainTheirMilestoneFourHashes() throws Exception {
+    void currentOwnerApprovedShrineAssetsHaveExpectedHashes() throws Exception {
         Map<String, String> expected = new LinkedHashMap<>();
         expected.put("animations/shrine.animation.json", "F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E");
-        expected.put("geo/shrine.geo.json", "05C52F184101C5AA62EEE515EB3BB285975FAAE2744EAC3381512000F0EEE62E");
+        expected.put("geo/shrine.geo.json", "3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC");
         expected.put("geo/shrine_missing.geo.json", "460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781");
         expected.put("models/item/shrine.json", "829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985");
-        expected.put("textures/block/shrine/chaos.png", "D8B2FDEB4158BBF86A053CDD383E532569F4DDDAEFF178D2472F5ABC2507EDC3");
-        expected.put("textures/block/shrine/compassion.png", "79160E8AF141E4395A64D64439F7FBF0C2170D78073A136E6CBEF8A130FC87BC");
-        expected.put("textures/block/shrine/honesty.png", "D35747568A37960736C20F8359F55043B19739FC7D1FAB34144F8F971C36BCCC");
-        expected.put("textures/block/shrine/honor.png", "ADC2A67CFA7476D4C1D18A7C49E9F1937D552099FCFE9F1D3C821B832135D381");
-        expected.put("textures/block/shrine/humility.png", "E201645E5D9058E28022B22904114E09823E736DDE8021D2E4DA2CE9E558AC8A");
-        expected.put("textures/block/shrine/justice.png", "5F01D14F16870EBA66C6A4C3E2F19C919E403A5DCDDC12037904285C825B1B8B");
-        expected.put("textures/block/shrine/sacrifice.png", "E4C56B44DC44C749DB10E2D34824DCF0079774FAAF9C2368330CC57036B4EEC4");
-        expected.put("textures/block/shrine/spirituality.png", "D50CF726BD459C85313A9173E708C49C3ADC72559D0EABC9458FDFED8FF05CF1");
-        expected.put("textures/block/shrine/valor.png", "A748C870317998F911AC328960685F4B41AE8330635DC839F35D27EC6ACA4A1F");
+        expected.put("textures/block/shrine/chaos.png", "9365AB11463B1442FEE89D131AA0197A38E7F5FE513102E44182D2B1595F4702");
+        expected.put("textures/block/shrine/compassion.png", "F4A03F885EBF68B0C060450F72EDCFE3D2D48825E030C3A31951F826FBA627CD");
+        expected.put("textures/block/shrine/honesty.png", "BF7C657E85198EB58A82E6466DFCBAFD74E45B3201B9F24000BD553B84744855");
+        expected.put("textures/block/shrine/honor.png", "723898577D80867D40B4BBF9DADCDCC759446740722F4F496264E88D1826AF36");
+        expected.put("textures/block/shrine/humility.png", "B8136CE1C9637D1B1A5F6E0738B9698F34854C88F796BD6FC63DB2F955C1688C");
+        expected.put("textures/block/shrine/justice.png", "50531DACCE0ECB3A513714EC3036C44C96092A787F93854375EDC47904A2BFC3");
+        expected.put("textures/block/shrine/sacrifice.png", "E9D3FA485A24BC1237B20CE2287F3E7BD93E8792C4BF44C8DA742C25992427DC");
+        expected.put("textures/block/shrine/spirituality.png", "C4394FF25C3EF14DAE11EEDB5D2DF3BD0787608E82602712314AF32565A3CA4A");
+        expected.put("textures/block/shrine/valor.png", "2482D99690D718C3D0B06E919118408BE965179C0A878F2924F396EBBA186CF9");
+        expected.put("textures/block/shrine/granite.png", "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77");
         Path root = Path.of("src/main/resources/assets/britannia_mod");
         for (var asset : expected.entrySet()) {
             assertEquals(asset.getValue(), sha256(root.resolve(asset.getKey())), asset.getKey());

@@ -17,7 +17,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import com.seggellion.britannia_mod.structure.HouseStyle;
+import com.seggellion.britannia_mod.structure.item.MonolithItem;
 import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.ShrineItemState;
 import com.seggellion.britannia_mod.structure.item.ShrineItemStateAccess;
 
 
@@ -262,6 +264,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.ANKH_ITEM.get());
                 safeAccept(output, ItemRegistry.PENTAGRAM_ITEM.get());
                 output.accept(shrineCreativeStack(LargeStructureRegistry.SHRINE.get()));
+                output.accept(monolithCreativeStack(LargeStructureRegistry.MONOLITH.get()));
                 safeAccept(output, ItemRegistry.ROPE_ITEM.get());
 
                 // Graveyard items
@@ -445,6 +448,15 @@ public class CreativeTabRegistry {
     /** Explicit default component for the single shared shrine entry in the existing decor tab. */
     public static ItemStack shrineCreativeStack(ShrineItem shrine) {
         return shrine.stateAccess().configuredStack(ShrineItemStateAccess.defaultState());
+    }
+
+    /** Explicitly configured monolith entry for the existing decor tab. */
+    public static ItemStack monolithCreativeStack(MonolithItem monolith) {
+        ShrineItemState state = new ShrineItemState(
+                ShrineItemState.CURRENT_SCHEMA_VERSION,
+                monolith.familyId(),
+                monolith.defaultVariantId());
+        return monolith.stateAccess().configuredStack(state);
     }
 
 

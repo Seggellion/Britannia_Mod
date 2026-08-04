@@ -1389,3 +1389,45 @@ stairs; verify centered fit, no stair penetration, empty side, stripe, overlap, 
 North/East/South/West; cycle Honesty, Compassion, and Chaos and verify identical geometry; verify
 collision; save/reload and verify alignment persists. Creative exposure and every GPU-dependent visual
 claim remain pending until owner evidence. Milestone 10 was not begun or resumed.
+
+## 2026-08-04 — Owner shrine model and Creative-tab defect correction
+
+- Starting HEAD: `9008f8c18e7e2c98dabcb207a464f94de5298f3d` (`fix(shrines): align geometry and expose creative item`).
+- Owner reference: `C:\projects\britannia\raw fiels\shrines\Shrine_old.json`, plus its Blockbench source and exact `honesty.png` / `granite.png` materials. The reference establishes a low central surface at 9 model voxels and a granite exterior at 10 voxels, replacing the unintended three-step silhouette.
+- Ending commit is the one commit containing this entry with subject `fix(shrines): restore flat model and creative entries`; its full hash is reported externally because a commit cannot contain its own hash without changing that hash or amending history.
+- Shared geometry now contains two top-level bones and eight non-overlapping cubes: four equal `13 x 9 x 13` surface quadrants and four 10-voxel-high granite rim pieces. Its raw X/Z union remains `[-7,23]`, preserving the proven one-voxel perimeter clearance; raw Y is now `[0,10]` (`0.625` block) instead of `[0,16]`.
+- Per-face UVs divide each 128 x 128 virtue texture into four exact 64 x 64 top quadrants. `ShrineGraniteRenderLayer` hides the surface and re-renders only `granite_rim` with the exact owner-supplied `textures/block/shrine/granite.png`; monolith models have neither bone and skip the layer.
+- The nine owner-supplied virtue textures replace the former generated textures. Geometry SHA-256 is `3B98308F509E264220381B6E32CC9A8ACFE6FFE3470B38CA01B10589BB562BAC`; granite SHA-256 is `A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77`. Exact texture hashes are recorded in `CONTENT_REPORT.json` and enforced by two resource tests.
+- Existing `britannia_mod:britannia_decor_tab` now exposes exactly one explicitly configured shrine stack (`shrine/honesty`) and one explicitly configured monolith stack (`monolith/diagnostic_missing_content`). No new tab, registry item, anchor/part item, recipe, schema, placement, lifecycle, persistence, integrity, or cycling behavior was introduced.
+- The owner-created `textures/block/shrine/old/` backup remains untouched and untracked. `build.gradle` excludes it from resource processing so it cannot enter either production JAR; it is not staged or committed.
+- First focused run compiled production successfully but one parser assertion still expected one bone: exit `1`, 150.5 seconds, 7 methods, three failures sharing that test-helper cause, zero production compile errors. After correcting the expected bone count, the focused class passed: exit `0`, 50.9 seconds, 7 methods, zero failures/errors/skips, 30 tasks (2 executed, 28 up-to-date).
+- Focused geometry/content/hash command (corrective renderer class, Milestone 5 scope/hash class,
+  and deterministic content report): exit `0`, 230.5 seconds, 3 classes / 15 methods, zero
+  failures/errors/skips; 30 tasks (3 executed, 27 up-to-date).
+- Structure suite: `gradlew test --tests "com.seggellion.britannia_mod.structure.*" ...`; exit `0`,
+  121.2 seconds, 33 classes / 208 methods, zero failures/errors/skips; 30 tasks (1 executed,
+  29 up-to-date).
+- Full suite: `gradlew test ...`; exit `0`, 85.2 seconds, 33 classes / 208 methods, zero
+  failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, only ignored reproducible `build`, `.gradle`, `run`, and `runs` paths were eligible
+  for Gradle outputs. Untracked `logs/` and the owner `old/` backup were preserved; Gradle `clean`
+  targeted only `build/`. `gradlew clean build ...` exited `0` in 249.2 seconds (`BUILD SUCCESSFUL
+  in 4m 8s`), 36 tasks (6 executed, 20 from cache, 10 up-to-date); cached test results remain
+  33 classes / 208 methods, zero failures/errors/skips.
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 21,988,612 bytes, 4,690 entries,
+  SHA-256 `358D6B436C2D4FD74BFB2F622F0D737FA7680A83055CE91DE6FE048EBD7EA7FA`.
+  Deployable `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,560,250 bytes, 4,694 entries,
+  SHA-256 `58C1F837196B0655EB91915C845E2844C95EA8960691AB57F3E81A78E6C4B6E7`.
+  Both contain 107 structure classes, one `ShrineRenderer`, one `ShrineGraniteRenderLayer`, one
+  Creative-tab class, one shrine geometry, ten shrine textures including granite, and zero `old/`
+  or test entries. Source-to-JAR SHA-256 comparison covered geometry plus all ten production shrine
+  textures in both artifacts with zero missing entries and zero mismatches.
+- The first bounded hidden client smoke stopped on an imprecise generic legacy model-warning marker;
+  it produced no shrine/granite diagnostic. The corrected smoke reached resource reload, OpenAL, and
+  the 4096-block-atlas marker in 112.7 seconds, then terminated its exact six-process tree. Exact
+  `shrine.geo`, `shrine/granite`, `textures/block/shrine`, and `ShrineGranite` diagnostic count was
+  zero. Existing unrelated model/blockstate, invalid-path, and legacy GeckoLib animation warnings
+  remain. This is resource/startup evidence, not a visual gameplay pass.
+- `git diff --check` passes; only Git's existing Windows LF-to-CRLF notices appear. Live GPU
+  appearance remains unverified pending the owner recheck in `OPEN_QUESTIONS.md`. Milestone 10
+  remains suspended.

@@ -14,6 +14,7 @@ import software.bernie.geckolib.renderer.GeoBlockRenderer;
 public final class ShrineRenderer extends GeoBlockRenderer<LargeStructureAnchorBlockEntity> {
     public ShrineRenderer(BlockEntityRendererProvider.Context context) {
         super(new ShrineGeoModel());
+        addRenderLayer(new ShrineGraniteRenderLayer(this));
     }
 
     @Override
@@ -35,8 +36,30 @@ public final class ShrineRenderer extends GeoBlockRenderer<LargeStructureAnchorB
             int color) {
         if (!isReRender) {
             poseStack.translate(0.0, ShrineRenderTransform.renderOffsetBlocks(anchor), 0.0);
+            model.getBone(ShrineGraniteRenderLayer.GRANITE_BONE)
+                    .ifPresent(bone -> bone.setHidden(true));
         }
         super.preRender(poseStack, anchor, model, bufferSource, buffer, isReRender,
                 partialTick, packedLight, packedOverlay, color);
+    }
+
+    @Override
+    public void postRender(
+            PoseStack poseStack,
+            LargeStructureAnchorBlockEntity anchor,
+            BakedGeoModel model,
+            MultiBufferSource bufferSource,
+            VertexConsumer buffer,
+            boolean isReRender,
+            float partialTick,
+            int packedLight,
+            int packedOverlay,
+            int color) {
+        super.postRender(poseStack, anchor, model, bufferSource, buffer, isReRender,
+                partialTick, packedLight, packedOverlay, color);
+        if (!isReRender) {
+            model.getBone(ShrineGraniteRenderLayer.GRANITE_BONE)
+                    .ifPresent(bone -> bone.setHidden(false));
+        }
     }
 }

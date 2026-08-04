@@ -1,14 +1,16 @@
 # Shrine and Monolith Open Questions
 
-## Corrective Milestone 9A owner recheck remains open
+## Post-Milestone 9A owner recheck remains open
 
-- The owner must visually confirm that the corrected shrine stays centered inside an eight-oak-stair
-  frame for North, East, South, and West, with no penetration, empty side, thin stripe, overlap, or
-  z-fighting artifact. Parsed geometry and envelope tests are not GPU-render evidence.
+- The owner must visually confirm that the shrine is a low, flat four-square surface with the supplied
+  black granite exterior rim, stays centered inside an eight-oak-stair frame for North, East, South,
+  and West, and has no penetration, empty side, thin stripe, overlap, or z-fighting artifact. Parsed
+  geometry and envelope tests are not GPU-render evidence.
 - The owner must confirm that the existing Britannia Decorative & Graveyard Creative tab now shows
-  exactly one `britannia_mod:shrine` entry, that it places `shrine/honesty`, and that no anchor, part,
-  or monolith item was exposed.
-- A remaining live GPU concern is texture blending at the stepped geometry and stair boundary. The
+  exactly one `britannia_mod:shrine` entry and one `britannia_mod:monolith` entry, that they place
+  `shrine/honesty` and `monolith/diagnostic_missing_content`, and that no anchor or part item is exposed.
+- A remaining live GPU concern is the seam between the virtue surface and separate granite material
+  pass, plus the shrine/stair boundary. The
   corrected one-model-voxel horizontal inset and non-intersecting envelope remove the proven
   perimeter-cell overlap mathematically, but only the prescribed owner recheck can close the visual
   result.
@@ -16,7 +18,7 @@
 
 No critical architecture, schema, security, saved-state, or compatibility decision is otherwise unresolved.
 
-The missing Milestone 9 multiplayer evidence is not an unanswered owner decision. On 2026-08-04 the project owner approved proceeding without the prescribed two-authenticated-client session. Corrective Milestone 9A supersedes that progression only for the new shrine visual and Creative-tab owner recheck above.
+The missing Milestone 9 multiplayer evidence is not an unanswered owner decision. On 2026-08-04 the project owner approved proceeding without the prescribed two-authenticated-client session. The later owner geometry and Creative-tab correction supersedes the prior visual and Creative recheck wording above without claiming live GPU evidence.
 
 ## Non-critical follow-up: final monolith content
 

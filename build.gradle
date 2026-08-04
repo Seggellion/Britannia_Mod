@@ -83,6 +83,8 @@ sourceSets {
     main {
         resources {
             srcDirs = ['src/main/resources', 'src/generated/resources']
+            // Owner working backup only; never package retired shrine textures.
+            exclude 'assets/britannia_mod/textures/block/shrine/old/**'
         }
     }
 }
