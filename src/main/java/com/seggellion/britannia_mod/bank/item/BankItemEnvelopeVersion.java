@@ -57,6 +57,10 @@ public final class BankItemEnvelopeVersion {
      * cheque inside its opaque payload so a stored cheque can be cashed from the vault. Requires
      * the Rails stored-redemption change (docs/banking_bank_cheque_stored_redemption.md).
      *
+     * <p><b>This level does not name a wire {@code schema_version}.</b> Rails defines only 1 and
+     * 2 and accepts this key at either -- see {@link #MAX_WIRE_SCHEMA_VERSION} for the regression
+     * that taught us the difference.
+     *
      * <p>Gated for exactly the reason v2 is: the key is sent only on cheque deposits, so against
      * a Rails without it the blast radius is every cheque deposit on that shard refused outright
      * with {@code UNEXPECTED_FIELD}. Ordinary deposits would be unaffected, which makes it
@@ -72,8 +76,40 @@ public final class BankItemEnvelopeVersion {
     private BankItemEnvelopeVersion() {
     }
 
-    /** The envelope version this build will actually emit. */
+    /**
+     * The highest {@code schema_version} Rails will accept on the wire, mirroring its
+     * {@code BankTransferOperations::PayloadValidator::SUPPORTED_SCHEMA_VERSIONS = [1, 2]}.
+     *
+     * <h2>Why this constant has to exist</h2>
+     * This class's number is a <b>client capability level</b>, and for v1 and v2 it happened to
+     * equal the wire {@code schema_version} -- so the two were sent as one value. The cheque link
+     * broke that coincidence: Rails accepts {@code cheque_public_id} at schema_version 1 or 2 and
+     * defines no version 3 at all. Rails says so in the validator itself -- "schema_version is
+     * the client's capability declaration, not a per-key allowlist, and coupling the two would
+     * invent a second negotiation mechanism".
+     *
+     * <p>Sending the level as the wire value therefore made <em>every</em> deposit fail with
+     * {@code UNSUPPORTED_SCHEMA_VERSION} the moment level 3 was configured -- not merely cheque
+     * deposits, because the field is on every envelope. Capping here is what keeps the level free
+     * to describe this client while the wire value stays something Rails recognises.
+     */
+    public static final int MAX_WIRE_SCHEMA_VERSION = 2;
+
+    /**
+     * The {@code schema_version} this build puts on the wire -- capped at what Rails accepts.
+     * Never the raw configured level; see {@link #MAX_WIRE_SCHEMA_VERSION}.
+     */
     public static int emitted() {
+        return Math.min(CONFIGURED, MAX_WIRE_SCHEMA_VERSION);
+    }
+
+    /**
+     * What this build is configured to be capable of, which is <em>not</em> what goes on the
+     * wire. Diagnostics and tests only -- every behavioural question has its own named method
+     * ({@link #emitsIdentity}, {@link #emitsChequeLink}), so nothing outside this class compares
+     * version numbers.
+     */
+    public static int capabilityLevel() {
         return CONFIGURED;
     }
 
@@ -111,25 +147,40 @@ public final class BankItemEnvelopeVersion {
     private static int readConfigured() {
         String raw = System.getProperty(SYSTEM_PROPERTY);
         if (raw == null || raw.isBlank()) {
-            LOGGER.info("Bank item envelope version 1 (identity fields OMITTED) -- {} is not set in this JVM",
-                    SYSTEM_PROPERTY);
+            LOGGER.info("Bank item {} -- {} is not set in this JVM",
+                    describe(V1_WITHOUT_IDENTITY), SYSTEM_PROPERTY);
             return V1_WITHOUT_IDENTITY;
         }
         int parsed;
         try {
             parsed = Integer.parseInt(raw.trim());
         } catch (NumberFormatException notANumber) {
-            LOGGER.warn("Bank item envelope version 1 (identity fields OMITTED) -- ignoring unparseable {}={}",
-                    SYSTEM_PROPERTY, raw);
+            LOGGER.warn("Bank item {} -- ignoring unparseable {}={}",
+                    describe(V1_WITHOUT_IDENTITY), SYSTEM_PROPERTY, raw);
             return V1_WITHOUT_IDENTITY;
         }
         if (!isSupported(parsed)) {
-            LOGGER.warn("Bank item envelope version 1 (identity fields OMITTED) -- ignoring unsupported {}={}",
-                    SYSTEM_PROPERTY, parsed);
+            LOGGER.warn("Bank item {} -- ignoring unsupported {}={}",
+                    describe(V1_WITHOUT_IDENTITY), SYSTEM_PROPERTY, parsed);
             return V1_WITHOUT_IDENTITY;
         }
-        LOGGER.info("Bank item envelope version {} (identity fields {})",
-                parsed, parsed >= V2_WITH_IDENTITY ? "EMITTED" : "OMITTED");
+        LOGGER.info("Bank item {}", describe(parsed));
         return parsed;
+    }
+
+    /**
+     * One line naming <em>every</em> capability the version gates, not just the newest. Two
+     * gated capabilities and a message that mentions one is the same silent-default problem this
+     * logging exists to prevent -- an operator who set the flag for stored cheques must be able
+     * to confirm the cheque link specifically, not infer it from a version number.
+     */
+    private static String describe(int version) {
+        return "envelope version " + version
+                + " (identity fields " + emitted(version >= V2_WITH_IDENTITY)
+                + ", cheque link " + emitted(version >= V3_WITH_CHEQUE_LINK) + ")";
+    }
+
+    private static String emitted(boolean on) {
+        return on ? "EMITTED" : "OMITTED";
     }
 }

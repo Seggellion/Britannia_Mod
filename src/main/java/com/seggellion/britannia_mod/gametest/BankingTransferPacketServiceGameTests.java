@@ -573,6 +573,174 @@ public final class BankingTransferPacketServiceGameTests {
         }
     }
 
+    // ---------- Milestone 18: the security matrix's remaining rows ----------
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void anUnsupportedCurrencyKeyIsRefusedLocallyWithNoRoundTrip(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+
+        // The withdrawal packet's codec deliberately does not validate the key (unlike cheque
+        // issuance's), so "platinum" genuinely reaches the server. It must die here, before any
+        // Rails call -- the throwing fake is the proof that it does.
+        BankingCurrencyWithdrawalProxyService.useClientForTesting(new FakeCurrencyWithdrawalClient());
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleCurrencyWithdrawal(
+                    player, new BankCurrencyWithdrawalRequestC2SPayload(teller.getId(), "platinum", 5));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.CLEAN_REJECTION,
+                        "an unknown denomination is a clean refusal, got " + resultSender.calls.get(0).kind());
+                check(!refreshed.get(), "nothing changed, so nothing may refresh");
+                cleanUpCurrencyWithdrawal();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUpCurrencyWithdrawal();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void anItemSwappedAfterThePacketIsSentIsNeverTheOneDeposited(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        // The altered-item-after-drag row: prepare is held open, and the slot is swapped for
+        // something far more valuable while the request is in flight. The fingerprint captured
+        // at press time must refuse to match, so the swap is cancelled rather than banked.
+        CompletableFuture<BankingDepositPrepareResult> pendingPrepare = new CompletableFuture<>();
+        FakeDepositClient depositClient = new FakeDepositClient();
+        depositClient.prepareBehavior = () -> pendingPrepare;
+        depositClient.cancelBehavior = () -> CompletableFuture.completedFuture(new BankingCancelResult.Cancelled());
+        BankingDepositProxyService.useClientForTesting(depositClient);
+
+        java.util.concurrent.atomic.AtomicBoolean refreshed = new java.util.concurrent.atomic.AtomicBoolean();
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> refreshed.set(true));
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            player.getInventory().setItem(SLOT, new ItemStack(Items.NETHERITE_INGOT, 64));
+            pendingPrepare.complete(new BankingDepositPrepareResult.Success(UUID.randomUUID(), UUID.randomUUID()));
+
+            helper.succeedWhen(() -> {
+                check(resultSender.calls.size() == 1, "expected one result, got " + resultSender.calls);
+                check(player.getInventory().getItem(SLOT).getItem() == Items.NETHERITE_INGOT,
+                        "the swapped-in stack must still be in the player's inventory, untouched");
+                check(player.getInventory().getItem(SLOT).getCount() == 64, "and at its full count");
+                check(!refreshed.get(), "nothing was banked, so nothing may refresh");
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 40)
+    public static void aRealButOutOfRangeTellerDropsTheRequestEntirely(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer player = setUpPlayer(helper, teller);
+        player.getInventory().setItem(SLOT, new ItemStack(Items.DIAMOND, 5));
+
+        // Not a forged id -- a real, live teller the player has walked away from. Distance is
+        // re-checked on every packet, not merely when the screen opened.
+        player.teleportTo(teller.getX() + 500.0, teller.getY(), teller.getZ());
+
+        BankingDepositProxyService.useClientForTesting(new FakeDepositClient());
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleDeposit(player, new BankDepositRequestC2SPayload(teller.getId(), SLOT));
+
+            check(resultSender.calls.isEmpty(),
+                    "an out-of-range teller drops the request silently, like bank.open: " + resultSender.calls);
+            check(!player.getInventory().getItem(SLOT).isEmpty(), "the item must not have been touched");
+
+            cleanUp();
+            helper.succeed();
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    // ---------- Milestone 18: concurrency ----------
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void twoPlayersRacingOneStoredItemProduceExactlyOneWithdrawal(GameTestHelper helper) {
+        installBankRegistry();
+        ServiceNpcEntity teller = spawnBankTeller(helper);
+        ServerPlayer first = setUpPlayer(helper, teller);
+        ServerPlayer second = setUpPlayer(helper, teller);
+        HolderLookup.Provider registries = first.registryAccess();
+
+        UUID bankItemId = UUID.randomUUID();
+        ItemStack original = new ItemStack(Items.DIAMOND, 5);
+        byte[] payload = BankItemCodec.serialize(original.copy(), registries);
+        String fingerprint = BankItemFingerprint.fingerprint(original, registries);
+        double weight = BankItemWeight.resolve(original);
+
+        // Rails is the arbiter: the first prepare wins the row, the second is told it is gone.
+        // The mod's job is to honour that answer per player and never conjure a second diamond.
+        AtomicInteger prepares = new AtomicInteger();
+        FakeWithdrawalClient withdrawalClient = new FakeWithdrawalClient();
+        withdrawalClient.prepareBehavior = () -> prepares.incrementAndGet() == 1
+                ? CompletableFuture.completedFuture(new BankingWithdrawalPrepareResult.Success(
+                        UUID.randomUUID(), bankItemId, BankItemSchemaVersion.CURRENT, payload, fingerprint, weight))
+                : CompletableFuture.completedFuture(new BankingWithdrawalPrepareResult.Rejected(
+                        BankingTransferOutcome.ITEM_NOT_FOUND, false));
+        withdrawalClient.confirmBehavior = () -> CompletableFuture.completedFuture(new BankingConfirmResult.Confirmed());
+        BankingWithdrawalProxyService.useClientForTesting(withdrawalClient);
+
+        wireOpenRefresh(new BankingOpenAccount(UUID.randomUUID(), "global", null, 250, 0.0, 0, 0, 0, 2));
+        BankingProxyService.useAccountScreenSenderForTesting((p, t, account, bankItems) -> { });
+        FakeResultSender resultSender = new FakeResultSender();
+        BankingTransferPacketService.useResultSenderForTesting(resultSender);
+
+        try {
+            BankingTransferPacketService.handleWithdrawal(
+                    first, new BankWithdrawalRequestC2SPayload(teller.getId(), bankItemId));
+            BankingTransferPacketService.handleWithdrawal(
+                    second, new BankWithdrawalRequestC2SPayload(teller.getId(), bankItemId));
+
+            helper.succeedWhen(() -> {
+                check(prepares.get() == 2, "both players must genuinely reach Rails, got " + prepares.get());
+                int delivered = countDiamonds(first) + countDiamonds(second);
+                check(delivered == 5, "exactly one diamond stack may exist across both players, found " + delivered);
+                check(resultSender.calls.size() == 1, "the loser gets exactly one result, got " + resultSender.calls);
+                check(resultSender.calls.get(0).kind() == BankTransferResultS2CPayload.Kind.STORED_ITEM_UNAVAILABLE,
+                        "the loser must be told the item is gone, got " + resultSender.calls.get(0).kind());
+                cleanUp();
+            });
+        } catch (RuntimeException | Error propagate) {
+            cleanUp();
+            throw propagate;
+        }
+    }
+
+    private static int countDiamonds(ServerPlayer player) {
+        int total = 0;
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            ItemStack stack = player.getInventory().getItem(slot);
+            if (stack.getItem() == Items.DIAMOND) total += stack.getCount();
+        }
+        return total;
+    }
+
     // ---------- Clean rejection sends the result payload, never a refresh ----------
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)

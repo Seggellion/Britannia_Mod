@@ -213,8 +213,15 @@ public final class BankItemEnvelopeGameTests {
                 ? parseOrZero(configured)
                 : BankItemEnvelopeVersion.V1_WITHOUT_IDENTITY;
 
-        check(BankItemEnvelopeVersion.emitted() == expected,
-                "emitted envelope version disagrees with the configured one");
+        check(BankItemEnvelopeVersion.capabilityLevel() == expected,
+                "capability level disagrees with the configured one");
+        // The wire value is NOT the level. Rails supports schema_version 1 and 2 only, and
+        // sending 3 failed every deposit -- cheque or not -- with UNSUPPORTED_SCHEMA_VERSION.
+        check(BankItemEnvelopeVersion.emitted() <= BankItemEnvelopeVersion.MAX_WIRE_SCHEMA_VERSION,
+                "the wire schema_version must never exceed what Rails accepts, got "
+                        + BankItemEnvelopeVersion.emitted());
+        check(BankItemEnvelopeVersion.emitted() == Math.min(expected, BankItemEnvelopeVersion.MAX_WIRE_SCHEMA_VERSION),
+                "the wire schema_version must be the capped level");
         check(BankItemEnvelopeVersion.emitsIdentity() == (expected >= BankItemEnvelopeVersion.V2_WITH_IDENTITY),
                 "identity emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY + " and default to off");
         check(BankItemEnvelopeVersion.emitsChequeLink() == (expected >= BankItemEnvelopeVersion.V3_WITH_CHEQUE_LINK),
@@ -232,6 +239,19 @@ public final class BankItemEnvelopeGameTests {
     }
 
     // ---------- Envelope v3: the cheque link ----------
+
+    @GameTest(template = TEMPLATE)
+    public static void aChequeLinkEnvelopeStillDeclaresASchemaVersionRailsAccepts(GameTestHelper helper) {
+        // The regression that broke every deposit locally: the cheque link rides schema_version
+        // 2, because Rails defines no version 3 and accepts the key independently of the version.
+        JsonObject item = envelopeItem(
+                BankItemEnvelopeVersion.emitted(), BankItemIdentity.EMPTY, UUID.randomUUID());
+        int declared = item.get("schema_version").getAsInt();
+        check(declared >= 1 && declared <= BankItemEnvelopeVersion.MAX_WIRE_SCHEMA_VERSION,
+                "declared schema_version " + declared + " is not one Rails accepts");
+        check(item.has("cheque_public_id"), "the link must still travel at an accepted version");
+        helper.succeed();
+    }
 
     @GameTest(template = TEMPLATE)
     public static void theChequeLinkIsWrittenOnlyWhenTheRequestCarriesOne(GameTestHelper helper) {
