@@ -150,6 +150,51 @@ class LargeStructurePersistenceTest {
         assertEquals(FOOTPRINT, reloaded.placedState().orElseThrow().footprint());
     }
 
+    @Test
+    void compareAndSetVariantPersistsThroughDiskUpdateTagAndPacketPaths() throws Exception {
+        PlacedStructureState honesty = state("shrine", "honesty", Direction.SOUTH);
+        PlacedStructureState compassion = state("shrine", "compassion", Direction.SOUTH);
+        LargeStructureAnchorBlockEntity source = entity(Direction.SOUTH);
+        assertTrue(source.initialize(honesty));
+        assertTrue(source.replacePlacedState(honesty, compassion));
+        assertEquals(compassion, source.placedState().orElseThrow());
+
+        CompoundTag disk = source.saveWithoutMetadata(RegistryAccess.EMPTY);
+        assertEquals("compassion", disk.getCompound(LargeStructureAnchorBlockEntity.STATE_TAG)
+                .getString("variant_id"));
+        LargeStructureAnchorBlockEntity diskReceiver = entity(Direction.SOUTH);
+        diskReceiver.loadWithComponents(disk, RegistryAccess.EMPTY);
+        assertEquals(compassion, diskReceiver.placedState().orElseThrow());
+
+        CompoundTag update = source.getUpdateTag(RegistryAccess.EMPTY);
+        LargeStructureAnchorBlockEntity tagReceiver = entity(Direction.SOUTH);
+        tagReceiver.handleUpdateTag(update, RegistryAccess.EMPTY);
+        assertEquals(compassion, tagReceiver.placedState().orElseThrow());
+
+        var constructor = ClientboundBlockEntityDataPacket.class.getDeclaredConstructor(
+                BlockPos.class, BlockEntityType.class, CompoundTag.class);
+        constructor.setAccessible(true);
+        ClientboundBlockEntityDataPacket packet = constructor.newInstance(
+                source.getBlockPos(), source.getType(), update.copy());
+        LargeStructureAnchorBlockEntity packetReceiver = entity(Direction.SOUTH);
+        packetReceiver.onDataPacket(null, packet, RegistryAccess.EMPTY);
+        assertEquals(compassion, packetReceiver.placedState().orElseThrow());
+    }
+
+    @Test
+    void compareAndSetRejectsStaleOrNonVariantStructuralChanges() {
+        PlacedStructureState honesty = state("shrine", "honesty", Direction.NORTH);
+        LargeStructureAnchorBlockEntity source = entity(Direction.NORTH);
+        assertTrue(source.initialize(honesty));
+        assertFalse(source.replacePlacedState(state("shrine", "valor", Direction.NORTH),
+                state("shrine", "compassion", Direction.NORTH)));
+        assertFalse(source.replacePlacedState(honesty,
+                state("monolith", "compassion", Direction.NORTH)));
+        assertFalse(source.replacePlacedState(honesty,
+                state("shrine", "compassion", Direction.EAST)));
+        assertEquals(honesty, source.placedState().orElseThrow());
+    }
+
     private static CompoundTag saved(PlacedStructureState state) {
         LargeStructureAnchorBlockEntity entity = entity(state.facing());
         assertTrue(entity.initialize(state));

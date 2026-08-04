@@ -79,6 +79,20 @@ public final class LargeStructureAnchorBlockEntity extends BlockEntity implement
         return true;
     }
 
+    /** Compare-and-set boundary used by the server-authoritative variant transaction. */
+    public boolean replacePlacedState(PlacedStructureState expected, PlacedStructureState replacement) {
+        if (expected == null || replacement == null
+                || !placedState.equals(Optional.of(expected))
+                || !sameStructureExceptVariant(expected, replacement)
+                || !facingCompatible(replacement)) {
+            return false;
+        }
+        placedState = Optional.of(replacement);
+        structuralStatus = PlacedStructureStatus.VALID;
+        setChanged();
+        return true;
+    }
+
     public void synchronize() {
         setChanged();
         if (level != null && !level.isClientSide) {
@@ -155,6 +169,14 @@ public final class LargeStructureAnchorBlockEntity extends BlockEntity implement
     private boolean facingCompatible(PlacedStructureState state) {
         return getBlockState().hasProperty(LargeStructureAnchorBlock.FACING)
                 && getBlockState().getValue(LargeStructureAnchorBlock.FACING) == state.facing();
+    }
+
+    private static boolean sameStructureExceptVariant(
+            PlacedStructureState previous, PlacedStructureState replacement) {
+        return previous.schemaVersion() == replacement.schemaVersion()
+                && previous.familyId().equals(replacement.familyId())
+                && previous.facing() == replacement.facing()
+                && previous.footprint().equals(replacement.footprint());
     }
 
     private static PlacedStructureStatus classify(CompoundTag root) {

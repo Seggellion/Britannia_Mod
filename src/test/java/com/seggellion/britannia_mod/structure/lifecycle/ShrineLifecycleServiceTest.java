@@ -202,4 +202,33 @@ class ShrineLifecycleServiceTest {
         assertNotEquals(ShrineLifecycleService.ResolutionStatus.VALID,
                 ShrineLifecycleService.resolve(world, correct, wrongOffset).status());
     }
+
+    @Test
+    void anchorAndThreePartsResolveForEveryHorizontalFacingWithoutForceLoading() {
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            ShrineLifecycleTestWorld world = new ShrineLifecycleTestWorld();
+            var anchor = world.placeShrine(ANCHOR, facing, "honesty");
+            for (LocalOffset offset : anchor.state().footprint()) {
+                BlockPos source = ShrinePlacementPlanner.worldPosition(ANCHOR, facing, offset);
+                var resolution = ShrineLifecycleService.resolve(world, source, world.blockState(source));
+                assertEquals(ShrineLifecycleService.ResolutionStatus.VALID, resolution.status());
+                assertEquals(ANCHOR, resolution.anchorPosition());
+                assertEquals(offset, resolution.sourceOffset());
+            }
+            assertTrue(world.writes.isEmpty());
+        }
+    }
+
+    @Test
+    void unloadedCandidateAnchorChunkIsReportedWithoutLoadOrMutation() {
+        ShrineLifecycleTestWorld world = new ShrineLifecycleTestWorld();
+        var anchor = world.placeShrine(ANCHOR, Direction.NORTH, "honesty");
+        LocalOffset offset = anchor.state().footprint().getLast();
+        BlockPos part = ShrinePlacementPlanner.worldPosition(ANCHOR, Direction.NORTH, offset);
+        world.unload(ANCHOR);
+        assertEquals(ShrineLifecycleService.ResolutionStatus.ANCHOR_CHUNK_UNLOADED,
+                ShrineLifecycleService.resolve(world, part, world.blockState(part)).status());
+        assertTrue(world.writes.isEmpty());
+        assertFalse(world.chunkLoaded(ANCHOR));
+    }
 }

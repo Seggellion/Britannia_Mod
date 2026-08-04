@@ -32,7 +32,8 @@ public final class StructureVariantCycler {
             return Optional.empty();
         }
         List<Variant> enabled = enabledVariants(family);
-        if (enabled.isEmpty()) {
+        if (enabled.isEmpty()
+                || (enabled.size() == 1 && enabled.getFirst().id().equals(currentId))) {
             return Optional.empty();
         }
         for (Variant candidate : enabled) {

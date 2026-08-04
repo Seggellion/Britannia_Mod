@@ -10,15 +10,7 @@ Settled decisions from the authoritative design and playbook are intentionally o
 - **Blocks Milestone 1:** **No.** Milestone 1 can specify a repository-native contract without merging or copying banner code. It does affect whether later implementation adapts an integrated primitive or independently introduces one.
 - **Smallest owner decision required:** Confirm whether `banners-dyetub` is expected to merge before shrine/monolith implementation begins.
 
-## 2. What exact administrator predicate should gate shrine/monolith decorator actions?
-
-- **Unresolved issue:** The approved feature is administrator-controlled, but `InteriorDecoratorToolItem` performs no administrator check. Other code uses creative mode and/or permission level 2 in several places without a single decorator authorization service.
-- **Why inspection did not answer it:** Existing call sites are inconsistent: some target blocks require creative, some exclude only spectators/adventure, and the tool's own rotations/styles have no permission gate.
-- **Evidence inspected:** `item/InteriorDecoratorToolItem.java`; all `INTERIOR_DECORATOR_TOOL` references; permission checks in spawn blocks and command handlers; `structure/StructureProtectionHandler.java`.
-- **Blocks Milestone 1:** **No.** It blocks the later decorator-interaction milestone, not the initial structure contract.
-- **Smallest owner decision required:** Choose one predicate: creative-only, permission-level-2-only, or creative-or-permission-level-2.
-
-## 3. Where are the monolith models and textures, and which names are approved?
+## 2. Where are the monolith models and textures, and which names are approved?
 
 - **Unresolved issue:** The design requires model-varying monolith variants and a `+16`-voxel render correction, but no supplied monolith asset is present. Authored coordinates, lowest-Y values, variant count, stable names, and provisional names therefore cannot be verified.
 - **Why inspection did not answer it:** Searches of resource, content, documentation, model, texture, GeckoLib, and Blockbench locations found no monolith asset or metadata outside the specifications.
@@ -28,6 +20,7 @@ Settled decisions from the authoritative design and playbook are intentionally o
 
 ## Confirmed non-questions
 
+- Milestone 5 uses the playbook's explicit fallback administrator policy because repository inspection found no canonical reusable predicate: logical-server validated creative mode or server permission level 2 or higher. The policy is centralized in `DecoratorAuthorization` and applies only to shrine cycling; unrelated decorator targets were not changed.
 - On 2026-08-03, after the corrective Milestone 4 review, the owner explicitly approved the exact historical placeholder package from `e1fcae20ae2f2af796b7b44ad9ca9d65352cffff` for use: one static shared shrine geometry, nine mapped 128 by 128 textures, the bounded diagnostic geometry, static animation manifest, and Honesty-based family item presentation. This resolves the shrine asset blocker without changing the corrective history.
 - Shrine dimensions, occupied cells, family behavior, and nine identities are settled.
 - Monolith dimensions, occupied cells, family behavior, and the positive sixteen-voxel render correction are settled.

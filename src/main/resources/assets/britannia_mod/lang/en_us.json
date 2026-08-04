@@ -631,7 +631,8 @@
     "message.britannia_mod.shrine.placement.target_occupied": "The complete shrine footprint must be clear.",
     "message.britannia_mod.shrine.placement.protected": "You cannot place a shrine here.",
     "message.britannia_mod.shrine.placement.invalid_configuration": "This shrine configuration is unavailable.",
-    "message.britannia_mod.shrine.placement.failed_safely": "Shrine placement failed without changing the world."
+    "message.britannia_mod.shrine.placement.failed_safely": "Shrine placement failed without changing the world.",
+    "message.britannia_mod.shrine.decorator.selected": "Selected shrine: %s"
 
 
 }

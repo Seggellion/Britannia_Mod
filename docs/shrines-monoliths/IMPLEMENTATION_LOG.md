@@ -730,3 +730,97 @@ All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`
 
 - Milestone 4 is implemented using the exact owner-approved replaceable placeholder package and is ready for owner review.
 - Milestone 5 was not started.
+
+## 2026-08-03 - Milestone 5: Interior Decorator Shrine Cycling
+
+### Authorization, isolation, and chronology
+
+- Starting commit: `06677e3235e05ec13678d474294e5f2152433ce0` on branch `shrines-monoliths`; independent clone `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`; working tree clean.
+- Merge base with `origin/patch-18`: `62df1dc97c5113a86f9c0f258cb90538f31efe89`. Authorized starting divergence was `0` behind / `8` ahead of `origin/patch-18` and `0` behind / `6` ahead of `origin/shrines-monoliths`.
+- Post-Milestone-3 history remains intact: `e1fcae20ae2f2af796b7b44ad9ca9d65352cffff` original Milestone 4 implementation; `69514a90c8376dc224cd2530f2f73e58928b1dfd` transparent corrective revert; `06677e3235e05ec13678d474294e5f2152433ce0` owner-approved restoration.
+- The shared repository was read-only throughout. Its initial observed state was branch `banking`, HEAD `bbe070f80c0b7bb0dd8c12a9ed6cf4170787eca0`, with unrelated existing banking and untracked work. No shared file, branch, index, build output, or history was changed.
+- The required final read-only observation found the shared repository still on `banking`, now at concurrently changed HEAD `e7ca8f14a72884a69f5c9193edbc9f749df99ccf`, with an existing `ModConfig.java` modification and two unrelated untracked specification files. Those external changes were not synchronized into the isolated clone.
+- The project owner's explicit override approves the exact Milestone 4 placeholder package as provisional implementation input. Milestone 5 did not regenerate, edit, rename, resize, recolor, re-UV, or otherwise alter it.
+- Ending commit: the single commit containing this entry, subject `feat(shrines): cycle variants with interior decorator`. Its full hash is recorded in the final Milestone 5 report because a commit cannot truthfully contain its own final hash without amendment.
+
+### Implementation
+
+- Existing item and entry point: `britannia_mod:interior_decorator_tool`, registered once in `ItemRegistry` and implemented by `InteriorDecoratorToolItem.useOn`. No second item, recipe, packet, screen, or dispatcher was added.
+- Dispatch precedence: registered large-structure anchor/part handling runs immediately after the null-player guard and before offhand nudge and generic horizontal rotation. Other item branches and block-owned tent, bed, furniture, floor, wall, sign, slab, hanging-item, and teleporter interactions remain in their previous order and code.
+- Authorization: repository inspection found no canonical reusable administrator predicate. `DecoratorAuthorization` therefore implements the playbook fallback once: logical-server `ServerPlayer.isCreative()` or `ServerPlayer.hasPermissions(2)`. It gates shrine cycling only and trusts no client permission or desired-variant input.
+- Server authority: the normal item-use request supplies only clicked cell and held stack. The server verifies the registered tool and authorization, resolves current anchor state, computes one next ID from the authoritative catalogue, and returns a sided interaction result. No custom packet exists.
+- Anchor and part resolution: `ShrineLifecycleService.resolve` remains the owner. Anchors resolve directly. Parts use the existing reverse transform and validate encoded offset/facing, already-loaded candidate chunk, anchor block/entity, authoritative facing, exact persisted offset, exact world position, expected part state, shrine family, and structurally valid four-cell footprint. No chunk ticket or force-load is used and cycling does not queue integrity work.
+- Cycle owner and order: `StructureVariantCycler` over the validated catalogue owns enabled, compatible, numeric cycle positions. Exact order is `honesty`, `compassion`, `valor`, `justice`, `sacrifice`, `honor`, `spirituality`, `humility`, `chaos`, then wrap to `honesty`. Disabled/incompatible candidates are skipped; missing current IDs, duplicate/negative cycle definitions, and a cycle with no alternate fail closed.
+- Transaction: `ShrineVariantCycleService` captures the complete previous `PlacedStructureState`, constructs an immutable replacement differing only in `variantId`, and applies it through `LargeStructureAnchorBlockEntity.replacePlacedState`, a compare-and-set boundary that rejects stale state and any schema/family/facing/footprint change. Assignment and readback precede synchronization; readback is confirmed again afterward.
+- Rollback: failed or partial assignment and injected synchronization failure restore the complete previous state, mark it changed through the same compare-and-set helper, and attempt normal synchronization. Rollback failure is explicit. No successful sound/message occurs before the transaction and restored synchronization complete.
+- Synchronization: `LargeStructureAnchorBlockEntity.synchronize` calls `setChanged` and server `sendBlockUpdated` with `Block.UPDATE_CLIENTS`; existing `getUpdateTag`, `ClientboundBlockEntityDataPacket`, `handleUpdateTag`, and `onDataPacket` paths carry the selected variant to initial/tracking clients. The renderer continues selecting one shared geometry and the texture identified by synchronized `variant_id`.
+- Feedback: no dedicated pre-existing decorator sound was registered. Milestone 5 uses the existing vanilla `SoundEvents.UI_STONECUTTER_SELECT_RECIPE` selection sound once on authoritative success and localized action-bar key `message.britannia_mod.shrine.decorator.selected` with the selected variant's existing translation key. Failure and unauthorized paths emit neither.
+- Typed results cover success, wrong tool, client side, unauthorized, non-structure cell, invalid part, unloaded/missing anchor, missing anchor entity, non-shrine family, missing current ID, no alternate, invalid cycle, incompatible candidate, assignment failure, synchronization failure, and rollback failure.
+
+### Preserved state and scope
+
+- The only mutable persisted field is `variant_id`. Schema, family, ordered footprint, anchor position/state, facing, all part states/offsets/world positions, geometry, render origin/offset/bounds, collision/selection/occlusion/support/piston/fluid behavior, held stack count/durability, shrine item component, lifecycle queues, integrity queues, drops, and world cells remain unchanged.
+- Placement planning/execution, lifecycle teardown, integrity repair, item reconstruction, drops, block replacement, shrine rotation/movement/nudging, reverse cycling, cross-family conversion, and monolith behavior are not called or added.
+- Renderer architecture, renderer registration, part invisibility, fallback policy, animation, geometry, item presentation, and all placeholder art remain unchanged. Milestone 6 placement, monolith renderer/cycling, and positive-Y runtime behavior remain deferred.
+
+### Approved asset hashes before and after
+
+Every before/after pair is identical (SHA-256; byte size):
+
+- `animations/shrine.animation.json`: `F20A6AFD94D1FCF6463B8FDA98853781FC8548293293514199C4AC1E4C5A981E` (89).
+- `geo/shrine.geo.json`: `C31915013A7D50D1732225764D4F94FEB1AD141515BAC0F3CADC81E5C8B3BCA0` (744).
+- `geo/shrine_missing.geo.json`: `460F9FDDE68EC578C3FF1B4E26B457AFCF3467485325B4189C14E02820CC4781` (597).
+- `models/item/shrine.json`: `829C55BB91B761F7529607B3BFD439B73D6A171F01556C12D5F50D5991636985` (121).
+- `chaos.png`: `D8B2FDEB4158BBF86A053CDD383E532569F4DDDAEFF178D2472F5ABC2507EDC3` (40,569).
+- `compassion.png`: `79160E8AF141E4395A64D64439F7FBF0C2170D78073A136E6CBEF8A130FC87BC` (43,798).
+- `honesty.png`: `D35747568A37960736C20F8359F55043B19739FC7D1FAB34144F8F971C36BCCC` (43,834).
+- `honor.png`: `ADC2A67CFA7476D4C1D18A7C49E9F1937D552099FCFE9F1D3C821B832135D381` (42,632).
+- `humility.png`: `E201645E5D9058E28022B22904114E09823E736DDE8021D2E4DA2CE9E558AC8A` (33,789).
+- `justice.png`: `5F01D14F16870EBA66C6A4C3E2F19C919E403A5DCDDC12037904285C825B1B8B` (43,083).
+- `sacrifice.png`: `E4C56B44DC44C749DB10E2D34824DCF0079774FAAF9C2368330CC57036B4EEC4` (40,475).
+- `spirituality.png`: `D50CF726BD459C85313A9173E708C49C3ADC72559D0EABC9458FDFED8FF05CF1` (39,279).
+- `valor.png`: `A748C870317998F911AC328960685F4B41AE8330635DC839F35D27EC6ACA4A1F` (37,300).
+
+### Automated coverage and requirement mapping
+
+- `DecoratorAuthorizationTest` covers logical-server creative, permission level 2, combined authorization, unauthorized state, and rejection of client-side claims.
+- `ShrineVariantCycleServiceTest` exercises the actual production transaction through a narrow injected mutation/synchronization adapter: all nine transitions/wrap, exactly-once advancement/feedback, disabled and incompatible skipping, display/localization independence, missing current, no alternate, invalid definition, all entry and target failure types, non-shrine family, immutable-field equality, geometry/texture mapping, clean/partial assignment failure, synchronization rollback, failed rollback, retry, and deterministic repeated catalogue access.
+- `ShrineLifecycleServiceTest` exercises the real resolver with registered block states for anchor plus all three parts across all four horizontal facings (16 cases), invalid/wrong membership, orphan/unrelated anchor, and unloaded-anchor deferral without writes or force-load.
+- `LargeStructurePersistenceTest` exercises the real registered anchor block entity compare-and-set, disk NBT, update tag, actual clientbound block-entity packet construction/application, and rejection of stale/family/facing structural changes.
+- `InteriorDecoratorMilestoneFiveScopeTest` proves one registered tool/constructor, shrine precedence before rotation, continued branch reachability, common-code client-import absence, no custom packet/placement/removal call, no Milestone 6/recipe, and exact immutable hashes for all thirteen approved assets.
+- Existing `ShrineRenderingMilestoneTest` proves the selected synchronized ID maps to the expected texture while retaining shared geometry; all earlier 127 Milestone 1-4 tests remain green.
+- These 23 Milestone 5-added/extended test methods contain more than 86 logical cases through the nine-transition, 16 membership/facing, typed-failure, persistence-path, and thirteen-asset loops. Requirements 1-86 are covered by the grouped suites above except live-world/manual claims, which remain explicitly unverified rather than inferred.
+
+### Exact validation commands and results
+
+All commands ran from `C:\projects\britannia\mod\Britannia_Mod_shrines_m2_codex`.
+
+- `compileJava --no-daemon --no-configuration-cache`: final exit `0`; 41.7 seconds; 26 tasks (1 executed, 25 up-to-date). Two existing warnings remained: missing Javadoc on a Mixin `@Overwrite` and deprecated-for-removal `Item.initializeClient`. An earlier compile attempt failed on an `Optional<String>` translation-key type mismatch; it was corrected before tests.
+- Focused `test --tests "com.seggellion.britannia_mod.structure.interaction.*" --no-daemon --no-configuration-cache --stacktrace`: final exit `0`; 22.5 seconds; 3 classes, 19 methods, 0 failures/errors/skips; 30 tasks (1 executed, 29 up-to-date). An earlier focused run exposed one incorrect test expectation about the established incompatible-candidate filter; the implementation was unchanged and the test corrected.
+- Expanded focused interaction/lifecycle/persistence command: exit `0`; 34.0 seconds; 5 classes, 42 methods, 0 failures/errors/skips; 30 tasks (2 executed, 28 up-to-date).
+- `test --tests "com.seggellion.britannia_mod.structure.*" --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 54.5 seconds; 20 classes, 150 methods, 0 failures/errors/skips; 30 tasks (2 executed, 28 up-to-date).
+- `test --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 34.1 seconds; 20 classes, 150 methods, 0 failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, `git ls-files` found no tracked build/cache/run/log/generated output. `git clean -ndX` listed only generated `.gradle`, `build`, `run`, and `runs`; no user-owned work was a Gradle-clean target.
+- `clean build --no-daemon --no-configuration-cache --stacktrace`: exit `0`; 161.5 seconds; 20 classes / 150 methods restored from cache, 0 failures/errors/skips; 36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- `git diff --check`: exit `0`; no whitespace errors. The only repeated Git warning was inability to read the user's global ignore file inside the sandbox; it did not affect repository status or validation.
+
+### Runtime smoke validation
+
+- Dedicated server: `runServer -Pdev --no-daemon --no-configuration-cache`. A first run reached `Done (1.799s)` but the wrapper did not forward redirected stdin, so only that attempt's exact process tree was terminated. The final run reached `Done (1.897s)`, accepted loopback RCON `stop`, logged `Stopping server`, `Saving players`, `Saving worlds`, and `All dimensions are saved`, and Gradle exited successfully in 59 seconds (32 tasks: 1 executed, 31 up-to-date).
+- Dedicated-server logs retain a pre-existing unrelated `TitleScreen` dist-cleaner error/warning and missing `britannia_mod.properties` warning. Despite those baseline diagnostics, mod construction, decorator and shrine registration, common shrine-cycle/authorization classes, world startup, and normal save/shutdown succeeded. No shrine client renderer was loaded from common cycle code.
+- Development client: `runClient -Pdev --no-daemon --no-configuration-cache` reached user initialization, OpenAL initialization, and block/GUI atlas creation. Existing unrelated missing-model/blockstate warnings remain. The hidden smoke processes were then terminated because no interactive window was exposed. This is startup/resource/class-loading evidence only, not a normal client-exit or gameplay result.
+- Manual/in-world checks performed: source/API/Git/JAR inspection plus actual dedicated-server and client startup smokes.
+- Manual interaction checks unperformed: obtaining/placing/clicking all cells, cycling nine variants, two-facing visual review, save/reload in-world, unauthorized/wrong-item play, two-client observation, live GPU appearance, and live resource reload. These are `UNVERIFIED`; adapter, packet, startup, and JAR results are not described as live gameplay or multiplayer validation.
+
+### Production JAR inspection
+
+- `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,231,766 bytes; 4,679 entries; SHA-256 `E5BC4DD455629DCD2CE1E16F5F7C47AC765DD2D1114222EDFB472DE1F8C951D4`.
+- `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,803,404 bytes; 4,683 entries; SHA-256 `D8E465F046823112DCEADB08DE00C4758FDDC6A14BAE222E6E91874D8FBCD8A2`.
+- Each contains `ShrineVariantCycleService` (five top/nested entries), one `DecoratorAuthorization`, one existing `InteriorDecoratorToolItem`, localization, two existing shrine renderer/model entries, nine textures, two geometry files, animation/item resources, and all Milestone 1-4 production classes.
+- Each contains zero test/fixture entries, zero second decorator item, zero monolith runtime/renderer/placement entry, zero Milestone 6 class, and no unexpected asset change.
+
+### Known limitations and next milestone
+
+- Mutation behavior is deeply exercised through the actual production service with deterministic adapters and real persisted/packet state, but no live `ServerPlayer`/`ServerLevel`, GameTest, two-client session, in-world click, save-file reload, or GPU visual validation occurred.
+- Client startup proves registration, resource parsing, and class loading only. It does not close the known Milestone 4 live-render/resource-reload limitation.
+- Milestone 6 remains explicitly deferred. The next milestone is permitted only after separate owner approval.

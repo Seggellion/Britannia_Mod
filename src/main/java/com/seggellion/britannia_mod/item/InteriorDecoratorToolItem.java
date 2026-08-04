@@ -7,6 +7,8 @@ import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
 import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
 import com.seggellion.britannia_mod.block.nudgeable.NudgeableBlockEntity;
+import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
+import com.seggellion.britannia_mod.structure.interaction.ShrineVariantCycleService;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.core.BlockPos;
@@ -14,6 +16,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -40,6 +44,19 @@ public class InteriorDecoratorToolItem extends Item {
         BlockState state = level.getBlockState(pos);
 
         if (player == null) return InteractionResult.PASS;
+
+        // Shrine ownership must win over the generic horizontal-facing rotation below.
+        if (state.is(LargeStructureRegistry.LARGE_STRUCTURE_ANCHOR.get())
+                || state.is(LargeStructureRegistry.LARGE_STRUCTURE_PART.get())) {
+            if (level.isClientSide()) return InteractionResult.SUCCESS;
+            if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
+                return InteractionResult.FAIL;
+            }
+            ShrineVariantCycleService.Result result = ShrineVariantCycleService.cycle(
+                    serverLevel, serverPlayer, inHand, pos, state);
+            return result == ShrineVariantCycleService.Result.SUCCESS
+                    ? InteractionResult.sidedSuccess(false) : InteractionResult.FAIL;
+        }
 
         // Nudge logic: only if offhand also holds InteriorDecoratorTool
         ItemStack offhand = player.getOffhandItem();
