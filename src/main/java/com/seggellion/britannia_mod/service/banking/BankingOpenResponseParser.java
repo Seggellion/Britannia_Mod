@@ -109,7 +109,7 @@ public final class BankingOpenResponseParser {
             // A malformed value degrades to absent rather than failing the whole response: a name
             // is a courtesy, and losing the player's entire account view over one would be a far
             // worse trade than showing the fallback.
-            items.add(new BankItemSummary(publicId, weight, lenientName(item), lenientCount(item)));
+            items.add(new BankItemSummary(publicId, weight, lenientName(item), lenientCount(item), lenientItemKey(item)));
         }
         return items;
     }
@@ -131,6 +131,26 @@ public final class BankingOpenResponseParser {
         }
         int value = element.getAsInt();
         return value >= 1 ? value : null;
+    }
+
+    /**
+     * Milestone 10: the registry id ({@code "minecraft:diamond_sword"}), read with the same
+     * lenient treatment the other identity fields get -- absent or the wrong JSON type degrades
+     * to {@code null}, never fails the account view (design §9.5.2).
+     *
+     * <p>One deliberate divergence from {@link #lenientName}: an over-long value is <b>dropped,
+     * not truncated</b>. Truncating a display name loses letters; truncating a registry id
+     * produces a <em>different id</em>, which could in principle resolve to a different item --
+     * the wrong icon rather than the unknown one. No syntax check happens here: this class stays
+     * Minecraft-free, and the resolver owns the one definition of malformed.
+     */
+    private static String lenientItemKey(JsonObject item) {
+        JsonElement element = item.get("item_key");
+        if (element == null || !element.isJsonPrimitive() || !element.getAsJsonPrimitive().isString()) {
+            return null;
+        }
+        String value = element.getAsString();
+        return value.length() > MAX_BANK_ITEM_NAME_LENGTH ? null : value;
     }
 
     private static BankingOpenAccount parseAccount(JsonObject account) throws ProtocolException {

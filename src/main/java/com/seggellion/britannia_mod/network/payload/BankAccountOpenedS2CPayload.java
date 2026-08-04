@@ -163,6 +163,12 @@ public record BankAccountOpenedS2CPayload(
             if (item.count() != null) {
                 buffer.writeVarInt(item.count());
             }
+            // Milestone 10: the registry id, same nullable-string shape as displayName. Bounded
+            // by the same byte cap -- a registry id longer than a display name is already garbage.
+            buffer.writeBoolean(item.itemKey() != null);
+            if (item.itemKey() != null) {
+                ServiceNpcSpawnPayloadCodec.writeUtf(buffer, item.itemKey(), MAX_ITEM_NAME_BYTES);
+            }
         }
     }
 
@@ -186,7 +192,9 @@ public record BankAccountOpenedS2CPayload(
             String displayName = buffer.readBoolean()
                     ? ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_ITEM_NAME_BYTES) : null;
             Integer count = buffer.readBoolean() ? buffer.readVarInt() : null;
-            bankItems.add(new BankItemSummary(publicId, weight, displayName, count));
+            String itemKey = buffer.readBoolean()
+                    ? ServiceNpcSpawnPayloadCodec.readUtf(buffer, MAX_ITEM_NAME_BYTES) : null;
+            bankItems.add(new BankItemSummary(publicId, weight, displayName, count, itemKey));
         }
 
         return new BankAccountOpenedS2CPayload(

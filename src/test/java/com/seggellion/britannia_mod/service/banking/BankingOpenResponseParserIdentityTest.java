@@ -30,6 +30,54 @@ class BankingOpenResponseParserIdentityTest {
         assertEquals("Gilded Arrow", items.get(0).displayName());
         assertEquals(64, items.get(0).count());
         assertEquals("Gilded Arrow x64", items.get(0).describe());
+        // Milestone 10: this test always sent item_key, and until now the parser dropped it --
+        // Milestone 0's principal remaining-work finding, closed here.
+        assertEquals("minecraft:arrow", items.get(0).itemKey());
+    }
+
+    @Test
+    void anAbsentItemKeyIsNullNotAnError() {
+        List<BankItemSummary> items = parseItems("""
+                {"public_id":"11111111-1111-4111-8111-111111111111","weight":1.5,"display_name":"Old Deposit"}
+                """);
+
+        assertNull(items.get(0).itemKey());
+        assertEquals("Old Deposit", items.get(0).displayName(), "the rest of the identity must be unaffected");
+    }
+
+    @Test
+    void aWrongTypedItemKeyDegradesToAbsentWithoutFailingTheView() {
+        List<BankItemSummary> items = parseItems("""
+                {"public_id":"11111111-1111-4111-8111-111111111111","weight":1.5,"item_key":42},
+                {"public_id":"22222222-2222-4222-8222-222222222222","weight":1.5,"item_key":{"nested":"object"}}
+                """);
+
+        assertNull(items.get(0).itemKey());
+        assertNull(items.get(1).itemKey());
+    }
+
+    @Test
+    void anOverLongItemKeyIsDroppedNotTruncated() {
+        // Truncating a display name loses letters; truncating a registry id produces a DIFFERENT
+        // id, which could resolve to the wrong item's icon. Over-long keys vanish instead.
+        String longKey = "minecraft:" + "a".repeat(300);
+        List<BankItemSummary> items = parseItems("""
+                {"public_id":"11111111-1111-4111-8111-111111111111","weight":1.5,"item_key":"%s"}
+                """.formatted(longKey));
+
+        assertNull(items.get(0).itemKey());
+    }
+
+    @Test
+    void aSyntacticallyDubiousKeyIsCarriedForTheResolverToJudge() {
+        // The parser stays Minecraft-free, so it does not know ResourceLocation's rules. One
+        // place decides what malformed means -- BankItemIcon, where the cell falls back to the
+        // unknown icon. Carrying the string through is what keeps that definition singular.
+        List<BankItemSummary> items = parseItems("""
+                {"public_id":"11111111-1111-4111-8111-111111111111","weight":1.5,"item_key":"Not A Valid Key!"}
+                """);
+
+        assertEquals("Not A Valid Key!", items.get(0).itemKey());
     }
 
     @Test

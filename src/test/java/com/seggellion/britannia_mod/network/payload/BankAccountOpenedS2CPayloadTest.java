@@ -53,7 +53,7 @@ class BankAccountOpenedS2CPayloadTest {
 
     @Test
     void roundTripsItemIdentityIntact() {
-        BankItemSummary named = new BankItemSummary(UUID.randomUUID(), 2.5, "Gilded Arrow", 64);
+        BankItemSummary named = new BankItemSummary(UUID.randomUUID(), 2.5, "Gilded Arrow", 64, "minecraft:arrow");
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
                 "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(named)
         );
@@ -64,6 +64,22 @@ class BankAccountOpenedS2CPayloadTest {
         assertEquals("Gilded Arrow", decoded.displayName());
         assertEquals(64, decoded.count());
         assertEquals("Gilded Arrow x64", decoded.describe());
+        // Milestone 10: the registry id crosses the wire too.
+        assertEquals("minecraft:arrow", decoded.itemKey());
+    }
+
+    @Test
+    void anAbsentItemKeySurvivesTheWireAsAbsent() {
+        BankItemSummary keyless = new BankItemSummary(UUID.randomUUID(), 1.0, "Old Deposit", 3, null);
+        BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
+                "Aldric", "male", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(keyless)
+        );
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        BankAccountOpenedS2CPayload.STREAM_CODEC.encode(buffer, payload);
+
+        BankItemSummary decoded = BankAccountOpenedS2CPayload.STREAM_CODEC.decode(buffer).bankItems().get(0);
+        assertNull(decoded.itemKey(), "absent must not arrive as an empty string");
+        assertEquals("Old Deposit", decoded.displayName());
     }
 
     /**
@@ -87,8 +103,8 @@ class BankAccountOpenedS2CPayloadTest {
 
     @Test
     void roundTripsItemsWhoseIdentityIsOnlyPartlyKnown() {
-        BankItemSummary nameOnly = new BankItemSummary(UUID.randomUUID(), 1.0, "Solitary Ledger", null);
-        BankItemSummary countOnly = new BankItemSummary(UUID.randomUUID(), 1.0, null, 12);
+        BankItemSummary nameOnly = new BankItemSummary(UUID.randomUUID(), 1.0, "Solitary Ledger", null, null);
+        BankItemSummary countOnly = new BankItemSummary(UUID.randomUUID(), 1.0, null, 12, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
                 "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(nameOnly, countOnly)
         );
@@ -105,7 +121,7 @@ class BankAccountOpenedS2CPayloadTest {
     @Test
     void roundTripsAMultiByteNameWithoutTruncatingIt() {
         String name = "鉄の剣 §cCursed";
-        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, name, 1);
+        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, name, 1, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
                 "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(item)
         );
@@ -122,7 +138,7 @@ class BankAccountOpenedS2CPayloadTest {
     @Test
     void roundTripsANameAtRailsOwnLengthLimit() {
         String name = "𝕬".repeat(255);
-        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, name, null);
+        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, name, null, null);
         BankAccountOpenedS2CPayload payload = new BankAccountOpenedS2CPayload(
                 "Aldric", "female", 42, "Britain", 250, 12.5, 3, 47, 92, List.of(item)
         );
@@ -134,9 +150,11 @@ class BankAccountOpenedS2CPayloadTest {
 
     @Test
     void treatsABlankNameAndANonPositiveCountAsNoIdentityAtAll() {
-        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, "   ", 0);
+        BankItemSummary item = new BankItemSummary(UUID.randomUUID(), 1.0, "   ", 0, "  ");
         assertNull(item.displayName());
         assertNull(item.count());
+        // Milestone 10: a blank key canonicalizes to absent, same rule as the name.
+        assertNull(item.itemKey());
         assertEquals("Stored item", item.describe());
     }
 }
