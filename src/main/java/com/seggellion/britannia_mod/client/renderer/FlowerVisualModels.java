@@ -24,6 +24,7 @@ public final class FlowerVisualModels {
     public static final int MAX_STAGE = 7;
     public static final ResourceLocation FALLBACK_SPECIES = FlowerRegistry.POPPY;
     public static final int FALLBACK_STAGE = 1;
+    public static final float DYE_MASK_OPACITY = 0.5F;
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final List<ResourceLocation> SUPPORTED_SPECIES = List.of(
@@ -84,7 +85,7 @@ public final class FlowerVisualModels {
                 savedTint,
                 visualTint,
                 Tint.WHITE,
-                Tint.fromRgb(visualTint),
+                Tint.fromRgb(visualTint, DYE_MASK_OPACITY),
                 unknownSpecies,
                 unknownSpecies || visualStage != savedStage,
                 unknownSpecies || invalidTint
@@ -186,11 +187,18 @@ public final class FlowerVisualModels {
         public static final Tint WHITE = new Tint(1.0F, 1.0F, 1.0F, 1.0F);
 
         public static Tint fromRgb(int rgb) {
+            return fromRgb(rgb, 1.0F);
+        }
+
+        public static Tint fromRgb(int rgb, float alpha) {
+            if (alpha < 0.0F || alpha > 1.0F) {
+                throw new IllegalArgumentException("Tint alpha must be between 0 and 1");
+            }
             return new Tint(
                     ((rgb >> 16) & 0xFF) / 255.0F,
                     ((rgb >> 8) & 0xFF) / 255.0F,
                     (rgb & 0xFF) / 255.0F,
-                    1.0F
+                    alpha
             );
         }
     }

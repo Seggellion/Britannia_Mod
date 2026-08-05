@@ -164,6 +164,8 @@ class FlowerAssetContractTest {
                 boolean transparentBase = false;
                 boolean transparentMask = false;
                 int visibleMask = 0;
+                int baseDetailUnderMask = 0;
+                Set<Integer> baseDetailColors = new HashSet<>();
                 for (int y = 0; y < 128; y++) {
                     for (int x = 0; x < 128; x++) {
                         int baseArgb = base.getRGB(x, y);
@@ -172,14 +174,16 @@ class FlowerAssetContractTest {
                         int maskAlpha = maskArgb >>> 24;
                         transparentBase |= baseAlpha == 0;
                         transparentMask |= maskAlpha == 0;
-                        assertFalse(baseAlpha != 0 && maskAlpha != 0,
-                                "Base/mask alpha overlap at " + content.path() + " stage " + stage + " (" + x + "," + y + ")");
                         if (maskAlpha != 0) {
                             visibleMask++;
                             int rgb = maskArgb & 0xFFFFFF;
                             assertEquals(0xFFFFFF, rgb,
                                     "Authored mask pixels must be white at " + content.path() + " stage " + stage);
                             assertFalse(configuredColors.contains(rgb));
+                            if (baseAlpha != 0) {
+                                baseDetailUnderMask++;
+                                baseDetailColors.add(baseArgb & 0xFFFFFF);
+                            }
                         }
                     }
                 }
@@ -190,6 +194,10 @@ class FlowerAssetContractTest {
                     assertTrue(manifest.contains("| `britannia_mod:" + content.path() + "` | " + stage));
                 } else {
                     assertTrue(visibleMask > 0);
+                    assertTrue(baseDetailUnderMask > 0,
+                            "Authored mask must overlap its detailed base at " + content.path() + " stage " + stage);
+                    assertTrue(baseDetailColors.size() > 1,
+                            "Base detail beneath authored mask must not be flat at " + content.path() + " stage " + stage);
                 }
                 assertTrue(manifest.contains(PROJECT.relativize(basePath).toString().replace('\\', '/')));
                 assertTrue(manifest.contains(PROJECT.relativize(maskPath).toString().replace('\\', '/')));

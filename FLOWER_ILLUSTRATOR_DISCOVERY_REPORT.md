@@ -2,7 +2,7 @@
 
 ## Milestone status
 
-Milestone 18 discovery is **complete and owner-approved for Milestone 19**. The owner intentionally corrected and resaved the Illustrator source after the first inventory. During Milestone 19, the owner then explicitly authorized a source-authoritative correction making every mask-selected base area transparent. Each source change was followed by a full native re-inventory before export.
+Milestone 18 discovery and Milestone 19 integration are **complete**. Milestone 19 was committed locally as `2e5ff48eba79c8f547ef1fe2379b1d89ec9edcc3`. After Milestone 20, the owner requested that dye tint preserve the base artwork's detail. The source-authoritative correction now restores the detailed originals as each authored-mask stage's `base_texture` and retains the former alpha-disjoint rasters as hidden reversible objects. The correction and its validation remain uncommitted for owner review.
 
 The refreshed source matches the owner's approvals:
 
@@ -32,12 +32,12 @@ The milestone document's lowercase `farming` gate is superseded by the owner's e
 | Property | Initial discovery source | Current authoritative source |
 |---|---|---|
 | Path | `C:\projects\britannia\raw fiels\flowers.ai` | same |
-| Size | 78,138,903 bytes | 50,391,256 bytes |
-| Last modified (UTC) | `2026-08-04T21:47:34.8107050Z` | `2026-08-05T01:11:11Z` |
-| SHA-256 | `340D14CFB6DC103ED90395BFFA3200B0F2AD84D88C34A4FBAD941AEA626BC62C` | `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223` |
-| Status | superseded by owner corrections | authoritative Milestone 19 export baseline |
+| Size | 78,138,903 bytes | 80,453,426 bytes |
+| Last modified (UTC) | `2026-08-04T21:47:34.8107050Z` | `2026-08-05T03:53:13Z` |
+| SHA-256 | `340D14CFB6DC103ED90395BFFA3200B0F2AD84D88C34A4FBAD941AEA626BC62C` | `1B5407855D448B8385CC6D067858A347DF3C0B0993B390382A36EE1D42C0A9EE` |
+| Status | superseded by owner corrections | authoritative detail-preserving tint source |
 
-The owner explicitly authorized the base-transparency correction and resave. A byte-identical backup of the prior owner-resaved source is retained at `C:\projects\britannia\raw fiels\codex_backups\flowers_pre_base_transparency_20260804_181043.ai` with SHA-256 `6E3DD39B95DA983B317D5F379F33F4BBD08A2E7FF72B7B2FD874DF4D3CFD4048`.
+The prior alpha-disjoint source is retained byte-for-byte at `C:\projects\britannia\raw fiels\codex_backups\flowers_pre_detail_preserving_tint_20260804_205234.ai` with SHA-256 `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`. The earlier owner-resaved source also remains at `C:\projects\britannia\raw fiels\codex_backups\flowers_pre_base_transparency_20260804_181043.ai` with SHA-256 `6E3DD39B95DA983B317D5F379F33F4BBD08A2E7FF72B7B2FD874DF4D3CFD4048`.
 
 ## Refreshed Illustrator inventory
 
@@ -85,9 +85,9 @@ Poppy retains source names `stage1` through `stage6` and `stage_7`; the numeric 
 | `snowdrop` | `snowdrop` | 1-7 | 3-7 | 1-2 |
 | **Total** | **7 species** | **49** | **33** | **16** |
 
-Every stage has exactly one named embedded `base_texture` RasterItem. On each of the 33 authored-mask stages, the export base is a corrected 128 x 128 embedded raster at exact artboard bounds `[0,0,128,-128]`; the previous high-resolution embedded base remains hidden as `base_texture_original_nonexport`. Authored masks are named `dye_mask` vector GroupItems. Every mask path is filled `RGB(255,255,255)`, normally blended at 100% opacity, with no strokes or clipping paths.
+Every stage has exactly one named embedded `base_texture` RasterItem. On each of the 33 authored-mask stages, the export base is the detailed high-resolution original and the former alpha-disjoint 128 x 128 raster remains hidden as `base_texture_alpha_disjoint_nonexport`. Authored masks are named `dye_mask` vector GroupItems. Every mask path is filled `RGB(255,255,255)`, normally blended at 100% opacity in Illustrator, with no strokes or clipping paths. Runtime opacity is controlled separately by the renderer.
 
-The corrected source was reopened and re-inventoried after saving: 49 stage layers, 49 export bases, 33 white masks, 33 hidden original bases, zero linked assets, and zero hidden or locked stage layers. A PDF-compatible rendering was also inspected as a cross-check. Pixel validation of the embedded corrections found zero base/mask alpha overlap across all 33 authored-mask stages and zero pixel changes outside the selected mask areas.
+The detail-restored source was saved and exported after a complete preflight: 49 stage layers, 49 export bases, 33 white masks, and 33 hidden alpha-disjoint archive rasters. Pixel validation found 58,516 visible mask pixels with detailed base beneath them, with varied underlying base colours on every authored-mask stage.
 
 Under the owner's override, a base-only stage is complete. Its base may be exported while its existing transparent mask placeholder remains unchanged.
 
@@ -139,7 +139,7 @@ Model and texture paths already match the approved destination convention. Miles
 
 | ID | Decision | Status |
 |---|---|---|
-| ILLUSTRATOR-001 | authoritative source is external `flowers.ai` at hash `00E0C2F5...2A223` | APPROVED |
+| ILLUSTRATOR-001 | authoritative source is external `flowers.ai`; current hash `1B540785...A9EE` | APPROVED |
 | ILLUSTRATOR-002 | `lilly -> lily`; exact `orfluer -> orfluer` mapping | APPROVED |
 | ILLUSTRATOR-003 | 49 bases, 33 masks, 16 base-only placeholder-retention mappings | APPROVED |
 | ILLUSTRATOR-004 | native Illustrator scripting | APPROVED |
@@ -152,8 +152,9 @@ Model and texture paths already match the approved destination convention. Miles
 | ILLUSTRATOR-011 | flat-white authored masks | APPROVED AND VERIFIED |
 | ILLUSTRATOR-012 | transparent placeholders retained for 16 base-only stages | APPROVED |
 | ILLUSTRATOR-013 | no extra Illustrator stages | APPROVED |
-| ILLUSTRATOR-014 | source remains external and authoritative; owner authorized alpha-disjoint base correction | APPROVED AND COMPLETED |
-| ILLUSTRATOR-015 | mask-selected base pixels are transparent; hidden embedded originals are retained for reversibility | APPROVED AND VERIFIED |
+| ILLUSTRATOR-014 | source remains external and authoritative; alpha-disjoint correction completed | HISTORICAL |
+| ILLUSTRATOR-015 | mask-selected base pixels transparent; hidden detailed originals retained | SUPERSEDED |
+| ILLUSTRATOR-016 | detailed originals restored as export bases; former alpha-disjoint rasters retained hidden; runtime masks use 50% opacity | APPROVED BY OWNER REQUEST AND VERIFIED |
 
 ## Milestone 18 closeout
 
@@ -172,4 +173,39 @@ Model and texture paths already match the approved destination convention. Miles
 - Textures exported in Milestone 18: 0
 - Owner decisions required: none
 
-Milestone 18's hard stop is cleared for Milestone 19 only. Milestone 20 remains unauthorized. The later source edit was explicitly owner-authorized for Milestone 19 and is recorded above; no stage, commit, push, fetch, or GitHub access occurred.
+Milestone 18's hard stop was cleared for Milestone 19. The later source edit was explicitly owner-authorized and is recorded above. Milestone 19 was committed locally; no push, fetch, or GitHub access occurred.
+
+## Milestone 20 validation closeout
+
+- Validation baseline: local `Farming` commit `2e5ff48eba79c8f547ef1fe2379b1d89ec9edcc3`.
+- Authoritative source rechecked at `C:\projects\britannia\raw fiels\flowers.ai`; SHA-256 remains `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`.
+- Fresh native Illustrator re-export: 49 bases and 33 authored masks; production comparison found 0 byte mismatches.
+- Hidden-original comparison: 58,516 mask-selected source pixels are transparent in corrected bases; 0 alpha changes and 0 visible-RGB changes outside selected regions.
+- Repository graph: exactly 49 canonical models, 49 bases, and 49 masks; no pass-specific models, stale flower resources, or orphan paths.
+- Pixel contract: 98/98 PNGs at 128 x 128; 33 white authored masks; 16 transparent placeholders; 0 base/mask overlap pixels.
+- Live dedicated-server fixture: all seven species and stages 1-7, including Poppy stage 7, validated at 49/49 before and after a clean save/restart.
+- Live clients: front, side, elevated, Poppy, post-resource-reload, overlapping two-client, and post-restart views were captured and inspected. No missing model, cross-species mapping, mirroring, halo, seam, static Z-fighting, clipping defect, or tint leakage was observed.
+- Full regression: 15 suites / 108 tests, 0 failures, 0 errors, 0 skipped.
+
+Runtime limitations are static visual inspection rather than a continuous-motion flicker or GPU-performance measurement. Moving clouds and lighting changed exact screenshot bytes; fixture luminance/edge structure remained strongly correlated across clients (`0.9994` / `0.9997`) and before/after reload (`0.9790` / `0.9887`). Pre-existing unrelated resource warnings and unavailable localhost service responses were observed and left out of scope.
+
+### Authoritative re-export instructions
+
+1. Open the external `flowers.ai` in Illustrator and verify the 49 named detailed `base_texture` objects, 33 flat-white `dye_mask` groups, 33 hidden `base_texture_alpha_disjoint_nonexport` objects, and 16 approved base-only stages.
+2. Export each visible object in isolation against Artboard 1 as transparent PNG24, 128 x 128, straight alpha, Art Optimized antialiasing, with no post-export crop or rescale. Treat numeric RGB as sRGB; retain the existing transparent mask file for the 16 base-only stages.
+3. Map `lilly` to repository `lily` and source `orfluer` to repository `orfluer`; exclude Snowdrop non-stage extras.
+4. Re-run dimension, white-mask, base-detail overlap, source/destination hash, canonical-graph, focused `FlowerAssetContractTest`, full test, dedicated-server, and resource-reload checks before accepting another replacement.
+
+Milestone 20 validation result: **Pass; awaiting owner approval for these uncommitted closeout records.**
+
+## Post-Milestone 20 source-authoritative detail restoration
+
+The authoritative AI was backed up, preflighted in full, updated, saved, and exported through Illustrator 30.7. All 33 mask-bearing stages promoted the retained detailed raster back to `base_texture`; the prior corrected raster was renamed `base_texture_alpha_disjoint_nonexport` and hidden. All 16 base-only stages were untouched.
+
+- Current source SHA-256: `1B5407855D448B8385CC6D067858A347DF3C0B0993B390382A36EE1D42C0A9EE`.
+- Backup immediately before restoration: `flowers_pre_detail_preserving_tint_20260804_205234.ai`, SHA-256 `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`.
+- Native export: 49 bases and 33 masks; 33 production bases changed, 16 bases remained byte-identical, and all 33 masks remained byte-identical.
+- Detailed overlap: 58,516 mask-selected pixels now expose underlying base artwork; all 33 authored-mask stages contain varied base colour/detail beneath their masks.
+- Runtime blend: the white coverage masks remain unchanged and are applied as a 50%-opacity translucent tint overlay.
+
+Detail-preserving correction: **Implemented and validated locally; uncommitted.**

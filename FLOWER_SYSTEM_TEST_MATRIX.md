@@ -216,7 +216,7 @@ Validation limitations: screenshots validate static alignment but do not formall
 
 ## Illustrator Asset Pipeline - Milestone 19 validation matrix
 
-This section supersedes only the placeholder-art assumptions in earlier rows. Prior gameplay, persistence, renderer, multiplayer, and runtime evidence remains historical; it was not rerun because Milestone 19 is a resource-only technical integration and Milestone 20 remains unauthorized.
+This section supersedes only the placeholder-art assumptions in earlier rows. Prior gameplay, persistence, renderer, multiplayer, and runtime evidence remained historical during Milestone 19 because it was a resource-only technical integration; those gates were rerun later in Milestone 20 below.
 
 | Area | Method | Result | Status / limitation |
 |---|---|---|---|
@@ -236,8 +236,52 @@ This section supersedes only the placeholder-art assumptions in earlier rows. Pr
 | Canonical asset graph | Git path audit plus `FlowerAssetContractTest` | 49 model JSONs unchanged; 0 pass-specific models; 0 model changes | Pass |
 | Focused resource contract | `FlowerAssetContractTest`, isolated no-daemon/one-worker Gradle run | 5 tests, 0 failures, `BUILD SUCCESSFUL in 52s` | Pass |
 | Placeholder generator safety | Historical ledger path coverage plus hash checks for non-Illustrator resources | 98 runtime textures and the hand-maintained manifest excluded from byte ownership; guarded overwrite remains unable to replace approved art | Pass |
-| Full build/gameplay/runtime regression | Not run | Outside Milestone 19 technical resource scope | Not executed; Milestone 20 remains unauthorized |
+| Full build/gameplay/runtime regression | Not run during Milestone 19 | Outside Milestone 19 technical resource scope | Completed later in Milestone 20 below |
 
 The first focused Gradle invocation exceeded its five-minute command timeout while a reused daemon continued in the background. Its result XML later recorded that the new 98-PNG contract passed and one historical JSON-ledger assertion failed because checked-out Windows CRLF bytes differed from generator LF bytes. The exact Farming daemon was identified and stopped without touching concurrent shared-repository Java processes. The ledger assertion was made line-ending-stable, and the isolated rerun above passed all five tests.
 
 Milestone 19 validation result: **Pass for technical integration. Final in-game visual acceptance is not claimed and remains Milestone 20 work.**
+
+## Illustrator Asset Pipeline - Milestone 20 validation matrix
+
+Milestone 20 ran against committed local baseline `2e5ff48eba79c8f547ef1fe2379b1d89ec9edcc3`. The disposable live harness and its world were kept inside ignored `build/m20-live-runtime`; no harness code or runtime output is part of the Farming change set.
+
+| Area | Method | Result | Status / limitation |
+|---|---|---|---|
+| Source identity | SHA-256 before/after fresh Illustrator export and after live QA | `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`; unchanged | Pass |
+| Fresh source fidelity | Object-isolated native export versus production | 49/49 bases and 33/33 authored masks byte-identical | Pass |
+| Corrected-base fidelity | Embedded hidden originals versus current bases outside authored masks | 58,516 selected pixels made transparent; 0 outside-mask alpha or visible-RGB changes | Pass |
+| Canonical graph | Enumerate models/textures and parse associations | 49 models, 98 textures, 0 pass models, 0 duplicate/stale/orphan paths | Pass |
+| Pixel contract | Dimensions, visible RGB, alpha, padding, paired alignment | 98/98 at 128 x 128; 33 white masks; 16 transparent placeholders; 0 overlap | Pass |
+| Original-resolution QA | Base, mask, tinted, black/white halo, and alpha-alignment sheets | Seven coherent stage sequences; no observed one-pixel shift, unintended crop, halo, or mask leakage | Pass; approved 128 x 128 artboard crop retained |
+| Live all-stage fixture | Dedicated server plus client front/elevated views | All seven species x seven stages rendered; server identity 49/49; Poppy stage 7 present | Pass |
+| Side/close rendering | Side and Poppy-focused screenshots | Transparency open; no mirrored mapping, seam, clipping defect, static Z-fighting, or UV mismatch observed | Pass; static inspection only |
+| Multiple saved colours | Deterministic distinct palette selection by stage, recorded server-side and rendered client-side | All 49 saved colours matched expected identities/stages and localized to authored mask regions | Pass |
+| Resource reload | Client A reload followed by front recapture | Geometry and tint placement stable; luminance/edge correlation `0.9790` / `0.9887` | Pass; lighting/cloud bytes changed |
+| Multiplayer | Two warmed clients overlapped on one fixture, same front view | Simultaneous server presence for 10 seconds; client A/B structure correlation `0.9994` / `0.9997` | Pass |
+| Save/restart persistence | Clean server stop, same-world restart, no fixture rebuild | Initial 49/49 and restart 49/49; restart client rendered saved identities/stages/colours | Pass |
+| Full automated regression | `.\gradlew.bat test --console=plain --no-configuration-cache --no-daemon --max-workers=1` | 15 XML suites, 108 tests, 0 failures/errors/skips; `BUILD SUCCESSFUL in 27s` | Pass |
+| Dedicated-server boundary | Two isolated starts and clean stops | Reached `Done`; saved players/worlds and all dimensions on each stop | Pass; pre-existing client-only mixin warning remains |
+| Repository/source scope | Git status and source hash before/after | Only five documentation records changed; three supplied untracked input docs preserved; Illustrator unchanged | Pass; records intentionally uncommitted |
+
+Screenshot limitations: this evidence validates static alignment and state agreement, not continuous-motion flicker or performance. Unrelated historical resource warnings and unavailable localhost development-service responses occurred during runtime and did not alter flower fixture validation.
+
+Milestone 20 validation result: **Pass; documentation-only closeout awaits owner approval and remains uncommitted.**
+
+## Post-Milestone 20 detail-preserving tint validation
+
+| Area | Method | Result | Status / limitation |
+|---|---|---|---|
+| Blend design | Review of existing two-texture renderer and mask semantics | 50% translucent colour overlay selected; highlight-only adjustment rejected because binary white masks carry no intensity/highlight data | Pass |
+| Authoritative source edit | Illustrator preflight, timestamped backup, object promotion/rename, native save and export | 33 detailed originals promoted to `base_texture`; 33 former alpha-disjoint rasters retained hidden; 16 base-only stages untouched | Pass |
+| Source/export identity | SHA-256 and byte comparison | Current AI `1B540785...A9EE`; 49 bases exported; 33 bases changed; 16 bases and all 33 masks byte-identical | Pass |
+| Detail overlap | Paired pixel and underlying-colour enumeration | 58,516 mask pixels overlap visible base detail; all 33 authored stages have multiple underlying colours | Pass |
+| Render contract | Source assertions plus compilation | Cutout base followed by directly bound `entityTranslucent` mask; vertex alpha scaled by `0.5F`; one canonical model/transform | Pass |
+| Focused regression | `FlowerRenderingTest` + `FlowerAssetContractTest` | 14 tests, 0 failures/errors | Pass |
+| Full regression | `\.\gradlew.bat --no-daemon --console=plain --no-configuration-cache test` | 15 suites / 108 tests, 0 failures/errors/skips; successful in 44s | Pass |
+| Live all-stage fixture | Existing ignored local M20 server/client harness | All species/stages rendered; front, side, elevated, Poppy, and post-reload captures completed; no flower renderer error | Pass |
+| Static visual review | Original-resolution elevated and side captures | Petal/leaf tonal detail remains visible beneath tint; no observed UV shift, seam, halo, clipping defect, or static Z-fighting | Pass; no continuous-motion/GPU profile |
+| Resource reload and shutdown | Live reload followed by client exit and server stop request | Reload completed; server saved all dimensions cleanly | Pass |
+| Repository scope | Git/status review | Implementation, tests, 33 base PNGs, and five existing project records modified; supplied untracked input docs preserved | Pass; intentionally uncommitted |
+
+Detail-preserving tint correction result: **Pass; owner review and commit approval pending.**

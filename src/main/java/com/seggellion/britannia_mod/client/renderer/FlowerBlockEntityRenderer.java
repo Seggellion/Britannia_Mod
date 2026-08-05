@@ -75,8 +75,9 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
         renderPass(minecraft, poseStack, bufferSource.getBuffer(RenderType.cutout()), renderState, resolved.model(),
                 plan.baseTint(), packedLight, packedOverlay);
         VertexConsumer dyeMaskConsumer = new TextureRemappingVertexConsumer(
-                bufferSource.getBuffer(RenderType.entityCutout(textureFile(resolved.assets().dyeMaskTextureId()))),
-                baseSprite
+                bufferSource.getBuffer(RenderType.entityTranslucent(textureFile(resolved.assets().dyeMaskTextureId()))),
+                baseSprite,
+                plan.dyeMaskTint().alpha()
         );
         renderPass(minecraft, poseStack, dyeMaskConsumer, renderState, resolved.model(),
                 plan.dyeMaskTint(), packedLight, packedOverlay);
@@ -145,13 +146,16 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
     private static final class TextureRemappingVertexConsumer implements VertexConsumer {
         private final VertexConsumer delegate;
         private final TextureAtlasSprite source;
+        private final float opacity;
 
         private TextureRemappingVertexConsumer(
                 VertexConsumer delegate,
-                TextureAtlasSprite source
+                TextureAtlasSprite source,
+                float opacity
         ) {
             this.delegate = delegate;
             this.source = source;
+            this.opacity = opacity;
         }
 
         @Override
@@ -162,7 +166,7 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
 
         @Override
         public VertexConsumer setColor(int red, int green, int blue, int alpha) {
-            delegate.setColor(red, green, blue, alpha);
+            delegate.setColor(red, green, blue, Math.round(alpha * opacity));
             return this;
         }
 

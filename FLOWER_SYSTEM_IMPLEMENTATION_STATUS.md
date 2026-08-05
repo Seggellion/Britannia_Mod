@@ -421,7 +421,7 @@ Corrective Milestone 11 status: **Corrective Milestone 11 — Approved.** Commit
 
 ## Illustrator Asset Pipeline - Milestone 19 technical integration
 
-Milestone 19 technical integration is **complete and uncommitted** on the local case-sensitive `Farming` branch at starting HEAD `142712bbe9acb2d29b65e4e85ab56ce5a49e0ed3`. Milestone 20 visual acceptance remains unauthorized and was not started.
+Milestone 19 technical integration is **complete and committed locally** on the case-sensitive `Farming` branch as `2e5ff48eba79c8f547ef1fe2379b1d89ec9edcc3`. Milestone 20 validation was subsequently authorized and completed; its documentation-only closeout remains uncommitted for owner review.
 
 ### Authoritative Illustrator source
 
@@ -456,7 +456,58 @@ Illustrator's scripted save left the AI as untagged RGB. The corrected pixels pr
 - Pixel audit: 49 stages, 98 PNGs, 33 authored masks, 16 transparent placeholders, 0 errors, 0 overlap pixels.
 - Visual QA: base, mask, and combined 7-by-7 contact sheets inspected; growth sequences, padding, and mask alignment are coherent.
 - Focused automated gate: `.\gradlew.bat test --tests "com.seggellion.britannia_mod.farming.FlowerAssetContractTest" --console=plain --no-configuration-cache --no-daemon --max-workers=1` passed in 52 seconds with 5 tests and 0 failures.
-- No full build, clean, gameplay regression suite, client launch, dedicated server, or Milestone 20 visual-review fixture was run.
-- No stage, commit, stash, fetch, pull, merge, rebase, reset, push, GitHub action, release, or deployment occurred.
+- No full build, clean, gameplay regression suite, client launch, dedicated server, or Milestone 20 visual-review fixture was run during Milestone 19.
+- Milestone 19 was later staged and committed locally as `2e5ff48`; no fetch, pull, merge, rebase, reset, push, GitHub action, release, or deployment occurred.
 
-Milestone 19 status: **Technical integration complete; awaiting separate Milestone 20 authorization and final visual acceptance.**
+Milestone 19 status: **Technical integration complete and committed locally.**
+
+## Illustrator Asset Pipeline - Milestone 20 validation closeout
+
+Milestone 20 validated the exact committed M19 asset set without changing implementation code, models, textures, or the authoritative Illustrator source.
+
+### Structural, source, and pixel validation
+
+- Exact graph: 49 canonical flower models, 49 base textures, 49 dye masks, no pass-specific models, no stale resources, and no orphans.
+- Fresh native source export: 49 bases and 33 masks, with 0 production byte mismatches and unchanged source SHA-256 `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`.
+- Source correction proof: 58,516 selected pixels transparent, 0 changed alpha or visible RGB outside mask regions, 0 base/mask overlap.
+- Runtime pixels: 98/98 at 128 x 128, 33 white authored masks, 16 transparent placeholders, coherent padding and growth sequences.
+
+### Live client/server acceptance
+
+- An ignored, independent `--no-hardlinks` local clone of `2e5ff48` hosted a disposable dedicated-server fixture with all seven species and stages 1-7.
+- The fixture validated 49/49 server identities and saved colours before shutdown and 49/49 after clean save/restart without reconstruction.
+- Client A captured front, side, elevated, Poppy stage-7, and post-resource-reload views. Client B overlapped Client A on the same server fixture and captured the same front state; the overlap ran from 20:34:38 to 20:34:48 local time.
+- Client A/B fixture crops had luminance/edge structure correlations of `0.9994` / `0.9997`. Before/after resource reload correlations were `0.9790` / `0.9887`; exact bytes varied with lighting/cloud rendering while geometry, species/stages, and tint placement remained stable.
+- A separate restart client rendered the persisted fixture and saved colours. No missing flower model, cross-species mapping, mirrored art, clipping defect, halo, seam, tint leakage, UV shift, or static Z-fighting was observed.
+
+### Regression and limitations
+
+- Full automated gate: `15` suites / `108` tests, `0` failures, `0` errors, `0` skipped; `BUILD SUCCESSFUL in 27s`.
+- Dedicated server started twice and shut down twice with all dimensions saved.
+- Static screenshots do not measure continuous-motion flicker or GPU performance. Pre-existing unrelated model/texture warnings, a dedicated-server client-only mixin warning, and unavailable localhost service responses were observed and left out of scope.
+- No clean, production implementation, asset edit, source edit, stage, commit, fetch, push, GitHub action, release, or deployment occurred in Milestone 20.
+
+Milestone 20 status: **Validation pass; awaiting owner approval to commit these documentation-only closeout records.**
+
+## Post-Milestone 20 detail-preserving dye tint correction
+
+The fully opaque/alpha-disjoint result made selected flower regions read as flat colour. The correction restores the source base artwork beneath each mask and blends the saved dye colour over it at 50% opacity. A highlight-only adjustment layer was evaluated but not selected: the current white masks encode coverage only, so highlight-sensitive recolouring would require newly authored grayscale intensity masks or a custom shader and a broader asset contract.
+
+### Implementation and source result
+
+- `FlowerVisualModels` defines `DYE_MASK_OPACITY = 0.5F` and carries that alpha in each resolved mask tint.
+- `FlowerBlockEntityRenderer` keeps the base on `RenderType.cutout()`, binds the mask with `RenderType.entityTranslucent(...)`, and scales submitted vertex alpha by the resolved mask opacity.
+- The renderer still uses one canonical baked model, two textures, two ordered passes, one transform, and the same saved RGB tint.
+- The authoritative Illustrator source now uses the detailed originals as the 33 mask-bearing `base_texture` objects. The prior alpha-disjoint rasters are hidden as `base_texture_alpha_disjoint_nonexport` for reversibility.
+- Source SHA-256 is `1B5407855D448B8385CC6D067858A347DF3C0B0993B390382A36EE1D42C0A9EE`; the immediately prior source is backed up at `flowers_pre_detail_preserving_tint_20260804_205234.ai` with SHA-256 `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`.
+- Exactly 33 production base PNGs changed. Sixteen base-only PNGs and all 33 authored mask PNGs remained byte-identical.
+
+### Validation
+
+- Pixel audit: 49 bases and 49 masks at 128 x 128; 33 exact-white authored masks; 16 transparent placeholders; 58,516 mask pixels with visible detailed base beneath them; every authored stage has non-flat underlying colour variation.
+- Focused automated gate: `FlowerRenderingTest` and `FlowerAssetContractTest`, 14 tests, 0 failures/errors.
+- Full automated gate: 15 suites / 108 tests, 0 failures/errors/skips; `BUILD SUCCESSFUL in 44s`.
+- Isolated live fixture: all seven species and stages rendered after the change; front, side, elevated, Poppy, and post-reload captures completed. Elevated/side inspection showed preserved petal and leaf shading with no mask shift, seam, halo, clipping defect, static Z-fighting, or flower renderer exception.
+- The resource reload completed and the isolated server saved all dimensions on shutdown. Historical unrelated resource warnings and unavailable local-service responses remained out of scope.
+
+Correction status: **Implemented and validated locally; no commit, fetch, push, GitHub action, release, or deployment performed.**

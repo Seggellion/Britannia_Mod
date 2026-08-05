@@ -73,7 +73,7 @@ class FlowerRenderingTest {
         assertEquals(unknown, first.savedSpecies());
         assertEquals(FlowerRegistry.POPPY, first.visualSpecies());
         assertEquals(1, first.visualStage());
-        assertEquals(FlowerVisualModels.Tint.WHITE, first.dyeMaskTint());
+        assertChannels(0xFFFFFF, FlowerVisualModels.DYE_MASK_OPACITY, first.dyeMaskTint());
         assertTrue(first.fallbackSpecies());
     }
 
@@ -89,7 +89,7 @@ class FlowerRenderingTest {
         FlowerVisualModels.RenderPlan arbitrarySavedTint = FlowerVisualModels.resolve(
                 FlowerRegistry.POPPY, 4, 0x123456
         );
-        assertChannels(0x123456, arbitrarySavedTint.dyeMaskTint());
+        assertChannels(0x123456, FlowerVisualModels.DYE_MASK_OPACITY, arbitrarySavedTint.dyeMaskTint());
         assertFalse(arbitrarySavedTint.fallbackTint());
         assertEquals(FlowerVisualModels.Tint.WHITE, arbitrarySavedTint.baseTint());
     }
@@ -101,7 +101,7 @@ class FlowerRenderingTest {
         FlowerVisualModels.RenderPlan invalid = FlowerVisualModels.resolve(FlowerRegistry.POPPY, 4, -1);
         assertEquals(-1, invalid.savedTint());
         assertEquals(expected, invalid.visualTint());
-        assertChannels(expected, invalid.dyeMaskTint());
+        assertChannels(expected, FlowerVisualModels.DYE_MASK_OPACITY, invalid.dyeMaskTint());
         assertTrue(invalid.fallbackTint());
     }
 
@@ -154,7 +154,7 @@ class FlowerRenderingTest {
     }
 
     @Test
-    void renderPlanAndRendererEnforceTwoCutoutPassesWithOneTransform() throws IOException {
+    void renderPlanAndRendererEnforceOpaqueBaseThenHalfOpacityMaskWithOneTransform() throws IOException {
         assertEquals(List.of(FlowerVisualModels.Pass.BASE, FlowerVisualModels.Pass.DYE_MASK),
                 FlowerVisualModels.passOrder());
         String renderer = source("client/renderer/FlowerBlockEntityRenderer.java");
@@ -164,18 +164,20 @@ class FlowerRenderingTest {
         assertEquals(2, count(renderer, "renderPass(minecraft"));
         assertEquals(2, count(renderer, "resolved.model(),"));
         assertEquals(1, count(renderer, "resolveModel(modelManager, plan.model()"));
-        assertTrue(renderer.contains("RenderType.entityCutout(textureFile(resolved.assets().dyeMaskTextureId()))"));
+        assertTrue(renderer.contains("RenderType.entityTranslucent(textureFile(resolved.assets().dyeMaskTextureId()))"));
         assertTrue(renderer.contains("new TextureRemappingVertexConsumer("));
+        assertTrue(renderer.contains("plan.dyeMaskTint().alpha()"));
+        assertTrue(renderer.contains("Math.round(alpha * opacity)"));
         assertTrue(renderer.contains("delegate.setUv(relativeU, relativeV)"));
         assertFalse(renderer.contains("dyeMaskModel"));
         assertEquals(1, count(renderer, "bufferSource.getBuffer(RenderType.cutout())"));
-        assertEquals(1, count(renderer, "bufferSource.getBuffer(RenderType.entityCutout("));
+        assertEquals(1, count(renderer, "bufferSource.getBuffer(RenderType.entityTranslucent("));
         assertTrue(renderer.indexOf("bufferSource.getBuffer(RenderType.cutout())")
-                < renderer.indexOf("bufferSource.getBuffer(RenderType.entityCutout("));
+                < renderer.indexOf("bufferSource.getBuffer(RenderType.entityTranslucent("));
         assertEquals(1, count(renderer, "poseStack.pushPose()"));
         assertEquals(1, count(renderer, "poseStack.popPose()"));
         assertEquals(1, count(renderer, "poseStack.mulPose("));
-        assertFalse(renderer.contains("RenderType.translucent"));
+        assertEquals(0.5F, FlowerVisualModels.DYE_MASK_OPACITY, EPSILON);
     }
 
     @Test
@@ -219,10 +221,14 @@ class FlowerRenderingTest {
     }
 
     private static void assertChannels(int rgb, FlowerVisualModels.Tint tint) {
+        assertChannels(rgb, 1.0F, tint);
+    }
+
+    private static void assertChannels(int rgb, float alpha, FlowerVisualModels.Tint tint) {
         assertEquals(((rgb >> 16) & 0xFF) / 255.0F, tint.red(), EPSILON);
         assertEquals(((rgb >> 8) & 0xFF) / 255.0F, tint.green(), EPSILON);
         assertEquals((rgb & 0xFF) / 255.0F, tint.blue(), EPSILON);
-        assertEquals(1.0F, tint.alpha(), EPSILON);
+        assertEquals(alpha, tint.alpha(), EPSILON);
     }
 
     private static JsonObject json(Path path) throws IOException {
