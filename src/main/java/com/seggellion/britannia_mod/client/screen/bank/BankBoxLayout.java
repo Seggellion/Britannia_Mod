@@ -58,7 +58,6 @@ public record BankBoxLayout(
         int denominationWidth,
         int actionX,
         int backY,
-        int withdrawY,
         int actionWidth,
         int statusY,
         int statusMaxWidth
@@ -213,7 +212,6 @@ public record BankBoxLayout(
         final int denominationWidth;
         final int actionX;
         final int backY;
-        final int withdrawY;
         final int actionWidth;
 
         if (compact) {
@@ -227,8 +225,10 @@ public record BankBoxLayout(
             y += ROW_HEIGHT + ROW_GAP;
             actionX = contentLeft;
             backY = y;
-            withdrawY = y;
-            actionWidth = (contentWidth - ROW_GAP) / 2;
+            // Back alone on its row since the Withdraw button retired (drag-to-withdraw owner
+            // decision) -- the drag IS the withdrawal, so the one remaining action gets the
+            // full content width.
+            actionWidth = contentWidth;
             y += ROW_HEIGHT;
         } else {
             // A column beside the chest, top-aligned with the bank grid. Every control is a
@@ -241,7 +241,6 @@ public record BankBoxLayout(
             denominationWidth = CONTROL_COLUMN_WIDTH;
             actionX = columnX;
             backY = denominationY + ((ROW_HEIGHT + ROW_GAP) * 3);
-            withdrawY = backY + ROW_HEIGHT + ROW_GAP;
             actionWidth = CONTROL_COLUMN_WIDTH;
         }
 
@@ -255,7 +254,7 @@ public record BankBoxLayout(
                 bankGrid, inventoryLabelY, inventoryGrid, hotbar,
                 amountBoxX, amountBoxY, amountBoxWidth,
                 denominationY, denominationWidth,
-                actionX, backY, withdrawY, actionWidth,
+                actionX, backY, actionWidth,
                 statusY, statusMaxWidth
         );
     }
@@ -286,13 +285,9 @@ public record BankBoxLayout(
         return compact ? denominationY : denominationY + (index * (ROW_HEIGHT + ROW_GAP));
     }
 
-    /** Back sits left of Withdraw when compact, and above it otherwise. */
+    /** The one remaining action's left edge -- Back, full-width in both arrangements. */
     public int backX() {
         return actionX;
-    }
-
-    public int withdrawX() {
-        return compact ? actionX + actionWidth + ROW_GAP : actionX;
     }
 
     public int panelRight() {

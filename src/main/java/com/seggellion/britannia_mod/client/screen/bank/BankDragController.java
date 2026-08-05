@@ -39,16 +39,31 @@ import java.util.Objects;
  * </ul>
  *
  * <h2>What the source snapshot is</h2>
- * An opaque token the screen builds from the live stack (registry id and count). The controller
- * only ever compares it -- {@link #tick} cancels the drag the moment the source slot no longer
- * holds what was pressed, which covers "source slot becoming empty before request handoff" and
- * every quieter mutation (a hopper, a refresh) that swaps the stack mid-gesture. Keeping it a
- * string is what keeps this class free of Minecraft types.
+ * An opaque token the screen builds from the live source. The controller only ever compares it --
+ * {@link #tick} cancels the drag the moment the source no longer holds what was pressed, which
+ * covers "source slot becoming empty before request handoff" and every quieter mutation (a
+ * hopper, a refresh) that swaps the source mid-gesture. Keeping it a string is what keeps this
+ * class free of Minecraft types.
+ *
+ * <h2>Direction-agnostic since the drag-to-withdraw addendum</h2>
+ * Built for one direction (pack → vault, Milestone 12), the machine itself never cared which way
+ * the items flow -- only the drop region and the meaning of {@code sourceSlot} differ. The owner
+ * commissioned drag-to-withdraw after the epic closed (2026-08-04, superseding design §3's
+ * non-goal), so the region became the {@link DropRegion} seam and the Bank Box now runs two
+ * instances of this one tested machine: pack cell → vault grid (deposit), and vault cell → the
+ * pack's two grids (withdraw). Everything else -- threshold, watchdog, one-handoff rule,
+ * Escape -- is shared by construction rather than duplicated.
  */
 public final class BankDragController {
 
     /** Movement, in scaled pixels, that turns a press into a drag rather than a click. */
     public static final double DRAG_THRESHOLD = 4.0;
+
+    /** Where a drag may end. The whole region is one target, never a particular cell (§10.5). */
+    @FunctionalInterface
+    public interface DropRegion {
+        boolean contains(double mouseX, double mouseY);
+    }
 
     /** The externally observable state, including hover validity while dragging. */
     public enum State {
@@ -65,15 +80,15 @@ public final class BankDragController {
     public enum ReleaseOutcome {
         /** Released before the threshold: an ordinary click, and the press is forgotten. */
         CLICK,
-        /** Released over the bank grid with a live, eligible source: the deposit gesture. */
-        DROPPED_ON_BANK,
+        /** Released over the drop region with a live, eligible source: the transfer gesture. */
+        DROPPED_ON_TARGET,
         /** Released anywhere else while dragging: cancelled, nothing happens (design §10.6). */
         CANCELLED,
         /** No gesture was live -- a duplicate or stray release. Must never act. */
         NONE
     }
 
-    private final BankGridGeometry bankGrid;
+    private final DropRegion target;
 
     private Phase phase = Phase.IDLE;
     private int sourceSlot = -1;
@@ -85,31 +100,38 @@ public final class BankDragController {
     private double lastY;
 
     /**
-     * @param bankGrid the drop target's geometry. A resize rebuilds the screen's layout and with
-     *                 it this controller, which is exactly the "cancel on resize/re-init" rule --
-     *                 a fresh controller is idle by construction.
+     * @param target the drop region. A resize rebuilds the screen's layout and with it this
+     *               controller, which is exactly the "cancel on resize/re-init" rule -- a fresh
+     *               controller is idle by construction.
      */
-    public BankDragController(BankGridGeometry bankGrid) {
-        this.bankGrid = Objects.requireNonNull(bankGrid, "bankGrid");
+    public BankDragController(DropRegion target) {
+        this.target = Objects.requireNonNull(target, "target");
+    }
+
+    /** The original single-grid form, kept so Milestone 12's construction sites read unchanged. */
+    public BankDragController(BankGridGeometry targetGrid) {
+        this((DropRegion) Objects.requireNonNull(targetGrid, "targetGrid")::contains);
     }
 
     // ---------- Events ----------
 
     /**
-     * A left press on a player inventory or hotbar cell.
+     * A left press on a source cell -- a pack slot for a deposit drag, a vault cell for a
+     * withdraw drag.
      *
-     * @param slotIndex       the vanilla inventory slot pressed
-     * @param depositable     the {@link BankDepositHint} verdict for the live stack
+     * @param slotIndex       the pressed source index (vanilla slot, or vault cell)
+     * @param draggable       whether the pressed source may be dragged at all (for a deposit,
+     *                        the {@link BankDepositHint} verdict; for a withdrawal, any stored row)
      * @param snapshot        opaque token for the live stack, for {@link #tick} to compare
      * @param mutationPending the session's lock -- no gesture may begin while anything is in
      *                        flight (design §10.3)
      * @return whether the press armed a potential drag (and should be consumed)
      */
-    public boolean onPress(int slotIndex, boolean depositable, String snapshot,
+    public boolean onPress(int slotIndex, boolean draggable, String snapshot,
                            double mouseX, double mouseY, boolean mutationPending) {
         if (phase != Phase.IDLE) return false;
         if (mutationPending) return false;
-        if (!depositable) return false;
+        if (!draggable) return false;
         if (slotIndex < 0) return false;
 
         phase = Phase.PRESSED;
@@ -146,9 +168,9 @@ public final class BankDragController {
             case DRAGGING -> {
                 lastX = mouseX;
                 lastY = mouseY;
-                if (bankGrid.contains(mouseX, mouseY)) {
+                if (target.contains(mouseX, mouseY)) {
                     phase = Phase.HANDOFF;
-                    return ReleaseOutcome.DROPPED_ON_BANK;
+                    return ReleaseOutcome.DROPPED_ON_TARGET;
                 }
                 reset();
                 return ReleaseOutcome.CANCELLED;
@@ -212,7 +234,7 @@ public final class BankDragController {
         return switch (phase) {
             case IDLE -> State.IDLE;
             case PRESSED -> State.PRESSED_ON_SOURCE;
-            case DRAGGING -> bankGrid.contains(lastX, lastY)
+            case DRAGGING -> target.contains(lastX, lastY)
                     ? State.DRAGGING_OVER_VALID
                     : State.DRAGGING_OVER_INVALID;
             case HANDOFF -> State.HANDOFF;

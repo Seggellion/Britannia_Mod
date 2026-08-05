@@ -82,14 +82,14 @@ class BankTranslationKeysTest {
         keys.add("screen.britannia_mod.bank.box.withdraw.gold");
         keys.add("screen.britannia_mod.bank.box.withdraw.silver");
         keys.add("screen.britannia_mod.bank.box.withdraw.copper");
-        keys.add("screen.britannia_mod.bank.box.withdraw_item");
-        keys.add("screen.britannia_mod.bank.box.withdraw_item.pending");
         keys.add("screen.britannia_mod.bank.box.unknown_item");
         keys.add("screen.britannia_mod.bank.box.tooltip_weight");
         keys.add("screen.britannia_mod.bank.box.cannot_bank");
         // Milestone 17 gate corrective: the cheque's two-gesture tooltip.
         keys.add("screen.britannia_mod.bank.box.cheque_hint");
         keys.add("screen.britannia_mod.bank.box.stored_cheque_hint");
+        // Drag-to-withdraw addendum: the vault tooltip's gesture hint.
+        keys.add("screen.britannia_mod.bank.box.stored_item_hint");
 
         // Milestone 5: the Balance screen. Both plural forms of all three denominations, because
         // a missing ".one" only shows up on an account holding exactly one coin -- which is

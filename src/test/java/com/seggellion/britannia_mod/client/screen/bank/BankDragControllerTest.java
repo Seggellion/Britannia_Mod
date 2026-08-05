@@ -136,7 +136,7 @@ class BankDragControllerTest {
     void releaseOverTheBankGridIsTheDepositGestureAndArmsExactlyOneHandoff() {
         press();
         dragTo(150, 120);
-        assertEquals(ReleaseOutcome.DROPPED_ON_BANK, controller.onRelease(150, 120));
+        assertEquals(ReleaseOutcome.DROPPED_ON_TARGET, controller.onRelease(150, 120));
         assertEquals(State.HANDOFF, controller.state());
         assertEquals(12, controller.sourceSlot(), "the handoff must still know its source");
     }
@@ -152,7 +152,7 @@ class BankDragControllerTest {
     @Test
     void aDuplicateReleaseAfterTheHandoffIsInertNoise() {
         // The machine half of "a duplicate mouse release must not send a duplicate request":
-        // only one DROPPED_ON_BANK can come out of one gesture, ever.
+        // only one DROPPED_ON_TARGET can come out of one gesture, ever.
         press();
         dragTo(150, 120);
         controller.onRelease(150, 120);

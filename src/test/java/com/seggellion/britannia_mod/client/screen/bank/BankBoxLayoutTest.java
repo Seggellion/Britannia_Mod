@@ -233,13 +233,14 @@ class BankBoxLayoutTest {
 
     @Test
     void theWideControlColumnNeverOutgrowsThePanel() {
-        // The stacked denominations made the column six rows tall; the panel's height is set by
-        // the grids, so the column must fit under it at the tightest wide screens too.
+        // Five rows since the Withdraw button retired (drag-to-withdraw owner decision) -- Back
+        // is the column's last row now. The panel's height is set by the grids, so the column
+        // must fit under it at the tightest wide screens too.
         for (int width = 180; width <= 1200; width += 4) {
             for (int height = 200; height <= 700; height += 20) {
                 BankBoxLayout l = layout(width, height, 40);
                 if (l.compact()) continue;
-                assertTrue(l.withdrawY() + BankBoxLayout.ROW_HEIGHT <= l.panelBottom(),
+                assertTrue(l.backY() + BankBoxLayout.ROW_HEIGHT <= l.panelBottom(),
                         "control column past the panel at " + width + "x" + height);
                 assertTrue(l.denominationY(2) + BankBoxLayout.ROW_HEIGHT <= l.backY(),
                         "denominations ran into Back at " + width + "x" + height);
@@ -248,14 +249,17 @@ class BankBoxLayoutTest {
     }
 
     @Test
-    void separatesBackFromWithdrawInBothArrangements() {
+    void backIsTheOnlyActionAndFillsItsRowInBothArrangements() {
+        // The Withdraw button retired with the drag; a half-width Back beside an empty hole
+        // would advertise the absence. Full width in both arrangements.
         BankBoxLayout wide = layout(W_1920_SCALE_2, H_1080_SCALE_2, 40);
-        assertTrue(wide.withdrawY() >= wide.backY() + BankBoxLayout.ROW_HEIGHT, "wide: stacked and not overlapping");
+        assertEquals(BankBoxLayout.CONTROL_COLUMN_WIDTH, wide.actionWidth(), "wide: the full column");
+        assertTrue(wide.backY() > wide.denominationY(2), "wide: below the denominations");
 
         BankBoxLayout compact = layout(W_1024_SCALE_4, 400, 40);
-        assertEquals(compact.backY(), compact.withdrawY(), "compact: side by side on one row");
-        assertTrue(compact.withdrawX() >= compact.backX() + compact.actionWidth(), "compact: not overlapping");
-        assertTrue(compact.withdrawX() + compact.actionWidth() <= compact.panelRight(), "compact: inside the panel");
+        assertTrue(compact.actionWidth() > (compact.panelWidth() - (BankBoxLayout.MARGIN * 2)) / 2,
+                "compact: wider than the old half-row share");
+        assertTrue(compact.backX() + compact.actionWidth() <= compact.panelRight(), "compact: inside the panel");
     }
 
     // ---------- Grid geometry ----------

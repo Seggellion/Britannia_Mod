@@ -341,11 +341,26 @@ public final class BankingWithdrawalProxyService {
         ItemStack reconstructed;
         switch (decoded) {
             case BankItemDecodeResult.Success decodeSuccess -> reconstructed = decodeSuccess.stack();
+            // Both abort branches LOG the row and the reason. The drag-to-withdraw field test
+            // proved the cost of silence here: an undecodable row (a pre-codec dev-database
+            // relic) surfaced to the player as a generic rejection, and the only diagnostic
+            // trail was Rails' cancel reason -- this side, which actually knows why, said
+            // nothing. The player-facing kind deliberately stays generic (Milestone 15: decode
+            // failures assert nothing a player can act on); the operator's log line is where
+            // the truth belongs.
             case BankItemDecodeResult.Corrupt corrupt -> {
+                LOGGER.warn(
+                        "banking withdrawal aborted: bank item {} payload does not decode ({}); "
+                                + "the reservation was cancelled and the row remains in the vault",
+                        success.bankItemPublicId(), corrupt.reason());
                 abortAfterPrepare(server, player, success.operationPublicId(), BankingWithdrawalAbortReason.DECODE_FAILED, outcome);
                 return;
             }
             case BankItemDecodeResult.UnsupportedSchemaVersion unsupported -> {
+                LOGGER.warn(
+                        "banking withdrawal aborted: bank item {} payload carries unsupported inner "
+                                + "schema version {}; the reservation was cancelled and the row remains in the vault",
+                        success.bankItemPublicId(), unsupported.foundVersion());
                 abortAfterPrepare(server, player, success.operationPublicId(), BankingWithdrawalAbortReason.DECODE_FAILED, outcome);
                 return;
             }

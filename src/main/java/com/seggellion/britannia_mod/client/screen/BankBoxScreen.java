@@ -95,6 +95,22 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     /** Milestone 12. Rebuilt with the layout on every init, so a resize cancels by construction. */
     @Nullable
     private com.seggellion.britannia_mod.client.screen.bank.BankDragController drag;
+    /**
+     * Drag-to-withdraw (owner addendum, 2026-08-04): the same tested machine, run the other way
+     * -- source is a vault cell, drop region is the pack's two grids. The gesture ends in the
+     * exact packet the Withdraw button sends, so the server chooses where the item lands ("just
+     * find a place"), and every guard that path has -- INVENTORY_FULL, STORED_ITEM_UNAVAILABLE,
+     * dedup -- is inherited rather than re-implemented.
+     */
+    @Nullable
+    private com.seggellion.britannia_mod.client.screen.bank.BankDragController withdrawDrag;
+    /**
+     * The identity the withdraw gesture carries: the pressed row's public id, never a cell index
+     * (design §9.6) -- a refresh or scroll can reorder the vault mid-drag, and this action moves
+     * value. Set when a press arms the gesture; only meaningful while it is live or in handoff.
+     */
+    @Nullable
+    private java.util.UUID withdrawDragItemId;
     /** Milestone 17 gate corrective: double-click on a pack cheque cashes it. */
     private final com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick chequeDoubleClick =
             new com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick();
@@ -105,9 +121,6 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
      */
     private final com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick vaultChequeDoubleClick =
             new com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick();
-    /** Milestone 15: live once something is selected. */
-    @Nullable
-    private BankActionButton withdrawButton;
     /** Milestone 16: keyed by denomination so each judges its own affordability. */
     private final java.util.EnumMap<com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination, Button> currencyButtons =
             new java.util.EnumMap<>(com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination.class);
@@ -131,6 +144,12 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         layout = BankBoxLayout.calculate(width, height, font.lineHeight, session.bankItems().size());
         scroll = scroll.reclamped(session.bankItems().size(), BankBoxLayout.COLUMNS, layout.bankGrid().rows());
         drag = new com.seggellion.britannia_mod.client.screen.bank.BankDragController(layout.bankGrid());
+        // The pack's two grids are one drop region: the player requests "withdraw this", not
+        // "place it at slot 14" -- the server finds room exactly as the Withdraw button does.
+        final BankBoxLayout builtLayout = layout;
+        withdrawDrag = new com.seggellion.britannia_mod.client.screen.bank.BankDragController(
+                (x, y) -> builtLayout.inventoryGrid().contains(x, y) || builtLayout.hotbar().contains(x, y));
+        withdrawDragItemId = null;
 
         buildCurrencyControls();
         buildActions();
@@ -233,6 +252,12 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         amountBox.setEditable(!pending);
     }
 
+    /**
+     * Owner decision at the drag-to-withdraw gate: the Withdraw button is retired -- the drag IS
+     * the withdrawal now, and it carries everything Milestone 15 built for the button (the
+     * public-id packet, the lock-before-send rule, every named refusal). Selection stays: it is
+     * still the grid's feedback, and the press that starts a drag still selects.
+     */
     private void buildActions() {
         Component back = Component.translatable("screen.britannia_mod.bank.action.back");
         addRenderableWidget(BankActionButton.create(
@@ -240,53 +265,6 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 back, back,
                 ignored -> returnToMain()
         ));
-
-        withdrawButton = BankActionButton.create(
-                layout.withdrawX(), layout.withdrawY(), layout.actionWidth(), BankBoxLayout.ROW_HEIGHT,
-                Component.translatable("screen.britannia_mod.bank.box.withdraw_item"),
-                Component.translatable("screen.britannia_mod.bank.box.withdraw_item.pending"),
-                ignored -> sendWithdrawal()
-        );
-        withdrawButton.active = false;
-        addRenderableWidget(withdrawButton);
-    }
-
-    /**
-     * Milestone 15: one press, one request, referencing the selection's public id -- never a grid
-     * position (design §9.6). The same shape as every mutation before it: the session lock is
-     * claimed before the packet goes out, a failed claim sends nothing, and what happens next
-     * arrives as a refresh push (the item gone from the vault, in the pack) or a result payload
-     * -- including {@code INVENTORY_FULL}, this milestone's own new kind, when the pack has no
-     * room. The selection itself needs no cleanup here: the session drops it when a refresh no
-     * longer holds the item, which is also what makes a duplicate press structurally moot -- by
-     * the time the lock releases on success, there is nothing selected to re-send.
-     */
-    private void sendWithdrawal() {
-        ClientBankingSession session = ClientBankingSession.active();
-        if (session == null || session.selectedStoredItem() == null) return;
-        if (!session.beginPending(
-                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL)) {
-            return;
-        }
-        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
-                new com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload(
-                        session.tellerEntityId(), session.selectedStoredItem()));
-        refreshWithdrawState(session);
-        refreshCurrencyButtons(session);
-    }
-
-    /**
-     * Mirrors the session onto the button: active only with a live selection and no pending
-     * mutation. Runs from {@code render} because both inputs change from packets, not from
-     * anything this screen does.
-     */
-    private void refreshWithdrawState(ClientBankingSession session) {
-        if (withdrawButton == null) return;
-        boolean pending = session.isMutationPending();
-        withdrawButton.setPending(pending
-                && session.pendingOperation()
-                        == com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL);
-        withdrawButton.active = !pending && session.selectedStoredItem() != null;
     }
 
     private void returnToMain() {
@@ -379,7 +357,6 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 BankStatusPresenter.statusFor(session)
         );
 
-        refreshWithdrawState(session);
         refreshCurrencyButtons(session);
 
         // Milestone 12: the source-changed watchdog runs every frame, and the drag visuals draw
@@ -389,10 +366,68 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         if (drag != null && drag.isGestureLive()) {
             drag.tick(sourceSnapshot(drag.sourceSlot()));
         }
+        // The withdraw gesture's watchdog compares identity, not cells: the row's public id
+        // while the account still holds it. A refresh that removes the row -- another client
+        // withdrew it, or cashed it -- kills the gesture on the spot.
+        if (withdrawDrag != null && withdrawDrag.isGestureLive()) {
+            withdrawDrag.tick(withdrawSourceToken(session));
+        }
         if (drag != null && drag.isDragging()) {
             renderDragVisuals(graphics, mouseX, mouseY);
+        } else if (withdrawDrag != null && withdrawDrag.isDragging()) {
+            renderWithdrawDragVisuals(graphics, session, mouseX, mouseY);
         } else {
             renderHoverTooltip(graphics, session, mouseX, mouseY);
+        }
+    }
+
+    /**
+     * The withdraw gesture's own four signals, mirroring {@link #renderDragVisuals} with the
+     * directions swapped: the source VAULT cell is dimmed and outlined (recomputed from the
+     * item's current position, so scrolling mid-drag dims the right cell or none), the pack's
+     * two grids gain the bright border while the drop is valid, the row's icon rides the
+     * cursor, and an invalid hover marks it with a cross.
+     */
+    private void renderWithdrawDragVisuals(GuiGraphics graphics, ClientBankingSession session, int mouseX, int mouseY) {
+        java.util.UUID publicId = withdrawDragItemId;
+        if (publicId == null) return;
+
+        int itemIndex = -1;
+        for (int i = 0; i < session.bankItems().size(); i++) {
+            if (publicId.equals(session.bankItems().get(i).publicId())) {
+                itemIndex = i;
+                break;
+            }
+        }
+        if (itemIndex < 0) return;
+
+        BankGridGeometry bank = layout.bankGrid();
+        int cell = itemIndex - (scroll.firstVisibleRow() * BankBoxLayout.COLUMNS);
+        if (cell >= 0 && cell < bank.capacity()) {
+            graphics.fill(bank.cellLeft(cell), bank.cellTop(cell),
+                    bank.cellLeft(cell) + bank.cellPitch(),
+                    bank.cellTop(cell) + bank.cellPitch(), 0x99101010);
+            graphics.renderOutline(bank.cellLeft(cell), bank.cellTop(cell),
+                    bank.cellPitch(), bank.cellPitch(), 0xFFE9DCC3);
+        }
+
+        boolean overValid = withdrawDrag.state()
+                == com.seggellion.britannia_mod.client.screen.bank.BankDragController.State.DRAGGING_OVER_VALID;
+        if (overValid) {
+            for (BankGridGeometry target : new BankGridGeometry[]{layout.inventoryGrid(), layout.hotbar()}) {
+                graphics.renderOutline(target.left() - 1, target.top() - 1,
+                        target.width() + 2, target.height() + 2, 0xFFFFD24A);
+                graphics.fill(target.left(), target.top(), target.right(), target.bottom(), 0x2AFFD24A);
+            }
+        }
+
+        com.seggellion.britannia_mod.service.banking.BankItemSummary summary = session.bankItems().get(itemIndex);
+        net.minecraft.world.item.ItemStack ghost = BankItemIcon.iconFor(summary);
+        int ghostX = mouseX - 8;
+        int ghostY = mouseY - 8;
+        graphics.renderItem(ghost, ghostX, ghostY);
+        if (!overValid) {
+            graphics.drawString(font, "✕", ghostX + 14, ghostY - 2, 0xFFFF5555, true);
         }
     }
 
@@ -520,6 +555,12 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 if (summary.isChequeRedeemable()) {
                     lines.add(Component.translatable("screen.britannia_mod.bank.box.stored_cheque_hint")
                             .withStyle(net.minecraft.ChatFormatting.GRAY));
+                } else {
+                    // Drag-to-withdraw's one discoverability line, on the same gray-hint pattern.
+                    // Cashable cheques keep their own line instead -- two hints on one tooltip
+                    // would bury the one that moves money.
+                    lines.add(Component.translatable("screen.britannia_mod.bank.box.stored_item_hint")
+                            .withStyle(net.minecraft.ChatFormatting.GRAY));
                 }
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             }
@@ -567,7 +608,13 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
 
             BankBoxSelection.Result result =
                     BankBoxSelection.handleClick(session, layout.bankGrid(), scroll, mouseX, mouseY);
-            if (result != BankBoxSelection.Result.OUTSIDE) return true;
+            if (result != BankBoxSelection.Result.OUTSIDE) {
+                // Drag-to-withdraw: the same press that selected also arms a potential drag.
+                // Released under the threshold it stays a plain click and the selection is the
+                // whole story; dragged to the pack it becomes the Withdraw button's request.
+                armWithdrawDrag(session, mouseX, mouseY);
+                return true;
+            }
 
             // Milestone 12: a press on a player stack arms a potential drag. Released under the
             // threshold it is a click, and inventory clicks still do nothing -- consistent with
@@ -647,6 +694,67 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                 new com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload(
                         session.tellerEntityId(), slot));
         drag.completeHandoff();
+    }
+
+    /**
+     * Arms a withdraw drag when the press landed on an occupied vault cell. The gesture's
+     * identity is the row's public id, captured now; the cell index is carried only so the
+     * source-cell dimming has somewhere to draw.
+     */
+    private void armWithdrawDrag(ClientBankingSession session, double mouseX, double mouseY) {
+        if (withdrawDrag == null) return;
+        Integer cell = layout.bankGrid().cellIndexAt(mouseX, mouseY);
+        if (cell == null) return;
+        int itemIndex = scroll.itemIndexFor(cell, BankBoxLayout.COLUMNS, session.bankItems().size());
+        if (itemIndex < 0) return;
+
+        java.util.UUID publicId = session.bankItems().get(itemIndex).publicId();
+        if (withdrawDrag.onPress(cell, true, publicId.toString(), mouseX, mouseY, session.isMutationPending())) {
+            withdrawDragItemId = publicId;
+        }
+    }
+
+    /**
+     * The withdraw gesture's watchdog token: the row's public id while the account still holds
+     * it, {@code null} the moment a refresh removes it -- withdrawn from another client, or
+     * cashed. Identity only; nothing about cells, so scrolling mid-drag is harmless.
+     */
+    @Nullable
+    private String withdrawSourceToken(ClientBankingSession session) {
+        if (withdrawDragItemId == null) return null;
+        for (com.seggellion.britannia_mod.service.banking.BankItemSummary item : session.bankItems()) {
+            if (withdrawDragItemId.equals(item.publicId())) return withdrawDragItemId.toString();
+        }
+        return null;
+    }
+
+    /**
+     * Drag-to-withdraw's handoff: the Withdraw button's request, reached by gesture. Same
+     * revalidate-lock-send order as every mutation, and the same packet -- the server routes,
+     * validates, and finds room for the item exactly as if the button had been pressed.
+     */
+    private void sendDragWithdrawal() {
+        ClientBankingSession session = ClientBankingSession.active();
+        java.util.UUID publicId = withdrawDragItemId;
+        if (session == null || withdrawDrag == null || publicId == null) {
+            if (withdrawDrag != null) withdrawDrag.completeHandoff();
+            return;
+        }
+        // Release-frame re-check: the row must still exist in the account this very frame.
+        if (!withdrawDrag.handoffSourceUnchanged(withdrawSourceToken(session))) {
+            withdrawDrag.completeHandoff();
+            return;
+        }
+        if (!session.beginPending(
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL)) {
+            withdrawDrag.completeHandoff();
+            return;
+        }
+
+        com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
+                new com.seggellion.britannia_mod.network.payload.BankWithdrawalRequestC2SPayload(
+                        session.tellerEntityId(), publicId));
+        withdrawDrag.completeHandoff();
     }
 
     /**
@@ -734,6 +842,14 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
             }
             return true;
         }
+        if (button == 0 && withdrawDrag != null && withdrawDrag.isGestureLive()) {
+            withdrawDrag.onMove(mouseX, mouseY);
+            // Same rule for the vault: a real drag is not the first half of a cashing click.
+            if (withdrawDrag.isDragging()) {
+                vaultChequeDoubleClick.reset();
+            }
+            return true;
+        }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
@@ -743,11 +859,28 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
             com.seggellion.britannia_mod.client.screen.bank.BankDragController.ReleaseOutcome outcome =
                     drag.onRelease(mouseX, mouseY);
             switch (outcome) {
-                case DROPPED_ON_BANK -> {
+                case DROPPED_ON_TARGET -> {
                     sendDragDeposit();
                     return true;
                 }
                 case CANCELLED, CLICK -> {
+                    return true;
+                }
+                case NONE -> {
+                    // fall through
+                }
+            }
+        }
+        if (button == 0 && withdrawDrag != null) {
+            com.seggellion.britannia_mod.client.screen.bank.BankDragController.ReleaseOutcome outcome =
+                    withdrawDrag.onRelease(mouseX, mouseY);
+            switch (outcome) {
+                case DROPPED_ON_TARGET -> {
+                    sendDragWithdrawal();
+                    return true;
+                }
+                case CANCELLED, CLICK -> {
+                    // A click already did its work at press time (selection); a cancel keeps it.
                     return true;
                 }
                 case NONE -> {
@@ -808,6 +941,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             if (drag != null && drag.cancel()) return true;
+            if (withdrawDrag != null && withdrawDrag.cancel()) return true;
             onClose();
             return true;
         }
