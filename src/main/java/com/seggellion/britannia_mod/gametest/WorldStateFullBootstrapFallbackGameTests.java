@@ -52,6 +52,20 @@ import java.util.concurrent.atomic.AtomicReference;
  * genuinely collided under real concurrent GameTest batching, not hypothetically -- exactly the
  * same class of hazard {@code WorldStateSyncGameTests} and {@code WorldStateSyncApplyGameTests}
  * already hit and fixed the same way for their own shared singletons).
+ *
+ * <h2>Why this file names its own {@code batch}</h2>
+ * Keeping the assertions in one method fixed collisions <em>within</em> this file, but not the
+ * other half of the same hazard: <b>five other GameTest classes write that same server-wide
+ * cache</b>, and tests inside one batch run concurrently. This test writes a baseline, waits
+ * forty ticks, and asserts nothing changed -- a window a neighbouring class's write lands in.
+ * That is what made it fail; adding banking tests never touched this subsystem, it only changed
+ * batch composition until the collision became deterministic rather than occasional.
+ *
+ * <p>{@code GameTestRunner.runBatch} starts batch {@code n+1} only once batch {@code n} has
+ * finished, so a distinct batch name is a genuine mutual-exclusion primitive. Every class that
+ * writes this cache now names its own, which serialises them against each other and against the
+ * default batch. The three single-test classes among them are thereby fully isolated; the
+ * multi-test ones keep the internal arrangement they already pass under.
  */
 @GameTestHolder(BritanniaMod.MODID)
 @PrefixGameTestTemplate(false)
@@ -62,7 +76,7 @@ public final class WorldStateFullBootstrapFallbackGameTests {
     private WorldStateFullBootstrapFallbackGameTests() {
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 200)
+    @GameTest(batch = "world_state_fallback", template = TEMPLATE, timeoutTicks = 200)
     public static void aFailedFetchLeavesTheCacheUntouchedAndASuccessfulCommitWritesSnapshotAndVersionTogether(
             GameTestHelper helper
     ) {

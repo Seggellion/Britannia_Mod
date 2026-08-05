@@ -68,7 +68,7 @@ public final class WorldStateSyncOutageAndReconciliationGameTests {
     private WorldStateSyncOutageAndReconciliationGameTests() {
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 80)
+    @GameTest(batch = "world_state_outage", template = TEMPLATE, timeoutTicks = 80)
     public static void railsOutageAtStartupServesExistingCacheThroughFailedRetriesThenRecoversViaADeltaWithNoDuplicationOrLoss(
             GameTestHelper helper
     ) {

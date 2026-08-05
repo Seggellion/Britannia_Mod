@@ -42,7 +42,7 @@ public final class ServiceNpcEntityGameTests {
     // command was added to production code, since none exists for any other
     // CitizenEntity subclass either, and inventing one would be unexercised production
     // surface area for a slice that must not wire any real spawning trigger.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void testSupportSpawnProducesAPlainServiceNpc(GameTestHelper helper) {
         ServiceNpcEntity npc = helper.spawn(EntityRegistry.SERVICE_NPC.get(), new BlockPos(1, 1, 1));
         check(npc != null && npc.isAlive(), "test-support spawn did not produce a live ServiceNpcEntity");
@@ -50,7 +50,7 @@ public final class ServiceNpcEntityGameTests {
     }
 
     // ---------- Persistence round-trip ----------
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void chunkUnloadReloadPreservesAllPersistentFields(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -66,7 +66,7 @@ public final class ServiceNpcEntityGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void simulatedServerRestartPreservesAllPersistentFields(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -93,7 +93,7 @@ public final class ServiceNpcEntityGameTests {
     // proves isPersistenceRequired() is unconditionally true and stays true even after a
     // reload carries a tampered "PersistenceRequired=false" tag, the exact field vanilla
     // Mob.readAdditionalSaveData would otherwise overwrite unconditionally.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void isPersistenceRequiredIsUnconditionallyTrueRegardlessOfNbt(GameTestHelper helper) {
         ServiceNpcEntity npc = helper.spawn(EntityRegistry.SERVICE_NPC.get(), new BlockPos(1, 1, 1));
         check(npc.isPersistenceRequired(), "ServiceNpcEntity was not despawn-exempt by default");
@@ -109,7 +109,7 @@ public final class ServiceNpcEntityGameTests {
     }
 
     // ---------- Home-post restriction ----------
-    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE, timeoutTicks = 60)
     public static void homePostRestrictionNeverExceedsConfiguredRadius(GameTestHelper helper) {
         BlockPos relative = new BlockPos(2, 1, 2);
         BlockPos post = helper.absolutePos(relative);
@@ -125,7 +125,7 @@ public final class ServiceNpcEntityGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void homePostRestrictionSurvivesSaveReload(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -148,7 +148,7 @@ public final class ServiceNpcEntityGameTests {
     // per-type/per-assignment radius instead of always accepting the default. Proves
     // that non-default radius round-trips through save/reload too, not just position —
     // the earlier test above only ever exercised the default radius of 1.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void assignHomePostAcceptsAndPersistsACustomRadius(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -174,7 +174,7 @@ public final class ServiceNpcEntityGameTests {
     // by inspection, exercise an unrelated existing CitizenEntity subclass through the
     // same save/reload boundary this slice's own tests exercise on ServiceNpcEntity, and
     // prove its behavior is unaffected rather than merely claiming it.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_entity", template = TEMPLATE)
     public static void questGiverEntityIsUnaffectedByThisSlice(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);

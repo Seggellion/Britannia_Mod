@@ -44,7 +44,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
     private ServiceNpcAssignmentReconcilerGameTests() {
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void missingEntityIsSpawnedFromActiveAssignment(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -88,7 +88,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
     // of the real World NPC's gender_key, which this test's fixture deliberately picks
     // to differ from that default so a missed set would be caught, not coincidentally
     // pass.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void freshSpawnSetsDisplayNameAndGenderFromCachedWorldNpc(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -113,7 +113,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void duplicateEntitiesAtOnePostReduceToOneCanonicalByHighestRevision(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -140,7 +140,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void closedAssignmentRemovesStaleEntityWithoutAlteringBlockUuid(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -169,7 +169,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void reassignmentToDifferentNpcReplacesEntityWithoutAlteringBlockUuid(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -213,7 +213,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
     // assignment moves elsewhere. findActiveAssignment's loop treats "absent" and
     // "present but not active" identically (both leave `best` null), so this proves
     // that equivalence holds rather than assuming it from a similar-looking code path.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void crossPostReassignmentMovesEntityFromPostAToPostBWithoutIdentityRegeneration(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relativeA = new BlockPos(1, 1, 1);
@@ -270,7 +270,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
     // -- not ticking at all -- while the reassignment actually happens. Confirms
     // cleanup still runs correctly once that chunk is next loaded and ticked, not
     // lost because no tick was running for it in the interim.
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void crossPostReassignmentCleansUpStalePostAEvenIfItsChunkWasUnloadedAtReassignmentTime(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relativeA = new BlockPos(1, 1, 1);
@@ -340,7 +340,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void chunkUnloadReloadReturnsSameNamedUuidTeller(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -377,7 +377,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void simulatedServerRestartReturnsSameNamedUuidTeller(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -431,7 +431,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void offlineRecoveredCacheSnapshotStillReconcilesCorrectly(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -464,7 +464,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void staleEntityRevisionNeverOverridesNewerCacheRevision(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
@@ -494,7 +494,7 @@ public final class ServiceNpcAssignmentReconcilerGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_reconciler", template = TEMPLATE)
     public static void questGiverEntityNearAPostIsUnaffectedByReconciliation(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);

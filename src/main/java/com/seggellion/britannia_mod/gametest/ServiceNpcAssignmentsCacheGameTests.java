@@ -30,7 +30,7 @@ public final class ServiceNpcAssignmentsCacheGameTests {
     private ServiceNpcAssignmentsCacheGameTests() {
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_cache", template = TEMPLATE)
     public static void cacheSurvivesASimulatedServerRestart(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ServiceNpcAssignmentsSnapshot snapshot = sampleSnapshot();
@@ -43,7 +43,7 @@ public final class ServiceNpcAssignmentsCacheGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_cache", template = TEMPLATE)
     public static void offlineStartupRecoversTheLastKnownGoodSnapshot(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ServiceNpcAssignmentsSnapshot snapshot = sampleSnapshot();
@@ -60,7 +60,7 @@ public final class ServiceNpcAssignmentsCacheGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_cache", template = TEMPLATE)
     public static void onDiskSchemaMismatchDiscardsAndStartsEmptyRatherThanThrowing(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         CompoundTag futureVersionTag = new CompoundTag();
@@ -79,7 +79,7 @@ public final class ServiceNpcAssignmentsCacheGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_cache", template = TEMPLATE)
     public static void corruptOnDiskContentIsQuarantinedWithoutThrowing(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         CompoundTag corruptTag = new CompoundTag();

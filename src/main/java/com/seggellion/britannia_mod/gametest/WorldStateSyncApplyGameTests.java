@@ -52,7 +52,7 @@ public final class WorldStateSyncApplyGameTests {
     private WorldStateSyncApplyGameTests() {
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(batch = "world_state_apply", template = TEMPLATE)
     public static void applyRejectionLeavesDiskUntouchedAndIdempotentReapplicationMatchesOnDiskToo(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ServiceNpcAssignmentsCache cache = ServiceNpcAssignmentsCache.get(level);
