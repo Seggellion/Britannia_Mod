@@ -106,6 +106,9 @@ public final class ClientBankingSession {
 
     private long pendingSinceMillis;
 
+    /** Set with {@link #pending}; see {@link #beginPending(BankTransferResultS2CPayload.Operation, boolean)}. */
+    private boolean pendingMovesCurrency;
+
     /** Test seam for {@link #isPendingUncertain} -- wall-clock by default. */
     private static java.util.function.LongSupplier clock = System::currentTimeMillis;
 
@@ -304,13 +307,31 @@ public final class ClientBankingSession {
      * mouse-release at the end of a drag.
      */
     public boolean beginPending(BankTransferResultS2CPayload.Operation operation) {
+        return beginPending(operation, false);
+    }
+
+    /**
+     * @param movesCurrency whether this request moves coins rather than an item -- the bit {@link
+     *                      BankTransferResultS2CPayload.Operation} deliberately does not carry
+     *                      (Milestone 2 made it coarse on purpose). Only the sender knows, so
+     *                      only the sender can say; it is read back by {@link BankMutationCue}
+     *                      when the refresh confirms success. Defaults false, which is correct
+     *                      for every item path and irrelevant to the silent cheque ones.
+     */
+    public boolean beginPending(BankTransferResultS2CPayload.Operation operation, boolean movesCurrency) {
         Objects.requireNonNull(operation, "operation");
         if (pending != null) return false;
         pending = operation;
+        pendingMovesCurrency = movesCurrency;
         pendingSinceMillis = clock.getAsLong();
         // Design §15.2: the previous outcome stops being relevant the moment a new one starts.
         lastResult = null;
         return true;
+    }
+
+    /** What the in-flight request said it was moving. Meaningless with nothing pending. */
+    public boolean pendingMovesCurrency() {
+        return pendingMovesCurrency;
     }
 
     /**

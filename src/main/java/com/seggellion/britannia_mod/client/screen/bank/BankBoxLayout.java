@@ -41,6 +41,8 @@ public record BankBoxLayout(
         int panelHeight,
         int titleY,
         int weightY,
+        /* The pager line -- lowest of the three lid rows, closest to the grid it pages. */
+        int pageY,
         int chestLeft,
         int chestTop,
         int chestWidth,
@@ -77,6 +79,12 @@ public record BankBoxLayout(
     public static final int HOTBAR_GAP = 4;
     public static final int ROW_HEIGHT = 20;
     public static final int ROW_GAP = 4;
+    /**
+     * The currency buttons carry two lines since the balance improvement (owner, 2026-08-04) --
+     * the denomination label with its live balance beneath -- so their rows are taller than the
+     * single-line {@link #ROW_HEIGHT} everywhere else.
+     */
+    public static final int CURRENCY_ROW_HEIGHT = 26;
     /**
      * In the wide arrangement the three denomination buttons are stacked as full-width rows, not
      * placed side by side: a third of any credible column is too narrow for "Copper" (108/3 with
@@ -128,12 +136,15 @@ public record BankBoxLayout(
         boolean compact = screenWidth < wideWidth;
         int panelWidth = compact ? (MARGIN * 2) + contentWidth : wideWidth;
 
-        // The lid always has room for the title and weight rows written on it.
-        int lidMin = (textRow * 2) + 8;
+        // The lid always has room for the title, weight and pager rows written on it. The pager
+        // row is RESERVED even when the vault fits one view: making it conditional would couple
+        // the lid height to the row count, whose computation depends on the lid height -- a
+        // circularity not worth eleven pixels.
+        int lidMin = (textRow * 3) + 8;
 
         // Everything that is not the bank grid, so what remains decides how many rows it gets.
         // The chest replaces the plain layout's title/weight band with its lid and adds its base.
-        int aboveGrid = chestVisible ? lidMin + CHEST_INTERIOR_PAD_TOP : (textRow * 2) + SECTION_GAP;
+        int aboveGrid = chestVisible ? lidMin + CHEST_INTERIOR_PAD_TOP : (textRow * 3) + SECTION_GAP;
         int belowGrid = chestVisible ? CHEST_INTERIOR_PAD_BOTTOM + CHEST_BASE_HEIGHT : 0;
         int controlsHeight = compact ? (ROW_HEIGHT * 2) + ROW_GAP + SECTION_GAP : 0;
         int fixedHeight = (MARGIN * 2)
@@ -175,11 +186,14 @@ public record BankBoxLayout(
         final int weightY;
         final BankGridGeometry bankGrid;
 
+        final int pageY;
         if (chestVisible) {
             chestLeft = contentLeft;
             chestTop = y;
             // Bottom-anchored in the lid, just above the opening -- on the dark inner-lid panel.
-            weightY = chestTop + lidHeight - textRow - 4;
+            // The pager line sits lowest, closest to the grid it pages.
+            pageY = chestTop + lidHeight - textRow - 4;
+            weightY = pageY - textRow;
             titleY = weightY - textRow;
             int gridLeft = chestLeft + ((CHEST_WIDTH - GRID_WIDTH) / 2);
             bankGrid = BankGridGeometry.of(gridLeft, chestTop + lidHeight + CHEST_INTERIOR_PAD_TOP, COLUMNS, bankRows);
@@ -190,6 +204,8 @@ public record BankBoxLayout(
             titleY = y;
             y += textRow;
             weightY = y;
+            y += textRow;
+            pageY = y;
             y += textRow + SECTION_GAP;
             bankGrid = BankGridGeometry.of(contentLeft, y, COLUMNS, bankRows);
             y = bankGrid.bottom() + SECTION_GAP;
@@ -222,7 +238,8 @@ public record BankBoxLayout(
             amountBoxWidth = contentWidth / 4;
             denominationY = y;
             denominationWidth = ((contentWidth - amountBoxWidth) - (ROW_GAP * 3)) / 3;
-            y += ROW_HEIGHT + ROW_GAP;
+            // The row advances by the taller two-line currency buttons, not the amount box.
+            y += CURRENCY_ROW_HEIGHT + ROW_GAP;
             actionX = contentLeft;
             backY = y;
             // Back alone on its row since the Withdraw button retired (drag-to-withdraw owner
@@ -240,7 +257,7 @@ public record BankBoxLayout(
             denominationY = amountBoxY + ROW_HEIGHT + ROW_GAP;
             denominationWidth = CONTROL_COLUMN_WIDTH;
             actionX = columnX;
-            backY = denominationY + ((ROW_HEIGHT + ROW_GAP) * 3);
+            backY = denominationY + ((CURRENCY_ROW_HEIGHT + ROW_GAP) * 3);
             actionWidth = CONTROL_COLUMN_WIDTH;
         }
 
@@ -249,7 +266,7 @@ public record BankBoxLayout(
 
         return new BankBoxLayout(
                 compact, chestVisible, panelLeft, panelTop, panelWidth, panelHeight,
-                titleY, weightY,
+                titleY, weightY, pageY,
                 chestLeft, chestTop, chestVisible ? CHEST_WIDTH : 0, lidHeight, interiorHeight, baseHeight,
                 bankGrid, inventoryLabelY, inventoryGrid, hotbar,
                 amountBoxX, amountBoxY, amountBoxWidth,
@@ -282,7 +299,7 @@ public record BankBoxLayout(
 
     /** Top edge of denomination button {@code index}, 0..2 -- stacked when wide. */
     public int denominationY(int index) {
-        return compact ? denominationY : denominationY + (index * (ROW_HEIGHT + ROW_GAP));
+        return compact ? denominationY : denominationY + (index * (CURRENCY_ROW_HEIGHT + ROW_GAP));
     }
 
     /** The one remaining action's left edge -- Back, full-width in both arrangements. */

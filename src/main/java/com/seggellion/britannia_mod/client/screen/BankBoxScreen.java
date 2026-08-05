@@ -122,8 +122,14 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     private final com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick vaultChequeDoubleClick =
             new com.seggellion.britannia_mod.client.screen.bank.BankChequeDoubleClick();
     /** Milestone 16: keyed by denomination so each judges its own affordability. */
-    private final java.util.EnumMap<com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination, Button> currencyButtons =
+    private final java.util.EnumMap<com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination,
+            com.seggellion.britannia_mod.client.screen.bank.BankCurrencyButton> currencyButtons =
             new java.util.EnumMap<>(com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination.class);
+    /** The vault pager (owner improvement, 2026-08-04). Hidden entirely while one page holds all. */
+    @Nullable
+    private Button pagerPrev;
+    @Nullable
+    private Button pagerNext;
 
     private BankGridScroll scroll = BankGridScroll.TOP;
 
@@ -198,16 +204,77 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
             final String wireKey = keys[index];
             final com.seggellion.britannia_mod.client.screen.bank.BankBalanceCopy.Denomination denomination =
                     denominations[index];
-            Button button = Button.builder(
+            // Two lines since the balance improvement: the denomination, its live balance under
+            // it -- which is why the row is CURRENCY_ROW_HEIGHT rather than ROW_HEIGHT.
+            com.seggellion.britannia_mod.client.screen.bank.BankCurrencyButton button =
+                    new com.seggellion.britannia_mod.client.screen.bank.BankCurrencyButton(
+                            layout.denominationX(index), layout.denominationY(index),
+                            layout.denominationWidth(), BankBoxLayout.CURRENCY_ROW_HEIGHT,
                             Component.translatable("screen.britannia_mod.bank.box.withdraw." + wireKey),
-                            ignored -> sendCurrencyWithdrawal(wireKey, denomination)
-                    )
-                    .bounds(layout.denominationX(index), layout.denominationY(index), layout.denominationWidth(), BankBoxLayout.ROW_HEIGHT)
-                    .build();
+                            ignored -> sendCurrencyWithdrawal(wireKey, denomination));
             button.active = false;
             currencyButtons.put(denomination, button);
             addRenderableWidget(button);
         }
+
+        buildPagerControls();
+    }
+
+    /**
+     * Owner improvement (2026-08-04): visible pagination for a vault that outgrows one view --
+     * two page buttons flanking a "1 / 3" line on the lid. Presentation over the existing row
+     * scroll ({@link BankGridPager}); the wheel keeps working, and both drive one position.
+     */
+    private void buildPagerControls() {
+        int buttonWidth = 14;
+        int buttonY = layout.pageY() - 2;
+        pagerPrev = Button.builder(Component.literal("<"), ignored -> {
+                    scroll = com.seggellion.britannia_mod.client.screen.bank.BankGridPager.previousPage(
+                            scroll, sessionItemCount(), BankBoxLayout.COLUMNS, layout.bankGrid().rows());
+                })
+                .bounds(layout.bankGrid().left(), buttonY, buttonWidth, 12).build();
+        pagerNext = Button.builder(Component.literal(">"), ignored -> {
+                    scroll = com.seggellion.britannia_mod.client.screen.bank.BankGridPager.nextPage(
+                            scroll, sessionItemCount(), BankBoxLayout.COLUMNS, layout.bankGrid().rows());
+                })
+                .bounds(layout.bankGrid().right() - buttonWidth, buttonY, buttonWidth, 12).build();
+        addRenderableWidget(pagerPrev);
+        addRenderableWidget(pagerNext);
+    }
+
+    private int sessionItemCount() {
+        ClientBankingSession session = ClientBankingSession.active();
+        return session == null ? 0 : session.bankItems().size();
+    }
+
+    /**
+     * The pager's per-frame truth: hidden entirely while one view holds the whole vault (a
+     * "1 / 1" with two dead arrows would be noise), otherwise the arrows enable at their ends
+     * and the position line draws between them. A refresh that shrinks the vault reclamps the
+     * scroll (Milestone 11) and this simply reads the new answer.
+     */
+    private void refreshPager(GuiGraphics graphics, ClientBankingSession session) {
+        if (pagerPrev == null || pagerNext == null) return;
+        int items = session.bankItems().size();
+        int visibleRows = layout.bankGrid().rows();
+        boolean paged = com.seggellion.britannia_mod.client.screen.bank.BankGridPager.paged(
+                items, BankBoxLayout.COLUMNS, visibleRows);
+        pagerPrev.visible = paged;
+        pagerNext.visible = paged;
+        if (!paged) return;
+
+        int page = com.seggellion.britannia_mod.client.screen.bank.BankGridPager.currentPage(
+                scroll, items, BankBoxLayout.COLUMNS, visibleRows);
+        int pages = com.seggellion.britannia_mod.client.screen.bank.BankGridPager.pageCount(
+                items, BankBoxLayout.COLUMNS, visibleRows);
+        pagerPrev.active = page > 1;
+        pagerNext.active = page < pages;
+
+        Component position = DialoguePresentation.text(
+                Component.translatable("screen.britannia_mod.bank.box.page", page, pages));
+        int centerX = layout.bankGrid().left() + (layout.bankGrid().width() / 2);
+        graphics.drawString(font, position, centerX - (font.width(position) / 2), layout.pageY(),
+                LIGHT_TEXT_COLOR, false);
     }
 
     /**
@@ -229,8 +296,9 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                         com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm
                                 .balanceOf(session, denomination));
         if (!validation.valid()) return;
+        // Coins, by construction -- this button withdraws a denomination.
         if (!session.beginPending(
-                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL)) {
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.WITHDRAWAL, true)) {
             return;
         }
         com.seggellion.britannia_mod.network.ClientNetworkHandler.sendToServer(
@@ -238,16 +306,23 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
                         session.tellerEntityId(), wireKey, validation.amount()));
     }
 
-    /** Per-denomination affordability plus the global pending lock, mirrored every frame. */
+    /**
+     * Per-denomination affordability plus the global pending lock, mirrored every frame -- and,
+     * since the balance improvement, each button's second line: the denomination's live balance,
+     * abbreviated so it always fits the frame. Reading it here means a refresh push changes the
+     * number the same frame it changes the session.
+     */
     private void refreshCurrencyButtons(ClientBankingSession session) {
         if (amountBox == null) return;
         boolean pending = session.isMutationPending();
         for (var entry : currencyButtons.entrySet()) {
+            int balance = com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm
+                    .balanceOf(session, entry.getKey());
+            entry.getValue().setBalanceText(
+                    com.seggellion.britannia_mod.client.screen.bank.BankBalanceAbbreviation.abbreviate(balance));
             entry.getValue().active = !pending
                     && com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm.validate(
-                            amountBox.getValue(),
-                            com.seggellion.britannia_mod.client.screen.bank.BankCurrencyWithdrawalForm
-                                    .balanceOf(session, entry.getKey())).valid();
+                            amountBox.getValue(), balance).valid();
         }
         amountBox.setEditable(!pending);
     }
@@ -268,8 +343,21 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
     }
 
     private void returnToMain() {
+        playChestClose();
         com.seggellion.britannia_mod.client.screen.bank.BankNavigation.beginNavigation(ClientBankingSession.active());
         Minecraft.getInstance().setScreen(new BankMainScreen());
+    }
+
+    /**
+     * The strongbox shuts (owner, 2026-08-04) -- on Back and on a real close alike, but never
+     * for a screen that failed to open at all (the session-null init bail also routes through
+     * {@link #onClose}), because a box that never creaked open must not thud shut.
+     */
+    private void playChestClose() {
+        if (layout == null) return;
+        Minecraft.getInstance().getSoundManager().play(
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                        com.seggellion.britannia_mod.ModSounds.CHEST_CLOSE.get(), 1.0F));
     }
 
     /**
@@ -358,6 +446,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
         );
 
         refreshCurrencyButtons(session);
+        refreshPager(graphics, session);
 
         // Milestone 12: the source-changed watchdog runs every frame, and the drag visuals draw
         // last so the ghost rides above everything. Tooltips are suppressed while dragging --
@@ -684,8 +773,13 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
             drag.completeHandoff();
             return;
         }
+        // Which sound this earns depends on what is under the cursor, and the client can tell
+        // with the SAME test the server routes on (top-level coin identity -- a container
+        // holding coins is not a coin stack). The routing decision itself stays server-side;
+        // this only predicts which noise success will make.
+        boolean coins = com.seggellion.britannia_mod.bank.currency.CurrencyItemRegistry.isCurrencyStack(live);
         if (!session.beginPending(
-                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.DEPOSIT)) {
+                com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload.Operation.DEPOSIT, coins)) {
             drag.completeHandoff();
             return;
         }
@@ -955,6 +1049,7 @@ public final class BankBoxScreen extends Screen implements BankingScreen {
 
     @Override
     public void onClose() {
+        playChestClose();
         ClientBankingSession.close();
         Minecraft.getInstance().setScreen(null);
     }

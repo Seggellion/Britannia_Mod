@@ -167,8 +167,8 @@ class BankBoxLayoutTest {
         BankBoxLayout tight = layout(W_1920_SCALE_2, 300, 100);
         assertTrue(tight.chestLidHeight() < BankBoxLayout.CHEST_LID_NATURAL,
                 "a tight screen should compress the lid");
-        assertTrue(tight.chestLidHeight() >= (FONT_LINE_HEIGHT + 2) * 2 + 8,
-                "but never below the two text rows written on it");
+        assertTrue(tight.chestLidHeight() >= (FONT_LINE_HEIGHT + 2) * 3 + 8,
+                "but never below the three text rows written on it -- title, weight, pager");
     }
 
     @Test

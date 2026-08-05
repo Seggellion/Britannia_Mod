@@ -597,6 +597,16 @@
       "britannia_mod:chest_close"
   ]
 },
+"bank_deposit": {
+  "sounds": [
+      "britannia_mod:hit02"
+  ]
+},
+"bank_withdraw": {
+  "sounds": [
+      "britannia_mod:leather1"
+  ]
+},
 "lap_harp_play": {
     "sounds": [
       "britannia_mod:lap_harp_play"

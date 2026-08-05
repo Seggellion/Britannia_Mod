@@ -97,7 +97,8 @@ public final class BankBalanceScreen extends Screen implements BankingScreen {
     private void depositAllCoins() {
         ClientBankingSession session = ClientBankingSession.active();
         if (session == null) return;
-        if (!session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT)) return;
+        // Coins, by construction -- the whole point of the sweep.
+        if (!session.beginPending(BankTransferResultS2CPayload.Operation.DEPOSIT, true)) return;
 
         ClientNetworkHandler.sendToServer(new BankDepositAllCoinsRequestC2SPayload(session.tellerEntityId()));
         refreshButtonStates(session);

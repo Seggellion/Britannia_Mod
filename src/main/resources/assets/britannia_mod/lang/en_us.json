@@ -654,6 +654,7 @@
     "screen.britannia_mod.bank.box.cheque_hint": "Double-click to cash it in, or drag it to the vault to store it.",
     "screen.britannia_mod.bank.box.stored_cheque_hint": "Double-click to cash this cheque in.",
     "screen.britannia_mod.bank.box.stored_item_hint": "Drag to thy pack to withdraw it.",
+    "screen.britannia_mod.bank.box.page": "%s / %s",
     "screen.britannia_mod.bank.box.amount_label": "Amount",
     "screen.britannia_mod.bank.box.withdraw.gold": "Gold",
     "screen.britannia_mod.bank.box.withdraw.silver": "Silver",

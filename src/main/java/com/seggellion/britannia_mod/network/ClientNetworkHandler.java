@@ -381,6 +381,19 @@ private static MutableComponent uoMessage(String text) {
         ctx.enqueueWork(() -> {
             Minecraft minecraft = Minecraft.getInstance();
             boolean bankingOpen = minecraft.screen instanceof BankingScreen;
+
+            // The mutation sounds (owner, 2026-08-04) play on SUCCESS, and the refresh IS the
+            // success signal -- a rejection arrives as a result payload and stays silent.
+            // Captured before applyAccountOpened resolves the lock, and only for the same
+            // teller: a refresh from a different teller starts a fresh session and says nothing
+            // about the old request.
+            ClientBankingSession before = ClientBankingSession.active();
+            com.seggellion.britannia_mod.client.screen.bank.BankMutationCue cue =
+                    before != null && before.tellerEntityId() == payload.entityId()
+                            ? com.seggellion.britannia_mod.client.screen.bank.BankMutationCue.forSuccess(
+                                    before.pendingOperation(), before.pendingMovesCurrency())
+                            : com.seggellion.britannia_mod.client.screen.bank.BankMutationCue.SILENT;
+
             switch (BankNavigation.refreshRoute(bankingOpen, payload.refresh())) {
                 // Milestone 17: a late refresh after the player closed banking. Not applied to
                 // the session either -- that would resurrect a session for an interaction the
@@ -388,11 +401,34 @@ private static MutableComponent uoMessage(String text) {
                 case DISCARD -> { }
                 case OPEN_MAIN -> {
                     ClientBankingSession.applyAccountOpened(payload);
+                    playMutationSuccessSound(minecraft, cue);
                     minecraft.setScreen(new BankMainScreen());
                 }
-                case KEEP_CURRENT -> ClientBankingSession.applyAccountOpened(payload);
+                case KEEP_CURRENT -> {
+                    ClientBankingSession.applyAccountOpened(payload);
+                    playMutationSuccessSound(minecraft, cue);
+                }
             }
         });
+    }
+
+    /**
+     * Coins jingle whichever way they move; an item thuds into the vault and the satchel creaks
+     * when it comes back. {@link com.seggellion.britannia_mod.client.screen.bank.BankMutationCue}
+     * made the decision (and is tested); this only maps a cue to a registered event.
+     */
+    private static void playMutationSuccessSound(
+            Minecraft minecraft, com.seggellion.britannia_mod.client.screen.bank.BankMutationCue cue
+    ) {
+        net.minecraft.sounds.SoundEvent event = switch (cue) {
+            case COIN -> com.seggellion.britannia_mod.ModSounds.GOLD_COIN.get();
+            case ITEM_DEPOSITED -> com.seggellion.britannia_mod.ModSounds.BANK_DEPOSIT.get();
+            case ITEM_WITHDRAWN -> com.seggellion.britannia_mod.ModSounds.BANK_WITHDRAW.get();
+            case SILENT -> null;
+        };
+        if (event == null) return;
+        minecraft.getSoundManager().play(
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(event, 1.0F));
     }
 
     /**

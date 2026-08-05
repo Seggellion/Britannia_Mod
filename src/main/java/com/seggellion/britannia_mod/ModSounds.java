@@ -197,6 +197,19 @@ public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("garg
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":chest_close"))
     );
 
+    // Bank Box feedback (owner, 2026-08-04). Event names say what happened, not which file
+    // plays -- the files are hit02.ogg and leather1.ogg, mapped in sounds.json, and swapping
+    // the audio later must not mean renaming a code constant.
+    public static final DeferredHolder<SoundEvent, SoundEvent> BANK_DEPOSIT = SOUND_EVENTS.register(
+            "bank_deposit",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":bank_deposit"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> BANK_WITHDRAW = SOUND_EVENTS.register(
+            "bank_withdraw",
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":bank_withdraw"))
+    );
+
     public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_OPEN = SOUND_EVENTS.register(
             "door_metal_open",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":door_metal_open"))

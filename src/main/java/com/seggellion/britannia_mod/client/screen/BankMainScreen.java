@@ -103,7 +103,13 @@ public final class BankMainScreen extends Screen implements BankingScreen {
         Minecraft minecraft = Minecraft.getInstance();
         BankNavigation.beginNavigation(session);
         switch (destination) {
-            case BANK_BOX -> minecraft.setScreen(new BankBoxScreen());
+            case BANK_BOX -> {
+                // The strongbox creaks open (owner, 2026-08-04). Played here at the navigation
+                // click rather than in the Box's init, which re-runs on every window resize.
+                minecraft.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                        com.seggellion.britannia_mod.ModSounds.CHEST_OPEN.get(), 1.0F));
+                minecraft.setScreen(new BankBoxScreen());
+            }
             case BALANCE -> minecraft.setScreen(new BankBalanceScreen());
             // Milestone 7 rebuilt this on the session, so it no longer needs a snapshot passed
             // in -- it reads the same live state every other banking screen does.
