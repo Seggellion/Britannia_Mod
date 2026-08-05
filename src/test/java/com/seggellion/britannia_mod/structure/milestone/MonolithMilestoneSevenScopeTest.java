@@ -44,16 +44,16 @@ class MonolithMilestoneSevenScopeTest {
     }
 
     @Test
-    void noThirdVariantReverseCycleCrossFamilyConversionOrMilestoneEightContentExists() throws Exception {
+    void exactlyThreeVariantsNoFourthReverseCycleCrossFamilyConversionOrRecipesExist() throws Exception {
         String definitions = Files.readString(Path.of(
                 "src/main/java/com/seggellion/britannia_mod/structure/definition/ShrineMonolithDefinitions.java"));
         assertEquals(1, occurrences(definitions, "new VariantId(\"diagnostic_missing_content\")"));
         assertEquals(1, occurrences(definitions, "new VariantId(\"diagnostic_alternate\")"));
-        assertFalse(definitions.contains("diagnostic_third"));
+        assertEquals(1, occurrences(definitions, "new VariantId(\"diagnostic_crystalline\")"));
+        assertFalse(definitions.contains("diagnostic_fourth"));
 
         try (var paths = Files.walk(Path.of("src/main"))) {
             var names = paths.filter(Files::isRegularFile).map(Path::toString).toList();
-            assertFalse(names.stream().anyMatch(path -> path.contains("MilestoneEight")));
             assertFalse(names.stream().anyMatch(path -> path.contains("ReverseMonolith")
                     || path.contains("MonolithRotation") || path.contains("MonolithResize")));
             assertFalse(names.stream().anyMatch(path -> path.contains("recipes")

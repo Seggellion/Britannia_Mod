@@ -33,7 +33,7 @@ class MonolithMilestoneSixRenderingTest {
     void existingEnabledProvisionalVariantStillResolvesItsUnchangedResources() throws Exception {
         var family = ShrineMonolithDefinitions.catalogue()
                 .family(ShrineMonolithDefinitions.MONOLITH).orElseThrow();
-        assertEquals(2, family.variants().size());
+        assertEquals(3, family.variants().size());
         var variant = family.variants().getFirst();
         assertEquals("diagnostic_missing_content", variant.id().value());
         assertEquals(ContentStatus.PROVISIONAL, variant.contentStatus());
@@ -111,7 +111,7 @@ class MonolithMilestoneSixRenderingTest {
         assertEquals("FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4",
                 sha256(TEXTURE));
         try (var paths = Files.list(TEXTURE.getParent())) {
-            assertEquals(2, paths.filter(Files::isRegularFile).count());
+            assertEquals(3, paths.filter(Files::isRegularFile).count());
         }
     }
 

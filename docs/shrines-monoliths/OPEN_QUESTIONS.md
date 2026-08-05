@@ -46,7 +46,9 @@ issues a separate explicit release-risk waiver.
 
 ## Non-critical follow-up: final monolith content
 
-- The owner approved exactly two provisional diagnostic variants: `monolith/diagnostic_missing_content` and `monolith/diagnostic_alternate`.
+- The owner approved exactly three provisional diagnostic variants:
+  `monolith/diagnostic_missing_content`, `monolith/diagnostic_alternate`, and
+  `monolith/diagnostic_crystalline`.
 - Final monolith variant count, lore/display names, final geometry/textures, and any replacement/migration package remain unspecified.
 - This does not block conditional review or merge because the exact provisional package is explicitly approved and honestly identified. It does block representing either diagnostic as final artwork.
 - A future owner package should supply stable IDs and localized names, exact approved source/production paths, geometry bounds/pivot/default forward direction, texture dimensions/alpha/UV compatibility, and an explicit keep/disable/migrate decision for each diagnostic ID.
@@ -60,7 +62,7 @@ issues a separate explicit release-risk waiver.
 ## Settled decisions
 
 - Shrine dimensions, four-cell footprint, shared geometry, nine stable identities, and owner-approved provisional asset package are settled.
-- Monolith dimensions, eighteen-cell footprint, exactly two current provisional variants, and the positive 16-voxel visual-only Y correction are settled.
+- Monolith dimensions, eighteen-cell footprint, exactly three current provisional variants, and the positive 16-voxel visual-only Y correction are settled.
 - `SOLID_CELL`, cell-bounded shapes, no waterlogging, blocked piston reaction, and render/collision independence are settled.
 - One anchor block entity owns each logical structure; parts carry only facing/local offset and do not render complete geometry.
 - Persisted footprints remain authoritative and current definitions cannot resize saved structures.

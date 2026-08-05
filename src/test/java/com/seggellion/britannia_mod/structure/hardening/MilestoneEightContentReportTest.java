@@ -36,15 +36,15 @@ class MilestoneEightContentReportTest {
     }
 
     @Test
-    void catalogueAndReportContainExactlyTwoFamiliesNineShrinesAndTwoMonoliths() throws Exception {
+    void catalogueAndReportContainExactlyTwoFamiliesNineShrinesAndThreeMonoliths() throws Exception {
         var catalogue = ShrineMonolithDefinitions.catalogue();
         assertEquals(2, catalogue.families().size());
         assertEquals(9, catalogue.family(ShrineMonolithDefinitions.SHRINE).orElseThrow().variants().size());
-        assertEquals(2, catalogue.family(ShrineMonolithDefinitions.MONOLITH).orElseThrow().variants().size());
+        assertEquals(3, catalogue.family(ShrineMonolithDefinitions.MONOLITH).orElseThrow().variants().size());
         assertEquals("honesty,compassion,valor,justice,sacrifice,honor,spirituality,humility,chaos",
                 catalogue.family(ShrineMonolithDefinitions.SHRINE).orElseThrow().variants().stream()
                         .map(variant -> variant.id().value()).collect(java.util.stream.Collectors.joining(",")));
-        assertEquals("diagnostic_missing_content,diagnostic_alternate",
+        assertEquals("diagnostic_missing_content,diagnostic_alternate,diagnostic_crystalline",
                 catalogue.family(ShrineMonolithDefinitions.MONOLITH).orElseThrow().variants().stream()
                         .map(variant -> variant.id().value()).collect(java.util.stream.Collectors.joining(",")));
     }
@@ -80,7 +80,7 @@ class MilestoneEightContentReportTest {
                 assertEquals(1, family.variants().stream().map(variant -> resourcePath(variant.model())).distinct().count());
                 assertEquals(9, family.variants().stream().map(variant -> resourcePath(variant.texture())).distinct().count());
             } else {
-                assertEquals(2, family.variants().stream().map(variant -> resourcePath(variant.model())).distinct().count());
+                assertEquals(3, family.variants().stream().map(variant -> resourcePath(variant.model())).distinct().count());
                 family.variants().forEach(variant -> assertEquals(16, variant.renderOffsetVoxels().y()));
             }
         }

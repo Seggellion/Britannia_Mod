@@ -257,8 +257,10 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
                 Map.entry("textures/block/shrine/light_granite.png", "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77"),
                 Map.entry("geo/monolith_diagnostic.geo.json", "0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C"),
                 Map.entry("geo/monolith_diagnostic_alternate.geo.json", "B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC"),
+                Map.entry("geo/monolith_diagnostic_crystalline.geo.json", "A4EAD03C5C1ECA1FEF6F7FA6DE22C64E1ADAE964763A5EAF0715E7C72AA74955"),
                 Map.entry("textures/block/monolith/diagnostic_stone.png", "FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4"),
                 Map.entry("textures/block/monolith/diagnostic_alternate_stone.png", "E320B72F2D0B9429D07DD4E62D264535760797AE6D1F9DD047C082B6736A2C4A"),
+                Map.entry("textures/block/monolith/diagnostic_crystalline_stone.png", "E20F4D15EC0511AFDB132E13D047FB830309896538C2C33A1224EF8420A9BAC7"),
                 Map.entry("animations/monolith.animation.json", "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"),
                 Map.entry("models/item/monolith.json", "E48339859F7AA66BBC08246B8BC65AC1827E28241509518F9884A854739A2BED"));
         for (var entry : expected.entrySet()) {

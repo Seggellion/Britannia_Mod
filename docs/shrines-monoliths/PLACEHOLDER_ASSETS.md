@@ -90,4 +90,34 @@ The texture is exactly 32 by 32 pixels and fully opaque. It uses dark cool layer
 
 Both enabled provisional variants use the same ordered eighteen-cell `3 x 3 x 2` footprint, floor placement, cell-bounded collision, lower-front-left render origin, and exact `[0, +16, 0]` voxel display correction. Their measured extents are equal, so the existing finite all-facing union bounds remain X/Z `[-2, 3]` and Y `[0, 3]` blocks plus `1/128` tolerance. The renderer applies the correction once at the shared anchor; collision and occupied cells remain unchanged.
 
-The explicit catalogue cycle is `diagnostic_missing_content -> diagnostic_alternate -> diagnostic_missing_content`. Replacement of either provisional package or addition of a third variant requires later owner approval. Live visual distinction, horizon alignment, culling, and interaction remain `UNVERIFIED` despite resource parsing and transform tests.
+## Owner-authorized third provisional monolith
+
+On 2026-08-04 the project owner authorized one additional provisional package, including original
+generated art, for stable technical ID `diagnostic_crystalline` and provisional label
+`Diagnostic Monolith Crystalline`.
+
+- Geometry: `assets/britannia_mod/geo/monolith_diagnostic_crystalline.geo.json` (1,403 bytes;
+  SHA-256 `A4EAD03C5C1ECA1FEF6F7FA6DE22C64E1ADAE964763A5EAF0715E7C72AA74955`).
+- Texture: `assets/britannia_mod/textures/block/monolith/diagnostic_crystalline_stone.png`
+  (2,250 bytes; SHA-256
+  `E20F4D15EC0511AFDB132E13D047FB830309896538C2C33A1224EF8420A9BAC7`).
+- Localization: `structure.britannia_mod.monolith.diagnostic_crystalline` with the provisional label
+  above. The shared static animation and existing vanilla-backed item model are reused.
+
+The seven-cube static silhouette uses a broad two-step base, two flanking pillars, a taller central
+obelisk, a shallow crown, and an asymmetric forward blade. Its exact authored union is X `[-8,40]`,
+Y `[-16,32]`, Z `[-8,24]`, with pivot `[0,-16,0]` and the front blade at negative Z. It therefore
+retains the same logical `3 x 3 x 2` footprint, North default forward, finite render bounds, and exact
+`[0,+16,0]`-voxel visual correction as the first two variants.
+
+OpenAI ImageGen created the 1,254 by 1,254 source raster at
+`C:\Users\dusti\.codex\generated_images\019fc9b3-b045-75a0-8d82-8e25a9fe1763\exec-a91b5169-e044-4101-944e-81c08fcfe44d.png`.
+It was deterministically reduced with high-quality bicubic sampling to the final fully opaque 32 by
+32 PNG. The prompt requested a seamless, flat-lit violet-black basalt material with restrained muted
+cyan crystalline flecks and prohibited text, runes, symbols, icons, figures, shrine/virtue imagery,
+ankhs, borders, perspective, directional lighting, watermarks, and transparency.
+
+The explicit catalogue cycle is now `diagnostic_missing_content -> diagnostic_alternate ->
+diagnostic_crystalline -> diagnostic_missing_content`. Replacement of any provisional package or
+addition of a fourth variant requires later owner approval. Live visual distinction, horizon
+alignment, culling, and interaction remain `UNVERIFIED` despite resource parsing and transform tests.

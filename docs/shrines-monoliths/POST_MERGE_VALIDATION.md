@@ -40,7 +40,7 @@ corrective build as release evidence.
       monolith, resolving to `shrine/honesty` and `monolith/diagnostic_missing_content`, with no anchor
       or part item exposed.
 - [ ] Authorized shrine cycling covers all nine variants and wraps deterministically.
-- [ ] Authorized monolith cycling covers both variants and wraps deterministically.
+- [ ] Authorized monolith cycling covers all three variants in order and wraps deterministically.
 - [ ] Cycling works when the Interior Decorator targets either anchor or part.
 - [ ] Unauthorized interaction fails without state change or success feedback.
 - [ ] Late tracking shows the correct family, variant, facing, footprint, and render.
@@ -59,7 +59,7 @@ corrective build as release evidence.
 - [ ] Cross-chunk placement, tracking, cycling, restart, lifecycle, repair, and unloaded-required-chunk rejection behave as documented.
 - [ ] Live full-block and stair matrix covers straight, inner-corner, outer-corner, top, bottom, and all facings around structure perimeters.
 - [ ] Slabs, walls, fences, fence gates, panes, supported attachments, and other required neighbors recompute and remain outside occupancy.
-- [ ] Both monolith models are reviewed against the horizon in all four facings; verify the positive 16-voxel Y offset once, alignment, culling, and no duplicate part render.
+- [ ] All three monolith models are reviewed against the horizon in all four facings; verify the positive 16-voxel Y offset once, alignment, culling, texture distinction, and no duplicate part render.
 - [ ] A dense scene of at least 12 shrines and 8 monoliths receives a responsiveness, frame, tick, memory, and bounded-log smoke.
 - [ ] Review the server log and both complete client logs across connect, cycle, reload, reconnect, restart, teardown, and dense-scene ranges.
 

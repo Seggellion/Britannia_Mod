@@ -4,14 +4,12 @@
 
 `CONDITIONAL MERGE READINESS`
 
-`CURRENT WORKTREE HOLD`: the owner-reported post-audit gap correction and the later chaos-only
-`light_granite.png` rim-selection feature are implemented but not committed or visually rechecked.
-The correction expands the shrine presentation from 30 by 30 to 32 by 32 model voxels so it exactly
-reaches the four-cell footprint boundary. The new selector maps only `shrine/chaos` to the distinct
-light-granite resource path; its supplied bytes currently equal `granite.png`. Until the owner accepts
-the worktree result and it is committed, the audited tip/artifact/hash tables below remain the historical
-`b261653` snapshot and must not be used to merge the dirty worktree. After acceptance, refresh the
-source tip, artifact hashes, exact-JAR server evidence, and merge simulation before integration.
+`CURRENT BRANCH HOLD`: the post-audit shrine corrections are committed at `76b8feb`, and a separate
+`codex/third-monolith-variant` branch now adds the owner-authorized provisional
+`diagnostic_crystalline` model and texture. The audited tip/artifact/hash tables below remain the
+historical `b261653` snapshot and must not be used as evidence for this newer branch. Refresh the
+source tip, protected inventory, artifact hashes, exact-JAR server evidence, and merge simulation
+before integration.
 
 Code review and an explicitly owner-authorized merge may proceed with the documented Milestone 9 limitations.
 
@@ -169,9 +167,9 @@ No shrine or monolith block, item, block-entity, or data-component ID existed at
 - Block-entity synchronization is display-only on the client.
 - A path-only, value-suppressed scan of every feature commit and current changed tree found no secret assignment, authentication secret, RCON password, launcher token, credential, world, raw runtime log, server property file, EULA, backup, or JAR in feature history. The only path names matching the word `Authorization` are the intended decorator policy source and test.
 
-## Content inventory
+## Historical audited content inventory
 
-The deterministic catalogue contains exactly nine shrine variants in cycle order: `honesty`,
+At the historical `b261653` audit, the deterministic catalogue contained exactly nine shrine variants in cycle order: `honesty`,
 `compassion`, `valor`, `justice`, `sacrifice`, `honor`, `spirituality`, `humility`, and `chaos`; and
 exactly two owner-approved provisional monolith variants: `diagnostic_missing_content` and
 `diagnostic_alternate`. Each stable ID appears once. All variants are enabled and cycle

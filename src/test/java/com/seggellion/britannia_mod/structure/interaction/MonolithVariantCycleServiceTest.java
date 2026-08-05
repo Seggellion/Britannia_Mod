@@ -28,7 +28,7 @@ class MonolithVariantCycleServiceTest {
     private static final BlockPos ANCHOR = new BlockPos(-17, 74, 29);
 
     @Test
-    void exactTwoStepCatalogueOrderWrapsDeterministicallyAndChangesOnlyVariantId() {
+    void exactThreeStepCatalogueOrderWrapsDeterministicallyAndChangesOnlyVariantId() {
         PlacedStructureState original = state("diagnostic_missing_content", Direction.EAST);
         FakeMutation mutation = new FakeMutation(original);
 
@@ -40,12 +40,18 @@ class MonolithVariantCycleServiceTest {
 
         mutation.target = Target.success(ANCHOR, alternate);
         assertEquals(Result.SUCCESS, ShrineVariantCycleService.cycle(mutation));
+        PlacedStructureState crystalline = mutation.state.orElseThrow();
+        assertEquals("diagnostic_crystalline", crystalline.variantId().value());
+        assertInvariantFields(original, crystalline);
+
+        mutation.target = Target.success(ANCHOR, crystalline);
+        assertEquals(Result.SUCCESS, ShrineVariantCycleService.cycle(mutation));
         PlacedStructureState wrapped = mutation.state.orElseThrow();
         assertEquals("diagnostic_missing_content", wrapped.variantId().value());
         assertInvariantFields(original, wrapped);
-        assertEquals(2, mutation.assignments);
-        assertEquals(2, mutation.synchronizations);
-        assertEquals(2, mutation.feedback);
+        assertEquals(3, mutation.assignments);
+        assertEquals(3, mutation.synchronizations);
+        assertEquals(3, mutation.feedback);
     }
 
     @Test

@@ -93,7 +93,10 @@ class MilestoneEightAdjacencyMatrixTest {
                 }
             }
         }
-        assertEquals((9 + 2) * 4 * PHASE_COUNT, logicalCases);
+        int variantCount = ShrineMonolithDefinitions.catalogue().families().stream()
+                .mapToInt(family -> family.variants().size())
+                .sum();
+        assertEquals(variantCount * 4 * PHASE_COUNT, logicalCases);
     }
 
     @Test
@@ -124,7 +127,10 @@ class MilestoneEightAdjacencyMatrixTest {
                 }
             }
         }
-        int perimeterSlots = (9 * 4 * 8) + (2 * 4 * 30);
+        int perimeterSlots = ShrineMonolithDefinitions.catalogue().families().stream()
+                .mapToInt(family -> family.variants().size() * 4
+                        * perimeter(occupied(family, Direction.NORTH)).size())
+                .sum();
         assertEquals(perimeterSlots * PHASE_COUNT * neighbors.size(), logicalCases);
     }
 

@@ -32,23 +32,26 @@ class MonolithMilestoneSevenRenderingTest {
     private static final Path ASSETS = Path.of("src/main/resources/assets/britannia_mod");
     private static final Path EXISTING_MODEL = ASSETS.resolve("geo/monolith_diagnostic.geo.json");
     private static final Path ALTERNATE_MODEL = ASSETS.resolve("geo/monolith_diagnostic_alternate.geo.json");
+    private static final Path CRYSTALLINE_MODEL = ASSETS.resolve("geo/monolith_diagnostic_crystalline.geo.json");
     private static final Path EXISTING_TEXTURE = ASSETS.resolve(
             "textures/block/monolith/diagnostic_stone.png");
     private static final Path ALTERNATE_TEXTURE = ASSETS.resolve(
             "textures/block/monolith/diagnostic_alternate_stone.png");
+    private static final Path CRYSTALLINE_TEXTURE = ASSETS.resolve(
+            "textures/block/monolith/diagnostic_crystalline_stone.png");
 
     @Test
-    void catalogueContainsExactlyTwoOrderedEnabledProvisionalCompatibleVariants() throws Exception {
+    void catalogueContainsExactlyThreeOrderedEnabledProvisionalCompatibleVariants() throws Exception {
         var family = ShrineMonolithDefinitions.catalogue()
                 .family(ShrineMonolithDefinitions.MONOLITH).orElseThrow();
         assertTrue(StructureDefinitionValidator.validate(family).valid());
-        assertEquals(List.of("diagnostic_missing_content", "diagnostic_alternate"),
+        assertEquals(List.of("diagnostic_missing_content", "diagnostic_alternate", "diagnostic_crystalline"),
                 family.variants().stream().map(variant -> variant.id().value()).toList());
-        assertEquals(List.of(0, 1), family.variants().stream().map(variant -> variant.cyclePosition()).toList());
-        assertEquals(2, family.variants().stream().filter(variant -> variant.enabled()).count());
+        assertEquals(List.of(0, 1, 2), family.variants().stream().map(variant -> variant.cyclePosition()).toList());
+        assertEquals(3, family.variants().stream().filter(variant -> variant.enabled()).count());
         assertTrue(family.variants().stream().allMatch(
                 variant -> variant.contentStatus() == ContentStatus.PROVISIONAL));
-        assertEquals(2, family.variants().stream().map(variant -> variant.id()).distinct().count());
+        assertEquals(3, family.variants().stream().map(variant -> variant.id()).distinct().count());
 
         for (var variant : family.variants()) {
             assertEquals(new Dimensions(3, 3, 2), variant.dimensions());
@@ -72,6 +75,8 @@ class MonolithMilestoneSevenRenderingTest {
         assertTrue(lang.has("structure.britannia_mod.monolith.diagnostic_missing_content"));
         assertEquals("Diagnostic Monolith Alternate",
                 lang.get("structure.britannia_mod.monolith.diagnostic_alternate").getAsString());
+        assertEquals("Diagnostic Monolith Crystalline",
+                lang.get("structure.britannia_mod.monolith.diagnostic_crystalline").getAsString());
         assertEquals("Selected monolith: %s",
                 lang.get("message.britannia_mod.monolith.decorator.selected").getAsString());
     }
@@ -82,8 +87,11 @@ class MonolithMilestoneSevenRenderingTest {
                 ShrineMonolithDefinitions.MONOLITH, new VariantId("diagnostic_missing_content"));
         var alternate = ShrineRenderSelection.resolve(
                 ShrineMonolithDefinitions.MONOLITH, new VariantId("diagnostic_alternate"));
+        var crystalline = ShrineRenderSelection.resolve(
+                ShrineMonolithDefinitions.MONOLITH, new VariantId("diagnostic_crystalline"));
         assertEquals(ShrineRenderSelection.Status.READY, existing.status());
         assertEquals(ShrineRenderSelection.Status.READY, alternate.status());
+        assertEquals(ShrineRenderSelection.Status.READY, crystalline.status());
         assertEquals("geo/monolith_diagnostic.geo.json",
                 existing.geometry().orElseThrow().location().orElseThrow().path());
         assertEquals("textures/block/monolith/diagnostic_stone.png",
@@ -92,8 +100,16 @@ class MonolithMilestoneSevenRenderingTest {
                 alternate.geometry().orElseThrow().location().orElseThrow().path());
         assertEquals("textures/block/monolith/diagnostic_alternate_stone.png",
                 alternate.texture().orElseThrow().location().orElseThrow().path());
+        assertEquals("geo/monolith_diagnostic_crystalline.geo.json",
+                crystalline.geometry().orElseThrow().location().orElseThrow().path());
+        assertEquals("textures/block/monolith/diagnostic_crystalline_stone.png",
+                crystalline.texture().orElseThrow().location().orElseThrow().path());
         assertNotEquals(existing.geometry(), alternate.geometry());
         assertNotEquals(existing.texture(), alternate.texture());
+        assertNotEquals(existing.geometry(), crystalline.geometry());
+        assertNotEquals(existing.texture(), crystalline.texture());
+        assertNotEquals(alternate.geometry(), crystalline.geometry());
+        assertNotEquals(alternate.texture(), crystalline.texture());
 
         ShrineRenderSelection missing = ShrineRenderSelection.resolve(
                 ShrineMonolithDefinitions.MONOLITH, new VariantId("missing_saved_variant"));
@@ -102,6 +118,7 @@ class MonolithMilestoneSevenRenderingTest {
         assertTrue(missing.texture().isEmpty());
         assertFalse(missing.geometry().equals(existing.geometry()));
         assertFalse(missing.geometry().equals(alternate.geometry()));
+        assertFalse(missing.geometry().equals(crystalline.geometry()));
     }
 
     @Test
@@ -153,10 +170,55 @@ class MonolithMilestoneSevenRenderingTest {
     }
 
     @Test
-    void finiteFamilyBoundsContainBothSameExtentsModelsForEveryFacingAndOffsetRemainsOnce() {
+    void crystallineGeometryHasPinnedExtentsPivotFrontDirectionAndDistinctSilhouette() throws Exception {
+        JsonObject root = JsonParser.parseString(Files.readString(CRYSTALLINE_MODEL)).getAsJsonObject();
+        JsonObject geometry = root.getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();
+        JsonObject description = geometry.getAsJsonObject("description");
+        assertEquals("geometry.britannia_mod.monolith_diagnostic_crystalline",
+                description.get("identifier").getAsString());
+        assertEquals(32, description.get("texture_width").getAsInt());
+        assertEquals(32, description.get("texture_height").getAsInt());
+        JsonObject bone = geometry.getAsJsonArray("bones").get(0).getAsJsonObject();
+        assertEquals("[0,-16,0]", compact(bone.getAsJsonArray("pivot")));
+        JsonArray cubes = bone.getAsJsonArray("cubes");
+        assertEquals(7, cubes.size());
+        assertEquals("[12,-4,-8]",
+                compact(cubes.get(6).getAsJsonObject().getAsJsonArray("origin")));
+        assertEquals("[8,28,6]",
+                compact(cubes.get(6).getAsJsonObject().getAsJsonArray("size")));
+        assertEquals(List.of(-8.0, -16.0, -8.0, 40.0, 32.0, 24.0), extents(cubes));
+        assertNotEquals(Files.readString(EXISTING_MODEL), Files.readString(CRYSTALLINE_MODEL));
+        assertNotEquals(Files.readString(ALTERNATE_MODEL), Files.readString(CRYSTALLINE_MODEL));
+        String source = Files.readString(CRYSTALLINE_MODEL).toLowerCase();
+        assertFalse(source.contains("shrine"));
+        assertFalse(source.contains("virtue"));
+        assertFalse(source.contains("ankh"));
+    }
+
+    @Test
+    void crystallineTextureIsOpaqueDistinctThirtyTwoPixelsWithPinnedHash() throws Exception {
+        BufferedImage crystalline = ImageIO.read(CRYSTALLINE_TEXTURE.toFile());
+        assertEquals(32, crystalline.getWidth());
+        assertEquals(32, crystalline.getHeight());
+        for (int y = 0; y < crystalline.getHeight(); y++) {
+            for (int x = 0; x < crystalline.getWidth(); x++) {
+                assertEquals(255, (crystalline.getRGB(x, y) >>> 24) & 0xFF);
+            }
+        }
+        assertEquals("E20F4D15EC0511AFDB132E13D047FB830309896538C2C33A1224EF8420A9BAC7",
+                sha256(CRYSTALLINE_TEXTURE));
+        assertEquals("A4EAD03C5C1ECA1FEF6F7FA6DE22C64E1ADAE964763A5EAF0715E7C72AA74955",
+                sha256(CRYSTALLINE_MODEL));
+        assertNotEquals(sha256(EXISTING_TEXTURE), sha256(CRYSTALLINE_TEXTURE));
+        assertNotEquals(sha256(ALTERNATE_TEXTURE), sha256(CRYSTALLINE_TEXTURE));
+    }
+
+    @Test
+    void finiteFamilyBoundsContainAllThreeSameExtentsModelsForEveryFacingAndOffsetRemainsOnce() {
         var footprint = ShrineMonolithDefinitions.catalogue()
                 .family(ShrineMonolithDefinitions.MONOLITH).orElseThrow().footprint();
-        for (String variant : List.of("diagnostic_missing_content", "diagnostic_alternate")) {
+        for (String variant : List.of(
+                "diagnostic_missing_content", "diagnostic_alternate", "diagnostic_crystalline")) {
             for (Direction facing : Direction.Plane.HORIZONTAL) {
                 var state = new PlacedStructureState(ShrineMonolithDefinitions.MONOLITH,
                         new VariantId(variant), facing, footprint);

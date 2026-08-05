@@ -140,6 +140,29 @@ public final class ShrineMonolithDefinitions {
                 true,
                 true,
                 ContentStatus.PROVISIONAL);
+        Variant crystalline = new Variant(
+                new VariantId("diagnostic_crystalline"),
+                MONOLITH,
+                DisplayName.resolved(
+                        "diagnostic_crystalline",
+                        "structure.britannia_mod.monolith.diagnostic_crystalline",
+                        "Diagnostic Monolith Crystalline"),
+                MONOLITH_DIMENSIONS,
+                footprint,
+                PlacementMode.FLOOR_ORIENTED,
+                CollisionProfile.SOLID_CELL,
+                RenderOrigin.ANCHOR_LOWER_FRONT_LEFT,
+                MONOLITH_RENDER_OFFSET,
+                ClientResource.available(
+                        "monolith_diagnostic_crystalline_geometry",
+                        "britannia_mod", "geo/monolith_diagnostic_crystalline.geo.json"),
+                ClientResource.available(
+                        "monolith_diagnostic_crystalline_texture",
+                        "britannia_mod", "textures/block/monolith/diagnostic_crystalline_stone.png"),
+                2,
+                true,
+                true,
+                ContentStatus.PROVISIONAL);
         return new Family(
                 MONOLITH,
                 DisplayName.unresolved("monolith", "Monoliths"),
@@ -154,6 +177,6 @@ public final class ShrineMonolithDefinitions {
                 Optional.empty(),
                 Optional.of(diagnostic.id()),
                 ContentStatus.APPROVED,
-                List.of(diagnostic, alternate));
+                List.of(diagnostic, alternate, crystalline));
     }
 }

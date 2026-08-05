@@ -1664,3 +1664,53 @@ claim remain pending until owner evidence. Milestone 10 was not begun or resumed
   class.
 - No commit, push, transfer, merge, rebase, reset, amend, fetch, or shared-repository mutation was
   performed.
+
+## 2026-08-04 - Owner-authorized third monolith variant
+
+- Created branch `codex/third-monolith-variant` from
+  `76b8feb95c4ea43dfb125b2ca0e6ffe9b8606929`; preserved untracked `logs/` and the owner shrine
+  `old/` backup. The shared repository remained read-only.
+- Added stable provisional ID `diagnostic_crystalline` at cycle position 2. The authoritative cycle
+  is `diagnostic_missing_content -> diagnostic_alternate -> diagnostic_crystalline ->
+  diagnostic_missing_content`. Cycling still changes only anchor-owned `variant_id`; footprint,
+  facing, blocks, collision, persistence schema, item schema, and render offset are unchanged.
+- New seven-cube static geometry `monolith_diagnostic_crystalline.geo.json` has SHA-256
+  `A4EAD03C5C1ECA1FEF6F7FA6DE22C64E1ADAE964763A5EAF0715E7C72AA74955`, exact authored union
+  X `[-8,40]`, Y `[-16,32]`, Z `[-8,24]`, pivot `[0,-16,0]`, and a negative-Z front blade.
+- The image-generation skill used built-in ImageGen to create an original 1,254 by 1,254 source
+  raster at
+  `C:\Users\dusti\.codex\generated_images\019fc9b3-b045-75a0-8d82-8e25a9fe1763\exec-a91b5169-e044-4101-944e-81c08fcfe44d.png`.
+  High-quality bicubic reduction produced the fully opaque 32 by 32 production texture
+  `diagnostic_crystalline_stone.png`: 2,250 bytes, 572 colors, SHA-256
+  `E20F4D15EC0511AFDB132E13D047FB830309896538C2C33A1224EF8420A9BAC7`.
+- The final prompt requested a seamless flat-lit violet-black basalt diffuse texture with restrained
+  muted cyan crystalline flecks, broad downscale-safe detail, and no text, runes, symbols, icons,
+  figures, shrine/virtue imagery, ankh, border, perspective, directional light, watermark, or alpha.
+- Deterministic content reporting, localization, renderer/resource selection, immutable existing
+  asset hashes, three-step cycling, bounds, persistence, adjacency, and scope tests were updated.
+- The first focused command exceeded its 120-second shell limit during NeoForge recompilation and
+  left a stop-requested single-use daemon; it produced no new results and is not counted as evidence.
+  `.\gradlew.bat --stop` then cleanly stopped the two Gradle daemons.
+- A completed 48-test focused run initially found two stale hard-coded case totals in
+  `MilestoneEightAdjacencyMatrixTest`: expected/actual `264/288` and `275616/338256`. The underlying
+  exhaustive cases passed. Expected totals now derive from the catalogue and perimeter while still
+  enumerating every variant, facing, state phase, and neighbor state.
+- Corrected focused command covering eight classes: exit 0 in 71.3 seconds (`BUILD SUCCESSFUL in
+  1m 10s`), 48 methods, zero failures/errors/skips; 30 tasks (2 executed, 28 up-to-date).
+- Full suite: `.\gradlew.bat test --no-daemon --no-configuration-cache --stacktrace`; exit 0 in
+  88.0 seconds (`BUILD SUCCESSFUL in 1m 26s`), 34 classes / 213 methods, zero
+  failures/errors/skips; 30 tasks (1 executed, 29 up-to-date).
+- Before clean, preserved untracked `logs/` and the owner shrine `old/` backup remained present;
+  clean targeted only reproducible `build/`. `.\gradlew.bat clean build --no-daemon
+  --no-configuration-cache --stacktrace`; exit 0 in 205.6 seconds (`BUILD SUCCESSFUL in 3m 23s`),
+  36 tasks (6 executed, 20 from cache, 10 up-to-date).
+- Thin JAR `Britannia_Mod_shrines_m2_codex-0.1.7k.jar`: 22,007,328 bytes, 4,694 entries,
+  SHA-256 `E2D5EA248969103428D43B9F046C8860C55F3F2CA5AFDD4677D3A228D180A285`.
+  Deployable JAR `Britannia_Mod_shrines_m2_codex-0.1.7k-all.jar`: 22,578,966 bytes, 4,698
+  entries, SHA-256 `7D66EAF697C11EB2497B6329D92C1EEE577C4D71CDD978AB5F488C5475BC27FD`.
+  Both contain exactly three monolith geometry entries and three monolith PNG entries, the exact
+  1,403-byte crystalline geometry and 2,250-byte crystalline texture, and all 23 protected assets
+  with zero missing or mismatched source byte. Both contain zero `old/` entry and zero test class.
+- Planned commit subject: `feat(monoliths): add crystalline decorator variant`. This entry cannot
+  contain its own commit hash without amendment; the final report records the resulting full hash.
+  No push, merge, rebase, reset, amend, fetch, or shared-repository mutation is authorized.
