@@ -16,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -37,6 +38,15 @@ class FlowerAssetContractTest {
             content("campion"),
             content("hyacinth"),
             content("orfluer")
+    );
+    private static final Map<String, Set<Integer>> AUTHORED_MASK_STAGES = Map.of(
+            "hyacinth", Set.of(3, 4, 5, 6, 7),
+            "lily", Set.of(3, 4, 5, 6, 7),
+            "campion", Set.of(3, 4, 5, 6),
+            "poppy", Set.of(3, 4, 5, 6),
+            "orfluer", Set.of(3, 4, 5, 6, 7),
+            "foxglove", Set.of(2, 3, 4, 5, 6),
+            "snowdrop", Set.of(3, 4, 5, 6, 7)
     );
 
     @Test
@@ -167,21 +177,17 @@ class FlowerAssetContractTest {
                         if (maskAlpha != 0) {
                             visibleMask++;
                             int rgb = maskArgb & 0xFFFFFF;
-                            int red = (rgb >>> 16) & 0xFF;
-                            int green = (rgb >>> 8) & 0xFF;
-                            int blue = rgb & 0xFF;
-                            assertEquals(red, green);
-                            assertEquals(green, blue);
+                            assertEquals(0xFFFFFF, rgb,
+                                    "Authored mask pixels must be white at " + content.path() + " stage " + stage);
                             assertFalse(configuredColors.contains(rgb));
                         }
                     }
                 }
                 assertTrue(transparentBase);
                 assertTrue(transparentMask);
-                if (stage <= 2) {
+                if (!AUTHORED_MASK_STAGES.get(content.path()).contains(stage)) {
                     assertEquals(0, visibleMask);
                     assertTrue(manifest.contains("| `britannia_mod:" + content.path() + "` | " + stage));
-                    assertTrue(manifest.contains("Yes - no bloom at this stage"));
                 } else {
                     assertTrue(visibleMask > 0);
                 }
@@ -194,9 +200,11 @@ class FlowerAssetContractTest {
     }
 
     @Test
-    void manifestAndHashLedgerIntentionallyCoverEveryGeneratedPlaceholder() throws IOException {
+    void manifestAndHistoricalHashLedgerRespectIllustratorOwnedRuntimeTextures() throws IOException {
         String manifest = Files.readString(PROJECT.resolve("FLOWER_ASSET_PLACEHOLDER_MANIFEST.md"));
-        assertTrue(manifest.contains("All current flower assets are technical placeholders and are not final owner-approved artwork."));
+        assertTrue(manifest.contains("49 Illustrator-approved base exports"));
+        assertTrue(manifest.contains("33 Illustrator-approved authored white masks"));
+        assertTrue(manifest.contains("16 owner-approved transparent mask placeholders"));
         assertTrue(manifest.contains("Do not add a third in-world texture."));
         assertTrue(manifest.contains("Do not bake a species colour into dye_mask."));
         assertTrue(manifest.contains("Do not overwrite approved replacement artwork with the placeholder generator."));
@@ -209,11 +217,22 @@ class FlowerAssetContractTest {
         assertTrue(files.has("src/main/resources/assets/britannia_mod/textures/item/skinning_knife.png"));
         assertTrue(files.has("src/main/resources/data/britannia_mod/tags/item/skinning_knives.json"));
         assertFalse(files.has("src/main/resources/data/britannia_mod/tags/items/skinning_knives.json"));
+        int illustratorOwnedRuntimeTextures = 0;
         for (String relative : files.keySet()) {
             Path path = PROJECT.resolve(relative);
             assertTrue(Files.isRegularFile(path), relative);
-            assertEquals(files.get(relative).getAsString(), sha256(path), relative);
+            if (isIllustratorOwnedRuntimeTexture(relative)) {
+                illustratorOwnedRuntimeTextures++;
+            } else if (!relative.equals("FLOWER_ASSET_PLACEHOLDER_MANIFEST.md")) {
+                assertEquals(files.get(relative).getAsString(), sha256(path), relative);
+            }
         }
+        assertEquals(98, illustratorOwnedRuntimeTextures);
+    }
+
+    private static boolean isIllustratorOwnedRuntimeTexture(String relative) {
+        return relative.startsWith("src/main/resources/assets/britannia_mod/textures/block/flowers/")
+                && (relative.endsWith("_base_texture.png") || relative.endsWith("_dye_mask.png"));
     }
 
     private static FlowerContent content(String path) {
@@ -306,7 +325,13 @@ class FlowerAssetContractTest {
 
     private static String sha256(Path path) throws IOException {
         try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(path));
+            byte[] contents = Files.readAllBytes(path);
+            if (path.getFileName().toString().endsWith(".json")) {
+                contents = new String(contents, StandardCharsets.UTF_8)
+                        .replace("\r\n", "\n")
+                        .getBytes(StandardCharsets.UTF_8);
+            }
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(contents);
             StringBuilder result = new StringBuilder(digest.length * 2);
             for (byte value : digest) {
                 result.append(String.format("%02x", value & 0xFF));

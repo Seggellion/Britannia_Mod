@@ -213,3 +213,31 @@ On 2026-08-01, the exact full build gate and the focused eleven-suite flower gat
 The fresh-runtime gate first rejected atlas-remapped missing-mask output and then rejected premature render-buffer switching with `BufferBuilder: Not building`. Neither defect was approved or committed. After direct mask binding and sequential pass-buffer acquisition, screenshots `25` through `33` were freshly recaptured on 2026-08-02 and inspected at original resolution; server shutdown completed player/world save and reported all dimensions saved. **Corrective Milestone 11 — Approved.**
 
 Validation limitations: screenshots validate static alignment but do not formally measure continuous-motion flicker or GPU performance. The DOCX authority was structurally reviewed but could not be rendered because LibreOffice/`soffice` is unavailable. Placeholder artwork remains deliberately unapproved. Unrelated pre-existing client resource warnings were observed and left out of scope.
+
+## Illustrator Asset Pipeline - Milestone 19 validation matrix
+
+This section supersedes only the placeholder-art assumptions in earlier rows. Prior gameplay, persistence, renderer, multiplayer, and runtime evidence remains historical; it was not rerun because Milestone 19 is a resource-only technical integration and Milestone 20 remains unauthorized.
+
+| Area | Method | Result | Status / limitation |
+|---|---|---|---|
+| Corrected source identity | SHA-256 before and after native export | `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`; unchanged | Pass |
+| Recoverable source edit | Hash durable pre-correction backup | `6E3DD39B95DA983B317D5F379F33F4BBD08A2E7FF72B7B2FD874DF4D3CFD4048` | Pass |
+| Native source structure | Illustrator 30.7 reopen/inventory after save | 49 export bases, 33 white masks, 33 hidden originals, 0 linked assets, 0 hidden/locked stage layers | Pass |
+| PDF-compatible source cross-check | Poppler render and original-resolution inspection | Corrected document renders; no missing full stage/object group observed | Pass; composite document view is not a runtime acceptance screenshot |
+| Native export coverage | Object-isolated Illustrator PNG24 export | 49 bases + 33 authored masks | Pass |
+| Base-only coverage | Copy one hash-verified transparent PNG to approved base-only destinations | 16 transparent masks; exact per-species matrix enforced | Pass |
+| Dimensions and padding | Pillow audit of every PNG | 98/98 are 128 x 128; every base has transparent padding and visible pixels | Pass |
+| Authored mask color | Visible-pixel RGB enumeration | 33/33 masks contain only `RGB(255,255,255)` | Pass |
+| Placeholder alpha | Alpha enumeration | 16/16 approved placeholders have zero visible pixels | Pass |
+| Base/mask separation | Per-pixel paired-alpha comparison | 0 overlapping pixels across all 49 pairs | Pass |
+| Source correction fidelity | Fresh native re-export versus pre-embed candidates | 0 alpha or visible-RGB mismatches across 33 corrected bases | Pass |
+| Destination fidelity | SHA-256 comparison from staging to resource destination | 98/98 destination files match staging | Pass |
+| Contact-sheet QA | Base, mask, and combined 7-by-7 sheets inspected at original resolution | All seven growth sequences present; white masks align with transparent base areas | Pass for technical QA; final visual acceptance deferred to Milestone 20 |
+| Canonical asset graph | Git path audit plus `FlowerAssetContractTest` | 49 model JSONs unchanged; 0 pass-specific models; 0 model changes | Pass |
+| Focused resource contract | `FlowerAssetContractTest`, isolated no-daemon/one-worker Gradle run | 5 tests, 0 failures, `BUILD SUCCESSFUL in 52s` | Pass |
+| Placeholder generator safety | Historical ledger path coverage plus hash checks for non-Illustrator resources | 98 runtime textures and the hand-maintained manifest excluded from byte ownership; guarded overwrite remains unable to replace approved art | Pass |
+| Full build/gameplay/runtime regression | Not run | Outside Milestone 19 technical resource scope | Not executed; Milestone 20 remains unauthorized |
+
+The first focused Gradle invocation exceeded its five-minute command timeout while a reused daemon continued in the background. Its result XML later recorded that the new 98-PNG contract passed and one historical JSON-ledger assertion failed because checked-out Windows CRLF bytes differed from generator LF bytes. The exact Farming daemon was identified and stopped without touching concurrent shared-repository Java processes. The ledger assertion was made line-ending-stable, and the isolated rerun above passed all five tests.
+
+Milestone 19 validation result: **Pass for technical integration. Final in-game visual acceptance is not claimed and remains Milestone 20 work.**

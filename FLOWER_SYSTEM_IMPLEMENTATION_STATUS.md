@@ -418,3 +418,45 @@ Deferred acquisition, economy, generation, and expansion features: **Not impleme
 Milestone 10 status: **Approved.** Commit message: `docs(flowers): close implementation and asset handoff`.
 
 Corrective Milestone 11 status: **Corrective Milestone 11 — Approved.** Commit message: `fix(flowers): use canonical models with two texture passes`. This approval authorizes only the isolated local commit; it does not authorize merge, push, tag, release, or deployment.
+
+## Illustrator Asset Pipeline - Milestone 19 technical integration
+
+Milestone 19 technical integration is **complete and uncommitted** on the local case-sensitive `Farming` branch at starting HEAD `142712bbe9acb2d29b65e4e85ab56ce5a49e0ed3`. Milestone 20 visual acceptance remains unauthorized and was not started.
+
+### Authoritative Illustrator source
+
+- Source: `C:\projects\britannia\raw fiels\flowers.ai`
+- Current SHA-256: `00E0C2F5CE56422361FC88C7F8F0BAD20A337B1FD85F33ED4252B6680F22A223`
+- Current size and timestamp: 50,391,256 bytes; `2026-08-05T01:11:11Z`
+- Pre-correction backup: `C:\projects\britannia\raw fiels\codex_backups\flowers_pre_base_transparency_20260804_181043.ai`
+- Backup SHA-256: `6E3DD39B95DA983B317D5F379F33F4BBD08A2E7FF72B7B2FD874DF4D3CFD4048`
+
+The owner authorized source-authoritative base correction. On all 33 authored-mask stages, the prior embedded base is retained hidden as `base_texture_original_nonexport`; a corrected embedded 128 x 128 `base_texture` occupies exact Artboard 1 bounds and is transparent wherever `dye_mask` selects. The 16 base-only stages remain unchanged. Post-save native inventory found 49 export bases, 33 white masks, 33 hidden originals, zero linked assets, zero hidden/locked stage layers, and the approved 7-by-7 species/stage structure.
+
+Illustrator's scripted save left the AI as untagged RGB. The corrected pixels preserve the previously exported sRGB numeric values, and the runtime PNGs contain no ICC profile, matching the existing resource convention. This color-profile limitation is recorded rather than silently claiming that the current AI carries an embedded sRGB tag.
+
+### Runtime asset result
+
+- 49 base PNGs exported from named Illustrator objects.
+- 33 authored white masks exported from named Illustrator groups.
+- 16 fully transparent mask placeholders retained where no source `dye_mask` exists.
+- Exact authored-mask matrix: Hyacinth 3-7; Lily 3-7; Campion 3-6; Poppy 3-6; Orfluer 3-7; Foxglove 2-6; Snowdrop 3-7.
+- All 98 production PNGs are 128 x 128, hash-verified after copy, and referenced by the existing canonical model paths.
+- Base/mask alpha overlap is zero across all 49 pairs.
+- All visible authored-mask RGB is exactly `255,255,255`.
+- The fresh Illustrator export matches all 33 pre-embed corrected candidates in alpha and visible RGB.
+- 85 tracked PNGs differ from the generated-placeholder baseline: 49 bases, 33 authored masks, and the Campion/Poppy/Foxglove stage-7 masks corrected to approved transparent placeholders.
+- 49 canonical model JSONs remain unchanged; no pass-specific model JSONs were added.
+
+`FlowerAssetContractTest` now encodes the approved per-species mask matrix instead of assuming every stage after 2 has a mask. It also requires exact white visible-mask pixels, preserves the zero-overlap rule, and treats the 98 integrated textures as Illustrator-owned outputs outside the historical placeholder hash ledger. Unchanged generated JSON ledger checks normalize Windows line endings.
+
+### Validation and scope boundary
+
+- Native Illustrator re-export: 49 bases plus 33 masks; source hash unchanged before/after.
+- Pixel audit: 49 stages, 98 PNGs, 33 authored masks, 16 transparent placeholders, 0 errors, 0 overlap pixels.
+- Visual QA: base, mask, and combined 7-by-7 contact sheets inspected; growth sequences, padding, and mask alignment are coherent.
+- Focused automated gate: `.\gradlew.bat test --tests "com.seggellion.britannia_mod.farming.FlowerAssetContractTest" --console=plain --no-configuration-cache --no-daemon --max-workers=1` passed in 52 seconds with 5 tests and 0 failures.
+- No full build, clean, gameplay regression suite, client launch, dedicated server, or Milestone 20 visual-review fixture was run.
+- No stage, commit, stash, fetch, pull, merge, rebase, reset, push, GitHub action, release, or deployment occurred.
+
+Milestone 19 status: **Technical integration complete; awaiting separate Milestone 20 authorization and final visual acceptance.**
