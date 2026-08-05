@@ -571,7 +571,6 @@ public static final DeferredHolder<Block, Block> IRON_FENCE = BLOCKS.register("i
 public static final DeferredHolder<Block, Block> ANCHOR = BLOCKS.register("anchor", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
-
 public static final DeferredHolder<Block, Block> CORRAL_FENCE = BLOCKS.register("corral_fence", () ->
     new HorizontalTallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
 
@@ -1275,6 +1274,14 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR =
                 .sound(SoundType.WOOD)
         ));
 
+        public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR_SLAB =
+    BLOCKS.register("wooden_plank_floor_slab", () ->
+        new FloorBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                .strength(2.0f)
+                .sound(SoundType.WOOD)
+        ));
+
 public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
     BLOCKS.register("wooden_board_floor", () ->
         new FloorBlock(
@@ -1634,6 +1641,9 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_WALL_BOTTOM =
             .noOcclusion()
         )
     );
+
+public static final DeferredHolder<Block, Block> WOOD_SUPPORT_FLOOR = BLOCKS.register("wood_support_floor", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
   public static final DeferredHolder<Block, PlasterWoodWallBlock> PLASTER_WOOD_WALL =
         BLOCKS.register("plaster_wood_wall", () ->

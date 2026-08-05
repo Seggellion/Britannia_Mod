@@ -915,6 +915,10 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_PLANK_FLOOR_ITEM =
     ITEMS.register("wooden_plank_floor", () ->
         new BlockItem(BlockRegistry.WOODEN_PLANK_FLOOR.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> WOODEN_PLANK_FLOOR_SLAB_ITEM =
+    ITEMS.register("wooden_plank_floor_slab", () ->
+        new BlockItem(BlockRegistry.WOODEN_PLANK_FLOOR_SLAB.get(), new Item.Properties()));
+
 public static final DeferredHolder<Item, BlockItem> WOODEN_BOARD_FLOOR_ITEM =
     ITEMS.register("wooden_board_floor", () ->
         new BlockItem(BlockRegistry.WOODEN_BOARD_FLOOR.get(), new Item.Properties()));
@@ -984,6 +988,11 @@ public static final DeferredHolder<Item, BlockItem> PLASTER_STONE_WALL_TOP_ITEM 
     public static final DeferredHolder<Item, Item> PLASTER_WOOD_WALL_ITEM =
         ITEMS.register("plaster_wood_wall", () ->
             new BlockItem(BlockRegistry.PLASTER_WOOD_WALL.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> WOOD_SUPPORT_FLOOR_ITEM =
+        ITEMS.register("wood_support_floor", () ->
+            new BlockItem(BlockRegistry.WOOD_SUPPORT_FLOOR.get(), new Item.Properties()));
+
 
 
 public static final DeferredHolder<Item, BlockItem> PLASTER_WOOD_FOUNDATION_ITEM =

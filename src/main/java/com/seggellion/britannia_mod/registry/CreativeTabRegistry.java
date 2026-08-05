@@ -55,6 +55,7 @@ public class CreativeTabRegistry {
                 // Foundations, Walls, Floors
                 safeAccept(output, ItemRegistry.WOODEN_BOARD_FLOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_PLANK_FLOOR_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_PLANK_FLOOR_SLAB_ITEM.get());
                 safeAccept(output, ItemRegistry.WOOD_DOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.WOODEN_GATE_ITEM.get());
                 safeAccept(output, ItemRegistry.IRON_FENCE_GATE_ITEM.get());
@@ -147,6 +148,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.LOG_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.LOG_WALL_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_STONE_WALL_ITEM.get());
+                safeAccept(output, ItemRegistry.WOOD_SUPPORT_FLOOR_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_BOTTOM_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_WALL_TOP_ITEM.get());

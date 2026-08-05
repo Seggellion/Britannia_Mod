@@ -1,0 +1,21 @@
+  {
+    "variants": {
+      "facing=north": {
+        "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
+        "y": 0
+      },
+      "facing=south": {
+        "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
+        "y": 180
+      },
+      "facing=west": {
+        "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
+        "y": 270
+      },
+      "facing=east": {
+        "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
+        "y": 90
+      }
+    }
+  }
+  
