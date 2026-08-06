@@ -1,85 +1,82 @@
 {
   "variants": {
     "facing=north,half=lower,shape=straight": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight",
-      "y": 0
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight"
+    },
+    "facing=north,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,half=lower,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner"
+    },
+    "facing=north,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,half=lower,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction"
+    },
+    "facing=north,half=upper,shape=t_junction": {
+      "model": "minecraft:block/air"
     },
     "facing=east,half=lower,shape=straight": {
       "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight",
       "y": 90
     },
-    "facing=south,half=lower,shape=straight": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight",
-      "y": 180
-    },
-    "facing=west,half=lower,shape=straight": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight",
-      "y": 270
-    },
-    "facing=north,half=lower,shape=corner": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner",
-      "y": 0
+    "facing=east,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
     },
     "facing=east,half=lower,shape=corner": {
       "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner",
       "y": 90
     },
-    "facing=south,half=lower,shape=corner": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner",
-      "y": 180
-    },
-    "facing=west,half=lower,shape=corner": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner",
-      "y": 270
-    },
-    "facing=north,half=lower,shape=t_junction": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction",
-      "y": 0
+    "facing=east,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
     },
     "facing=east,half=lower,shape=t_junction": {
       "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction",
       "y": 90
     },
-    "facing=south,half=lower,shape=t_junction": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction",
+    "facing=east,half=upper,shape=t_junction": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,half=lower,shape=straight": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight",
       "y": 180
-    },
-    "facing=west,half=lower,shape=t_junction": {
-      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction",
-      "y": 270
-    },
-    "facing=north,half=upper,shape=straight": {
-      "model": "minecraft:block/air"
-    },
-    "facing=east,half=upper,shape=straight": {
-      "model": "minecraft:block/air"
     },
     "facing=south,half=upper,shape=straight": {
       "model": "minecraft:block/air"
     },
-    "facing=west,half=upper,shape=straight": {
-      "model": "minecraft:block/air"
-    },
-    "facing=north,half=upper,shape=corner": {
-      "model": "minecraft:block/air"
-    },
-    "facing=east,half=upper,shape=corner": {
-      "model": "minecraft:block/air"
+    "facing=south,half=lower,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner",
+      "y": 180
     },
     "facing=south,half=upper,shape=corner": {
       "model": "minecraft:block/air"
     },
-    "facing=west,half=upper,shape=corner": {
-      "model": "minecraft:block/air"
-    },
-    "facing=north,half=upper,shape=t_junction": {
-      "model": "minecraft:block/air"
-    },
-    "facing=east,half=upper,shape=t_junction": {
-      "model": "minecraft:block/air"
+    "facing=south,half=lower,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction",
+      "y": 180
     },
     "facing=south,half=upper,shape=t_junction": {
       "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower,shape=straight": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_straight",
+      "y": 270
+    },
+    "facing=west,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower,shape=corner": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_corner",
+      "y": 270
+    },
+    "facing=west,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower,shape=t_junction": {
+      "model": "britannia_mod:block/structure/plaster/plaster_ornate_wall_upper_t_junction",
+      "y": 270
     },
     "facing=west,half=upper,shape=t_junction": {
       "model": "minecraft:block/air"

@@ -1,52 +1,85 @@
 {
   "variants": {
-    "facing=north,shape=straight": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight",
-      "y": 0
+    "facing=north,half=lower,shape=straight": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight"
     },
-    "facing=east,shape=straight": {
+    "facing=north,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,half=lower,shape=corner": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner"
+    },
+    "facing=north,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,half=lower,shape=t_junction": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_t_junction"
+    },
+    "facing=north,half=upper,shape=t_junction": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,half=lower,shape=straight": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight",
       "y": 90
     },
-    "facing=south,shape=straight": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight",
-      "y": 180
+    "facing=east,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
     },
-    "facing=west,shape=straight": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight",
-      "y": 270
-    },
-    "facing=north,shape=corner": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner",
-      "y": 0
-    },
-    "facing=east,shape=corner": {
+    "facing=east,half=lower,shape=corner": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner",
       "y": 90
     },
-    "facing=south,shape=corner": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner",
-      "y": 180
+    "facing=east,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
     },
-    "facing=west,shape=corner": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner",
-      "y": 270
-    },
-    "facing=north,shape=t_junction": {
-      "model": "britannia_mod:block/structure/sandstone/sandstone_column_t_junction",
-      "y": 0
-    },
-    "facing=east,shape=t_junction": {
+    "facing=east,half=lower,shape=t_junction": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_column_t_junction",
       "y": 90
     },
-    "facing=south,shape=t_junction": {
+    "facing=east,half=upper,shape=t_junction": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,half=lower,shape=straight": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight",
+      "y": 180
+    },
+    "facing=south,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,half=lower,shape=corner": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner",
+      "y": 180
+    },
+    "facing=south,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,half=lower,shape=t_junction": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_column_t_junction",
       "y": 180
     },
-    "facing=west,shape=t_junction": {
+    "facing=south,half=upper,shape=t_junction": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower,shape=straight": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_straight",
+      "y": 270
+    },
+    "facing=west,half=upper,shape=straight": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower,shape=corner": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_column_corner",
+      "y": 270
+    },
+    "facing=west,half=upper,shape=corner": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower,shape=t_junction": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_column_t_junction",
       "y": 270
+    },
+    "facing=west,half=upper,shape=t_junction": {
+      "model": "minecraft:block/air"
     }
   }
 }

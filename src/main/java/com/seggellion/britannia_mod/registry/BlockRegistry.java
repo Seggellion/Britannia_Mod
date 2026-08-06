@@ -36,6 +36,7 @@ import com.seggellion.britannia_mod.block.PurpleTentBlock;
 import com.seggellion.britannia_mod.block.CobbleStoneWallBlock;
 import com.seggellion.britannia_mod.block.OakWallBlock;
 import com.seggellion.britannia_mod.block.FloorBlock;
+import com.seggellion.britannia_mod.block.FloorSlabBlock;
 import com.seggellion.britannia_mod.block.DungeonWallBlock;
 import com.seggellion.britannia_mod.block.CaveBlock;
 import com.seggellion.britannia_mod.block.GhostLightBlock;
@@ -1274,12 +1275,13 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR =
                 .sound(SoundType.WOOD)
         ));
 
-        public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR_SLAB =
+public static final DeferredHolder<Block, FloorSlabBlock> WOODEN_PLANK_FLOOR_SLAB =
     BLOCKS.register("wooden_plank_floor_slab", () ->
-        new FloorBlock(
+        new FloorSlabBlock(
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
                 .strength(2.0f)
                 .sound(SoundType.WOOD)
+                .noOcclusion()
         ));
 
 public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
