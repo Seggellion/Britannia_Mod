@@ -428,6 +428,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PLASTER_WALL_AND_SUPPORT_BLANK_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_ARCHWAY_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_AND_STONE_WINDOW_ITEM.get());
+                safeAccept(output, ItemRegistry.BANNISTER_ITEM.get());
 
                 // Sandstone Series
                 safeAccept(output, ItemRegistry.ORNATE_SANDSTONE_WALL_ITEM.get());

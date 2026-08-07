@@ -2,15 +2,16 @@
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
 	"parent": "minecraft:block/block",
+	"ambientocclusion": false,
 	"textures": {
 		"1": "britannia_mod:block/structure/plaster/dirty_plaster",
 		"2": "britannia_mod:block/structure/plaster/wood_support"
 	},
 	"elements": [
 		{
-			"from": [0, 0, 0.5],
-			"to": [16, 31.9, 5.5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, -5]},
+			"from": [3, 0, 0],
+			"to": [16, 31.9, 5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [3, 0, -5.5]},
 			"faces": {
 				"north": {"uv": [8.25, 8.375, 16, 16], "texture": "#1"},
 				"east": {"uv": [8.25, 8.375, 16, 16], "texture": "#1"},
@@ -21,9 +22,9 @@
 			}
 		},
 		{
-			"from": [3, 0, -0.5],
-			"to": [16, 1, 0.5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [3, 0, -0.5]},
+			"from": [3, 0, -1],
+			"to": [16, 1, 0],
+			"rotation": {"angle": 0, "axis": "y", "origin": [3, 0, -1]},
 			"faces": {
 				"north": {"uv": [0, 12.09375, 9.5, 13.84375], "texture": "#2"},
 				"east": {"uv": [0, 12.09375, 9.5, 13.84375], "texture": "#2"},
@@ -48,7 +49,7 @@
 		},
 		{
 			"from": [-0.1, 0, -0.8],
-			"to": [2.9, 32, 2.2],
+			"to": [2.9, 32, 6.7],
 			"rotation": {"angle": 0, "axis": "y", "origin": [-0.1, 0, -0.8]},
 			"faces": {
 				"north": {"uv": [0, 6.09375, 16, 7.84375], "rotation": 90, "texture": "#2"},
@@ -59,5 +60,12 @@
 				"down": {"uv": [0, 6.09375, 16, 7.84375], "rotation": 90, "texture": "#2"}
 			}
 		}
-	]
+	],
+	"display": {
+		"gui": {
+			"rotation": [32, -140, 0],
+			"translation": [-1, -2.25, 0],
+			"scale": [0.46, 0.46, 0.46]
+		}
+	}
 }

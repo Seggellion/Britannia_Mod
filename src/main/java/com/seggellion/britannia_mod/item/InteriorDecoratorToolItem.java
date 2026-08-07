@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
+import com.seggellion.britannia_mod.block.WindowSideToggleable;
 import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
 import com.seggellion.britannia_mod.block.nudgeable.NudgeableBlockEntity;
 import com.mojang.logging.LogUtils;
@@ -18,9 +19,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -58,6 +61,17 @@ public class InteriorDecoratorToolItem extends Item {
                 }
                 return InteractionResult.SUCCESS;
             }
+        }
+
+        // Window side toggle. Must come before the generic facing rotation below, otherwise these
+        // blocks would just spin: they all carry HorizontalDirectionalBlock.FACING.
+        if (state.getBlock() instanceof WindowSideToggleable window) {
+            if (!level.isClientSide()) {
+                BooleanProperty side = window.windowSideProperty();
+                level.setBlock(pos, state.setValue(side, !state.getValue(side)), Block.UPDATE_ALL);
+                LOGGER.info("🎨 InteriorDecoratorTool toggled window side at {}", pos);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide());
         }
 
         // Rotate horizontal blocks (except ThinWall, DoubleBedBlock, and BlankSignHolder)

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:doors",
+    { "id": "britannia_mod:wood_door", "required": false },
+    { "id": "britannia_mod:metal_door", "required": false },
+    { "id": "britannia_mod:lockable_wood_door", "required": false },
+    { "id": "britannia_mod:lockable_metal_door", "required": false },
+    { "id": "britannia_mod:wooden_gate", "required": false },
+    { "id": "britannia_mod:iron_fence_gate", "required": false }
+  ]
+}

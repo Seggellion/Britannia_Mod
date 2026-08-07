@@ -1,84 +1,165 @@
 {
   "variants": {
-    "facing=north,half=lower,shape=straight": {
+    "facing=north,shape=straight,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight"
     },
-    "facing=north,half=upper,shape=straight": {
+    "facing=north,shape=straight,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,half=lower,shape=corner": {
+    "facing=north,shape=straight,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight"
+    },
+    "facing=north,shape=straight,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=corner,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner"
     },
-    "facing=north,half=upper,shape=corner": {
+    "facing=north,shape=corner,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,half=lower,shape=t_junction": {
+    "facing=north,shape=corner,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner_branch_right"
+    },
+    "facing=north,shape=corner,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=t_junction,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction"
     },
-    "facing=north,half=upper,shape=t_junction": {
+    "facing=north,shape=t_junction,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,half=lower,shape=straight": {
+    "facing=north,shape=t_junction,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction_branch_right"
+    },
+    "facing=north,shape=t_junction,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=straight,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight",
       "y": 90
     },
-    "facing=east,half=upper,shape=straight": {
+    "facing=east,shape=straight,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,half=lower,shape=corner": {
+    "facing=east,shape=straight,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight",
+      "y": 90
+    },
+    "facing=east,shape=straight,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=corner,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner",
       "y": 90
     },
-    "facing=east,half=upper,shape=corner": {
+    "facing=east,shape=corner,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,half=lower,shape=t_junction": {
+    "facing=east,shape=corner,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner_branch_right",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=t_junction,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction",
       "y": 90
     },
-    "facing=east,half=upper,shape=t_junction": {
+    "facing=east,shape=t_junction,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,half=lower,shape=straight": {
+    "facing=east,shape=t_junction,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction_branch_right",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=straight,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight",
       "y": 180
     },
-    "facing=south,half=upper,shape=straight": {
+    "facing=south,shape=straight,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,half=lower,shape=corner": {
+    "facing=south,shape=straight,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight",
+      "y": 180
+    },
+    "facing=south,shape=straight,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=corner,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner",
       "y": 180
     },
-    "facing=south,half=upper,shape=corner": {
+    "facing=south,shape=corner,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,half=lower,shape=t_junction": {
+    "facing=south,shape=corner,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner_branch_right",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=t_junction,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction",
       "y": 180
     },
-    "facing=south,half=upper,shape=t_junction": {
+    "facing=south,shape=t_junction,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,half=lower,shape=straight": {
+    "facing=south,shape=t_junction,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction_branch_right",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=straight,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight",
       "y": 270
     },
-    "facing=west,half=upper,shape=straight": {
+    "facing=west,shape=straight,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,half=lower,shape=corner": {
+    "facing=west,shape=straight,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_straight",
+      "y": 270
+    },
+    "facing=west,shape=straight,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=corner,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner",
       "y": 270
     },
-    "facing=west,half=upper,shape=corner": {
+    "facing=west,shape=corner,branch_right=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,half=lower,shape=t_junction": {
+    "facing=west,shape=corner,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_corner_branch_right",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=t_junction,branch_right=false,half=lower": {
       "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction",
       "y": 270
     },
-    "facing=west,half=upper,shape=t_junction": {
+    "facing=west,shape=t_junction,branch_right=false,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=t_junction,branch_right=true,half=lower": {
+      "model": "britannia_mod:block/structure/sandstone/sandstone_block_wall_t_junction_branch_right",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=true,half=upper": {
       "model": "minecraft:block/air"
     }
   }

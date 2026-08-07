@@ -2,10 +2,10 @@
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
 	"parent": "minecraft:block/block",
+	"ambientocclusion": false,
 	"textures": {
 		"1": "britannia_mod:block/structure/plaster/wood_support",
-		"2": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7",
-		"particle": "britannia_mod:block/structure/plaster/dirty_plaster"
+		"2": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7"
 	},
 	"elements": [
 		{
