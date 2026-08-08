@@ -432,6 +432,12 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_POST_ITEM.get());
                 safeAccept(output, ItemRegistry.VILLA_LAMP_POST_ITEM.get());
                 safeAccept(output, ItemRegistry.HOUSE_FARM_PLOT_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_BLANK_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_AND_SUPPORT_BLANK_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_EAST_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_HALF_ITEM.get());
+                safeAccept(output, ItemRegistry.CEILING_PLANKS_ITEM.get());
+                safeAccept(output, ItemRegistry.CEILING_JOIST_EDGE_ITEM.get());
 
                 // Sandstone Series
                 safeAccept(output, ItemRegistry.ORNATE_SANDSTONE_WALL_ITEM.get());

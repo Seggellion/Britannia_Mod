@@ -8,6 +8,9 @@ import com.seggellion.britannia_mod.block.BannisterBlock;
 import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
 import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.block.VillaLampPostBlock;
+import com.seggellion.britannia_mod.block.PlasterWallHalfBlock;
+import com.seggellion.britannia_mod.block.CeilingJoistEdgeBlock;
+import com.seggellion.britannia_mod.block.CeilingPanelBlock;
 import com.seggellion.britannia_mod.block.CustomSandstoneBrickBlock;
 import com.seggellion.britannia_mod.block.SandstoneBrickRoadBlock;
 import com.seggellion.britannia_mod.block.IronFenceBlock;
@@ -1944,6 +1947,17 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
 
     /** 3x3 timber post, 32 voxels tall, in one corner of the block. */
     public static final DeferredHolder<Block, PlasterWoodPostBlock> PLASTER_WOOD_POST = BLOCKS.register("plaster_wood_post", () -> new PlasterWoodPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    // Half-height plaster walls: 16 tall, 5 deep, on the block edge. Same connection logic as the
+    // full-height family, so they turn corners the same way.
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_BLANK_HALF = BLOCKS.register("plaster_wall_blank_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_AND_SUPPORT_BLANK_HALF = BLOCKS.register("plaster_wall_and_support_blank_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_SUPPORT_DIAGONAL_EAST_HALF = BLOCKS.register("plaster_wall_support_diagonal_east_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_HALF = BLOCKS.register("plaster_wall_support_diagonal_south_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+
+    /** Ceiling panels: the underside counterparts of the floor deck and joist edge. */
+    public static final DeferredHolder<Block, CeilingPanelBlock> CEILING_PLANKS = BLOCKS.register("ceiling_planks", () -> new CeilingPanelBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+    public static final DeferredHolder<Block, CeilingJoistEdgeBlock> CEILING_JOIST_EDGE = BLOCKS.register("ceiling_joist_edge", () -> new CeilingJoistEdgeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
 
     /** Raised planting bed: brick kerb outside, soil recessed inside. */
     public static final DeferredHolder<Block, HouseFarmPlotBlock> HOUSE_FARM_PLOT = BLOCKS.register("house_farm_plot", () -> new HouseFarmPlotBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(1.5f).sound(SoundType.GRAVEL)));

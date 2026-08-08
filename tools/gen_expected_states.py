@@ -36,7 +36,8 @@ MIRRORABLE = ["plaster_wall_large_window", "ornate_wall_large_window",
                       "plaster_wall_and_support_blank"]
 
 # BannisterBlock: facing x shape x branch_right
-FLOORS = ["bannister"]
+FLOORS = ["bannister", "plaster_wall_blank_half", "plaster_wall_and_support_blank_half",
+          "plaster_wall_support_diagonal_east_half", "plaster_wall_support_diagonal_south_half"]
 
 # WoodSupportFloorBlock: the above, plus enclosed
 JOISTS = ["wood_support_floor"]
@@ -45,10 +46,10 @@ JOISTS = ["wood_support_floor"]
 POSTS = ["plaster_wood_post"]
 
 # Blocks with facing only
-FACING_ONLY = ["villa_lamp_post"]
+FACING_ONLY = ["villa_lamp_post", "ceiling_joist_edge"]
 
 # Blocks with no properties at all
-SINGLE_STATE = ["house_farm_plot"]
+SINGLE_STATE = ["ceiling_planks"]   # house_farm_plot is multipart; the validator skips those
 
 
 def main():

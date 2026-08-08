@@ -635,5 +635,11 @@
     "block.britannia_mod.walnut_stairs": "Walnut Stairs",
     "block.britannia_mod.plaster_wood_post": "Plaster Wood Post",
     "block.britannia_mod.house_farm_plot": "House Farm Plot",
-    "block.britannia_mod.villa_lamp_post": "Villa Lamp Post"
+    "block.britannia_mod.villa_lamp_post": "Villa Lamp Post",
+    "block.britannia_mod.plaster_wall_blank_half": "Plaster Wall (Half)",
+    "block.britannia_mod.plaster_wall_and_support_blank_half": "Plaster Wall and Support (Half)",
+    "block.britannia_mod.plaster_wall_support_diagonal_east_half": "Plaster Wall Support Diagonal East (Half)",
+    "block.britannia_mod.plaster_wall_support_diagonal_south_half": "Plaster Wall Support Diagonal South (Half)",
+    "block.britannia_mod.ceiling_planks": "Ceiling Planks",
+    "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge"
 }

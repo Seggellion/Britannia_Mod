@@ -1,6 +1,8 @@
 // ItemRegistry.java
 package com.seggellion.britannia_mod.registry;
 
+import com.seggellion.britannia_mod.item.RaisedBlockItem;
+
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.ModSounds;
 // import com.seggellion.britannia_mod.item.SmallWoodHouseDeedItem;
@@ -1484,7 +1486,9 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_POST_ITEM =
 
 
     public static final DeferredHolder<Item, Item> CANDELABRA_TALL_ITEM = ITEMS.register(
-            "candelabra_tall", () -> new BlockItem(BlockRegistry.CANDELABRA_TALL.get(), new Item.Properties()));
+            // Its model spans y -16..31.5, a third of it below the block it occupies, so it is
+            // placed one block up to sit the base on the ground instead of sinking into it.
+            "candelabra_tall", () -> new RaisedBlockItem(BlockRegistry.CANDELABRA_TALL.get(), 1, new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> TORCH_WALL_ITEM = ITEMS.register(
             "torch_wall", () -> new BlockItem(BlockRegistry.TORCH_WALL.get(), new Item.Properties()));
@@ -1636,8 +1640,15 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> PLASTER_AND_STONE_WINDOW_ITEM = ITEMS.register("plaster_and_stone_window", () -> new BlockItem(BlockRegistry.PLASTER_AND_STONE_WINDOW.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> BANNISTER_ITEM = ITEMS.register("bannister", () -> new BlockItem(BlockRegistry.BANNISTER.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> PLASTER_WOOD_POST_ITEM = ITEMS.register("plaster_wood_post", () -> new BlockItem(BlockRegistry.PLASTER_WOOD_POST.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_BLANK_HALF_ITEM = ITEMS.register("plaster_wall_blank_half", () -> new BlockItem(BlockRegistry.PLASTER_WALL_BLANK_HALF.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_AND_SUPPORT_BLANK_HALF_ITEM = ITEMS.register("plaster_wall_and_support_blank_half", () -> new BlockItem(BlockRegistry.PLASTER_WALL_AND_SUPPORT_BLANK_HALF.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_SUPPORT_DIAGONAL_EAST_HALF_ITEM = ITEMS.register("plaster_wall_support_diagonal_east_half", () -> new BlockItem(BlockRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_EAST_HALF.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_HALF_ITEM = ITEMS.register("plaster_wall_support_diagonal_south_half", () -> new BlockItem(BlockRegistry.PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_HALF.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CEILING_PLANKS_ITEM = ITEMS.register("ceiling_planks", () -> new BlockItem(BlockRegistry.CEILING_PLANKS.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> CEILING_JOIST_EDGE_ITEM = ITEMS.register("ceiling_joist_edge", () -> new BlockItem(BlockRegistry.CEILING_JOIST_EDGE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> HOUSE_FARM_PLOT_ITEM = ITEMS.register("house_farm_plot", () -> new BlockItem(BlockRegistry.HOUSE_FARM_PLOT.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> VILLA_LAMP_POST_ITEM = ITEMS.register("villa_lamp_post", () -> new BlockItem(BlockRegistry.VILLA_LAMP_POST.get(), new Item.Properties()));
+    /** Model spans y -16..32, so place one block up or the base sinks into the terrain. */
+    public static final DeferredHolder<Item, Item> VILLA_LAMP_POST_ITEM = ITEMS.register("villa_lamp_post", () -> new RaisedBlockItem(BlockRegistry.VILLA_LAMP_POST.get(), 1, new Item.Properties()));
     public static final DeferredHolder<Item, Item> ORNATE_SANDSTONE_WALL_ITEM = ITEMS.register("ornate_sandstone_wall", () -> new BlockItem(BlockRegistry.ORNATE_SANDSTONE_WALL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> REGULAR_SANDSTONE_WALL_ITEM = ITEMS.register("regular_sandstone_wall", () -> new BlockItem(BlockRegistry.REGULAR_SANDSTONE_WALL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SANDSTONE_BLOCK_WALL_ITEM = ITEMS.register("sandstone_block_wall", () -> new BlockItem(BlockRegistry.SANDSTONE_BLOCK_WALL.get(), new Item.Properties()));

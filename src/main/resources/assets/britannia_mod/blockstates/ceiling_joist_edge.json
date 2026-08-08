@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "britannia_mod:block/structure/ceiling_joist_edge"
+    },
+    "facing=east": {
+      "model": "britannia_mod:block/structure/ceiling_joist_edge",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "britannia_mod:block/structure/ceiling_joist_edge",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "britannia_mod:block/structure/ceiling_joist_edge",
+      "y": 270
+    }
+  }
+}

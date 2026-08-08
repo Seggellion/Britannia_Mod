@@ -20,55 +20,39 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Floor joist edge piece: a full-height joist run along one block edge with a thin deck covering
- * the rest of the block.
+ * Half-height plaster wall: 16 voxels tall, 5 deep, hugging one edge of the block.
  *
- * <p>Uses the same canonical orientation and connection derivation as {@link DoubleWallBlock}, so
- * the two families turn corners the same way: {@code facing} is the edge the joist run hugs, and
+ * <p>The full-height family is {@link DoubleWallBlock}, which is two blocks tall and carries a
+ * 32-voxel model on its lower half. This is the single-block version for knee walls, parapets and
+ * balustrade infill, and it shares the same canonical orientation and connection derivation so the
+ * two families turn corners identically: {@code facing} is the edge the wall hugs, and
  * {@code branch_right} says which side the perpendicular run is on.
- *
- * <p>This block previously had no {@code getShape} at all, so its collision and selection were a
- * full cube while the model is a joist plus a 3-voxel deck. Both now follow the art.
  */
-public class WoodSupportFloorBlock extends Block {
+public class PlasterWallHalfBlock extends Block {
 
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<WallShape> SHAPE = EnumProperty.create("shape", WallShape.class);
     public static final BooleanProperty BRANCH_RIGHT = BooleanProperty.create("branch_right");
 
-    /**
-     * True when all four horizontal neighbours are filled, so no joist end is exposed. The visible
-     * joist retracts to just the deck: an interior floor tile has nothing to show an edge to, and
-     * leaving the joist there pushed geometry into the neighbour and read as a lattice of beams
-     * across what should be a flat floor.
-     */
-    public static final BooleanProperty ENCLOSED = BooleanProperty.create("enclosed");
+    /** Matches the models: 5 voxels deep against the edge named by {@link #FACING}. */
+    private static final double DEPTH = 5.0D;
 
-    /** How far the joist run reaches back from the face it hugs. Matches the model. */
-    private static final double JOIST_DEPTH = 7.0D;
-    /** The deck is the top 3 voxels of everything the joists do not occupy. */
-    private static final double DECK_TOP = 13.0D;
+    private static final VoxelShape NORTH = Block.box(0, 0, 0, 16, 16, DEPTH);
+    private static final VoxelShape SOUTH = Block.box(0, 0, 16 - DEPTH, 16, 16, 16);
+    private static final VoxelShape WEST  = Block.box(0, 0, 0, DEPTH, 16, 16);
+    private static final VoxelShape EAST  = Block.box(16 - DEPTH, 0, 0, 16, 16, 16);
 
-    private static final VoxelShape JOIST_NORTH = Block.box(0, 0, 0, 16, 16, JOIST_DEPTH);
-    private static final VoxelShape JOIST_SOUTH = Block.box(0, 0, 16 - JOIST_DEPTH, 16, 16, 16);
-    private static final VoxelShape JOIST_WEST  = Block.box(0, 0, 0, JOIST_DEPTH, 16, 16);
-    private static final VoxelShape JOIST_EAST  = Block.box(16 - JOIST_DEPTH, 0, 0, 16, 16, 16);
-
-    /** The deck spans the whole block; the joists simply stand proud of it. */
-    private static final VoxelShape DECK = Block.box(0, DECK_TOP, 0, 16, 16, 16);
-
-    public WoodSupportFloorBlock(BlockBehaviour.Properties properties) {
+    public PlasterWallHalfBlock(BlockBehaviour.Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(FACING, Direction.NORTH)
             .setValue(SHAPE, WallShape.STRAIGHT)
-            .setValue(BRANCH_RIGHT, false)
-            .setValue(ENCLOSED, false));
+            .setValue(BRANCH_RIGHT, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, SHAPE, BRANCH_RIGHT, ENCLOSED);
+        builder.add(FACING, SHAPE, BRANCH_RIGHT);
     }
 
     @Override
@@ -88,32 +72,11 @@ public class WoodSupportFloorBlock extends Block {
         WallConnection connection = WallConnection.derive(
             level, pos,
             state.getValue(FACING), state.getValue(BRANCH_RIGHT),
-            neighbour -> neighbour.getBlock() instanceof WoodSupportFloorBlock);
+            neighbour -> neighbour.getBlock() instanceof PlasterWallHalfBlock);
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())
-                    .setValue(BRANCH_RIGHT, connection.branchRight())
-                    .setValue(ENCLOSED, isEnclosed(level, pos));
-    }
-
-    /**
-     * True when every horizontal neighbour on this plane is filled - another joist floor, or any
-     * block presenting a solid face toward us. Nothing can see a joist end here, so it retracts.
-     */
-    private static boolean isEnclosed(LevelAccessor level, BlockPos pos) {
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            BlockPos neighbourPos = pos.relative(direction);
-            BlockState neighbour = level.getBlockState(neighbourPos);
-            // "Surrounded by blocks on all sides" means exactly that. isFaceSturdy was too strict:
-            // a plaster wall or another joist floor next door presents a partial shape, so it
-            // failed the test and the joist never retracted.
-            boolean filled = neighbour.getBlock() instanceof WoodSupportFloorBlock
-                || !(neighbour.isAir() || neighbour.canBeReplaced());
-            if (!filled) {
-                return false;
-            }
-        }
-        return true;
+                    .setValue(BRANCH_RIGHT, connection.branchRight());
     }
 
     @Override
@@ -130,29 +93,24 @@ public class WoodSupportFloorBlock extends Block {
         return mirrored.setValue(BRANCH_RIGHT, !state.getValue(BRANCH_RIGHT));
     }
 
-    private static VoxelShape joist(Direction direction) {
+    private static VoxelShape edge(Direction direction) {
         return switch (direction) {
-            case SOUTH -> JOIST_SOUTH;
-            case EAST  -> JOIST_EAST;
-            case WEST  -> JOIST_WEST;
-            default    -> JOIST_NORTH;
+            case SOUTH -> SOUTH;
+            case EAST  -> EAST;
+            case WEST  -> WEST;
+            default    -> NORTH;
         };
     }
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (state.getValue(ENCLOSED)) {
-            // Retracted: the deck alone, matching the enclosed model.
-            return DECK;
-        }
-
         Direction facing = state.getValue(FACING);
-        VoxelShape shape = Shapes.or(DECK, joist(facing));
+        VoxelShape shape = edge(facing);
 
         if (state.getValue(SHAPE) != WallShape.STRAIGHT) {
             Direction branch = state.getValue(BRANCH_RIGHT)
                 ? facing.getClockWise() : facing.getCounterClockWise();
-            shape = Shapes.or(shape, joist(branch));
+            shape = Shapes.or(shape, edge(branch));
         }
         return shape;
     }

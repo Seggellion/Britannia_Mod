@@ -1,0 +1,21 @@
+{
+	"format_version": "1.21.11",
+	"parent": "minecraft:block/block",
+	"textures": {
+		"brick": "britannia_mod:block/structure/brick_dark_foundation",
+		"particle": "britannia_mod:block/structure/brick_dark_foundation"
+	},
+	"elements": [
+		{
+			"from": [2, 0, 0],
+			"to": [14, 16, 2],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#brick"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#brick"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#brick"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#brick"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#brick"}
+			}
+		}
+	]
+}

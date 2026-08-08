@@ -1,7 +1,107 @@
 {
-  "variants": {
-    "": {
-      "model": "britannia_mod:block/structure/house_farm_plot"
+  "multipart": [
+    {
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_soil"
+      }
+    },
+    {
+      "when": {
+        "north": "false"
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_kerb"
+      }
+    },
+    {
+      "when": {
+        "east": "false"
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_kerb",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "false"
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_kerb",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "false"
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_kerb",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "north": "false"
+          },
+          {
+            "west": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_post"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "north": "false"
+          },
+          {
+            "east": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_post",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "south": "false"
+          },
+          {
+            "east": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_post",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "south": "false"
+          },
+          {
+            "west": "false"
+          }
+        ]
+      },
+      "apply": {
+        "model": "britannia_mod:block/structure/house_farm_plot_post",
+        "y": 270
+      }
     }
-  }
+  ]
 }
