@@ -173,7 +173,78 @@ def check_models(report):
             check_geometry(path, data, report)
 
 
+def check_blockbench_drops(path, data, report):
+    """
+    Report the three things Blockbench silently drops or cannot express when it re-saves a model.
+    Reported, never fixed: every model here is hand-authored.
+    """
+    elements = data.get("elements") or []
+    if not elements:
+        return
+
+    textures = (data.get("textures") or {}).values()
+    if any(isinstance(v, str) and "ornateness" in v for v in textures)             and data.get("render_type") != "minecraft:cutout":
+        report.warn(rel(path),
+                    "uses the transparent 'ornateness' sheet but declares no render_type - add "
+                    '"render_type": "minecraft:cutout" or its clear texels render as opaque black')
+
+    outside = any(c < 0 or c > 16 for el in elements for c in (el["from"] + el["to"]))
+    if outside and data.get("ambientocclusion") is not False:
+        report.warn(rel(path),
+                    "has geometry outside the 0..16 block cube but leaves ambient occlusion on - "
+                    'add "ambientocclusion": false or the part above the block renders black')
+
+    check_display(path, data, elements, report)
+
+
+# Every slot minecraft:block/block defines. A model that declares ANY slot must declare them all:
+# BlockModel#getTransform falls back to the parent only when a model declares no transforms at
+# all, so an omitted slot becomes the identity transform rather than being inherited.
+DISPLAY_SLOTS = ("gui", "ground", "fixed", "head", "thirdperson_righthand",
+                 "thirdperson_lefthand", "firstperson_righthand", "firstperson_lefthand")
+
+# What a one-block model uses, and therefore the slot budget an icon has to fit inside.
+VANILLA_GUI_SCALE = 0.625
+
+
+def check_display(path, data, elements, report):
+    display = data.get("display")
+    if not display:
+        return
+
+    missing = [slot for slot in DISPLAY_SLOTS if slot not in display]
+    if missing:
+        report.warn(rel(path),
+                    "declares display for %s but omits %s - Minecraft does NOT inherit the missing "
+                    "slots from the parent, they become the identity transform, so the item renders "
+                    "unscaled there. Set every slot in Blockbench's Display tab."
+                    % (", ".join(sorted(set(DISPLAY_SLOTS) - set(missing))), ", ".join(missing)))
+
+    gui = display.get("gui") or {}
+    scale = gui.get("scale")
+    if not scale:
+        return
+
+    extent = max(max(float(e["to"][i]) for e in elements) - min(float(e["from"][i]) for e in elements)
+                 for i in range(3))
+    if extent <= 16.0:
+        return
+
+    blocks = extent / 16.0
+    used = float(scale[0]) * blocks
+    if used > VANILLA_GUI_SCALE + 1e-6:
+        fits = round(VANILLA_GUI_SCALE / blocks, 4)
+        report.warn(rel(path),
+                    "inventory icon overflows its slot: the model is %g voxels (%.2f blocks) across "
+                    "and gui scale %g uses %.0f%% of the slot budget. Minecraft renders the 0..1 "
+                    "block cube in the slot, so scale %g fits; translation.y %g centres it."
+                    % (extent, blocks, float(scale[0]), 100 * used / VANILLA_GUI_SCALE,
+                       fits, round(-16.0 * fits * (blocks / 2 - 0.5), 2)))
+
+
 def check_geometry(path, data, report):
+    check_blockbench_drops(path, data, report)
+
     elements = data.get("elements")
     if not elements:
         return
@@ -218,6 +289,45 @@ def check_geometry(path, data, report):
             report.warn(rel(path),
                         "elements %s all declare a '%s' face at %g over the same footprint "
                         "- one of them is redundant" % (indices, face, plane))
+
+    check_coplanar_overlaps(path, elements, report)
+
+
+FACE_PLANE = {"west": (0, "from"), "east": (0, "to"), "down": (1, "from"),
+              "up": (1, "to"), "north": (2, "from"), "south": (2, "to")}
+
+
+def check_coplanar_overlaps(path, elements, report):
+    """
+    Two faces of different elements that point the SAME way, lie in the same plane and overlap
+    z-fight, even when the elements are different sizes. The identical-footprint check above misses
+    that, which is how a post sitting inside a beam went unnoticed.
+
+    Faces pointing opposite ways in a shared plane are fine and must not be reported: that is just
+    two boxes stacked flush, and backface culling removes whichever one faces away from the viewer.
+    """
+    def span(element, axis):
+        others = [i for i in range(3) if i != axis]
+        return [(float(element["from"][i]), float(element["to"][i])) for i in others]
+
+    def overlaps(a, b):
+        return all(min(x[1], y[1]) - max(x[0], y[0]) > 1e-6 for x, y in zip(a, b))
+
+    for i, first in enumerate(elements):
+        for j, second in enumerate(elements[i + 1:], start=i + 1):
+            for face, (axis, side) in FACE_PLANE.items():
+                if face not in (first.get("faces") or {}) or face not in (second.get("faces") or {}):
+                    continue
+                try:
+                    plane_a = float(first[side][axis])
+                    plane_b = float(second[side][axis])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if abs(plane_a - plane_b) < 1e-6 and overlaps(span(first, axis), span(second, axis)):
+                    report.warn(rel(path),
+                                "elements %d and %d both declare a '%s' face at %g with "
+                                "overlapping footprints - these will z-fight"
+                                % (i, j, face, plane_a))
 
 
 def quad_key(face, lo, hi):

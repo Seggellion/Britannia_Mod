@@ -10,18 +10,23 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
- * A {@link DoubleWallBlock} with a window opening whose vertical furniture can sit on either side.
+ * A {@link DoubleWallBlock} with an asymmetric feature that can sit on either side of the wall -
+ * a window's frame and mullion, or the timber support on {@code plaster_wall_and_support_blank}.
  *
- * <p>Only {@link #MIRRORED} is added on top of the wall state, so facing, shape, branch side and the
- * plaster style all survive a toggle untouched. {@code mirrored=false} is the default, which is what
- * every block placed before this property existed resolves to.
+ * <p>Flipped with the interior decorator tool held in the OFF hand (see
+ * {@code InteriorDecoratorToolItem}). The main hand keeps rotating the block, so one tool does both
+ * jobs without the two getting in each other's way.
+ *
+ * <p>Only {@link #MIRRORED} is added on top of the wall state, so facing, shape, branch side and
+ * the plaster style all survive a flip untouched. {@code mirrored=false} is the default, which is
+ * what every block placed before this property existed resolves to.
  */
-public class MirrorableWindowBlock extends DoubleWallBlock implements WindowSideToggleable {
+public class MirrorableWallBlock extends DoubleWallBlock {
 
-    /** {@code false} = window furniture on the normal side, {@code true} = on the opposite side. */
+    /** {@code false} = feature on its authored side, {@code true} = on the opposite side. */
     public static final BooleanProperty MIRRORED = BooleanProperty.create("mirrored");
 
-    public MirrorableWindowBlock(BlockBehaviour.Properties properties) {
+    public MirrorableWallBlock(BlockBehaviour.Properties properties) {
         super(properties);
         this.registerDefaultState(this.defaultBlockState()
             .setValue(FACING, Direction.NORTH)
@@ -29,11 +34,6 @@ public class MirrorableWindowBlock extends DoubleWallBlock implements WindowSide
             .setValue(BRANCH_RIGHT, false)
             .setValue(MIRRORED, false)
             .setValue(HALF, DoubleBlockHalf.LOWER));
-    }
-
-    @Override
-    public BooleanProperty windowSideProperty() {
-        return MIRRORED;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class MirrorableWindowBlock extends DoubleWallBlock implements WindowSide
         if (mirror == Mirror.NONE) {
             return mirrored;
         }
-        // Reflecting the world reflects the window furniture with it.
+        // Reflecting the world reflects the feature with it.
         return mirrored.setValue(MIRRORED, !state.getValue(MIRRORED));
     }
 }

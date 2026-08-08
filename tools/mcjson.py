@@ -3,7 +3,9 @@ Serialise Minecraft model JSON the way Blockbench does, so generated files diff 
 hand-authored ones: tab indent, and short leaf containers (coordinate triples, uv rects, the
 rotation object, a single face) kept on one line.
 """
+import collections
 import json
+import os
 
 
 def _is_leaf(value):
@@ -54,7 +56,47 @@ def dumps(value, level=0):
     return _inline(value)
 
 
-def write(path, value):
+def generated(data, source, script):
+    """
+    Stamp a generated model so anyone opening it knows edits here are thrown away.
+
+    Minecraft's model deserialiser reads only the keys it knows about and ignores the rest, so the
+    banner is inert at runtime.
+    """
+    out = collections.OrderedDict()
+    out["comment"] = ("GENERATED FILE - do not edit. Produced by tools/%s from %s. "
+                      "Edit that source model and re-run the generator; changes made here are "
+                      "overwritten on the next run." % (script, source))
+    for key, value in data.items():
+        if key != "comment":
+            out[key] = value
+    return out
+
+
+def is_hand_authored(path):
+    """
+    True when a model exists but does not carry the generated banner - i.e. a human made it.
+
+    Blockbench strips the banner when it re-saves a file, so opening a generated model, editing it
+    and saving is all it takes to claim ownership of it. Generators must leave those alone.
+    """
+    if not os.path.exists(path):
+        return False
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return "GENERATED FILE" not in (json.load(fh).get("comment") or "")
+    except (ValueError, OSError):
+        return False
+
+
+def write(path, value, skip_if_hand_authored=False):
+    """
+    Write a model. With skip_if_hand_authored, an existing model that a human has taken over is
+    left untouched and False is returned, so hand-authored corners survive a regeneration.
+    """
+    if skip_if_hand_authored and is_hand_authored(path):
+        return False
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(dumps(value))
         fh.write("\n")
+    return True

@@ -2,7 +2,7 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
-import com.seggellion.britannia_mod.block.MirrorableWindowBlock;
+import com.seggellion.britannia_mod.block.MirrorableWallBlock;
 import com.seggellion.britannia_mod.block.WoodSupportFloorBlock;
 import com.seggellion.britannia_mod.block.BannisterBlock;
 import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
@@ -1918,17 +1918,17 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ORNATE_WALL_1 = BLOCKS.register("plaster_ornate_wall_1", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ORNATE_WALL_2 = BLOCKS.register("plaster_ornate_wall_2", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_SMALL_WINDOW = BLOCKS.register("plaster_small_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
-    public static final DeferredHolder<Block, MirrorableWindowBlock> ORNATE_WALL_LARGE_WINDOW = BLOCKS.register("ornate_wall_large_window", () -> new MirrorableWindowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, MirrorableWallBlock> ORNATE_WALL_LARGE_WINDOW = BLOCKS.register("ornate_wall_large_window", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     // The window families whose straight models have asymmetric furniture to move, so the ones
     // where the interior decorator's window-side toggle has something to show. plaster_small_window
-    // and plaster_and_stone_window are still placeholder art; switch them to MirrorableWindowBlock
+    // and plaster_and_stone_window are still placeholder art; switch them to MirrorableWallBlock
     // once they have real models.
-    public static final DeferredHolder<Block, MirrorableWindowBlock> PLASTER_WALL_LARGE_WINDOW = BLOCKS.register("plaster_wall_large_window", () -> new MirrorableWindowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, MirrorableWallBlock> PLASTER_WALL_LARGE_WINDOW = BLOCKS.register("plaster_wall_large_window", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_DIAGONAL_EAST = BLOCKS.register("plaster_wall_support_diagonal_east", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH = BLOCKS.register("plaster_wall_support_diagonal_south", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_OPEN = BLOCKS.register("plaster_wall_support_open", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_BLANK = BLOCKS.register("plaster_wall_blank", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
-    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_AND_SUPPORT_BLANK = BLOCKS.register("plaster_wall_and_support_blank", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, MirrorableWallBlock> PLASTER_WALL_AND_SUPPORT_BLANK = BLOCKS.register("plaster_wall_and_support_blank", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ARCHWAY = BLOCKS.register("plaster_archway", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_AND_STONE_WINDOW = BLOCKS.register("plaster_and_stone_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> ORNATE_SANDSTONE_WALL = BLOCKS.register("ornate_sandstone_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));

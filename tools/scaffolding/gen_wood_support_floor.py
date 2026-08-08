@@ -19,9 +19,11 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 import mcjson  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 from gen_junctions import rot_element, clip  # noqa: E402
 
 PLASTER = os.path.join("src", "main", "resources", "assets", "britannia_mod",
@@ -106,11 +108,17 @@ def main():
     for suffix, mirrored in variants:
         junction = "corner" if suffix.startswith("corner") else "t_junction"
         dst = os.path.join(PLASTER, "plaster_wall_joist_edge_%s.json" % suffix)
-        mcjson.write(dst, build(junction, mirrored))
-        print("  wrote " + os.path.basename(dst))
+        if mcjson.write(dst, mcjson.generated(
+                build(junction, mirrored),
+                "plaster_wall_joist_edge.json", "gen_wood_support_floor.py"),
+                skip_if_hand_authored=True):
+            print("  wrote " + os.path.basename(dst))
+        else:
+            print("  KEPT hand-authored " + os.path.basename(dst))
 
     dst = os.path.join(PLASTER, "plaster_wall_joist_edge_enclosed.json")
-    mcjson.write(dst, build_enclosed())
+    mcjson.write(dst, mcjson.generated(
+        build_enclosed(), "plaster_wall_joist_edge.json", "gen_wood_support_floor.py"))
     print("  wrote " + os.path.basename(dst))
 
 

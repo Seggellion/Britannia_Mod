@@ -29,6 +29,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 import mcjson  # noqa: E402
 
 PLASTER = os.path.join(
@@ -199,8 +200,26 @@ def body(elements):
 
 
 def wall_depth(elements):
-    """How far the wall body reaches back from the north face, ignoring anything outside the block."""
-    return max((min(el["to"][2], 16.0) for el in body(elements)), default=16.0)
+    """
+    How deep the wall PLANE is - the back face of the main slab, which is where the perpendicular
+    run has to butt up against.
+
+    This deliberately uses the largest element rather than the deepest one. Trim beams stand proud
+    of the wall face (a mid-height band running z -1..6 against a wall of z 0..5), and taking the
+    maximum over every element pushed the clip plane a voxel too far back. The main run was then
+    clipped to x>=6 while the rotated branch only reached x=5, leaving a one-voxel slot straight
+    through the inside of every corner.
+    """
+    core = body(elements)
+    if not core:
+        return 16.0
+
+    def volume(el):
+        return abs((el["to"][0] - el["from"][0])
+                   * (el["to"][1] - el["from"][1])
+                   * (el["to"][2] - el["from"][2]))
+
+    return min(max(core, key=volume)["to"][2], 16.0)
 
 
 def is_edge_aligned(elements):
@@ -275,6 +294,7 @@ VARIANTS = [("corner", False), ("corner_branch_right", True),
 
 def main():
     written = 0
+    kept = []
     targets = [(PLASTER, AUTHORED + PLACEHOLDER), (SANDSTONE, SANDSTONE_FAMILIES)]
     for directory, families in targets:
         for family in families:
@@ -287,9 +307,18 @@ def main():
             for suffix, mirrored in VARIANTS:
                 junction = "corner" if suffix.startswith("corner") else "t_junction"
                 dst = os.path.join(directory, "%s_%s.json" % (family, suffix))
-                mcjson.write(dst, build(straight, junction, mirrored))
-                written += 1
+                if mcjson.write(dst, mcjson.generated(
+                        build(straight, junction, mirrored),
+                        family + "_straight.json", "gen_junctions.py"),
+                        skip_if_hand_authored=True):
+                    written += 1
+                else:
+                    kept.append(os.path.basename(dst))
     print("wrote %d junction models" % written)
+    if kept:
+        print("KEPT %d hand-authored model(s) - not regenerated:" % len(kept))
+        for name in kept:
+            print("   " + name)
 
 
 if __name__ == "__main__":

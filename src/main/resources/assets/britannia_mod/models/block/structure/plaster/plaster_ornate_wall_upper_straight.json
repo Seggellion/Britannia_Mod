@@ -5,9 +5,9 @@
 	"ambientocclusion": false,
 	"render_type": "minecraft:cutout",
 	"textures": {
-		"1": "britannia_mod:block/structure/plaster/dirty_plaster",
 		"2": "britannia_mod:block/structure/plaster/wood_support",
 		"3": "britannia_mod:block/structure/plaster/ornateness",
+		"4": "britannia_mod:block/structure/plaster/dirty_plaster",
 		"particle": "britannia_mod:block/structure/plaster/dirty_plaster"
 	},
 	"elements": [
@@ -16,9 +16,12 @@
 			"to": [16, 32, 5],
 			"rotation": {"angle": 0, "axis": "y", "origin": [3, 1, -5.5]},
 			"faces": {
-				"north": {"uv": [8.25, 0.25, 16, 7.875], "texture": "#1"},
-				"south": {"uv": [8.25, 0.25, 16, 7.875], "texture": "#1"},
-				"up": {"uv": [0, 0, 6.625, 4.125], "texture": "#1"}
+				"north": {"uv": [8.25, 0.25, 16, 7.875], "texture": "#4"},
+				"east": {"uv": [0, 0, 3, 8], "texture": "#4"},
+				"south": {"uv": [8.25, 0.25, 16, 7.875], "texture": "#4"},
+				"west": {"uv": [0, 0, 0, 0], "texture": "#4"},
+				"up": {"uv": [0, 0, 6.625, 4.125], "texture": "#4"},
+				"down": {"uv": [0, 0, 0, 0], "texture": "#4"}
 			}
 		},
 		{
@@ -79,9 +82,21 @@
 		}
 	],
 	"display": {
+		"thirdperson_righthand": {
+			"translation": [0, 0, 1.75],
+			"scale": [0.37, 0.37, 0.37]
+		},
+		"thirdperson_lefthand": {
+			"translation": [0, 0, 1.75],
+			"scale": [0.37, 0.37, 0.37]
+		},
+		"firstperson_righthand": {
+			"translation": [0, -0.5, 0],
+			"scale": [0.29, 0.29, 0.29]
+		},
 		"gui": {
-			"rotation": [48, -123, 0],
-			"translation": [-2.5, -1.25, 0],
+			"rotation": [36, -123, 0],
+			"translation": [-2.5, -2.5, 0],
 			"scale": [0.47, 0.47, 0.47]
 		}
 	}

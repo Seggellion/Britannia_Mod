@@ -5,7 +5,7 @@ import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.ThinWall;
 import com.seggellion.britannia_mod.block.CarpetDummyBlock;
 import com.seggellion.britannia_mod.block.CarpetTeleporterBlock;
-import com.seggellion.britannia_mod.block.WindowSideToggleable;
+import com.seggellion.britannia_mod.block.MirrorableWallBlock;
 import com.seggellion.britannia_mod.block.nudgeable.INudgeable;
 import com.seggellion.britannia_mod.block.nudgeable.NudgeableBlockEntity;
 import com.mojang.logging.LogUtils;
@@ -13,6 +13,8 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -63,13 +65,24 @@ public class InteriorDecoratorToolItem extends Item {
             }
         }
 
-        // Window side toggle. Must come before the generic facing rotation below, otherwise these
-        // blocks would just spin: they all carry HorizontalDirectionalBlock.FACING.
-        if (state.getBlock() instanceof WindowSideToggleable window) {
+        // Mirror an asymmetric wall feature - a window's frame, or the timber support on
+        // plaster_wall_and_support_blank - to the other side of the block.
+        //
+        // Driven from the OFF hand so it does not compete with rotation. Holding the tool normally
+        // and right-clicking still spins the block; putting it in the left hand and clicking flips
+        // the feature. This has to sit above the generic facing rotation below, because these
+        // blocks all carry HorizontalDirectionalBlock.FACING and would otherwise just spin.
+        if (ctx.getHand() == InteractionHand.OFF_HAND
+            && state.getBlock() instanceof MirrorableWallBlock) {
+
             if (!level.isClientSide()) {
-                BooleanProperty side = window.windowSideProperty();
-                level.setBlock(pos, state.setValue(side, !state.getValue(side)), Block.UPDATE_ALL);
-                LOGGER.info("🎨 InteriorDecoratorTool toggled window side at {}", pos);
+                level.setBlock(pos,
+                    state.setValue(MirrorableWallBlock.MIRRORED,
+                                   !state.getValue(MirrorableWallBlock.MIRRORED)),
+                    Block.UPDATE_ALL);
+                level.playSound(null, pos, state.getSoundType().getPlaceSound(),
+                    SoundSource.BLOCKS, 0.5f, 1.2f);
+                LOGGER.info("🎨 InteriorDecoratorTool mirrored wall feature at {}", pos);
             }
             return InteractionResult.sidedSuccess(level.isClientSide());
         }

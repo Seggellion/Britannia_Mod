@@ -10,6 +10,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 import mcjson  # noqa: E402
 from gen_junctions import rot_element, clip  # noqa: E402
 
@@ -60,9 +61,13 @@ def main():
                 ("t_junction", False), ("t_junction_branch_right", True)]
     for suffix, mirrored in variants:
         junction = "corner" if suffix.startswith("corner") else "t_junction"
-        mcjson.write(os.path.join(MODEL_DIR, "bannister_%s.json" % suffix),
-                     build(junction, mirrored))
-        print("  wrote bannister_%s.json" % suffix)
+        if mcjson.write(os.path.join(MODEL_DIR, "bannister_%s.json" % suffix),
+                        mcjson.generated(build(junction, mirrored),
+                                         "bannister.json", "gen_bannister.py"),
+                        skip_if_hand_authored=True):
+            print("  wrote bannister_%s.json" % suffix)
+        else:
+            print("  KEPT hand-authored bannister_%s.json" % suffix)
 
     suffixes = {("straight", "false"): "", ("straight", "true"): "",
                 ("corner", "false"): "_corner", ("corner", "true"): "_corner_branch_right",

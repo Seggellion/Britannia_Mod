@@ -21,6 +21,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
 import mcjson  # noqa: E402
 
 ASSETS = os.path.join("src", "main", "resources", "assets", "britannia_mod")
@@ -109,8 +110,10 @@ def write_window_mirrors():
             out = {k: v for k, v in model.items() if k != "elements"}
             out["elements"] = [mirror_element(el) for el in model.get("elements", [])]
             dst = src[:-len(".json")] + "_window_right.json"
-            mcjson.write(dst, out)
-            written.append(os.path.basename(dst))
+            if mcjson.write(dst, mcjson.generated(
+                    out, family + suffix + ".json", "gen_blockstates.py"),
+                    skip_if_hand_authored=True):
+                written.append(os.path.basename(dst))
     return written
 
 

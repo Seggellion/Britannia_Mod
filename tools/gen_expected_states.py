@@ -24,15 +24,16 @@ WALLS = [
     "plaster_ornate_wall_upper", "plaster_ornate_wall_1", "plaster_ornate_wall_2",
     "plaster_small_window", "plaster_wall_support_diagonal_east",
     "plaster_wall_support_diagonal_south", "plaster_wall_support_open",
-    "plaster_wall_blank", "plaster_wall_and_support_blank", "plaster_archway",
-    "plaster_and_stone_window",
+    "plaster_wall_blank", "plaster_archway", "plaster_and_stone_window",
     "ornate_sandstone_wall", "regular_sandstone_wall", "sandstone_block_wall",
     "ornate_sandstone_window", "sandstone_window", "sandstone_post",
     "ornate_sandstone_post", "sandstone_battlement", "sandstone_column",
 ]
 
-# MirrorableWindowBlock: the above, plus mirrored
-MIRRORABLE_WINDOWS = ["plaster_wall_large_window", "ornate_wall_large_window"]
+
+# MirrorableWallBlock: the above, plus mirrored
+MIRRORABLE = ["plaster_wall_large_window", "ornate_wall_large_window",
+                      "plaster_wall_and_support_blank"]
 
 # BannisterBlock: facing x shape x branch_right
 FLOORS = ["bannister"]
@@ -59,7 +60,7 @@ def main():
             for f, s, b, h in itertools.product(DIRECTIONS, SHAPES, BOOLEANS, HALVES)
         ]
 
-    for name in MIRRORABLE_WINDOWS:
+    for name in MIRRORABLE:
         states[name] = [
             ["facing=" + f, "shape=" + s, "branch_right=" + b, "mirrored=" + m, "half=" + h]
             for f, s, b, m, h in itertools.product(DIRECTIONS, SHAPES, BOOLEANS, BOOLEANS, HALVES)

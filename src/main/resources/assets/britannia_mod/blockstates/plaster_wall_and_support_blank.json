@@ -1,165 +1,327 @@
 {
   "variants": {
-    "facing=north,shape=straight,branch_right=false,half=lower": {
+    "facing=north,shape=straight,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight"
     },
-    "facing=north,shape=straight,branch_right=false,half=upper": {
+    "facing=north,shape=straight,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,shape=straight,branch_right=true,half=lower": {
+    "facing=north,shape=straight,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored"
+    },
+    "facing=north,shape=straight,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=straight,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight"
     },
-    "facing=north,shape=straight,branch_right=true,half=upper": {
+    "facing=north,shape=straight,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,shape=corner,branch_right=false,half=lower": {
+    "facing=north,shape=straight,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored"
+    },
+    "facing=north,shape=straight,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=corner,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner"
     },
-    "facing=north,shape=corner,branch_right=false,half=upper": {
+    "facing=north,shape=corner,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,shape=corner,branch_right=true,half=lower": {
+    "facing=north,shape=corner,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored"
+    },
+    "facing=north,shape=corner,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=corner,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right"
     },
-    "facing=north,shape=corner,branch_right=true,half=upper": {
+    "facing=north,shape=corner,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,shape=t_junction,branch_right=false,half=lower": {
+    "facing=north,shape=corner,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored"
+    },
+    "facing=north,shape=corner,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=t_junction,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction"
     },
-    "facing=north,shape=t_junction,branch_right=false,half=upper": {
+    "facing=north,shape=t_junction,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=north,shape=t_junction,branch_right=true,half=lower": {
+    "facing=north,shape=t_junction,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored"
+    },
+    "facing=north,shape=t_junction,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=north,shape=t_junction,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right"
     },
-    "facing=north,shape=t_junction,branch_right=true,half=upper": {
+    "facing=north,shape=t_junction,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,shape=straight,branch_right=false,half=lower": {
+    "facing=north,shape=t_junction,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored"
+    },
+    "facing=north,shape=t_junction,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=straight,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
       "y": 90
     },
-    "facing=east,shape=straight,branch_right=false,half=upper": {
+    "facing=east,shape=straight,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,shape=straight,branch_right=true,half=lower": {
+    "facing=east,shape=straight,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored",
+      "y": 90
+    },
+    "facing=east,shape=straight,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=straight,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
       "y": 90
     },
-    "facing=east,shape=straight,branch_right=true,half=upper": {
+    "facing=east,shape=straight,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,shape=corner,branch_right=false,half=lower": {
+    "facing=east,shape=straight,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored",
+      "y": 90
+    },
+    "facing=east,shape=straight,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=corner,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
       "y": 90
     },
-    "facing=east,shape=corner,branch_right=false,half=upper": {
+    "facing=east,shape=corner,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,shape=corner,branch_right=true,half=lower": {
+    "facing=east,shape=corner,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=corner,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
       "y": 90
     },
-    "facing=east,shape=corner,branch_right=true,half=upper": {
+    "facing=east,shape=corner,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,shape=t_junction,branch_right=false,half=lower": {
+    "facing=east,shape=corner,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=t_junction,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction",
       "y": 90
     },
-    "facing=east,shape=t_junction,branch_right=false,half=upper": {
+    "facing=east,shape=t_junction,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=east,shape=t_junction,branch_right=true,half=lower": {
+    "facing=east,shape=t_junction,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,shape=t_junction,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right",
       "y": 90
     },
-    "facing=east,shape=t_junction,branch_right=true,half=upper": {
+    "facing=east,shape=t_junction,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,shape=straight,branch_right=false,half=lower": {
+    "facing=east,shape=t_junction,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=straight,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
       "y": 180
     },
-    "facing=south,shape=straight,branch_right=false,half=upper": {
+    "facing=south,shape=straight,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,shape=straight,branch_right=true,half=lower": {
+    "facing=south,shape=straight,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored",
+      "y": 180
+    },
+    "facing=south,shape=straight,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=straight,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
       "y": 180
     },
-    "facing=south,shape=straight,branch_right=true,half=upper": {
+    "facing=south,shape=straight,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,shape=corner,branch_right=false,half=lower": {
+    "facing=south,shape=straight,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored",
+      "y": 180
+    },
+    "facing=south,shape=straight,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=corner,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
       "y": 180
     },
-    "facing=south,shape=corner,branch_right=false,half=upper": {
+    "facing=south,shape=corner,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,shape=corner,branch_right=true,half=lower": {
+    "facing=south,shape=corner,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=corner,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
       "y": 180
     },
-    "facing=south,shape=corner,branch_right=true,half=upper": {
+    "facing=south,shape=corner,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,shape=t_junction,branch_right=false,half=lower": {
+    "facing=south,shape=corner,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=t_junction,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction",
       "y": 180
     },
-    "facing=south,shape=t_junction,branch_right=false,half=upper": {
+    "facing=south,shape=t_junction,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=south,shape=t_junction,branch_right=true,half=lower": {
+    "facing=south,shape=t_junction,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,shape=t_junction,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right",
       "y": 180
     },
-    "facing=south,shape=t_junction,branch_right=true,half=upper": {
+    "facing=south,shape=t_junction,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,shape=straight,branch_right=false,half=lower": {
+    "facing=south,shape=t_junction,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=straight,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
       "y": 270
     },
-    "facing=west,shape=straight,branch_right=false,half=upper": {
+    "facing=west,shape=straight,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,shape=straight,branch_right=true,half=lower": {
+    "facing=west,shape=straight,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored",
+      "y": 270
+    },
+    "facing=west,shape=straight,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=straight,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight",
       "y": 270
     },
-    "facing=west,shape=straight,branch_right=true,half=upper": {
+    "facing=west,shape=straight,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,shape=corner,branch_right=false,half=lower": {
+    "facing=west,shape=straight,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_straight_mirrored",
+      "y": 270
+    },
+    "facing=west,shape=straight,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=corner,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner",
       "y": 270
     },
-    "facing=west,shape=corner,branch_right=false,half=upper": {
+    "facing=west,shape=corner,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,shape=corner,branch_right=true,half=lower": {
+    "facing=west,shape=corner,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_mirrored",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=corner,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right",
       "y": 270
     },
-    "facing=west,shape=corner,branch_right=true,half=upper": {
+    "facing=west,shape=corner,branch_right=true,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,shape=t_junction,branch_right=false,half=lower": {
+    "facing=west,shape=corner,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_corner_branch_right_mirrored",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=true,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=t_junction,branch_right=false,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction",
       "y": 270
     },
-    "facing=west,shape=t_junction,branch_right=false,half=upper": {
+    "facing=west,shape=t_junction,branch_right=false,mirrored=false,half=upper": {
       "model": "minecraft:block/air"
     },
-    "facing=west,shape=t_junction,branch_right=true,half=lower": {
+    "facing=west,shape=t_junction,branch_right=false,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_mirrored",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=false,mirrored=true,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=t_junction,branch_right=true,mirrored=false,half=lower": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right",
       "y": 270
     },
-    "facing=west,shape=t_junction,branch_right=true,half=upper": {
+    "facing=west,shape=t_junction,branch_right=true,mirrored=false,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,shape=t_junction,branch_right=true,mirrored=true,half=lower": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_and_support_blank_t_junction_branch_right_mirrored",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=true,mirrored=true,half=upper": {
       "model": "minecraft:block/air"
     }
   }
