@@ -83,6 +83,23 @@ def build(junction, mirrored):
     return out
 
 
+def build_enclosed():
+    """
+    Fully surrounded: no joist end is exposed, so the joist retracts and only the deck is left,
+    stretched across the whole block. This is the one variant that keeps no geometry outside the
+    block bounds at all.
+    """
+    with open(STRAIGHT, encoding="utf-8") as fh:
+        straight = json.load(fh)
+    deck = json.loads(json.dumps(straight["elements"][DECK_INDEX]))
+    deck["from"][2] = 0
+    deck["to"][2] = 16
+    # The deck's up/down uv already spans the full sheet, so widening z keeps the texture scale.
+    out = {k: v for k, v in straight.items() if k != "elements"}
+    out["elements"] = [deck]
+    return out
+
+
 def main():
     variants = [("corner", False), ("corner_branch_right", True),
                 ("t_junction", False), ("t_junction_branch_right", True)]
@@ -91,6 +108,10 @@ def main():
         dst = os.path.join(PLASTER, "plaster_wall_joist_edge_%s.json" % suffix)
         mcjson.write(dst, build(junction, mirrored))
         print("  wrote " + os.path.basename(dst))
+
+    dst = os.path.join(PLASTER, "plaster_wall_joist_edge_enclosed.json")
+    mcjson.write(dst, build_enclosed())
+    print("  wrote " + os.path.basename(dst))
 
 
 if __name__ == "__main__":

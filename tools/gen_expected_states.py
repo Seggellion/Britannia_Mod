@@ -34,11 +34,20 @@ WALLS = [
 # MirrorableWindowBlock: the above, plus mirrored
 MIRRORABLE_WINDOWS = ["plaster_wall_large_window", "ornate_wall_large_window"]
 
-# WoodSupportFloorBlock and BannisterBlock: facing x shape x branch_right
-FLOORS = ["wood_support_floor", "bannister"]
+# BannisterBlock: facing x shape x branch_right
+FLOORS = ["bannister"]
+
+# WoodSupportFloorBlock: the above, plus enclosed
+JOISTS = ["wood_support_floor"]
+
+# PlasterWoodPostBlock: facing x half
+POSTS = ["plaster_wood_post"]
 
 # Blocks with facing only
-SIMPLE_FACING = []
+FACING_ONLY = ["villa_lamp_post"]
+
+# Blocks with no properties at all
+SINGLE_STATE = ["house_farm_plot"]
 
 
 def main():
@@ -62,8 +71,21 @@ def main():
             for f, s, b in itertools.product(DIRECTIONS, SHAPES, BOOLEANS)
         ]
 
-    for name in SIMPLE_FACING:
+    for name in JOISTS:
+        states[name] = [
+            ["facing=" + f, "shape=" + s2, "branch_right=" + b, "enclosed=" + e]
+            for f, s2, b, e in itertools.product(DIRECTIONS, SHAPES, BOOLEANS, BOOLEANS)
+        ]
+
+    for name in POSTS:
+        states[name] = [["facing=" + f, "half=" + h]
+                        for f, h in itertools.product(DIRECTIONS, ["lower", "upper"])]
+
+    for name in FACING_ONLY:
         states[name] = [["facing=" + f] for f in DIRECTIONS]
+
+    for name in SINGLE_STATE:
+        states[name] = [[]]
 
     json.dump(states, sys.stdout, indent=2)
     sys.stdout.write("\n")

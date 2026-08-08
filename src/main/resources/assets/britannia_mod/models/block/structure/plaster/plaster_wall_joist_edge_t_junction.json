@@ -5,8 +5,7 @@
 	"ambientocclusion": false,
 	"textures": {
 		"1": "britannia_mod:block/structure/plaster/wood_support",
-		"2": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7",
-		"particle": "britannia_mod:block/structure/plaster/dirty_plaster"
+		"2": "britannia_mod:block/structure/wooden_plank_floor/wooden_plank_floor_7"
 	},
 	"elements": [
 		{
@@ -36,27 +35,27 @@
 			}
 		},
 		{
-			"from": [0, 0, 7],
+			"from": [-1.8, 0, 7],
 			"to": [7, 8, 16],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0.2, 0, 16.2]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [-1.8, 0, 16.2]},
 			"faces": {
+				"west": {"uv": [9.58594, 13.875, 12.75, 16], "texture": "#1"},
 				"east": {"uv": [7.125, 13.875, 10.28906, 16], "texture": "#1"},
 				"south": {"uv": [7.125, 13.875, 12.75, 16], "texture": "#1"},
-				"west": {"uv": [9.58594, 13.875, 12.75, 16], "texture": "#1"},
-				"up": {"uv": [7.125, 13.875, 12.75, 16], "rotation": 270, "texture": "#1"},
-				"down": {"uv": [7.125, 13.875, 12.75, 16], "rotation": 90, "texture": "#1"}
+				"up": {"uv": [7.125, 13.875, 12.75, 16], "texture": "#1", "rotation": 270},
+				"down": {"uv": [7.125, 13.875, 12.75, 16], "texture": "#1", "rotation": 90}
 			}
 		},
 		{
-			"from": [0, 8, 7],
+			"from": [-2, 8, 7],
 			"to": [7, 16, 16],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 8, 16.2]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [-2, 8, 16.2]},
 			"faces": {
+				"west": {"uv": [7.88281, 1.78125, 11.75, 3.90625], "texture": "#1"},
 				"east": {"uv": [4.875, 1.78125, 8.74219, 3.90625], "texture": "#1"},
 				"south": {"uv": [4.875, 1.78125, 11.75, 3.90625], "texture": "#1"},
-				"west": {"uv": [7.88281, 1.78125, 11.75, 3.90625], "texture": "#1"},
-				"up": {"uv": [4.875, 1.90625, 11.75, 3.65625], "rotation": 270, "texture": "#1"},
-				"down": {"uv": [4.875, 1.90625, 11.75, 3.65625], "rotation": 90, "texture": "#1"}
+				"up": {"uv": [4.875, 1.78125, 11.75, 3.90625], "texture": "#1", "rotation": 270},
+				"down": {"uv": [4.875, 1.78125, 11.75, 3.90625], "texture": "#1", "rotation": 90}
 			}
 		},
 		{
@@ -71,11 +70,5 @@
 				"down": {"uv": [0, 0, 16, 8.40625], "rotation": 180, "texture": "#2"}
 			}
 		}
-	],
-	"display": {
-		"gui": {
-			"rotation": [46, -40, 0],
-			"scale": [0.58, 0.58, 0.58]
-		}
-	}
+	]
 }

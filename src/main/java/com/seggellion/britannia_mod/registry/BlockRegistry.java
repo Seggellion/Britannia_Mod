@@ -5,6 +5,9 @@ import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWindowBlock;
 import com.seggellion.britannia_mod.block.WoodSupportFloorBlock;
 import com.seggellion.britannia_mod.block.BannisterBlock;
+import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
+import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
+import com.seggellion.britannia_mod.block.VillaLampPostBlock;
 import com.seggellion.britannia_mod.block.CustomSandstoneBrickBlock;
 import com.seggellion.britannia_mod.block.SandstoneBrickRoadBlock;
 import com.seggellion.britannia_mod.block.IronFenceBlock;
@@ -1938,6 +1941,15 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_BATTLEMENT = BLOCKS.register("sandstone_battlement", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_COLUMN = BLOCKS.register("sandstone_column", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, BannisterBlock> BANNISTER = BLOCKS.register("bannister", () -> new BannisterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    /** 3x3 timber post, 32 voxels tall, in one corner of the block. */
+    public static final DeferredHolder<Block, PlasterWoodPostBlock> PLASTER_WOOD_POST = BLOCKS.register("plaster_wood_post", () -> new PlasterWoodPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    /** Raised planting bed: brick kerb outside, soil recessed inside. */
+    public static final DeferredHolder<Block, HouseFarmPlotBlock> HOUSE_FARM_PLOT = BLOCKS.register("house_farm_plot", () -> new HouseFarmPlotBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(1.5f).sound(SoundType.GRAVEL)));
+
+    /** Three-block-tall lamp post. Follows the CandelabraBlock pattern: light 15 plus its block entity. */
+    public static final DeferredHolder<Block, VillaLampPostBlock> VILLA_LAMP_POST = BLOCKS.register("villa_lamp_post", () -> new VillaLampPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5f).sound(SoundType.WOOD).noOcclusion().lightLevel(state -> 15)));
 
     public static final DeferredHolder<Block, CustomSandstoneBrickBlock> CUSTOM_SANDSTONE_BRICK = BLOCKS.register("custom_sandstone_brick", () -> new CustomSandstoneBrickBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> LIGHT_SANDSTONE_BRICK_ROAD = BLOCKS.register("light_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));

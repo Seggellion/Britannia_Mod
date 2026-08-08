@@ -632,5 +632,8 @@
     "block.britannia_mod.sandstone_battlement": "Sandstone Battlement",
     "block.britannia_mod.sandstone_column": "Sandstone Column",
     "block.britannia_mod.walnut_floor": "Walnut Floor",
-    "block.britannia_mod.walnut_stairs": "Walnut Stairs"
+    "block.britannia_mod.walnut_stairs": "Walnut Stairs",
+    "block.britannia_mod.plaster_wood_post": "Plaster Wood Post",
+    "block.britannia_mod.house_farm_plot": "House Farm Plot",
+    "block.britannia_mod.villa_lamp_post": "Villa Lamp Post"
 }

@@ -5,10 +5,10 @@
 	"render_type": "minecraft:cutout",
 	"ambientocclusion": false,
 	"textures": {
-		"1": "britannia_mod:block/structure/plaster/plaster_clean",
+		"1": "britannia_mod:block/structure/plaster/dirty_plaster",
 		"2": "britannia_mod:block/structure/plaster/wood_support",
 		"3": "britannia_mod:block/structure/plaster/ornateness",
-		"particle": "britannia_mod:block/structure/plaster/plaster_clean"
+		"particle": "britannia_mod:block/structure/plaster/dirty_plaster"
 	},
 	"elements": [
 		{

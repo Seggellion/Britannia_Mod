@@ -36,6 +36,14 @@ public class WoodSupportFloorBlock extends Block {
     public static final EnumProperty<WallShape> SHAPE = EnumProperty.create("shape", WallShape.class);
     public static final BooleanProperty BRANCH_RIGHT = BooleanProperty.create("branch_right");
 
+    /**
+     * True when all four horizontal neighbours are filled, so no joist end is exposed. The visible
+     * joist retracts to just the deck: an interior floor tile has nothing to show an edge to, and
+     * leaving the joist there pushed geometry into the neighbour and read as a lattice of beams
+     * across what should be a flat floor.
+     */
+    public static final BooleanProperty ENCLOSED = BooleanProperty.create("enclosed");
+
     /** How far the joist run reaches back from the face it hugs. Matches the model. */
     private static final double JOIST_DEPTH = 7.0D;
     /** The deck is the top 3 voxels of everything the joists do not occupy. */
@@ -54,12 +62,13 @@ public class WoodSupportFloorBlock extends Block {
         this.registerDefaultState(this.stateDefinition.any()
             .setValue(FACING, Direction.NORTH)
             .setValue(SHAPE, WallShape.STRAIGHT)
-            .setValue(BRANCH_RIGHT, false));
+            .setValue(BRANCH_RIGHT, false)
+            .setValue(ENCLOSED, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, SHAPE, BRANCH_RIGHT);
+        builder.add(FACING, SHAPE, BRANCH_RIGHT, ENCLOSED);
     }
 
     @Override
@@ -83,7 +92,25 @@ public class WoodSupportFloorBlock extends Block {
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())
-                    .setValue(BRANCH_RIGHT, connection.branchRight());
+                    .setValue(BRANCH_RIGHT, connection.branchRight())
+                    .setValue(ENCLOSED, isEnclosed(level, pos));
+    }
+
+    /**
+     * True when every horizontal neighbour on this plane is filled - another joist floor, or any
+     * block presenting a solid face toward us. Nothing can see a joist end here, so it retracts.
+     */
+    private static boolean isEnclosed(LevelAccessor level, BlockPos pos) {
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            BlockPos neighbourPos = pos.relative(direction);
+            BlockState neighbour = level.getBlockState(neighbourPos);
+            boolean filled = neighbour.getBlock() instanceof WoodSupportFloorBlock
+                || neighbour.isFaceSturdy(level, neighbourPos, direction.getOpposite());
+            if (!filled) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -111,6 +138,11 @@ public class WoodSupportFloorBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(ENCLOSED)) {
+            // Retracted: the deck alone, matching the enclosed model.
+            return DECK;
+        }
+
         Direction facing = state.getValue(FACING);
         VoxelShape shape = Shapes.or(DECK, joist(facing));
 

@@ -49,9 +49,9 @@ AUTHORED = [
     "plaster_wall_support_diagonal_south",
     "plaster_wall_support_open",
     "ornate_wall_large_window",
+    "plaster_small_window",
 ]
 PLACEHOLDER = [
-    "plaster_small_window",
     "plaster_and_stone_window",
     "plaster_archway",
 ]

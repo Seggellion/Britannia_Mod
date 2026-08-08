@@ -238,11 +238,14 @@ def check_state_coverage(report, blockstates, expected):
         if "multipart" in data:
             continue
         variants = data.get("variants", {})
-        present = {frozenset(key.split(",")) for key in variants if key}
+        # A block with no properties has the single variant "", which splits to [""] rather than
+        # to an empty list - normalise so it matches an empty expected combination.
+        present = {frozenset(p for p in key.split(",") if p) for key in variants}
         for combo in combos:
             if frozenset(combo) not in present:
                 report.error("blockstates/%s.json" % name,
-                             "no variant for state '%s'" % ",".join(sorted(combo)))
+                             "no variant for state '%s'"
+                             % (",".join(sorted(combo)) if combo else "<no properties>"))
 
 
 def main():
