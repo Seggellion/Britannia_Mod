@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "britannia_mod:block/service_npc_spawn_block" }
+  }
+}

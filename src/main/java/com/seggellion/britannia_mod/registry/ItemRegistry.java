@@ -136,6 +136,12 @@ public class ItemRegistry {
             () -> new Item(new Item.Properties().stacksTo(99)));
     public static final DeferredHolder<Item, Item> LOCKPICK_TOOLS = ITEMS.register("lockpick_tools",
             () -> new Item(new Item.Properties().stacksTo(64)));
+
+    // Milestone 11 NeoForge Slice 1: the physical bank cheque -- a single, non-stacking value
+    // instrument (each carries its own distinct Rails-issued UUID via BankChequeData, so two
+    // cheques can never legitimately share a stack).
+    public static final DeferredHolder<Item, Item> BANK_CHEQUE = ITEMS.register("bank_cheque",
+            () -> new com.seggellion.britannia_mod.item.BankChequeItem(new Item.Properties().stacksTo(1)));
     
     // Quality Jewlery
 
@@ -1340,6 +1346,10 @@ public static final DeferredHolder<Item, BlockItem> QUEST_DESTINATION_BLOCK_ITEM
     public static final DeferredHolder<Item, BlockItem> QUEST_GIVER_SPAWN_BLOCK_ITEM =
             ITEMS.register("quest_giver_spawn_block", () ->
                     new BlockItem(BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, BlockItem> SERVICE_NPC_SPAWN_BLOCK_ITEM =
+            ITEMS.register("service_npc_spawn_block", () ->
+                    new BlockItem(BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, BlockItem> BRITANNIA_SPAWN_BLOCK_ITEM =
             ITEMS.register("britannia_spawn_block", () ->

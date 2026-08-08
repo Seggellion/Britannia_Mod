@@ -5,7 +5,7 @@ import net.neoforged.neoforge.common.NeoForge;          // global bus
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
-import java.util.concurrent.CompletableFuture;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 
 
 public final class BlessedItemSyncHandler {
@@ -20,10 +20,12 @@ public final class BlessedItemSyncHandler {
         if (!(evt.getEntity() instanceof ServerPlayer player)) return;
 
         // Kick the HTTP work off-thread so the login thread never blocks.
-        CompletableFuture
-            .supplyAsync(() -> BlessedItemSyncAPI.fetch(player))
-            .thenAcceptAsync(items -> {                     // back on main thread
-                BlessedItemInventorySync.apply(player, items);
-            }, player.server);                              // ensures world-thread context
+        var playerId = player.getUUID();
+        ServerHttpExecutor.submit(player.server, () -> BlessedItemSyncAPI.fetch(player))
+            .whenComplete((items, error) -> player.server.execute(() -> {
+                ServerPlayer current = player.server.getPlayerList().getPlayer(playerId);
+                if (current == null || error != null) return;
+                BlessedItemInventorySync.apply(current, items);
+            }));
     }
 }

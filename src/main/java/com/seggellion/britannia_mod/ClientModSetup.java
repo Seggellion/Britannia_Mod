@@ -86,6 +86,14 @@ public class ClientModSetup {
     private static boolean clientGameHandlersRegistered = false;
 
     @SubscribeEvent
+    public static void registerMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(
+                com.seggellion.britannia_mod.registry.MenuRegistry.SERVICE_NPC_SPAWN_MENU.get(),
+                com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen::new
+        );
+    }
+
+    @SubscribeEvent
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
         new ClientOnlyItemRegistry().registerSpawnEggColors(event);
 
@@ -510,6 +518,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.QUEST_GIVER.get(), QuestGiverEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ALCOHOL_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.SERVICE_NPC.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.MEAT_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ORE_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.STONE_TRADER.get(), CitizenEntityRenderer::new);

@@ -1,41 +1,51 @@
 package com.seggellion.britannia_mod.sync;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
 import com.mojang.logging.LogUtils;
-import com.seggellion.britannia_mod.config.ModConfig;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
 import com.seggellion.britannia_mod.util.FishCatalog;
 import com.seggellion.britannia_mod.util.RegionData;
 import com.seggellion.britannia_mod.util.RegionItemData;
-import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
-import com.seggellion.britannia_mod.player.PlayerDataStore;
-import com.seggellion.britannia_mod.network.ClientboundSyncCityTokenPayload;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.auth.ServerCredentials;
+import com.seggellion.britannia_mod.server.http.CancellableHttpRequest;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.QuestEntryParser;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsParser;
+import com.seggellion.britannia_mod.service.ServiceNpcAssignmentsSnapshot;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistryParser;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistrySnapshot;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class WorldBootstrapAPI {
     private static final Logger LOGGER = LogUtils.getLogger();
+    static final int MAX_RESPONSE_BYTES = 4 * 1024 * 1024;
+    public static final String BOOTSTRAP_PROFILE = "minecraft_server";
 
     public static WorldBootstrapData fetch(ServerPlayer player) {
+        return fetch(player, new RequestHandle());
+    }
+
+    public static WorldBootstrapData fetch(ServerPlayer player, RequestHandle requestHandle) {
         try {
-            // 1. Resolve Shard Name first
-            String shard = ModConfig.SHARD_NAME != null && !ModConfig.SHARD_NAME.isBlank()
-                    ? ModConfig.SHARD_NAME
-                    : "Britannia"; 
+            Optional<ServerCredentials> configuredCredentials = ServerAuthRegistry.credentials(player.server);
+            if (configuredCredentials.isEmpty()) {
+                LOGGER.warn("Skipping world bootstrap because server authentication is unavailable");
+                return WorldBootstrapData.empty();
+            }
+            ServerCredentials credentials = configuredCredentials.get();
+            String shard = credentials.shardName();
             
             // 2. Resolve the authenticated Minecraft profile. Rails owns all identity linking.
             GameProfile profile = player.getGameProfile();
@@ -48,41 +58,33 @@ public final class WorldBootstrapAPI {
 
             String playerUuid = minecraftUuid.toString();
 
-            // 3. Encode values
-            String encodedShard = URLEncoder.encode(shard, StandardCharsets.UTF_8);
-            String encodedUuid  = URLEncoder.encode(playerUuid, StandardCharsets.UTF_8);
-            String encodedName  = URLEncoder.encode(playerName, StandardCharsets.UTF_8);
+            var requestUri = credentials.apiUrls().resolve(
+                    Endpoint.WORLD_BOOTSTRAP,
+                    Map.of("shard", shard),
+                    bootstrapQuery(playerUuid, playerName)
+            );
+            LOGGER.debug("Sending Rails request endpoint={}", Endpoint.WORLD_BOOTSTRAP.symbolicName());
 
-            // 4. Construct URL
-            String base = ModConfig.API_BASE_URL;
-            if (!base.endsWith("/")) base += "/";
-            final String urlString = base + "world_bootstrap/" + encodedShard
-                    + "?player_uuid=" + encodedUuid
-                    + "&minecraft_uuid=" + encodedUuid
-                    + "&minecraft_username=" + encodedName;
+            CancellableHttpRequest request = new CancellableHttpRequest(requestUri, MAX_RESPONSE_BYTES);
+            requestHandle.attach(request);
+            CancellableHttpRequest.Response response = request.execute(connection -> {
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Accept", "application/json");
+                RailsRequestAuthenticator.apply(connection, credentials, new byte[0]);
+            });
 
-            // 5. Open Connection
-            HttpURLConnection conn = (HttpURLConnection) new URL(urlString).openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
-
-            CityAPITokenData tok = CityAPITokenData.getOrCreate(player.serverLevel());
-            if (!tok.getApiToken().isEmpty()) {
-                conn.setRequestProperty("Authorization", "Bearer " + tok.getApiToken());
-                ClientboundSyncCityTokenPayload.send(player, tok.getApiToken(), tok.getShardSecret());
+            if (response.status() != 200) {
+                String code = switch (response.status()) {
+                    case 401, 403 -> "authentication_rejected";
+                    case 404 -> "route_failure";
+                    default -> "http_status_failure";
+                };
+                LOGGER.warn("World bootstrap failed code={} status={}", code, response.status());
+                return WorldBootstrapData.failed(code);
             }
 
-            int code = conn.getResponseCode();
-            if (code != HttpURLConnection.HTTP_OK) {
-                LOGGER.warn("World bootstrap failed for shard {}. HTTP {}", shard, code);
-                return WorldBootstrapData.empty();
-            }
-
-            try (InputStream is = conn.getInputStream();
-                 InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
-                 JsonReader json = new JsonReader(reader)) {
-
-                JsonObject root = JsonParser.parseReader(json).getAsJsonObject();
+                JsonObject root = JsonParser.parseString(
+                        new String(response.body(), StandardCharsets.UTF_8)).getAsJsonObject();
 
                 // 1) Fish catalog
                 Map<ResourceLocation, FishCatalog.FishMeta> fishMap = new HashMap<>();
@@ -134,54 +136,16 @@ public final class WorldBootstrapAPI {
                     }
                 }
 
-                // 3) City Data
-                List<CityBootstrapData> citiesData = new ArrayList<>();
-                if (root.has("cities") && root.get("cities").isJsonArray()) {
-                    for (JsonElement el : root.getAsJsonArray("cities")) {
-                        JsonObject c = el.getAsJsonObject();
-                        String name = c.get("name").getAsString();
+                // 3-4) Player, city, quest, and Service NPC data are parsed as one
+                // application unit. A malformed player field therefore cannot produce
+                // a partially applicable bootstrap result.
+                CoreBootstrapData core = parseCore(root);
 
-                        JsonObject s = c.getAsJsonObject("supplies");
-                        double food = s.get("food").getAsDouble();
-                        double wood = s.get("wood").getAsDouble();
-                        double metal = s.get("metal").getAsDouble();
-                        double stone = s.get("stone").getAsDouble();
-                        double textile = s.get("textile").getAsDouble();
-                        double alcohol = s.get("alcohol").getAsDouble();
-                        double tech = s.get("technology").getAsDouble();
-
-                        JsonObject t = c.getAsJsonObject("treasury");
-                        int gold = t.get("gold").getAsInt();
-                        int silver = t.get("silver").getAsInt();
-                        int copper = t.get("copper").getAsInt();
-
-                        Map<String, Map<String, Map<String, Double>>> weights = parseWeights(c.getAsJsonObject("market_weights"));
-                        Map<String, Map<String, Map<String, Integer>>> quantities = parseQuantities(c.getAsJsonObject("market_quantities"));
-
-                        citiesData.add(new CityBootstrapData(name, food, wood, metal, stone, textile, alcohol, tech, gold, silver, copper, weights, quantities));
-                    }
-                }
-
-                // 4) ShardUser data
-                ShardUserData shardUser = null;
-                if (root.has("shard_user") && root.get("shard_user").isJsonObject()) {
-                    JsonObject su = root.getAsJsonObject("shard_user");
-                    String gender        = su.get("gender").getAsString();
-                    int fame             = su.get("fame").getAsInt();
-                    int karma            = su.get("karma").getAsInt();
-                    int murderCount      = su.get("murder_count").getAsInt();
-                    JsonObject inventory = su.getAsJsonObject("inventory");
-                    JsonObject stats     = su.getAsJsonObject("stats");
-
-                    shardUser = new ShardUserData(gender, fame, karma, murderCount, inventory, stats);
-                    if (shardUser != null) {
-                        com.seggellion.britannia_mod.player.PlayerData pd =
-                            com.seggellion.britannia_mod.player.PlayerDataStore.get(player);
-                        pd.setPlayerName(player.getGameProfile().getName());
-                        pd.syncFromShardUser(shardUser);
-                        com.seggellion.britannia_mod.player.PlayerDataStore.save(player, pd);
-                    }
-                }
+                // Bootstrap has no per-server credential, so the parsed section spans
+                // every Minecraft server on the shard; narrow it to this server's own
+                // entries before it ever leaves this method.
+                ServiceNpcAssignmentsSnapshot serviceNpcAssignments = core.serviceNpcAssignments()
+                        .filteredForServer(credentials.minecraftServerKey().orElse(null));
 
                 // 5) Grape Varieties
                 List<com.seggellion.britannia_mod.winery.GrapeVariety> grapesList = new ArrayList<>();
@@ -241,19 +205,35 @@ public final class WorldBootstrapAPI {
                             id, displayName, hydration, n, p, k, om, region, minAlt, maxAlt, color, diff, grapeColorEnum
                         ));
                     }
-                    // IMPORTANT: Pass the data to the Manager!
-                    GrapeVarietyManager.loadFromBootstrap(grapesList);
                 }
 
-                // 6) Accepted/current quests. Rails may provide either accepted_quests or quests.
-                List<ClientQuestEntry> acceptedQuests = QuestEntryParser.parseAcceptedQuests(root);
-
                 // Return
-                return new WorldBootstrapData(fishMap, regions, shardUser, citiesData, acceptedQuests);
-            }
+                return new WorldBootstrapData(
+                        fishMap,
+                        regions,
+                        core.shardUser(),
+                        core.cities(),
+                        core.acceptedQuests(),
+                        core.serviceNpcRegistry(),
+                        serviceNpcAssignments,
+                        grapesList,
+                        true,
+                        null
+                );
+        } catch (CancellableHttpRequest.RequestException classified) {
+            String code = classified.code().safeCode();
+            LOGGER.warn("World bootstrap failed code={}", code);
+            return WorldBootstrapData.failed(code);
+        } catch (BootstrapParseException malformed) {
+            LOGGER.warn("World bootstrap malformed response: field={} expected={}",
+                    malformed.field(), malformed.expected());
+            return WorldBootstrapData.failed("malformed_response");
+        } catch (JsonParseException | IllegalStateException malformed) {
+            LOGGER.warn("World bootstrap failed code=malformed_response");
+            return WorldBootstrapData.failed("malformed_response");
         } catch (Exception e) {
-            LOGGER.error("Failed world bootstrap", e);
-            return WorldBootstrapData.empty();
+            LOGGER.error("World bootstrap failed code=unexpected_error", e);
+            return WorldBootstrapData.failed("unexpected_error");
         }
     }
 
@@ -261,23 +241,209 @@ public final class WorldBootstrapAPI {
 
     public record WorldBootstrapData(
             Map<ResourceLocation, FishCatalog.FishMeta> fish,
-            List<RegionData> regions, 
+            List<RegionData> regions,
             ShardUserData shardUser,
             List<CityBootstrapData> cities,
-            List<ClientQuestEntry> acceptedQuests
+            List<ClientQuestEntry> acceptedQuests,
+            ServiceNpcRegistrySnapshot serviceNpcRegistry,
+            ServiceNpcAssignmentsSnapshot serviceNpcAssignments,
+            List<com.seggellion.britannia_mod.winery.GrapeVariety> grapes,
+            boolean successful,
+            String failureCode
     ) {
         public static WorldBootstrapData empty() {
-            return new WorldBootstrapData(Map.of(), List.of(), null, List.of(), List.of());
+            return failed("fetch_failed");
+        }
+
+        public static WorldBootstrapData failed(String failureCode) {
+            return new WorldBootstrapData(
+                    Map.of(),
+                    List.of(),
+                    null,
+                    List.of(),
+                    List.of(),
+                    ServiceNpcRegistrySnapshot.empty(),
+                    ServiceNpcAssignmentsSnapshot.empty(),
+                    List.of(),
+                    false,
+                    failureCode
+            );
+        }
+    }
+
+    public static final class RequestHandle {
+        private final AtomicReference<CancellableHttpRequest> request = new AtomicReference<>();
+        private final AtomicBoolean cancelled = new AtomicBoolean();
+
+        void attach(CancellableHttpRequest candidate) throws IOException {
+            if (!request.compareAndSet(null, candidate)) {
+                throw new IOException("bootstrap request handle is already attached");
+            }
+            if (cancelled.get()) candidate.cancel();
+        }
+
+        public void cancel() {
+            cancelled.set(true);
+            CancellableHttpRequest active = request.get();
+            if (active != null) active.cancel();
+        }
+
+        public boolean isCancelled() {
+            return cancelled.get();
         }
     }
 
     public record CityBootstrapData(
+            String publicId,
             String name,
             double food, double wood, double metal, double stone, double textile, double alcohol, double tech,
             int gold, int silver, int copper,
             Map<String, Map<String, Map<String, Double>>> weights,
             Map<String, Map<String, Map<String, Integer>>> quantities
     ) {}
+
+    record CoreBootstrapData(
+            ShardUserData shardUser,
+            List<CityBootstrapData> cities,
+            List<ClientQuestEntry> acceptedQuests,
+            ServiceNpcRegistrySnapshot serviceNpcRegistry,
+            ServiceNpcAssignmentsSnapshot serviceNpcAssignments
+    ) {}
+
+    static CoreBootstrapData parseCore(JsonObject root) {
+        List<CityBootstrapData> cities = new ArrayList<>();
+        if (root.has("cities") && root.get("cities").isJsonArray()) {
+            for (JsonElement element : root.getAsJsonArray("cities")) {
+                cities.add(parseCity(element.getAsJsonObject()));
+            }
+        }
+
+        ShardUserData shardUser = parseShardUser(root);
+        List<ClientQuestEntry> acceptedQuests = QuestEntryParser.parseAcceptedQuests(root);
+        ServiceNpcRegistryParser.ParseResult serviceNpcRegistry =
+                ServiceNpcRegistryParser.parseBootstrapRoot(root);
+        if (serviceNpcRegistry.status() == ServiceNpcRegistryParser.ParseStatus.REJECTED) {
+            LOGGER.warn("Rejected Service NPC registry without rejecting unrelated bootstrap data: {}",
+                    serviceNpcRegistry.error());
+        }
+
+        ServiceNpcAssignmentsParser.ParseResult serviceNpcAssignments =
+                ServiceNpcAssignmentsParser.parseBootstrapRoot(root);
+        if (serviceNpcAssignments.status() == ServiceNpcAssignmentsParser.ParseStatus.REJECTED) {
+            LOGGER.warn("Rejected Service NPC assignments without rejecting unrelated bootstrap data: {}",
+                    serviceNpcAssignments.error());
+        }
+
+        return new CoreBootstrapData(
+                shardUser,
+                List.copyOf(cities),
+                List.copyOf(acceptedQuests),
+                serviceNpcRegistry.snapshot(),
+                serviceNpcAssignments.snapshot()
+        );
+    }
+
+    static CityBootstrapData parseCity(JsonObject city) {
+        String publicId = city.has("public_id") && !city.get("public_id").isJsonNull()
+                ? city.get("public_id").getAsString()
+                : null;
+        String name = city.get("name").getAsString();
+
+        JsonObject supplies = city.getAsJsonObject("supplies");
+        double food = supplies.get("food").getAsDouble();
+        double wood = supplies.get("wood").getAsDouble();
+        double metal = supplies.get("metal").getAsDouble();
+        double stone = supplies.get("stone").getAsDouble();
+        double textile = supplies.get("textile").getAsDouble();
+        double alcohol = supplies.get("alcohol").getAsDouble();
+        double technology = supplies.get("technology").getAsDouble();
+
+        JsonObject treasury = city.getAsJsonObject("treasury");
+        int gold = treasury.get("gold").getAsInt();
+        int silver = treasury.get("silver").getAsInt();
+        int copper = treasury.get("copper").getAsInt();
+
+        return new CityBootstrapData(
+                publicId, name, food, wood, metal, stone, textile, alcohol, technology,
+                gold, silver, copper,
+                parseWeights(city.getAsJsonObject("market_weights")),
+                parseQuantities(city.getAsJsonObject("market_quantities"))
+        );
+    }
+
+    static Map<String, String> bootstrapQuery(String playerUuid, String playerName) {
+        return Map.of(
+                "player_uuid", playerUuid,
+                "minecraft_uuid", playerUuid,
+                "minecraft_username", playerName,
+                "profile", BOOTSTRAP_PROFILE
+        );
+    }
+
+    static ShardUserData parseShardUser(JsonObject root) {
+        JsonObject shardUser = optionalObject(root, "shard_user", "shard_user");
+        if (shardUser == null) return null;
+
+        return new ShardUserData(
+                requiredString(shardUser, "gender", "shard_user.gender"),
+                requiredInt(shardUser, "fame", "shard_user.fame"),
+                requiredInt(shardUser, "karma", "shard_user.karma"),
+                requiredInt(shardUser, "murder_count", "shard_user.murder_count"),
+                objectOrEmpty(shardUser, "inventory", "shard_user.inventory"),
+                objectOrEmpty(shardUser, "stats", "shard_user.stats")
+        );
+    }
+
+    private static JsonObject objectOrEmpty(JsonObject parent, String key, String field) {
+        JsonObject value = optionalObject(parent, key, field);
+        return value == null ? new JsonObject() : value;
+    }
+
+    private static JsonObject optionalObject(JsonObject parent, String key, String field) {
+        JsonElement value = parent.get(key);
+        if (value == null || value.isJsonNull()) return null;
+        if (!value.isJsonObject()) throw new BootstrapParseException(field, "object_or_null");
+        return value.getAsJsonObject();
+    }
+
+    private static String requiredString(JsonObject parent, String key, String field) {
+        JsonElement value = parent.get(key);
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+            throw new BootstrapParseException(field, "string");
+        }
+        return value.getAsString();
+    }
+
+    private static int requiredInt(JsonObject parent, String key, String field) {
+        JsonElement value = parent.get(key);
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+            throw new BootstrapParseException(field, "integer");
+        }
+        try {
+            return value.getAsInt();
+        } catch (NumberFormatException invalidNumber) {
+            throw new BootstrapParseException(field, "integer");
+        }
+    }
+
+    static final class BootstrapParseException extends RuntimeException {
+        private final String field;
+        private final String expected;
+
+        BootstrapParseException(String field, String expected) {
+            super("field=" + field + " expected=" + expected);
+            this.field = field;
+            this.expected = expected;
+        }
+
+        String field() {
+            return field;
+        }
+
+        String expected() {
+            return expected;
+        }
+    }
 
     public record ShardUserData(
             String gender,

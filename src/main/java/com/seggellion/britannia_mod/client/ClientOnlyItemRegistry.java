@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.client;
 
+import com.seggellion.britannia_mod.client.screen.bank.BankChequeTint;
+import com.seggellion.britannia_mod.registry.DataComponentRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.world.item.Item;
@@ -105,6 +107,14 @@ public class ClientOnlyItemRegistry {
             }
         }, ItemRegistry.DAEMON_SPAWN_EGG.get());
         LOGGER.info("Registered colors for Mongbat and Horse Seller spawn eggs.");
+
+        // Bank interface rebuild: a cheque is drawn on the deed artwork, tinted by the balance
+        // that funded it, so gold, silver and copper cheques are told apart at a glance. The
+        // mapping lives in BankChequeTint so it can be tested; this only wires it up.
+        event.register((stack, layer) -> {
+            if (layer != 0) return BankChequeTint.UNTINTED;
+            return BankChequeTint.forData(stack.get(DataComponentRegistry.BANK_CHEQUE_DATA.get()));
+        }, ItemRegistry.BANK_CHEQUE.get());
     }
 
 

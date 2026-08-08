@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
+import com.seggellion.britannia_mod.quest.QuestRewardService;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
@@ -325,6 +326,7 @@ public class QuestEventHandlers {
     }
 
     private static void handleQuestTriggerSuccess(ServerPlayer player, QuestModels.QuestResponse response, long questId, String triggerKey) {
+        QuestRewardService.apply(player, response);
         String responseJson = GSON.toJson(response);
         PacketDistributor.sendToPlayer(player, new QuestTriggerResultS2CPayload(responseJson, questId, triggerKey));
     }

@@ -1,0 +1,1 @@
+{"protocol_version":1,"success":false,"outcome":"STALE_REVISION","retryable":false,"operation_id":"30000000-0000-4000-8000-000000000003","spawn_uuid":"20000000-0000-4000-8000-000000000001","submitted_revision":1,"acknowledged_revision":2,"registration_state":"LIVE","acknowledged_at":"2026-07-17T20:43:58.492601Z","current_revision":2}

@@ -34,9 +34,16 @@ dependencies {
     implementation "software.bernie.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}"
     implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
     implementation 'org.nanohttpd:nanohttpd:2.2.0'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
     implementation "io.github.llamalad7:mixinextras-common:0.3.5"
     annotationProcessor "io.github.llamalad7:mixinextras-common:0.3.5"
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 runs {
@@ -58,9 +65,28 @@ runs {
         }
     }
 
+    gameTestServer {
+        workingDirectory = file("run/gametest")
+        modSource sourceSets.main
+        systemProperty "neoforge.enabledGameTestNamespaces", mod_id
+        dependencies {
+            runtime 'org.nanohttpd:nanohttpd:2.2.0'
+        }
+    }
+
 
     configureEach {
         systemProperty "forge.logging.markers", "REGISTRIES"
+        // Milestone 17: emit bank item identity in development runs. Set on every run
+        // configuration rather than just one, because the deposit envelope is built
+        // server-side -- setting this on the client alone does nothing when a dedicated
+        // server is in play.
+        //
+        // Safe to commit: this block configures gradle's own dev runs only and has no effect
+        // on a built jar, which keeps BankItemEnvelopeVersion's compiled-in default of 1. Dev
+        // runs point at a local Rails that has Milestone 16; a production build must not
+        // assume the instance it is pointed at does.
+        systemProperty "britannia.bank.item_envelope_version", "3"
         logging.captureStandardOutput(LogLevel.DEBUG)
     }
 }
@@ -79,9 +105,31 @@ jarJar {
 sourceSets {
     main {
         resources {
-            srcDirs = ['src/main/resources', 'src/generated/resources']
+            srcDirs = ['src/main/resources', 'src/generated/resources', 'build/generated/gametest']
         }
     }
+}
+
+tasks.register('generateServiceNpcSpawnGameTestStructure') {
+    def encodedStructure = layout.projectDirectory.file('src/gametest/service_npc_spawn_test_empty.nbt.b64')
+    def generatedStructure = layout.buildDirectory.file(
+            'generated/gametest/data/britannia_mod/structure/service_npc_spawn_test_empty.nbt')
+    inputs.file encodedStructure
+    outputs.file generatedStructure
+    doLast {
+        def outputFile = generatedStructure.get().asFile
+        outputFile.parentFile.mkdirs()
+        outputFile.bytes = Base64.decoder.decode(encodedStructure.asFile.text.trim())
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn tasks.named('generateServiceNpcSpawnGameTestStructure')
+}
+
+tasks.named('jar', Jar) {
+    exclude 'com/seggellion/britannia_mod/gametest/**'
+    exclude 'data/britannia_mod/structure/service_npc_spawn_test_empty.nbt'
 }
 
 tasks.register("generateModMetadata", ProcessResources) {
