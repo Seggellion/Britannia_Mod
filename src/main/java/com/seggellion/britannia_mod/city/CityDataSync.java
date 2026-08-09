@@ -183,6 +183,13 @@ public static JsonObject fetchCityDataWithMarketPrices(ServerLevel serverLevel, 
 
 public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
                                     String sourceId, String spawnLocation, String status) {
+    if (ServerAuthRegistry.credentials(serverLevel.getServer()).isEmpty()) {
+        // No Rails credentials configured: every other sync path in this class already
+        // degrades gracefully without a backend; NPC lifecycle sync must not crash the
+        // ticking server either.
+        LOGGER.warn("{} skipped: no server credentials configured", "NPC upsert sync");
+        return false;
+    }
     JsonObject payload = buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, status);
     String npcId = npc.getUUID().toString();
 
@@ -213,6 +220,13 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
 
 public static boolean heartbeatLiveNpc(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
                                        String sourceId, String spawnLocation) {
+    if (ServerAuthRegistry.credentials(serverLevel.getServer()).isEmpty()) {
+        // No Rails credentials configured: every other sync path in this class already
+        // degrades gracefully without a backend; NPC lifecycle sync must not crash the
+        // ticking server either.
+        LOGGER.warn("{} skipped: no server credentials configured", "NPC heartbeat sync");
+        return false;
+    }
     JsonObject payload = buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, "active");
     payload.addProperty("sync_action", "heartbeat");
     payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
@@ -230,6 +244,13 @@ public static boolean heartbeatLiveNpc(ServerLevel serverLevel, Entity npc, Stri
 
 public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, String npcType, String cityName,
                                           String sourceId, String spawnLocation, String status, String reason) {
+    if (ServerAuthRegistry.credentials(serverLevel.getServer()).isEmpty()) {
+        // No Rails credentials configured: every other sync path in this class already
+        // degrades gracefully without a backend; NPC lifecycle sync must not crash the
+        // ticking server either.
+        LOGGER.warn("{} skipped: no server credentials configured", "NPC inactive sync");
+        return false;
+    }
     String apiStatus = inactiveStatusForApi(status);
     JsonObject payload = new JsonObject();
     payload.addProperty("npc_id", npcId.toString());
