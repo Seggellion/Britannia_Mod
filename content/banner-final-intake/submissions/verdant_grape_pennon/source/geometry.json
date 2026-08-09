@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed parallel Medium-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/verdant_grape_pennon/base_texture",
+    "dye_mask": "britannia_mod:banner/verdant_grape_pennon/dye_mask",
+    "particle": "britannia_mod:banner/verdant_grape_pennon/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        1.30508,
+        -4.0,
+        7.49
+      ],
+      "to": [
+        14.69492,
+        16.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.125,
+            0.75,
+            13.0,
+            15.5
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            3.125,
+            0.75,
+            13.0,
+            15.5
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        1.30508,
+        -4.0,
+        7.47
+      ],
+      "to": [
+        14.69492,
+        16.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.125,
+            0.75,
+            13.0,
+            15.5
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            3.125,
+            0.75,
+            13.0,
+            15.5
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

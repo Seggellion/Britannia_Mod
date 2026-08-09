@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.6",
-	"credit": "Created by Workshop Six",
+	"credit": "Seggellion from Ultimacraft.com",
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "britannia_mod:block/decoration/farmer_props",
@@ -204,6 +204,5 @@
 			"color": 0,
 			"children": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 		}
-	],
-	"mcmodels": "3470d824cbe136467764788b56b2bdce"
+	]
 }

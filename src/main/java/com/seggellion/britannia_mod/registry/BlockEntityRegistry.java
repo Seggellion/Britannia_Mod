@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.block.entity.FishBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MerchantSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.QuestDestinationBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
@@ -22,6 +23,10 @@ import com.seggellion.britannia_mod.block.entity.LockableDoorBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ThreeHeightLightBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.block.entity.FlowerBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
+import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WeightedWoodBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WineBarrelBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TrashBarrelBlockEntity;
 import com.seggellion.britannia_mod.block.entity.JuicePressBlockEntity;
@@ -156,6 +161,43 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                             BlockRegistry.FARMING_BLOCK.get()
                     ).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlowerBlockEntity>> FLOWER_BLOCK_BE =
+            BLOCK_ENTITIES.register("flower_block_be",
+                    () -> BlockEntityType.Builder.of(
+                            FlowerBlockEntity::new,
+                            BlockRegistry.FLOWER_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CommunityFarmBlockEntity>> COMMUNITY_FARM_BLOCK_BE =
+            BLOCK_ENTITIES.register("community_farm_block_be",
+                    () -> BlockEntityType.Builder.of(
+                            CommunityFarmBlockEntity::new,
+                            BlockRegistry.COMMUNITY_FARM_BLOCK.get(),
+                            BlockRegistry.COMMUNITY_HOED_FARM_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OrangeTreeRootBlockEntity>> ORANGE_TREE_ROOT_BE =
+            BLOCK_ENTITIES.register("orange_tree_root_be",
+                    () -> BlockEntityType.Builder.of(
+                            OrangeTreeRootBlockEntity::new,
+                            BlockRegistry.ORANGE_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.LEMON_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.LIME_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.PEAR_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.PEACH_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.APPLE_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.CHERRY_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.OLIVE_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.PLUM_TREE_ROOT_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WeightedWoodBlockEntity>> WEIGHTED_WOOD_BE =
+            BLOCK_ENTITIES.register("weighted_wood_be",
+                    () -> BlockEntityType.Builder.of(
+                            WeightedWoodBlockEntity::new,
+                            BlockRegistry.WEIGHTED_WOOD_BLOCK.get()
+                    ).build(null));
+
 
                     // Inside your BlockRegistry class, in the BLOCK_ENTITIES section:
 
@@ -204,12 +246,21 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WineBottl
                 ).build(null)
             );
 
-        public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestGiverSpawnBlockEntity>>
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<QuestGiverSpawnBlockEntity>>
             QUEST_GIVER_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
                 "quest_giver_spawn_block_entity",
                 () -> BlockEntityType.Builder.of(
                         QuestGiverSpawnBlockEntity::new,
                         BlockRegistry.QUEST_GIVER_SPAWN_BLOCK.get()
+                ).build(null)
+            );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ServiceNpcSpawnBlockEntity>>
+            SERVICE_NPC_SPAWN_BLOCK_ENTITY_TYPE = BLOCK_ENTITIES.register(
+                "service_npc_spawn_block_entity",
+                () -> BlockEntityType.Builder.of(
+                        ServiceNpcSpawnBlockEntity::new,
+                        BlockRegistry.SERVICE_NPC_SPAWN_BLOCK.get()
                 ).build(null)
             );
 

@@ -56,6 +56,10 @@ import com.seggellion.britannia_mod.network.ClientNetworkHandler;
 import com.seggellion.britannia_mod.client.structure.StructureCache;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.HouseManagementScreenPayload;
+import com.seggellion.britannia_mod.client.farming.ClientFarmingPlantingItemPresentation;
+import com.seggellion.britannia_mod.client.farming.ClientFarmingPresentationRefresh;
+import com.seggellion.britannia_mod.farming.FarmingPlantingItemPresentation;
+import com.seggellion.britannia_mod.skill.ClientSkillTable;
 
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
@@ -64,6 +68,9 @@ import com.seggellion.britannia_mod.client.screen.WineryScreen;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.minecraft.world.entity.item.ItemEntity;
 
 
 import net.minecraft.nbt.CompoundTag;
@@ -86,6 +93,9 @@ public class ClientEventHandler {
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
         NeoForge.EVENT_BUS.addListener(ClientEventHandler::onBlockRightClick);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientLogin);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientLogout);
+        NeoForge.EVENT_BUS.addListener(ClientEventHandler::onRenderNameTag);
     }
 
     public static void onClientSetup(FMLClientSetupEvent event) {
@@ -169,6 +179,7 @@ return switch (color) {
 
  @SubscribeEvent
 public static void onClientTick(ClientTickEvent.Post event) {
+    ClientFarmingPresentationRefresh.refreshIfChanged();
     Minecraft mc = Minecraft.getInstance();
     if (mc.player == null || mc.level == null) {
         return;
@@ -191,6 +202,28 @@ if (held.getItem() instanceof AbstractHouseDeedItem deed) {
     }
 
     wasAttackPressed = isAttackPressed;
+}
+
+public static void onClientLogin(ClientPlayerNetworkEvent.LoggingIn event) {
+    ClientSkillTable.beginSession();
+    ClientFarmingPresentationRefresh.reset();
+}
+
+public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+    ClientSkillTable.clear();
+    ClientFarmingPresentationRefresh.reset();
+}
+
+public static void onRenderNameTag(RenderNameTagEvent event) {
+    if (!(event.getEntity() instanceof ItemEntity itemEntity)) {
+        return;
+    }
+    var presentation = ClientFarmingPlantingItemPresentation.resolve(
+            itemEntity.getItem(), event.getContent(), FarmingPlantingItemPresentation.Surface.DROPPED_LABEL
+    );
+    if (presentation.applicable() && !presentation.identified()) {
+        event.setContent(presentation.displayName());
+    }
 }
 
 

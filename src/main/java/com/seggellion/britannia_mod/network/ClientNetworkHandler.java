@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.npc.TraderRoleHandler;
 import com.seggellion.britannia_mod.network.RenameStorePayload;
 import com.seggellion.britannia_mod.network.StoreSignScreenPayload;
 import com.seggellion.britannia_mod.npc.NpcRoleHandler;
+import com.seggellion.britannia_mod.shop.Product;
 
 import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
 import com.seggellion.britannia_mod.network.payload.BritanniaSpawnScreenS2CPayload;
@@ -30,15 +31,27 @@ import com.seggellion.britannia_mod.ui.ManaOverlayScreen;
 import com.seggellion.britannia_mod.network.payload.QuestDestinationScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDestinationScreen;
 import com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload;
-import com.seggellion.britannia_mod.network.payload.ClaimQuestRewardC2SPayload;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestDecisionScreen;
 import com.seggellion.britannia_mod.network.payload.QuestGiverSpawnScreenS2CPayload;
 import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
+import com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen;
+import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
+import com.seggellion.britannia_mod.client.screen.DyePreviewScreen;
+import com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload;
+import com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload;
+import com.seggellion.britannia_mod.network.payload.banner.S2CBannerRenderDataPayload;
+import com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
+
+import com.seggellion.britannia_mod.network.payload.BankAccountOpenedS2CPayload;
+import com.seggellion.britannia_mod.client.screen.BankMainScreen;
+import com.seggellion.britannia_mod.client.screen.bank.BankNavigation;
+import com.seggellion.britannia_mod.client.screen.bank.BankingScreen;
+import com.seggellion.britannia_mod.client.screen.bank.ClientBankingSession;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -68,6 +81,18 @@ public class ClientNetworkHandler {
     private static final ResourceLocation FONT_UO_CLASSIC =
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
+
+    public static void handleServiceNpcSpawnState(
+            ServiceNpcSpawnStateS2CPayload payload,
+            IPayloadContext context
+    ) {
+        context.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen instanceof ServiceNpcSpawnScreen screen) {
+                screen.acceptState(payload);
+            }
+        });
+    }
 // 1. Your existing 4-argument method for NPCs
     public static void openQuestDecisionScreen(
         com.seggellion.britannia_mod.quest.network.QuestModels.QuestResponse response, 
@@ -109,7 +134,8 @@ public class ClientNetworkHandler {
         // enqueueWork ensures this runs on the main client rendering thread
         context.enqueueWork(() -> {
             // Open the screen and pass it the ingotId we sent from the server
-            Minecraft.getInstance().setScreen(new BlacksmithyScreen(payload.ingotId()));
+            Minecraft.getInstance().setScreen(new BlacksmithyScreen(payload.ingotId(), payload.learnedRecipes(),
+                    payload.race(), payload.gender(), payload.sessionToken()));
         });
     }
 
@@ -122,9 +148,14 @@ public class ClientNetworkHandler {
             NpcRoleHandler roleHandler = com.seggellion.britannia_mod.npc.TraderRoleHandlers.create(
                     pkt.npcType(), pkt.role(), pkt.city());
 
-            // Fetch catalog before opening the screen
-            roleHandler.fetchCatalog(player, pkt.city(), products -> {
-              if (products == null || products.isEmpty()) {
+            java.util.List<Product> products = pkt.products().stream().map(product -> new Product(
+                    product.itemId(),
+                    product.name(),
+                    product.price(),
+                    product.currency(),
+                    product.icon().isBlank() ? null : ResourceLocation.tryParse(product.icon())
+            )).toList();
+            if (products.isEmpty()) {
                     String msg = pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT
                             ? pkt.role() + " says: 'I have nothing the city can produce right now.'"
                             : pkt.role() + " says: 'I am not interested in anything you have.'";
@@ -132,10 +163,10 @@ public class ClientNetworkHandler {
                             .withFont(FONT_UO_CLASSIC)
                             .withColor(GRAY_848484);
                     player.sendSystemMessage(Component.literal(msg).withStyle(style));
-                    return; // Cancel screen open
-                }
+                    return;
+            }
 
-                mc.setScreen(new NpcCatalogScreen(
+            mc.setScreen(new NpcCatalogScreen(
                     pkt.npcType(),
                     pkt.role(),
                     pkt.city(),
@@ -143,8 +174,7 @@ public class ClientNetworkHandler {
                     player,
                     roleHandler,
                     products
-                ));
-            });
+            ));
         });
     }
 
@@ -183,11 +213,6 @@ public static void handleTriggerQuest(com.seggellion.britannia_mod.network.paylo
     ctx.enqueueWork(() -> {
         com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
             if (response != null && response.success) {
-                // Claim items if the API granted any
-                if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                    sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
-                }
-                
                 // Open the screen
                 openQuestDecisionScreen(response, "The Guardian", null);
             }
@@ -228,10 +253,6 @@ public static void handleQuestTriggerResult(QuestTriggerResultS2CPayload payload
         }
 
         QuestManager.getInstance().setCurrentQuestState(response);
-
-        if (response.granted_items != null && !response.granted_items.isEmpty()) {
-            sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
-        }
 
         handleQuestClientActions(response, payload.questId(), payload.triggerKey());
 
@@ -336,9 +357,6 @@ private static MutableComponent uoMessage(String text) {
         ctx.enqueueWork(() -> {
             com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
                 if (response != null && response.success) {
-                    if (response.granted_items != null && !response.granted_items.isEmpty()) {
-                        sendToServer(ClaimQuestRewardC2SPayload.fromResponse(response));
-                    }
                     Minecraft.getInstance().setScreen(
                         new QuestDecisionScreen(
                             response, 
@@ -350,6 +368,90 @@ private static MutableComponent uoMessage(String text) {
                 }
             });
         });
+    }
+
+    /**
+     * A {@code bank.open} result, or the refresh push that follows every confirmed mutation --
+     * the two are the same payload and cannot be told apart here.
+     *
+     * <p><b>Bank interface rebuild, Milestone 4: this is the cutover.</b> It used to be
+     * {@code setScreen(new BankScreen(payload))} unconditionally, which rebuilt the whole screen
+     * on every refresh and threw away whatever the player had selected, scrolled to or typed. Now
+     * the payload updates {@link ClientBankingSession} and the screen is left alone if banking is
+     * already open -- screens read the session as they draw, so fresh state needs no rebuild.
+     *
+     * <p>{@link BankNavigation#refreshRoute} owns the decision so it can be tested without a
+     * client; see its docs for the one behaviour deliberately preserved rather than improved.
+     */
+    public static void handleBankAccountOpened(BankAccountOpenedS2CPayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            boolean bankingOpen = minecraft.screen instanceof BankingScreen;
+
+            // The mutation sounds (owner, 2026-08-04) play on SUCCESS, and the refresh IS the
+            // success signal -- a rejection arrives as a result payload and stays silent.
+            // Captured before applyAccountOpened resolves the lock, and only for the same
+            // teller: a refresh from a different teller starts a fresh session and says nothing
+            // about the old request.
+            ClientBankingSession before = ClientBankingSession.active();
+            com.seggellion.britannia_mod.client.screen.bank.BankMutationCue cue =
+                    before != null && before.tellerEntityId() == payload.entityId()
+                            ? com.seggellion.britannia_mod.client.screen.bank.BankMutationCue.forSuccess(
+                                    before.pendingOperation(), before.pendingMovesCurrency())
+                            : com.seggellion.britannia_mod.client.screen.bank.BankMutationCue.SILENT;
+
+            switch (BankNavigation.refreshRoute(bankingOpen, payload.refresh())) {
+                // Milestone 17: a late refresh after the player closed banking. Not applied to
+                // the session either -- that would resurrect a session for an interaction the
+                // player ended, and the next genuine open re-fetches everything anyway.
+                case DISCARD -> { }
+                case OPEN_MAIN -> {
+                    ClientBankingSession.applyAccountOpened(payload);
+                    playMutationSuccessSound(minecraft, cue);
+                    minecraft.setScreen(new BankMainScreen());
+                }
+                case KEEP_CURRENT -> {
+                    ClientBankingSession.applyAccountOpened(payload);
+                    playMutationSuccessSound(minecraft, cue);
+                }
+            }
+        });
+    }
+
+    /**
+     * Coins jingle whichever way they move; an item thuds into the vault and the satchel creaks
+     * when it comes back. {@link com.seggellion.britannia_mod.client.screen.bank.BankMutationCue}
+     * made the decision (and is tested); this only maps a cue to a registered event.
+     */
+    private static void playMutationSuccessSound(
+            Minecraft minecraft, com.seggellion.britannia_mod.client.screen.bank.BankMutationCue cue
+    ) {
+        net.minecraft.sounds.SoundEvent event = switch (cue) {
+            case COIN -> com.seggellion.britannia_mod.ModSounds.GOLD_COIN.get();
+            case ITEM_DEPOSITED -> com.seggellion.britannia_mod.ModSounds.BANK_DEPOSIT.get();
+            case ITEM_WITHDRAWN -> com.seggellion.britannia_mod.ModSounds.BANK_WITHDRAW.get();
+            case SILENT -> null;
+        };
+        if (event == null) return;
+        minecraft.getSoundManager().play(
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(event, 1.0F));
+    }
+
+    /**
+     * A clean-rejection, reconciliation-required, or other non-success outcome for an in-flight
+     * banking mutation. A clean confirm never reaches this handler at all -- see {@code
+     * BankTransferResultS2CPayload}'s own docs for why the account/bank_items refresh (a fresh
+     * {@link BankAccountOpenedS2CPayload}, handled just above) is the success signal instead.
+     *
+     * <p>Milestone 19: this handler no longer touches any screen. Every rebuilt screen reads the
+     * outcome off {@link ClientBankingSession} while rendering, so recording it there is the
+     * whole job -- and a result that arrives after the player closed banking is dropped by the
+     * session itself rather than by a screen check here (design §5.3).
+     */
+    public static void handleBankTransferResult(
+            com.seggellion.britannia_mod.network.payload.BankTransferResultS2CPayload payload, IPayloadContext ctx
+    ) {
+        ctx.enqueueWork(() -> ClientBankingSession.applyTransferResult(payload));
     }
 
     public static void handleQuestGiverSpawnScreen(QuestGiverSpawnScreenS2CPayload payload, IPayloadContext ctx) {
@@ -374,6 +476,31 @@ private static MutableComponent uoMessage(String text) {
                 chessScreen.updateState(payload.state());
             } else {
                 mc.setScreen(new ChessBoardScreen(payload.pos(), payload.state()));
+            }
+        });
+    }
+
+    public static void handleOpenDyePreview(S2COpenDyePreviewPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> Minecraft.getInstance().setScreen(new DyePreviewScreen(payload)));
+    }
+
+    public static void handleBannerRenderData(S2CBannerRenderDataPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> com.seggellion.britannia_mod.client.banner.ClientBannerRenderData
+                .replace(payload.snapshot()));
+    }
+
+    public static void handleBannerPlacementOrientation(
+            S2CBannerPlacementOrientationPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> com.seggellion.britannia_mod.client.banner.ClientBannerPlacementState
+                .replace(payload.orientation()));
+    }
+
+    public static void handleDyeApplicationResult(
+            S2CDyeApplicationResultPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen instanceof DyePreviewScreen screen) {
+                screen.handleResult(payload);
             }
         });
     }

@@ -22,12 +22,16 @@ eclipse
 run
 runs
 run-data
+/logs/
 gradlew
 gradlew.bat
 
 repo
 
 /.git
+
+logs/
+*.log
 
 /src/main/resources/worlds/custom_world.zip
 /build/libs/britannia_mod-0.0.1.jar

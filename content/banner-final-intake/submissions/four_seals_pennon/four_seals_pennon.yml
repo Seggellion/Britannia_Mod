@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-30",
+    "notes": "Approved by the product owner on 2026-07-30; creator identity, original-art status, no reference copying, distribution permission, 1 x 2 dimensions, prepared geometry, and parallel-only runtime integration confirmed."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:four_seals_pennon",
+    "final_display_name": "Four Seals Pennon",
+    "catalogue_index": 9,
+    "family": "medium_wall",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_parallel",
+    "geometry_id": "britannia_mod:banner/medium_wall/four_seals_pennon/geometry",
+    "geometry_convention": "Approved 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Four Seals Pennon"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/four_seals_pennon/base_texture",
+      "source_file": "content/banner-final-intake/submissions/four_seals_pennon/base_texture.png",
+      "sha256": "0b7db42e5ef3969a347df79ee19cd1546f924a423227b5dd251ccc5a1f145a8f"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/four_seals_pennon/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/four_seals_pennon/dye_mask.png",
+      "sha256": "81128cba4d6e1a49c60870eddf53ddd8c7bc7b1fcc04462b653a883a15cb9e14"
+    },
+    "geometry": {
+      "shared_geometry_approved": true,
+      "source_file": "content/banner-final-intake/submissions/four_seals_pennon/source/geometry.json",
+      "sha256": "b90fc59cf20d0716732c3dd1fcf43ea04de0cf29f8a9eae6a5697463be0becd5"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/four_seals_pennon/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium_wall.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Product-owner intake approval was supplied on 2026-07-30. Post-integration live Gate E review has not yet been performed."
+  },
+  "requested_content_status": "in_progress"
+}

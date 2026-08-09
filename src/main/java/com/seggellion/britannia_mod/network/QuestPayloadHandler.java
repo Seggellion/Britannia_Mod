@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.network;
 
-import com.seggellion.britannia_mod.network.payload.SpawnEscortC2SPayload;
 import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
 import com.seggellion.britannia_mod.quest.QuestManager;
@@ -80,97 +79,63 @@ public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
 
     }
 
-    public static void handleSpawnEscort(final SpawnEscortC2SPayload payload, final IPayloadContext context) {
-        context.enqueueWork(() -> {
-            ServerPlayer player = (ServerPlayer) context.player();
-            ServerLevel level = player.serverLevel();
-            String questStateId = payload.questStateId() == null ? "" : payload.questStateId().trim();
-            if (questStateId.isBlank()) {
-                LOGGER.warn("Rejected escort activation without quest_state_id player={} quest_id={} npc_uuid={}",
-                        player.getStringUUID(), payload.questId(), payload.npcUuid());
-                player.sendSystemMessage(uoMessage("The escort could not be assigned yet."));
-                return;
-            }
+    public static void activateEscort(ServerPlayer player, long questId, String rawQuestStateId,
+                                      java.util.UUID npcUuid) {
+        if (player == null || npcUuid == null || questId <= 0) return;
+        ServerLevel level = player.serverLevel();
+        String questStateId = rawQuestStateId == null ? "" : rawQuestStateId.trim();
+        ClientQuestEntry acceptedQuest = ServerQuestTable.get(player, questStateId);
+        if (questStateId.isBlank() || acceptedQuest == null || !questIdMatches(acceptedQuest, questId)) {
+            LOGGER.warn("Rejected authoritative escort activation for inactive quest player={} quest_id={}",
+                    player.getStringUUID(), questId);
+            return;
+        }
 
-            ClientQuestEntry acceptedQuest = ServerQuestTable.get(player, questStateId);
-            if (acceptedQuest == null) {
-                LOGGER.warn("Rejected escort activation for inactive quest player={} quest_state_id={} quest_id={} npc_uuid={}",
-                        player.getStringUUID(), questStateId, payload.questId(), payload.npcUuid());
-                player.sendSystemMessage(uoMessage("The escort quest is not active."));
-                return;
-            }
+        Entity oldEntity = level.getEntity(npcUuid);
+        if (!(oldEntity instanceof com.seggellion.britannia_mod.entity.QuestGiverEntity oldQuestGiver)
+                || !oldEntity.isAlive() || player.distanceToSqr(oldEntity) > 64.0D) {
+            LOGGER.warn("Rejected authoritative escort activation because the nearby quest NPC was unavailable player={} quest_id={}",
+                    player.getStringUUID(), questId);
+            return;
+        }
 
-            // Default to the payload data in case the original entity has already unloaded
-            String finalName = payload.npcName();
-            String finalGender = payload.npcGender();
-            com.seggellion.britannia_mod.entity.QuestGiverEntity oldQg = null;
+        String finalName = oldQuestGiver.getPersonalName();
+        String npcApiId = internalApiId(finalName);
+        if (!isCompatibleQuestNpc(acceptedQuest, npcApiId)) {
+            LOGGER.warn("Rejected authoritative escort activation for mismatched quest NPC player={} quest_id={}",
+                    player.getStringUUID(), questId);
+            return;
+        }
 
-            // 1. Find and DELETE the original NPC
-            Entity oldEntity = level.getEntity(payload.npcUuid());
+        CompoundTag sourceTag = new CompoundTag();
+        oldQuestGiver.saveWithoutId(sourceTag);
+        sourceTag.remove("UUID");
+        QuestCleanupService.clearSpawnerForRemovedQuestGiver(level, oldQuestGiver.getUUID(), npcApiId, 600);
+        oldEntity.discard();
 
-            if (oldEntity instanceof com.seggellion.britannia_mod.entity.QuestGiverEntity foundQg) {
-                oldQg = foundQg;
-                // Grab the raw database name so we don't lose the encoded API routing data
-                finalName = oldQg.getPersonalName();
-                finalGender = oldQg.getGender();
-                String npcApiId = internalApiId(finalName);
-                if (!isCompatibleQuestNpc(acceptedQuest, npcApiId)) {
-                    LOGGER.warn("Rejected escort activation for mismatched npc player={} quest_state_id={} quest_key={} npc_api_id={} npc_uuid={}",
-                            player.getStringUUID(), questStateId, acceptedQuest.questKey(), npcApiId, oldQg.getStringUUID());
-                    player.sendSystemMessage(uoMessage("That escort does not belong to this quest."));
-                    return;
-                }
-                QuestCleanupService.clearSpawnerForRemovedQuestGiver(level, oldQg.getUUID(), internalApiId(finalName), 600);
-                oldEntity.discard(); // Deleting this frees up the Spawner Block to generate a new escort
-            } else {
-                LOGGER.warn("Rejected escort activation because NPC was not found player={} quest_state_id={} quest_id={} npc_uuid={}",
-                        player.getStringUUID(), questStateId, payload.questId(), payload.npcUuid());
-                player.sendSystemMessage(uoMessage("The escort could not be found."));
-                return;
-            }
+        com.seggellion.britannia_mod.entity.QuestGiverEntity escort =
+                com.seggellion.britannia_mod.registry.EntityRegistry.QUEST_GIVER.get().create(level);
+        if (escort == null) return;
+        escort.load(sourceTag);
+        escort.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0F);
+        escort.addTag("escort_active");
+        escort.addTag("quest_escort_" + player.getUUID());
+        escort.addTag("quest_id_" + questId);
+        escort.addTag("quest_state_id_" + questStateId);
+        if (!npcApiId.isBlank()) escort.addTag("quest_key_" + npcApiId);
+        escort.setPersistenceRequired();
+        escort.goalSelector.addGoal(2, new FollowPlayerGoal(escort, player, 1.2D, 5.0F, 2.0F));
+        level.addFreshEntity(escort);
 
-            // 2. Spawn a NEW QuestGiverEntity
-            com.seggellion.britannia_mod.entity.QuestGiverEntity escort = com.seggellion.britannia_mod.registry.EntityRegistry.QUEST_GIVER.get().create(level);
-            
-            if (escort != null) {
-                // If we successfully found the old NPC, clone its exact appearance (clothing, name, gender) via NBT!
-                if (oldQg != null) {
-                    CompoundTag tag = new CompoundTag();
-                    oldQg.saveWithoutId(tag);
-                    tag.remove("UUID"); // Strip the old UUID so it generates a fresh one
-                    escort.load(tag);
-                } else {
-                    // Fallback: apply the data explicitly from the payload
-                    escort.setPersonalName(finalName);
-                    escort.setGender(finalGender);
-                }
+        String displayString = finalName != null && finalName.contains(":") ? finalName.split(":", 2)[0] : finalName;
+        player.sendSystemMessage(uoMessage(displayString + " joins your side. Lead the way."));
+        LOGGER.info("Activated escort from authoritative Rails result player={} quest_state_id={} quest_id={} npc_uuid={}",
+                player.getStringUUID(), questStateId, questId, escort.getStringUUID());
+    }
 
-                // Move it to the player's exact location
-                escort.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0F);
-                
-                // Apply our tracking tags
-                escort.addTag("escort_active");
-                escort.addTag("quest_escort_" + player.getUUID().toString());
-                escort.addTag("quest_id_" + payload.questId());
-                escort.addTag("quest_state_id_" + questStateId);
-                String questKey = internalApiId(finalName);
-                if (!questKey.isBlank()) {
-                    escort.addTag("quest_key_" + questKey);
-                }
-                escort.setPersistenceRequired();
-
-                // 3. INJECT THE FOLLOW AI GOAL!
-                escort.goalSelector.addGoal(2, new FollowPlayerGoal(escort, player, 1.2D, 5.0F, 2.0F));
-
-                level.addFreshEntity(escort);
-
-                // Format the chat message so it doesn't print raw database IDs
-                String displayString = finalName != null && finalName.contains(":") ? finalName.split(":", 2)[0] : finalName;
-                player.sendSystemMessage(uoMessage(displayString + " joins your side. Lead the way."));
-                LOGGER.info("Activated escort after Rails accept player={} quest_state_id={} quest_id={} npc_api_id={} npc_uuid={}",
-                        player.getStringUUID(), questStateId, payload.questId(), questKey, escort.getStringUUID());
-            }
-        });
+    private static boolean questIdMatches(ClientQuestEntry quest, long questId) {
+        try { return Long.parseLong(quest.questId()) == questId; }
+        catch (NumberFormatException ignored) { return false; }
     }
 
     private static Component uoMessage(String text) {

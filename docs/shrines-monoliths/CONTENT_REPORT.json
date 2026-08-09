@@ -1,0 +1,1062 @@
+{
+  "report_schema_version": 1,
+  "generated_from_commit": "0aa523ec86e483e230fc1c4d04e145d394ebf990",
+  "families": [
+    {
+      "family_id": "shrine",
+      "family_status": "APPROVED",
+      "dimensions": {
+        "width": 2,
+        "height": 1,
+        "depth": 2
+      },
+      "ordered_footprint": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1
+        }
+      ],
+      "occupied_cell_count": 4,
+      "placement_mode": "FLOOR_ORIENTED",
+      "collision_profile": "SOLID_CELL",
+      "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+      "render_offset_voxels": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "geometry_mode": "SHARED",
+      "variants": [
+        {
+          "variant_id": "honesty",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.honesty",
+          "cycle_position": 0,
+          "enabled": true,
+          "default": true,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/honesty.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "BF7C657E85198EB58A82E6466DFCBAFD74E45B3201B9F24000BD553B84744855",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "compassion",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.compassion",
+          "cycle_position": 1,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/compassion.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "F4A03F885EBF68B0C060450F72EDCFE3D2D48825E030C3A31951F826FBA627CD",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "valor",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.valor",
+          "cycle_position": 2,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/valor.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "2482D99690D718C3D0B06E919118408BE965179C0A878F2924F396EBBA186CF9",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "justice",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.justice",
+          "cycle_position": 3,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/justice.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "50531DACCE0ECB3A513714EC3036C44C96092A787F93854375EDC47904A2BFC3",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "sacrifice",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.sacrifice",
+          "cycle_position": 4,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/sacrifice.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "E9D3FA485A24BC1237B20CE2287F3E7BD93E8792C4BF44C8DA742C25992427DC",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "honor",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.honor",
+          "cycle_position": 5,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/honor.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "723898577D80867D40B4BBF9DADCDCC759446740722F4F496264E88D1826AF36",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "spirituality",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.spirituality",
+          "cycle_position": 6,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/spirituality.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "C4394FF25C3EF14DAE11EEDB5D2DF3BD0787608E82602712314AF32565A3CA4A",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "humility",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.humility",
+          "cycle_position": 7,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/humility.png",
+          "rim_texture_resource": "textures/block/shrine/granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "B8136CE1C9637D1B1A5F6E0738B9698F34854C88F796BD6FC63DB2F955C1688C",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "chaos",
+          "variant_status": "APPROVED",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.shrine.chaos",
+          "cycle_position": 8,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 2,
+            "height": 1,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 4,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "geometry_resource": "geo/shrine.geo.json",
+          "texture_resource": "textures/block/shrine/chaos.png",
+          "rim_texture_resource": "textures/block/shrine/light_granite.png",
+          "animation_resource": "animations/shrine.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "DAEF7813658A6EB8C9831D538599EB58892E184174896D4B2179E21C29C099FE",
+            "texture": "9365AB11463B1442FEE89D131AA0197A38E7F5FE513102E44182D2B1595F4702",
+            "rim_texture": "A1D3C1A881B6DC6990EB56932B702CDA78AE0BBF10355FDA90B8A3133B4CCA77",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        }
+      ]
+    },
+    {
+      "family_id": "monolith",
+      "family_status": "APPROVED",
+      "dimensions": {
+        "width": 3,
+        "height": 3,
+        "depth": 2
+      },
+      "ordered_footprint": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 1
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 0
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "z": 1
+        },
+        {
+          "x": 1,
+          "y": 2,
+          "z": 1
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 1
+        }
+      ],
+      "occupied_cell_count": 18,
+      "placement_mode": "FLOOR_ORIENTED",
+      "collision_profile": "SOLID_CELL",
+      "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+      "render_offset_voxels": {
+        "x": 0,
+        "y": 16,
+        "z": 0
+      },
+      "geometry_mode": "PER_VARIANT",
+      "variants": [
+        {
+          "variant_id": "diagnostic_missing_content",
+          "variant_status": "PROVISIONAL",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.monolith.diagnostic_missing_content",
+          "cycle_position": 0,
+          "enabled": true,
+          "default": true,
+          "dimensions": {
+            "width": 3,
+            "height": 3,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 18,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 16,
+            "z": 0
+          },
+          "geometry_resource": "geo/monolith_diagnostic.geo.json",
+          "texture_resource": "textures/block/monolith/diagnostic_stone.png",
+          "animation_resource": "animations/monolith.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C",
+            "texture": "FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "diagnostic_alternate",
+          "variant_status": "PROVISIONAL",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.monolith.diagnostic_alternate",
+          "cycle_position": 1,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 3,
+            "height": 3,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 18,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 16,
+            "z": 0
+          },
+          "geometry_resource": "geo/monolith_diagnostic_alternate.geo.json",
+          "texture_resource": "textures/block/monolith/diagnostic_alternate_stone.png",
+          "animation_resource": "animations/monolith.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC",
+            "texture": "E320B72F2D0B9429D07DD4E62D264535760797AE6D1F9DD047C082B6736A2C4A",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        },
+        {
+          "variant_id": "diagnostic_crystalline",
+          "variant_status": "PROVISIONAL",
+          "asset_status": "OWNER_APPROVED_PROVISIONAL",
+          "display_localization_key": "structure.britannia_mod.monolith.diagnostic_crystalline",
+          "cycle_position": 2,
+          "enabled": true,
+          "default": false,
+          "dimensions": {
+            "width": 3,
+            "height": 3,
+            "depth": 2
+          },
+          "ordered_footprint": [
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 0,
+              "z": 1
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 2,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 2,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 2,
+              "z": 1
+            }
+          ],
+          "occupied_cell_count": 18,
+          "placement_mode": "FLOOR_ORIENTED",
+          "collision_profile": "SOLID_CELL",
+          "render_origin": "ANCHOR_LOWER_FRONT_LEFT",
+          "render_offset_voxels": {
+            "x": 0,
+            "y": 16,
+            "z": 0
+          },
+          "geometry_resource": "geo/monolith_diagnostic_crystalline.geo.json",
+          "texture_resource": "textures/block/monolith/diagnostic_crystalline_stone.png",
+          "animation_resource": "animations/monolith.animation.json",
+          "resource_availability": "AVAILABLE",
+          "resource_sha256": {
+            "geometry": "A4EAD03C5C1ECA1FEF6F7FA6DE22C64E1ADAE964763A5EAF0715E7C72AA74955",
+            "texture": "E20F4D15EC0511AFDB132E13D047FB830309896538C2C33A1224EF8420A9BAC7",
+            "animation": "D63D4CBCEF6A3E410EE94F38F5684F7B3E9F94BCC69B4D80C925FBBB61FC1530"
+          },
+          "validation_status": "VALID",
+          "validation_diagnostics": []
+        }
+      ]
+    }
+  ]
+}

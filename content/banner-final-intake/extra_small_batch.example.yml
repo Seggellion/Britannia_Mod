@@ -1,0 +1,475 @@
+{
+  "schema_version": 1,
+  "template_status": "NOT_APPROVED",
+  "instructions": "Complete each record independently. Approved final-content base_texture.png and dye_mask.png must each be exactly 128 x 128 RGBA. current_catalogue_state is informational and is not approval.",
+  "records": [
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:road_guard",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Road Guard",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:pale_road_guard",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Pale Road Guard",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:red_crosslets",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Red Crosslets",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:captains_red_crosslets",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Captain's Red Crosslets",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:scarlet_court",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Scarlet Court",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:verdant_court",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Verdant Court",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:small_curtain",
+        "final_display_name": "Small Curtain",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Small Curtain",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/small_curtain/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:prosperity_standard",
+        "final_display_name": "Prosperity Standard",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Prosperity Standard",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:guardian_standard",
+        "final_display_name": "Guardian Standard",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_catalogue_state": {
+        "display_label": "Guardian Standard",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:extra_small",
+        "geometry_id": "britannia_mod:banner/road_guard/geometry",
+        "content_status": "complete",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "placeholder"
+    }
+  ]
+}

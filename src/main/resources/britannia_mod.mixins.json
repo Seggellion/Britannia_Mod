@@ -6,13 +6,16 @@
   "refmap": "britannia_mod.refmap.json",
   "mixins": [
     "LivingEntityBedMixin",
-     "TitleScreenBackgroundMixin",
-    "PlayerSleepMixin"
+    "PlayerSleepMixin",
+    "PlayerListInvokerMixin",
+    "PlayerListAccessorMixin"
   ],
   "client": [
+    "TitleScreenBackgroundMixin",
+    "client.CreativeModeInventoryScreenAccessor",
+    "client.ItemStackFarmingPresentationMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   }
-  }
-  
+}

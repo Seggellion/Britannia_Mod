@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:silk",
+  "display_name_key": "material.britannia_mod.silk",
+  "natural_colour_id": "britannia_mod:silk_natural",
+  "palette_id": "britannia_mod:silk",
+  "tags": ["fabric", "development_palette", "fine", "vivid"]
+}

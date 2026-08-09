@@ -18,6 +18,7 @@ import com.seggellion.britannia_mod.event.ChestHandler;
 import com.seggellion.britannia_mod.event.GlobalEventHandler;
 import com.seggellion.britannia_mod.event.WoodChopEventHandler;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
+import com.seggellion.britannia_mod.event.FlowerInteractionHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
@@ -38,6 +39,7 @@ import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
 import com.seggellion.britannia_mod.structure.StructureProtectionHandler;
+import com.seggellion.britannia_mod.structure.lifecycle.ShrineIntegrityHandler;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.util.NameLoader;
@@ -50,6 +52,14 @@ import com.seggellion.britannia_mod.util.OreVeinLoader;
 import com.seggellion.britannia_mod.sync.BlessedItemSyncHandler;
 import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnDeliveryProcessor;
+import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegistration;
+import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
+import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
+import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrityHandler;
+import com.seggellion.britannia_mod.banner.placement.BannerOrientationPreferenceLifecycle;
+import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -77,6 +87,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -90,6 +101,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
+import java.nio.file.Path;
 
 @Mod(BritanniaMod.MODID)
 public class BritanniaMod {
@@ -102,20 +114,30 @@ public class BritanniaMod {
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
         OreVeinLoader.loadOreVeins();
-          BlessedItemSyncHandler.init(); 
-        WorldBootstrapHandler.init(); 
+          BlessedItemSyncHandler.init();
+        WorldBootstrapHandler.init();
+        com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.init();
         GrapeVarietyManager.init();
 CraftableRegistry.init();
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
+        BannerBlockRegistry.register(modEventBus);
+        BannerStructureIntegrityHandler.register();
+        BannerOrientationPreferenceLifecycle.register(NeoForge.EVENT_BUS);
         ItemRegistry.register(modEventBus);
+        LargeStructureRegistry.register(modEventBus);
+        ShrineIntegrityHandler.register();
+
+        BlacksmithItemRegistry.register(modEventBus);
+        DyeItemRegistry.register(modEventBus);
+        BannerItemRegistry.register(modEventBus);
 
         WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
         PaintingRegistry.register(modEventBus);
-      //  MenuRegistry.register(modEventBus);
+        MenuRegistry.register(modEventBus);
 
         ToolRegistry.register(modEventBus);
         EntityRegistry.register(modEventBus);
@@ -134,11 +156,15 @@ CraftableRegistry.init();
 
         ModSounds.register(modEventBus);
         CommandRegistry.register();
+        BannerDataReloadRegistration.register(NeoForge.EVENT_BUS);
+        BannerRenderDataSync.register(NeoForge.EVENT_BUS);
+        DyePreviewLifecycle.register(NeoForge.EVENT_BUS);
 
         // Register event handlers
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.register(new ForgeEventHandler());
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
+        NeoForge.EVENT_BUS.register(new FlowerInteractionHandler());
         NeoForge.EVENT_BUS.register(new RestrictedEquipmentControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new BlockRestoreHandler());
@@ -170,6 +196,9 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new SurvivalZoneHandler());
           NeoForge.EVENT_BUS.register(new StructureProtectionHandler());
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(this::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(this::onServerTick);
+        NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 
 
         ManaHandler.register();
@@ -217,6 +246,7 @@ public void onServerStopping(ServerStoppingEvent event) {
     }
     if (railsUpdateServer != null) {
         railsUpdateServer.stop();
+        railsUpdateServer = null;
         LOGGER.info("🛑 railsUpdateServer stopped");
     }
 
@@ -224,6 +254,10 @@ public void onServerStopping(ServerStoppingEvent event) {
 
     // === NEW: Monster cleanup ===
     MinecraftServer server = event.getServer();
+    ServiceNpcSpawnDeliveryProcessor.stop(server);
+    com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.stop(server);
+    WorldBootstrapHandler.onServerStopping(server);
+    ServerAuthRegistry.clear(server);
     for (ServerLevel level : server.getAllLevels()) {
         int viewDistance = level.getServer().getPlayerList().getViewDistance();
 
@@ -251,7 +285,21 @@ public void onServerStopping(ServerStoppingEvent event) {
 
 }
 
+public void onServerStarted(ServerStartedEvent event) {
+    ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
+    com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.start(event.getServer());
+    com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.runStartupReconciliation(event.getServer());
+}
+
+public void onServerTick(ServerTickEvent.Post event) {
+    ServiceNpcSpawnDeliveryProcessor.tick(event.getServer());
+    com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.tick(event.getServer());
+}
+
 public void onServerStarting(ServerStartingEvent event) {
+    MinecraftServer minecraftServer = event.getServer();
+    boolean dedicatedServer = minecraftServer instanceof net.minecraft.server.dedicated.DedicatedServer;
+    ServerAuthRegistry.initialize(minecraftServer, Path.of("."), dedicatedServer);
     NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
 
     try {
@@ -263,6 +311,9 @@ public void onServerStarting(ServerStartingEvent event) {
         LOGGER.error("❌ Failed to start DeedHttpServer", e);
     }
 
+    if (ServerAuthRegistry.credentials(minecraftServer)
+        .map(credentials -> credentials.railsUpdateListenerEnabled())
+        .orElse(false)) {
     try {
         // Start the Rails Update API server (new)
         railsUpdateServer = new RailsUpdateServer(8081, event.getServer());
@@ -270,6 +321,7 @@ public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("✅ RailsUpdateServer started on port 8081");
     } catch (IOException e) {
         LOGGER.error("❌ Failed to start RailsUpdateServer", e);
+    }
     }
 }
 

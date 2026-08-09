@@ -1,6 +1,5 @@
 package com.seggellion.britannia_mod.npc;
 
-import com.seggellion.britannia_mod.api.RailsApi;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.payload.BuyMerchantItemsC2SPayload;
 import com.seggellion.britannia_mod.shop.Product;
@@ -22,7 +21,7 @@ public class MerchantRoleHandler implements NpcRoleHandler {
 
     @Override
     public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
-        RailsApi.fetchCatalog(city, role, callback);
+        callback.accept(List.of());
     }
 
     @Override

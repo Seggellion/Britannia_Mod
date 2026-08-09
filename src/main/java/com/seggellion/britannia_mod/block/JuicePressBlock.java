@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.JuicePressBlockEntity;
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
 import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.winery.GrapeVariety;
@@ -100,8 +101,7 @@ public class JuicePressBlock extends HorizontalDirectionalBlock implements Entit
                 return ItemInteractionResult.SUCCESS;
             }
 
-            CompoundTag itemTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag())).copyTag();
-            int quality = itemTag.contains("Quality") ? itemTag.getInt("Quality") : 50;
+            int quality = CropQualityCalculator.hasQuality(stack) ? CropQualityCalculator.getQuality(stack) : 50;
 
             int amountToAdd = stack.getCount();
             int consumed = press.addGrapes(variety, quality, region, amountToAdd);

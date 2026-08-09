@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "layer0":  "britannia_mod:item/watermelon"
+                 },
+    "parent":  "minecraft:item/generated"
+}

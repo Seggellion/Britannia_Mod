@@ -1,0 +1,7 @@
+{
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "britannia_mod:item/crops/banana/banana_block"
+  },
+  "elements": []
+}

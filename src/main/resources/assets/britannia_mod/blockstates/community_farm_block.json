@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "prepared=false": { "model": "britannia_mod:block/community_farm_block" },
+    "prepared=true": { "model": "britannia_mod:block/community_farm_block_prepared" }
+  }
+}

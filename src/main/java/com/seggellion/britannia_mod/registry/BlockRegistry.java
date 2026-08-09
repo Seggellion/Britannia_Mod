@@ -82,6 +82,7 @@ import com.seggellion.britannia_mod.block.TraderSpawnBlock;
 import com.seggellion.britannia_mod.block.MerchantSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.QuestGiverSpawnBlock;
+import com.seggellion.britannia_mod.block.ServiceNpcSpawnBlock;
 import com.seggellion.britannia_mod.block.entity.QuestGiverSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.QuestDestinationBlock;
 import com.seggellion.britannia_mod.block.DecorativeItems3x3Block;
@@ -103,8 +104,18 @@ import com.seggellion.britannia_mod.block.JuicePressBlock;
 import com.seggellion.britannia_mod.block.WineBarrelBlock;
 import com.seggellion.britannia_mod.block.WineBottleBlock;
 import com.seggellion.britannia_mod.block.TrashBarrelBlock;
+import com.seggellion.britannia_mod.block.CommunityFarmBlock;
+import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
+import com.seggellion.britannia_mod.block.FlowerBlock;
+import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeBranchBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeLeafBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeTrunkBlock;
+import com.seggellion.britannia_mod.block.OrangeFruitBlock;
+import com.seggellion.britannia_mod.block.WeightedWoodBlock;
 
 
 import net.minecraft.world.level.block.Block;
@@ -181,7 +192,27 @@ public static final DeferredHolder<Block, WineBottleBlock> WINE_BOTTLE_CLEAR_BLO
         () -> new WineBottleBlock(bottleProps()));
 
 // Custom Soil
-    public static final DeferredHolder<Block, FarmingBlock> FARMING_BLOCK = BLOCKS.register(
+public static final DeferredHolder<Block, CommunityFarmBlock> COMMUNITY_FARM_BLOCK = BLOCKS.register(
+            "community_farm_block",
+            () -> new CommunityFarmBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.GRAVEL)
+                    .isViewBlocking((state, level, pos) -> true)
+                    .isSuffocating((state, level, pos) -> true))
+    );
+
+public static final DeferredHolder<Block, CommunityHoedFarmBlock> COMMUNITY_HOED_FARM_BLOCK = BLOCKS.register(
+            "community_hoed_farm_block",
+            () -> new CommunityHoedFarmBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.GRAVEL)
+                    .isViewBlocking((state, level, pos) -> true)
+                    .isSuffocating((state, level, pos) -> true))
+    );
+
+public static final DeferredHolder<Block, FarmingBlock> FARMING_BLOCK = BLOCKS.register(
             "farming_block",
             () -> new FarmingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.DIRT)
@@ -191,10 +222,208 @@ public static final DeferredHolder<Block, WineBottleBlock> WINE_BOTTLE_CLEAR_BLO
                     .isSuffocating((state, level, pos) -> true))
     );
 
+public static final DeferredHolder<Block, FlowerBlock> FLOWER_BLOCK = BLOCKS.register(
+            "flower_block",
+            () -> new FlowerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.DIRT)
+                    .strength(0.6F)
+                    .sound(SoundType.GRAVEL)
+                    .isViewBlocking((state, level, pos) -> true)
+                    .isSuffocating((state, level, pos) -> true))
+    );
+
+public static final DeferredHolder<Block, CornStalkBlock> CORN_STALK_BLOCK = BLOCKS.register(
+            "corn_stalk_block",
+            () -> new CornStalkBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .strength(0.2F)
+                    .sound(SoundType.CROP)
+                    .noCollission()
+                    .noOcclusion())
+    );
+
 public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.register(
             "trellis_block",
             () -> new TrellisBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).noOcclusion())
     );
+
+public static final DeferredHolder<Block, WeightedWoodBlock> WEIGHTED_WOOD_BLOCK = BLOCKS.register(
+            "weighted_wood_block",
+            () -> new WeightedWoodBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_LOG)
+                    .strength(2.0F)
+                    .sound(SoundType.WOOD))
+    );
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> ORANGE_TREE_ROOT_BLOCK = BLOCKS.register(
+            "orange_tree_root",
+            () -> new OrangeTreeRootBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(1.2F)
+                    .sound(SoundType.WOOD)
+                    .randomTicks())
+    );
+
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> ORANGE_TREE_TRUNK_BLOCK = BLOCKS.register(
+            "orange_tree_trunk",
+            () -> new OrangeTreeTrunkBlock("orange", fruitTreeTrunkProperties())
+    );
+
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> ORANGE_TREE_BRANCH_BLOCK = BLOCKS.register(
+            "orange_tree_branch",
+            () -> new OrangeTreeBranchBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.WOOD)
+                    .strength(0.8F)
+                    .sound(SoundType.WOOD)
+                    .noOcclusion())
+    );
+
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> ORANGE_TREE_LEAF_BLOCK = BLOCKS.register(
+            "orange_tree_leaf",
+            () -> new OrangeTreeLeafBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .strength(0.2F)
+                    .sound(SoundType.GRASS)
+                    .noOcclusion())
+    );
+
+public static final DeferredHolder<Block, OrangeFruitBlock> ORANGE_FRUIT_BLOCK = BLOCKS.register(
+            "orange_fruit",
+            () -> new OrangeFruitBlock("orange", BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_ORANGE)
+                    .strength(0.2F)
+                    .sound(SoundType.GRASS)
+                    .noCollission()
+                    .noOcclusion())
+    );
+
+private static BlockBehaviour.Properties fruitTreeRootProperties() {
+    return BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.2F)
+            .sound(SoundType.WOOD)
+            .randomTicks();
+}
+
+private static BlockBehaviour.Properties fruitTreeBranchProperties() {
+    return BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(0.8F)
+            .sound(SoundType.WOOD)
+            .noOcclusion();
+}
+
+private static BlockBehaviour.Properties fruitTreeTrunkProperties() {
+    return BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(1.0F)
+            .sound(SoundType.WOOD)
+            .noOcclusion();
+}
+
+private static BlockBehaviour.Properties fruitTreeLeafProperties() {
+    return BlockBehaviour.Properties.of()
+            .mapColor(MapColor.PLANT)
+            .strength(0.2F)
+            .sound(SoundType.GRASS)
+            .noOcclusion();
+}
+
+private static BlockBehaviour.Properties fruitBlockProperties(MapColor color) {
+    return BlockBehaviour.Properties.of()
+            .mapColor(color)
+            .strength(0.2F)
+            .sound(SoundType.GRASS)
+            .noCollission()
+            .noOcclusion();
+}
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> LEMON_TREE_ROOT_BLOCK = BLOCKS.register(
+        "lemon_tree_root", () -> new OrangeTreeRootBlock("lemon", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> LEMON_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "lemon_tree_trunk", () -> new OrangeTreeTrunkBlock("lemon", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> LEMON_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "lemon_tree_branch", () -> new OrangeTreeBranchBlock("lemon", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> LEMON_TREE_LEAF_BLOCK = BLOCKS.register(
+        "lemon_tree_leaf", () -> new OrangeTreeLeafBlock("lemon", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> LEMON_FRUIT_BLOCK = BLOCKS.register(
+        "lemon_fruit", () -> new OrangeFruitBlock("lemon", fruitBlockProperties(MapColor.COLOR_YELLOW)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> LIME_TREE_ROOT_BLOCK = BLOCKS.register(
+        "lime_tree_root", () -> new OrangeTreeRootBlock("lime", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> LIME_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "lime_tree_trunk", () -> new OrangeTreeTrunkBlock("lime", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> LIME_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "lime_tree_branch", () -> new OrangeTreeBranchBlock("lime", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> LIME_TREE_LEAF_BLOCK = BLOCKS.register(
+        "lime_tree_leaf", () -> new OrangeTreeLeafBlock("lime", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> LIME_FRUIT_BLOCK = BLOCKS.register(
+        "lime_fruit", () -> new OrangeFruitBlock("lime", fruitBlockProperties(MapColor.COLOR_LIGHT_GREEN)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> PEAR_TREE_ROOT_BLOCK = BLOCKS.register(
+        "pear_tree_root", () -> new OrangeTreeRootBlock("pear", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> PEAR_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "pear_tree_trunk", () -> new OrangeTreeTrunkBlock("pear", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> PEAR_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "pear_tree_branch", () -> new OrangeTreeBranchBlock("pear", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> PEAR_TREE_LEAF_BLOCK = BLOCKS.register(
+        "pear_tree_leaf", () -> new OrangeTreeLeafBlock("pear", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> PEAR_FRUIT_BLOCK = BLOCKS.register(
+        "pear_fruit", () -> new OrangeFruitBlock("pear", fruitBlockProperties(MapColor.COLOR_LIGHT_GREEN)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> PEACH_TREE_ROOT_BLOCK = BLOCKS.register(
+        "peach_tree_root", () -> new OrangeTreeRootBlock("peach", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> PEACH_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "peach_tree_trunk", () -> new OrangeTreeTrunkBlock("peach", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> PEACH_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "peach_tree_branch", () -> new OrangeTreeBranchBlock("peach", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> PEACH_TREE_LEAF_BLOCK = BLOCKS.register(
+        "peach_tree_leaf", () -> new OrangeTreeLeafBlock("peach", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> PEACH_FRUIT_BLOCK = BLOCKS.register(
+        "peach_fruit", () -> new OrangeFruitBlock("peach", fruitBlockProperties(MapColor.TERRACOTTA_ORANGE)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> APPLE_TREE_ROOT_BLOCK = BLOCKS.register(
+        "apple_tree_root", () -> new OrangeTreeRootBlock("apple", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> APPLE_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "apple_tree_trunk", () -> new OrangeTreeTrunkBlock("apple", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> APPLE_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "apple_tree_branch", () -> new OrangeTreeBranchBlock("apple", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> APPLE_TREE_LEAF_BLOCK = BLOCKS.register(
+        "apple_tree_leaf", () -> new OrangeTreeLeafBlock("apple", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> APPLE_FRUIT_BLOCK = BLOCKS.register(
+        "apple_fruit", () -> new OrangeFruitBlock("apple", fruitBlockProperties(MapColor.COLOR_RED)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> CHERRY_TREE_ROOT_BLOCK = BLOCKS.register(
+        "cherry_tree_root", () -> new OrangeTreeRootBlock("cherries", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> CHERRY_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "cherry_tree_trunk", () -> new OrangeTreeTrunkBlock("cherries", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> CHERRY_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "cherry_tree_branch", () -> new OrangeTreeBranchBlock("cherries", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> CHERRY_TREE_LEAF_BLOCK = BLOCKS.register(
+        "cherry_tree_leaf", () -> new OrangeTreeLeafBlock("cherries", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> CHERRY_FRUIT_BLOCK = BLOCKS.register(
+        "cherry_fruit", () -> new OrangeFruitBlock("cherries", fruitBlockProperties(MapColor.COLOR_RED)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> OLIVE_TREE_ROOT_BLOCK = BLOCKS.register(
+        "olive_tree_root", () -> new OrangeTreeRootBlock("olive", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> OLIVE_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "olive_tree_trunk", () -> new OrangeTreeTrunkBlock("olive", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> OLIVE_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "olive_tree_branch", () -> new OrangeTreeBranchBlock("olive", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> OLIVE_TREE_LEAF_BLOCK = BLOCKS.register(
+        "olive_tree_leaf", () -> new OrangeTreeLeafBlock("olive", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> OLIVE_FRUIT_BLOCK = BLOCKS.register(
+        "olive_fruit", () -> new OrangeFruitBlock("olive", fruitBlockProperties(MapColor.COLOR_GREEN)));
+
+public static final DeferredHolder<Block, OrangeTreeRootBlock> PLUM_TREE_ROOT_BLOCK = BLOCKS.register(
+        "plum_tree_root", () -> new OrangeTreeRootBlock("plum", fruitTreeRootProperties()));
+public static final DeferredHolder<Block, OrangeTreeTrunkBlock> PLUM_TREE_TRUNK_BLOCK = BLOCKS.register(
+        "plum_tree_trunk", () -> new OrangeTreeTrunkBlock("plum", fruitTreeTrunkProperties()));
+public static final DeferredHolder<Block, OrangeTreeBranchBlock> PLUM_TREE_BRANCH_BLOCK = BLOCKS.register(
+        "plum_tree_branch", () -> new OrangeTreeBranchBlock("plum", fruitTreeBranchProperties()));
+public static final DeferredHolder<Block, OrangeTreeLeafBlock> PLUM_TREE_LEAF_BLOCK = BLOCKS.register(
+        "plum_tree_leaf", () -> new OrangeTreeLeafBlock("plum", fruitTreeLeafProperties()));
+public static final DeferredHolder<Block, OrangeFruitBlock> PLUM_FRUIT_BLOCK = BLOCKS.register(
+        "plum_fruit", () -> new OrangeFruitBlock("plum", fruitBlockProperties(MapColor.COLOR_PURPLE)));
 
 
     // --- Pitchers (Blocks) ---
@@ -230,6 +459,9 @@ public static final DeferredHolder<Block, TrellisBlock> TRELLIS_BLOCK = BLOCKS.r
 
     public static final DeferredHolder<Block, QuestGiverSpawnBlock> QUEST_GIVER_SPAWN_BLOCK =
             BLOCKS.register("quest_giver_spawn_block", QuestGiverSpawnBlock::new);
+
+    public static final DeferredHolder<Block, ServiceNpcSpawnBlock> SERVICE_NPC_SPAWN_BLOCK =
+            BLOCKS.register("service_npc_spawn_block", ServiceNpcSpawnBlock::new);
 
 public static final DeferredHolder<Block, QuestDestinationBlock> QUEST_DESTINATION_BLOCK =
             BLOCKS.register("quest_destination_block", QuestDestinationBlock::new);

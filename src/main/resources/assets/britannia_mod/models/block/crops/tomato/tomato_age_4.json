@@ -1,0 +1,143 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Seggellion from Ultimacraft.com",
+	"render_type": "minecraft:cutout",
+	"textures": {
+		"1": "britannia_mod:block/crops/tomato/tomato_bottom_age_4",
+		"3": "britannia_mod:block/crops/tomato/tomato_top_age_4",
+		"particle": "britannia_mod:block/crops/trellis"
+	},
+	"elements": [
+		{
+			"from": [2, 14, 0.3],
+			"to": [14, 27, 0.3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [2, 14, 0.3]},
+			"faces": {
+				"north": {"uv": [0.625, 0, 15, 16], "texture": "#3"},
+				"south": {"uv": [0.625, 0, 15, 16], "texture": "#3"}
+			}
+		},
+		{
+			"from": [16, 14, 1.1],
+			"to": [16, 25, 13.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [16, 14, 1.1]},
+			"faces": {
+				"east": {"uv": [0.625, 0, 14.875, 16], "texture": "#3"},
+				"west": {"uv": [0.625, 0, 14.875, 16], "texture": "#3"}
+			}
+		},
+		{
+			"from": [2, 14, 15.9],
+			"to": [14, 27, 15.9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [2, 14, 15.9]},
+			"faces": {
+				"north": {"uv": [0.625, 0, 15, 16], "texture": "#3"},
+				"south": {"uv": [15, 0, 0.625, 16], "texture": "#3"}
+			}
+		},
+		{
+			"from": [-0.7, 14, 2.1],
+			"to": [-0.7, 25, 14.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.7, 14, 2.1]},
+			"faces": {
+				"east": {"uv": [0.625, 0, 14.875, 16], "texture": "#3"},
+				"west": {"uv": [0.625, 0, 14.875, 16], "texture": "#3"}
+			}
+		},
+		{
+			"from": [0, -1, 4],
+			"to": [17, 16, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, -1, 4]},
+			"faces": {
+				"north": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"south": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [7, -1, -3.9],
+			"to": [7, 16, 13.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, -1, -3.9]},
+			"faces": {
+				"east": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"west": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [14.7, -1, -0.9],
+			"to": [14.7, 16, 16.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [14.7, -1, -0.9]},
+			"faces": {
+				"east": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"west": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [1.7, -1, -0.9],
+			"to": [1.7, 16, 16.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [1.7, -1, -0.9]},
+			"faces": {
+				"east": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"west": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [0, -1, 13.1],
+			"to": [17, 16, 13.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, -1, 13.1]},
+			"faces": {
+				"north": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"south": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [4, -1, 7.1],
+			"to": [20, 15, 7.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [4, -1, 7.1]},
+			"faces": {
+				"north": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"south": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [-5, -1, 7.1],
+			"to": [12, 16, 7.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-5, -1, 7.1]},
+			"faces": {
+				"north": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"south": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		},
+		{
+			"from": [7, -1, 5.2],
+			"to": [7, 16, 19.2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, -1, 5.2]},
+			"faces": {
+				"east": {"uv": [2, 0, 14.625, 16], "texture": "#1"},
+				"west": {"uv": [2, 0, 14.625, 16], "texture": "#1"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "group",
+			"origin": [-1, 14, 0.3],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1, 2, 3]
+		},
+		{
+			"name": "plant",
+			"origin": [-1, 14, 0.3],
+			"scope": 0,
+			"color": 0,
+			"children": [4, 5, 6, 7]
+		},
+		{
+			"name": "plant",
+			"origin": [-1, 14, 0.3],
+			"scope": 0,
+			"color": 0,
+			"children": [8, 9, 10, 11]
+		}
+	]
+}

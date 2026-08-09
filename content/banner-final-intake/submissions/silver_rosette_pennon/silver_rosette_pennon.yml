@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-30",
+    "notes": "Approved by the product owner on 2026-07-30; creator identity, original-art status, no reference copying, distribution permission, 1 x 2 dimensions, prepared geometry, and parallel-only runtime integration confirmed."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:silver_rosette_pennon",
+    "final_display_name": "Silver Rosette Pennon",
+    "catalogue_index": 8,
+    "family": "medium_wall",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_parallel",
+    "geometry_id": "britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+    "geometry_convention": "Approved 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Silver Rosette Pennon"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/silver_rosette_pennon/base_texture",
+      "source_file": "content/banner-final-intake/submissions/silver_rosette_pennon/base_texture.png",
+      "sha256": "e8eb84f1e2fee6cff3e6210cce20846e4dff8c675b6d9fbf8d762a3209c42633"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/silver_rosette_pennon/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/silver_rosette_pennon/dye_mask.png",
+      "sha256": "e938710b77cd045981a077b4ea80c6d0a5af713e2b3a6ea068e954ec95bb2be8"
+    },
+    "geometry": {
+      "shared_geometry_approved": true,
+      "source_file": "content/banner-final-intake/submissions/verdant_grape_pennon/source/geometry.json",
+      "sha256": "818d4e606f8f03a4f3fb9aef8e3e7f90f90272673b5a802778b1ffb8e6c0ef97"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/silver_rosette_pennon/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium_wall.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Product-owner intake approval was supplied on 2026-07-30. Post-integration live Gate E review has not yet been performed."
+  },
+  "requested_content_status": "in_progress"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:wool",
+  "material_id": "britannia_mod:wool",
+  "natural_colour_id": "britannia_mod:wool_natural",
+  "entries": [
+    {"id":"britannia_mod:wool_natural","display_name_key":"colour.britannia_mod.wool_natural","display_srgb":"#C8B89E","match_oklab":[0.7891391137,0.0069662571,0.0393577692],"priority":0,"tags":["natural","neutral","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_oxblood","display_name_key":"colour.britannia_mod.wool_oxblood","display_srgb":"#8F3435","match_oklab":[0.4554844721,0.1141269122,0.0479096394],"priority":20,"tags":["colour_family_red","earthy","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_indigo","display_name_key":"colour.britannia_mod.wool_indigo","display_srgb":"#405B78","match_oklab":[0.4621495913,-0.0188482227,-0.0543726935],"priority":20,"tags":["colour_family_blue","earthy","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_moss","display_name_key":"colour.britannia_mod.wool_moss","display_srgb":"#586B3D","match_oklab":[0.5001049240,-0.0434565135,0.0573931657],"priority":20,"tags":["colour_family_green","earthy","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_ochre","display_name_key":"colour.britannia_mod.wool_ochre","display_srgb":"#B8832E","match_oklab":[0.6479052197,0.0302663268,0.1140047396],"priority":20,"tags":["colour_family_yellow","earthy","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_black","display_name_key":"colour.britannia_mod.wool_black","display_srgb":"#262324","match_oklab":[0.2598234191,0.0048208269,-0.0004116200],"priority":20,"tags":["colour_family_black","rich","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_cream","display_name_key":"colour.britannia_mod.wool_cream","display_srgb":"#E4D7BE","match_oklab":[0.8830657697,0.0039468813,0.0361486312],"priority":20,"tags":["colour_family_white","soft","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:wool_brown","display_name_key":"colour.britannia_mod.wool_brown","display_srgb":"#735A43","match_oklab":[0.4869144945,0.0209748406,0.0429023533],"priority":10,"tags":["colour_family_neutral","earthy","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]}
+  ],
+  "pigment_overrides": {"britannia_mod:madder_red":"britannia_mod:wool_oxblood"}
+}

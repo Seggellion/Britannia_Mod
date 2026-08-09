@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-29",
+    "notes": "Approved by the product owner on 2026-07-29; original artwork and distribution permission confirmed; manual review performed by Seggellion."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:iron_ward_auxiliary",
+    "final_display_name": "Iron Ward Auxiliary",
+    "catalogue_index": 26,
+    "family": "small",
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "supported_orientations": [
+      "wall_parallel",
+      "wall_perpendicular"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:small",
+    "geometry_id": "britannia_mod:banner/small/iron_ward_auxiliary/geometry",
+    "geometry_convention": "Approved 10-unit-tall small-family planar geometry derived from the complete authored alpha bounds; full-canvas UVs, established two-pass thickness, and separate orientation mount geometry are preserved."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Iron Ward Auxiliary"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/iron_ward_auxiliary/base_texture",
+      "source_file": "content/banner-final-intake/submissions/iron_ward_auxiliary/base_texture.png",
+      "sha256": "a38f29c4325250dcb50d3b1af1ba8ce20772d9ecfb4eb17d3cc0247231da380a"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/iron_ward_auxiliary/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/iron_ward_auxiliary/dye_mask.png",
+      "sha256": "856ced21d8cdf2baa9f2662b7d9028facb9dbbfd715dfe3ad2f10e52370838d4"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/iron_ward_auxiliary/source/geometry.json",
+      "sha256": "88e657797bd7631ff2abbee2a46aa7b7f3db5e6ad40dead400668ab776c01ef4"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/iron_ward_auxiliary/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_small.ai to one aligned 128 x 128 RGBA artboard. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_small.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": true,
+    "tester": "Seggellion",
+    "date": "2026-07-29",
+    "notes": "Product owner reports the approved banner artwork was tested."
+  },
+  "requested_content_status": "in_progress"
+}

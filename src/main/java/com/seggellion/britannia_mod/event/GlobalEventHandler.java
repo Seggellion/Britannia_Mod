@@ -1,6 +1,12 @@
 package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
+import com.seggellion.britannia_mod.farming.FruitProvenance;
+import com.seggellion.britannia_mod.item.GrapesItem;
+import com.seggellion.britannia_mod.item.WeightedCommodityItem;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.util.ModTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -13,6 +19,7 @@ import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +30,23 @@ import java.util.Optional;
 // or you can register it in your main mod class if required.
 
 public class GlobalEventHandler {
+
+    @SubscribeEvent
+    public static void onItemTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty()) {
+            return;
+        }
+        if (stack.getItem() instanceof WeightedCommodityItem || stack.getItem() instanceof GrapesItem) {
+            return;
+        }
+        if (FruitProvenance.hasRegionName(stack)) {
+            FruitProvenance.appendTooltip(stack, event.getToolTip());
+        }
+        if (CropQualityCalculator.hasCropQuality(stack)) {
+            event.getToolTip().add(CropQualityCalculator.qualityTooltip(stack));
+        }
+    }
 
     @SubscribeEvent
      public static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -38,6 +62,12 @@ public class GlobalEventHandler {
                     Optional.empty(),
                     Optional.empty()
                 );
+                var logHolderSet = blockRegistry.getOrCreateTag(BlockTags.LOGS);
+                var fruitTreeHolderSet = blockRegistry.getOrCreateTag(ModTags.Blocks.FRUIT_TREE_BLOCKS);
+                AdventureModePredicate axeBreakPredicate = new AdventureModePredicate(List.of(
+                        new BlockPredicate(Optional.of(logHolderSet), Optional.empty(), Optional.empty()),
+                        new BlockPredicate(Optional.of(fruitTreeHolderSet), Optional.empty(), Optional.empty())
+                ), true);
 
                 AdventureModePredicate canPlacePredicate = new AdventureModePredicate(List.of(placeOnPredicate), true);
 
@@ -48,6 +78,13 @@ public class GlobalEventHandler {
                         AdventureModePredicate current = stack.get(DataComponents.CAN_PLACE_ON);
                         if (current == null) {
                             stack.set(DataComponents.CAN_PLACE_ON, canPlacePredicate);
+                            serverPlayer.getInventory().setItem(i, stack);
+                        }
+                    }
+                    if (!stack.isEmpty() && stack.is(ItemRegistry.TWO_HANDED_AXE.get())) {
+                        AdventureModePredicate current = stack.get(DataComponents.CAN_BREAK);
+                        if (current == null) {
+                            stack.set(DataComponents.CAN_BREAK, axeBreakPredicate);
                             serverPlayer.getInventory().setItem(i, stack);
                         }
                     }

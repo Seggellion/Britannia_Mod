@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:linen",
+  "material_id": "britannia_mod:linen",
+  "natural_colour_id": "britannia_mod:linen_natural",
+  "entries": [
+    {"id":"britannia_mod:linen_natural","display_name_key":"colour.britannia_mod.linen_natural","display_srgb":"#D8CCAE","match_oklab":[0.8471670337,0.0008843813,0.0424070772],"priority":0,"tags":["natural","neutral","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_madder","display_name_key":"colour.britannia_mod.linen_madder","display_srgb":"#965B55","match_oklab":[0.5357741309,0.0707350314,0.0349103182],"priority":20,"tags":["colour_family_red","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_dusty_blue","display_name_key":"colour.britannia_mod.linen_dusty_blue","display_srgb":"#60788C","match_oklab":[0.5610990136,-0.0185484652,-0.0375982958],"priority":20,"tags":["colour_family_blue","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_sage","display_name_key":"colour.britannia_mod.linen_sage","display_srgb":"#68765A","match_oklab":[0.5461584799,-0.0287789189,0.0349961702],"priority":20,"tags":["colour_family_green","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_ochre","display_name_key":"colour.britannia_mod.linen_ochre","display_srgb":"#B58E4B","match_oklab":[0.6696138316,0.0179579100,0.0957198533],"priority":20,"tags":["colour_family_yellow","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_slate","display_name_key":"colour.britannia_mod.linen_slate","display_srgb":"#3F4140","match_oklab":[0.3730324188,-0.0030545055,0.0008230477],"priority":20,"tags":["colour_family_black","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_flax_white","display_name_key":"colour.britannia_mod.linen_flax_white","display_srgb":"#E8DFC8","match_oklab":[0.9046981906,0.0004787138,0.0321613984],"priority":20,"tags":["colour_family_white","warm","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:linen_taupe","display_name_key":"colour.britannia_mod.linen_taupe","display_srgb":"#8B806D","match_oklab":[0.6043444802,0.0046227725,0.0304774062],"priority":10,"tags":["colour_family_neutral","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]}
+  ],
+  "pigment_overrides": {"britannia_mod:madder_red":"britannia_mod:linen_madder"}
+}

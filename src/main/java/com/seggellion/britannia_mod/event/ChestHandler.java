@@ -99,7 +99,7 @@ public void onServerTickPre(ServerTickEvent.Pre event) {
             LOGGER.info("Repopulated barrel at {} with {}", barrelPos, validatedItem.getHoverName().getString());
         }
     } else {
-        LOGGER.warn("No barrel found at {}. Found block entity: {}", barrelPos, blockEntity);
+       // LOGGER.warn("No barrel found at {}. Found block entity: {}", barrelPos, blockEntity);
     }
 }
 
@@ -158,9 +158,6 @@ private static ItemStack validateItemStack(ItemStack itemStack) {
 
         // Apply components to the ItemStack
         fishingRod.applyComponents(builder.build());
-
-        // Log for debugging
-        LOGGER.info("Created Fishing Rod with components: {}", fishingRod.getComponents());
 
         return fishingRod;
     }

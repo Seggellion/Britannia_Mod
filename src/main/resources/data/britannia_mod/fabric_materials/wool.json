@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:wool",
+  "display_name_key": "material.britannia_mod.wool",
+  "natural_colour_id": "britannia_mod:wool_natural",
+  "palette_id": "britannia_mod:wool",
+  "tags": ["fabric", "development_palette", "warm", "dense"]
+}

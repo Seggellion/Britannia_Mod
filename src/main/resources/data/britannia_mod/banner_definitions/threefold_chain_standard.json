@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:threefold_chain_standard",
+  "display_name_key": "banner.britannia_mod.threefold_chain_standard",
+  "content_status": "complete",
+  "source_reference": {
+    "page": 1,
+    "row": 2,
+    "source_label": "Threefold Chain Standard"
+  },
+  "catalogue_group": "large",
+  "dimensions": {
+    "width_blocks": 2,
+    "height_blocks": 2,
+    "provisional": false
+  },
+  "supported_orientations": [
+    "wall_parallel"
+  ],
+  "supported_mounts": [
+    "britannia_mod:brass",
+    "britannia_mod:iron"
+  ],
+  "default_mount": "britannia_mod:brass",
+  "default_material": "britannia_mod:cotton",
+  "assets": {
+    "geometry": "britannia_mod:banner/large/threefold_chain_standard/geometry",
+    "base_texture": "britannia_mod:banner/threefold_chain_standard/base_texture",
+    "dye_mask": "britannia_mod:banner/threefold_chain_standard/dye_mask"
+  },
+  "placement_profile": "britannia_mod:large_parallel"
+}

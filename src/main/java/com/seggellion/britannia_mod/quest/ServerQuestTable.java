@@ -59,6 +59,37 @@ public final class ServerQuestTable {
         return quests != null && quests.containsKey(questStateId.trim());
     }
 
+    public static boolean hasActiveQuestId(ServerPlayer player, long questId) {
+        if (player == null || questId <= 0) return false;
+        Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(player.getUUID());
+        return quests != null && quests.values().stream().anyMatch(entry -> {
+            try { return Long.parseLong(entry.questId()) == questId; }
+            catch (NumberFormatException ignored) { return false; }
+        });
+    }
+
+    public static ClientQuestEntry findByQuestId(ServerPlayer player, long questId) {
+        if (player == null || questId <= 0) return null;
+        Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(player.getUUID());
+        if (quests == null) return null;
+        return quests.values().stream().filter(entry -> {
+            try { return Long.parseLong(entry.questId()) == questId; }
+            catch (NumberFormatException ignored) { return false; }
+        }).findFirst().orElse(null);
+    }
+
+    public static void removeAfterRailsCompletionSuccessByQuestId(ServerPlayer player, long questId) {
+        if (player == null || questId <= 0) return;
+        QUESTS_BY_PLAYER.computeIfPresent(player.getUUID(), (uuid, existing) -> {
+            Map<String, ClientQuestEntry> quests = new LinkedHashMap<>(existing);
+            quests.values().removeIf(entry -> {
+                try { return Long.parseLong(entry.questId()) == questId; }
+                catch (NumberFormatException ignored) { return false; }
+            });
+            return quests;
+        });
+    }
+
     public static ClientQuestEntry get(ServerPlayer player, String questStateId) {
         if (player == null || questStateId == null || questStateId.isBlank()) return null;
         Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(player.getUUID());

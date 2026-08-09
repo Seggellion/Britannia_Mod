@@ -1,0 +1,412 @@
+{
+  "schema_version": 1,
+  "source_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
+  "source_sha256": "a6a75becd1793dac7a5b36361c0a33d615846ac4e97502deff794ef5ac337fac",
+  "canvas": [
+    128,
+    128
+  ],
+  "logical_dimensions_proposal": {
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "evidence": "Every authoritative silhouette is tall and narrow, with base-alpha bounds 68-84 pixels wide and 115-121 pixels high. This matches the approved 1 x 2 Medium footprint; the old 2 x 2 medium-wall default is explicitly provisional.",
+    "approval": "PENDING"
+  },
+  "placement_profile_proposal": {
+    "id": "britannia_mod:medium_parallel",
+    "dimensions": {
+      "width_blocks": 1,
+      "height_blocks": 2
+    },
+    "orientations": [
+      "wall_parallel"
+    ],
+    "orientation_mount_geometry": {
+      "wall_parallel": "britannia_mod:banner/mount/wall_parallel"
+    },
+    "mount_materials": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "runtime_integration": "COMPLETE",
+    "architecture_note": "The placement-profile codec accepts an orientation-specific subset and registry cross-validation requires it to match the consuming definition. The integrated parallel-only Medium profile does not change smaller-family or perpendicular Medium profiles."
+  },
+  "geometry_groups": [
+    {
+      "key": "grape_rosette_pair",
+      "resource_id": "britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+      "members": [
+        "verdant_grape_pennon",
+        "silver_rosette_pennon"
+      ],
+      "classification": "REUSE_SHARED_MEDIUM_WALL_GEOMETRY",
+      "existing_medium_geometry_reuse": false,
+      "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
+      "shape_evidence": "Matching crenellated attachment edge, straight sides, centred lower point, width-to-height relationship, and full-canvas layout; colour and heraldry differ.",
+      "source_file": "content/banner-final-intake/submissions/verdant_grape_pennon/source/geometry.json",
+      "sha256": "818d4e606f8f03a4f3fb9aef8e3e7f90f90272673b5a802778b1ffb8e6c0ef97",
+      "alpha_bounds": [
+        25,
+        6,
+        104,
+        124
+      ]
+    },
+    {
+      "key": "four_seals_pennon",
+      "resource_id": "britannia_mod:banner/medium_wall/four_seals_pennon/geometry",
+      "members": [
+        "four_seals_pennon"
+      ],
+      "classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "existing_medium_geometry_reuse": false,
+      "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
+      "shape_evidence": "Distinct wide rounded lower edge, top suspension opening, and split field.",
+      "source_file": "content/banner-final-intake/submissions/four_seals_pennon/source/geometry.json",
+      "sha256": "b90fc59cf20d0716732c3dd1fcf43ea04de0cf29f8a9eae6a5697463be0becd5",
+      "alpha_bounds": [
+        22,
+        6,
+        106,
+        122
+      ]
+    },
+    {
+      "key": "twin_spades_pennon",
+      "resource_id": "britannia_mod:banner/medium_wall/twin_spades_pennon/geometry",
+      "members": [
+        "twin_spades_pennon"
+      ],
+      "classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "existing_medium_geometry_reuse": false,
+      "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
+      "shape_evidence": "Distinct offset top attachment pixels, diagonal checked field, straight sides, and shallow pointed lower edge.",
+      "source_file": "content/banner-final-intake/submissions/twin_spades_pennon/source/geometry.json",
+      "sha256": "f75af06ef4e0068b6b258cdf9ae06c40fad1d46567cd97e66788f971e6a5fe64",
+      "alpha_bounds": [
+        25,
+        4,
+        102,
+        125
+      ]
+    },
+    {
+      "key": "ankh_pennon",
+      "resource_id": "britannia_mod:banner/medium_wall/ankh_pennon/geometry",
+      "members": [
+        "ankh_pennon"
+      ],
+      "classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "existing_medium_geometry_reuse": false,
+      "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
+      "shape_evidence": "Distinct narrow U-ended silhouette, curved upper opening, and attachment row.",
+      "source_file": "content/banner-final-intake/submissions/ankh_pennon/source/geometry.json",
+      "sha256": "1754d8d9c69ed36d1610b79834c7a930f32a1a656b6e82c20cfacc4eddd4a5b3",
+      "alpha_bounds": [
+        30,
+        5,
+        98,
+        126
+      ]
+    },
+    {
+      "key": "joined_wards",
+      "resource_id": "britannia_mod:banner/medium_wall/joined_wards/geometry",
+      "members": [
+        "joined_wards"
+      ],
+      "classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "existing_medium_geometry_reuse": false,
+      "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
+      "shape_evidence": "Distinct two-point swallowtail silhouette and quartered field.",
+      "source_file": "content/banner-final-intake/submissions/joined_wards/source/geometry.json",
+      "sha256": "d151fdab70a3cb21c5366dda0cba7e4e089d12c2349a990a926176c9e226a505",
+      "alpha_bounds": [
+        25,
+        7,
+        103,
+        122
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "stable_id": "britannia_mod:verdant_grape_pennon",
+      "previous_id": "britannia_mod:medium_wall_01",
+      "catalogue_index": 7,
+      "display_name": "Verdant Grape Pennon",
+      "export_classification": "READY_FOR_EXPORT",
+      "validator_expected": "READY_FOR_INTEGRATION",
+      "integration_readiness": "READY_FOR_INTEGRATION",
+      "base_path": "content/banner-final-intake/submissions/verdant_grape_pennon/base_texture.png",
+      "base_sha256": "5faf14b7a221752158bbf59393e6b096f4df109db3716437614898794cf0af3b",
+      "mask_path": "content/banner-final-intake/submissions/verdant_grape_pennon/dye_mask.png",
+      "mask_sha256": "c1aa265275d1a61e2221bc547b3665bf2288f62ae062bbee95a6dd85ef2dfddb",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        25,
+        6,
+        104,
+        124
+      ],
+      "mask_active_pixels": 7530,
+      "mask_transparent_pixels": 8854,
+      "fixed_base_pixels": 517,
+      "fixed_upper_band_pixels": 120,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/verdant_grape_pennon/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/verdant_grape_pennon/review/parallel_geometry_mount.png",
+      "geometry_id": "britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_WALL_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/verdant_grape_pennon/verdant_grape_pennon.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "logical-dimension approval",
+        "geometry approval"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:silver_rosette_pennon",
+      "previous_id": "britannia_mod:medium_wall_02",
+      "catalogue_index": 8,
+      "display_name": "Silver Rosette Pennon",
+      "export_classification": "READY_FOR_EXPORT",
+      "validator_expected": "READY_FOR_INTEGRATION",
+      "integration_readiness": "READY_FOR_INTEGRATION",
+      "base_path": "content/banner-final-intake/submissions/silver_rosette_pennon/base_texture.png",
+      "base_sha256": "e8eb84f1e2fee6cff3e6210cce20846e4dff8c675b6d9fbf8d762a3209c42633",
+      "mask_path": "content/banner-final-intake/submissions/silver_rosette_pennon/dye_mask.png",
+      "mask_sha256": "e938710b77cd045981a077b4ea80c6d0a5af713e2b3a6ea068e954ec95bb2be8",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        25,
+        6,
+        104,
+        124
+      ],
+      "mask_active_pixels": 7478,
+      "mask_transparent_pixels": 8906,
+      "fixed_base_pixels": 594,
+      "fixed_upper_band_pixels": 181,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/silver_rosette_pennon/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/silver_rosette_pennon/review/parallel_geometry_mount.png",
+      "geometry_id": "britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+      "geometry_classification": "REUSE_SHARED_MEDIUM_WALL_GEOMETRY",
+      "intake_path": "content/banner-final-intake/submissions/silver_rosette_pennon/silver_rosette_pennon.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "logical-dimension approval",
+        "geometry approval"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:four_seals_pennon",
+      "previous_id": "britannia_mod:medium_wall_03",
+      "catalogue_index": 9,
+      "display_name": "Four Seals Pennon",
+      "export_classification": "READY_FOR_EXPORT",
+      "validator_expected": "READY_FOR_INTEGRATION",
+      "integration_readiness": "READY_FOR_INTEGRATION",
+      "base_path": "content/banner-final-intake/submissions/four_seals_pennon/base_texture.png",
+      "base_sha256": "0b7db42e5ef3969a347df79ee19cd1546f924a423227b5dd251ccc5a1f145a8f",
+      "mask_path": "content/banner-final-intake/submissions/four_seals_pennon/dye_mask.png",
+      "mask_sha256": "81128cba4d6e1a49c60870eddf53ddd8c7bc7b1fcc04462b653a883a15cb9e14",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        22,
+        6,
+        106,
+        122
+      ],
+      "mask_active_pixels": 4851,
+      "mask_transparent_pixels": 11533,
+      "fixed_base_pixels": 4578,
+      "fixed_upper_band_pixels": 1684,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/four_seals_pennon/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/four_seals_pennon/review/parallel_geometry_mount.png",
+      "geometry_id": "britannia_mod:banner/medium_wall/four_seals_pennon/geometry",
+      "geometry_classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "intake_path": "content/banner-final-intake/submissions/four_seals_pennon/four_seals_pennon.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "logical-dimension approval",
+        "geometry approval"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:twin_spades_pennon",
+      "previous_id": "britannia_mod:medium_wall_04",
+      "catalogue_index": 10,
+      "display_name": "Twin Spades Pennon",
+      "export_classification": "READY_FOR_EXPORT",
+      "validator_expected": "READY_FOR_INTEGRATION",
+      "integration_readiness": "READY_FOR_INTEGRATION",
+      "base_path": "content/banner-final-intake/submissions/twin_spades_pennon/base_texture.png",
+      "base_sha256": "f6e5a834a57b940ade9b84873b78ad71f0c91efa09eeb8d93ef0a4820ed3fc0b",
+      "mask_path": "content/banner-final-intake/submissions/twin_spades_pennon/dye_mask.png",
+      "mask_sha256": "6908bb015759849df80c3c2b4aae7a746d5982fa311a1ae6bb1513ad35d515db",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        25,
+        4,
+        102,
+        125
+      ],
+      "mask_active_pixels": 4464,
+      "mask_transparent_pixels": 11920,
+      "fixed_base_pixels": 3819,
+      "fixed_upper_band_pixels": 829,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/twin_spades_pennon/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/twin_spades_pennon/review/parallel_geometry_mount.png",
+      "geometry_id": "britannia_mod:banner/medium_wall/twin_spades_pennon/geometry",
+      "geometry_classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "intake_path": "content/banner-final-intake/submissions/twin_spades_pennon/twin_spades_pennon.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "logical-dimension approval",
+        "geometry approval"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:ankh_pennon",
+      "previous_id": "britannia_mod:medium_wall_05",
+      "catalogue_index": 11,
+      "display_name": "Ankh Pennon",
+      "export_classification": "READY_FOR_EXPORT",
+      "validator_expected": "READY_FOR_INTEGRATION",
+      "integration_readiness": "READY_FOR_INTEGRATION",
+      "base_path": "content/banner-final-intake/submissions/ankh_pennon/base_texture.png",
+      "base_sha256": "65163afac35ae78167436a08be48f4029beb8df45b24fc0f544a6938191bfb80",
+      "mask_path": "content/banner-final-intake/submissions/ankh_pennon/dye_mask.png",
+      "mask_sha256": "7077db933ffbeb8383616f8bf34ba42f6c75472b6a0463599b23f36f2e393eab",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        30,
+        5,
+        98,
+        126
+      ],
+      "mask_active_pixels": 2545,
+      "mask_transparent_pixels": 13839,
+      "fixed_base_pixels": 5068,
+      "fixed_upper_band_pixels": 818,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/ankh_pennon/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/ankh_pennon/review/parallel_geometry_mount.png",
+      "geometry_id": "britannia_mod:banner/medium_wall/ankh_pennon/geometry",
+      "geometry_classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "intake_path": "content/banner-final-intake/submissions/ankh_pennon/ankh_pennon.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "logical-dimension approval",
+        "geometry approval"
+      ]
+    },
+    {
+      "stable_id": "britannia_mod:joined_wards",
+      "previous_id": null,
+      "catalogue_index": 12,
+      "display_name": "Joined Wards",
+      "export_classification": "READY_FOR_EXPORT",
+      "validator_expected": "READY_FOR_INTEGRATION",
+      "integration_readiness": "READY_FOR_INTEGRATION",
+      "base_path": "content/banner-final-intake/submissions/joined_wards/base_texture.png",
+      "base_sha256": "8551830308310eb073cc06bcf4760d69db4ebe897c2aed88bfe49239a84c5a70",
+      "mask_path": "content/banner-final-intake/submissions/joined_wards/dye_mask.png",
+      "mask_sha256": "ec964aa2ae06ab42ca323c232c4a2e18e952d5cd3aecdb9dcd1b161a6d9dba82",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        25,
+        7,
+        103,
+        122
+      ],
+      "mask_active_pixels": 3891,
+      "mask_transparent_pixels": 12493,
+      "fixed_base_pixels": 3997,
+      "fixed_upper_band_pixels": 1701,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/joined_wards/review/review_sheet.png",
+      "geometry_preview": "content/banner-final-intake/submissions/joined_wards/review/parallel_geometry_mount.png",
+      "geometry_id": "britannia_mod:banner/medium_wall/joined_wards/geometry",
+      "geometry_classification": "CUSTOM_MEDIUM_WALL_GEOMETRY_REQUIRED",
+      "intake_path": "content/banner-final-intake/submissions/joined_wards/joined_wards.yml",
+      "missing_fields": [
+        "approval.approved_by",
+        "approval.approved_date",
+        "provenance.original_art confirmation",
+        "provenance.creator",
+        "provenance.distribution_permission_confirmed",
+        "provenance.copied_from_reference_art",
+        "manual product-owner review",
+        "logical-dimension approval",
+        "geometry approval"
+      ]
+    }
+  ],
+  "family_review_sheet": "content/banner-final-intake/review/parallel_medium_family_review.png"
+}

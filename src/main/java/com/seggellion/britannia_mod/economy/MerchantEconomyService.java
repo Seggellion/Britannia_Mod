@@ -13,7 +13,11 @@ import com.seggellion.britannia_mod.network.payload.TransactionSuccessS2CPayload
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.item.WeightedCommodityItem;
 import com.seggellion.britannia_mod.shop.Product;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -33,7 +37,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public final class MerchantEconomyService {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -74,8 +76,8 @@ public final class MerchantEconomyService {
         }
 
         MinecraftServer server = level.getServer();
-        CompletableFuture
-                .supplyAsync(() -> preparePurchase(level, city, role, payload.items()))
+        ServerHttpExecutor
+                .submit(server, () -> preparePurchase(level, city, role, payload.items()))
                 .whenComplete((prepared, error) -> server.execute(() -> {
                     if (error != null) {
                         LOGGER.warn("Merchant purchase preparation failed city={} role={} error={}", city, role, error.toString());
@@ -95,8 +97,8 @@ public final class MerchantEconomyService {
 
                     String idempotencyKey = "merchant:" + player.getUUID() + ":" + merchant.getUUID() + ":" +
                             level.getGameTime() + ":" + UUID.randomUUID();
-                    CompletableFuture
-                            .supplyAsync(() -> postPurchase(level, player, merchant, city, role, prepared, idempotencyKey))
+                    ServerHttpExecutor
+                            .submit(server, () -> postPurchase(level, player, merchant, city, role, prepared, idempotencyKey))
                             .whenComplete((posted, postError) -> server.execute(() -> {
                                 if (postError != null || !posted.success()) {
                                     coins.refund(player);
@@ -157,13 +159,14 @@ public final class MerchantEconomyService {
                                                    AbstractEconomyMerchantEntity merchant, String city, String role,
                                                    PreparedPurchase prepared, String idempotencyKey) {
         try {
-            URL url = new URL(ModConfig.API_BASE_URL + "merchant_transactions");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            var requestUri = ServerAuthRegistry.credentials(level.getServer()).orElseThrow().apiUrls()
+                    .resolve(Endpoint.MERCHANT_PURCHASE);
+            HttpURLConnection conn = (HttpURLConnection) requestUri.toURL().openConnection();
+            BoundedHttp.configure(conn);
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Idempotency-Key", idempotencyKey);
-            attachServerAuth(level, conn);
 
             JsonObject payload = new JsonObject();
             payload.addProperty("transaction_type", "purchase");
@@ -218,12 +221,16 @@ public final class MerchantEconomyService {
             payload.add("consumed_commodities", inputs.deepCopy());
             payload.add("commodity_inputs", inputs.deepCopy());
 
+            byte[] bodyBytes = payload.toString().getBytes(StandardCharsets.UTF_8);
+            attachServerAuth(level, conn, bodyBytes);
+
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
 
             int status = conn.getResponseCode();
-            String body = readBody(status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream());
+            String body = BoundedHttp.readUtf8(
+                    status >= 200 && status < 300 ? conn.getInputStream() : conn.getErrorStream(), 1_048_576);
             if (status < 200 || status >= 300) {
                 return PurchasePostResult.failure(status, body, "Purchase rejected by economy server.");
             }
@@ -362,12 +369,20 @@ public final class MerchantEconomyService {
         return CoinReservation.success(totalCopper);
     }
 
-    private static int countCoins(ServerPlayer player) {
+    /**
+     * Milestone 11 prerequisite: sums a player's real coin stacks into a total expressed in
+     * copper, using {@link CoinConversion}'s centralized ratio rather than inline literals.
+     * Made {@code public} (was {@code private}) so a real {@code ServerPlayer} GameTest can
+     * prove this refactor is behavior-preserving directly, matching this codebase's existing
+     * precedent for exposing a service's internal logic for test access (e.g.
+     * {@code BankItemEligibility}'s public static checks).
+     */
+    public static int countCoins(ServerPlayer player) {
         int total = 0;
         for (ItemStack stack : player.getInventory().items) {
             if (stack.isEmpty()) continue;
-            if (stack.getItem() == ItemRegistry.GOLD_COIN.get()) total += stack.getCount() * 10000;
-            else if (stack.getItem() == ItemRegistry.SILVER_COIN.get()) total += stack.getCount() * 100;
+            if (stack.getItem() == ItemRegistry.GOLD_COIN.get()) total += stack.getCount() * CoinConversion.COPPER_PER_GOLD;
+            else if (stack.getItem() == ItemRegistry.SILVER_COIN.get()) total += stack.getCount() * CoinConversion.COPPER_PER_SILVER;
             else if (stack.getItem() == ItemRegistry.COPPER_COIN.get()) total += stack.getCount();
         }
         return total;
@@ -385,12 +400,19 @@ public final class MerchantEconomyService {
         }
     }
 
-    private static void giveChange(ServerPlayer player, int copper) {
-        giveCoin(player, ItemRegistry.GOLD_COIN.get(), copper / 10000);
-        copper %= 10000;
-        giveCoin(player, ItemRegistry.SILVER_COIN.get(), copper / 100);
-        copper %= 100;
-        giveCoin(player, ItemRegistry.COPPER_COIN.get(), copper);
+    /**
+     * Milestone 11 prerequisite: delegates the actual gold/silver/copper split to
+     * {@link CoinConversion#toCoins}, which implements the exact same greedy
+     * largest-denomination-first arithmetic this method's own inline division/remainder chain
+     * used before this refactor -- a behavior-preserving call-through, not a reimplementation.
+     * Made {@code public} (was {@code private}) for the same test-access reason as
+     * {@link #countCoins}.
+     */
+    public static void giveChange(ServerPlayer player, int copper) {
+        CoinConversion.CoinCounts coins = CoinConversion.toCoins(copper);
+        giveCoin(player, ItemRegistry.GOLD_COIN.get(), coins.gold());
+        giveCoin(player, ItemRegistry.SILVER_COIN.get(), coins.silver());
+        giveCoin(player, ItemRegistry.COPPER_COIN.get(), coins.copper());
     }
 
     private static void giveCoin(ServerPlayer player, Item coin, int amount) {
@@ -422,26 +444,9 @@ public final class MerchantEconomyService {
         return raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static String readBody(InputStream stream) throws Exception {
-        if (stream == null) return "";
-        try (Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
-            StringBuilder out = new StringBuilder();
-            char[] buffer = new char[2048];
-            int read;
-            while ((read = reader.read(buffer)) >= 0) {
-                out.append(buffer, 0, read);
-            }
-            return out.toString();
-        }
-    }
-
-    private static void attachServerAuth(ServerLevel level, HttpURLConnection conn) {
-        CityAPITokenData data = CityAPITokenData.getOrCreate(level);
-        if (data.getApiToken() != null && !data.getApiToken().isBlank()) {
-            conn.setRequestProperty("Authorization", "Bearer " + data.getApiToken());
-        }
-        if (data.getShardSecret() != null && !data.getShardSecret().isBlank()) {
-            conn.setRequestProperty("Shard-Secret", data.getShardSecret());
+    private static void attachServerAuth(ServerLevel level, HttpURLConnection conn, byte[] body) {
+        if (!RailsRequestAuthenticator.apply(conn, level.getServer(), body)) {
+            throw new IllegalStateException("Server authentication unavailable");
         }
     }
 

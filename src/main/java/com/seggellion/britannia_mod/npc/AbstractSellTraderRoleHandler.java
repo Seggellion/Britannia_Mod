@@ -1,7 +1,6 @@
 package com.seggellion.britannia_mod.npc;
 
 import com.google.gson.JsonArray;
-import com.seggellion.britannia_mod.api.RailsApi;
 import com.seggellion.britannia_mod.network.NetworkHandler;
 import com.seggellion.britannia_mod.network.payload.SellItemsC2SPayload;
 import com.seggellion.britannia_mod.shop.Product;
@@ -25,7 +24,7 @@ public abstract class AbstractSellTraderRoleHandler implements NpcRoleHandler {
 
     @Override
     public void fetchCatalog(Player player, String city, Consumer<List<Product>> callback) {
-        RailsApi.fetchTraderCatalog(city, role, collectSellableInventory(player), callback);
+        callback.accept(List.of());
     }
 
     @Override
@@ -48,6 +47,10 @@ public abstract class AbstractSellTraderRoleHandler implements NpcRoleHandler {
     }
 
     protected abstract JsonArray collectSellableInventory(Player player);
+
+    public final JsonArray collectServerInventory(Player player) {
+        return collectSellableInventory(player);
+    }
 
     protected List<SellItemsC2SPayload.ItemRequest> toRequests(Player player, Map<Product, Integer> cart) {
         List<SellItemsC2SPayload.ItemRequest> requests = new ArrayList<>();

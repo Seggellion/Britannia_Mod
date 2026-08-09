@@ -10,13 +10,23 @@ import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.item.WeightedWoodItem;
+import com.seggellion.britannia_mod.item.WeightedWoodType;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.winery.GrapeVariety;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import com.seggellion.britannia_mod.structure.HouseStyle;
+import com.seggellion.britannia_mod.structure.item.MonolithItem;
+import com.seggellion.britannia_mod.structure.item.ShrineItem;
+import com.seggellion.britannia_mod.structure.item.ShrineItemState;
+import com.seggellion.britannia_mod.structure.item.ShrineItemStateAccess;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 
 public class CreativeTabRegistry {
@@ -81,10 +91,36 @@ public class CreativeTabRegistry {
                 // 1. Tools & Utility
                 safeAccept(output, ItemRegistry.VINTNER_HOE.get());
                 safeAccept(output, ItemRegistry.SCISSORS.get());
+                safeAccept(output, ItemRegistry.FARMING_HOE.get());
+                safeAccept(output, ItemRegistry.SKINNING_KNIFE.get());
                 
                 // 2. Farming Blocks
                 safeAccept(output, ItemRegistry.FARMING_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.COMMUNITY_FARM_BLOCK_ITEM.get());
+                safeAccept(output, ItemRegistry.ORANGE_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.ORANGE_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.LEMON_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.LEMON_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.LIME_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.LIME_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.PEAR_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.PEAR_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.PEACH_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.PEACH_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.APPLE_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.APPLE_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.CHERRY_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.CHERRY_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.OLIVE_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.OLIVE_TREE_TRUNK_ITEM.get());
+                safeAccept(output, ItemRegistry.PLUM_TREE_ROOT_ITEM.get());
+                safeAccept(output, ItemRegistry.PLUM_TREE_TRUNK_ITEM.get());
+                for (WeightedWoodType woodType : WeightedWoodType.values()) {
+                    output.accept(weightedWoodSample(woodType));
+                }
                 safeAccept(output, ItemRegistry.TRELLIS_ITEM.get());
+                safeAccept(output, ItemRegistry.FERTILIZED_DIRT.get());
+                safeAccept(output, ItemRegistry.WATERING_CAN.get());
                 
                 // 3. Processing Blocks
                 safeAccept(output, ItemRegistry.JUICE_PRESS_ITEM.get());
@@ -103,20 +139,11 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PITCHER_WHITE_GRAPE_JUICE.get());
                 safeAccept(output, ItemRegistry.PITCHER_RED_GRAPE_JUICE.get());
 
-                // 6. Dynamic Seeds & Grapes (The fix for the error)
-              // 6. Dynamic Seeds
-                for (com.seggellion.britannia_mod.winery.GrapeVariety variety : com.seggellion.britannia_mod.winery.GrapeVarietyManager.getAllVarieties()) {
-                    
-                    // Add Seed Packet
-                    ItemStack seedStack = new ItemStack(ItemRegistry.GRAPE_SEEDS.get());
-                    com.seggellion.britannia_mod.item.GrapeSeedsItem.setVariety(seedStack, variety.id());
-                    
-                    // Set Name
-                    seedStack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, 
-                        Component.literal(variety.displayName() + " Seeds"));
-                    
-                    output.accept(seedStack);
-                }
+                // 6. Farming seeds and produce
+                addGrapeVarietySeeds(output);
+                addFarmingSeeds(output);
+                addVanillaCompatibilityCrops(output);
+                addFarmingProduce(output);
    
 
                 // Containers
@@ -259,6 +286,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SERPENT_SHIELD_ITEM.get());
                 safeAccept(output, ItemRegistry.ANKH_ITEM.get());
                 safeAccept(output, ItemRegistry.PENTAGRAM_ITEM.get());
+                output.accept(shrineCreativeStack(LargeStructureRegistry.SHRINE.get()));
+                output.accept(monolithCreativeStack(LargeStructureRegistry.MONOLITH.get()));
                 safeAccept(output, ItemRegistry.ROPE_ITEM.get());
 
                 // Graveyard items
@@ -324,7 +353,17 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.GINSENG.get());
                 safeAccept(output, ItemRegistry.SPIDERS_SILK.get());
                 safeAccept(output, ItemRegistry.SULPHUROUS_ASH.get());
-                safeAccept(output, ItemRegistry.MANDRAKE_ROOT.get());
+                safeAccept(output, ItemRegistry.MANDRAKE.get());
+
+                // Banner-dyeing development items
+                safeAccept(output, DyeItemRegistry.DYE_TUB.get());
+                safeAccept(output, DyeItemRegistry.MADDER_RED.get());
+                safeAccept(output, DyeItemRegistry.WOAD_BLUE.get());
+                safeAccept(output, DyeItemRegistry.VERDIGRIS.get());
+                safeAccept(output, DyeItemRegistry.WELD_GOLD.get());
+                safeAccept(output, DyeItemRegistry.SOOT_BLACK.get());
+                safeAccept(output, DyeItemRegistry.CHALK_WHITE.get());
+                safeAccept(output, DyeItemRegistry.ICE_BLUE.get());
 
                 // General items
                 
@@ -350,6 +389,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TWO_HANDED_AXE.get());
                 safeAccept(output, ItemRegistry.BLACKSMITH_HAMMER.get());
                 output.accept(ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
+                output.accept(ToolRegistry.createShovel(UOMetalToolMaterial.IRON, 3));
                 safeAccept(output, ItemRegistry.ORDER_SHIELD.get());
                 // Musical Instruments
                 safeAccept(output, ItemRegistry.LAP_HARP.get());
@@ -383,6 +423,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TRADER_SPAWN_BLOCK_ITEM.get());   
                 safeAccept(output, ItemRegistry.MERCHANT_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.QUEST_GIVER_SPAWN_BLOCK_ITEM.get());     
+                safeAccept(output, ItemRegistry.SERVICE_NPC_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.QUEST_DESTINATION_BLOCK_ITEM.get());                                                                         
                 safeAccept(output, ItemRegistry.WOOD_SPAWN_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_SPAWN_BLOCK_ITEM.get());
@@ -437,6 +478,201 @@ public class CreativeTabRegistry {
         } else {
             System.err.println("Warning: Attempted to add a null item to the creative tab.");
         }
+    }
+
+    private static void addGrapeVarietySeeds(CreativeModeTab.Output output) {
+        boolean added = false;
+        for (GrapeVariety variety : GrapeVarietyManager.getAllVarieties()) {
+            ItemStack seedStack = new ItemStack(ItemRegistry.GRAPE_SEEDS.get());
+            com.seggellion.britannia_mod.item.GrapeSeedsItem.setVariety(seedStack, variety.id());
+            seedStack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+                    Component.literal(variety.displayName() + " Seeds"));
+            output.accept(seedStack);
+            added = true;
+        }
+        if (!added) {
+            safeAccept(output, ItemRegistry.GRAPE_SEEDS.get());
+        }
+    }
+
+    private static void addFarmingSeeds(CreativeModeTab.Output output) {
+        for (Supplier<? extends Item> seed : FARMING_SEEDS) {
+            safeAccept(output, seed.get());
+        }
+    }
+
+    private static void addFarmingProduce(CreativeModeTab.Output output) {
+        for (Supplier<? extends Item> produce : FARMING_PRODUCE) {
+            safeAccept(output, produce.get());
+        }
+    }
+
+    private static void addVanillaCompatibilityCrops(CreativeModeTab.Output output) {
+        safeAccept(output, Items.WHEAT_SEEDS);
+        safeAccept(output, Items.WHEAT);
+    }
+
+    private static final List<Supplier<? extends Item>> FARMING_SEEDS = List.of(
+            ItemRegistry.SQUASH_SEEDS,
+            ItemRegistry.CARROT_SEEDS,
+            ItemRegistry.POTATO_SEED,
+            ItemRegistry.CORN_SEEDS,
+            ItemRegistry.CABBAGE_SEEDS,
+            ItemRegistry.LETTUCE_SEEDS,
+            ItemRegistry.YELLOW_ONION_SEEDS,
+            ItemRegistry.GREEN_ONION_SEEDS,
+            ItemRegistry.PUMPKIN_SEEDS_CUSTOM,
+            ItemRegistry.WATERMELON_SEEDS,
+            ItemRegistry.RYE_SEEDS,
+            ItemRegistry.BARLEY_SEEDS,
+            ItemRegistry.OAT_SEEDS,
+            ItemRegistry.MUSTARD_SEEDS,
+            ItemRegistry.BEAN_SEEDS,
+            ItemRegistry.RICE_SEEDS,
+            ItemRegistry.TOMATO_SEEDS,
+            ItemRegistry.GARLIC_SEEDS,
+            ItemRegistry.GINSENG_SEEDS,
+            ItemRegistry.MANDRAKE_SEEDS,
+            ItemRegistry.NIGHTSHADE_SEEDS,
+            ItemRegistry.PINEAPPLE_SEEDS,
+            ItemRegistry.STRAWBERRY_SEEDS,
+            ItemRegistry.BLUEBERRY_SEEDS,
+            ItemRegistry.RASPBERRY_SEEDS,
+            ItemRegistry.CRANBERRY_SEEDS,
+            ItemRegistry.BLACKBERRY_SEEDS,
+            ItemRegistry.HUCKLEBERRY_SEEDS,
+            ItemRegistry.MULBERRY_SEEDS,
+            ItemRegistry.ELDERBERRY_SEEDS,
+            ItemRegistry.CHERRY_SEEDS,
+            ItemRegistry.COTTON_SEEDS,
+            ItemRegistry.FLAX_SEEDS,
+            ItemRegistry.HEMP_SEEDS,
+            ItemRegistry.HOPS_SEEDS,
+            ItemRegistry.SNOW_PEA_SEEDS,
+            ItemRegistry.PEA_SEEDS,
+            ItemRegistry.TURNIP_SEEDS,
+            ItemRegistry.APPLE_SEEDS,
+            ItemRegistry.PEAR_SEEDS,
+            ItemRegistry.PEACH_SEEDS,
+            ItemRegistry.LEMON_SEEDS,
+            ItemRegistry.LIME_SEEDS,
+            ItemRegistry.ORANGE_SEEDS,
+            ItemRegistry.OLIVE_SEEDS,
+            ItemRegistry.PLUM_SEEDS,
+            ItemRegistry.BELL_PEPPER_SEEDS,
+            ItemRegistry.CUCUMBER_SEEDS,
+            ItemRegistry.HONEYDEW_SEEDS,
+            ItemRegistry.CANTALOUPE_SEEDS,
+            ItemRegistry.BANANA_SEEDS,
+            ItemRegistry.BROCCOLI_SEEDS,
+            ItemRegistry.CAULIFLOWER_SEEDS,
+            ItemRegistry.RHUBARB_SEEDS,
+            ItemRegistry.CELERY_SEEDS,
+            ItemRegistry.TOBACCO_SEEDS,
+            ItemRegistry.RADISH_SEEDS,
+            ItemRegistry.PARSNIP_SEEDS,
+            ItemRegistry.YAM_SEEDS,
+            ItemRegistry.RUTABAGA_SEEDS,
+            ItemRegistry.POPPY_SEEDS,
+            ItemRegistry.SNOWDROP_SEEDS,
+            ItemRegistry.LILY_SEEDS,
+            ItemRegistry.FOXGLOVE_SEEDS,
+            ItemRegistry.CAMPION_SEEDS,
+            ItemRegistry.HYACINTH_SEEDS,
+            ItemRegistry.ORFLUER_SEEDS
+    );
+
+    private static final List<Supplier<? extends Item>> FARMING_PRODUCE = List.of(
+            ItemRegistry.SQUASH,
+            ItemRegistry.CARROTS,
+            ItemRegistry.POTATO,
+            ItemRegistry.CORN,
+            ItemRegistry.CABBAGE,
+            ItemRegistry.LETTUCE,
+            ItemRegistry.YELLOW_ONION,
+            ItemRegistry.GREEN_ONION,
+            ItemRegistry.PUMPKIN,
+            ItemRegistry.WATERMELON,
+            ItemRegistry.RYE,
+            ItemRegistry.BARLEY,
+            ItemRegistry.OATS,
+            ItemRegistry.BEANS,
+            ItemRegistry.STRAW,
+            ItemRegistry.RICE,
+            ItemRegistry.TOMATO,
+            ItemRegistry.GARLIC,
+            ItemRegistry.GINSENG,
+            ItemRegistry.MANDRAKE,
+            ItemRegistry.NIGHTSHADE,
+            ItemRegistry.PINEAPPLE,
+            ItemRegistry.STRAWBERRY,
+            ItemRegistry.BLUEBERRY,
+            ItemRegistry.RASPBERRY,
+            ItemRegistry.CRANBERRY,
+            ItemRegistry.BLACKBERRY,
+            ItemRegistry.HUCKLEBERRY,
+            ItemRegistry.MULBERRY,
+            ItemRegistry.ELDERBERRY,
+            ItemRegistry.CHERRIES,
+            ItemRegistry.COTTON,
+            ItemRegistry.FLAX,
+            ItemRegistry.HEMP,
+            ItemRegistry.HOPS,
+            ItemRegistry.SNOW_PEAS,
+            ItemRegistry.PEAS,
+            ItemRegistry.TURNIPS,
+            ItemRegistry.APPLE,
+            ItemRegistry.PEARS,
+            ItemRegistry.PEACHES,
+            ItemRegistry.LEMON,
+            ItemRegistry.LIME,
+            ItemRegistry.ORANGE,
+            ItemRegistry.OLIVE,
+            ItemRegistry.PLUM,
+            ItemRegistry.BELL_PEPPERS,
+            ItemRegistry.CUCUMBERS,
+            ItemRegistry.HONEYDEW,
+            ItemRegistry.CANTALOUPE,
+            ItemRegistry.BANANA,
+            ItemRegistry.BROCCOLI,
+            ItemRegistry.CAULIFLOWER,
+            ItemRegistry.RHUBARB,
+            ItemRegistry.CELERY,
+            ItemRegistry.TOBACCO,
+            ItemRegistry.RADISH,
+            ItemRegistry.PARSNIP,
+            ItemRegistry.YAM,
+            ItemRegistry.RUTABAGA,
+            ItemRegistry.POPPY,
+            ItemRegistry.SNOWDROP,
+            ItemRegistry.LILY,
+            ItemRegistry.FOXGLOVE,
+            ItemRegistry.CAMPION,
+            ItemRegistry.HYACINTH,
+            ItemRegistry.ORFLUER
+    );
+
+    private static ItemStack weightedWoodSample(WeightedWoodType woodType) {
+        ItemStack stack = new ItemStack(ItemRegistry.WEIGHTED_WOOD_ITEM.get());
+        if (stack.getItem() instanceof WeightedWoodItem weightedWoodItem) {
+            weightedWoodItem.setWoodType(stack, woodType.id());
+            weightedWoodItem.setWeight(stack, woodType.averageWeight());
+        }
+        return stack;
+    }
+
+    /** Explicit default component for the single shared shrine entry in the existing decor tab. */
+    public static ItemStack shrineCreativeStack(ShrineItem shrine) {
+        return shrine.stateAccess().configuredStack(ShrineItemStateAccess.defaultState());
+    }
+
+    /** Explicitly configured monolith entry for the existing decor tab. */
+    public static ItemStack monolithCreativeStack(MonolithItem monolith) {
+        ShrineItemState state = new ShrineItemState(
+                ShrineItemState.CURRENT_SCHEMA_VERSION,
+                monolith.familyId(),
+                monolith.defaultVariantId());
+        return monolith.stateAccess().configuredStack(state);
     }
 
 

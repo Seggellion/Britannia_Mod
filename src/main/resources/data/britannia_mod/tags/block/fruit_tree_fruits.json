@@ -1,0 +1,14 @@
+{
+    "replace":  false,
+    "values":  [
+                   "britannia_mod:orange_fruit",
+                   "britannia_mod:lemon_fruit",
+                   "britannia_mod:lime_fruit",
+                   "britannia_mod:pear_fruit",
+                   "britannia_mod:peach_fruit",
+                   "britannia_mod:apple_fruit",
+                   "britannia_mod:cherry_fruit",
+                   "britannia_mod:olive_fruit",
+                   "britannia_mod:plum_fruit"
+               ]
+}

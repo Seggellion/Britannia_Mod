@@ -1,0 +1,29 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"render_type": "minecraft:cutout",
+	"textures": {
+		"0": "britannia_mod:block/crops/corn/corn_block",
+		"particle": "britannia_mod:block/crops/corn/corn_block"
+	},
+	"elements": [
+		{
+			"from": [2, 0, 8],
+			"to": [15, 11, 8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [2, 0, 0]},
+			"faces": {
+				"north": {"uv": [0, 0, 9.4, 5], "texture": "#0"},
+				"south": {"uv": [9.6, 0, 0, 4.4], "texture": "#0"}
+			}
+		},
+		{
+			"from": [8, 0, 2],
+			"to": [8, 10, 14],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, 2]},
+			"faces": {
+				"east": {"uv": [0, 0, 5.4, 4.6], "texture": "#0"},
+				"west": {"uv": [5.4, 0, 0, 4.6], "texture": "#0"}
+			}
+		}
+	]
+}

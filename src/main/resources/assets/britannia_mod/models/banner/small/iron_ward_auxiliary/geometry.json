@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed small-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/small/iron_ward_auxiliary/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/iron_ward_auxiliary/base_texture",
+    "dye_mask": "britannia_mod:banner/iron_ward_auxiliary/dye_mask",
+    "particle": "britannia_mod:banner/iron_ward_auxiliary/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        5.35537,
+        3.0,
+        7.49
+      ],
+      "to": [
+        10.64463,
+        13.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.0,
+            0.5,
+            12.0,
+            15.625
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            4.0,
+            0.5,
+            12.0,
+            15.625
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        5.35537,
+        3.0,
+        7.47
+      ],
+      "to": [
+        10.64463,
+        13.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.0,
+            0.5,
+            12.0,
+            15.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            4.0,
+            0.5,
+            12.0,
+            15.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

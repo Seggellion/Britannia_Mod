@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:cotton",
+  "material_id": "britannia_mod:cotton",
+  "natural_colour_id": "britannia_mod:cotton_natural",
+  "entries": [
+    {"id":"britannia_mod:cotton_natural","display_name_key":"colour.britannia_mod.cotton_natural","display_srgb":"#D6CDB7","match_oklab":[0.8496841328,0.0008827067,0.0313594124],"priority":0,"tags":["natural","neutral","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_red","display_name_key":"colour.britannia_mod.cotton_red","display_srgb":"#B53A42","match_oklab":[0.5291235529,0.1481209805,0.0562839174],"priority":20,"tags":["colour_family_red","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_blue","display_name_key":"colour.britannia_mod.cotton_blue","display_srgb":"#3975A8","match_oklab":[0.5457355715,-0.0401524769,-0.0932329273],"priority":20,"tags":["colour_family_blue","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_green","display_name_key":"colour.britannia_mod.cotton_green","display_srgb":"#4F7A4A","match_oklab":[0.5349777181,-0.0685858937,0.0538436719],"priority":20,"tags":["colour_family_green","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_gold","display_name_key":"colour.britannia_mod.cotton_gold","display_srgb":"#D09A2D","match_oklab":[0.7198917387,0.0226870606,0.1326464311],"priority":20,"tags":["colour_family_yellow","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_charcoal","display_name_key":"colour.britannia_mod.cotton_charcoal","display_srgb":"#2F3034","match_oklab":[0.3097397140,0.0005993773,-0.0072330642],"priority":20,"tags":["colour_family_black","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_ivory","display_name_key":"colour.britannia_mod.cotton_ivory","display_srgb":"#F1EBDD","match_oklab":[0.9409580326,0.0008540770,0.0196813177],"priority":20,"tags":["colour_family_white","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:cotton_taupe","display_name_key":"colour.britannia_mod.cotton_taupe","display_srgb":"#897D6C","match_oklab":[0.5956847983,0.0067121128,0.0282221384],"priority":10,"tags":["colour_family_neutral","muted","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]}
+  ],
+  "pigment_overrides": {"britannia_mod:madder_red":"britannia_mod:cotton_red"}
+}

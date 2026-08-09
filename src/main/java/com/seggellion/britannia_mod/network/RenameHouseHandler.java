@@ -2,9 +2,12 @@ package com.seggellion.britannia_mod.network;
 
 import com.google.gson.JsonObject;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
-import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.network.RenameHousePayload;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
+import com.seggellion.britannia_mod.server.http.BoundedHttp;
+import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 import com.mojang.logging.LogUtils;
 
 import net.minecraft.ChatFormatting;
@@ -18,7 +21,6 @@ import org.slf4j.Logger;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -57,46 +59,56 @@ if (!(entity instanceof HouseLotBlockEntity)) {
 
 
         sendRenameRequestToAPI(level, payload.houseUuid(), payload.newName(), player);
-            HouseManagementScreenPayload.send(player, pos);
+        HouseManagementScreenPayload.send(player, pos);
 
     }
 
     private static void sendRenameRequestToAPI(ServerLevel level, UUID houseUuid, String newName, ServerPlayer player) {
-        try {
-            String urlString = ModConfig.API_BASE_URL + "houses/rename" ;
+        UUID playerId = player.getUUID();
+        ServerHttpExecutor.submit(level.getServer(), () -> sendRenameRequest(level, houseUuid, newName))
+            .whenComplete((code, error) -> level.getServer().execute(() -> {
+                ServerPlayer current = level.getServer().getPlayerList().getPlayer(playerId);
+                if (current == null) return;
+                if (error != null) {
+                    current.sendSystemMessage(Component.literal("Error renaming house."));
+                } else if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_NO_CONTENT) {
+                    current.sendSystemMessage(Component.literal("House name updated!"));
+                } else {
+                    current.sendSystemMessage(Component.literal("Failed to rename house. Response code: " + code));
+                    LOGGER.warn("Rename failed: {}", code);
+                }
+            }));
+    }
 
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    private static int sendRenameRequest(ServerLevel level, UUID houseUuid, String newName) {
+        HttpURLConnection conn = null;
+        try {
+            var requestUri = ServerAuthRegistry.credentials(level.getServer()).orElseThrow().apiUrls()
+                    .resolve(Endpoint.HOUSE_RENAME);
+            conn = (HttpURLConnection) requestUri.toURL().openConnection();
+            BoundedHttp.configure(conn);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-
-            CityAPITokenData data = CityAPITokenData.getOrCreate(level);
-            String token = data.getApiToken();
-            if (!token.isEmpty()) {
-                conn.setRequestProperty("Authorization", "Bearer " + token);
-            }
-
-            conn.setDoOutput(true);
 
             JsonObject body = new JsonObject();
             body.addProperty("house_name", newName);
             body.addProperty("house_uuid", houseUuid.toString());
+            byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+
+            if (!RailsRequestAuthenticator.apply(conn, level.getServer(), bodyBytes)) throw new IllegalStateException("Server authentication unavailable");
+
+            conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                os.write(bodyBytes);
             }
 
-            int code = conn.getResponseCode();
-            if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_NO_CONTENT) {
-                player.sendSystemMessage(Component.literal("House name updated!"));
-            } else {
-                player.sendSystemMessage(Component.literal("Failed to rename house. Response code: " + code));
-                LOGGER.warn("Rename failed: {}", code);
-            }
+            return conn.getResponseCode();
 
         } catch (Exception e) {
-            LOGGER.error("API rename error", e);
-            player.sendSystemMessage(Component.literal("Error renaming house."));
+            throw new IllegalStateException("House rename API request failed", e);
+        } finally {
+            if (conn != null) conn.disconnect();
         }
     }
 }

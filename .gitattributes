@@ -1,7 +1,57 @@
-# Disable autocrlf on generated files, they always generate with LF
-# Add any extra files or paths here to make git stop saying they
-# are changed when only line endings change.
-src/generated/**/.cache/cache text eol=lf
-src/generated/**/*.json text eol=lf
-*.jar filter=lfs diff=lfs merge=lfs -text
-*.zip filter=lfs diff=lfs merge=lfs -text
+# Shrine/monolith content tests pin SHA-256 hashes over these text assets.
+# Each file is pinned in the byte representation its committed hash was
+# recorded over, so checkouts stay hash-stable on every platform.
+src/main/resources/assets/britannia_mod/geo/monolith_diagnostic.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/monolith_diagnostic_alternate.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/monolith_diagnostic_crystalline.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/shrine.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/shrine_missing.geo.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/item/shrine.json text eol=crlf
+src/main/resources/assets/britannia_mod/animations/monolith.animation.json text eol=lf
+src/main/resources/assets/britannia_mod/animations/shrine.animation.json text eol=lf
+src/main/resources/assets/britannia_mod/models/item/monolith.json text eol=lf
+content/banner-final-intake/submissions/small_curtain/source/geometry.json text eol=lf
+src/main/resources/assets/britannia_mod/models/banner/road_guard/geometry.json text eol=lf
+src/main/resources/assets/britannia_mod/models/banner/small_curtain/geometry.json text eol=lf
+content/banner-final-intake/submissions/ankh_pennon/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/argent_shield/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/four_seals_pennon/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/gilded_chevron_curtain/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/gilded_trellis_curtain/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/iron_quarter/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/iron_serpent_standard/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/iron_ward/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/iron_ward_auxiliary/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/joined_wards/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/outer_ward/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/serpent_guard/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/ship_standard/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/silver_and_gold_pennon/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/silver_fleur_curtain/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/star_standard/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/threefold_chain_standard/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/tournament_curtain/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/tournament_medium/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/twin_spades_pennon/source/geometry.json text eol=crlf
+content/banner-final-intake/submissions/verdant_grape_pennon/source/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/large/gilded_chevron_curtain/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/large/gilded_trellis_curtain/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/large/iron_serpent_standard/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/large/silver_fleur_curtain/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/large/threefold_chain_standard/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/large/tournament_curtain/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium/argent_shield/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium/iron_quarter/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium/pointed_ward/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium/rounded_guard/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium/tournament_pair/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium_wall/ankh_pennon/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium_wall/four_seals_pennon/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium_wall/grape_rosette_pair/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium_wall/joined_wards/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/medium_wall/twin_spades_pennon/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/small/iron_ward/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/small/iron_ward_auxiliary/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/small/pennon_pair/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/small/ship_standard/geometry.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/banner/small/star_standard/geometry.json text eol=crlf

@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -55,7 +56,9 @@ public class WeightedCookedFoodItem extends WeightedCommodityItem {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        tooltip.add(Component.literal("Restores: " + restoreAmount(stack)));
+        if (!CropQualityCalculator.hasCropQuality(stack)) {
+            tooltip.add(Component.literal("Restores: " + restoreAmount(stack)));
+        }
     }
 
     public String foodType() {

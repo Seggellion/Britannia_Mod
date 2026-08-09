@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.item;
 
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
+import com.seggellion.britannia_mod.farming.FruitProvenance;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -65,7 +67,10 @@ public class WeightedCommodityItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         tooltip.add(Component.literal("Weight: " + String.format("%.2f", getWeight(stack)) + " stones"));
-        if (hasQuality(stack)) {
+        FruitProvenance.appendTooltip(stack, tooltip);
+        if (CropQualityCalculator.hasCropQuality(stack)) {
+            tooltip.add(CropQualityCalculator.qualityTooltip(stack));
+        } else if (hasQuality(stack)) {
             tooltip.add(Component.literal("Quality: " + getQuality(stack)));
         }
     }

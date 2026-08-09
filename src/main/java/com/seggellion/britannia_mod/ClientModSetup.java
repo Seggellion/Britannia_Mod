@@ -22,9 +22,18 @@ import com.seggellion.britannia_mod.client.renderer.entity.EntityWoodMerchantRen
 import com.seggellion.britannia_mod.client.renderer.entity.EntityMetalMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.EntityStoneMerchantRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.TownPersonEntityRenderer;
+import com.seggellion.britannia_mod.farming.CropDefinition;
+import com.seggellion.britannia_mod.farming.CropRegistry;
+import com.seggellion.britannia_mod.farming.CropVisualRotation;
+import com.seggellion.britannia_mod.farming.GrapeVisualResolver;
 import com.seggellion.britannia_mod.client.renderer.ArchitectRenderer;
 import com.seggellion.britannia_mod.client.Keybinds;
+import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.FlowerBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.FlowerVisualModels;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.shrine.ShrineRenderer;
+import com.seggellion.britannia_mod.client.banner.BannerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
 import com.seggellion.britannia_mod.event.ClientEventHandler;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -50,9 +59,12 @@ import net.minecraft.client.renderer.entity.CatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
+import com.seggellion.britannia_mod.registry.LargeStructureRegistry;
+import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
+import com.seggellion.britannia_mod.item.QualityShovelItem;
 import com.seggellion.britannia_mod.item.QualitySwordItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
 import net.minecraft.world.item.component.CustomModelData;
@@ -76,6 +88,11 @@ import net.minecraft.world.item.Item;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.registry.WeaponRegistry;
 import com.seggellion.britannia_mod.registry.ToolRegistry;
+import com.seggellion.britannia_mod.registry.BlacksmithItemRegistry;
+import com.seggellion.britannia_mod.item.BlacksmithEquipmentItem;
+import com.seggellion.britannia_mod.item.BlacksmithItemData;
+import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.skill.crafting.MaterialProfileRegistry;
 import com.seggellion.britannia_mod.client.ClientOnlyItemRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
 
@@ -84,6 +101,14 @@ import net.neoforged.bus.api.SubscribeEvent;
 public class ClientModSetup {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean clientGameHandlersRegistered = false;
+
+    @SubscribeEvent
+    public static void registerMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(
+                com.seggellion.britannia_mod.registry.MenuRegistry.SERVICE_NPC_SPAWN_MENU.get(),
+                com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen::new
+        );
+    }
 
     @SubscribeEvent
     public static void onRegisterItemColors(RegisterColorHandlersEvent.Item event) {
@@ -98,6 +123,8 @@ public class ClientModSetup {
                 materialName = QualitySwordItem.getMaterial(stack);
             } else if (stack.getItem() instanceof QualityToolItem) {
                 materialName = QualityToolItem.getMaterial(stack);
+            } else if (stack.getItem() instanceof QualityShovelItem) {
+                materialName = QualityShovelItem.getMaterial(stack);
             }
 
             // Get the base tint
@@ -105,7 +132,17 @@ public class ClientModSetup {
             // Force Alpha to 100% and strip any existing alpha data
             return 0xFF000000 | (tint & 0xFFFFFF);
             
-        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get());
+        }, WeaponRegistry.VIKING_SWORD.get(), WeaponRegistry.DAGGER.get(), ToolRegistry.PICKAXE.get(), ToolRegistry.SHOVEL.get());
+
+        event.register((stack, tintIndex) -> {
+            if (tintIndex != 0 || !(stack.getItem() instanceof BlacksmithEquipmentItem equipment)
+                    || !equipment.definition().retainsMaterialColor()) return -1;
+            String stored = BlacksmithItemData.materialId(stack);
+            UOMetalToolMaterial material = stored == null ? UOMetalToolMaterial.IRON
+                    : UOMetalToolMaterial.getMaterialByName(stored.replace('_', ' '));
+            var profile = material == null ? null : MaterialProfileRegistry.get(material);
+            return profile == null ? -1 : 0xFF000000 | profile.tint();
+        }, BlacksmithItemRegistry.catalogueItems());
 
 
         event.register((stack, tintIndex) -> {
@@ -166,10 +203,13 @@ public class ClientModSetup {
 
         // Pickaxe tinting
         event.register((stack, tintIndex) -> {
-            if (!(stack.getItem() instanceof QualityToolItem tool)) return -1;
+            boolean customMetalTool = stack.getItem() instanceof QualityToolItem || stack.getItem() instanceof QualityShovelItem;
+            if (!customMetalTool) return -1;
             
             if (tintIndex == 0) {
-                String metalType = QualityToolItem.getMaterial(stack);
+                String metalType = stack.getItem() instanceof QualityShovelItem
+                        ? QualityShovelItem.getMaterial(stack)
+                        : QualityToolItem.getMaterial(stack);
 
                 if (metalType == null) return -1; // ✅ prevent crash
 
@@ -189,7 +229,7 @@ public class ClientModSetup {
             }
 
             return -1;
-        }, ToolRegistry.PICKAXE.get());
+        }, ToolRegistry.PICKAXE.get(), ToolRegistry.SHOVEL.get());
 
     }
 
@@ -209,12 +249,41 @@ public class ClientModSetup {
         event.register(ModelResourceLocation.standalone(
             ResourceLocation.parse("britannia_mod:block/structure/thin_wall_corner_fill")
         ));
+        registerFarmingCropModels(event);
+        registerFlowerModels(event);
+    }
+
+    private static void registerFarmingCropModels(ModelEvent.RegisterAdditional event) {
+        for (ResourceLocation grapeModel : GrapeVisualResolver.allModelLocations()) {
+            event.register(ModelResourceLocation.standalone(grapeModel));
+        }
+        for (CropDefinition crop : CropRegistry.all()) {
+            if (!CropVisualRotation.isEnabledFor(crop)) {
+                continue;
+            }
+            if ("grapes".equals(crop.id())) {
+                continue;
+            }
+            for (int growthStage = 0; growthStage < crop.growthStages(); growthStage++) {
+                if (FarmingBlockEntityRenderer.hasRenderableCropModel(crop, growthStage)) {
+                    event.register(ModelResourceLocation.standalone(FarmingBlockEntityRenderer.cropModelLocation(crop, growthStage)));
+                }
+            }
+        }
+    }
+
+    private static void registerFlowerModels(ModelEvent.RegisterAdditional event) {
+        for (ModelResourceLocation model : FlowerVisualModels.allModelLocations()) {
+            event.register(model);
+        }
     }
 
     @SubscribeEvent
     public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
         ThinWallModels.onModifyBakingResults(event);
         new ThinWallClient().onModifyBaking(event);
+        FlowerVisualModels.onModelsReloaded();
+        FlowerBlockEntityRenderer.onModelsReloaded();
     }
 
     @SubscribeEvent
@@ -414,6 +483,11 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockRegistry.WOOD_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ARCHITECT_SPAWN_BLOCK_ENTITY_TYPE.get(), CityNameBlockRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.WINE_BOTTLE_BE.get(), WineBottleBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.FARMING_BLOCK_BE.get(), FarmingBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), FlowerBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(LargeStructureRegistry.LARGE_STRUCTURE.get(), ShrineRenderer::new);
+        event.registerBlockEntityRenderer(
+                BannerBlockRegistry.BANNER_BLOCK_ENTITY.get(), BannerBlockEntityRenderer::new);
         // Entity Renderers
       //  event.registerEntityRenderer(EntityType.VILLAGER, CustomVillagerRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SEAT_ENTITY.get(), LivingSeatRenderer::new);
@@ -510,6 +584,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.QUEST_GIVER.get(), QuestGiverEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.SALVAGE_TRADER.get(), SalvageTraderEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ALCOHOL_TRADER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.SERVICE_NPC.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.MEAT_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.ORE_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.STONE_TRADER.get(), CitizenEntityRenderer::new);
@@ -532,6 +607,9 @@ public class ClientModSetup {
             NeoForge.EVENT_BUS.addListener(ClientEventHandler::onGameModeChange);
             NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientTick);
             NeoForge.EVENT_BUS.addListener(ClientEventHandler::onBlockRightClick);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientLogin);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onClientLogout);
+            NeoForge.EVENT_BUS.addListener(ClientEventHandler::onRenderNameTag);
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);

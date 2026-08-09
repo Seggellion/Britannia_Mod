@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "layer0":  "britannia_mod:item/potato_seed"
+                 },
+    "parent":  "minecraft:item/generated"
+}

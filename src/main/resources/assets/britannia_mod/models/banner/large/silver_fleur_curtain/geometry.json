@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed parallel Large-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/large/silver_fleur_curtain/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/silver_fleur_curtain/base_texture",
+    "dye_mask": "britannia_mod:banner/silver_fleur_curtain/dye_mask",
+    "particle": "britannia_mod:banner/silver_fleur_curtain/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        -6.91589,
+        -6.0,
+        7.49
+      ],
+      "to": [
+        22.91589,
+        22.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.875,
+            1.375,
+            15.125,
+            14.75
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            0.875,
+            1.375,
+            15.125,
+            14.75
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        -6.91589,
+        -6.0,
+        7.47
+      ],
+      "to": [
+        22.91589,
+        22.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.875,
+            1.375,
+            15.125,
+            14.75
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            0.875,
+            1.375,
+            15.125,
+            14.75
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

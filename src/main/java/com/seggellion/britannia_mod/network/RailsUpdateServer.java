@@ -2,7 +2,7 @@ package com.seggellion.britannia_mod.network;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.inventory.CityInventory;
-import com.seggellion.britannia_mod.util.CityAPITokenData;
+import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.Response;
@@ -24,15 +24,16 @@ import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class RailsUpdateServer extends NanoHTTPD {
     private static final Logger LOGGER = LoggerFactory.getLogger("RailsUpdateServer");
+    private static final int MAX_REQUEST_BODY_BYTES = 1_048_576;
     private final MinecraftServer server;
 
     public RailsUpdateServer(int port, MinecraftServer server) {
-        super(port);
+        super("127.0.0.1", port);
         this.server = server;
     }
 
@@ -51,28 +52,40 @@ public Response serve(IHTTPSession session) {
                         "{\"error\":\"Overworld not found\"}");
             }
 
-            String storedSecret = CityAPITokenData.getOrCreate(overworld).getShardSecret();
-            if (storedSecret == null || storedSecret.isEmpty()) {
+            if (ServerAuthRegistry.credentials(server).isEmpty()) {
                 LOGGER.warn("No Shard Secret configured on server. Rejecting request.");
                 return newFixedLengthResponse(Response.Status.UNAUTHORIZED, "application/json",
                         "{\"error\":\"Shard secret not configured\"}");
             }
 
-            if (providedSecret == null || !providedSecret.equals(storedSecret)) {
-                LOGGER.warn("Invalid Shard Secret received: {}", providedSecret);
+            if (!ServerAuthRegistry.matchesConfiguredSecret(server, providedSecret)) {
+                LOGGER.warn("Invalid shard authentication received from loopback update request");
                 return newFixedLengthResponse(Response.Status.UNAUTHORIZED, "application/json",
                         "{\"error\":\"Invalid Shard Secret\"}");
             }
 
 
-            Map<String, String> files = new HashMap<>();
-            session.parseBody(files);
-            String body = files.get("postData");
-
-            if (body == null) {
+            String contentLength = session.getHeaders().get("content-length");
+            if (contentLength != null) {
+                try {
+                    if (Long.parseLong(contentLength) > MAX_REQUEST_BODY_BYTES) {
+                        return requestBodyTooLarge();
+                    }
+                } catch (NumberFormatException invalidLength) {
+                    return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/json",
+                            "{\"error\":\"Invalid Content-Length\"}");
+                }
+            }
+            InputStream input = session.getInputStream();
+            byte[] bodyBytes = input.readNBytes(MAX_REQUEST_BODY_BYTES + 1);
+            if (bodyBytes.length > MAX_REQUEST_BODY_BYTES) {
+                return requestBodyTooLarge();
+            }
+            if (bodyBytes.length == 0) {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/json",
                         "{\"error\":\"Missing POST data\"}");
             }
+            String body = new String(bodyBytes, StandardCharsets.UTF_8);
 
             JsonObject root = JsonParser.parseString(body).getAsJsonObject();
             if (!root.has("cities")) {
@@ -173,6 +186,11 @@ public Response serve(IHTTPSession session) {
 
 private double getDoubleSafe(JsonObject obj, String key) {
     return obj.has(key) ? obj.get(key).getAsDouble() : 0.0;
+}
+
+private Response requestBodyTooLarge() {
+    return newFixedLengthResponse(Response.Status.BAD_REQUEST, "application/json",
+            "{\"error\":\"Request body too large\"}");
 }
 
 }

@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.6",
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft.com",
 	"texture_size": [128, 128],
 	"textures": {
 		"0": "britannia_mod:block/furniture/chest_of_drawers_red",
@@ -142,6 +142,5 @@
 				5
 			]
 		}
-	],
-	"mcmodels": "ab5990c64d125c275230c43ce53f1910"
+	]
 }

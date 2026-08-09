@@ -1,0 +1,102 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Seggellion from Ultimacraft.com",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "britannia_mod:block/crops/pear/trunk",
+		"1": "britannia_mod:block/crops/pear/log",
+		"particle": "britannia_mod:block/crops/pear/trunk"
+	},
+	"elements": [
+		{
+			"from": [6, 0, 0],
+			"to": [10, 4, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6, 0, 0]},
+			"faces": {
+				"north": {"uv": [16, 16, 0, 0], "texture": "#1"},
+				"east": {"uv": [3, 0, 9.75, 16], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"west": {"uv": [0, 0, 5.1875, 16], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [6.13278, 0, 13.05662, 16], "texture": "#0"},
+				"down": {"uv": [12, 0, 16, 16], "texture": "#0"}
+			}
+		},
+		{
+			"from": [7, 4, 0],
+			"to": [9, 4.5, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 4, 0]},
+			"faces": {
+				"north": {"uv": [5, 13.75, 11.25, 7.97408], "texture": "#0"},
+				"east": {"uv": [0, 0, 4, 16], "texture": "#0"},
+				"south": {"uv": [12.75, 0, 14, 16], "texture": "#0"},
+				"west": {"uv": [7.75, 0, 9.1875, 16], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [5.75, 0, 7.25, 16], "texture": "#0"},
+				"down": {"uv": [12.5, 3.75, 15, 7.25], "texture": "#0"}
+			}
+		},
+		{
+			"from": [5.5, 1, 0],
+			"to": [6, 3, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [5.5, 1, 0]},
+			"faces": {
+				"north": {"uv": [5, 13.75, 11.25, 7.97408], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [0, 0, 4, 16], "texture": "#0"},
+				"south": {"uv": [12.75, 0, 14, 16], "texture": "#0"},
+				"west": {"uv": [5.75, 0, 9.6875, 16], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [5.75, 0, 6.5, 16], "texture": "#0"},
+				"down": {"uv": [12.5, 3.75, 15, 7.25], "texture": "#0"}
+			}
+		},
+		{
+			"from": [10, 1, 0],
+			"to": [10.5, 3, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [10, 1, 0]},
+			"faces": {
+				"north": {"uv": [5, 13.75, 11.25, 7.97408], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [0, 0, 4, 16], "texture": "#0"},
+				"south": {"uv": [12.75, 0, 14, 16], "texture": "#0"},
+				"west": {"uv": [5.75, 0, 9.6875, 16], "rotation": 90, "texture": "#0"},
+				"up": {"uv": [5.75, 0, 6.5, 16], "texture": "#0"},
+				"down": {"uv": [12.5, 3.75, 15, 7.25], "texture": "#0"}
+			}
+		},
+		{
+			"from": [7, -0.5, 0],
+			"to": [9, 0, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, -0.5, 0]},
+			"faces": {
+				"north": {"uv": [5, 13.75, 11.25, 7.97408], "texture": "#0"},
+				"east": {"uv": [0, 0, 4, 16], "texture": "#0"},
+				"south": {"uv": [12.75, 0, 14, 16], "texture": "#0"},
+				"west": {"uv": [0, 0, 4.1875, 16], "texture": "#0"},
+				"up": {"uv": [5.75, 0, 7.25, 16], "texture": "#0"},
+				"down": {"uv": [12.5, 3.75, 15, 7.25], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [78, 49, -6],
+			"translation": [-1.5, 4.5, 5.75]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [78, 49, -6],
+			"translation": [-1.5, 4.5, 5.75]
+		},
+		"firstperson_righthand": {
+			"rotation": [62, 0, 0]
+		},
+		"firstperson_lefthand": {
+			"rotation": [62, 0, 0]
+		},
+		"gui": {
+			"rotation": [28, -37, -12],
+			"translation": [1.25, 5.25, 0],
+			"scale": [1.09, 1.09, 1.09]
+		},
+		"fixed": {
+			"rotation": [-3, -95, -7],
+			"translation": [0, 6.25, 0]
+		}
+	}
+}

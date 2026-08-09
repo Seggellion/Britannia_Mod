@@ -49,7 +49,6 @@ import net.neoforged.neoforge.common.NeoForgeMod;
 import com.seggellion.britannia_mod.ModAttributes;
 import com.seggellion.britannia_mod.shop.Product;
 import com.seggellion.britannia_mod.network.NetworkHandler;
-import com.seggellion.britannia_mod.network.RailsCatalog;
 import com.seggellion.britannia_mod.trader.ITrader;
 
 // Geckolib
@@ -65,9 +64,12 @@ import software.bernie.geckolib.animation.AnimationController;
 // Java utils
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatable, ICityEntity  {
     private String gender = "unknown";
+    @Nullable
+    private UUID worldNpcPublicId;
     private boolean stepToggle = false;
 
 private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
@@ -278,6 +280,15 @@ public void setGender(String gender) {
         return this.entityData.get(DATA_PERSONAL_NAME); 
     }
 
+    @Nullable
+    public UUID getWorldNpcPublicId() {
+        return worldNpcPublicId;
+    }
+
+    public void setWorldNpcPublicId(@Nullable UUID worldNpcPublicId) {
+        this.worldNpcPublicId = worldNpcPublicId;
+    }
+
 protected void updateDisplayName() {
         // Fetch the name from the SynchedEntityData via our getter
         Component styledName = Component.literal(this.getPersonalName()).withStyle(UO_STYLE);
@@ -306,18 +317,6 @@ protected void updateDisplayName() {
     // ---------- Catalog ----------
     public List<Product> getCatalog() { return catalog; }
 
-    public void loadCatalogFromRails(Runnable onComplete) {
-        if (!level().isClientSide && !city().isBlank()) {
-            RailsCatalog.fetch(city()).thenAcceptAsync(fetched -> {
-                catalog.clear();
-                catalog.addAll(fetched);
-                if (onComplete != null) onComplete.run();
-            }, ((ServerLevel) level()).getServer());
-        } else {
-            if (onComplete != null) onComplete.run();
-        }
-    }
-
     // ---------- Attribute overrides ----------
     @Override
     public float getScale() {
@@ -342,6 +341,7 @@ protected void updateDisplayName() {
         tag.putString("cityName", this.getCityName());
         tag.putString("gender", this.getGender());
         tag.putString("personalName", this.getPersonalName());
+        WorldNpcPublicIdNbt.write(tag, this.worldNpcPublicId);
 
     tag.putInt("hairIndex", this.entityData.get(DATA_HAIR));
     tag.putInt("facialHairIndex", this.entityData.get(DATA_FACIAL_HAIR));
@@ -363,6 +363,7 @@ protected void updateDisplayName() {
         
         // This setter automatically calls updateDisplayName() for us!
         this.setPersonalName(tag.getString("personalName")); 
+        this.worldNpcPublicId = WorldNpcPublicIdNbt.read(tag);
 
         if (tag.contains("hairIndex")) {
         this.entityData.set(DATA_HAIR, tag.getInt("hairIndex"));
@@ -377,7 +378,7 @@ protected void updateDisplayName() {
             this.setOutfitKey(tag.getString("outfitKey"));
         }
     }
-    
+
     @Override
     public void tick() {
         super.tick();
