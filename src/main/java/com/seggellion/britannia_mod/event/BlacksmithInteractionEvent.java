@@ -2,6 +2,10 @@ package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.item.BlackSmithsHammerItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
+import com.seggellion.britannia_mod.item.BlacksmithItemData;
+import com.seggellion.britannia_mod.util.LocalRecipes;
+import com.seggellion.britannia_mod.player.PlayerDataStore;
+import com.seggellion.britannia_mod.skill.BlacksmithSessionManager;
 import com.seggellion.britannia_mod.network.payload.OpenBlacksmithGuiS2CPayload;
 import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.ChatFormatting;
@@ -33,7 +37,9 @@ public class BlacksmithInteractionEvent {
         ItemStack mainHand = event.getEntity().getMainHandItem();
         ItemStack offHand = event.getEntity().getOffhandItem();
 
-        if (mainHand.getItem() instanceof BlackSmithsHammerItem) {
+        boolean hammer = mainHand.getItem() instanceof BlackSmithsHammerItem;
+        boolean equipmentTarget = BlacksmithItemData.isSupportedEquipment(mainHand);
+        if (hammer || equipmentTarget) {
             LOGGER.info("Hammer detected on Anvil! Intercepting...");
 
             if (event.getLevel().isClientSide) {
@@ -47,8 +53,9 @@ public class BlacksmithInteractionEvent {
             // Check if the offhand item matches any ingot in our Enum
             UOMetalToolMaterial metal = UOMetalToolMaterial.getMaterialByIngot(offHand.getItem());
 
-            if (metal != null) {
-                LOGGER.info("Valid {} Ingot found. Sending UI payload.", metal.getMetalName());
+            if (metal != null || equipmentTarget) {
+                LOGGER.info("Opening Blacksmithing with material={} target={}",
+                        metal == null ? "none" : metal.getMetalName(), equipmentTarget);
 
                 event.getLevel().playSound(
                         null, 
@@ -59,7 +66,12 @@ public class BlacksmithInteractionEvent {
                 );
 
                 // Send the clean string (e.g., "valorite") to the UI payload
-                NetworkHandler.sendToPlayer(player, new OpenBlacksmithGuiS2CPayload(metal.getMetalName()));
+                var playerData = PlayerDataStore.get(player);
+                String race = playerData.getStats().has("race") ? playerData.getStats().get("race").getAsString() : "human";
+                NetworkHandler.sendToPlayer(player, new OpenBlacksmithGuiS2CPayload(
+                        metal == null ? "" : metal.getMetalName(),
+                        LocalRecipes.learnedBlacksmithing(player).stream().sorted().toList(),
+                        race, playerData.getGender(), BlacksmithSessionManager.open(player)));
                 
             } else {
                 LOGGER.info("No valid ingots in offhand.");

@@ -658,13 +658,18 @@ public static void handleCraftBlacksmithItem(CraftBlacksmithItemC2SPayload paylo
     // ALWAYS enqueue work to the main thread when modifying game state/inventory
     context.enqueueWork(() -> {
         ServerPlayer player = (ServerPlayer) context.player();
+        if (!com.seggellion.britannia_mod.skill.BlacksmithSessionManager.validate(player, payload.sessionToken())) {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Blacksmithing session expired."));
+            return;
+        }
         
-        // Look up the definition using the ID sent by the client
-        CraftableDef def = CraftableRegistry.get(payload.craftableId());
-        
-        if (def != null) {
-            // Hand it off to the crafting logic
-            BlacksmithCrafting.processCraftRequest(player, def);
+        switch (payload.action()) {
+            case CRAFT -> {
+                CraftableDef def = CraftableRegistry.get(payload.craftableId());
+                if (def != null) BlacksmithCrafting.processCraftRequest(player, def);
+            }
+            case REPAIR -> BlacksmithCrafting.processRepairRequest(player, payload.targetToken());
+            case SMELT -> BlacksmithCrafting.processSmeltRequest(player, payload.targetToken());
         }
     });
 }
