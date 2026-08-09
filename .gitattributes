@@ -1,7 +1,12 @@
-# Disable autocrlf on generated files, they always generate with LF
-# Add any extra files or paths here to make git stop saying they
-# are changed when only line endings change.
-src/generated/**/.cache/cache text eol=lf
-src/generated/**/*.json text eol=lf
-*.jar filter=lfs diff=lfs merge=lfs -text
-*.zip filter=lfs diff=lfs merge=lfs -text
+# Shrine/monolith content tests pin SHA-256 hashes over these text assets.
+# Each file is pinned in the byte representation its committed hash was
+# recorded over, so checkouts stay hash-stable on every platform.
+src/main/resources/assets/britannia_mod/geo/monolith_diagnostic.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/monolith_diagnostic_alternate.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/monolith_diagnostic_crystalline.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/shrine.geo.json text eol=lf
+src/main/resources/assets/britannia_mod/geo/shrine_missing.geo.json text eol=crlf
+src/main/resources/assets/britannia_mod/models/item/shrine.json text eol=crlf
+src/main/resources/assets/britannia_mod/animations/monolith.animation.json text eol=lf
+src/main/resources/assets/britannia_mod/animations/shrine.animation.json text eol=lf
+src/main/resources/assets/britannia_mod/models/item/monolith.json text eol=lf

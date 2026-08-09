@@ -121,6 +121,8 @@ sourceSets {
     main {
         resources {
             srcDirs = ['src/main/resources', 'src/generated/resources', 'build/generated/gametest']
+            // Owner working backup only; never package retired shrine textures.
+            exclude 'assets/britannia_mod/textures/block/shrine/old/**'
         }
     }
 }
@@ -184,6 +186,10 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 idea {

@@ -39,6 +39,7 @@ import com.seggellion.britannia_mod.block.MoongateTickHandler;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.structure.SurvivalZoneHandler;
 import com.seggellion.britannia_mod.structure.StructureProtectionHandler;
+import com.seggellion.britannia_mod.structure.lifecycle.ShrineIntegrityHandler;
 import com.seggellion.britannia_mod.city.CityManager;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.util.NameLoader;
@@ -117,6 +118,8 @@ CraftableRegistry.init();
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
         ItemRegistry.register(modEventBus);
+        LargeStructureRegistry.register(modEventBus);
+        ShrineIntegrityHandler.register();
 
         BlacksmithItemRegistry.register(modEventBus);
 

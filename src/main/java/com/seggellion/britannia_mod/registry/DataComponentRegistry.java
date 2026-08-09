@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.component.BankChequeData;
 import com.seggellion.britannia_mod.component.WineData;
+import com.seggellion.britannia_mod.structure.item.ShrineItemState;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus; // <--- Import this
@@ -28,6 +29,20 @@ public class DataComponentRegistry {
                 .persistent(BankChequeData.CODEC)
                 .networkSynchronized(BankChequeData.STREAM_CODEC)
                 .build());
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShrineItemState>>
+            SHRINE_INSTANCE_STATE = DATA_COMPONENT_TYPES.register(
+                    "shrine_instance_state", DataComponentRegistry::createShrineInstanceStateType);
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ShrineItemState>>
+            MONOLITH_INSTANCE_STATE = DATA_COMPONENT_TYPES.register(
+                    "monolith_instance_state", DataComponentRegistry::createShrineInstanceStateType);
+
+    public static DataComponentType<ShrineItemState> createShrineInstanceStateType() {
+        return DataComponentType.<ShrineItemState>builder()
+                .persistent(ShrineItemState.CODEC)
+                .networkSynchronized(ShrineItemState.STREAM_CODEC)
+                .build();
+    }
 
     // === ADD THIS METHOD ===
     public static void register(IEventBus eventBus) {
