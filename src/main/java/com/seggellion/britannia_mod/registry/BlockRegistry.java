@@ -1,6 +1,18 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.DoubleWallBlock;
+import com.seggellion.britannia_mod.block.MirrorableWallBlock;
+import com.seggellion.britannia_mod.block.WoodSupportFloorBlock;
+import com.seggellion.britannia_mod.block.BannisterBlock;
+import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
+import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
+import com.seggellion.britannia_mod.block.VillaLampPostBlock;
+import com.seggellion.britannia_mod.block.PlasterWallHalfBlock;
+import com.seggellion.britannia_mod.block.CeilingJoistEdgeBlock;
+import com.seggellion.britannia_mod.block.CeilingPanelBlock;
+import com.seggellion.britannia_mod.block.CustomSandstoneBrickBlock;
+import com.seggellion.britannia_mod.block.SandstoneBrickRoadBlock;
 import com.seggellion.britannia_mod.block.IronFenceBlock;
 import com.seggellion.britannia_mod.block.TallThinBlock;
 import com.seggellion.britannia_mod.block.TallDecorativeBlock;
@@ -33,6 +45,7 @@ import com.seggellion.britannia_mod.block.PurpleTentBlock;
 import com.seggellion.britannia_mod.block.CobbleStoneWallBlock;
 import com.seggellion.britannia_mod.block.OakWallBlock;
 import com.seggellion.britannia_mod.block.FloorBlock;
+import com.seggellion.britannia_mod.block.FloorSlabBlock;
 import com.seggellion.britannia_mod.block.DungeonWallBlock;
 import com.seggellion.britannia_mod.block.CaveBlock;
 import com.seggellion.britannia_mod.block.GhostLightBlock;
@@ -800,13 +813,14 @@ public static final DeferredHolder<Block, Block> IRON_FENCE = BLOCKS.register("i
 public static final DeferredHolder<Block, Block> ANCHOR = BLOCKS.register("anchor", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
 
-
 public static final DeferredHolder<Block, Block> CORRAL_FENCE = BLOCKS.register("corral_fence", () ->
     new HorizontalTallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
 
 public static final DeferredHolder<Block, Block> CORRAL_PILLAR = BLOCKS.register("corral_pillar", () ->
     new HorizontalTallBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)));
 
+public static final DeferredHolder<Block, Block> WALNUT_FLOOR = BLOCKS.register("walnut_floor", () ->
+    new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
 
 public static final DeferredHolder<Block, Block> DEAD_GRAVE_FLOWER_VASE = BLOCKS.register("dead_grave_flower_vase", () ->
     new HorizontalFacingBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
@@ -1325,6 +1339,17 @@ public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_SPRUCE = BLOCK
     () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
 );
 
+public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_SANDSTONE = BLOCKS.register(
+    "brick_foundation_sandstone",
+    () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
+);
+
+public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_DARK_SANDSTONE = BLOCKS.register(
+    "brick_foundation_dark_sandstone",
+    () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
+);
+
+
 
 public static final DeferredHolder<Block, Block> STONE_FOUNDATION = BLOCKS.register(
     "stone_foundation",
@@ -1491,6 +1516,15 @@ public static final DeferredHolder<Block, FloorBlock> WOODEN_PLANK_FLOOR =
                 .sound(SoundType.WOOD)
         ));
 
+public static final DeferredHolder<Block, FloorSlabBlock> WOODEN_PLANK_FLOOR_SLAB =
+    BLOCKS.register("wooden_plank_floor_slab", () ->
+        new FloorSlabBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                .strength(2.0f)
+                .sound(SoundType.WOOD)
+                .noOcclusion()
+        ));
+
 public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
     BLOCKS.register("wooden_board_floor", () ->
         new FloorBlock(
@@ -1581,6 +1615,11 @@ public static final DeferredHolder<Block, Block> STONE_FLOOR_POLISHED =
 
     public static final DeferredHolder<Block, Block> DARK_STONE_STAIRS = BLOCKS.register(
         "dark_stone_stairs", CustomStoneStairsBlock::new
+    );
+
+
+    public static final DeferredHolder<Block, Block> WALNUT_STAIRS = BLOCKS.register(
+        "walnut_stairs", CustomStoneStairsBlock::new
     );
 
     public static final DeferredHolder<Block, Block> DUNGEON_STAIRS = BLOCKS.register(
@@ -1846,6 +1885,9 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_STONE_WALL_BOTTOM =
         )
     );
 
+public static final DeferredHolder<Block, WoodSupportFloorBlock> WOOD_SUPPORT_FLOOR = BLOCKS.register("wood_support_floor", () ->
+    new WoodSupportFloorBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BARS).noOcclusion()));
+
   public static final DeferredHolder<Block, PlasterWoodWallBlock> PLASTER_WOOD_WALL =
         BLOCKS.register("plaster_wood_wall", () ->
             new PlasterWoodWallBlock(
@@ -2105,6 +2147,61 @@ public static final DeferredHolder<Block, BlankSignHolder> BLANK_SIGN_HOLDER = B
 
 public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
         BLOCKS.register("chess_board", ChessBoardBlock::new);
+
+    // Villa DoubleWallBlock Series
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ORNATE_WALL_UPPER = BLOCKS.register("plaster_ornate_wall_upper", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ORNATE_WALL_1 = BLOCKS.register("plaster_ornate_wall_1", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ORNATE_WALL_2 = BLOCKS.register("plaster_ornate_wall_2", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_SMALL_WINDOW = BLOCKS.register("plaster_small_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, MirrorableWallBlock> ORNATE_WALL_LARGE_WINDOW = BLOCKS.register("ornate_wall_large_window", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    // The window families whose straight models have asymmetric furniture to move, so the ones
+    // where the interior decorator's window-side toggle has something to show. plaster_small_window
+    // and plaster_and_stone_window are still placeholder art; switch them to MirrorableWallBlock
+    // once they have real models.
+    public static final DeferredHolder<Block, MirrorableWallBlock> PLASTER_WALL_LARGE_WINDOW = BLOCKS.register("plaster_wall_large_window", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_DIAGONAL_EAST = BLOCKS.register("plaster_wall_support_diagonal_east", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH = BLOCKS.register("plaster_wall_support_diagonal_south", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_OPEN = BLOCKS.register("plaster_wall_support_open", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_BLANK = BLOCKS.register("plaster_wall_blank", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, MirrorableWallBlock> PLASTER_WALL_AND_SUPPORT_BLANK = BLOCKS.register("plaster_wall_and_support_blank", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ARCHWAY = BLOCKS.register("plaster_archway", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_AND_STONE_WINDOW = BLOCKS.register("plaster_and_stone_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> ORNATE_SANDSTONE_WALL = BLOCKS.register("ornate_sandstone_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> REGULAR_SANDSTONE_WALL = BLOCKS.register("regular_sandstone_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_BLOCK_WALL = BLOCKS.register("sandstone_block_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> ORNATE_SANDSTONE_WINDOW = BLOCKS.register("ornate_sandstone_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_WINDOW = BLOCKS.register("sandstone_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_POST = BLOCKS.register("sandstone_post", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> ORNATE_SANDSTONE_POST = BLOCKS.register("ornate_sandstone_post", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_BATTLEMENT = BLOCKS.register("sandstone_battlement", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_COLUMN = BLOCKS.register("sandstone_column", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, BannisterBlock> BANNISTER = BLOCKS.register("bannister", () -> new BannisterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    /** 3x3 timber post, 32 voxels tall, in one corner of the block. */
+    public static final DeferredHolder<Block, PlasterWoodPostBlock> PLASTER_WOOD_POST = BLOCKS.register("plaster_wood_post", () -> new PlasterWoodPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    // Half-height plaster walls: 16 tall, 5 deep, on the block edge. Same connection logic as the
+    // full-height family, so they turn corners the same way.
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_BLANK_HALF = BLOCKS.register("plaster_wall_blank_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_AND_SUPPORT_BLANK_HALF = BLOCKS.register("plaster_wall_and_support_blank_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_SUPPORT_DIAGONAL_EAST_HALF = BLOCKS.register("plaster_wall_support_diagonal_east_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_HALF = BLOCKS.register("plaster_wall_support_diagonal_south_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+
+    /** Ceiling panels: the underside counterparts of the floor deck and joist edge. */
+    public static final DeferredHolder<Block, CeilingPanelBlock> CEILING_PLANKS = BLOCKS.register("ceiling_planks", () -> new CeilingPanelBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+    public static final DeferredHolder<Block, CeilingJoistEdgeBlock> CEILING_JOIST_EDGE = BLOCKS.register("ceiling_joist_edge", () -> new CeilingJoistEdgeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+
+    /** Raised planting bed: brick kerb outside, soil recessed inside. */
+    public static final DeferredHolder<Block, HouseFarmPlotBlock> HOUSE_FARM_PLOT = BLOCKS.register("house_farm_plot", () -> new HouseFarmPlotBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(1.5f).sound(SoundType.GRAVEL)));
+
+    /** Three-block-tall lamp post. Follows the CandelabraBlock pattern: light 15 plus its block entity. */
+    public static final DeferredHolder<Block, VillaLampPostBlock> VILLA_LAMP_POST = BLOCKS.register("villa_lamp_post", () -> new VillaLampPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(0.5f).sound(SoundType.WOOD).noOcclusion().lightLevel(state -> 15)));
+
+    public static final DeferredHolder<Block, CustomSandstoneBrickBlock> CUSTOM_SANDSTONE_BRICK = BLOCKS.register("custom_sandstone_brick", () -> new CustomSandstoneBrickBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+    public static final DeferredHolder<Block, SandstoneBrickRoadBlock> LIGHT_SANDSTONE_BRICK_ROAD = BLOCKS.register("light_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+    public static final DeferredHolder<Block, SandstoneBrickRoadBlock> MEDIUM_SANDSTONE_BRICK_ROAD = BLOCKS.register("medium_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+
+    public static final DeferredHolder<Block, SandstoneBrickRoadBlock> DARK_SANDSTONE_BRICK_ROAD = BLOCKS.register("dark_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

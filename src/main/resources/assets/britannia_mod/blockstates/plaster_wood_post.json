@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "facing=north,half=lower": {
+      "model": "britannia_mod:block/structure/plaster_wood_post"
+    },
+    "facing=north,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=east,half=lower": {
+      "model": "britannia_mod:block/structure/plaster_wood_post",
+      "y": 90
+    },
+    "facing=east,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=south,half=lower": {
+      "model": "britannia_mod:block/structure/plaster_wood_post",
+      "y": 180
+    },
+    "facing=south,half=upper": {
+      "model": "minecraft:block/air"
+    },
+    "facing=west,half=lower": {
+      "model": "britannia_mod:block/structure/plaster_wood_post",
+      "y": 270
+    },
+    "facing=west,half=upper": {
+      "model": "minecraft:block/air"
+    }
+  }
+}

@@ -26,6 +26,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 
 public class ThinWallBakedModel implements BakedModel {
 
@@ -358,4 +363,33 @@ private static int quarterTurnsForCorner(Direction facing) {
     @Override public boolean isCustomRenderer()           { return original.isCustomRenderer(); }
     @Override public ItemOverrides getOverrides()         { return original.getOverrides(); }
     @Override public TextureAtlasSprite getParticleIcon() { return original.getParticleIcon(); }
+
+    /*
+     * A wrapper has to delegate everything it does not itself change, or the wrapped model
+     * silently loses that behaviour.
+     *
+     * getTransforms was the one that hurt: without it every wrapped model fell back to
+     * ItemTransforms.NO_TRANSFORMS - the identity transform - so the display block in the model
+     * JSON was ignored and the item rendered at full size in the inventory and the hand. That hit
+     * every model whose path contains "_wall_", which is most of the plaster and stone walls.
+     *
+     * getRenderTypes matters just as much: without it the model's declared render_type is lost and
+     * cutout geometry renders on the solid layer, which turns transparent texels opaque black.
+     */
+    @Override public ItemTransforms getTransforms()       { return original.getTransforms(); }
+
+    @Override
+    public ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
+        return original.getRenderTypes(state, rand, data);
+    }
+
+    @Override
+    public List<RenderType> getRenderTypes(ItemStack stack, boolean fabulous) {
+        return original.getRenderTypes(stack, fabulous);
+    }
+
+    @Override
+    public BakedModel applyTransform(ItemDisplayContext context, PoseStack poseStack, boolean leftHand) {
+        return original.applyTransform(context, poseStack, leftHand);
+    }
 }

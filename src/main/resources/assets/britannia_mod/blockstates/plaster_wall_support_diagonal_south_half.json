@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,shape=straight,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half"
+    },
+    "facing=north,shape=straight,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half"
+    },
+    "facing=north,shape=corner,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half"
+    },
+    "facing=north,shape=corner,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half"
+    },
+    "facing=north,shape=t_junction,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half"
+    },
+    "facing=north,shape=t_junction,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half"
+    },
+    "facing=east,shape=straight,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 90
+    },
+    "facing=east,shape=straight,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 90
+    },
+    "facing=south,shape=straight,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 180
+    },
+    "facing=south,shape=straight,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 180
+    },
+    "facing=west,shape=straight,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 270
+    },
+    "facing=west,shape=straight,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=false": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=true": {
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_support_diagonal_south_half",
+      "y": 270
+    }
+  }
+}

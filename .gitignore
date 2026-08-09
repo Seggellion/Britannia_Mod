@@ -32,6 +32,7 @@ repo
 
 logs/
 *.log
+*.log.gz
 
 /src/main/resources/worlds/custom_world.zip
 /build/libs/britannia_mod-0.0.1.jar

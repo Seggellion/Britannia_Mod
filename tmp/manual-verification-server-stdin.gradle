@@ -1,0 +1,7 @@
+allprojects {
+    tasks.configureEach { task ->
+        if (task.name == 'runServer' && task.hasProperty('standardInput')) {
+            task.standardInput = System.in
+        }
+    }
+}

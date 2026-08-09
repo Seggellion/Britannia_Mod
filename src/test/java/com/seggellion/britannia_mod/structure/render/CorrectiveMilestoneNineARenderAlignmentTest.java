@@ -296,7 +296,9 @@ class CorrectiveMilestoneNineARenderAlignmentTest {
         assertEquals(1, occurrences(decor, "shrineCreativeStack(LargeStructureRegistry.SHRINE.get())"));
         assertEquals(1, occurrences(source, "LargeStructureRegistry.MONOLITH.get()"));
         assertEquals(1, occurrences(decor, "monolithCreativeStack(LargeStructureRegistry.MONOLITH.get())"));
-        assertEquals(5, occurrences(source, "DeferredHolder<CreativeModeTab, CreativeModeTab>"));
+        // Villa integration adds a sixth creative tab alongside the five present
+        // when this milestone was recorded.
+        assertEquals(6, occurrences(source, "DeferredHolder<CreativeModeTab, CreativeModeTab>"));
 
         String registry = Files.readString(REGISTRY);
         assertEquals(1, occurrences(registry, "SHRINE = ITEMS.register("));

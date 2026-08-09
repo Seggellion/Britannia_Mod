@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "britannia_mod:block/structure/walnut_1",
+    "top": "britannia_mod:block/structure/walnut_1",
+    "side": "britannia_mod:block/structure/walnut_2",
+    "particle": "britannia_mod:block/structure/walnut_2"
+  }
+}

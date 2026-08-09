@@ -1,0 +1,12 @@
+{
+	"format_version": "1.21.11",
+	"parent": "minecraft:block/block",
+	"textures": {"soil": "britannia_mod:block/farmland/farmland_0", "particle": "britannia_mod:block/farmland/farmland_0"},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 14, 16],
+			"faces": {"up": {"uv": [0, 0, 16, 16], "texture": "#soil"}, "down": {"uv": [0, 0, 16, 16], "texture": "#soil"}}
+		}
+	]
+}
