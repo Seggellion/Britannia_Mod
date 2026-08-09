@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "NOT_APPROVED",
+    "approved_by": "",
+    "approved_date": "",
+    "notes": "Approved final-content base_texture.png and dye_mask.png must each be exactly 128 x 128 RGBA; this template remains NOT_APPROVED."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:example_banner",
+    "final_display_name": "",
+    "width_blocks": null,
+    "height_blocks": null,
+    "supported_orientations": [],
+    "supported_mounts": [],
+    "default_mount": null,
+    "placement_profile_id": null,
+    "geometry_id": null,
+    "geometry_convention": ""
+  },
+  "localization": {
+    "language": "en_us",
+    "value": ""
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": null,
+      "source_file": null,
+      "sha256": null
+    },
+    "dye_mask": {
+      "resource_id": null,
+      "source_file": null,
+      "sha256": null
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": null,
+      "sha256": null
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": null
+  },
+  "provenance": {
+    "original_art": false,
+    "creator": "",
+    "creation_method": "",
+    "source_project_file": "",
+    "distribution_permission_confirmed": false,
+    "copied_from_reference_art": null
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": ""
+  },
+  "requested_content_status": "placeholder"
+}

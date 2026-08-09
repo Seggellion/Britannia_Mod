@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-30",
+    "notes": "Approved by the product owner on 2026-07-30; creator identity, original-art status, no reference copying, distribution permission, 1 x 2 dimensions, prepared geometry, and parallel-only runtime integration confirmed."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:twin_spades_pennon",
+    "final_display_name": "Twin Spades Pennon",
+    "catalogue_index": 10,
+    "family": "medium_wall",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_parallel",
+    "geometry_id": "britannia_mod:banner/medium_wall/twin_spades_pennon/geometry",
+    "geometry_convention": "Approved 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Twin Spades Pennon"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/twin_spades_pennon/base_texture",
+      "source_file": "content/banner-final-intake/submissions/twin_spades_pennon/base_texture.png",
+      "sha256": "f6e5a834a57b940ade9b84873b78ad71f0c91efa09eeb8d93ef0a4820ed3fc0b"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/twin_spades_pennon/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/twin_spades_pennon/dye_mask.png",
+      "sha256": "6908bb015759849df80c3c2b4aae7a746d5982fa311a1ae6bb1513ad35d515db"
+    },
+    "geometry": {
+      "shared_geometry_approved": true,
+      "source_file": "content/banner-final-intake/submissions/twin_spades_pennon/source/geometry.json",
+      "sha256": "f75af06ef4e0068b6b258cdf9ae06c40fad1d46567cd97e66788f971e6a5fe64"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/twin_spades_pennon/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium_wall.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Product-owner intake approval was supplied on 2026-07-30. Post-integration live Gate E review has not yet been performed."
+  },
+  "requested_content_status": "in_progress"
+}

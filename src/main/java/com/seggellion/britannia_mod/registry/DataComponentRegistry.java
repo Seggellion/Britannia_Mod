@@ -4,6 +4,8 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.component.BankChequeData;
 import com.seggellion.britannia_mod.component.WineData;
 import com.seggellion.britannia_mod.structure.item.ShrineItemState;
+import com.seggellion.britannia_mod.banner.state.BannerInstanceState;
+import com.seggellion.britannia_mod.dye.state.DyeTubState;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus; // <--- Import this
@@ -41,6 +43,27 @@ public class DataComponentRegistry {
         return DataComponentType.<ShrineItemState>builder()
                 .persistent(ShrineItemState.CODEC)
                 .networkSynchronized(ShrineItemState.STREAM_CODEC)
+                .build();
+    }
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<DyeTubState>> DYE_TUB_STATE =
+        DATA_COMPONENT_TYPES.register("dye_tub_state", DataComponentRegistry::createDyeTubStateType);
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<BannerInstanceState>>
+            BANNER_INSTANCE_STATE = DATA_COMPONENT_TYPES.register(
+                    "banner_instance_state", DataComponentRegistry::createBannerInstanceStateType);
+
+    public static DataComponentType<DyeTubState> createDyeTubStateType() {
+        return DataComponentType.<DyeTubState>builder()
+                .persistent(DyeTubState.CODEC)
+                .networkSynchronized(DyeTubState.STREAM_CODEC)
+                .build();
+    }
+
+    public static DataComponentType<BannerInstanceState> createBannerInstanceStateType() {
+        return DataComponentType.<BannerInstanceState>builder()
+                .persistent(BannerInstanceState.CODEC)
+                .networkSynchronized(BannerInstanceState.STREAM_CODEC)
                 .build();
     }
 

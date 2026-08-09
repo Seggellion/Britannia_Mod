@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:tournament_medium",
+  "display_name_key": "banner.britannia_mod.tournament_medium",
+  "content_status": "complete",
+  "source_reference": {
+    "page": 2,
+    "row": 5,
+    "source_label": "Tournament Medium"
+  },
+  "catalogue_group": "medium",
+  "dimensions": {
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "provisional": false
+  },
+  "supported_orientations": [
+    "wall_perpendicular"
+  ],
+  "supported_mounts": [
+    "britannia_mod:brass",
+    "britannia_mod:iron"
+  ],
+  "default_mount": "britannia_mod:brass",
+  "default_material": "britannia_mod:cotton",
+  "assets": {
+    "geometry": "britannia_mod:banner/medium/tournament_pair/geometry",
+    "base_texture": "britannia_mod:banner/tournament_medium/base_texture",
+    "dye_mask": "britannia_mod:banner/tournament_medium/dye_mask"
+  },
+  "placement_profile": "britannia_mod:medium_perpendicular"
+}

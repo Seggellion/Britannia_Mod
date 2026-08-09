@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:silk",
+  "material_id": "britannia_mod:silk",
+  "natural_colour_id": "britannia_mod:silk_natural",
+  "entries": [
+    {"id":"britannia_mod:silk_natural","display_name_key":"colour.britannia_mod.silk_natural","display_srgb":"#E7DCC9","match_oklab":[0.8981822015,0.0041789993,0.0278514716],"priority":0,"tags":["natural","neutral","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_ruby","display_name_key":"colour.britannia_mod.silk_ruby","display_srgb":"#C51F4A","match_oklab":[0.5362225122,0.1916793340,0.0470030334],"priority":20,"tags":["colour_family_red","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_sapphire","display_name_key":"colour.britannia_mod.silk_sapphire","display_srgb":"#2454B8","match_oklab":[0.4742370413,-0.0215877582,-0.1655624935],"priority":20,"tags":["colour_family_blue","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_emerald","display_name_key":"colour.britannia_mod.silk_emerald","display_srgb":"#16855B","match_oklab":[0.5476095709,-0.1089284000,0.0366279795],"priority":20,"tags":["colour_family_green","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_gold","display_name_key":"colour.britannia_mod.silk_gold","display_srgb":"#E4AA16","match_oklab":[0.7717156262,0.0185408254,0.1536264221],"priority":20,"tags":["colour_family_yellow","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_onyx","display_name_key":"colour.britannia_mod.silk_onyx","display_srgb":"#1B1C28","match_oklab":[0.2311151682,0.0043062802,-0.0227811571],"priority":20,"tags":["colour_family_black","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_pearl","display_name_key":"colour.britannia_mod.silk_pearl","display_srgb":"#F5F0E8","match_oklab":[0.9568159065,0.0021157079,0.0117400810],"priority":20,"tags":["colour_family_white","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_amethyst","display_name_key":"colour.britannia_mod.silk_amethyst","display_srgb":"#7B3FB2","match_oklab":[0.4995235961,0.1009045630,-0.1453515645],"priority":10,"tags":["colour_family_violet","jewel","development"],"allowed_pigment_tags":[],"excluded_pigment_tags":[]},
+    {"id":"britannia_mod:silk_glacial","display_name_key":"colour.britannia_mod.silk_glacial","display_srgb":"#8ED8E8","match_oklab":[0.8392981584,-0.0644016410,-0.0414863437],"priority":30,"tags":["colour_family_blue","special","development"],"allowed_pigment_tags":["ice"],"excluded_pigment_tags":["mundane"]}
+  ],
+  "pigment_overrides": {"britannia_mod:madder_red":"britannia_mod:silk_ruby"}
+}

@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "diagnostic": "britannia_mod:banner/placeholder/missing",
+    "particle": "britannia_mod:banner/placeholder/missing"
+  },
+  "elements": [
+    {
+      "from": [1, 1, 14],
+      "to": [15, 15, 16],
+      "faces": {
+        "north": { "texture": "#diagnostic" },
+        "east": { "texture": "#diagnostic" },
+        "south": { "texture": "#diagnostic" },
+        "west": { "texture": "#diagnostic" },
+        "up": { "texture": "#diagnostic" },
+        "down": { "texture": "#diagnostic" }
+      }
+    }
+  ]
+}

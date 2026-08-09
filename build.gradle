@@ -125,6 +125,37 @@ sourceSets {
             exclude 'assets/britannia_mod/textures/block/shrine/old/**'
         }
     }
+    scaffold {
+        java.srcDir 'tools/scaffold'
+        compileClasspath += sourceSets.main.output + configurations.compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+    test {
+        compileClasspath += sourceSets.scaffold.output
+        runtimeClasspath += sourceSets.scaffold.output
+    }
+}
+
+configurations {
+    scaffoldImplementation.extendsFrom implementation
+    scaffoldCompileOnly.extendsFrom compileOnly
+}
+
+tasks.named('compileTestJava') {
+    dependsOn tasks.named('scaffoldClasses')
+}
+
+tasks.register('scaffoldBanners', JavaExec) {
+    group = 'banner dyeing'
+    description = 'Generate or verify the Milestone 4 banner catalogue scaffold.'
+    dependsOn tasks.named('scaffoldClasses')
+    classpath = sourceSets.scaffold.runtimeClasspath
+    mainClass = 'com.seggellion.britannia_mod.tools.BannerScaffoldTool'
+    workingDir = projectDir
+    def suppliedArgs = providers.gradleProperty('bannerScaffoldArgs').getOrElse('').trim()
+    if (!suppliedArgs.isEmpty()) {
+        args suppliedArgs.split('\\s+')
+    }
 }
 
 tasks.register('generateServiceNpcSpawnGameTestStructure') {

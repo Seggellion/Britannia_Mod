@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,orientation=wall_parallel": { "model": "britannia_mod:block/banner", "y": 0 },
+    "facing=east,orientation=wall_parallel": { "model": "britannia_mod:block/banner", "y": 90 },
+    "facing=south,orientation=wall_parallel": { "model": "britannia_mod:block/banner", "y": 180 },
+    "facing=west,orientation=wall_parallel": { "model": "britannia_mod:block/banner", "y": 270 },
+    "facing=north,orientation=wall_perpendicular": { "model": "britannia_mod:block/banner_perpendicular", "y": 0 },
+    "facing=east,orientation=wall_perpendicular": { "model": "britannia_mod:block/banner_perpendicular", "y": 90 },
+    "facing=south,orientation=wall_perpendicular": { "model": "britannia_mod:block/banner_perpendicular", "y": 180 },
+    "facing=west,orientation=wall_perpendicular": { "model": "britannia_mod:block/banner_perpendicular", "y": 270 }
+  }
+}

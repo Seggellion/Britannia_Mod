@@ -645,6 +645,58 @@ registrar.playToServer(
     })
 );
 
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.dye.C2SConfirmDyeApplicationPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.dye.C2SConfirmDyeApplicationPayload.STREAM_CODEC,
+    (payload, context) -> context.enqueueWork(() -> {
+        if (context.player() instanceof ServerPlayer player) {
+            com.seggellion.britannia_mod.dye.preview.DyePreviewRuntime.confirm(player, payload.sessionId());
+        }
+    })
+);
+
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.dye.C2SCancelDyePreviewPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.dye.C2SCancelDyePreviewPayload.STREAM_CODEC,
+    (payload, context) -> context.enqueueWork(() -> {
+        if (context.player() instanceof ServerPlayer player) {
+            com.seggellion.britannia_mod.dye.preview.DyePreviewRuntime.cancel(player, payload.sessionId());
+        }
+    })
+);
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleOpenDyePreview
+        : (payload, context) -> {}
+);
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleDyeApplicationResult
+        : (payload, context) -> {}
+);
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.banner.S2CBannerRenderDataPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.banner.S2CBannerRenderDataPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleBannerRenderData
+        : (payload, context) -> {}
+);
+
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload.STREAM_CODEC,
+    FMLLoader.getDist().isClient()
+        ? ClientNetworkHandler::handleBannerPlacementOrientation
+        : (payload, context) -> {}
+);
+
 
     
 }

@@ -1,0 +1,12 @@
+{
+  "geometry_id": "britannia_mod:banner/small_curtain/geometry",
+  "source": "C:/projects/britannia/raw fiels/tabbard/banner.ai",
+  "canvas": [128, 128],
+  "alpha_bounds": [33, 7, 95, 122],
+  "physical_bounds": {
+    "from": [6.38261, 5.0, 7.49],
+    "to": [9.61739, 11.0, 7.51]
+  },
+  "uv": [4.125, 0.875, 11.875, 15.25],
+  "silhouette": "The base texture alpha supplies the authored wide curtain outline and flat bottom."
+}

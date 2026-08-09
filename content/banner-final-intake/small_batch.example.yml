@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "template_status": "NOT_APPROVED",
+  "instructions": "Complete each record independently. Approved final-content base_texture.png and dye_mask.png must each be exactly 128 x 128 PNG, 8-bit RGBA, aligned, and byte-preserved during integration. current_provisional_state is informational catalogue data and is not approval.",
+  "records": [
+    {
+      "approval": {"status": "NOT_APPROVED", "approved_by": "", "approved_date": "", "notes": ""},
+      "banner": {
+        "stable_id": "britannia_mod:silver_and_gold_pennon",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Silver and Gold Pennon",
+        "name_status": "source-named",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "dimensions_provisional": true,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_small",
+        "geometry_id": "britannia_mod:banner/placeholder/small",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {"language": "en_us", "value": ""},
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {"status": "NOT_APPROVED", "approved_by": "", "approved_date": "", "notes": ""},
+      "banner": {
+        "stable_id": "britannia_mod:star_standard",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Star Standard",
+        "name_status": "provisional",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "dimensions_provisional": true,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_small",
+        "geometry_id": "britannia_mod:banner/placeholder/small",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {"language": "en_us", "value": ""},
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {"status": "NOT_APPROVED", "approved_by": "", "approved_date": "", "notes": ""},
+      "banner": {
+        "stable_id": "britannia_mod:ship_standard",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Ship Standard",
+        "name_status": "provisional",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "dimensions_provisional": true,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_small",
+        "geometry_id": "britannia_mod:banner/placeholder/small",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {"language": "en_us", "value": ""},
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {"status": "NOT_APPROVED", "approved_by": "", "approved_date": "", "notes": ""},
+      "banner": {
+        "stable_id": "britannia_mod:pennon_of_silver",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Pennon of Silver",
+        "name_status": "source-named",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "dimensions_provisional": true,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_small",
+        "geometry_id": "britannia_mod:banner/placeholder/small",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {"language": "en_us", "value": ""},
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {"status": "NOT_APPROVED", "approved_by": "", "approved_date": "", "notes": ""},
+      "banner": {
+        "stable_id": "britannia_mod:iron_ward",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Iron Ward",
+        "name_status": "source-named",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "dimensions_provisional": true,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_small",
+        "geometry_id": "britannia_mod:banner/placeholder/small",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {"language": "en_us", "value": ""},
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {"status": "NOT_APPROVED", "approved_by": "", "approved_date": "", "notes": ""},
+      "banner": {
+        "stable_id": "britannia_mod:iron_ward_auxiliary",
+        "final_display_name": "",
+        "width_blocks": null,
+        "height_blocks": null,
+        "supported_orientations": [],
+        "supported_mounts": [],
+        "default_mount": null,
+        "placement_profile_id": null,
+        "geometry_id": null,
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Iron Ward Auxiliary",
+        "name_status": "source-named",
+        "width_blocks": 1,
+        "height_blocks": 1,
+        "dimensions_provisional": true,
+        "supported_orientations": ["wall_parallel", "wall_perpendicular"],
+        "supported_mounts": ["britannia_mod:brass", "britannia_mod:iron"],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_small",
+        "geometry_id": "britannia_mod:banner/placeholder/small",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {"language": "en_us", "value": ""},
+      "assets": {
+        "base_texture": {"resource_id": null, "source_file": null, "sha256": null},
+        "dye_mask": {"resource_id": null, "source_file": null, "sha256": null},
+        "geometry": {"shared_geometry_approved": false, "source_file": null, "sha256": null}
+      },
+      "references": {"authoring_source_file": null, "preview_image_file": null},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false,
+        "copied_from_reference_art": null
+      },
+      "manual_verification": {"performed": false, "tester": "", "date": "", "notes": ""},
+      "requested_content_status": "in_progress"
+    }
+  ]
+}

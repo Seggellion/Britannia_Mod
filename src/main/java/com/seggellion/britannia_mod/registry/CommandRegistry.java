@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.commands.PopulateOresCommand;
 import com.seggellion.britannia_mod.commands.RandomizeWallsCommand;
 import com.seggellion.britannia_mod.commands.VerifyCommand;
 import com.seggellion.britannia_mod.commands.FarmingDebugCommand;
+import com.seggellion.britannia_mod.commands.BannerDyeAdminCommands;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
@@ -36,6 +37,7 @@ public class CommandRegistry {
         RandomizeWallsCommand.register(event.getDispatcher());
         VerifyCommand.register(event.getDispatcher());
         FarmingDebugCommand.register(event.getDispatcher());
+        BannerDyeAdminCommands.register(event.getDispatcher());
 
         // Register additional command classes here
     }

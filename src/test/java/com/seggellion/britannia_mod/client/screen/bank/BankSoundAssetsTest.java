@@ -23,9 +23,9 @@ class BankSoundAssetsTest {
     private static final Path PROJECT_DIR =
             Path.of(System.getProperty("britannia.projectDir", "."));
     private static final Path SOUNDS_JSON =
-            PROJECT_DIR.resolve(Path.of("src", "main", "resources", "assets", "britannia_mod", "sounds.json"));
+            PROJECT_DIR.resolve(Path.of(System.getProperty("britannia.projectDir", "."),"src", "main", "resources", "assets", "britannia_mod", "sounds.json"));
     private static final Path SOUNDS_DIR =
-            PROJECT_DIR.resolve(Path.of("src", "main", "resources", "assets", "britannia_mod", "sounds"));
+            PROJECT_DIR.resolve(Path.of(System.getProperty("britannia.projectDir", "."),"src", "main", "resources", "assets", "britannia_mod", "sounds"));
 
     /** Event name -> the file its sounds.json entry must reference. */
     private static final Map<String, String> BANK_SOUNDS = Map.of(

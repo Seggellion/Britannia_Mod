@@ -38,6 +38,11 @@ import com.seggellion.britannia_mod.client.screen.QuestGiverSpawnScreen;
 import com.seggellion.britannia_mod.client.screen.ChessBoardScreen;
 import com.seggellion.britannia_mod.client.screen.ServiceNpcSpawnScreen;
 import com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnStateS2CPayload;
+import com.seggellion.britannia_mod.client.screen.DyePreviewScreen;
+import com.seggellion.britannia_mod.network.payload.dye.S2CDyeApplicationResultPayload;
+import com.seggellion.britannia_mod.network.payload.dye.S2COpenDyePreviewPayload;
+import com.seggellion.britannia_mod.network.payload.banner.S2CBannerRenderDataPayload;
+import com.seggellion.britannia_mod.network.payload.banner.S2CBannerPlacementOrientationPayload;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
 // --- NEW IMPORTS END ---
@@ -471,6 +476,31 @@ private static MutableComponent uoMessage(String text) {
                 chessScreen.updateState(payload.state());
             } else {
                 mc.setScreen(new ChessBoardScreen(payload.pos(), payload.state()));
+            }
+        });
+    }
+
+    public static void handleOpenDyePreview(S2COpenDyePreviewPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> Minecraft.getInstance().setScreen(new DyePreviewScreen(payload)));
+    }
+
+    public static void handleBannerRenderData(S2CBannerRenderDataPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> com.seggellion.britannia_mod.client.banner.ClientBannerRenderData
+                .replace(payload.snapshot()));
+    }
+
+    public static void handleBannerPlacementOrientation(
+            S2CBannerPlacementOrientationPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> com.seggellion.britannia_mod.client.banner.ClientBannerPlacementState
+                .replace(payload.orientation()));
+    }
+
+    public static void handleDyeApplicationResult(
+            S2CDyeApplicationResultPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen instanceof DyePreviewScreen screen) {
+                screen.handleResult(payload);
             }
         });
     }

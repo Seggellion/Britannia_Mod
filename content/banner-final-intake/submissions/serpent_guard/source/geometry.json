@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed perpendicular medium-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/medium/rounded_guard/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/serpent_guard/base_texture",
+    "dye_mask": "britannia_mod:banner/serpent_guard/dye_mask",
+    "particle": "britannia_mod:banner/serpent_guard/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        1.1405,
+        -4.0,
+        7.49
+      ],
+      "to": [
+        14.8595,
+        16.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.875,
+            0.5,
+            13.25,
+            15.625
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            2.875,
+            0.5,
+            13.25,
+            15.625
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        1.1405,
+        -4.0,
+        7.47
+      ],
+      "to": [
+        14.8595,
+        16.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.875,
+            0.5,
+            13.25,
+            15.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            2.875,
+            0.5,
+            13.25,
+            15.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

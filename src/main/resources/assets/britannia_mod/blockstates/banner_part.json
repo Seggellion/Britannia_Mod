@@ -1,0 +1,12 @@
+{
+  "multipart": [
+    { "when": { "facing": "north", "orientation": "wall_parallel" }, "apply": { "model": "britannia_mod:block/banner_part" } },
+    { "when": { "facing": "east", "orientation": "wall_parallel" }, "apply": { "model": "britannia_mod:block/banner_part", "y": 90 } },
+    { "when": { "facing": "south", "orientation": "wall_parallel" }, "apply": { "model": "britannia_mod:block/banner_part", "y": 180 } },
+    { "when": { "facing": "west", "orientation": "wall_parallel" }, "apply": { "model": "britannia_mod:block/banner_part", "y": 270 } },
+    { "when": { "facing": "north", "orientation": "wall_perpendicular" }, "apply": { "model": "britannia_mod:block/banner_part_perpendicular" } },
+    { "when": { "facing": "east", "orientation": "wall_perpendicular" }, "apply": { "model": "britannia_mod:block/banner_part_perpendicular", "y": 90 } },
+    { "when": { "facing": "south", "orientation": "wall_perpendicular" }, "apply": { "model": "britannia_mod:block/banner_part_perpendicular", "y": 180 } },
+    { "when": { "facing": "west", "orientation": "wall_perpendicular" }, "apply": { "model": "britannia_mod:block/banner_part_perpendicular", "y": 270 } }
+  ]
+}

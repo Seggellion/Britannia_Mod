@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:verdant_grape_pennon",
+  "display_name_key": "banner.britannia_mod.verdant_grape_pennon",
+  "content_status": "complete",
+  "source_reference": {
+    "page": 1,
+    "row": 7,
+    "source_label": "Verdant Grape Pennon"
+  },
+  "catalogue_group": "medium-wall",
+  "dimensions": {
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "provisional": false
+  },
+  "supported_orientations": [
+    "wall_parallel"
+  ],
+  "supported_mounts": [
+    "britannia_mod:brass",
+    "britannia_mod:iron"
+  ],
+  "default_mount": "britannia_mod:brass",
+  "default_material": "britannia_mod:cotton",
+  "assets": {
+    "geometry": "britannia_mod:banner/medium_wall/grape_rosette_pair/geometry",
+    "base_texture": "britannia_mod:banner/verdant_grape_pennon/base_texture",
+    "dye_mask": "britannia_mod:banner/verdant_grape_pennon/dye_mask"
+  },
+  "placement_profile": "britannia_mod:medium_parallel"
+}

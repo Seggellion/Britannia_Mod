@@ -1,0 +1,42 @@
+{
+  "credit": "Shared Road Guard-style planar geometry for the authoritative 128 x 128 extra-small canvas",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/road_guard/base_texture",
+    "dye_mask": "britannia_mod:banner/road_guard/dye_mask",
+    "particle": "britannia_mod:banner/road_guard/base_texture"
+  },
+  "elements": [
+    {
+      "from": [6.82927, 5.0, 7.49],
+      "to": [9.17073, 11.0, 7.51],
+      "faces": {
+        "north": {
+          "uv": [5.0, 0.375, 11.0, 15.75],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [5.0, 0.375, 11.0, 15.75],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [6.82927, 5.0, 7.47],
+      "to": [9.17073, 11.0, 7.53],
+      "faces": {
+        "north": {
+          "uv": [5.0, 0.375, 11.0, 15.75],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [5.0, 0.375, 11.0, 15.75],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

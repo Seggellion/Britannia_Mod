@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed parallel Large-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/large/gilded_trellis_curtain/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/gilded_trellis_curtain/base_texture",
+    "dye_mask": "britannia_mod:banner/gilded_trellis_curtain/dye_mask",
+    "particle": "britannia_mod:banner/gilded_trellis_curtain/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        -6.0,
+        -6.0,
+        7.49
+      ],
+      "to": [
+        22.0,
+        22.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.5,
+            1.625,
+            14.5,
+            14.625
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            1.625,
+            14.5,
+            14.625
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        -6.0,
+        -6.0,
+        7.47
+      ],
+      "to": [
+        22.0,
+        22.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.5,
+            1.625,
+            14.5,
+            14.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            1.5,
+            1.625,
+            14.5,
+            14.625
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

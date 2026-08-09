@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-30",
+    "notes": "Product-owner approval covers the prepared natural artwork, authored dye selection, 2 x 2 logical dimensions, definition-specific geometry, wall_parallel placement, provenance, and distribution."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:threefold_chain_standard",
+    "final_display_name": "Threefold Chain Standard",
+    "catalogue_index": 2,
+    "family": "large",
+    "width_blocks": 2,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:large_parallel",
+    "geometry_id": "britannia_mod:banner/large/threefold_chain_standard/geometry",
+    "geometry_convention": "Approved 28-unit-tall parallel Large-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Physical placement uses a 2 x 2 wall_parallel footprint and the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Threefold Chain Standard"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/threefold_chain_standard/base_texture",
+      "source_file": "content/banner-final-intake/submissions/threefold_chain_standard/base_texture.png",
+      "sha256": "b800da02a68e35c3f31bcbe9efce352ffd0e3b13de312292cb69c82341092091"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/threefold_chain_standard/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/threefold_chain_standard/dye_mask.png",
+      "sha256": "800ab6e9d877f74ca279acd50146bc28e7271c34b789b113879ff0afaa347374"
+    },
+    "geometry": {
+      "shared_geometry_approved": false,
+      "source_file": "content/banner-final-intake/submissions/threefold_chain_standard/source/geometry.json",
+      "sha256": "dab9491a133d437de31b8d5ee80615f957d126a4eeaf6683c66f3994b1a73d5e"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/threefold_chain_standard/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_large.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the authored selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_large.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Not performed. Review artifacts are prepared, but Gate E must wait until the intake is approved and integrated."
+  },
+  "requested_content_status": "in_progress"
+}

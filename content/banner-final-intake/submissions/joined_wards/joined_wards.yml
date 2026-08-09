@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "approval": {
+    "status": "APPROVED",
+    "approved_by": "Seggellion",
+    "approved_date": "2026-07-30",
+    "notes": "Approved by the product owner on 2026-07-30; creator identity, original-art status, no reference copying, distribution permission, 1 x 2 dimensions, prepared geometry, and parallel-only runtime integration confirmed."
+  },
+  "banner": {
+    "stable_id": "britannia_mod:joined_wards",
+    "final_display_name": "Joined Wards",
+    "catalogue_index": 12,
+    "family": "medium_wall",
+    "width_blocks": 1,
+    "height_blocks": 2,
+    "supported_orientations": [
+      "wall_parallel"
+    ],
+    "supported_mounts": [
+      "britannia_mod:brass",
+      "britannia_mod:iron"
+    ],
+    "default_mount": "britannia_mod:brass",
+    "placement_profile_id": "britannia_mod:medium_parallel",
+    "geometry_id": "britannia_mod:banner/medium_wall/joined_wards/geometry",
+    "geometry_convention": "Approved 20-unit-tall parallel Medium-family planar geometry derived from the complete authored alpha bounds. The 128-pixel UV basis and established two-pass thickness are preserved. Parallel physical placement reuses the shared wall_parallel mount geometry; brass/iron remain separate untinted material choices. Authored attachment and crossbar pixels stay fixed in base_texture."
+  },
+  "localization": {
+    "language": "en_us",
+    "value": "Joined Wards"
+  },
+  "assets": {
+    "base_texture": {
+      "resource_id": "britannia_mod:banner/joined_wards/base_texture",
+      "source_file": "content/banner-final-intake/submissions/joined_wards/base_texture.png",
+      "sha256": "8551830308310eb073cc06bcf4760d69db4ebe897c2aed88bfe49239a84c5a70"
+    },
+    "dye_mask": {
+      "resource_id": "britannia_mod:banner/joined_wards/dye_mask",
+      "source_file": "content/banner-final-intake/submissions/joined_wards/dye_mask.png",
+      "sha256": "ec964aa2ae06ab42ca323c232c4a2e18e952d5cd3aecdb9dcd1b161a6d9dba82"
+    },
+    "geometry": {
+      "shared_geometry_approved": true,
+      "source_file": "content/banner-final-intake/submissions/joined_wards/source/geometry.json",
+      "sha256": "d151fdab70a3cb21c5366dda0cba7e4e089d12c2349a990a926176c9e226a505"
+    }
+  },
+  "references": {
+    "authoring_source_file": null,
+    "preview_image_file": "content/banner-final-intake/submissions/joined_wards/review/review_sheet.png"
+  },
+  "provenance": {
+    "original_art": true,
+    "creator": "Seggellion",
+    "creation_method": "Named base_texture and authored dye_mask artwork exported from banner_medium_wall.ai using one shared 128 x 128 artboard transform. Active mask RGB was normalized to white and mask alpha was constrained to base alpha without expanding or reinterpreting the selection.",
+    "source_project_file": "C:/projects/britannia/raw fiels/tabbard/banner_medium_wall.ai",
+    "distribution_permission_confirmed": true,
+    "copied_from_reference_art": false
+  },
+  "manual_verification": {
+    "performed": false,
+    "tester": "",
+    "date": "",
+    "notes": "Product-owner intake approval was supplied on 2026-07-30. Post-integration live Gate E review has not yet been performed."
+  },
+  "requested_content_status": "in_progress"
+}

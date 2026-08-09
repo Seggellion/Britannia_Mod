@@ -54,6 +54,12 @@ import com.seggellion.britannia_mod.event.WorldBootstrapHandler;
 import com.seggellion.britannia_mod.skill.crafting.CraftableRegistry;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnDeliveryProcessor;
+import com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataReloadRegistration;
+import com.seggellion.britannia_mod.registry.BannerBlockRegistry;
+import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
+import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrityHandler;
+import com.seggellion.britannia_mod.banner.placement.BannerOrientationPreferenceLifecycle;
+import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -117,11 +123,16 @@ CraftableRegistry.init();
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
         BlockEntityRegistry.register(modEventBus);
+        BannerBlockRegistry.register(modEventBus);
+        BannerStructureIntegrityHandler.register();
+        BannerOrientationPreferenceLifecycle.register(NeoForge.EVENT_BUS);
         ItemRegistry.register(modEventBus);
         LargeStructureRegistry.register(modEventBus);
         ShrineIntegrityHandler.register();
 
         BlacksmithItemRegistry.register(modEventBus);
+        DyeItemRegistry.register(modEventBus);
+        BannerItemRegistry.register(modEventBus);
 
         WeaponRegistry.register(modEventBus);
         FishRegistry.register(modEventBus);
@@ -145,6 +156,9 @@ CraftableRegistry.init();
 
         ModSounds.register(modEventBus);
         CommandRegistry.register();
+        BannerDataReloadRegistration.register(NeoForge.EVENT_BUS);
+        BannerRenderDataSync.register(NeoForge.EVENT_BUS);
+        DyePreviewLifecycle.register(NeoForge.EVENT_BUS);
 
         // Register event handlers
         MoongateTickHandler.registerTickEvent(NeoForge.EVENT_BUS);

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:extra_small",
+  "dimensions": {
+    "width_blocks": 1,
+    "height_blocks": 1,
+    "provisional": false
+  },
+  "requires_wall_support": true,
+  "orientation_mount_geometry": {
+    "wall_parallel": "britannia_mod:banner/mount/wall_parallel",
+    "wall_perpendicular": "britannia_mod:banner/mount/wall_perpendicular"
+  }
+}

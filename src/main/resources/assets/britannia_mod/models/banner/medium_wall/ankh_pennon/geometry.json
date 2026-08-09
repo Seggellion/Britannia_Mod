@@ -1,0 +1,78 @@
+{
+  "credit": "Proposed parallel Medium-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/medium_wall/ankh_pennon/geometry",
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "base_texture": "britannia_mod:banner/ankh_pennon/base_texture",
+    "dye_mask": "britannia_mod:banner/ankh_pennon/dye_mask",
+    "particle": "britannia_mod:banner/ankh_pennon/base_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        2.38017,
+        -4.0,
+        7.49
+      ],
+      "to": [
+        13.61983,
+        16.0,
+        7.51
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.75,
+            0.625,
+            12.25,
+            15.75
+          ],
+          "texture": "#base_texture"
+        },
+        "south": {
+          "uv": [
+            3.75,
+            0.625,
+            12.25,
+            15.75
+          ],
+          "texture": "#base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        2.38017,
+        -4.0,
+        7.47
+      ],
+      "to": [
+        13.61983,
+        16.0,
+        7.53
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.75,
+            0.625,
+            12.25,
+            15.75
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        },
+        "south": {
+          "uv": [
+            3.75,
+            0.625,
+            12.25,
+            15.75
+          ],
+          "texture": "#dye_mask",
+          "tintindex": 1
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,391 @@
+{
+  "schema_version": 1,
+  "template_status": "NOT_APPROVED",
+  "instructions": "Complete each record independently. Large banners support wall_parallel placement only and never wall_perpendicular placement. Approved final-content base_texture.png and dye_mask.png must each be exactly 128 x 128 PNG, 8-bit RGBA, aligned, and byte-preserved during integration. current_provisional_state is informational catalogue data and is not approval.",
+  "records": [
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:large_01",
+        "final_display_name": "",
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [],
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Large Banner 01",
+        "name_status": "provisional",
+        "width_blocks": 3,
+        "height_blocks": 2,
+        "dimensions_provisional": true,
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [
+          "britannia_mod:brass",
+          "britannia_mod:iron"
+        ],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_large",
+        "geometry_id": "britannia_mod:banner/placeholder/large",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {},
+        "dye_mask": {},
+        "geometry": {
+          "shared_geometry_approved": false
+        }
+      },
+      "references": {},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false
+      },
+      "manual_verification": {
+        "performed": false,
+        "tester": "",
+        "date": "",
+        "notes": ""
+      },
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:large_02",
+        "final_display_name": "",
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [],
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Large Banner 02",
+        "name_status": "provisional",
+        "width_blocks": 3,
+        "height_blocks": 2,
+        "dimensions_provisional": true,
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [
+          "britannia_mod:brass",
+          "britannia_mod:iron"
+        ],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_large",
+        "geometry_id": "britannia_mod:banner/placeholder/large",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {},
+        "dye_mask": {},
+        "geometry": {
+          "shared_geometry_approved": false
+        }
+      },
+      "references": {},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false
+      },
+      "manual_verification": {
+        "performed": false,
+        "tester": "",
+        "date": "",
+        "notes": ""
+      },
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:large_03",
+        "final_display_name": "",
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [],
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Large Banner 03",
+        "name_status": "provisional",
+        "width_blocks": 3,
+        "height_blocks": 2,
+        "dimensions_provisional": true,
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [
+          "britannia_mod:brass",
+          "britannia_mod:iron"
+        ],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_large",
+        "geometry_id": "britannia_mod:banner/placeholder/large",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {},
+        "dye_mask": {},
+        "geometry": {
+          "shared_geometry_approved": false
+        }
+      },
+      "references": {},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false
+      },
+      "manual_verification": {
+        "performed": false,
+        "tester": "",
+        "date": "",
+        "notes": ""
+      },
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:large_04",
+        "final_display_name": "",
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [],
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Large Banner 04",
+        "name_status": "provisional",
+        "width_blocks": 3,
+        "height_blocks": 2,
+        "dimensions_provisional": true,
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [
+          "britannia_mod:brass",
+          "britannia_mod:iron"
+        ],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_large",
+        "geometry_id": "britannia_mod:banner/placeholder/large",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {},
+        "dye_mask": {},
+        "geometry": {
+          "shared_geometry_approved": false
+        }
+      },
+      "references": {},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false
+      },
+      "manual_verification": {
+        "performed": false,
+        "tester": "",
+        "date": "",
+        "notes": ""
+      },
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:large_05",
+        "final_display_name": "",
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [],
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Large Banner 05",
+        "name_status": "provisional",
+        "width_blocks": 3,
+        "height_blocks": 2,
+        "dimensions_provisional": true,
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [
+          "britannia_mod:brass",
+          "britannia_mod:iron"
+        ],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_large",
+        "geometry_id": "britannia_mod:banner/placeholder/large",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {},
+        "dye_mask": {},
+        "geometry": {
+          "shared_geometry_approved": false
+        }
+      },
+      "references": {},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false
+      },
+      "manual_verification": {
+        "performed": false,
+        "tester": "",
+        "date": "",
+        "notes": ""
+      },
+      "requested_content_status": "in_progress"
+    },
+    {
+      "approval": {
+        "status": "NOT_APPROVED",
+        "approved_by": "",
+        "approved_date": "",
+        "notes": ""
+      },
+      "banner": {
+        "stable_id": "britannia_mod:large_06",
+        "final_display_name": "",
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [],
+        "geometry_convention": ""
+      },
+      "current_provisional_state": {
+        "display_label": "Large Banner 06",
+        "name_status": "provisional",
+        "width_blocks": 3,
+        "height_blocks": 2,
+        "dimensions_provisional": true,
+        "supported_orientations": [
+          "wall_parallel"
+        ],
+        "supported_mounts": [
+          "britannia_mod:brass",
+          "britannia_mod:iron"
+        ],
+        "default_mount": "britannia_mod:brass",
+        "placement_profile_id": "britannia_mod:placeholder_large",
+        "geometry_id": "britannia_mod:banner/placeholder/large",
+        "base_texture_id": "britannia_mod:banner/placeholder/base_texture",
+        "dye_mask_id": "britannia_mod:banner/placeholder/dye_mask",
+        "content_status": "placeholder",
+        "approval_meaning": "INFORMATIONAL_NOT_INTAKE_APPROVAL"
+      },
+      "localization": {
+        "language": "en_us",
+        "value": ""
+      },
+      "assets": {
+        "base_texture": {},
+        "dye_mask": {},
+        "geometry": {
+          "shared_geometry_approved": false
+        }
+      },
+      "references": {},
+      "provenance": {
+        "original_art": false,
+        "creator": "",
+        "creation_method": "",
+        "source_project_file": "",
+        "distribution_permission_confirmed": false
+      },
+      "manual_verification": {
+        "performed": false,
+        "tester": "",
+        "date": "",
+        "notes": ""
+      },
+      "requested_content_status": "in_progress"
+    }
+  ]
+}

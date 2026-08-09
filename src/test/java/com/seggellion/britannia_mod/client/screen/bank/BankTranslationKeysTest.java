@@ -31,7 +31,7 @@ class BankTranslationKeysTest {
 
     private static final Path LANG =
             Path.of(System.getProperty("britannia.projectDir", "."))
-                    .resolve(Path.of("src", "main", "resources", "assets", "britannia_mod", "lang", "en_us.json"));
+                    .resolve(Path.of(System.getProperty("britannia.projectDir", "."),"src", "main", "resources", "assets", "britannia_mod", "lang", "en_us.json"));
 
     private static JsonObject language() throws IOException {
         assertTrue(Files.exists(LANG), "language file not found at " + LANG.toAbsolutePath());

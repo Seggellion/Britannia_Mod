@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "assets": [
+    {
+      "stable_id": "britannia_mod:road_guard",
+      "base_path": "content/banner-final-intake/submissions/road_guard/base_texture.png",
+      "base_sha256": "46ce83a31b9954cea1b3934249eab919ca9408658772b96b0e2752c6aaa48b2d",
+      "mask_path": "content/banner-final-intake/submissions/road_guard/dye_mask.png",
+      "mask_sha256": "8efeff71ca5c8689fef725c7fc3172b783687ffcb3c9dd0bf978874cad048f77",
+      "runtime_base_sha256": "46ce83a31b9954cea1b3934249eab919ca9408658772b96b0e2752c6aaa48b2d",
+      "runtime_mask_sha256": "8efeff71ca5c8689fef725c7fc3172b783687ffcb3c9dd0bf978874cad048f77",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        44,
+        5,
+        84,
+        121
+      ],
+      "mask_active_pixels": 1482,
+      "mask_transparent_pixels": 14902,
+      "fixed_base_pixels": 1439,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/road_guard/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:pale_road_guard",
+      "base_path": "content/banner-final-intake/submissions/pale_road_guard/base_texture.png",
+      "base_sha256": "d3a95ac9ea835943ee57f12fc8ff68048bcba65fbaa4a90c8761b6a0e22fb9bb",
+      "mask_path": "content/banner-final-intake/submissions/pale_road_guard/dye_mask.png",
+      "mask_sha256": "2f4c56225adfea15a0bf9f07a58f228555774c189a464af6de7722fe5a9c2da0",
+      "runtime_base_sha256": "d3a95ac9ea835943ee57f12fc8ff68048bcba65fbaa4a90c8761b6a0e22fb9bb",
+      "runtime_mask_sha256": "2f4c56225adfea15a0bf9f07a58f228555774c189a464af6de7722fe5a9c2da0",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        44,
+        5,
+        84,
+        121
+      ],
+      "mask_active_pixels": 1504,
+      "mask_transparent_pixels": 14880,
+      "fixed_base_pixels": 1417,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/pale_road_guard/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:red_crosslets",
+      "base_path": "content/banner-final-intake/submissions/red_crosslets/base_texture.png",
+      "base_sha256": "222f27705b9543662db1788bde63fb81ba5efb510a738c811115fbcfa4fe1950",
+      "mask_path": "content/banner-final-intake/submissions/red_crosslets/dye_mask.png",
+      "mask_sha256": "31162c610a4b49a049e4589e13d68e54e025771fa86ad13454eac58efdcf4b51",
+      "runtime_base_sha256": "222f27705b9543662db1788bde63fb81ba5efb510a738c811115fbcfa4fe1950",
+      "runtime_mask_sha256": "31162c610a4b49a049e4589e13d68e54e025771fa86ad13454eac58efdcf4b51",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        42,
+        3,
+        87,
+        126
+      ],
+      "mask_active_pixels": 1162,
+      "mask_transparent_pixels": 15222,
+      "fixed_base_pixels": 2297,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/red_crosslets/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:captains_red_crosslets",
+      "base_path": "content/banner-final-intake/submissions/captains_red_crosslets/base_texture.png",
+      "base_sha256": "2eb1cf8b6aa5b1f863dc673b010281875723ab3c0c315328e92a7e56d9e2da68",
+      "mask_path": "content/banner-final-intake/submissions/captains_red_crosslets/dye_mask.png",
+      "mask_sha256": "48431385c961644d65cf2bf60f322efb132070a30636da3f5acc94747c463b89",
+      "runtime_base_sha256": "2eb1cf8b6aa5b1f863dc673b010281875723ab3c0c315328e92a7e56d9e2da68",
+      "runtime_mask_sha256": "48431385c961644d65cf2bf60f322efb132070a30636da3f5acc94747c463b89",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        40,
+        4,
+        88,
+        124
+      ],
+      "mask_active_pixels": 1144,
+      "mask_transparent_pixels": 15240,
+      "fixed_base_pixels": 2466,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/captains_red_crosslets/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:scarlet_court",
+      "base_path": "content/banner-final-intake/submissions/scarlet_court/base_texture.png",
+      "base_sha256": "1d243ac0cff95dd4b3bc5c6e8c3c5117c31c0b747b1b8c7be1f66122ab7e2d2e",
+      "mask_path": "content/banner-final-intake/submissions/scarlet_court/dye_mask.png",
+      "mask_sha256": "3e63c73a6abf07eabdbd71d2fb1311a2f7b4b2f3de39c3544e36310d6b1f1814",
+      "runtime_base_sha256": "1d243ac0cff95dd4b3bc5c6e8c3c5117c31c0b747b1b8c7be1f66122ab7e2d2e",
+      "runtime_mask_sha256": "3e63c73a6abf07eabdbd71d2fb1311a2f7b4b2f3de39c3544e36310d6b1f1814",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        48,
+        8,
+        80,
+        121
+      ],
+      "mask_active_pixels": 2280,
+      "mask_transparent_pixels": 14104,
+      "fixed_base_pixels": 1154,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/scarlet_court/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:verdant_court",
+      "base_path": "content/banner-final-intake/submissions/verdant_court/base_texture.png",
+      "base_sha256": "d7b79fc3d313a2082b16193fabc9a47ffa226a7956cfe0b1ed00355d585c65dd",
+      "mask_path": "content/banner-final-intake/submissions/verdant_court/dye_mask.png",
+      "mask_sha256": "44aa39f534353d60027fbf4ca780a92700ad23dfd57b86ba3cd2d541bab0adb2",
+      "runtime_base_sha256": "d7b79fc3d313a2082b16193fabc9a47ffa226a7956cfe0b1ed00355d585c65dd",
+      "runtime_mask_sha256": "44aa39f534353d60027fbf4ca780a92700ad23dfd57b86ba3cd2d541bab0adb2",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        44,
+        3,
+        84,
+        125
+      ],
+      "mask_active_pixels": 2088,
+      "mask_transparent_pixels": 14296,
+      "fixed_base_pixels": 2183,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/verdant_court/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:small_curtain",
+      "base_path": "content/banner-final-intake/submissions/small_curtain/base_texture.png",
+      "base_sha256": "e5ead84ea05f73ad61281a0160e2c2875955a195af917494c1bc83849e96b355",
+      "mask_path": "content/banner-final-intake/submissions/small_curtain/dye_mask.png",
+      "mask_sha256": "39d7f7fdc5efc3e11139acbb69ed88ad30abc685d402ab6765a38dc3e8ba4651",
+      "runtime_base_sha256": "e5ead84ea05f73ad61281a0160e2c2875955a195af917494c1bc83849e96b355",
+      "runtime_mask_sha256": "39d7f7fdc5efc3e11139acbb69ed88ad30abc685d402ab6765a38dc3e8ba4651",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        33,
+        7,
+        95,
+        122
+      ],
+      "mask_active_pixels": 5518,
+      "mask_transparent_pixels": 10866,
+      "fixed_base_pixels": 55,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/small_curtain/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:prosperity_standard",
+      "base_path": "content/banner-final-intake/submissions/prosperity_standard/base_texture.png",
+      "base_sha256": "c40be2bbc878fb3102fd1fada88f150e507612635abe9b81132daaba9f5e4acf",
+      "mask_path": "content/banner-final-intake/submissions/prosperity_standard/dye_mask.png",
+      "mask_sha256": "187fa08bdd798125328e04b850dc761f4131c0caf8cfc7b0aacf252fd457a043",
+      "runtime_base_sha256": "c40be2bbc878fb3102fd1fada88f150e507612635abe9b81132daaba9f5e4acf",
+      "runtime_mask_sha256": "187fa08bdd798125328e04b850dc761f4131c0caf8cfc7b0aacf252fd457a043",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        47,
+        4,
+        81,
+        122
+      ],
+      "mask_active_pixels": 2411,
+      "mask_transparent_pixels": 13973,
+      "fixed_base_pixels": 1487,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/prosperity_standard/review/review_sheet.png"
+    },
+    {
+      "stable_id": "britannia_mod:guardian_standard",
+      "base_path": "content/banner-final-intake/submissions/guardian_standard/base_texture.png",
+      "base_sha256": "d4a4245760608e8ec6048292827672e8d61836497431c173459218b29f9c6e2a",
+      "mask_path": "content/banner-final-intake/submissions/guardian_standard/dye_mask.png",
+      "mask_sha256": "5b74d9f79a5f5130e9790aa23a30fe9b543a202dccae686205c84451d22d0b1e",
+      "runtime_base_sha256": "d4a4245760608e8ec6048292827672e8d61836497431c173459218b29f9c6e2a",
+      "runtime_mask_sha256": "5b74d9f79a5f5130e9790aa23a30fe9b543a202dccae686205c84451d22d0b1e",
+      "dimensions": [
+        128,
+        128
+      ],
+      "mode": "RGBA",
+      "base_alpha_bounds": [
+        47,
+        4,
+        81,
+        124
+      ],
+      "mask_active_pixels": 1643,
+      "mask_transparent_pixels": 14741,
+      "fixed_base_pixels": 2134,
+      "mask_alpha_exceeds_base": 0,
+      "active_mask_nonwhite_pixels": 0,
+      "review_sheet": "content/banner-final-intake/submissions/guardian_standard/review/review_sheet.png"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "britannia_mod:cotton",
+  "display_name_key": "material.britannia_mod.cotton",
+  "natural_colour_id": "britannia_mod:cotton_natural",
+  "palette_id": "britannia_mod:cotton",
+  "tags": [
+    "fabric",
+    "development_palette",
+    "balanced"
+  ]
+}
