@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "layer0":  "britannia_mod:item/watermelon_seeds"
+                 },
+    "parent":  "minecraft:item/generated"
+}

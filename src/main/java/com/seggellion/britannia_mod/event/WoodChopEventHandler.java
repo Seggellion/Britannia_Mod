@@ -1,9 +1,19 @@
 package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.ModSounds;
+import com.seggellion.britannia_mod.block.OrangeFruitBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeBranchBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
+import com.seggellion.britannia_mod.block.OrangeTreeTrunkBlock;
+import com.seggellion.britannia_mod.block.WeightedWoodBlock;
+import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WeightedWoodBlockEntity;
+import com.seggellion.britannia_mod.farming.OrangeTreeUtils;
 import com.seggellion.britannia_mod.item.WeightedWoodItem;
+import com.seggellion.britannia_mod.item.WeightedWoodType;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.util.AxeHarvestRules;
+import com.seggellion.britannia_mod.util.ModTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -38,18 +48,6 @@ public class WoodChopEventHandler {
     // Holds min–max "stones" (approx. densities) for known wood types
     // e.g. Oak logs might be ~4.5–5.5 stones, Birch might be ~3–4, etc.
     // Adjust these to your desired ranges.
-    private static final Map<String, Double[]> WOOD_TYPE_RANGES = new HashMap<>();
-    static {
-        WOOD_TYPE_RANGES.put("oak",       new Double[]{4.5, 5.5});
-        WOOD_TYPE_RANGES.put("spruce",    new Double[]{3.5, 4.5});
-        WOOD_TYPE_RANGES.put("birch",     new Double[]{3.0, 4.0});
-        WOOD_TYPE_RANGES.put("jungle",    new Double[]{4.0, 5.0});
-        WOOD_TYPE_RANGES.put("acacia",    new Double[]{4.0, 5.0});
-        WOOD_TYPE_RANGES.put("dark_oak",  new Double[]{5.0, 6.0});
-        // Add more if you have more types
-        // Everything else can default to "oak" if unknown
-    }
-
     private static final Map<Block, ItemStack> LEAF_SAPLING_DROPS = new HashMap<>();
 
     static {
@@ -87,8 +85,54 @@ public class WoodChopEventHandler {
     }
 
     public static boolean handleAxeHarvest(ServerLevel serverLevel, BlockPos pos, BlockState state, Player player) {
+        if (AxeHarvestRules.isAllowedFruitBlock(state)) {
+            OrangeTreeRootBlockEntity root = OrangeTreeUtils.findRoot(serverLevel, pos).orElse(null);
+            if (root != null) {
+                OrangeFruitBlock.dropFruitFromTree(serverLevel, pos, root, player, false);
+            }
+            serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
+            return true;
+        }
+
+        if (state.getBlock() instanceof WeightedWoodBlock) {
+            player.level().playSound(null, pos, ModSounds.CHOP_TREE.get(), SoundSource.PLAYERS, 2.0F, 2.0F);
+            WeightedWoodType woodType = state.getValue(WeightedWoodBlock.WOOD_TYPE);
+            double weight = woodType.averageWeight();
+            if (serverLevel.getBlockEntity(pos) instanceof WeightedWoodBlockEntity weightedWoodBlockEntity) {
+                woodType = weightedWoodBlockEntity.getWoodTypeDefinition();
+                weight = weightedWoodBlockEntity.getWoodWeight();
+            }
+            serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
+            player.displayClientMessage(
+                    Component.literal(String.format("You chop %s. Weight=%.2f stones", woodType.displayName().toLowerCase(), weight)),
+                    true
+            );
+            return true;
+        }
+
+        if (state.is(ModTags.Blocks.FRUIT_TREE_LOGS)
+                || state.is(ModTags.Blocks.FRUIT_TREE_TRUNKS)
+                || state.is(ModTags.Blocks.FRUIT_TREE_BRANCHES)
+                || state.getBlock() instanceof OrangeTreeRootBlock
+                || state.getBlock() instanceof OrangeTreeTrunkBlock
+                || state.getBlock() instanceof OrangeTreeBranchBlock) {
+            player.level().playSound(null, pos, ModSounds.CHOP_TREE.get(), SoundSource.PLAYERS, 2.0F, 2.0F);
+            OrangeTreeRootBlockEntity root = OrangeTreeUtils.findRoot(serverLevel, pos).orElse(null);
+            if (root != null) {
+                root.cleanupTree(serverLevel, player, true);
+                player.displayClientMessage(Component.literal("You chop down the " + root.definition().displayName().toLowerCase() + " tree."), true);
+            } else {
+                serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
+            }
+            return true;
+        }
+
         if (AxeHarvestRules.isAllowedLeafBlock(state)) {
             serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
+
+            if (state.is(ModTags.Blocks.FRUIT_TREE_LEAVES)) {
+                return true;
+            }
 
             if (serverLevel.random.nextInt(4) == 0) {
                 ItemStack saplingStack = LEAF_SAPLING_DROPS
@@ -121,13 +165,12 @@ public class WoodChopEventHandler {
 
             serverLevel.setBlock(pos, serverLevel.getFluidState(pos).createLegacyBlock(), 2);
 
-            String woodType = deduceWoodType(state);
-            Double[] range = WOOD_TYPE_RANGES.getOrDefault(woodType, new Double[]{4.5, 5.5});
-            double weight = generateRandomWeight(range[0], range[1]);
+            WeightedWoodType woodType = deduceWoodType(state);
+            double weight = generateRandomWeight(woodType);
 
             ItemStack woodStack = new ItemStack(ItemRegistry.WEIGHTED_WOOD_ITEM.get());
             WeightedWoodItem woodItem = (WeightedWoodItem) woodStack.getItem();
-            woodItem.setWoodType(woodStack, woodType);
+            woodItem.setWoodType(woodStack, woodType.id());
             woodItem.setWeight(woodStack, weight);
 
             ItemEntity drop = new ItemEntity(serverLevel, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, woodStack);
@@ -136,11 +179,11 @@ public class WoodChopEventHandler {
             UUID playerId = player.getUUID();
             long currentTime = System.currentTimeMillis();
 
-            LOGGER.info("Dropped WeightedWoodItem for type={}, weight={}", woodType, weight);
+            LOGGER.info("Dropped WeightedWoodItem for type={}, weight={}", woodType.id(), weight);
 
             // Optionally message the player
             player.displayClientMessage(
-                Component.literal(String.format("You chop %s log. Weight=%.2f stones", woodType, weight)), true
+                Component.literal(String.format("You chop %s. Weight=%.2f stones", woodType.displayName().toLowerCase(), weight)), true
             );
 
             if (player.isCreative() || player.hasPermissions(2)) {
@@ -158,20 +201,25 @@ public class WoodChopEventHandler {
     }
 
 
-    private static String deduceWoodType(BlockState state) {
+    private static WeightedWoodType deduceWoodType(BlockState state) {
         // e.g. "block.minecraft.oak_log"
         String name = state.getBlock().getDescriptionId().toLowerCase();
 
-        if (name.contains("spruce"))    return "spruce";
-        if (name.contains("birch"))     return "birch";
-        if (name.contains("jungle"))    return "jungle";
-        if (name.contains("acacia"))    return "acacia";
-        if (name.contains("dark_oak"))  return "dark_oak";
+        if (name.contains("spruce")) return WeightedWoodType.SPRUCE;
+        if (name.contains("birch")) return WeightedWoodType.BIRCH;
+        if (name.contains("jungle")) return WeightedWoodType.JUNGLE;
+        if (name.contains("acacia")) return WeightedWoodType.ACACIA;
+        if (name.contains("dark_oak")) return WeightedWoodType.DARK_OAK;
+        if (name.contains("mangrove")) return WeightedWoodType.MANGROVE;
+        if (name.contains("cherry")) return WeightedWoodType.CHERRY;
+        if (name.contains("bamboo")) return WeightedWoodType.BAMBOO;
+        if (name.contains("crimson")) return WeightedWoodType.CRIMSON;
+        if (name.contains("warped")) return WeightedWoodType.WARPED;
         // default fallback
-        return "oak";
+        return WeightedWoodType.OAK;
     }
 
-    private static double generateRandomWeight(double min, double max) {
-        return min + RandomSource.create().nextDouble() * (max - min);
+    private static double generateRandomWeight(WeightedWoodType woodType) {
+        return woodType.randomWeight(RandomSource.create());
     }
 }

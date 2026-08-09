@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -163,7 +164,16 @@ public void onItemPickup(ItemEntityPickupEvent.Pre event) { // Changed to Pre
                 ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
                 if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get()) {
-                    if (level instanceof ServerLevel serverLevel && AxeHarvestRules.isAllowedAxeHarvestBlock(state)) {
+                    boolean allowed = AxeHarvestRules.isAllowedAxeHarvestBlock(state);
+                    LOGGER.debug("TwoHandedAxe Adventure attack: player={} block={} pos={} vanillaLog={} vanillaLeaves={} fruitTree={} allowed={}",
+                            player.getGameProfile().getName(),
+                            BuiltInRegistries.BLOCK.getKey(state.getBlock()),
+                            pos.toShortString(),
+                            state.is(net.minecraft.tags.BlockTags.LOGS),
+                            state.is(net.minecraft.tags.BlockTags.LEAVES),
+                            AxeHarvestRules.isFruitTreeBlock(state),
+                            allowed);
+                    if (level instanceof ServerLevel serverLevel && allowed) {
                         WoodChopEventHandler.handleAxeHarvest(serverLevel, pos, state, player);
                     }
 

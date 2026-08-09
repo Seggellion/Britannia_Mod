@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.item.QualityShovelItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
 import net.minecraft.world.item.Item;
@@ -23,6 +24,11 @@ public class ToolRegistry {
         () -> new QualityToolItem(UOMetalToolMaterial.IRON.getTier(), new Item.Properties().stacksTo(1))
     );
 
+    public static final DeferredHolder<Item, QualityShovelItem> SHOVEL = TOOLS.register(
+        "britannia_shovel",
+        () -> new QualityShovelItem(UOMetalToolMaterial.IRON.getTier(), new Item.Properties().stacksTo(1))
+    );
+
     public static ItemStack createPickaxe(UOMetalToolMaterial material, int quality) {
         ItemStack stack = new ItemStack(PICKAXE.get());
         QualityToolItem.setQuality(stack, quality);
@@ -30,6 +36,13 @@ public class ToolRegistry {
         // Updated this line to use the new string-based material system!
         QualityToolItem.setMaterial(stack, material); 
         
+        return stack;
+    }
+
+    public static ItemStack createShovel(UOMetalToolMaterial material, int quality) {
+        ItemStack stack = new ItemStack(SHOVEL.get());
+        QualityShovelItem.setQuality(stack, quality);
+        QualityShovelItem.setMaterial(stack, material);
         return stack;
     }
 

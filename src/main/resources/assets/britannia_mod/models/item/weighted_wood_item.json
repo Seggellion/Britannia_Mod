@@ -1,46 +1,24 @@
 {
-    "parent": "item/generated",
-    "textures": {
-      "layer0": "minecraft:block/oak_log"
-    },
-  
-    "overrides": [
-      {
-        "predicate": {
-          "custom_model_data": 1
-        },
-        "model": "britannia_mod:item/weighted_wood_item_spruce"
-      },
-      {
-        "predicate": {
-          "custom_model_data": 2
-        },
-        "model": "britannia_mod:item/weighted_wood_item_birch"
-      },
-      {
-        "predicate": {
-          "custom_model_data": 3
-        },
-        "model": "britannia_mod:item/weighted_wood_item_jungle"
-      },
-      {
-        "predicate": {
-          "custom_model_data": 4
-        },
-        "model": "britannia_mod:item/weighted_wood_item_acacia"
-      },
-      {
-        "predicate": {
-          "custom_model_data": 5
-        },
-        "model": "britannia_mod:item/weighted_wood_item_dark_oak"
-      },
-      {
-        "predicate": {
-          "custom_model_data": 6
-        },
-        "model": "britannia_mod:item/weighted_wood_item_mangrove"
-      }
-    ]
-  }
-  
+  "parent": "britannia_mod:block/weighted_wood/oak",
+  "overrides": [
+    { "predicate": { "custom_model_data": 1 }, "model": "britannia_mod:item/weighted_wood/spruce" },
+    { "predicate": { "custom_model_data": 2 }, "model": "britannia_mod:item/weighted_wood/birch" },
+    { "predicate": { "custom_model_data": 3 }, "model": "britannia_mod:item/weighted_wood/jungle" },
+    { "predicate": { "custom_model_data": 4 }, "model": "britannia_mod:item/weighted_wood/acacia" },
+    { "predicate": { "custom_model_data": 5 }, "model": "britannia_mod:item/weighted_wood/dark_oak" },
+    { "predicate": { "custom_model_data": 6 }, "model": "britannia_mod:item/weighted_wood/mangrove" },
+    { "predicate": { "custom_model_data": 7 }, "model": "britannia_mod:item/weighted_wood/cherry" },
+    { "predicate": { "custom_model_data": 8 }, "model": "britannia_mod:item/weighted_wood/bamboo" },
+    { "predicate": { "custom_model_data": 9 }, "model": "britannia_mod:item/weighted_wood/crimson" },
+    { "predicate": { "custom_model_data": 10 }, "model": "britannia_mod:item/weighted_wood/warped" },
+    { "predicate": { "custom_model_data": 100 }, "model": "britannia_mod:item/weighted_wood/orange" },
+    { "predicate": { "custom_model_data": 101 }, "model": "britannia_mod:item/weighted_wood/lemon" },
+    { "predicate": { "custom_model_data": 102 }, "model": "britannia_mod:item/weighted_wood/lime" },
+    { "predicate": { "custom_model_data": 103 }, "model": "britannia_mod:item/weighted_wood/pear" },
+    { "predicate": { "custom_model_data": 104 }, "model": "britannia_mod:item/weighted_wood/peach" },
+    { "predicate": { "custom_model_data": 105 }, "model": "britannia_mod:item/weighted_wood/apple" },
+    { "predicate": { "custom_model_data": 106 }, "model": "britannia_mod:item/weighted_wood/cherries" },
+    { "predicate": { "custom_model_data": 107 }, "model": "britannia_mod:item/weighted_wood/olive" },
+    { "predicate": { "custom_model_data": 108 }, "model": "britannia_mod:item/weighted_wood/plum" }
+  ]
+}

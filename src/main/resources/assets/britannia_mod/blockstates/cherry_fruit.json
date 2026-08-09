@@ -1,0 +1,10 @@
+﻿{
+  "variants": {
+    "ripe=false": {
+      "model": "britannia_mod:block/crops/cherries/fruit_unripe"
+    },
+    "ripe=true": {
+      "model": "britannia_mod:block/crops/cherries/fruit_ripe"
+    }
+  }
+}

@@ -22,6 +22,7 @@ eclipse
 run
 runs
 run-data
+/logs/
 gradlew
 gradlew.bat
 

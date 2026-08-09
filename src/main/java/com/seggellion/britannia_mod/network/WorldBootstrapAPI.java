@@ -46,7 +46,7 @@ public final class WorldBootstrapAPI {
             }
             ServerCredentials credentials = configuredCredentials.get();
             String shard = credentials.shardName();
-            
+
             // 2. Resolve the authenticated Minecraft profile. Rails owns all identity linking.
             GameProfile profile = player.getGameProfile();
             UUID minecraftUuid = profile.getId();
@@ -73,6 +73,13 @@ public final class WorldBootstrapAPI {
                 RailsRequestAuthenticator.apply(connection, credentials, new byte[0]);
             });
 
+            if (response.status() == 304) {
+                // Not Modified: the caller keeps every previously applied cache untouched.
+                LOGGER.info("World bootstrap not modified for shard {}; retaining cached data.", shard);
+                return WorldBootstrapData.failed("not_modified", shard, response.status(),
+                        "HTTP 304 Not Modified; retaining existing cached bootstrap data.");
+            }
+
             if (response.status() != 200) {
                 String code = switch (response.status()) {
                     case 401, 403 -> "authentication_rejected";
@@ -80,61 +87,18 @@ public final class WorldBootstrapAPI {
                     default -> "http_status_failure";
                 };
                 LOGGER.warn("World bootstrap failed code={} status={}", code, response.status());
-                return WorldBootstrapData.failed(code);
+                return WorldBootstrapData.failed(code, shard, response.status(),
+                        "HTTP " + response.status() + " bootstrap failure; retained existing cached data.");
             }
 
                 JsonObject root = JsonParser.parseString(
                         new String(response.body(), StandardCharsets.UTF_8)).getAsJsonObject();
 
-                // 1) Fish catalog
-                Map<ResourceLocation, FishCatalog.FishMeta> fishMap = new HashMap<>();
-                if (root.has("fish") && root.get("fish").isJsonArray()) {
-                    for (JsonElement el : root.getAsJsonArray("fish")) {
-                        JsonObject f = el.getAsJsonObject();
-                        String keyStr = f.get("item_key").getAsString();
-                        ResourceLocation key = ResourceLocation.parse(keyStr);
-                        String name = f.has("name") && !f.get("name").isJsonNull()
-                                ? f.get("name").getAsString()
-                                : key.getPath();
-                        double minW = f.get("min_weight").getAsDouble();
-                        double maxW = f.get("max_weight").getAsDouble();
-                        int minSkill = f.has("min_skill") ? f.get("min_skill").getAsInt() : 0;
-                        int rarity = f.has("rarity") ? f.get("rarity").getAsInt() : 0;
-                        fishMap.put(key, new FishCatalog.FishMeta(name, minW, maxW, minSkill, rarity));
-                    }
-                }
+                // 1) Fish catalog (per-entry tolerant parsing)
+                Map<ResourceLocation, FishCatalog.FishMeta> fishMap = parseFish(root);
 
-                // 2) Regions
-                List<RegionData> regions = new ArrayList<>();
-                if (root.has("regions") && root.get("regions").isJsonArray()) {
-                    for (JsonElement el : root.getAsJsonArray("regions")) {
-                        JsonObject r = el.getAsJsonObject();
-                        String name = r.get("name").getAsString();
-                        int minX = r.get("min_x").getAsInt();
-                        int maxX = r.get("max_x").getAsInt();
-                        int minY = r.get("min_y").getAsInt();
-                        int maxY = r.get("max_y").getAsInt();
-                        int minZ = r.get("min_z").getAsInt();
-                        int maxZ = r.get("max_z").getAsInt();
-
-                        List<RegionItemData> items = new ArrayList<>();
-                        if (r.has("items") && r.get("items").isJsonArray()) {
-                            for (JsonElement ie : r.getAsJsonArray("items")) {
-                                JsonObject io = ie.getAsJsonObject();
-                                String type = io.get("type").getAsString();
-                                String key = io.get("key").getAsString();
-                                int weight = io.get("weight").getAsInt();
-                                Integer minSkillOverride =
-                                        io.has("min_skill_override") && !io.get("min_skill_override").isJsonNull()
-                                                ? io.get("min_skill_override").getAsInt()
-                                                : null;
-                                int rarity = 0;
-                                items.add(new RegionItemData(type, key, weight, minSkillOverride, rarity));
-                            }
-                        }
-                        regions.add(new RegionData(name, minX, maxX, minY, maxY, minZ, maxZ, items));
-                    }
-                }
+                // 2) Regions (per-entry tolerant parsing; carries climate)
+                List<RegionData> regions = parseRegions(root, shard);
 
                 // 3-4) Player, city, quest, and Service NPC data are parsed as one
                 // application unit. A malformed player field therefore cannot produce
@@ -147,65 +111,8 @@ public final class WorldBootstrapAPI {
                 ServiceNpcAssignmentsSnapshot serviceNpcAssignments = core.serviceNpcAssignments()
                         .filteredForServer(credentials.minecraftServerKey().orElse(null));
 
-                // 5) Grape Varieties
-                List<com.seggellion.britannia_mod.winery.GrapeVariety> grapesList = new ArrayList<>();
-                if (root.has("grapes") && root.get("grapes").isJsonArray()) {
-                    for (JsonElement el : root.getAsJsonArray("grapes")) {
-                        JsonObject g = el.getAsJsonObject();
-                        
-                        String id = g.get("id").getAsString();
-                        String displayName = g.get("display_name").getAsString();
-                        int hydration = g.get("optimal_hydration").getAsInt();
-                        
-                        // Chemistry
-                        JsonObject chem = g.getAsJsonObject("chemistry");
-                        float n = chem.get("n").getAsFloat();
-                        float p = chem.get("p").getAsFloat();
-                        float k = chem.get("k").getAsFloat();
-                        float om = chem.get("om").getAsFloat();
-
-                        String region = g.has("region") ? g.get("region").getAsString() : "Temperate";
-                        
-                        // Altitude
-                        JsonObject alt = g.getAsJsonObject("altitude");
-                        int minAlt = alt.get("min").getAsInt();
-                        int maxAlt = alt.get("max").getAsInt();
-
-                        // --- FIX STARTS HERE ---
-                        // Handle Hex Strings (0x...) or standard Integers
-                        int color = 0xFFFFFF; // Default white
-                        if (g.has("base_color")) {
-                            JsonElement cEl = g.get("base_color");
-                            if (cEl.getAsJsonPrimitive().isString()) {
-                                try {
-                                    // Integer.decode handles "0x", "#", and plain numbers automatically
-                                    color = Integer.decode(cEl.getAsString());
-                                } catch (NumberFormatException e) {
-                                    LOGGER.warn("Invalid grape color hex: " + cEl.getAsString());
-                                    color = 0xFFFFFF;
-                                }
-                            } else {
-                                color = cEl.getAsInt();
-                            }
-                        }
-                        // --- FIX ENDS HERE ---
-
-                        int diff = g.get("difficulty").getAsInt();
-                        
-                        // Enum Parsing
-                        String colorStr = g.has("grape_color") ? g.get("grape_color").getAsString() : "PURPLE";
-                        com.seggellion.britannia_mod.winery.GrapeColor grapeColorEnum;
-                        try {
-                            grapeColorEnum = com.seggellion.britannia_mod.winery.GrapeColor.valueOf(colorStr.toUpperCase());
-                        } catch (IllegalArgumentException e) {
-                            grapeColorEnum = com.seggellion.britannia_mod.winery.GrapeColor.PURPLE;
-                        }
-
-                        grapesList.add(new com.seggellion.britannia_mod.winery.GrapeVariety(
-                            id, displayName, hydration, n, p, k, om, region, minAlt, maxAlt, color, diff, grapeColorEnum
-                        ));
-                    }
-                }
+                // 5) Grape Varieties (per-entry tolerant parsing)
+                List<com.seggellion.britannia_mod.winery.GrapeVariety> grapesList = parseGrapes(root);
 
                 // Return
                 return new WorldBootstrapData(
@@ -218,7 +125,14 @@ public final class WorldBootstrapAPI {
                         serviceNpcAssignments,
                         grapesList,
                         true,
-                        null
+                        null,
+                        shard,
+                        response.status(),
+                        "Bootstrap success: fish=" + fishMap.size()
+                                + ", regions=" + regions.size()
+                                + ", cities=" + core.cities().size()
+                                + ", grapes=" + grapesList.size()
+                                + ", quests=" + core.acceptedQuests().size()
                 );
         } catch (CancellableHttpRequest.RequestException classified) {
             String code = classified.code().safeCode();
@@ -249,13 +163,20 @@ public final class WorldBootstrapAPI {
             ServiceNpcAssignmentsSnapshot serviceNpcAssignments,
             List<com.seggellion.britannia_mod.winery.GrapeVariety> grapes,
             boolean successful,
-            String failureCode
+            String failureCode,
+            String shard,
+            int httpStatus,
+            String status
     ) {
         public static WorldBootstrapData empty() {
             return failed("fetch_failed");
         }
 
         public static WorldBootstrapData failed(String failureCode) {
+            return failed(failureCode, "<unknown>", -1, failureCode);
+        }
+
+        public static WorldBootstrapData failed(String failureCode, String shard, int httpStatus, String status) {
             return new WorldBootstrapData(
                     Map.of(),
                     List.of(),
@@ -266,7 +187,10 @@ public final class WorldBootstrapAPI {
                     ServiceNpcAssignmentsSnapshot.empty(),
                     List.of(),
                     false,
-                    failureCode
+                    failureCode,
+                    shard,
+                    httpStatus,
+                    status
             );
         }
     }
@@ -394,6 +318,264 @@ public final class WorldBootstrapAPI {
         );
     }
 
+    // --- Tolerant catalog parsing (fish, regions, grapes): a malformed entry is
+    // skipped with a warning instead of rejecting the whole bootstrap. Core data
+    // (shard user, cities, quests, Service NPCs) intentionally stays atomic above.
+
+    private static Map<ResourceLocation, FishCatalog.FishMeta> parseFish(JsonObject root) {
+        Map<ResourceLocation, FishCatalog.FishMeta> fishMap = new HashMap<>();
+        if (!hasArray(root, "fish")) {
+            return fishMap;
+        }
+
+        for (JsonElement element : root.getAsJsonArray("fish")) {
+            if (element == null || !element.isJsonObject()) {
+                LOGGER.warn("Skipping malformed fish bootstrap entry: not an object.");
+                continue;
+            }
+
+            try {
+                JsonObject fish = element.getAsJsonObject();
+                String keyString = getStringOrDefault(fish, "item_key", "");
+                if (keyString.isBlank()) {
+                    LOGGER.warn("Skipping malformed fish bootstrap entry: missing item_key.");
+                    continue;
+                }
+                ResourceLocation key = ResourceLocation.parse(keyString);
+                String name = getStringOrDefault(fish, "name", key.getPath());
+                double minWeight = getDoubleOrDefault(fish, "min_weight", 0.0D);
+                double maxWeight = getDoubleOrDefault(fish, "max_weight", minWeight);
+                int minSkill = getIntOrDefault(fish, "min_skill", 0);
+                int rarity = getIntOrDefault(fish, "rarity", 0);
+                fishMap.put(key, new FishCatalog.FishMeta(name, minWeight, maxWeight, minSkill, rarity));
+            } catch (Exception ex) {
+                LOGGER.warn("Skipping malformed fish bootstrap entry: {}", ex.getMessage());
+            }
+        }
+        return fishMap;
+    }
+
+    private static List<RegionData> parseRegions(JsonObject root, String shard) {
+        List<RegionData> regions = new ArrayList<>();
+        int rawRegionCount = hasArray(root, "regions") ? root.getAsJsonArray("regions").size() : 0;
+        LOGGER.info("World bootstrap received {} raw regions for shard {}", rawRegionCount, shard);
+        if (!hasArray(root, "regions")) {
+            LOGGER.warn("World bootstrap response for shard {} did not include a regions array.", shard);
+            return regions;
+        }
+
+        for (JsonElement element : root.getAsJsonArray("regions")) {
+            if (element == null || !element.isJsonObject()) {
+                LOGGER.warn("Skipping malformed region bootstrap entry: not an object.");
+                continue;
+            }
+
+            try {
+                JsonObject region = element.getAsJsonObject();
+                OptionalInt minX = getRequiredInt(region, "min_x");
+                OptionalInt maxX = getRequiredInt(region, "max_x");
+                OptionalInt minY = getRequiredInt(region, "min_y");
+                OptionalInt maxY = getRequiredInt(region, "max_y");
+                OptionalInt minZ = getRequiredInt(region, "min_z");
+                OptionalInt maxZ = getRequiredInt(region, "max_z");
+                if (minX.isEmpty() || maxX.isEmpty() || minY.isEmpty() || maxY.isEmpty() || minZ.isEmpty() || maxZ.isEmpty()) {
+                    LOGGER.warn("Skipping malformed region bootstrap entry: missing or invalid bounds.");
+                    continue;
+                }
+
+                String name = getStringOrDefault(region, "name", "Unnamed Region");
+                String climate = getStringOrDefault(region, "climate", "Temperate");
+                List<RegionItemData> items = parseRegionItems(region);
+                regions.add(new RegionData(
+                        name,
+                        climate,
+                        minX.getAsInt(),
+                        maxX.getAsInt(),
+                        minY.getAsInt(),
+                        maxY.getAsInt(),
+                        minZ.getAsInt(),
+                        maxZ.getAsInt(),
+                        items
+                ));
+            } catch (Exception ex) {
+                LOGGER.warn("Skipping malformed region bootstrap entry: {}", ex.getMessage());
+            }
+        }
+
+        LOGGER.info("World bootstrap parsed {} regions for shard {}", regions.size(), shard);
+        return regions;
+    }
+
+    private static List<RegionItemData> parseRegionItems(JsonObject region) {
+        List<RegionItemData> items = new ArrayList<>();
+        if (!hasArray(region, "items")) {
+            return items;
+        }
+
+        for (JsonElement itemElement : region.getAsJsonArray("items")) {
+            if (itemElement == null || !itemElement.isJsonObject()) {
+                LOGGER.warn("Skipping malformed region item bootstrap entry: not an object.");
+                continue;
+            }
+
+            try {
+                JsonObject item = itemElement.getAsJsonObject();
+                String type = getStringOrDefault(item, "type", "");
+                String key = getStringOrDefault(item, "key", "");
+                if (type.isBlank() || key.isBlank()) {
+                    LOGGER.warn("Skipping malformed region item bootstrap entry: missing type or key.");
+                    continue;
+                }
+                int weight = getIntOrDefault(item, "weight", 0);
+                Integer minSkillOverride = item.has("min_skill_override") && !item.get("min_skill_override").isJsonNull()
+                        ? getIntOrDefault(item, "min_skill_override", 0)
+                        : null;
+                int rarity = getIntOrDefault(item, "rarity", 0);
+                items.add(new RegionItemData(type, key, weight, minSkillOverride, rarity));
+            } catch (Exception ex) {
+                LOGGER.warn("Skipping malformed region item bootstrap entry: {}", ex.getMessage());
+            }
+        }
+        return items;
+    }
+
+    private static List<com.seggellion.britannia_mod.winery.GrapeVariety> parseGrapes(JsonObject root) {
+        List<com.seggellion.britannia_mod.winery.GrapeVariety> grapesList = new ArrayList<>();
+        if (!hasArray(root, "grapes")) {
+            return grapesList;
+        }
+
+        for (JsonElement element : root.getAsJsonArray("grapes")) {
+            if (element == null || !element.isJsonObject()) {
+                LOGGER.warn("Skipping malformed grape bootstrap entry: not an object.");
+                continue;
+            }
+
+            try {
+                JsonObject grape = element.getAsJsonObject();
+                String id = getStringOrDefault(grape, "id", "");
+                if (id.isBlank()) {
+                    LOGGER.warn("Skipping malformed grape bootstrap entry: missing id.");
+                    continue;
+                }
+                String displayName = getStringOrDefault(grape, "display_name", id);
+                int hydration = getIntOrDefault(grape, "optimal_hydration", 3);
+
+                JsonObject chemistry = getObjectOrEmpty(grape, "chemistry");
+                float n = getFloatOrDefault(chemistry, "n", 0.0f);
+                float p = getFloatOrDefault(chemistry, "p", 0.0f);
+                float k = getFloatOrDefault(chemistry, "k", 0.0f);
+                float om = getFloatOrDefault(chemistry, "om", 0.0f);
+
+                String climate = getStringOrDefault(grape, "climate",
+                        getStringOrDefault(grape, "region", "Temperate"));
+
+                JsonObject altitude = getObjectOrEmpty(grape, "altitude");
+                int minAltitude = getIntOrDefault(altitude, "min", -64);
+                int maxAltitude = getIntOrDefault(altitude, "max", 320);
+                int color = parseColor(grape);
+                int difficulty = getIntOrDefault(grape, "difficulty", 1);
+
+                String colorString = getStringOrDefault(grape, "grape_color", "PURPLE");
+                com.seggellion.britannia_mod.winery.GrapeColor grapeColor;
+                try {
+                    grapeColor = com.seggellion.britannia_mod.winery.GrapeColor.valueOf(colorString.toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException ex) {
+                    LOGGER.warn("Invalid grape color enum for {}: {}", id, colorString);
+                    grapeColor = com.seggellion.britannia_mod.winery.GrapeColor.PURPLE;
+                }
+
+                grapesList.add(new com.seggellion.britannia_mod.winery.GrapeVariety(
+                        id, displayName, hydration, n, p, k, om, climate, minAltitude, maxAltitude, color, difficulty, grapeColor
+                ));
+            } catch (Exception ex) {
+                LOGGER.warn("Skipping malformed grape bootstrap entry: {}", ex.getMessage());
+            }
+        }
+        return grapesList;
+    }
+
+    private static int parseColor(JsonObject grape) {
+        JsonElement colorElement = grape == null ? null : grape.get("base_color");
+        if (colorElement == null || colorElement.isJsonNull() || !colorElement.isJsonPrimitive()) {
+            return 0xFFFFFF;
+        }
+
+        try {
+            JsonPrimitive primitive = colorElement.getAsJsonPrimitive();
+            if (primitive.isString()) {
+                return Integer.decode(primitive.getAsString());
+            }
+            return primitive.getAsInt();
+        } catch (Exception ex) {
+            LOGGER.warn("Invalid grape color value: {}", colorElement);
+            return 0xFFFFFF;
+        }
+    }
+
+    private static boolean hasObject(JsonObject obj, String key) {
+        return obj != null
+                && obj.has(key)
+                && !obj.get(key).isJsonNull()
+                && obj.get(key).isJsonObject();
+    }
+
+    private static boolean hasArray(JsonObject obj, String key) {
+        return obj != null
+                && obj.has(key)
+                && !obj.get(key).isJsonNull()
+                && obj.get(key).isJsonArray();
+    }
+
+    private static JsonObject getObjectOrEmpty(JsonObject obj, String key) {
+        return hasObject(obj, key) ? obj.getAsJsonObject(key) : new JsonObject();
+    }
+
+    private static String getStringOrDefault(JsonObject obj, String key, String fallback) {
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return fallback;
+        try {
+            return obj.get(key).getAsString();
+        } catch (Exception ex) {
+            return fallback;
+        }
+    }
+
+    private static int getIntOrDefault(JsonObject obj, String key, int fallback) {
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return fallback;
+        try {
+            return obj.get(key).getAsInt();
+        } catch (Exception ex) {
+            return fallback;
+        }
+    }
+
+    private static OptionalInt getRequiredInt(JsonObject obj, String key) {
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return OptionalInt.empty();
+        try {
+            return OptionalInt.of(obj.get(key).getAsInt());
+        } catch (Exception ex) {
+            return OptionalInt.empty();
+        }
+    }
+
+    private static double getDoubleOrDefault(JsonObject obj, String key, double fallback) {
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return fallback;
+        try {
+            return obj.get(key).getAsDouble();
+        } catch (Exception ex) {
+            return fallback;
+        }
+    }
+
+    private static float getFloatOrDefault(JsonObject obj, String key, float fallback) {
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return fallback;
+        try {
+            return obj.get(key).getAsFloat();
+        } catch (Exception ex) {
+            return fallback;
+        }
+    }
+
     private static JsonObject objectOrEmpty(JsonObject parent, String key, String field) {
         JsonObject value = optionalObject(parent, key, field);
         return value == null ? new JsonObject() : value;
@@ -472,7 +654,7 @@ public final class WorldBootstrapAPI {
         }
         return result;
     }
-    
+
     private static Map<String, Map<String, Map<String, Integer>>> parseQuantities(JsonObject obj) {
         Map<String, Map<String, Map<String, Integer>>> result = new HashMap<>();
         if (obj == null) return result;

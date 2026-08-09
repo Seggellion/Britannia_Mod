@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "crop":  "britannia_mod:block/crops/pumpkin/pumpkin_age_0"
+                 },
+    "parent":  "minecraft:block/crop"
+}

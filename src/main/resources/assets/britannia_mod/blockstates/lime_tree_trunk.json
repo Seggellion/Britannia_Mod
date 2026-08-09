@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": {"model": "britannia_mod:block/crops/lime/trunk", "x": 90, "y": 90},
+    "axis=y": {"model": "britannia_mod:block/crops/lime/trunk"},
+    "axis=z": {"model": "britannia_mod:block/crops/lime/trunk", "x": 90}
+  }
+}

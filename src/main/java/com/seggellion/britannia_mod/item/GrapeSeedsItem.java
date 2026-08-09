@@ -2,10 +2,11 @@ package com.seggellion.britannia_mod.item;
 
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.block.FarmingBlock;
-import com.seggellion.britannia_mod.block.GrapeVineBlock;
-import com.seggellion.britannia_mod.block.TrellisBlock;
-import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
-import com.seggellion.britannia_mod.winery.GrapeColor;
+import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.farming.CropDefinition;
+import com.seggellion.britannia_mod.farming.CropRegistry;
+import com.seggellion.britannia_mod.farming.FarmingActionType;
+import com.seggellion.britannia_mod.farming.FarmingSkill;
 import com.seggellion.britannia_mod.winery.GrapeVariety;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.mojang.logging.LogUtils;
@@ -26,6 +27,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -64,42 +66,33 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
         BlockState clickedState = level.getBlockState(clickedPos);
         ItemStack stack = context.getItemInHand();
 
-        // SCENARIO A: Clicking on a Trellis (Existing logic)
-        if (clickedState.getBlock() instanceof TrellisBlock) {
-             // ... (Keep your existing trellis logic here if you want to support both methods) ...
-             // For brevity, I'm focusing on the Soil logic below.
-        }
-
-        // SCENARIO B: Clicking on Farming Block (The workflow you asked for)
         if (clickedState.getBlock() instanceof FarmingBlock && context.getClickedFace() == Direction.UP) {
-            BlockPos plantPos = clickedPos.above();
-            
-            // Ensure space is empty
-            if (level.isEmptyBlock(plantPos)) {
-                if (!level.isClientSide) {
-                    String varietyId = getVariety(stack);
-                    GrapeColor color = GrapeVarietyManager.getVariety(varietyId).colorType();
-
-                    // 1. Place the Vine Block
-                    BlockState vineState = BlockRegistry.GRAPE_VINE_BLOCK.get().defaultBlockState()
-                        .setValue(GrapeVineBlock.COLOR, color);
-                    level.setBlock(plantPos, vineState, 3);
-
-                    // 2. Transfer Data
-                    BlockEntity be = level.getBlockEntity(plantPos);
-                    if (be instanceof GrapeVineBlockEntity vineBE) {
-                        vineBE.setVariety(varietyId);
-                    }
-                    debugSeedPlacement(stack, plantPos, vineState, varietyId);
-
-                    // 3. Effects & Consumption
-                    level.playSound(null, plantPos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
-                    if (!context.getPlayer().getAbilities().instabuild) {
-                        stack.shrink(1);
-                    }
-                }
-                return InteractionResult.sidedSuccess(level.isClientSide);
+            BlockEntity be = level.getBlockEntity(clickedPos);
+            CropDefinition crop = CropRegistry.byId("grapes").orElse(null);
+            if (!(be instanceof FarmingBlockEntity farmBe) || crop == null) {
+                return InteractionResult.FAIL;
             }
+            if (farmBe.hasCrop() || clickedState.getValue(FarmingBlock.HAS_SEEDS)) {
+                if (!level.isClientSide && context.getPlayer() != null) {
+                    context.getPlayer().displayClientMessage(Component.literal("A crop is already planted here.").withStyle(ChatFormatting.YELLOW), true);
+                }
+                return InteractionResult.SUCCESS;
+            }
+
+            if (!level.isClientSide) {
+                String varietyId = getVariety(stack);
+                farmBe.plant(crop, varietyId);
+                level.setBlock(clickedPos, clickedState.setValue(FarmingBlock.HAS_SEEDS, true), 3);
+                debugSeedPlacement(stack, clickedPos, varietyId);
+                level.playSound(null, clickedPos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
+                if (context.getPlayer() != null && !context.getPlayer().getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+                if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+                    FarmingSkill.award(serverPlayer, FarmingActionType.PLANT, crop.tier(), crop.farmingSkillModifier());
+                }
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
         // Fallback to standard behavior (will likely fail for custom data transfer if we don't handle it above)
@@ -111,16 +104,15 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
         tooltip.add(Component.literal("Variety: " + GrapesItem.getDisplayNameForVariety(getVariety(stack))).withStyle(ChatFormatting.GRAY));
     }
 
-    private static void debugSeedPlacement(ItemStack stack, BlockPos pos, BlockState vineState, String varietyId) {
+    private static void debugSeedPlacement(ItemStack stack, BlockPos pos, String varietyId) {
         if (!DEBUG_GRAPE_FLOW) {
             return;
         }
         GrapeVariety variety = GrapeVarietyManager.getVariety(varietyId);
         LOGGER.info(
-            "Grape seed placement at {}: seedVarietyId={}, vineStateColor={}, displayName={}, colorType={}, baseColor=0x{}",
+            "Grape seed placement at {}: seedVarietyId={}, displayName={}, colorType={}, baseColor=0x{}",
             pos,
             varietyId,
-            vineState.getValue(GrapeVineBlock.COLOR).getSerializedName(),
             variety.getFormattedName(),
             variety.colorType(),
             Integer.toHexString(variety.baseColor())

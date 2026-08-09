@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "crop":  "britannia_mod:block/crops/potato/potato_age_4"
+                 },
+    "parent":  "minecraft:block/crop"
+}

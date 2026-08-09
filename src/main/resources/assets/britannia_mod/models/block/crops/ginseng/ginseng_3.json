@@ -1,0 +1,7 @@
+﻿{
+    "parent":  "minecraft:block/cross",
+    "textures":  {
+                     "cross":  "britannia_mod:block/crops/ginseng/ginseng_3",
+                     "particle":  "britannia_mod:block/crops/ginseng/ginseng_3"
+                 }
+}

@@ -1,0 +1,6 @@
+{
+    "textures":  {
+                     "layer0":  "britannia_mod:item/pumpkin_seeds_custom"
+                 },
+    "parent":  "minecraft:item/generated"
+}

@@ -23,6 +23,10 @@ import com.seggellion.britannia_mod.block.entity.LockableDoorBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ThreeHeightLightBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.block.entity.FlowerBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
+import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.block.entity.WeightedWoodBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WineBarrelBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TrashBarrelBlockEntity;
 import com.seggellion.britannia_mod.block.entity.JuicePressBlockEntity;
@@ -155,6 +159,43 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                     () -> BlockEntityType.Builder.of(
                             FarmingBlockEntity::new,
                             BlockRegistry.FARMING_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FlowerBlockEntity>> FLOWER_BLOCK_BE =
+            BLOCK_ENTITIES.register("flower_block_be",
+                    () -> BlockEntityType.Builder.of(
+                            FlowerBlockEntity::new,
+                            BlockRegistry.FLOWER_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CommunityFarmBlockEntity>> COMMUNITY_FARM_BLOCK_BE =
+            BLOCK_ENTITIES.register("community_farm_block_be",
+                    () -> BlockEntityType.Builder.of(
+                            CommunityFarmBlockEntity::new,
+                            BlockRegistry.COMMUNITY_FARM_BLOCK.get(),
+                            BlockRegistry.COMMUNITY_HOED_FARM_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<OrangeTreeRootBlockEntity>> ORANGE_TREE_ROOT_BE =
+            BLOCK_ENTITIES.register("orange_tree_root_be",
+                    () -> BlockEntityType.Builder.of(
+                            OrangeTreeRootBlockEntity::new,
+                            BlockRegistry.ORANGE_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.LEMON_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.LIME_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.PEAR_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.PEACH_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.APPLE_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.CHERRY_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.OLIVE_TREE_ROOT_BLOCK.get(),
+                            BlockRegistry.PLUM_TREE_ROOT_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WeightedWoodBlockEntity>> WEIGHTED_WOOD_BE =
+            BLOCK_ENTITIES.register("weighted_wood_be",
+                    () -> BlockEntityType.Builder.of(
+                            WeightedWoodBlockEntity::new,
+                            BlockRegistry.WEIGHTED_WOOD_BLOCK.get()
                     ).build(null));
 
 

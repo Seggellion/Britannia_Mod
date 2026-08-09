@@ -2,6 +2,7 @@
 package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.farming.FarmingSkillRequirementValidator;
 import com.seggellion.britannia_mod.entity.EntityHorseMerchant;
 import com.seggellion.britannia_mod.registry.EntityRegistry; // Updated import to use EntityRegistry
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -21,6 +22,7 @@ public class ModEventHandler {
 
     @SubscribeEvent
     public static void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(FarmingSkillRequirementValidator::validateRegisteredDefinitions);
     }
 
     @SubscribeEvent

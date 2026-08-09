@@ -41,6 +41,18 @@ public class SkillManager {
     /** Skill definitions keyed by skill name (loaded once per server). */
 private static final Map<String, SkillDef> SKILL_DEFS = new java.util.concurrent.ConcurrentHashMap<>();
 private static final Map<UUID, PlayerSkills> PLAYER_SKILLS = new java.util.concurrent.ConcurrentHashMap<>();
+private static final Map<UUID, SkillDataState> PLAYER_SKILL_STATES = new java.util.concurrent.ConcurrentHashMap<>();
+private static final Map<UUID, Long> PLAYER_SKILL_REVISIONS = new java.util.concurrent.ConcurrentHashMap<>();
+
+public enum SkillDataState {
+    NOT_LOADED,
+    LOADING,
+    AVAILABLE,
+    UNAVAILABLE
+}
+
+public record SkillSnapshot(SkillDataState state, float value) {
+}
 
 
     /* =====  Public API  ===== */
@@ -90,7 +102,7 @@ private static final Map<UUID, PlayerSkills> PLAYER_SKILLS = new java.util.concu
     player.sendSystemMessage(Component.literal(message).withStyle(style));
 
     // Send to client on server thread
-    player.server.execute(() -> NetworkHandler.sendToPlayer(player, new SkillSyncPayload(p.map)));
+    player.server.execute(() -> sendSkillSync(player));
 
     // Async persist
     postGain(player, key, newValue);
@@ -120,7 +132,7 @@ public static float awardSkillGain(ServerPlayer player, String skillName, float 
     player.sendSystemMessage(Component.literal(""));
     player.sendSystemMessage(Component.literal(message).withStyle(style));
 
-    player.server.execute(() -> NetworkHandler.sendToPlayer(player, new SkillSyncPayload(p.map)));
+    player.server.execute(() -> sendSkillSync(player));
     postGain(player, key, newValue);
 
     return newValue - current;
@@ -138,6 +150,9 @@ private static String capitalize(String s) {
   
         NeoForge.EVENT_BUS.addListener(SkillManager::onPlayerLogin);
         NeoForge.EVENT_BUS.addListener(SkillManager::onPlayerLogOut);
+        NeoForge.EVENT_BUS.addListener(SkillManager::onPlayerRespawn);
+        NeoForge.EVENT_BUS.addListener(SkillManager::onPlayerChangedDimension);
+        NeoForge.EVENT_BUS.addListener(SkillManager::onPlayerGameModeChange);
     }
 
 // 3) Login: seed skills immediately, then fetch/merge async
@@ -148,7 +163,10 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
     LOGGER.info("SKILL SYSTEM LOGIN (MP-safe)");
 
     // Ensure the player has a skills map right now so gains won’t be dropped in MP
-    PLAYER_SKILLS.putIfAbsent(sp.getUUID(), new PlayerSkills());
+    PLAYER_SKILLS.put(sp.getUUID(), new PlayerSkills());
+    PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.LOADING);
+    PLAYER_SKILL_REVISIONS.put(sp.getUUID(), 0L);
+    sendSkillSync(sp);
 
     ServerHttpExecutor.run(sp.server, () -> {
         try {
@@ -162,24 +180,87 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
                 }
             }
 
-            // Load player’s values; if API fails, keep the seeded empty map
+            // Load the authoritative values; an API failure leaves cultivation unavailable.
             PlayerSkills loaded = fetchPlayerSkillsAsync(sp);
-            if (loaded == null) return;
+            if (loaded == null) {
+                sp.server.execute(() -> markSkillDataUnavailable(sp));
+                return;
+            }
 
             sp.server.execute(() -> {
-                if (!sp.isAlive() || sp.connection == null) return;
+                if (!isCurrentConnectedPlayer(sp)) return;
                 PLAYER_SKILLS.put(sp.getUUID(), loaded);
-                NetworkHandler.sendToPlayer(sp, new SkillSyncPayload(loaded.map));
+                PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.AVAILABLE);
+                sendSkillSync(sp);
                 LOGGER.info("✅ Loaded {} skills for {}", loaded.size(), sp.getScoreboardName());
             });
 
         } catch (Exception ex) {
             LOGGER.error("Login skill bootstrap failed for {}", sp.getScoreboardName(), ex);
+            sp.server.execute(() -> markSkillDataUnavailable(sp));
         }
     });
 }
     private static void onPlayerLogOut(PlayerEvent.PlayerLoggedOutEvent e) {
         PLAYER_SKILLS.remove(e.getEntity().getUUID());
+        PLAYER_SKILL_STATES.remove(e.getEntity().getUUID());
+        PLAYER_SKILL_REVISIONS.remove(e.getEntity().getUUID());
+    }
+
+    private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            sendSkillSync(player);
+        }
+    }
+
+    private static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            sendSkillSync(player);
+        }
+    }
+
+    private static void onPlayerGameModeChange(PlayerEvent.PlayerChangeGameModeEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !event.isCanceled()) {
+            player.server.execute(() -> sendSkillSync(player));
+        }
+    }
+
+    private static boolean isCurrentConnectedPlayer(ServerPlayer player) {
+        return player.isAlive() && player.connection != null
+                && player.server.getPlayerList().getPlayer(player.getUUID()) == player;
+    }
+
+    private static void markSkillDataUnavailable(ServerPlayer player) {
+        if (isCurrentConnectedPlayer(player)) {
+            PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.UNAVAILABLE);
+            sendSkillSync(player);
+        }
+    }
+
+    private static void sendSkillSync(ServerPlayer player) {
+        if (player == null || player.connection == null) {
+            return;
+        }
+        // Skill sync is a UI-only snapshot. Gametest mock players and other
+        // connections that negotiated no britannia channels cannot accept the
+        // payload; skip instead of letting NeoForge throw inside event handlers.
+        if (!player.connection.hasChannel(SkillSyncPayload.TYPE)) {
+            return;
+        }
+        UUID playerId = player.getUUID();
+        SkillDataState state = PLAYER_SKILL_STATES.getOrDefault(playerId, SkillDataState.NOT_LOADED);
+        PlayerSkills playerSkills = PLAYER_SKILLS.get(playerId);
+        Map<String, Float> values = state == SkillDataState.AVAILABLE && playerSkills != null
+                ? Map.copyOf(playerSkills.map)
+                : Map.of();
+        long revision = PLAYER_SKILL_REVISIONS.merge(playerId, 1L, Long::sum);
+        boolean identificationBypass = com.seggellion.britannia_mod.farming.FlowerProtectionService
+                .isAdministrator(player.isCreative(),
+                        com.seggellion.britannia_mod.farming.FlowerProtectionService
+                                .effectivePermissionLevel(player));
+        NetworkHandler.sendToPlayer(player, SkillSyncPayload.create(
+                state, revision, identificationBypass, values
+        ));
     }
 
     /* =====  HTTP helpers  ===== */
@@ -206,11 +287,12 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
         // FIX 1: getUuid() -> getUUID()
         PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
         p.set(key, value);
+        PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
 
         LOGGER.info("🛠️ ADMIN: Set {}'s {} skill to {}", player.getGameProfile().getName(), key, value);
 
         // Sync to client (using the public 'server' field, matching NeoForge standard)
-        player.server.execute(() -> NetworkHandler.sendToPlayer(player, new SkillSyncPayload(p.map)));
+        player.server.execute(() -> sendSkillSync(player));
 
         // Async persist to the new Rails endpoint
         postSetSkill(player, key, value);
@@ -266,11 +348,13 @@ private static void fetchPlayerSkills(ServerPlayer sp) {
             ps.set(o.get("skill_name").getAsString(), o.get("value").getAsFloat());
         }
         PLAYER_SKILLS.put(sp.getUUID(), ps);
-        NetworkHandler.sendToPlayer(sp, new SkillSyncPayload(ps.map));
+        PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.AVAILABLE);
+        sendSkillSync(sp);
         LOGGER.info("✅ Loaded {} skills for {}", ps.size(), sp.getScoreboardName());
 
     } catch (Exception ex) {
         LOGGER.error("Failed to load player skills for {}", sp.getScoreboardName(), ex);
+        PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.UNAVAILABLE);
     }
 }
 
@@ -338,9 +422,9 @@ private static PlayerSkills fetchPlayerSkillsAsync(ServerPlayer sp) {
         }
         return ps;
     } catch (Exception ex) {
-        // Return empty so MP still gains; we’ll POST gains and next login will resync.
+        // Preserve the distinction between an authoritative zero and unavailable data.
         LOGGER.error("Failed to load player skills for {}", sp.getScoreboardName(), ex);
-        return new PlayerSkills();
+        return null;
     }
 }
 
@@ -394,6 +478,11 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
     public static float getSkill(java.util.UUID playerUUID, String skillName) {
         PlayerSkills ps = PLAYER_SKILLS.get(playerUUID);
         return (ps == null) ? 0f : ps.get(skillName);
+    }
+
+    public static SkillSnapshot getSkillSnapshot(UUID playerUUID, String skillName) {
+        SkillDataState state = PLAYER_SKILL_STATES.getOrDefault(playerUUID, SkillDataState.NOT_LOADED);
+        return new SkillSnapshot(state, getSkill(playerUUID, skillName));
     }
 
     // 2. The helper method that accepts a Player (Fixes all your Server errors!)

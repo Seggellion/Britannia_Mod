@@ -1,0 +1,16 @@
+﻿{
+  "variants": {
+    "axis=x": {
+      "model": "britannia_mod:block/crops/peach/branch",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "britannia_mod:block/crops/peach/branch"
+    },
+    "axis=z": {
+      "model": "britannia_mod:block/crops/peach/branch",
+      "x": 90
+    }
+  }
+}

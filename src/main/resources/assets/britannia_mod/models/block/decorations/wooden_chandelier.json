@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.11",
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft.com",
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "britannia_mod:block/candle_flicker",
@@ -1056,6 +1056,5 @@
 				70
 			]
 		}
-	],
-	"mcmodels": "3f03207872ae986723fcf9f0e1b228ff"
+	]
 }

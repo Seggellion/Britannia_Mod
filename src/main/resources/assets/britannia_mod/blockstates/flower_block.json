@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "hydration=0": { "model": "britannia_mod:block/flower_block_0", "uvlock": true },
+    "hydration=1": { "model": "britannia_mod:block/flower_block_1", "uvlock": true },
+    "hydration=2": { "model": "britannia_mod:block/flower_block_2", "uvlock": true },
+    "hydration=3": { "model": "britannia_mod:block/flower_block_3", "uvlock": true },
+    "hydration=4": { "model": "britannia_mod:block/flower_block_4", "uvlock": true },
+    "hydration=5": { "model": "britannia_mod:block/flower_block_5", "uvlock": true }
+  }
+}

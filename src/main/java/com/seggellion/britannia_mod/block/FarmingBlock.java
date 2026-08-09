@@ -2,29 +2,49 @@ package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
+import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.farming.CropDefinition;
+import com.seggellion.britannia_mod.farming.CropGrowthContext;
+import com.seggellion.britannia_mod.farming.CropGrowthHabit;
+import com.seggellion.britannia_mod.farming.CropHarvestTool;
+import com.seggellion.britannia_mod.farming.CropQualityCalculator;
+import com.seggellion.britannia_mod.farming.CropRegistry;
+import com.seggellion.britannia_mod.farming.CropSupportRequirement;
+import com.seggellion.britannia_mod.farming.FarmingActionType;
+import com.seggellion.britannia_mod.farming.FarmingClimateResolver;
+import com.seggellion.britannia_mod.farming.FarmingCultivationGate;
+import com.seggellion.britannia_mod.farming.FarmingSkill;
+import com.seggellion.britannia_mod.farming.FarmingSoilCare;
+import com.seggellion.britannia_mod.farming.FlowerPlantingService;
+import com.seggellion.britannia_mod.farming.FruitProvenance;
+import com.seggellion.britannia_mod.farming.FruitTreeDefinition;
+import com.seggellion.britannia_mod.farming.FruitTreeRegistry;
+import com.seggellion.britannia_mod.farming.GrainHarvestTools;
+import com.seggellion.britannia_mod.farming.RootCropShovelTools;
+import com.seggellion.britannia_mod.farming.TallCropSupport;
 import com.seggellion.britannia_mod.item.GrapesItem;
 import com.seggellion.britannia_mod.item.GrapeSeedsItem;
+import com.seggellion.britannia_mod.item.WateringCanItem;
 import com.seggellion.britannia_mod.winery.GrapeColor;
 import com.seggellion.britannia_mod.winery.GrapeVarietyManager;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -46,6 +66,8 @@ import com.mojang.logging.LogUtils;
 public class FarmingBlock extends Block implements EntityBlock {
     // 0 = Dry, 5 = Fully Hydrated
     private static final Logger LOGGER = LogUtils.getLogger();
+    public static final float HYDRATION_DECAY_CHANCE = 0.10f;
+    public static final int RAIN_HYDRATION_MINIMUM = 2;
 
     public static final IntegerProperty HYDRATION = IntegerProperty.create("hydration", 0, 5);
     // 0 = None, 1 = Manure, 2 = Chemical
@@ -109,15 +131,33 @@ public class FarmingBlock extends Block implements EntityBlock {
             }
         }
 
+        ItemInteractionResult careResult = applyCareItem(level, pos, state, player, hand, stack);
+        if (careResult != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return careResult;
+        }
+
+        FlowerPlantingService.Outcome flowerPlanting = FlowerPlantingService.tryPlant(
+                level, pos, state, player, stack
+        );
+        if (flowerPlanting == FlowerPlantingService.Outcome.PLANTED) {
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        }
+        if (flowerPlanting == FlowerPlantingService.Outcome.REJECTED) {
+            return ItemInteractionResult.SUCCESS;
+        }
+
         // 1. PLANTING SEEDS LOGIC
         // We check if it is a GrapeSeed, the soil has no seeds yet, and we are interacting with the top face
         if (stack.getItem() instanceof GrapeSeedsItem) {
                 // Case A: Soil is empty -> Plant the seeds
-                if (!state.getValue(HAS_SEEDS)) {
-                    if (be instanceof FarmingBlockEntity farmBe) {
+                if (!state.getValue(HAS_SEEDS) && be instanceof FarmingBlockEntity farmBe && !farmBe.hasCrop()) {
+                    CropDefinition grapeCrop = CropRegistry.byId("grapes").orElse(null);
+                    if (grapeCrop == null) {
+                        return ItemInteractionResult.FAIL;
+                    }
                         if (!level.isClientSide) {
                             String variety = GrapeSeedsItem.getVariety(stack);
-                            farmBe.setStoredSeed(variety);
+                            farmBe.plant(grapeCrop, variety);
                             
                             level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
                             level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -127,7 +167,6 @@ public class FarmingBlock extends Block implements EntityBlock {
                             }
                         }
                         return ItemInteractionResult.sidedSuccess(level.isClientSide);
-                    }
                 } 
                 // Case B: Soil already has seeds -> BLOCK the item from doing anything
                 else {
@@ -140,62 +179,148 @@ public class FarmingBlock extends Block implements EntityBlock {
                 }
             }
 
-        // 2. WATER LOGIC
-        if (stack.is(Items.WATER_BUCKET)) {
-            if (!level.isClientSide) {
-                setHydration(level, pos, state, 5);
-                level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
-            
-            // Swap the water bucket for an empty bucket if not in Creative mode
-            if (!player.getAbilities().instabuild) {
-                ItemStack emptyBucket = new ItemStack(Items.BUCKET);
-                player.setItemInHand(hand, net.minecraft.world.item.ItemUtils.createFilledResult(stack, player, emptyBucket));
-            }
-            
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        if (be instanceof FarmingBlockEntity farmBe && CropRegistry.bySeed(stack.getItem()).isPresent() && !(stack.getItem() instanceof GrapeSeedsItem)) {
+            return tryPlantSeed(level, pos, state, player, stack, false, "farming_block");
         }
 
-        // 3. FERTILIZER LOGIC
         if (be instanceof FarmingBlockEntity farmBe) {
-            boolean applied = false;
-            
-            if (stack.is(Items.BONE_MEAL)) {
-                if (!level.isClientSide) farmBe.addNutrients(0.6f, 0.0f, 0.0f, 0.0f);
-                applied = true;
-            }
-            else if (stack.is(ItemRegistry.TURQUOISE_POWDER.get())) {
-                if (!level.isClientSide) farmBe.addNutrients(0.0f, 0.3f, 0.0f, 0.0f);
-                applied = true;
-            }
-            else if (stack.is(ItemRegistry.SULPHUROUS_ASH.get())) {
-                if (!level.isClientSide) farmBe.addNutrients(0.0f, 0.0f, 0.8f, 0.0f);
-                applied = true;
-            }
-            else if (stack.is(Items.ROTTEN_FLESH)) {
-                if (!level.isClientSide) farmBe.addNutrients(0.0f, 0.0f, 0.0f, 0.5f);
-                applied = true;
-            }
-
-            if (applied) {
-                if (level.isClientSide) {
-                    level.addParticle(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
-                } else {
-                    if (!player.getAbilities().instabuild) stack.shrink(1);
-                    level.setBlock(pos, state.setValue(FERTILIZER, 1), 3);
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide);
+            if (farmBe.isMature()) {
+                return tryHarvestCrop(farmBe, state, level, pos, player, stack, hand, "farming_block");
             }
         }
 
         return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
-    private void setHydration(Level level, BlockPos pos, BlockState state, int value) {
-        level.setBlock(pos, state.setValue(HYDRATION, value), 3);
-        if (level.getBlockEntity(pos) instanceof FarmingBlockEntity be) {
-            be.setHydration(value);
+    public static ItemInteractionResult applyCareItem(Level level, BlockPos pos, BlockState state, Player player, InteractionHand hand, ItemStack stack) {
+        if (!(state.getBlock() instanceof FarmingBlock)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
+
+        if (stack.is(ItemRegistry.WATERING_CAN.get())) {
+            return WateringCanItem.waterFarmingBlock(level, pos, state, player, stack);
+        }
+
+        if (stack.is(Items.WATER_BUCKET)) {
+            return waterWithBucket(level, pos, state, player, hand, stack);
+        }
+
+        return applyNutrients(level, pos, state, player, stack);
+    }
+
+    private static ItemInteractionResult waterWithBucket(Level level, BlockPos pos, BlockState state, Player player, InteractionHand hand, ItemStack stack) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (!(be instanceof FarmingBlockEntity farmBe)) {
+            return ItemInteractionResult.FAIL;
+        }
+
+        if (!level.isClientSide) {
+            boolean improved = farmBe.getHydration() < FarmingBlockEntity.MAX_HYDRATION;
+            setHydration(level, pos, state, FarmingBlockEntity.MAX_HYDRATION);
+            if (improved && player instanceof ServerPlayer serverPlayer) {
+                FarmingSkill.award(serverPlayer, FarmingActionType.TEND, farmBe.cropTier(), 1.0f);
+            }
+            level.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+
+        if (player != null && !player.getAbilities().instabuild) {
+            ItemStack emptyBucket = new ItemStack(Items.BUCKET);
+            player.setItemInHand(hand, net.minecraft.world.item.ItemUtils.createFilledResult(stack, player, emptyBucket));
+        }
+
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static ItemInteractionResult applyNutrients(Level level, BlockPos pos, BlockState state, Player player, ItemStack stack) {
+        if (!(level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        FarmingSoilCare.Fertilizer fertilizer = FarmingSoilCare.fertilizerFor(stack).orElse(null);
+        if (fertilizer == null) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        CropDefinition plantedCrop = CropRegistry.byId(farmBe.getPlantedCropId()).orElse(null);
+        float beforeFit = plantedCrop == null ? 0.0f : farmBe.nutrientFit(plantedCrop);
+        boolean changed = false;
+        if (!level.isClientSide) {
+            changed = farmBe.addNutrients(fertilizer.nitrogen(), fertilizer.phosphorus(), fertilizer.potassium(), fertilizer.organicMatter());
+        }
+
+        if (level.isClientSide) {
+            level.addParticle(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+        } else if (changed) {
+            if (player == null || !player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+            level.setBlock(pos, state.setValue(FERTILIZER, 1), 3);
+            boolean meaningful = plantedCrop == null || farmBe.nutrientFit(plantedCrop) > beforeFit + 0.001f;
+            if (player != null) {
+                player.displayClientMessage(Component.literal(fertilizerMessage(fertilizer.name(), farmBe)).withStyle(ChatFormatting.GREEN), true);
+            }
+            level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (meaningful && player instanceof ServerPlayer serverPlayer) {
+                float modifier = plantedCrop == null ? 0.25f : plantedCrop.farmingSkillModifier();
+                FarmingSkill.award(serverPlayer, FarmingActionType.TEND, farmBe.cropTier(), modifier);
+            }
+        } else if (player != null) {
+            player.displayClientMessage(Component.literal("The soil cannot absorb more of that nutrient.").withStyle(ChatFormatting.YELLOW), true);
+        }
+
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static void setHydration(Level level, BlockPos pos, BlockState state, int value) {
+        int clamped = Math.max(0, Math.min(FarmingBlockEntity.MAX_HYDRATION, value));
+        level.setBlock(pos, state.setValue(HYDRATION, clamped), 3);
+        if (level.getBlockEntity(pos) instanceof FarmingBlockEntity be) {
+            be.setHydration(clamped);
+        }
+    }
+
+    public static int getSyncedHydration(Level level, BlockPos pos, BlockState state) {
+        int stateHydration = state.hasProperty(HYDRATION) ? state.getValue(HYDRATION) : 0;
+        if (level.getBlockEntity(pos) instanceof FarmingBlockEntity be) {
+            return Math.max(0, Math.min(FarmingBlockEntity.MAX_HYDRATION, be.getHydration()));
+        }
+        return stateHydration;
+    }
+
+    public static boolean isRainHydrating(Level level, BlockPos pos) {
+        return level.isRainingAt(pos.above());
+    }
+
+    public static boolean isOutdoorsForRain(Level level, BlockPos pos) {
+        return level.canSeeSky(pos.above());
+    }
+
+    public static boolean shouldDecayHydration(int currentHydration, RandomSource random) {
+        return currentHydration > 0 && hydrationDecays(currentHydration, random.nextFloat());
+    }
+
+    public static boolean hydrationDecays(int currentHydration, float randomRoll) {
+        return currentHydration > 0 && randomRoll < HYDRATION_DECAY_CHANCE;
+    }
+
+    public static int hydrationAfterRain(Level level, BlockPos pos, int currentHydration) {
+        return hydrationAfterRain(currentHydration, isRainHydrating(level, pos));
+    }
+
+    public static int hydrationAfterRain(int currentHydration, boolean rainingAtFlower) {
+        return currentHydration < RAIN_HYDRATION_MINIMUM && rainingAtFlower
+                ? RAIN_HYDRATION_MINIMUM
+                : currentHydration;
+    }
+
+    private int applyRainHydrationIfOutdoors(ServerLevel level, BlockPos pos, BlockState state, int currentHydration) {
+        int hydrated = hydrationAfterRain(level, pos, currentHydration);
+        if (hydrated == currentHydration) {
+            return currentHydration;
+        }
+
+        setHydration(level, pos, state, hydrated);
+        return hydrated;
     }
 
     @Override
@@ -205,73 +330,390 @@ public class FarmingBlock extends Block implements EntityBlock {
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        int currentHydration = state.getValue(HYDRATION);
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof FarmingBlockEntity farmBe && farmBe.shouldReclaimCommunityPlot(level)) {
+            level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+            return;
+        }
+
+        int currentHydration = getSyncedHydration(level, pos, state);
+        if (state.getValue(HYDRATION) != currentHydration) {
+            setHydration(level, pos, state, currentHydration);
+            state = level.getBlockState(pos);
+        }
 
         // 1. Hydration Decay
-        if (currentHydration > 0 && random.nextFloat() < 0.10f) {
+        if (shouldDecayHydration(currentHydration, random)) {
             setHydration(level, pos, state, currentHydration - 1);
+            state = level.getBlockState(pos);
+            currentHydration = getSyncedHydration(level, pos, state);
         }
+
+        currentHydration = applyRainHydrationIfOutdoors(level, pos, state, currentHydration);
+        state = level.getBlockState(pos);
+        currentHydration = getSyncedHydration(level, pos, state);
 
         // 2. Growth / Germination Logic
         if (currentHydration > 0) {
-            BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof FarmingBlockEntity farmBe) {
 
-                // CHECK: Do we have seeds waiting?
-                if (state.getValue(HAS_SEEDS)) {
-                    BlockPos abovePos = pos.above();
-                    BlockState aboveState = level.getBlockState(abovePos);
-
-                    // REQUIREMENT: Must have a Trellis above to germinate
-                    if (aboveState.getBlock() instanceof TrellisBlock) {
-
-                        // 1. Retrieve the stored seed ID
+                // Migrate legacy grape seeds that were waiting for the old vine/trellis germination path.
+                if (state.getValue(HAS_SEEDS) && !farmBe.hasCrop() && farmBe.getStoredSeed() != null && !farmBe.getStoredSeed().isBlank()) {
+                    CropDefinition grapeCrop = CropRegistry.byId("grapes").orElse(null);
+                    if (grapeCrop != null) {
                         String varietyId = farmBe.getStoredSeed();
-                        if (varietyId == null || varietyId.isBlank()) {
-                            varietyId = GrapesItem.DEFAULT_VARIETY_ID;
-                        }
-                        
-                        // 2. Look up the color
-                        GrapeColor color = GrapeVarietyManager.getVariety(varietyId).colorType();
-
-                        // 3. Create the Vine State WITH the color
-                        BlockState vineState = BlockRegistry.GRAPE_VINE_BLOCK.get().defaultBlockState()
-                                .setValue(GrapeVineBlock.COLOR, color); // <--- Set the color
-
-                        level.setBlock(abovePos, vineState, 3);
-
-                        // 4. Move Seed Data
-                        BlockEntity vineBe = level.getBlockEntity(abovePos);
-                        if (vineBe instanceof GrapeVineBlockEntity gvb) {
-                            gvb.setVariety(varietyId);
-                        }
-
-                        // Clear Seed from Soil
-                        farmBe.clearStoredSeed();
-                        level.setBlock(pos, state.setValue(HAS_SEEDS, false), 3);
+                        farmBe.plant(grapeCrop, varietyId == null || varietyId.isBlank() ? GrapesItem.DEFAULT_VARIETY_ID : varietyId);
+                        level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
                     }
                 }
+
+                farmBe.tickGrowth(level, pos, state, random);
             }
         }
+    }
+
+    private static String fertilizerMessage(String nutrient, FarmingBlockEntity farmBe) {
+        return String.format(
+                "Soil absorbed %s. Nutrients: bone %.2f, turquoise %.2f, ash %.2f, flesh %.2f",
+                nutrient,
+                farmBe.getBoneMealNutrient(),
+                farmBe.getTurquoiseNutrient(),
+                farmBe.getSulphurousAshNutrient(),
+                farmBe.getRottenFleshNutrient()
+        );
+    }
+
+    public static ItemInteractionResult tryPlantSeed(Level level, BlockPos pos, BlockState state, @Nullable Player player, ItemStack stack, boolean requireTrellisCrop, String interactionSource) {
+        if (!(state.getBlock() instanceof FarmingBlock)
+                || !(level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        CropDefinition crop = CropRegistry.bySeed(stack.getItem()).orElse(null);
+        if (crop == null || stack.getItem() instanceof GrapeSeedsItem) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (!level.isClientSide) {
+            FarmingCultivationGate.Evaluation eligibility = FarmingCultivationGate.evaluate(player, stack.getItem());
+            if (!eligibility.permitsPlanting()) {
+                FarmingCultivationGate.sendDenialFeedback(player, eligibility);
+                FarmingCultivationGate.synchronizeDeniedInteraction(player, level, pos);
+                logPlantingFlow(interactionSource, level, pos, stack, crop, false, false,
+                        "farming_gate_" + eligibility.type().name().toLowerCase(java.util.Locale.ROOT));
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+
+        boolean trellisCrop = isTrellisCrop(crop);
+        boolean supportSatisfied = canPlantWithCurrentSupport(level, pos, crop);
+        if (requireTrellisCrop && !trellisCrop) {
+            if (!level.isClientSide) {
+                logPlantingFlow(interactionSource, level, pos, stack, crop, supportSatisfied, false, "not_trellis_crop");
+                if (player != null) {
+                    player.displayClientMessage(Component.literal(crop.displayName() + " cannot be planted through a trellis.").withStyle(ChatFormatting.YELLOW), true);
+                }
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        if (state.getValue(HAS_SEEDS) || farmBe.hasCrop()) {
+            if (!level.isClientSide) {
+                logPlantingFlow(interactionSource, level, pos, stack, crop, supportSatisfied, false, "already_planted");
+                if (player != null) {
+                    player.displayClientMessage(Component.literal("A crop is already planted here.").withStyle(ChatFormatting.YELLOW), true);
+                }
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        if (!level.isClientSide) {
+            if (!supportSatisfied) {
+                logPlantingFlow(interactionSource, level, pos, stack, crop, false, false, "missing_support");
+                if (player != null) {
+                    player.displayClientMessage(Component.literal(requiredSupportMessage(crop)).withStyle(ChatFormatting.YELLOW), true);
+                }
+                return ItemInteractionResult.SUCCESS;
+            }
+            FruitTreeDefinition tree = crop.treeCrop() && FruitTreeRegistry.byId(crop.id()).isPresent()
+                    ? FruitTreeRegistry.byIdOrDefault(crop.id())
+                    : null;
+            BlockPos rootPos = tree == null ? null : pos.above();
+            if (tree != null) {
+                if (!level.getBlockState(rootPos).canBeReplaced()) {
+                    logPlantingFlow(interactionSource, level, pos, stack, crop, true, false, "tree_space_blocked");
+                    if (player != null) {
+                        player.displayClientMessage(Component.literal("The " + tree.displayName().toLowerCase() + " tree needs open space above the soil.").withStyle(ChatFormatting.YELLOW), true);
+                    }
+                    return ItemInteractionResult.SUCCESS;
+                }
+            }
+
+            if (tree != null) {
+                farmBe.plant(crop);
+                level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
+                level.setBlock(rootPos, tree.rootBlock().get().defaultBlockState(), 3);
+                BlockEntity newBlockEntity = level.getBlockEntity(rootPos);
+                if (newBlockEntity instanceof OrangeTreeRootBlockEntity orangeRoot) {
+                    orangeRoot.initializeFromFarm(farmBe, level.getRandom(), tree.id());
+                }
+            } else {
+                farmBe.plant(crop);
+                level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
+            }
+
+            level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player == null || !player.getAbilities().instabuild) {
+                stack.shrink(1);
+            }
+            if (player instanceof ServerPlayer serverPlayer) {
+                FarmingSkill.award(serverPlayer, FarmingActionType.PLANT, crop.tier(), crop.farmingSkillModifier());
+            }
+            logPlantingFlow(interactionSource, level, pos, stack, crop, true, true, "planted");
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    public static ItemInteractionResult tryHarvestCrop(FarmingBlockEntity farmBe, BlockState state, Level level, BlockPos pos, Player player, ItemStack toolStack, InteractionHand hand, String interactionSource) {
+        CropDefinition crop = CropRegistry.byId(farmBe.getPlantedCropId()).orElse(null);
+        if (crop == null || !farmBe.isMature()) {
+            if (!level.isClientSide) {
+                logHarvestFlow(interactionSource, level, pos, farmBe, crop, toolStack, false, "not_mature_or_no_crop");
+            }
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (crop.treeCrop()) {
+            if (!level.isClientSide) {
+                player.displayClientMessage(Component.literal("Harvest ripe fruit from the tree.").withStyle(ChatFormatting.YELLOW), true);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+        if (crop.requiresSupport() && !farmBe.hasRequiredSupport(level, pos, crop)) {
+            if (!level.isClientSide) {
+                player.displayClientMessage(Component.literal(crop.displayName() + " needs its support before it can be harvested.").withStyle(ChatFormatting.YELLOW), true);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+        if (!canHarvestWith(crop, toolStack)) {
+            if (!level.isClientSide) {
+                logHarvestFlow(interactionSource, level, pos, farmBe, crop, toolStack, false, "wrong_tool");
+                if (crop.harvestTool() == CropHarvestTool.SCISSORS) {
+                    player.displayClientMessage(Component.literal(crop.displayName() + " must be harvested with scissors.").withStyle(ChatFormatting.YELLOW), true);
+                } else if (crop.harvestTool() == CropHarvestTool.BARE_HAND) {
+                    player.displayClientMessage(Component.literal(crop.displayName() + " must be harvested with an empty hand.").withStyle(ChatFormatting.YELLOW), true);
+                } else if (crop.harvestTool() == CropHarvestTool.GRAIN_BLADE) {
+                    player.displayClientMessage(Component.literal(crop.displayName() + " must be harvested with a blade.").withStyle(ChatFormatting.YELLOW), true);
+                } else if (crop.harvestTool() == CropHarvestTool.ROOT_SHOVEL) {
+                    player.displayClientMessage(Component.literal(crop.displayName() + " must be harvested with a Britannia shovel.").withStyle(ChatFormatting.YELLOW), true);
+                }
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+        if (crop.tallCrop()
+                && !TallCropSupport.repairStructureIfPossible(level, pos, crop, crop.maxGrowthAge())) {
+            if (!level.isClientSide) {
+                player.displayClientMessage(Component.literal(crop.displayName() + " needs full vertical growth before harvest.").withStyle(ChatFormatting.YELLOW), true);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        if (!level.isClientSide) {
+            int rootAgeBefore = farmBe.getRootAgeDays();
+            RandomSource random = level.getRandom();
+            int yield = crop.minYield() + random.nextInt(Math.max(1, crop.maxYield() - crop.minYield() + 1));
+            CropGrowthContext context = farmBe.createGrowthContext(level, pos, crop, player);
+            int quality = CropQualityCalculator.calculateQuality(crop, context, player, farmBe.getRootAgeDays());
+            ItemStack harvest = new ItemStack(crop.harvestItem().get(), yield);
+            CropQualityCalculator.applyQuality(harvest, crop, quality);
+            FruitProvenance.setRegionName(harvest, FarmingClimateResolver.findRegionAt(level, pos)
+                    .map(region -> region.name)
+                    .orElse("Unknown"));
+            if ("grapes".equals(crop.id())) {
+                String variety = farmBe.getStoredSeed();
+                GrapesItem.setVariety(harvest, variety == null || variety.isBlank() ? GrapesItem.DEFAULT_VARIETY_ID : variety);
+                GrapesItem.setRegion(harvest, FarmingClimateResolver.findRegionAt(level, pos)
+                        .map(region -> region.name)
+                        .orElse("Britannia"));
+            }
+            popResource(level, pos, harvest);
+            if (crop.harvestTool() == CropHarvestTool.GRAIN_BLADE) {
+                popResource(level, pos, new ItemStack(ItemRegistry.STRAW.get()));
+            }
+            if (crop.seedReturnChance() > 0.0f && random.nextFloat() < crop.seedReturnChance()) {
+                popResource(level, pos, new ItemStack(crop.seedItem().get()));
+            }
+
+            if ((crop.harvestTool() == CropHarvestTool.SCISSORS
+                    || crop.harvestTool() == CropHarvestTool.GRAIN_BLADE
+                    || crop.harvestTool() == CropHarvestTool.ROOT_SHOVEL)
+                    && !player.getAbilities().instabuild && !toolStack.isEmpty()) {
+                toolStack.hurtAndBreak(1, player, Player.getSlotForHand(hand));
+            }
+
+            if (crop.persistsAfterHarvest()) {
+                farmBe.regrowAfterHarvest(crop);
+                level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
+            } else {
+                resetAnnualCropState(level, pos, state, farmBe);
+            }
+
+            level.playSound(null, pos, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
+                FarmingSkill.award(serverPlayer, FarmingActionType.HARVEST, crop.tier(), crop.farmingSkillModifier());
+            }
+            LOGGER.debug(
+                    "[farming harvest] source={} target={} farm_pos={} crop_id={} age={} mature=true required_tool={} held_item={} held_tool_accepted=true perennial={} post_harvest_regrowth_age={} root_age_before={} root_age_after={} harvested=true",
+                    interactionSource,
+                    "trellis_block".equals(interactionSource) ? "trellis" : "farming_block",
+                    pos,
+                    crop.id(),
+                    farmBe.getGrowthStage(),
+                    crop.harvestTool(),
+                    toolStack.getItem(),
+                    crop.persistsAfterHarvest(),
+                    crop.clampedPostHarvestRegrowthAge(),
+                    rootAgeBefore,
+                    farmBe.getRootAgeDays()
+            );
+        }
+
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    public static ItemInteractionResult harvestTallCropFromSegment(Level level, BlockPos segmentPos, Player player, InteractionHand hand, ItemStack toolStack) {
+        BlockPos anchor = TallCropSupport.findAnchor(level, segmentPos);
+        if (anchor == null) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        BlockState anchorState = level.getBlockState(anchor);
+        if (!(anchorState.getBlock() instanceof FarmingBlock farmingBlock)
+                || !(level.getBlockEntity(anchor) instanceof FarmingBlockEntity farmBe)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        return tryHarvestCrop(farmBe, anchorState, level, anchor, player, toolStack, hand, "tall_crop_segment");
+    }
+
+    private static boolean canHarvestWith(CropDefinition crop, ItemStack stack) {
+        return switch (crop.harvestTool()) {
+            case HAND -> true;
+            case BARE_HAND -> stack.isEmpty();
+            case SCISSORS -> stack.is(ItemRegistry.SCISSORS.get());
+            case GRAIN_BLADE -> GrainHarvestTools.isGrainHarvestBlade(stack);
+            case ROOT_SHOVEL -> RootCropShovelTools.isRootCropShovel(stack);
+        };
+    }
+
+    private static boolean canPlantWithCurrentSupport(Level level, BlockPos pos, CropDefinition crop) {
+        return switch (crop.supportRequirement()) {
+            case NONE -> true;
+            case TRELLIS, LATTICE -> level.getBlockState(pos.above()).getBlock() instanceof TrellisBlock;
+            case TREE_STRUCTURE -> true;
+        };
+    }
+
+    private static String requiredSupportMessage(CropDefinition crop) {
+        if (crop.supportRequirement() == CropSupportRequirement.TRELLIS || crop.supportRequirement() == CropSupportRequirement.LATTICE) {
+            return "A trellis must be placed here for this crop to grow.";
+        }
+        return crop.displayName() + " cannot be planted here.";
+    }
+
+    private static boolean isTrellisCrop(CropDefinition crop) {
+        return crop.growthHabit() == CropGrowthHabit.TRELLIS_CROP
+                || crop.supportRequirement() == CropSupportRequirement.TRELLIS;
+    }
+
+    private static void logPlantingFlow(String interactionSource, Level level, BlockPos pos, ItemStack stack, CropDefinition crop, boolean supportSatisfied, boolean planted, String reason) {
+        LOGGER.debug(
+                "[farming planting] source={} target={} farm_pos={} held_item={} crop_id={} growth_habit={} required_support={} support_satisfied={} planted={} reason={}",
+                interactionSource,
+                "trellis_block".equals(interactionSource) ? "trellis" : "farming_block",
+                pos,
+                stack.getItem(),
+                crop.id(),
+                crop.growthHabit(),
+                crop.supportRequirement(),
+                supportSatisfied,
+                planted,
+                reason
+        );
+    }
+
+    private static void logHarvestFlow(String interactionSource, Level level, BlockPos pos, FarmingBlockEntity farmBe, @Nullable CropDefinition crop, ItemStack toolStack, boolean harvested, String reason) {
+        LOGGER.debug(
+                "[farming harvest] source={} target={} farm_pos={} crop_id={} age={} mature={} required_tool={} held_item={} held_tool_accepted={} perennial={} post_harvest_regrowth_age={} root_age={} harvested={} reason={}",
+                interactionSource,
+                "trellis_block".equals(interactionSource) ? "trellis" : "farming_block",
+                pos,
+                crop == null ? "<none>" : crop.id(),
+                farmBe.getGrowthStage(),
+                farmBe.isMature(),
+                crop == null ? "<none>" : crop.harvestTool(),
+                toolStack.getItem(),
+                crop != null && canHarvestWith(crop, toolStack),
+                crop != null && crop.persistsAfterHarvest(),
+                crop == null ? 0 : crop.clampedPostHarvestRegrowthAge(),
+                farmBe.getRootAgeDays(),
+                harvested,
+                reason
+        );
+    }
+
+    public static void resetAnnualCropState(Level level, BlockPos pos, BlockState state, FarmingBlockEntity farmBe) {
+        farmBe.clearStoredSeed();
+        farmBe.clearCrop();
+        if (farmBe.isCommunityPlot()) {
+            level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+            return;
+        }
+        if (state.getBlock() instanceof FarmingBlock) {
+            level.setBlock(pos, state.setValue(HAS_SEEDS, false), 3);
+        }
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        BlockEntity be = level.getBlockEntity(pos);
+        if (be instanceof FarmingBlockEntity farmBe && farmBe.isMature()) {
+            ItemInteractionResult result = tryHarvestCrop(farmBe, state, level, pos, player, ItemStack.EMPTY, InteractionHand.MAIN_HAND, "farming_block");
+            return result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+                    ? InteractionResult.PASS
+                    : InteractionResult.sidedSuccess(level.isClientSide);
+        }
+        return super.useWithoutItem(state, level, pos, player, hitResult);
     }
 
     // --- Harvesting Logic ---
     
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide && !player.isCreative()) {
+        if (!level.isClientSide) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof FarmingBlockEntity farmBe) {
-                int quality = farmBe.calculateQualityScore();
-
-                ItemStack grapes = new ItemStack(ItemRegistry.GRAPES.get());
-                CompoundTag dataTag = new CompoundTag();
-                dataTag.putInt("QualityScore", quality);
-                grapes.set(DataComponents.CUSTOM_DATA, CustomData.of(dataTag));
-                popResource(level, pos, grapes);
+                if (farmBe.hasCrop()) {
+                    if (farmBe.isCommunityPlot()) {
+                        farmBe.clearStoredSeed();
+                        farmBe.clearCrop();
+                    } else {
+                        resetAnnualCropState(level, pos, state, farmBe);
+                    }
+                } else if (farmBe.getStoredSeed() != null && !farmBe.getStoredSeed().isBlank()) {
+                    farmBe.clearStoredSeed();
+                }
             }
         }
         return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+        boolean reclaimCommunityPlot = blockEntity instanceof FarmingBlockEntity farmBe && farmBe.isCommunityPlot();
+        super.playerDestroy(level, player, pos, state, blockEntity, tool);
+        if (!level.isClientSide && reclaimCommunityPlot) {
+            level.setBlock(pos, BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), 3);
+        }
     }
     
     @Override
@@ -279,5 +721,18 @@ public class FarmingBlock extends Block implements EntityBlock {
          return !this.defaultBlockState().canSurvive(context.getLevel(), context.getClickedPos()) 
              ? com.seggellion.britannia_mod.registry.BlockRegistry.CAVE_FLOOR_BLOCK.get().defaultBlockState() 
              : super.getStateForPlacement(context);
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!level.isClientSide && state.getBlock() != newState.getBlock() && level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe) {
+            if (farmBe.hasCrop()) {
+                farmBe.clearCrop();
+            }
+            if (!farmBe.getStoredSeed().isBlank()) {
+                farmBe.clearStoredSeed();
+            }
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 }

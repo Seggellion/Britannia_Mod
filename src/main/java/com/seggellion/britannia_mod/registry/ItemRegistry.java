@@ -7,6 +7,12 @@ import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.registry.SignItemRegistry;
 import com.seggellion.britannia_mod.item.InstrumentItem;
 import com.seggellion.britannia_mod.item.GrapesItem;
+import com.seggellion.britannia_mod.item.CropSeedItem;
+import com.seggellion.britannia_mod.item.FertilizedDirtItem;
+import com.seggellion.britannia_mod.item.FarmingHoeItem;
+import com.seggellion.britannia_mod.item.SeedExtractableHealingCropItem;
+import com.seggellion.britannia_mod.item.HarvestedFlowerItem;
+import com.seggellion.britannia_mod.item.WateringCanItem;
 import com.seggellion.britannia_mod.item.CookedFishSteakItem;
 import com.seggellion.britannia_mod.item.WeightedCommodityItem;
 import com.seggellion.britannia_mod.item.WeightedCookedFoodItem;
@@ -127,6 +133,29 @@ public class ItemRegistry {
                 new WeightedCookedFoodItem(food(1, saturation), foodType, restoreMultiplier));
     }
 
+    private static DeferredHolder<Item, SeedExtractableHealingCropItem> healingSeedCrop(
+            String id,
+            int nutrition,
+            float saturation,
+            java.util.function.Supplier<? extends Item> seedItem,
+            float healthRestored
+    ) {
+        return ITEMS.register(id, () ->
+                new SeedExtractableHealingCropItem(food(nutrition, saturation), seedItem, healthRestored));
+    }
+
+    private static DeferredHolder<Item, CropSeedItem> cropSeed(String id, String cropId) {
+        return ITEMS.register(id, () -> new CropSeedItem(cropId, new Item.Properties()));
+    }
+
+    private static DeferredHolder<Item, Item> flowerContentItem(String id) {
+        return ITEMS.register(id, () -> new Item(new Item.Properties()));
+    }
+
+    private static DeferredHolder<Item, HarvestedFlowerItem> harvestedFlowerItem(String id) {
+        return ITEMS.register(id, () -> new HarvestedFlowerItem(new Item.Properties()));
+    }
+
     // General Items
     public static final DeferredHolder<Item, Item> GOLD_COIN = ITEMS.register("gold_coin",
             () -> new Item(new Item.Properties().stacksTo(99)));
@@ -186,7 +215,7 @@ public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.registe
     // Spell Ingredients
     public static final DeferredHolder<Item, Item> SPIDERS_SILK = ITEMS.register("spiders_silk",
             () -> new Item(new Item.Properties()));
-    public static final DeferredHolder<Item, Item> MANDRAKE_ROOT = ITEMS.register("mandrake_root",
+    public static final DeferredHolder<Item, Item> MANDRAKE = ITEMS.register("mandrake",
             () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> SULPHUROUS_ASH = ITEMS.register("sulphurous_ash",
             () -> new Item(new Item.Properties()));
@@ -320,8 +349,8 @@ public static final DeferredHolder<Item, WeightedCookedFoodItem> SQUASH = cooked
         "squash", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
 public static final DeferredHolder<Item, WeightedCookedFoodItem> CARROTS = cookedFood(
         "carrots", 3, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
-public static final DeferredHolder<Item, WeightedCookedFoodItem> CORN = cookedFood(
-        "corn", 3, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, SeedExtractableHealingCropItem> CORN = healingSeedCrop(
+        "corn", 1, 0.2f, () -> ItemRegistry.CORN_SEEDS.get(), 2.0f);
 public static final DeferredHolder<Item, WeightedCookedFoodItem> CABBAGE = cookedFood(
         "cabbage", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
 public static final DeferredHolder<Item, WeightedCookedFoodItem> LETTUCE = cookedFood(
@@ -336,14 +365,100 @@ public static final DeferredHolder<Item, WeightedCookedFoodItem> BERRIES = cooke
         "berries", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
 public static final DeferredHolder<Item, WeightedCookedFoodItem> POTATO = cookedFood(
         "potato", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> WATERMELON = cookedFood(
+        "watermelon", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
 public static final DeferredHolder<Item, WeightedCookedFoodItem> TOMATO = cookedFood(
         "tomato", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> YELLOW_ONION = cookedFood(
+        "yellow_onion", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> GREEN_ONION = cookedFood(
+        "green_onion", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BEANS = cookedFood(
+        "beans", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, Item> RICE = ITEMS.register("rice",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PINEAPPLE = cookedFood(
+        "pineapple", 4, 0.4f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> STRAWBERRY = cookedFood(
+        "strawberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BLUEBERRY = cookedFood(
+        "blueberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> RASPBERRY = cookedFood(
+        "raspberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CRANBERRY = cookedFood(
+        "cranberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BLACKBERRY = cookedFood(
+        "blackberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> HUCKLEBERRY = cookedFood(
+        "huckleberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> MULBERRY = cookedFood(
+        "mulberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> ELDERBERRY = cookedFood(
+        "elderberry", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> STRAWBERRIES = cookedFood(
+        "strawberries", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BLUEBERRIES = cookedFood(
+        "blueberries", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CHERRIES = cookedFood(
+        "cherries", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PLUM = cookedFood(
+        "plum", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, Item> COTTON = ITEMS.register("cotton",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> FLAX = ITEMS.register("flax",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> HEMP = ITEMS.register("hemp",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> HOPS = ITEMS.register("hops",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, WeightedCookedFoodItem> SNOW_PEAS = cookedFood(
+        "snow_peas", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PEAS = cookedFood(
+        "peas", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> TURNIPS = cookedFood(
+        "turnips", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> LEMON = cookedFood(
+        "lemon", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, SeedExtractableHealingCropItem> LIME = healingSeedCrop(
+        "lime", 1, 0.2f, () -> ItemRegistry.LIME_SEEDS.get(), 0.0f);
+public static final DeferredHolder<Item, SeedExtractableHealingCropItem> ORANGE = healingSeedCrop(
+        "orange", 1, 0.2f, () -> ItemRegistry.ORANGE_SEEDS.get(), 2.0f);
+public static final DeferredHolder<Item, SeedExtractableHealingCropItem> OLIVE = healingSeedCrop(
+        "olive", 1, 0.2f, () -> ItemRegistry.OLIVE_SEEDS.get(), 0.0f);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BELL_PEPPERS = cookedFood(
+        "bell_peppers", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CUCUMBERS = cookedFood(
+        "cucumbers", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> HONEYDEW = cookedFood(
+        "honeydew", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CANTALOUPE = cookedFood(
+        "cantaloupe", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> BROCCOLI = cookedFood(
+        "broccoli", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CAULIFLOWER = cookedFood(
+        "cauliflower", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> RHUBARB = cookedFood(
+        "rhubarb", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> CELERY = cookedFood(
+        "celery", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, Item> TOBACCO = ITEMS.register("tobacco",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, WeightedCookedFoodItem> RADISH = cookedFood(
+        "radish", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> PARSNIP = cookedFood(
+        "parsnip", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> YAM = cookedFood(
+        "yam", 3, 0.3f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
+public static final DeferredHolder<Item, WeightedCookedFoodItem> RUTABAGA = cookedFood(
+        "rutabaga", 2, 0.2f, "produce", WeightedCookedFoodItem.PRODUCE_MULTIPLIER);
 
 public static final DeferredHolder<Item, Item> BARLEY = ITEMS.register("barley",
         () -> new Item(new Item.Properties()));
 public static final DeferredHolder<Item, Item> OATS = ITEMS.register("oats",
         () -> new Item(new Item.Properties()));
 public static final DeferredHolder<Item, Item> RYE = ITEMS.register("rye",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> STRAW = ITEMS.register("straw",
         () -> new Item(new Item.Properties()));
 public static final DeferredHolder<Item, Item> FLOUR = ITEMS.register("flour",
         () -> new Item(new Item.Properties()));
@@ -395,9 +510,140 @@ public static final DeferredHolder<Item, Item> TANNED_LEATHER = ITEMS.register("
 public static final DeferredHolder<Item, Item> FARMING_BLOCK_ITEM = ITEMS.register("farming_block",
             () -> new net.minecraft.world.item.BlockItem(BlockRegistry.FARMING_BLOCK.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, Item> COMMUNITY_FARM_BLOCK_ITEM = ITEMS.register("community_farm_block",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.COMMUNITY_FARM_BLOCK.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, Item> ORANGE_TREE_ROOT_ITEM = ITEMS.register("orange_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.ORANGE_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> ORANGE_TREE_TRUNK_ITEM = ITEMS.register("orange_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.ORANGE_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> LEMON_TREE_ROOT_ITEM = ITEMS.register("lemon_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.LEMON_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> LEMON_TREE_TRUNK_ITEM = ITEMS.register("lemon_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.LEMON_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> LIME_TREE_ROOT_ITEM = ITEMS.register("lime_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.LIME_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> LIME_TREE_TRUNK_ITEM = ITEMS.register("lime_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.LIME_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> PEAR_TREE_ROOT_ITEM = ITEMS.register("pear_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.PEAR_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> PEAR_TREE_TRUNK_ITEM = ITEMS.register("pear_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.PEAR_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> PEACH_TREE_ROOT_ITEM = ITEMS.register("peach_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.PEACH_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> PEACH_TREE_TRUNK_ITEM = ITEMS.register("peach_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.PEACH_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> APPLE_TREE_ROOT_ITEM = ITEMS.register("apple_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.APPLE_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> APPLE_TREE_TRUNK_ITEM = ITEMS.register("apple_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.APPLE_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> CHERRY_TREE_ROOT_ITEM = ITEMS.register("cherry_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.CHERRY_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> CHERRY_TREE_TRUNK_ITEM = ITEMS.register("cherry_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.CHERRY_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> OLIVE_TREE_ROOT_ITEM = ITEMS.register("olive_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.OLIVE_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> OLIVE_TREE_TRUNK_ITEM = ITEMS.register("olive_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.OLIVE_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> PLUM_TREE_ROOT_ITEM = ITEMS.register("plum_tree_root",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.PLUM_TREE_ROOT_BLOCK.get(), new Item.Properties()));
+public static final DeferredHolder<Item, Item> PLUM_TREE_TRUNK_ITEM = ITEMS.register("plum_tree_trunk",
+            () -> new net.minecraft.world.item.BlockItem(BlockRegistry.PLUM_TREE_TRUNK_BLOCK.get(), new Item.Properties()));
+
+public static final DeferredHolder<Item, FertilizedDirtItem> FERTILIZED_DIRT = ITEMS.register("fertilized_dirt",
+        () -> new FertilizedDirtItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, WateringCanItem> WATERING_CAN = ITEMS.register("watering_can",
+        () -> new WateringCanItem(new Item.Properties().stacksTo(1)));
+
+public static final DeferredHolder<Item, FarmingHoeItem> FARMING_HOE = ITEMS.register("farming_hoe",
+        () -> new FarmingHoeItem(new Item.Properties().stacksTo(1).durability(128)));
+
+public static final DeferredHolder<Item, Item> SKINNING_KNIFE = ITEMS.register("skinning_knife",
+        () -> new Item(new Item.Properties().durability(128)));
+
+// Flower content is deliberately ordinary inventory content in Milestone 3.
+// FlowerRegistry remains the sole authoritative seed-to-species mapping; later
+// interaction work may delegate harvested items to CropSeedExtractor.
+public static final DeferredHolder<Item, HarvestedFlowerItem> POPPY = harvestedFlowerItem("poppy");
+public static final DeferredHolder<Item, Item> POPPY_SEEDS = flowerContentItem("poppy_seeds");
+public static final DeferredHolder<Item, HarvestedFlowerItem> SNOWDROP = harvestedFlowerItem("snowdrop");
+public static final DeferredHolder<Item, Item> SNOWDROP_SEEDS = flowerContentItem("snowdrop_seeds");
+public static final DeferredHolder<Item, HarvestedFlowerItem> LILY = harvestedFlowerItem("lily");
+public static final DeferredHolder<Item, Item> LILY_SEEDS = flowerContentItem("lily_seeds");
+public static final DeferredHolder<Item, HarvestedFlowerItem> FOXGLOVE = harvestedFlowerItem("foxglove");
+public static final DeferredHolder<Item, Item> FOXGLOVE_SEEDS = flowerContentItem("foxglove_seeds");
+public static final DeferredHolder<Item, HarvestedFlowerItem> CAMPION = harvestedFlowerItem("campion");
+public static final DeferredHolder<Item, Item> CAMPION_SEEDS = flowerContentItem("campion_seeds");
+public static final DeferredHolder<Item, HarvestedFlowerItem> HYACINTH = harvestedFlowerItem("hyacinth");
+public static final DeferredHolder<Item, Item> HYACINTH_SEEDS = flowerContentItem("hyacinth_seeds");
+public static final DeferredHolder<Item, HarvestedFlowerItem> ORFLUER = harvestedFlowerItem("orfluer");
+public static final DeferredHolder<Item, Item> ORFLUER_SEEDS = flowerContentItem("orfluer_seeds");
+
     // 2. Grape Seeds (Connects to the Block)
 public static final DeferredHolder<Item, GrapeSeedsItem> GRAPE_SEEDS = ITEMS.register("grape_seeds",
     () -> new GrapeSeedsItem(new Item.Properties()));
+
+public static final DeferredHolder<Item, CropSeedItem> SQUASH_SEEDS = cropSeed("squash_seeds", "squash");
+public static final DeferredHolder<Item, CropSeedItem> CARROT_SEEDS = cropSeed("carrot_seeds", "carrot");
+public static final DeferredHolder<Item, CropSeedItem> CORN_SEEDS = cropSeed("corn_seeds", "corn");
+public static final DeferredHolder<Item, CropSeedItem> CABBAGE_SEEDS = cropSeed("cabbage_seeds", "cabbage");
+public static final DeferredHolder<Item, CropSeedItem> LETTUCE_SEEDS = cropSeed("lettuce_seeds", "lettuce");
+public static final DeferredHolder<Item, CropSeedItem> YELLOW_ONION_SEEDS = cropSeed("yellow_onion_seeds", "yellow_onion");
+public static final DeferredHolder<Item, CropSeedItem> GREEN_ONION_SEEDS = cropSeed("green_onion_seeds", "green_onion");
+public static final DeferredHolder<Item, CropSeedItem> PUMPKIN_SEEDS_CUSTOM = cropSeed("pumpkin_seeds_custom", "pumpkin");
+public static final DeferredHolder<Item, CropSeedItem> POTATO_SEED = cropSeed("potato_seed", "potato");
+public static final DeferredHolder<Item, CropSeedItem> WATERMELON_SEEDS = cropSeed("watermelon_seeds", "watermelon");
+public static final DeferredHolder<Item, CropSeedItem> RYE_SEEDS = cropSeed("rye_seeds", "rye");
+public static final DeferredHolder<Item, CropSeedItem> BARLEY_SEEDS = cropSeed("barley_seeds", "barley");
+public static final DeferredHolder<Item, CropSeedItem> OAT_SEEDS = cropSeed("oat_seeds", "oats");
+public static final DeferredHolder<Item, CropSeedItem> MUSTARD_SEEDS = cropSeed("mustard_seeds", "mustard");
+public static final DeferredHolder<Item, CropSeedItem> BEAN_SEEDS = cropSeed("bean_seeds", "beans");
+public static final DeferredHolder<Item, CropSeedItem> RICE_SEEDS = cropSeed("rice_seeds", "rice");
+public static final DeferredHolder<Item, CropSeedItem> TOMATO_SEEDS = cropSeed("tomato_seeds", "tomato");
+public static final DeferredHolder<Item, CropSeedItem> GARLIC_SEEDS = cropSeed("garlic_seeds", "garlic");
+public static final DeferredHolder<Item, CropSeedItem> GINSENG_SEEDS = cropSeed("ginseng_seeds", "ginseng");
+public static final DeferredHolder<Item, CropSeedItem> MANDRAKE_SEEDS = cropSeed("mandrake_seeds", "mandrake");
+public static final DeferredHolder<Item, CropSeedItem> NIGHTSHADE_SEEDS = cropSeed("nightshade_seeds", "nightshade");
+public static final DeferredHolder<Item, CropSeedItem> PINEAPPLE_SEEDS = cropSeed("pineapple_seeds", "pineapple");
+public static final DeferredHolder<Item, CropSeedItem> STRAWBERRY_SEEDS = cropSeed("strawberry_seeds", "strawberry");
+public static final DeferredHolder<Item, CropSeedItem> BLUEBERRY_SEEDS = cropSeed("blueberry_seeds", "blueberry");
+public static final DeferredHolder<Item, CropSeedItem> RASPBERRY_SEEDS = cropSeed("raspberry_seeds", "raspberry");
+public static final DeferredHolder<Item, CropSeedItem> CRANBERRY_SEEDS = cropSeed("cranberry_seeds", "cranberry");
+public static final DeferredHolder<Item, CropSeedItem> BLACKBERRY_SEEDS = cropSeed("blackberry_seeds", "blackberry");
+public static final DeferredHolder<Item, CropSeedItem> HUCKLEBERRY_SEEDS = cropSeed("huckleberry_seeds", "huckleberry");
+public static final DeferredHolder<Item, CropSeedItem> MULBERRY_SEEDS = cropSeed("mulberry_seeds", "mulberry");
+public static final DeferredHolder<Item, CropSeedItem> ELDERBERRY_SEEDS = cropSeed("elderberry_seeds", "elderberry");
+public static final DeferredHolder<Item, CropSeedItem> CHERRY_SEEDS = cropSeed("cherry_seeds", "cherries");
+public static final DeferredHolder<Item, CropSeedItem> COTTON_SEEDS = cropSeed("cotton_seeds", "cotton");
+public static final DeferredHolder<Item, CropSeedItem> FLAX_SEEDS = cropSeed("flax_seeds", "flax");
+public static final DeferredHolder<Item, CropSeedItem> HEMP_SEEDS = cropSeed("hemp_seeds", "hemp");
+public static final DeferredHolder<Item, CropSeedItem> HOPS_SEEDS = cropSeed("hops_seeds", "hops");
+public static final DeferredHolder<Item, CropSeedItem> SNOW_PEA_SEEDS = cropSeed("snow_pea_seeds", "snow_peas");
+public static final DeferredHolder<Item, CropSeedItem> PEA_SEEDS = cropSeed("pea_seeds", "peas");
+public static final DeferredHolder<Item, CropSeedItem> TURNIP_SEEDS = cropSeed("turnip_seeds", "turnips");
+public static final DeferredHolder<Item, CropSeedItem> APPLE_SEEDS = cropSeed("apple_seeds", "apple");
+public static final DeferredHolder<Item, CropSeedItem> PEAR_SEEDS = cropSeed("pear_seeds", "pear");
+public static final DeferredHolder<Item, CropSeedItem> PEACH_SEEDS = cropSeed("peach_seeds", "peach");
+public static final DeferredHolder<Item, CropSeedItem> LEMON_SEEDS = cropSeed("lemon_seeds", "lemon");
+public static final DeferredHolder<Item, CropSeedItem> LIME_SEEDS = cropSeed("lime_seeds", "lime");
+public static final DeferredHolder<Item, CropSeedItem> ORANGE_SEEDS = cropSeed("orange_seeds", "orange");
+public static final DeferredHolder<Item, CropSeedItem> OLIVE_SEEDS = cropSeed("olive_seeds", "olive");
+public static final DeferredHolder<Item, CropSeedItem> PLUM_SEEDS = cropSeed("plum_seeds", "plum");
+public static final DeferredHolder<Item, CropSeedItem> BELL_PEPPER_SEEDS = cropSeed("bell_pepper_seeds", "bell_peppers");
+public static final DeferredHolder<Item, CropSeedItem> CUCUMBER_SEEDS = cropSeed("cucumber_seeds", "cucumbers");
+public static final DeferredHolder<Item, CropSeedItem> HONEYDEW_SEEDS = cropSeed("honeydew_seeds", "honeydew");
+public static final DeferredHolder<Item, CropSeedItem> CANTALOUPE_SEEDS = cropSeed("cantaloupe_seeds", "cantaloupe");
+public static final DeferredHolder<Item, CropSeedItem> BANANA_SEEDS = cropSeed("banana_seeds", "banana");
+public static final DeferredHolder<Item, CropSeedItem> BROCCOLI_SEEDS = cropSeed("broccoli_seeds", "broccoli");
+public static final DeferredHolder<Item, CropSeedItem> CAULIFLOWER_SEEDS = cropSeed("cauliflower_seeds", "cauliflower");
+public static final DeferredHolder<Item, CropSeedItem> RHUBARB_SEEDS = cropSeed("rhubarb_seeds", "rhubarb");
+public static final DeferredHolder<Item, CropSeedItem> CELERY_SEEDS = cropSeed("celery_seeds", "celery");
+public static final DeferredHolder<Item, CropSeedItem> TOBACCO_SEEDS = cropSeed("tobacco_seeds", "tobacco");
+public static final DeferredHolder<Item, CropSeedItem> RADISH_SEEDS = cropSeed("radish_seeds", "radish");
+public static final DeferredHolder<Item, CropSeedItem> PARSNIP_SEEDS = cropSeed("parsnip_seeds", "parsnip");
+public static final DeferredHolder<Item, CropSeedItem> YAM_SEEDS = cropSeed("yam_seeds", "yam");
+public static final DeferredHolder<Item, CropSeedItem> RUTABAGA_SEEDS = cropSeed("rutabaga_seeds", "rutabaga");
 
     // The Juice Press Output
 // Keep this one as a standard BlockItem (so clicking air with an empty pitcher does nothing)

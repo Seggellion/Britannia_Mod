@@ -90,7 +90,7 @@ public final class WorldBootstrapHandler {
 
         FishCatalog.clear();
         data.fish().forEach(FishCatalog::put);
-        RegionCache.update(data.regions());
+        RegionCache.update(data.regions(), data.shard(), data.httpStatus(), data.status());
         GrapeVarietyManager.loadFromBootstrap(data.grapes());
 
         if (data.shardUser() != null) {
@@ -179,8 +179,14 @@ public final class WorldBootstrapHandler {
             if (failure != null || data == null || !data.successful()) {
                 String failureCode = classifyFailure(data, failure);
                 ServerAuthRegistry.recordBootstrapResult(server, failureCode);
-                LOGGER.warn("World bootstrap did not complete code={} player={}",
-                    failureCode, player.getGameProfile().getName());
+                // The previously applied caches stay authoritative; record the fallback
+                // diagnostics so operators can inspect the last bootstrap outcome.
+                RegionCache.retainExisting(
+                    data != null ? data.shard() : "<unknown>",
+                    data != null ? data.httpStatus() : -1,
+                    data != null ? data.status() : failureCode);
+                LOGGER.warn("World bootstrap did not complete code={} player={}; {} cached regions remain",
+                    failureCode, player.getGameProfile().getName(), RegionCache.count());
                 return;
             }
             apply(player, data);

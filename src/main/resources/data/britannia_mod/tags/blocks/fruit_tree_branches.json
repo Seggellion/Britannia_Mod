@@ -1,0 +1,14 @@
+{
+    "replace":  false,
+    "values":  [
+                   "britannia_mod:orange_tree_branch",
+                   "britannia_mod:lemon_tree_branch",
+                   "britannia_mod:lime_tree_branch",
+                   "britannia_mod:pear_tree_branch",
+                   "britannia_mod:peach_tree_branch",
+                   "britannia_mod:apple_tree_branch",
+                   "britannia_mod:cherry_tree_branch",
+                   "britannia_mod:olive_tree_branch",
+                   "britannia_mod:plum_tree_branch"
+               ]
+}
