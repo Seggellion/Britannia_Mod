@@ -90,12 +90,6 @@ class Milestone14RRemovalAndPreservationTest {
 
     @Test
     void scaffoldAndStatusHaveNoCraftingContract() throws Exception {
-        // The banner intake/review documents are excluded from the Patch 18
-        // integration line by owner policy (they stay on the banners-dyetub branch).
-        org.junit.jupiter.api.Assumptions.assumeTrue(
-                java.nio.file.Files.exists(java.nio.file.Path.of(
-                        System.getProperty("britannia.projectDir", "."), "content/banner_catalogue_status.md")),
-                "content/banner_catalogue_status.md is not present on this branch (owner exclusion policy)");
         String scaffold = Files.readString(ROOT.resolve(
                 "tools/scaffold/com/seggellion/britannia_mod/tools/BannerScaffoldTool.java"));
         String status = Files.readString(ROOT.resolve("content/banner_catalogue_status.md"));

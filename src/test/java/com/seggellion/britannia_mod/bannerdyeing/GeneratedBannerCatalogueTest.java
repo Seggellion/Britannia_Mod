@@ -264,12 +264,6 @@ class GeneratedBannerCatalogueTest {
 
     @Test
     void statusReportListsEveryProvisionalEntryAndGateBFacts() throws Exception {
-        // The banner intake/review documents are excluded from the Patch 18
-        // integration line by owner policy (they stay on the banners-dyetub branch).
-        org.junit.jupiter.api.Assumptions.assumeTrue(
-                java.nio.file.Files.exists(java.nio.file.Path.of(
-                        System.getProperty("britannia.projectDir", "."), "content/banner_catalogue_status.md")),
-                "content/banner_catalogue_status.md is not present on this branch (owner exclusion policy)");
         String status = Files.readString(Path.of(System.getProperty("britannia.projectDir", "."), BannerScaffoldTool.STATUS_PATH));
         BannerScaffoldTool.Manifest manifest = BannerScaffoldTool.readAndValidateManifest(
                 Path.of(System.getProperty("britannia.projectDir", "."), BannerScaffoldTool.MANIFEST_PATH));

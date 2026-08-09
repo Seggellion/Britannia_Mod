@@ -210,12 +210,6 @@ class ParallelLargeGateECloseoutTest {
 
     @Test
     void generatedDefinitionsAndStatusReportAgreeOnFinalTotals() throws Exception {
-        // The banner intake/review documents are excluded from the Patch 18
-        // integration line by owner policy (they stay on the banners-dyetub branch).
-        org.junit.jupiter.api.Assumptions.assumeTrue(
-                java.nio.file.Files.exists(java.nio.file.Path.of(
-                        System.getProperty("britannia.projectDir", "."), "content/banner_catalogue_status.md")),
-                "content/banner_catalogue_status.md is not present on this branch (owner exclusion policy)");
         Path definitions = Path.of(System.getProperty("britannia.projectDir", "."),
                 "src/main/resources/data/britannia_mod/banner_definitions");
         try (var paths = Files.list(definitions)) {
