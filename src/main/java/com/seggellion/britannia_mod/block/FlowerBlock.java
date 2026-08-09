@@ -52,7 +52,21 @@ public final class FlowerBlock extends Block implements EntityBlock {
 
     @Override
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        if (!(level.getBlockEntity(pos) instanceof FlowerBlockEntity flower) || !flower.isInitialized()) {
+        if (!(level.getBlockEntity(pos) instanceof FlowerBlockEntity flower)) {
+            return;
+        }
+        tickFlower(state, level, pos, random, flower);
+    }
+
+    /** Shared weather and growth entry point for FlowerBlock and in-place house plots. */
+    public static void tickFlower(
+            BlockState state,
+            ServerLevel level,
+            BlockPos pos,
+            RandomSource random,
+            FlowerBlockEntity flower
+    ) {
+        if (!flower.isInitialized()) {
             return;
         }
 

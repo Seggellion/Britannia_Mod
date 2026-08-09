@@ -64,7 +64,7 @@ public final class TallCropSupport {
         int upperSegments = upperSegmentCountForStage(crop, stage);
         for (int offset = 1; offset <= upperSegments; offset++) {
             BlockState state = level.getBlockState(basePos.above(offset));
-            if (!(state.canBeReplaced() || state.getBlock() instanceof CornStalkBlock)) {
+            if (!(state.canBeReplaced() || isSegmentForCrop(state, crop))) {
                 return false;
             }
         }
@@ -148,13 +148,13 @@ public final class TallCropSupport {
             BlockPos pos = basePos.above(offset);
             BlockState current = level.getBlockState(pos);
             if (offset <= upperSegments) {
-                if (current.canBeReplaced() || current.getBlock() instanceof CornStalkBlock) {
+                if (current.canBeReplaced() || isSegmentForCrop(current, crop)) {
                     level.setBlock(pos, BlockRegistry.CORN_STALK_BLOCK.get().defaultBlockState()
                             .setValue(CornStalkBlock.AGE, Math.max(0, Math.min(crop.maxGrowthAge(), stage)))
                             .setValue(CornStalkBlock.PART, expectedPartForOffset(crop, stage, offset))
                             .setValue(CornStalkBlock.CROP_KIND, cropKind(crop)), 3);
                 }
-            } else if (current.getBlock() instanceof CornStalkBlock) {
+            } else if (isSegmentForCrop(current, crop)) {
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
             }
         }
@@ -166,7 +166,7 @@ public final class TallCropSupport {
         }
         for (int offset = 1; offset <= maxUpperSegmentCount(crop); offset++) {
             BlockPos pos = basePos.above(offset);
-            if (level.getBlockState(pos).getBlock() instanceof CornStalkBlock) {
+            if (isSegmentForCrop(level.getBlockState(pos), crop)) {
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
             }
         }
@@ -235,6 +235,11 @@ public final class TallCropSupport {
         int actualPart = state.getValue(CornStalkBlock.PART);
         return state.getValue(CornStalkBlock.AGE) == expectedAge
                 && actualPart == expectedPartForOffset(crop, stage, offset)
+                && state.getValue(CornStalkBlock.CROP_KIND) == cropKind(crop);
+    }
+
+    private static boolean isSegmentForCrop(BlockState state, CropDefinition crop) {
+        return state.getBlock() instanceof CornStalkBlock
                 && state.getValue(CornStalkBlock.CROP_KIND) == cropKind(crop);
     }
 

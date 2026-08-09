@@ -47,6 +47,18 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
             int packedLight,
             int packedOverlay
     ) {
+        renderFlower(entity, poseStack, bufferSource, packedLight, packedOverlay, FLOWER_RENDER_Y_OFFSET);
+    }
+
+    /** Reuses the canonical flower model and dye-mask passes at a surface-specific anchor. */
+    public static void renderFlower(
+            FlowerBlockEntity entity,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int packedLight,
+            int packedOverlay,
+            double renderYOffset
+    ) {
         FlowerPersistentState state = entity.flowerState().orElse(null);
         if (state == null) {
             return;
@@ -66,7 +78,7 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
                 .apply(resolved.assets().baseTextureId());
         BlockState renderState = entity.getBlockState();
         poseStack.pushPose();
-        poseStack.translate(0.5D, FLOWER_RENDER_Y_OFFSET, 0.5D);
+        poseStack.translate(0.5D, renderYOffset, 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(CropVisualRotation.yawFor(
                 entity.getBlockPos(), plan.visualSpecies().toString()
         )));

@@ -2,7 +2,9 @@ package com.seggellion.britannia_mod.item;
 
 import com.seggellion.britannia_mod.block.CommunityFarmBlock;
 import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
+import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
+import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
 import com.seggellion.britannia_mod.farming.FarmingSkill;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
@@ -33,6 +35,10 @@ public class FarmingHoeItem extends Item {
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
 
+        if (state.getBlock() instanceof HouseFarmPlotBlock) {
+            return clearHouseFarmPlot(context);
+        }
+
         if (state.getBlock() instanceof CommunityHoedFarmBlock) {
             if (!level.isClientSide && context.getPlayer() != null) {
                 context.getPlayer().displayClientMessage(Component.literal("This public plot has already been hoed.").withStyle(ChatFormatting.YELLOW), true);
@@ -48,6 +54,41 @@ public class FarmingHoeItem extends Item {
         return result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
                 ? InteractionResult.PASS
                 : InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static InteractionResult clearHouseFarmPlot(UseOnContext context) {
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        Player player = context.getPlayer();
+        if (!(level.getBlockEntity(pos) instanceof HouseFarmPlotBlockEntity plot)) {
+            return InteractionResult.FAIL;
+        }
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!(level instanceof net.minecraft.server.level.ServerLevel serverLevel)
+                || player == null
+                || !HouseFarmPlotBlock.mayManagePlot(serverLevel, pos, player)) {
+            if (player != null) {
+                player.displayClientMessage(Component.literal("You may only clear a house farm plot you own.").withStyle(ChatFormatting.RED), true);
+            }
+            return InteractionResult.FAIL;
+        }
+
+        plot.initializeDefaultPoppy(serverLevel);
+        if (!plot.clearPersistentAssignment(serverLevel)) {
+            player.displayClientMessage(Component.literal("This house farm plot is already clear.").withStyle(ChatFormatting.YELLOW), true);
+            return InteractionResult.SUCCESS;
+        }
+
+        level.playSound(null, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0f, 1.0f);
+        if (!player.getAbilities().instabuild) {
+            context.getItemInHand().hurtAndBreak(1, player, Player.getSlotForHand(context.getHand()));
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            FarmingSkill.award(serverPlayer, FarmingActionType.TOOL, 1, 1.0f);
+        }
+        return InteractionResult.SUCCESS;
     }
 
     public static ItemInteractionResult prepareCommunityPlot(Level level, BlockPos pos, BlockState state, Player player, ItemStack stack, InteractionHand hand) {

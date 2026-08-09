@@ -3,8 +3,10 @@ package com.seggellion.britannia_mod.farming;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.FlowerBlock;
+import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FlowerBlockEntity;
+import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.util.ModTags;
 import net.minecraft.core.BlockPos;
@@ -263,17 +265,23 @@ public final class FlowerPlantingService {
 
         @Override
         public boolean targetIsFarmingBlock() {
-            return originalState.getBlock() == BlockRegistry.FARMING_BLOCK.get()
-                    && level.getBlockState(pos).getBlock() == BlockRegistry.FARMING_BLOCK.get()
+            boolean supportedSurface = originalState.getBlock() == BlockRegistry.FARMING_BLOCK.get()
+                    || originalState.getBlock() instanceof HouseFarmPlotBlock;
+            return supportedSurface
+                    && level.getBlockState(pos).getBlock() == originalState.getBlock()
                     && level.getBlockEntity(pos) instanceof FarmingBlockEntity;
         }
 
         @Override
         public boolean targetOccupied() {
             BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof HouseFarmPlotBlockEntity housePlot && !housePlot.isCleared()) {
+                return true;
+            }
             return originalState.getValue(FarmingBlock.HAS_SEEDS)
                     || !(blockEntity instanceof FarmingBlockEntity farming)
                     || farming.hasCrop()
+                    || blockEntity instanceof FlowerBlockEntity flower && flower.isInitialized()
                     || farming.getStoredSeed() != null && !farming.getStoredSeed().isBlank();
         }
 
@@ -336,6 +344,10 @@ public final class FlowerPlantingService {
 
         @Override
         public boolean replaceWithFlower(FlowerSoilSnapshot soil) {
+            if (originalState.getBlock() instanceof HouseFarmPlotBlock) {
+                return level.getBlockState(pos).equals(originalState)
+                        && level.getBlockEntity(pos) instanceof HouseFarmPlotBlockEntity;
+            }
             BlockState flowerState = BlockRegistry.FLOWER_BLOCK.get().defaultBlockState()
                     .setValue(FlowerBlock.HYDRATION, soil.hydration())
                     .setValue(FlowerBlock.FERTILIZER, soil.fertilizerLevel());
@@ -359,6 +371,9 @@ public final class FlowerPlantingService {
             if (!(level.getBlockEntity(pos) instanceof FlowerBlockEntity flower)) {
                 throw new IllegalStateException("FlowerBlockEntity disappeared before synchronization");
             }
+            if (flower instanceof HouseFarmPlotBlockEntity housePlot) {
+                housePlot.assignFlower(flower.flowerState().orElseThrow().speciesId());
+            }
             flower.setChangedAndSync();
         }
 
@@ -380,6 +395,11 @@ public final class FlowerPlantingService {
             FarmingBlockEntity.FlowerConversionSnapshot snapshot = rollbackSnapshot.orElse(null);
             if (snapshot == null) {
                 return false;
+            }
+            if (level.getBlockEntity(pos) instanceof HouseFarmPlotBlockEntity housePlot
+                    && originalState.getBlock() instanceof HouseFarmPlotBlock) {
+                housePlot.rollbackFlowerPlanting(snapshot);
+                return level.getBlockState(pos).equals(originalState) && housePlot.isCleared();
             }
             if (!level.getBlockState(pos).equals(snapshot.blockState())
                     && !level.setBlock(pos, snapshot.blockState(), 3)) {

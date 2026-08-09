@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
+import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
 import com.seggellion.britannia_mod.farming.CropDefinition;
@@ -550,7 +551,9 @@ public class FarmingBlock extends Block implements EntityBlock {
                 toolStack.hurtAndBreak(1, player, Player.getSlotForHand(hand));
             }
 
-            if (crop.persistsAfterHarvest()) {
+            boolean persistentHouseAssignment = farmBe instanceof HouseFarmPlotBlockEntity housePlot
+                    && housePlot.assignmentMatches(crop);
+            if (crop.persistsAfterHarvest() || persistentHouseAssignment) {
                 farmBe.regrowAfterHarvest(crop);
                 level.setBlock(pos, state.setValue(HAS_SEEDS, true), 3);
             } else {
@@ -590,6 +593,12 @@ public class FarmingBlock extends Block implements EntityBlock {
         if (!(anchorState.getBlock() instanceof FarmingBlock farmingBlock)
                 || !(level.getBlockEntity(anchor) instanceof FarmingBlockEntity farmBe)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (anchorState.getBlock() instanceof HouseFarmPlotBlock
+                && level instanceof ServerLevel serverLevel
+                && !HouseFarmPlotBlock.mayManagePlot(serverLevel, anchor, player)) {
+            player.displayClientMessage(Component.literal("You may only harvest a house farm plot you own."), true);
+            return ItemInteractionResult.SUCCESS;
         }
 
         return tryHarvestCrop(farmBe, anchorState, level, anchor, player, toolStack, hand, "tall_crop_segment");
