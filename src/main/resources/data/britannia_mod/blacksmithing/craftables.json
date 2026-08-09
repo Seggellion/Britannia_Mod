@@ -4999,7 +4999,7 @@
                         "id":  "pike",
                         "category":  "Polearms",
                         "display_name":  "Pike",
-                        "output":  "britannia_mod:pike",
+                        "output":  "britannia_mod:pike_polearm",
                         "output_count":  1,
                         "ingredients":  [
                                             {
