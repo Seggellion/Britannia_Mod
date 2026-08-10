@@ -74,9 +74,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Folded cloth | `folded_cloth` | `PLACEHOLDER` | Temporary purchased fabric-stack art imported in Milestone 2 |
 | Loom | `loom` | `PLACEHOLDER` | Temporary purchased model re-authored to the requested 32x48x16-voxel envelope |
 | Bolt of cloth | `bolt_of_cloth` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
-| Spinning wheel | `spinning_wheel` | `MISSING` | Required |
-| Ball of yarn | `ball_of_yarn` | `MISSING` | Item icon/model required |
-| Spool of thread | `spool_of_thread` | `PARTIAL` | Fabric-spool art exists; dedicated item representation needed |
+| Spinning wheel | `spinning_wheel` | `PLACEHOLDER` | Functional one-cell magenta/black replacement-art block implemented in Milestone 8 |
+| Ball of yarn | `ball_of_yarn` | `PLACEHOLDER` | Final processing ID with unmistakable vanilla-texture placeholder item model |
+| Spool of thread | `spool_of_thread` | `PLACEHOLDER` | Final processing ID with unmistakable vanilla-texture placeholder item model |
 | Silk textile input | `silk` | `MISSING` | Deferred textile item/art; must not alias spiders' silk |
 | Display case family | `display_case` | `MISSING` | Single/end/middle/corner placeholder set required |
 | Pewter mug | `pewter_mug` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
@@ -349,29 +349,29 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:spinning_wheel`; functional processing block/structure.
 - Source model/texture: none. `standing_loom` and `tailoring_station` are not spinning wheels and will not be silently relabeled.
 - Source format/checksum: none.
-- Import status: `MISSING`.
-- Proposed targets: processing block/root block entity, recipes/data, standard resources/registries/localization/loot.
+- Import status: `PLACEHOLDER` — functional one-cell block implemented in Milestone 8 with unmistakable magenta/black code-authored replacement art.
+- Final targets: immediate processing block, standard resources/registries/localization/loot. No hidden inventory or block entity is required by the approved interaction contract.
 - Required behavior: wool → `ball_of_yarn`; cotton/flax/future silk → `spool_of_thread`; server-authoritative and duplication-safe.
 - Dimensions/animation/collision: deferred to placeholder/final art; animation not required by current contract.
-- Notes/blockers: physical footprint cannot be derived from current art.
+- Notes/blockers: the one-cell footprint is explicitly temporary because no source art exists; final art may justify a later footprint migration.
 
 #### Ball of yarn
 
 - Proposed registry ID/category: `britannia_mod:ball_of_yarn`; processing item.
 - Source model/texture: none.
-- Import status: `MISSING`.
-- Proposed targets: `ItemRegistry`, `models/item/ball_of_yarn.json`, `textures/item/ball_of_yarn.png`, localization/creative tab.
+- Import status: `PLACEHOLDER` — final ID and processing behavior implemented in Milestone 8 using a conspicuous vanilla-texture placeholder model.
+- Final targets: `ItemRegistry`, final item model/texture, localization/creative tab.
 - Required behavior: output from wool and valid 5-item loom input.
 - Dimensions/animation/collision: inventory item, no block collision/animation.
-- Notes/blockers: item placeholder/icon required.
+- Notes/blockers: final dedicated icon is still required.
 
 #### Spool of thread
 
 - Proposed registry ID/category: `britannia_mod:spool_of_thread`; processing item.
 - Candidate source: tailoring pack `fabric_spools.json`/`.png`.
 - Format/checksum: JSON `d1024c6b217116bce9069a2b46c0a014635131fab56809b5cd9652f65aed1b78`; PNG `d94ac30cf6e7c7b2e0e3f70e6bfd9f72251500e628570bf193e4fda6fe6fbfcc`.
-- Import status: `PARTIAL` — complete placeable spool geometry exists, but a dedicated inventory icon/item representation still needs design.
-- Proposed targets: `ItemRegistry`, item model/texture/localization/creative tab; optionally a placeable decoration only if explicitly retained.
+- Import status: `PLACEHOLDER` — final item ID and processing behavior implemented in Milestone 8 using a conspicuous vanilla-texture placeholder model. The oversized purchased prop was deliberately not used as the handheld model.
+- Final targets: `ItemRegistry`, final item model/texture/localization/creative tab; the optional placeable decoration remains unauthorized.
 - Required behavior: output from cotton/flax/future silk and valid 5-item loom input.
 - Dimensions/animation/collision: source prop is about 17×32×15 voxels; no animation. Item-only form has no collision.
 - Notes/blockers: avoid making a two-block-tall prop the default handheld item model without transform review.

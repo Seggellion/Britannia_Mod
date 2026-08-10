@@ -258,6 +258,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.MOONGLOW_BUSH_ITEM.get());
                 safeAccept(output, ItemRegistry.FOLDED_CLOTH_ITEM.get());
                 safeAccept(output, ItemRegistry.BOLT_OF_CLOTH_ITEM.get());
+                safeAccept(output, ItemRegistry.BALL_OF_YARN.get());
+                safeAccept(output, ItemRegistry.SPOOL_OF_THREAD.get());
                 safeAccept(output, ItemRegistry.PEWTER_MUG_ITEM.get());
                 safeAccept(output, ItemRegistry.KETTLE_ITEM.get());
                 safeAccept(output, ItemRegistry.PLATES_AND_SILVERWARE_ITEM.get());
@@ -271,6 +273,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SCARECROW_ITEM.get());
                 safeAccept(output, ItemRegistry.DRESS_FORM_ITEM.get());
                 safeAccept(output, ItemRegistry.LOOM_ITEM.get());
+                safeAccept(output, ItemRegistry.SPINNING_WHEEL_ITEM.get());
                 safeAccept(output, ItemRegistry.SMALL_CRATE_ITEM.get());
                 safeAccept(output, ItemRegistry.MEDIUM_CRATE_ITEM.get());
                 safeAccept(output, ItemRegistry.LARGE_CRATE_ITEM.get());

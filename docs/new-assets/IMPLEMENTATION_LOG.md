@@ -470,4 +470,39 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 7 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 7 as `63a3492f` (`Add animated training dummy`).
+
+## Milestone 8 — Textile Processing
+
+### Scope implemented
+
+- Starting HEAD: `63a3492f`.
+- Added final inventory IDs `britannia_mod:ball_of_yarn` and `britannia_mod:spool_of_thread` with temporary unmistakable placeholder models.
+- Added `britannia_mod:spinning_wheel` as a functional one-cell replacement-art block. One wool item produces one ball of yarn; one existing `britannia_mod:cotton` or `britannia_mod:flax` produces one spool of thread.
+- Upgraded the existing 2×3 `britannia_mod:loom` in place to accept five balls of yarn or five spools of thread and produce one existing placeable `britannia_mod:folded_cloth`.
+- Exchanges are immediate and server-authoritative. Input is consumed and output is inserted exactly once; a full inventory drops the output at the player instead of losing or duplicating it. Insufficient loom stacks fail without mutation, and unsupported inputs pass through without mutation.
+- No silk inventory item was registered. `britannia_mod:spiders_silk` is explicitly unsupported, preserving the owner's boundary that future textile silk is a distinct material.
+- No processing GUI, persistent machine inventory, timer, energy system, broader tailoring recipes, bolt-of-cloth conversion, or placeable spool block was added.
+
+### Art and registration
+
+- The spinning wheel uses code-authored magenta/black one-block placeholder geometry because the source inventory contains no spinning-wheel art; its footprint must be reviewed when replacement art arrives.
+- Yarn and thread use conspicuous vanilla-texture placeholder item models. The purchased two-block-tall fabric-spool prop was not repurposed as the handheld thread item.
+- Added block/item registrations, creative-tab entries, localization, spinning-wheel blockstate/models/loot, axe mineability, and updated the repository item-count preservation guard from 760 to 763.
+
+### Validation performed
+
+- Focused conversion-policy and resource-contract tests: PASS.
+- `gradlew.bat build --no-daemon --no-configuration-cache`: PASS; 1,702 tests completed, 17 skipped, zero failures or errors.
+- Dedicated-server GameTests: PASS; all 345 required tests passed. The Milestone 8 test covers wool/cotton/flax one-to-one exchanges, five-yarn and five-thread loom exchanges through a child cell, insufficient-input rollback, spiders'-silk rejection, exact full-inventory output dropping at the player, and isolated two-player loom exchanges.
+- Development-client startup reached completed resource reload with no `spinning_wheel`, `ball_of_yarn`, or `spool_of_thread` model/blockstate/texture warnings or errors. Unrelated pre-existing resource warnings remain elsewhere in the mod.
+
+### Validation still requiring an interactive client/multiplayer session
+
+- Final placeholder presentation, facing, collision, sounds, creative entries, full-inventory drops, rapid interaction, and two-player exchanges require live review.
+- Future `britannia_mod:silk` acquisition and spinning-wheel support remain deliberately deferred; spiders' silk must continue to be rejected.
+
+### Commit status
+
+- Milestone 8 remains uncommitted pending owner review and explicit commit authorization.

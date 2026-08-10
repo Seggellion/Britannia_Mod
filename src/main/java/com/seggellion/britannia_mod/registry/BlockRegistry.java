@@ -6,6 +6,8 @@ import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
+import com.seggellion.britannia_mod.block.LoomBlock;
+import com.seggellion.britannia_mod.block.SpinningWheelBlock;
 import com.seggellion.britannia_mod.block.TrainingDummyBlock;
 import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
@@ -2281,14 +2283,24 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             ? Block.box(3, 0, 3, 13, 16, 13)
                             : Block.box(4, 0, 5, 12, 16, 11)));
 
-    public static final DeferredHolder<Block, DecorativeMultiblockBlock> LOOM = BLOCKS.register("loom", () ->
-            new DecorativeMultiblockBlock(
+    public static final DeferredHolder<Block, LoomBlock> LOOM = BLOCKS.register("loom", () ->
+            new LoomBlock(
                     BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
                             .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
                     0, 1, -1, 1, 0, 0,
                     (x, y, z) -> y == 1
                             ? Block.box(1, 0, 4, 15, 8, 12)
                             : Block.box(2, 0, 4, 14, 16, 12)));
+
+    public static final DeferredHolder<Block, SpinningWheelBlock> SPINNING_WHEEL = BLOCKS.register(
+            "spinning_wheel", () -> new SpinningWheelBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(1.5F)
+                            .sound(SoundType.WOOD).noOcclusion(),
+                    Shapes.or(
+                            Block.box(1, 0, 5, 15, 3, 11),
+                            Block.box(3, 3, 6, 5, 16, 10),
+                            Block.box(11, 3, 6, 13, 16, 10),
+                            Block.box(5, 5, 6, 11, 15, 10))));
 
     public static final DeferredHolder<Block, CrateBlock> SMALL_CRATE = BLOCKS.register("small_crate", () ->
             new CrateBlock(

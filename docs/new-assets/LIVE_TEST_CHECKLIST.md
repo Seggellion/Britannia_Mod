@@ -233,3 +233,39 @@ Automated unit tests, the full build, the dedicated GameTest server, and client 
 - Art/animation/collision result:
 - Screenshots or log path:
 - Accepted placeholder/replacement notes:
+
+## Milestone 8 — Textile Processing
+
+Automated checks cover the exact ratios, supported/rejected material policy, resource shape, registry preservation, and dedicated-server transactions. The following presentation and interaction checks remain for a live client.
+
+### Spinning wheel
+
+- [ ] Confirm `Spinning Wheel (Placeholder)` appears exactly once in the Britannia creative tab, places in all four facings, drops itself, and is axe-mineable.
+- [ ] Inspect its unmistakable magenta/black temporary appearance, one-cell footprint, collision, item presentation, and processing sound.
+- [ ] Right-click with every vanilla wool color and verify exactly one wool becomes exactly one `ball_of_yarn` per interaction.
+- [ ] Right-click separately with cotton and flax and verify exactly one input becomes exactly one `spool_of_thread` per interaction.
+- [ ] Try spiders' silk, hemp, empty hand, yarn, thread, and unrelated items; verify the wheel consumes and produces nothing.
+
+### Loom
+
+- [ ] Interact with every cell of the existing 2×3 loom using exactly five yarn; verify one folded cloth is produced and the whole input is consumed.
+- [ ] Repeat with exactly five thread and then with larger stacks; verify each interaction consumes exactly five and produces exactly one folded cloth.
+- [ ] Try zero through four yarn/thread and unsupported items; verify no item mutation or output occurs.
+- [ ] Confirm the existing loom still places/tears down atomically in all facings and its temporary model, collision, and item presentation are unchanged.
+
+### Inventory and multiplayer safety
+
+- [ ] Fill the player inventory, perform each valid conversion, and verify the single output drops safely without loss or duplication.
+- [ ] Spam interactions and have two players use the same wheel/loom simultaneously; verify every accepted server interaction has exactly one input debit and one output credit.
+- [ ] Confirm no silk item exists yet and `britannia_mod:spiders_silk` never converts to thread.
+
+### Milestone 8 acceptance record
+
+- Tester/date:
+- Client/dedicated-server result:
+- Spinning-wheel conversion result:
+- Loom conversion result:
+- Full-inventory/multiplayer result:
+- Art/collision/sound result:
+- Screenshots or log path:
+- Accepted placeholder/replacement notes:

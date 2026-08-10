@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/new_assets/spinning_wheel" },
+    "facing=east": { "model": "britannia_mod:block/new_assets/spinning_wheel", "y": 90 },
+    "facing=south": { "model": "britannia_mod:block/new_assets/spinning_wheel", "y": 180 },
+    "facing=west": { "model": "britannia_mod:block/new_assets/spinning_wheel", "y": 270 }
+  }
+}
