@@ -138,7 +138,49 @@ The test suite has now run; see §3. Not yet re-run after my fixes.
 
 ---
 
-## 6. Seeds have never been run — **OPEN**
+## 6a. Seeds are run — **CLOSED**, and the result was clean
+
+```
+created (34) ... already present: 5 ... total skills now: 39
+Guildmaster definitions seeded: 12 guilds
+```
+
+Every guild landed with exactly its RunUO roster count — bard 6, blacksmith 4, fisher 1, healer 5,
+mage 7, merchant 2, miner 2, ranger 11, tailor 1, thief 9, tinker 3, warrior 7. That is all 58
+taught-skill slots, so **no guild silently lost a skill** to the seed-time intersection.
+
+**Zero alias matches.** The alias pass existed to stop a duplicate row appearing next to a skill
+already stored under a different spelling; nothing triggered it. The 5 pre-existing skills were
+`discordance`, `fishing`, `musicianship`, `peacemaking`, `provocation` — exactly the five published
+on the play guide.
+
+## 6b. `farming` and `carpentry` are still missing from Rails — **OPEN (pre-existing bug)**
+
+Fell out of the seed arithmetic rather than being looked for. The table held exactly 5 skills
+before and holds exactly 39 now, and 39 is precisely the RunUO roster — so every skill in the
+database is one of mine or one of those five. Neither `farming` nor `carpentry` is in the RunUO
+roster, so **neither exists as a `Skill` row**.
+
+The mod references both:
+
+- `FarmingSkill.SKILL_ID = "farming"`
+- the literal `"carpentry"`
+
+Both route into `SkillManager` and then `POST /api/skills/gain`, where
+`Skill.find_by!(slug: ...)` raises `RecordNotFound` → 404. `SkillManager.postGain` swallows that
+into `LOGGER.warn("Failed to POST skill gain to Rails")`, so **farming and carpentry gains have
+been silently discarded at every logout** — the in-memory value rises during a session and is gone
+at next login.
+
+`blacksmithy` was in exactly this state until this seed created it, which is how the pattern
+became visible.
+
+This is pre-existing and not caused by the Guildmaster work; it is recorded because the Guildmaster
+work is what made it detectable, and because it is a live player-facing data-loss bug. Fixing it is
+a two-row addition to `UoSkillRoster::SKILLS` (or a separate seed), but only the owner can say what
+`max_value` and gain rules those two should carry.
+
+## 6c. Original note — **superseded by 6a**
 
 `db:seed:uo_skills` and `db:seed:guildmaster_definitions` have not been executed, so no Guildmaster
 type exists yet and no skill has been created. Until then the registry publishes no Guildmasters
