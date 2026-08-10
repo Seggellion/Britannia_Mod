@@ -1,0 +1,7 @@
+{
+  "ambientocclusion": false,
+  "textures": { "glass": "minecraft:block/glass", "particle": "minecraft:block/magenta_concrete" },
+  "elements": [
+    { "from": [2, 2, 0.5], "to": [14, 30, 1], "faces": { "north": { "texture": "#glass" }, "south": { "texture": "#glass" } } }
+  ]
+}

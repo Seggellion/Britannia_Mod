@@ -78,7 +78,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Ball of yarn | `ball_of_yarn` | `PLACEHOLDER` | Final processing ID with unmistakable vanilla-texture placeholder item model |
 | Spool of thread | `spool_of_thread` | `PLACEHOLDER` | Final processing ID with unmistakable vanilla-texture placeholder item model |
 | Silk textile input | `silk` | `MISSING` | Deferred textile item/art; must not alias spiders' silk |
-| Display case family | `display_case` | `MISSING` | Single/end/middle/corner placeholder set required |
+| Display case family | `display_case` | `PLACEHOLDER` | One functional two-block ID with compositional independent/end/middle/corner placeholder visuals implemented in Milestone 9 |
 | Pewter mug | `pewter_mug` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Kettle | `kettle` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Plates and silverware | `plates_and_silverware` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
@@ -392,12 +392,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:display_case`; neighbor-aware two-block decorative family.
 - Source model/texture: none. No `display`, `case`, or `showcase` candidate appears in the raw tree, outer archives, or nested archives.
 - Source format/checksum: none.
-- Import status: `MISSING`.
-- Proposed targets: one block class/family with lower/upper structure and bounded horizontal connection state; blockstate/multipart models for single/end/middle/corner; standard registries/resources/localization/loot.
+- Import status: `PLACEHOLDER` — final ID, atomic two-cell structure, and neighbor-aware placeholder visuals implemented in Milestone 9.
+- Final targets: `DisplayCaseBlock`, shared transactional multiblock placement, four root connection flags, multipart side models, standard registries/resources/localization/empty loot, axe mineability, and client cutout rendering.
 - Required behavior: visual connection only; no storage and no displayed-item inventory.
 - Dimensions/animation: one block per segment, two blocks high; no animation.
 - Collision: fitted glass/frame case shape, recomputed with neighbors where needed.
-- Notes/blockers: placeholder model set must visibly distinguish all four required connection states.
+- Notes/blockers: code-authored magenta/black/glass art is deliberately conspicuous replacement art. Each absent neighbor supplies a side pane, so independent/end/middle/corner—and deterministic T/cross layouts—need no duplicate registry IDs. Live visual review remains required.
 
 ### 20. Pewter mug
 

@@ -269,3 +269,37 @@ Automated checks cover the exact ratios, supported/rejected material policy, res
 - Art/collision/sound result:
 - Screenshots or log path:
 - Accepted placeholder/replacement notes:
+
+## Milestone 9 — Connected Decorative Display Cases
+
+Automated checks cover the two-cell lifecycle, server-derived connections, absence of block entities, teardown, and exact item drop. The following visual and interaction checks require a live client.
+
+### Placement and presentation
+
+- [ ] Confirm `Display Case (Placeholder)` appears exactly once in the Britannia creative tab and places only on a sturdy floor with two clear vertical cells.
+- [ ] Inspect the magenta/black/glass replacement art, 16×16×32-voxel envelope, inventory presentation, cutout transparency, selection shape, collision, and reach from both cells.
+- [ ] Place and break cases in every player facing; verify the symmetric structure remains aligned and an axe is the assigned mining tool.
+- [ ] Break both lower and upper cells in Survival; verify the whole structure disappears with exactly one item and no orphan state.
+
+### Neighbor forms
+
+- [ ] Place one case and verify the independent form retains all four exterior glass sides.
+- [ ] Place two adjacent cases and verify the shared panes disappear and both cases become clean end pieces.
+- [ ] Place a straight run of at least three and verify only the outer cases are ends while interior cases are middle pieces.
+- [ ] Build all four rotated L layouts and verify the corner case opens exactly the two shared faces.
+- [ ] Add/remove cases rapidly, including T and cross layouts, and verify every neighbor updates immediately without stale panes or visual holes on exterior faces.
+
+### Decorative-only boundary
+
+- [ ] Right-click every cell with empty hand and representative items; verify no menu, storage, displayed-item slot, insertion, or item loss occurs.
+- [ ] Save/reload a mixed connected layout and verify all structures and derived connections return correctly.
+
+### Milestone 9 acceptance record
+
+- Tester/date:
+- Client/resource result:
+- Placement/teardown result:
+- Independent/end/middle/corner result:
+- Decorative-only boundary result:
+- Screenshots or log path:
+- Accepted placeholder/replacement notes:

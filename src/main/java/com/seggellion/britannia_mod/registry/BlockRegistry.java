@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
 import com.seggellion.britannia_mod.block.LoomBlock;
 import com.seggellion.britannia_mod.block.SpinningWheelBlock;
+import com.seggellion.britannia_mod.block.DisplayCaseBlock;
 import com.seggellion.britannia_mod.block.TrainingDummyBlock;
 import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
@@ -2301,6 +2302,11 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             Block.box(3, 3, 6, 5, 16, 10),
                             Block.box(11, 3, 6, 13, 16, 10),
                             Block.box(5, 5, 6, 11, 15, 10))));
+
+    public static final DeferredHolder<Block, DisplayCaseBlock> DISPLAY_CASE = BLOCKS.register(
+            "display_case", () -> new DisplayCaseBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(1.5F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK)));
 
     public static final DeferredHolder<Block, CrateBlock> SMALL_CRATE = BLOCKS.register("small_crate", () ->
             new CrateBlock(

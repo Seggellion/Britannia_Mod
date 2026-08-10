@@ -1,0 +1,24 @@
+{
+  "multipart": [
+    {
+      "when": { "part": "0" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base" }
+    },
+    {
+      "when": { "part": "0", "north": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_side_north" }
+    },
+    {
+      "when": { "part": "0", "east": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_side_east" }
+    },
+    {
+      "when": { "part": "0", "south": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_side_south" }
+    },
+    {
+      "when": { "part": "0", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_side_west" }
+    }
+  ]
+}

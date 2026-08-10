@@ -1460,5 +1460,6 @@
   "block.britannia_mod.training_dummy": "Training Dummy (Temporary Art)",
   "block.britannia_mod.spinning_wheel": "Spinning Wheel (Placeholder)",
   "item.britannia_mod.ball_of_yarn": "Ball of Yarn (Placeholder)",
-  "item.britannia_mod.spool_of_thread": "Spool of Thread (Placeholder)"
+  "item.britannia_mod.spool_of_thread": "Spool of Thread (Placeholder)",
+  "block.britannia_mod.display_case": "Display Case (Placeholder)"
 }

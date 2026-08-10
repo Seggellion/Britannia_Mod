@@ -274,6 +274,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.DRESS_FORM_ITEM.get());
                 safeAccept(output, ItemRegistry.LOOM_ITEM.get());
                 safeAccept(output, ItemRegistry.SPINNING_WHEEL_ITEM.get());
+                safeAccept(output, ItemRegistry.DISPLAY_CASE_ITEM.get());
                 safeAccept(output, ItemRegistry.SMALL_CRATE_ITEM.get());
                 safeAccept(output, ItemRegistry.MEDIUM_CRATE_ITEM.get());
                 safeAccept(output, ItemRegistry.LARGE_CRATE_ITEM.get());

@@ -505,4 +505,37 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 8 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 8 as `65ea30aa` (`Add textile processing`).
+
+## Milestone 9 — Connected Decorative Display Cases
+
+### Scope implemented
+
+- Starting HEAD: `65ea30aa`.
+- Added one final `britannia_mod:display_case` block/item ID as an atomic 1-wide × 2-high structure using the shared transactional multiblock placement and teardown contract.
+- Added server-derived north/east/south/west root connection flags. A lone case is independent, one neighbor produces an end, two opposite neighbors produce a middle, and two adjacent neighbors produce a corner. Three- and four-way layouts remain deterministic through the same compositional side-removal model rather than requiring extra IDs.
+- Neighbor state is recalculated after placement and teardown, including when a connected case's upper cell is broken. Each structure drops exactly one item and leaves no orphan cells.
+- The display case is strictly decorative: it implements no `EntityBlock`, block entity, container, storage menu, displayed-item inventory, or item-rendering mechanic.
+
+### Art and registration
+
+- No source art exists. Added a conspicuous code-authored magenta/black/glass 16×16×32-voxel placeholder assembled from a common frame plus four conditional glass sides.
+- Added multipart blockstate models, an independent inventory model, empty multiblock loot, localization, creative-tab registration, axe mineability, and cutout rendering.
+- Updated the exact repository-item preservation count from 763 to 764 for the one intentional new block item.
+
+### Validation performed
+
+- Java compilation and focused resource/contract tests: PASS.
+- Gradle 8.9 `build --no-configuration-cache`: PASS; 1,704 tests completed, 17 skipped, zero failures or errors.
+- Dedicated-server GameTests: PASS; all 346 required tests passed. The Milestone 9 test covers live independent/end/middle/corner transitions, exact shared-face flags, absence of block entities on both cells, upper-cell teardown, neighbor disconnection, and exactly one item drop.
+- Development-client startup reached completed resource reload and atlas creation with no `display_case` blockstate, multipart-model, item-model, or texture warnings/errors. Unrelated pre-existing resource warnings remain elsewhere in the mod.
+
+### Validation still requiring an interactive client
+
+- Placeholder appearance, glass transparency, inventory presentation, collision/reach, atomic placement in all facings, creative entry, axe behavior, and live independent/end/middle/corner transitions remain on the checklist.
+- No storage or displayed-item mechanism is authorized; future art should preserve the single final ID and connection contract.
+
+### Commit status
+
+- Milestone 9 remains uncommitted pending owner review and explicit commit authorization.
