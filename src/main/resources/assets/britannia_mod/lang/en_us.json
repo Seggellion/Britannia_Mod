@@ -1427,5 +1427,13 @@
   "block.britannia_mod.plaster_wall_support_diagonal_east_half": "Plaster Wall Support Diagonal East (Half)",
   "block.britannia_mod.plaster_wall_support_diagonal_south_half": "Plaster Wall Support Diagonal South (Half)",
   "block.britannia_mod.ceiling_planks": "Ceiling Planks",
-  "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge"
+  "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge",
+  "block.britannia_mod.globe": "Globe (Temporary Art)",
+  "block.britannia_mod.fern": "Fern (Temporary Art)",
+  "block.britannia_mod.moonglow_bush": "Moonglow Bush (Temporary Art)",
+  "block.britannia_mod.folded_cloth": "Folded Cloth (Temporary Art)",
+  "block.britannia_mod.bolt_of_cloth": "Bolt of Cloth (Placeholder)",
+  "block.britannia_mod.pewter_mug": "Pewter Mug (Placeholder)",
+  "block.britannia_mod.kettle": "Kettle (Placeholder)",
+  "block.britannia_mod.plates_and_silverware": "Plates and Silverware (Placeholder)"
 }

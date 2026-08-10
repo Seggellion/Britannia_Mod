@@ -1920,6 +1920,15 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
 
     public static final DeferredHolder<Item, Item> DARK_SANDSTONE_BRICK_ROAD_ITEM = ITEMS.register("dark_sandstone_brick_road", () -> new BlockItem(BlockRegistry.DARK_SANDSTONE_BRICK_ROAD.get(), new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> GLOBE_ITEM = ITEMS.register("globe", () -> new BlockItem(BlockRegistry.GLOBE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> FERN_ITEM = ITEMS.register("fern", () -> new BlockItem(BlockRegistry.FERN.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MOONGLOW_BUSH_ITEM = ITEMS.register("moonglow_bush", () -> new BlockItem(BlockRegistry.MOONGLOW_BUSH.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> FOLDED_CLOTH_ITEM = ITEMS.register("folded_cloth", () -> new BlockItem(BlockRegistry.FOLDED_CLOTH.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> BOLT_OF_CLOTH_ITEM = ITEMS.register("bolt_of_cloth", () -> new BlockItem(BlockRegistry.BOLT_OF_CLOTH.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PEWTER_MUG_ITEM = ITEMS.register("pewter_mug", () -> new BlockItem(BlockRegistry.PEWTER_MUG.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> KETTLE_ITEM = ITEMS.register("kettle", () -> new BlockItem(BlockRegistry.KETTLE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> PLATES_AND_SILVERWARE_ITEM = ITEMS.register("plates_and_silverware", () -> new BlockItem(BlockRegistry.PLATES_AND_SILVERWARE.get(), new Item.Properties()));
+
 
     public static void register(IEventBus modEventBus) {
         ITEMS.register(modEventBus);

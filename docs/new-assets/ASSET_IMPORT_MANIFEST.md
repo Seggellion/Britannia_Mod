@@ -60,28 +60,28 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Merchant carts, six colors | `merchant_cart_<color>` | `PARTIAL` | Four color variants need approved names/art |
 | Training dummy | `training_dummy` | `PARTIAL` | Re-author/scale source to required 2×3-block structure |
 | Fountain | `fountain` | `FOUND` | None |
-| Moonglow bush | `moonglow_bush` | `PARTIAL` | Approve/recolor a generic purple-flower bush or create placeholder |
-| Sandstone family | existing IDs | `FOUND` | None; audit existing art in Milestone 2 |
-| Globe | `globe` | `FOUND` | None |
+| Moonglow bush | `moonglow_bush` | `PLACEHOLDER` | Temporary purchased purple-flower bush imported in Milestone 2 |
+| Sandstone family | existing IDs | `VALIDATED` | Existing connected family reused; no duplicate IDs |
+| Globe | `globe` | `PLACEHOLDER` | Temporary purchased large-globe art imported in Milestone 2 |
 | Small crate | `small_crate` | `FOUND` | None |
 | Medium crate | `medium_crate` | `MISSING` | Required |
 | Large crate | `large_crate` | `FOUND` | None |
 | Water well | `water_well` | `FOUND` | None |
 | Ladder | `ladder` | `PARTIAL` | Extend/re-author source to 3-block height |
 | Scarecrow | `scarecrow` | `FOUND` | None |
-| Fern | `fern` | `PARTIAL` | Approve a generic flora model or create fern placeholder |
+| Fern | `fern` | `PLACEHOLDER` | Temporary purchased small-flora art imported in Milestone 2 |
 | Dress form | `dress_form` | `FOUND` | None |
-| Folded cloth | `folded_cloth` | `FOUND` | None |
+| Folded cloth | `folded_cloth` | `PLACEHOLDER` | Temporary purchased fabric-stack art imported in Milestone 2 |
 | Loom | `loom` | `PARTIAL` | Source is 2 blocks high, requested structure is 3 high |
-| Bolt of cloth | `bolt_of_cloth` | `MISSING` | Required |
+| Bolt of cloth | `bolt_of_cloth` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Spinning wheel | `spinning_wheel` | `MISSING` | Required |
 | Ball of yarn | `ball_of_yarn` | `MISSING` | Item icon/model required |
 | Spool of thread | `spool_of_thread` | `PARTIAL` | Fabric-spool art exists; dedicated item representation needed |
 | Silk textile input | `silk` | `MISSING` | Deferred textile item/art; must not alias spiders' silk |
 | Display case family | `display_case` | `MISSING` | Single/end/middle/corner placeholder set required |
-| Pewter mug | `pewter_mug` | `MISSING` | Required |
-| Kettle | `kettle` | `MISSING` | Required |
-| Plates and silverware | `plates_and_silverware` | `MISSING` | Required |
+| Pewter mug | `pewter_mug` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
+| Kettle | `kettle` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
+| Plates and silverware | `plates_and_silverware` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 
 ## Detailed entries
 
@@ -162,12 +162,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Candidate model: `ShizuArt_Plants_Bundle.zip::ItemsAdder/contents/shizuart_furnitures/models/bush_props/bush_purple_flowers.json`.
 - Candidate texture: shared `.../textures/bush_props/bush.png`.
 - Format/checksum: JSON `4fc256e399e835be0e378b71fe8a6d415a49f777b2b0187fef10e69ee82a77c6`; PNG `69635ac6e3d341a5093b2a0efd6acbbb55c68d4dfe33868a212a00ebd7bfd6af`.
-- Import status: `PARTIAL` — many generic bushes exist, but none is identified as Moonglow-specific.
-- Proposed targets: ordinary transparent plant/decorative block plus blockstate/model/item/texture, creative tab, localization, loot.
+- Import status: `PLACEHOLDER` — the generic purchased purple-flower bush was normalized as temporary art in Milestone 2; it is not final Moonglow art.
+- Final targets: `BlockRegistry.MOONGLOW_BUSH`, `ItemRegistry.MOONGLOW_BUSH`, `DecorativePlantBlock`, and `assets/britannia_mod/{blockstates/moonglow_bush.json,models/block/new_assets/moonglow_bush.json,models/item/moonglow_bush.json,textures/block/new_assets/moonglow_bush.png}` plus localization, loot, creative-tab, and cutout registration.
 - Required behavior: decoration only; no world generation.
-- Dimensions/animation: candidate is a non-animated custom bush; exact candidate selection/scale remains an art decision.
+- Dimensions/animation: normalized candidate is non-animated; replacement art and scale remain an art-review item.
 - Collision: low/non-full foliage collision.
-- Notes/blockers: the generic purchased bush may be used as explicitly temporary `PLACEHOLDER` art; it must not be presented as final Moonglow art.
+- Notes/blockers: registered under the final ID with player-facing temporary-art labeling. Replace the model/texture without changing the ID.
 
 ### 7. Sandstone family — existing tracked assets
 
@@ -183,11 +183,11 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Category: existing blocks/items; no raw import required.
 - Source model/texture paths: tracked `src/main/resources/assets/britannia_mod/models/block/structure/sandstone/**` and `textures/block/structure/sandstone/**`; exact blockstates and item models already exist.
 - Source format/provenance: Git-tracked JSON/PNG at starting HEAD `50061f07231271e67591b2720ddf21cf4fa54fcc`.
-- Import status: `FOUND`.
+- Import status: `VALIDATED` — existing registrations and connected models were reused; Milestone 2 added missing block loot tables and explicit pickaxe mineability without duplicating the family.
 - Final Java/resource targets: existing `BlockRegistry`/`ItemRegistry` holders and same tracked resource paths; reuse rather than duplicate.
 - Required behavior: preserve four texture variants on `custom_sandstone_brick`; preserve neighbor-aware `DoubleWallBlock` states for the wall/window/post/battlement/column family.
 - Dimensions/animation: `custom_sandstone_brick` is a full block; existing straight sandstone family models are 16×5×32. No animation.
-- Collision: existing custom block/wall collision should be audited during Milestone 2 live validation.
+- Collision: existing custom block/wall collision remains on the live-client checklist; dedicated-server resource/tag loading passed.
 - Notes/blockers: the owner listed “sandstone battlement” twice; both references map to the single existing `sandstone_battlement` unless a distinct ornate battlement is later requested. Existing `ornate_sandstone_wall` and `sandstone_block_wall` also remain available but were not newly requested.
 
 ### 8. Globe
@@ -196,12 +196,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:globe`; decorative block/item.
 - Source model/texture: `globe.zip::Nexo/pack/assets/minecraft/models/lanshan/essentials/globe/large_globe.json` and matching texture; mini/retro alternatives also exist.
 - Format/checksum: JSON `5b52c322a76177b9fde48934c43fb4eb2e5cc6ed204adbd271cd115460d2dff2`; PNG `a8e9affe05c5eb7131cb5cd6a3b39c04a2f1f754b86d3aaad9c044dcde0e2d6e`.
-- Import status: `FOUND`.
-- Proposed targets: normal decorative block/item resources and registry/localization/loot/creative entries.
+- Import status: `PLACEHOLDER` — the purchased large-globe model/texture was normalized as temporary art in Milestone 2.
+- Final targets: `BlockRegistry.GLOBE`, `ItemRegistry.GLOBE`, `DecorativePropBlock`, and `assets/britannia_mod/{blockstates/globe.json,models/block/new_assets/globe.json,models/item/globe.json,textures/block/new_assets/globe.png}` plus localization, loot, creative-tab, and axe-mineability entries.
 - Required behavior: decoration only.
 - Dimensions/animation: large model about 15×24×12 voxels, no animation.
 - Collision: narrow pedestal/globe approximation, not full cube.
-- Notes/blockers: choose large versus mini/retro during Milestone 2 visual review without changing the registry ID.
+- Notes/blockers: large geometry is the temporary selection and carries a temporary-art label. Final replacement can retain the registry ID.
 
 ### 9. Crate container family
 
@@ -284,12 +284,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:fern`; decorative plant.
 - Candidate model/texture: `ShizuArt_Plants_Bundle.zip` `flora_small_plant.json` plus shared `flora.png` atlas.
 - Format/checksum: JSON `411a870c47d8c9694c3445b5eed99f96bff4122d3fb1a687f69fc424c5bba7c3`; PNG `d67371f36eecc14f672edce002346f88b822cee8540560b56cf5a9fd0c769dfe`.
-- Import status: `PARTIAL` — no file is identified as a fern, and atlas UV inspection alone is insufficient to rename it final art.
-- Proposed targets: transparent plant block, blockstate/model/item/texture, localization/loot/placement tags/creative tab.
+- Import status: `PLACEHOLDER` — the generic purchased small-flora model was normalized as temporary fern art in Milestone 2.
+- Final targets: `BlockRegistry.FERN`, `ItemRegistry.FERN`, `DecorativePlantBlock`, and `assets/britannia_mod/{blockstates/fern.json,models/block/new_assets/fern.json,models/item/fern.json,textures/block/new_assets/fern.png}` plus localization, loot, creative-tab, and cutout registration.
 - Required behavior: no world generation; use existing substrate/replaceability conventions.
 - Dimensions/animation: candidate about 28.6×14.1×28.6 voxels; no animation.
 - Collision: low/non-full or empty plant collision.
-- Notes/blockers: owner visual approval or a fern-specific placeholder is required.
+- Notes/blockers: player-facing name marks the art temporary; replace model/texture later without changing the final ID.
 
 ### 14. Dress form
 
@@ -310,8 +310,8 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:folded_cloth`; placeable block item that is also a processing output.
 - Source model/texture: tailoring pack `fabric_stack.json` and `fabric_stack.png`.
 - Format/checksum: JSON `462b4e66336f694fd1e7d43a905bdbba3bb3b3b31252e2533c53a61fb00d5c5a`; PNG `e3684fe6d38beaa0b207e8c5a684e287ee98ce70405353355d689c170ecd4f5e`.
-- Import status: `FOUND`.
-- Proposed targets: block/item registration using one ID, standard resources, localization/loot/creative tab; later loom recipe data.
+- Import status: `PLACEHOLDER` — the purchased fabric-stack model/texture was normalized as temporary folded-cloth art in Milestone 2.
+- Final targets: `BlockRegistry.FOLDED_CLOTH`, `ItemRegistry.FOLDED_CLOTH`, `DecorativePropBlock`, and `assets/britannia_mod/{blockstates/folded_cloth.json,models/block/new_assets/folded_cloth.json,models/item/folded_cloth.json,textures/block/new_assets/folded_cloth.png}` plus localization, loot, and creative-tab registration; later loom recipe data.
 - Required behavior: later accept 5 `ball_of_yarn` or 5 `spool_of_thread` for one folded cloth at the loom.
 - Dimensions/animation: model bounds 14×12×13 voxels; no animation.
 - Collision: shallow fitted stack collision.
@@ -336,11 +336,11 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:bolt_of_cloth`; placeable block item unless later textile design chooses item-only.
 - Source model/texture: none. `fabric_stack` is assigned to folded cloth and `fabric_spools` depicts spools, not a cloth bolt.
 - Source format/checksum: none.
-- Import status: `MISSING`.
-- Proposed targets: standard block/item model/texture paths with one final ID, localization/loot/creative entry.
+- Import status: `PLACEHOLDER` — an unmistakable magenta/black code-authored cloth-roll model was added in Milestone 2.
+- Final targets: `BlockRegistry.BOLT_OF_CLOTH`, `ItemRegistry.BOLT_OF_CLOTH`, `DecorativePropBlock`, `assets/britannia_mod/{blockstates/bolt_of_cloth.json,models/block/new_assets/bolt_of_cloth.json,models/item/bolt_of_cloth.json}`, localization, loot, and creative-tab registration.
 - Required behavior: no processing contract yet.
 - Dimensions/animation/collision: small placeable prop; no animation; fitted placeholder collision.
-- Notes/blockers: placeholder or owner-supplied art required.
+- Notes/blockers: replacement art is still required; preserve the final registry ID when replacing the placeholder.
 
 ### 18. Spinning wheel and textile outputs
 
@@ -403,31 +403,31 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 
 - Proposed registry ID/category: `britannia_mod:pewter_mug`; small placeable decorative block item.
 - Source model/texture/format/checksum: none.
-- Import status: `MISSING`.
-- Proposed targets: standard block/item resources and registry/localization/loot/creative entries.
+- Import status: `PLACEHOLDER` — an unmistakable code-authored tabletop model was added in Milestone 2.
+- Final targets: `BlockRegistry.PEWTER_MUG`, `ItemRegistry.PEWTER_MUG`, `DecorativePropBlock`, `assets/britannia_mod/{blockstates/pewter_mug.json,models/block/new_assets/pewter_mug.json,models/item/pewter_mug.json}`, localization, loot, creative-tab, and pickaxe-tag entries.
 - Required behavior: decoration only.
 - Dimensions/animation/collision: small tabletop prop, no animation, small fitted collision.
-- Notes/blockers: placeholder or owner art required.
+- Notes/blockers: replacement art is still required; preserve the final registry ID when replacing the placeholder.
 
 ### 21. Kettle
 
 - Proposed registry ID/category: `britannia_mod:kettle`; placeable decorative block item.
 - Source model/texture/format/checksum: none. Market `pot`/`hangingpot` assets are not identified as kettles.
-- Import status: `MISSING`.
-- Proposed targets: standard block/item resources and registry/localization/loot/creative entries.
+- Import status: `PLACEHOLDER` — an unmistakable code-authored tabletop model was added in Milestone 2.
+- Final targets: `BlockRegistry.KETTLE`, `ItemRegistry.KETTLE`, `DecorativePropBlock`, `assets/britannia_mod/{blockstates/kettle.json,models/block/new_assets/kettle.json,models/item/kettle.json}`, localization, loot, creative-tab, and pickaxe-tag entries.
 - Required behavior: decoration only; no cooking.
 - Dimensions/animation/collision: tabletop prop, no animation, fitted collision.
-- Notes/blockers: placeholder or owner art required.
+- Notes/blockers: replacement art is still required; preserve the final registry ID when replacing the placeholder.
 
 ### 22. Plates and silverware
 
 - Proposed registry ID/category: `britannia_mod:plates_and_silverware`; combined place-setting decorative block item unless later art proves separate pieces.
 - Source model/texture/format/checksum: none. The farmer `fork` is an agricultural pitchfork and is not silverware.
-- Import status: `MISSING`.
-- Proposed targets: standard block/item resources and registry/localization/loot/creative entries.
+- Import status: `PLACEHOLDER` — one unmistakable code-authored combined place-setting model was added in Milestone 2.
+- Final targets: `BlockRegistry.PLATES_AND_SILVERWARE`, `ItemRegistry.PLATES_AND_SILVERWARE`, `DecorativePropBlock`, `assets/britannia_mod/{blockstates/plates_and_silverware.json,models/block/new_assets/plates_and_silverware.json,models/item/plates_and_silverware.json}`, localization, loot, creative-tab, and pickaxe-tag entries.
 - Required behavior: decoration only.
 - Dimensions/animation/collision: shallow tabletop prop, no animation, very low fitted collision.
-- Notes/blockers: current inventory cannot determine combined versus separate source art; use one combined placeholder because no extra variants are authorized.
+- Notes/blockers: replacement art is still required; keep one combined final ID unless the owner later authorizes separate pieces.
 
 ## Special-check conclusions
 

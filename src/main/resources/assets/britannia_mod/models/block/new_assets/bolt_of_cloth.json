@@ -1,0 +1,105 @@
+{
+  "textures": {
+    "cloth": "minecraft:block/magenta_wool",
+    "band": "minecraft:block/black_wool",
+    "particle": "minecraft:block/magenta_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        1,
+        5
+      ],
+      "to": [
+        14,
+        6,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#cloth"
+        },
+        "east": {
+          "texture": "#cloth"
+        },
+        "south": {
+          "texture": "#cloth"
+        },
+        "west": {
+          "texture": "#cloth"
+        },
+        "up": {
+          "texture": "#cloth"
+        },
+        "down": {
+          "texture": "#cloth"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        0.5,
+        4.5
+      ],
+      "to": [
+        3,
+        6.5,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#band"
+        },
+        "east": {
+          "texture": "#band"
+        },
+        "south": {
+          "texture": "#band"
+        },
+        "west": {
+          "texture": "#band"
+        },
+        "up": {
+          "texture": "#band"
+        },
+        "down": {
+          "texture": "#band"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0.5,
+        4.5
+      ],
+      "to": [
+        14.5,
+        6.5,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#band"
+        },
+        "east": {
+          "texture": "#band"
+        },
+        "south": {
+          "texture": "#band"
+        },
+        "west": {
+          "texture": "#band"
+        },
+        "up": {
+          "texture": "#band"
+        },
+        "down": {
+          "texture": "#band"
+        }
+      }
+    }
+  ]
+}

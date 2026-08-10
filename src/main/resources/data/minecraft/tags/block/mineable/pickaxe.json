@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:custom_sandstone_brick",
+    "britannia_mod:ornate_sandstone_wall",
+    "britannia_mod:regular_sandstone_wall",
+    "britannia_mod:sandstone_block_wall",
+    "britannia_mod:ornate_sandstone_window",
+    "britannia_mod:sandstone_window",
+    "britannia_mod:sandstone_post",
+    "britannia_mod:ornate_sandstone_post",
+    "britannia_mod:sandstone_battlement",
+    "britannia_mod:sandstone_column",
+    "britannia_mod:pewter_mug",
+    "britannia_mod:kettle",
+    "britannia_mod:plates_and_silverware"
+  ]
+}

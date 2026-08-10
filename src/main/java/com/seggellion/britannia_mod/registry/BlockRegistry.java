@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.DecorativePlantBlock;
+import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
 import com.seggellion.britannia_mod.block.WoodSupportFloorBlock;
@@ -2202,6 +2204,24 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> MEDIUM_SANDSTONE_BRICK_ROAD = BLOCKS.register("medium_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
 
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> DARK_SANDSTONE_BRICK_ROAD = BLOCKS.register("dark_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+
+    // New-assets Milestone 2. Purchased-pack geometry is temporary placeholder art.
+    public static final DeferredHolder<Block, DecorativePropBlock> GLOBE = BLOCKS.register("globe", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion(), Block.box(1, 0, 1, 15, 16, 15), true));
+    public static final DeferredHolder<Block, DecorativePlantBlock> FERN = BLOCKS.register("fern", () ->
+            new DecorativePlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak().sound(SoundType.GRASS).noCollission().noOcclusion().replaceable(), Block.box(3, 0, 3, 13, 10, 13)));
+    public static final DeferredHolder<Block, DecorativePlantBlock> MOONGLOW_BUSH = BLOCKS.register("moonglow_bush", () ->
+            new DecorativePlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak().sound(SoundType.GRASS).noCollission().noOcclusion().replaceable(), Block.box(2, 0, 2, 14, 13, 14)));
+    public static final DeferredHolder<Block, DecorativePropBlock> FOLDED_CLOTH = BLOCKS.register("folded_cloth", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(0.3f).sound(SoundType.WOOL).noOcclusion(), Block.box(1, 0, 2, 15, 12, 14), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> BOLT_OF_CLOTH = BLOCKS.register("bolt_of_cloth", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(0.3f).sound(SoundType.WOOL).noOcclusion(), Block.box(2, 0, 4, 14, 7, 12), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> PEWTER_MUG = BLOCKS.register("pewter_mug", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.8f).sound(SoundType.METAL).noOcclusion(), Block.box(5, 0, 5, 11, 8, 11), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> KETTLE = BLOCKS.register("kettle", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.8f).sound(SoundType.METAL).noOcclusion(), Block.box(3, 0, 3, 13, 11, 13), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> PLATES_AND_SILVERWARE = BLOCKS.register("plates_and_silverware", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.4f).sound(SoundType.METAL).noOcclusion(), Block.box(2, 0, 2, 14, 2, 14), true));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

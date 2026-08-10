@@ -1,0 +1,137 @@
+{
+  "textures": {
+    "metal": "minecraft:block/iron_block",
+    "placeholder": "minecraft:block/magenta_concrete",
+    "particle": "minecraft:block/iron_block"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        8,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#metal"
+        },
+        "east": {
+          "texture": "#metal"
+        },
+        "south": {
+          "texture": "#metal"
+        },
+        "west": {
+          "texture": "#metal"
+        },
+        "up": {
+          "texture": "#placeholder"
+        },
+        "down": {
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        2,
+        6
+      ],
+      "to": [
+        13,
+        7,
+        7
+      ],
+      "faces": {
+        "north": {
+          "texture": "#placeholder"
+        },
+        "east": {
+          "texture": "#placeholder"
+        },
+        "south": {
+          "texture": "#placeholder"
+        },
+        "west": {
+          "texture": "#placeholder"
+        },
+        "up": {
+          "texture": "#placeholder"
+        },
+        "down": {
+          "texture": "#placeholder"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        2,
+        9
+      ],
+      "to": [
+        13,
+        7,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#placeholder"
+        },
+        "east": {
+          "texture": "#placeholder"
+        },
+        "south": {
+          "texture": "#placeholder"
+        },
+        "west": {
+          "texture": "#placeholder"
+        },
+        "up": {
+          "texture": "#placeholder"
+        },
+        "down": {
+          "texture": "#placeholder"
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        1,
+        6
+      ],
+      "to": [
+        13,
+        3,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#placeholder"
+        },
+        "east": {
+          "texture": "#placeholder"
+        },
+        "south": {
+          "texture": "#placeholder"
+        },
+        "west": {
+          "texture": "#placeholder"
+        },
+        "up": {
+          "texture": "#placeholder"
+        },
+        "down": {
+          "texture": "#placeholder"
+        }
+      }
+    }
+  ]
+}

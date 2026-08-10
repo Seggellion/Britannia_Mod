@@ -225,3 +225,52 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 - Merchant-cart colors are approved as red, purple, blue, green, yellow, and white.
 - All axes map to Swordsmanship for training-dummy classification.
 - The manifest now includes a consolidated dimensional re-authoring matrix for the moongate, training dummy, ladder, and loom. It distinguishes those visual changes from origin normalization (fountain) and multiblock placement/collision work (large crate).
+
+### Milestone 1 commit
+
+- Owner approval was received after the post-review resolutions were incorporated.
+- Committed exactly the Milestone 1 documentation as `221f69da397a61bb2a4db1131b8128be9cadd377` (`Document new assets inventory`).
+- No implementation files or raw assets were included in that commit.
+
+## Milestone 2 — Asset Import Infrastructure and Low-Risk Decorative Assets
+
+### Scope implemented
+
+- Starting HEAD: `221f69da397a61bb2a4db1131b8128be9cadd377`.
+- Added final block/item IDs for `globe`, `fern`, `moonglow_bush`, `folded_cloth`, `bolt_of_cloth`, `pewter_mug`, `kettle`, and `plates_and_silverware`.
+- Added reusable horizontally oriented `DecorativePropBlock` geometry/collision handling and a substrate-aware, replaceable, no-collision `DecorativePlantBlock`.
+- Registered all eight block items in the existing decor creative tab and added English localization, blockstates, item models, one-drop loot tables, and deliberate voxel shapes.
+- Registered fern and Moonglow bush on the client cutout render layer. No world generation was added.
+- Reused the existing sandstone family rather than creating duplicate registry IDs. Added one-drop loot tables for its ten extant blocks and explicit `minecraft:mineable/pickaxe` membership.
+
+### Art and provenance
+
+- Normalized temporary purchased-pack art for globe, fern, Moonglow bush, and folded cloth into the Britannia namespace. Source namespaces were removed from all model texture references.
+- Added unmistakable code-authored temporary models for bolt of cloth, pewter mug, kettle, and plates/silverware using conspicuous placeholder materials/colors.
+- All eight new assets use final registry IDs but are classified `PLACEHOLDER`; purchased artwork is not represented as final imported art.
+- Raw source files and archives remained read-only.
+
+### Validation performed
+
+- Parsed 64 relevant blockstate/model/item/loot/tag JSON resources successfully.
+- Verified all referenced local models/textures resolve, with zero resource-reference errors and no retained `lanshan`, `workshop_six`, or `shizuart_furnitures` namespaces.
+- Verified imported PNG dimensions/color mode: globe 128x128, fern 256x256, Moonglow bush 256x256, and folded cloth 64x64, all ARGB.
+- `gradlew.bat compileJava`: PASS (36 existing compiler warnings).
+- `gradlew.bat build`: PASS after updating the exact repository-item preservation count from 735 to 743 for the eight intentional new block items; 1,679 tests completed, 17 skipped, zero failed.
+- `gradlew.bat runGameTestServer --no-configuration-cache`: PASS; all 337 required game tests passed.
+- The first game-test pass exposed unqualified sandstone tag values resolving as `minecraft:*`; corrected them to `britannia_mod:*`. The second pass had no missing-tag/model/texture errors and showed the intended Britannia tag entries. Final audit assigns the ten sandstone blocks and three metal props to pickaxe mineability and the wooden globe to axe mineability.
+- The game-test environment continued to log expected missing local configuration/authentication warnings while using its test defaults; these did not fail the suite.
+
+### Validation still requiring an interactive client
+
+- Visual scale, UVs, cutout edges, inventory transforms, collision feel, and all four horizontal orientations require live placement review.
+- Existing sandstone four-variant appearance and neighbor transitions require live visual/collision review.
+- These owner/client checks are recorded in `docs/new-assets/LIVE_TEST_CHECKLIST.md`; JSON and dedicated-server validation do not substitute for them.
+
+### Tooling note
+
+- The feature worktree held a Git LFS pointer for `gradle/wrapper/gradle-wrapper.jar`. A local materialized copy from the primary worktree was used only to run Gradle and is restored to the exact tracked pointer before milestone handoff.
+
+### Commit status
+
+- Milestone 2 remains uncommitted pending owner review and explicit commit authorization.

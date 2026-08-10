@@ -253,6 +253,14 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TORCH_STANDING_ITEM.get());
                 safeAccept(output, ItemRegistry.BRAZIER_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TABLE_SETTING_ITEM.get());
+                safeAccept(output, ItemRegistry.GLOBE_ITEM.get());
+                safeAccept(output, ItemRegistry.FERN_ITEM.get());
+                safeAccept(output, ItemRegistry.MOONGLOW_BUSH_ITEM.get());
+                safeAccept(output, ItemRegistry.FOLDED_CLOTH_ITEM.get());
+                safeAccept(output, ItemRegistry.BOLT_OF_CLOTH_ITEM.get());
+                safeAccept(output, ItemRegistry.PEWTER_MUG_ITEM.get());
+                safeAccept(output, ItemRegistry.KETTLE_ITEM.get());
+                safeAccept(output, ItemRegistry.PLATES_AND_SILVERWARE_ITEM.get());
                 safeAccept(output, ItemRegistry.SPITTOON_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_WEAPONS_1_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_1_ITEM.get());

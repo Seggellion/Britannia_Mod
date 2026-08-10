@@ -59,8 +59,9 @@ class Milestone14RRemovalAndPreservationTest {
         // Integrated Patch 18 item universe (farming + shrines + banners + dye added
         // to the branch-local 550).
         // Villa integration adds its construction item set on top of the previous
-        // integrated total of 693.
-        assertEquals(735, repositoryItems);
+        // integrated total of 693. New-assets milestone 2 adds eight decorative
+        // block items without restoring any of the rejected banner content.
+        assertEquals(743, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

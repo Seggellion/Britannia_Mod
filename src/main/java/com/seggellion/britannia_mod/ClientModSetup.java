@@ -667,6 +667,8 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_OPEN_COFFIN.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.WOODEN_COFFIN_SKELETON.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.FERN.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MOONGLOW_BUSH.get(), RenderType.cutout());
 
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.CAVE_FLOOR_BLOCK.get(), RenderType.solid());
 
