@@ -24,6 +24,9 @@ import net.minecraft.network.chat.Component;
  * instant the purchase commits — leaving it open would show a price that is no longer real.
  */
 public final class GuildmasterTrainingScreen extends Screen {
+    /** Guarded by GuildTranslationKeysTest, like every bank screen key. */
+    public static final String KEY_CLOSE = "screen.britannia_mod.guild.close";
+
     private static final int ROW_HEIGHT = 24;
     private static final int BUTTON_WIDTH = 260;
     private static final int BUTTON_HEIGHT = 20;
@@ -44,7 +47,7 @@ public final class GuildmasterTrainingScreen extends Screen {
         for (int index = 0; index < offer.offers().size(); index++) {
             GuildTrainingOpenS2CPayload.Offer row = offer.offers().get(index);
             Button button = Button.builder(
-                    DialoguePresentation.text(GuildTrainingOfferLabel.of(row)),
+                    GuildTrainingOfferLabel.of(row),
                     ignored -> train(row.slug()))
                 .bounds(x, top + index * ROW_HEIGHT, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build();
@@ -54,7 +57,7 @@ public final class GuildmasterTrainingScreen extends Screen {
             addRenderableWidget(button);
         }
 
-        addRenderableWidget(Button.builder(Component.literal("Close"), ignored -> onClose())
+        addRenderableWidget(Button.builder(Component.translatable(KEY_CLOSE), ignored -> onClose())
                 .bounds(x, top + offer.offers().size() * ROW_HEIGHT + 10, BUTTON_WIDTH, BUTTON_HEIGHT)
                 .build());
     }
