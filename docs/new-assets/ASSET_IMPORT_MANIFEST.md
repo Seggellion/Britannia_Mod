@@ -1,0 +1,481 @@
+# UltimaCraft New Assets — Asset Import Manifest
+
+## Milestone 1 inventory baseline
+
+- Inventory date: 2026-08-09 (America/Vancouver).
+- Raw root: `C:\projects\britannia\raw fiels\models to import`.
+- Scan mode: recursive, read-only. No source file or archive was modified.
+- Files directly present under the raw root: 74 files, 4,705,838 bytes.
+- Direct extension counts: 33 `.png`, 24 `.json`, 10 `.zip`, 3 `.mcmeta`, 2 `.yml`, 2 `.bbmodel`.
+- All ten outer ZIPs were enumerated without extraction into the source tree. Seven nested ZIP entries were also enumerated in memory.
+- No `.obj`, `.mtl`, `.gltf`, or `.glb` files were found.
+- Source packs include Minecraft JSON/PNG resources, Blockbench `.bbmodel` projects, Nexo/ItemsAdder/Oraxen/CraftEngine configuration, and a ModelEngine training-dummy blueprint.
+- Milestone 1 did not copy/import assets, create placeholders, register content, or change gameplay.
+
+### Status meanings
+
+- `FOUND`: complete usable source model/texture pair exists, or the exact requested asset already exists in the tracked repository.
+- `PARTIAL`: related source exists, but art, variants, dimensions, animation, or identity must be completed or approved.
+- `MISSING`: no credible source match was found after recursive directory/archive inspection.
+
+`PLACEHOLDER`, `IMPORTED`, and `VALIDATED` are later-milestone states and are not assigned in this inventory milestone.
+
+## Owner decisions recorded after Milestone 0
+
+- Ibis cap: working requirement is 15 ibis total across all three Jhelom areas, counted independently of other city animals.
+- Moongate: update existing `MoongateBlock`; collapse the current two-block teleporter implementation to one logical block with a 32-voxel-high custom model while preserving teleport behavior.
+- Water well: supports watering cans, vanilla buckets, and pitchers. Correct the existing empty-pitcher registration for water behavior only.
+- Training dummy: axes are supported. Canonical combat skill slugs remain unknown and must be resolved before Milestone 7 implementation.
+- Silk: a future textile material/item distinct from `britannia_mod:spiders_silk`.
+- Loom: later processing rule is 5 `ball_of_yarn` or 5 `spool_of_thread` → 1 `folded_cloth`; no broader tailoring UI/crafting system is authorized.
+- Display cases: decorative and neighbor-connected only; no storage or displayed-item inventory.
+- Sandstone: reuse/reconcile the existing sandstone family described below rather than create duplicate IDs.
+- Purchased asset packs: all art originating from purchased packs is approved only as temporary placeholder art and is expected to be replaced later. When copied into the mod in later milestones, classify it as `PLACEHOLDER`, not final imported art.
+- Merchant-cart palette: approved IDs/colors are red, purple, blue, green, yellow, and white.
+- Axe mapping: every axe maps to Swordsmanship for training-dummy purposes.
+
+## Source-container checksums
+
+| Source container | Files | SHA-256 |
+|---|---:|---|
+| `blood.zip` | 40 | `163669328cb2eb8f90610012f19372e119e26c603897351121e10cd1e839da60` |
+| `elitecreatures-medieval_market_decoration_v2.zip` | 50 | `1bd4c8d8aa2555e34b26d64a7d84b50c6e79b72e69694a3d3b05d4d3c1931c5a` |
+| `Garden Essentials Vol 4 - Bushes.zip` | 29 | `577485157ae9361c6b06454ed9d7feaf3c8767d11b45d347f0bb8699a617efa0` |
+| `globe.zip` | 27 | `7934ba451b3d1392b368ca17d3edb15a8565b6e92ed1c02fcd80f36333947e21` |
+| `Medieval Market Furniture Set.zip` | 231 | `a94e1bb79123a277d819df3af70039a1109c9d4ae44be17ad3d64fea4d7b8a73` |
+| `Nexo Assets - Crates & Barrels.zip` | 27 | `31ad339bebc4c28e49878e54b0131a47ff426d9ba8070b14feec2c954cfbe3e8` |
+| `Nexo Assets - Tailoring Station.zip` | 15 | `e7b5cb579d06b738dfb61ec2023132c78b4a3e86aa2b54a6697e0708ebdfa8ca` |
+| `shizuart_farmer_props.zip` | 66 | `ba58633db19701e46837b46be0b98fd4ab57f038e647d0b55013f7ed838771b6` |
+| `ShizuArt_Plants_Bundle.zip` | 183 | `17b6de23501fdde2fe0619a1d45064d2ef1c71bc64c45ccda974b8e1cf421a05` |
+| `training_dummy.zip` | 54 | `4997030831eda233a91b4aa8fa1609842d015015e6cacc579f2b9ca9e7b7b085` |
+
+Purchased-pack readmes/install instructions were present, but no explicit redistribution/license grant was found inside the archives. The owner authorized their use only as temporary placeholder art that will be replaced later.
+
+## Requested asset summary
+
+| Requested asset | Proposed/existing registry ID | Status | Placeholder proposal |
+|---|---|---|---|
+| Ibis, white/scarlet | `ibis` with persistent variant | `PARTIAL` | Derive scarlet safely in Milestone 6; placeholder only if recoloring is unsafe |
+| Moongate visual replacement | existing `moongate_block` | `PARTIAL` | Reworked 32-voxel model required; do not create another gate ID |
+| Merchant carts, six colors | `merchant_cart_<color>` | `PARTIAL` | Four color variants need approved names/art |
+| Training dummy | `training_dummy` | `PARTIAL` | Re-author/scale source to required 2×3-block structure |
+| Fountain | `fountain` | `FOUND` | None |
+| Moonglow bush | `moonglow_bush` | `PARTIAL` | Approve/recolor a generic purple-flower bush or create placeholder |
+| Sandstone family | existing IDs | `FOUND` | None; audit existing art in Milestone 2 |
+| Globe | `globe` | `FOUND` | None |
+| Small crate | `small_crate` | `FOUND` | None |
+| Medium crate | `medium_crate` | `MISSING` | Required |
+| Large crate | `large_crate` | `FOUND` | None |
+| Water well | `water_well` | `FOUND` | None |
+| Ladder | `ladder` | `PARTIAL` | Extend/re-author source to 3-block height |
+| Scarecrow | `scarecrow` | `FOUND` | None |
+| Fern | `fern` | `PARTIAL` | Approve a generic flora model or create fern placeholder |
+| Dress form | `dress_form` | `FOUND` | None |
+| Folded cloth | `folded_cloth` | `FOUND` | None |
+| Loom | `loom` | `PARTIAL` | Source is 2 blocks high, requested structure is 3 high |
+| Bolt of cloth | `bolt_of_cloth` | `MISSING` | Required |
+| Spinning wheel | `spinning_wheel` | `MISSING` | Required |
+| Ball of yarn | `ball_of_yarn` | `MISSING` | Item icon/model required |
+| Spool of thread | `spool_of_thread` | `PARTIAL` | Fabric-spool art exists; dedicated item representation needed |
+| Silk textile input | `silk` | `MISSING` | Deferred textile item/art; must not alias spiders' silk |
+| Display case family | `display_case` | `MISSING` | Single/end/middle/corner placeholder set required |
+| Pewter mug | `pewter_mug` | `MISSING` | Required |
+| Kettle | `kettle` | `MISSING` | Required |
+| Plates and silverware | `plates_and_silverware` | `MISSING` | Required |
+
+## Detailed entries
+
+### 1. Ibis bird — white and scarlet variants
+
+- Requested asset: Ibis bird, white and scarlet.
+- Proposed registry ID/category: `britannia_mod:ibis`; entity with synchronized/persisted variant.
+- Source model: `white ibis\white ibis.bbmodel`.
+- Source textures: `white ibis\texture.png`; no scarlet texture found anywhere in the raw tree or archives.
+- Format/checksum: Blockbench `.bbmodel` `da2731a389fb01d103b5cab181561c55389ab13c91e35daf16b80a0dca8a7a2c`; 512×512 ARGB PNG `5127c6846e013cc7021bc63c906693526685d1787906fc24ca4a43c232fa2507`.
+- Import status: `PARTIAL` — white art is complete; scarlet art is missing but may be derived later.
+- Proposed targets: `EntityRegistry`; `entity/IbisEntity.java`; ibis model/renderer classes; `assets/britannia_mod/geo/ibis.geo.json`; `animations/ibis.animation.json`; `textures/entity/ibis_white.png`; `textures/entity/ibis_scarlet.png`.
+- Required behavior: Jhelom-only regional spawning with one independent 15-ibis total across the three Jhelom AABBs; no global biome spawn.
+- Dimensions/animation: source bounds x `-3..3`, y `-5.07779..13.15677`, z `-22.37905..8.3`; animations `walk` 2s, `idle` 6s, `eating` 6s.
+- Collision: animal-sized hitbox authored independently from visual bounds.
+- Notes/blockers: scarlet generation is Milestone 6, not Milestone 1. Preserve white source, alpha, UV layout, outlines, eyes, beak, and legs.
+
+### 2. Moongate visual replacement
+
+- Requested asset: replacement art for existing `MoongateBlock`.
+- Existing registry ID/category: `britannia_mod:moongate_block`; animated teleport block. Do not add a parallel moongate ID/system.
+- Source model: `moongate\portal.bbmodel`.
+- Source textures: `moongate\portal_texture.png` through `portal_texture6.png`.
+- Format/checksum: Blockbench `.bbmodel` `a22ccc954d3f7b8a36670c017da4f506d0bb18b326700f416b1e8931d0dd48a7`; texture checksums are recorded in the inventory evidence. Textures are ARGB and range from 32×32 to animated strips of 128×1536.
+- Import status: `PARTIAL`.
+- Proposed targets: existing `MoongateBlock`, `moongate_block` registration, teleport handler/tick handler; replacement geometry/animation/texture resources under existing moongate paths; remove dependence on `moongate_top` only when Milestone 10 safely migrates existing worlds.
+- Required behavior: preserve existing destination/configuration, mount/escort, and cooldown behavior while moving to one logical block.
+- Dimensions/animation: raw bounds x `-16..16`, y `-1.5..41.5`, z `-16..16`; `idle` 3s and `spawn` 1.5s. Owner target is 32 voxels high.
+- Collision: portal interaction volume must be deliberate and must not use the raw 32×32×43 bounds unchanged.
+- Notes/blockers: source is wider/taller than the target and requires re-origin/rescale/re-authoring. This targets `MoongateBlock`, not a new teleport network; paired-dungeon visual parity can be reviewed separately in Milestone 10.
+
+### 3. Merchant carts — six colors
+
+- Requested asset: six decorative merchant-cart colors.
+- Proposed registry IDs/category: approved `merchant_cart_red`, `merchant_cart_purple`, `merchant_cart_blue`, `merchant_cart_green`, `merchant_cart_yellow`, and `merchant_cart_white`; decorative multiblock blocks.
+- Source models/textures: `Medieval Market Furniture Set.zip` raw entries `medieval_market_wagon_red`, `medieval_market_wagon_purple`, and uncolored/base `medieval_market_wagon2`, each with `.json`, `.bbmodel`, and `.png` art.
+- Source format/checksums: Minecraft JSON/PNG and Blockbench. Model hashes: base `418e47bfae3acf3e24f20d3853e0c3fa90a1375f5e538c4b27e104170794703b`, purple `2f94428ac2534f0abdf2bd15ae89a72f169e5219d255d397013ea8d6bd564c01`, red `2212cc3bf20136d25e7a4619d3ad9b0c9f94dc6060188a14f393b162c3ad941e`.
+- Import status: `PARTIAL` — only red, purple, and a materially different base wagon are present; no six-color set exists.
+- Proposed targets: shared merchant-cart block/multiblock implementation; per-color blockstate/model/texture resources; `BlockRegistry`, `ItemRegistry`, localization, loot, creative tab.
+- Required behavior: decoration only; share placement/teardown code and geometry where art allows.
+- Dimensions/animation: base bounds about 25×24×35 voxels; red/purple about 36×38×47 voxels. No animation metadata.
+- Collision: authored cart body/wheel shapes, not full cubes.
+- Notes/blockers: red/purple geometries match each other, but `wagon2` is not simply a third texture on the same model. Blue/green/yellow/white temporary textures or unmistakable placeholders still need to be produced in Milestone 3.
+
+### 4. Training dummy
+
+- Requested asset: animated 2-block-wide × 3-block-high training dummy.
+- Proposed registry ID/category: `britannia_mod:training_dummy`; functional animated multiblock trainer.
+- Source model: direct gray JSON under `training_dummy\resourcepack\...\training_dummy_gray.json`; animated ModelEngine blueprint `training_dummy.zip::fv_punching_bags/plugins/ModelEngine/blueprints/fv_punching_bag_gray.bbmodel`.
+- Source texture: direct 128×128 ARGB `...\fv_punching_bag\gray.png`; eight other color textures are unrelated optional variants.
+- Format/checksum: animated `.bbmodel` hash `9d63b0d4e9ffec0a33bc02071f3f97e5facfc79dd00a4b682815f8c459eaac7a`; direct JSON `cc7291f83211b86882bcfb3f6241acdfea721e24454a3e571bdd2bbb8346c17f`; gray PNG `c33911195d7c4f83c8cb7bfff6309a6c5f9c1dc9885d4b1b1f777f1a61c44b88`.
+- Import status: `PARTIAL`.
+- Proposed targets: authoritative multiblock root/parts, animated root block entity/renderer, training event service, model/animation/texture resources, registries/localization/loot.
+- Required behavior: Swordsmanship/Mace Fighting/Fencing training to 25.0; axes supported; small Tactics chance; no Wrestling/Anatomy/Lumberjacking; 3-second per-player server cooldown; no weapon durability loss.
+- Dimensions/animation: blueprint bounds x `-10..10`, y `4..48`, z `-7..7` (about 20×44×14 visible voxels), with `hit` animation reported as 5s. It is a punching bag, not a 32×48 training-dummy silhouette.
+- Collision: 2×3 multiblock occupancy with narrower deliberate strike/collision shapes.
+- Notes/blockers: canonical skill slugs and non-axe weapon mapping remain unresolved. Animation must be retimed or triggered independently from the 3-second cooldown.
+- Owner resolution: all axes map to Swordsmanship. Canonical skill slugs remain unresolved.
+
+### 5. Fountain
+
+- Requested asset: 2×2×3 decorative fountain.
+- Proposed registry ID/category: `britannia_mod:fountain`; decorative multiblock.
+- Source model: `fountain\models\item\tiered_fountain_angel.json` with related tiered/water models.
+- Source textures: `fountain\textures\tiered_fountain.png`, `fountain_water.png`, and animation `.mcmeta` for water.
+- Format/checksum: JSON `81e97f1937863dc06b0d047c78af8d47e9817b4256783683dbe4925d563d6a5f`; texture `7d8800aac2053571a703968ecf23b632cf3f35a7d81e05a1267938bafbb31ffb`; water texture `c5c6a8c797899105dd0cd42b38f896ca2022922269576d8746d43064db624637`.
+- Import status: `FOUND`.
+- Proposed targets: multiblock root/parts and `assets/britannia_mod/{blockstates,models/block,models/item,textures/block}` fountain resources; registries/localization/loot.
+- Required behavior: decorative, atomic place/teardown, one drop.
+- Dimensions/animation: angel model bounds x/z `-8..24` (exact 32×32 footprint) and y `-16..30` (46 voxels, compatible with a 3-block envelope); animated water texture.
+- Collision: basin/pillar shapes matching visible footprint as closely as practical.
+- Notes/blockers: normalize origin and split/render coherently across the authoritative 2×2×3 structure.
+
+### 6. Moonglow bush
+
+- Requested asset: Moonglow bush decoration.
+- Proposed registry ID/category: `britannia_mod:moonglow_bush`; transparent decorative plant.
+- Candidate model: `ShizuArt_Plants_Bundle.zip::ItemsAdder/contents/shizuart_furnitures/models/bush_props/bush_purple_flowers.json`.
+- Candidate texture: shared `.../textures/bush_props/bush.png`.
+- Format/checksum: JSON `4fc256e399e835be0e378b71fe8a6d415a49f777b2b0187fef10e69ee82a77c6`; PNG `69635ac6e3d341a5093b2a0efd6acbbb55c68d4dfe33868a212a00ebd7bfd6af`.
+- Import status: `PARTIAL` — many generic bushes exist, but none is identified as Moonglow-specific.
+- Proposed targets: ordinary transparent plant/decorative block plus blockstate/model/item/texture, creative tab, localization, loot.
+- Required behavior: decoration only; no world generation.
+- Dimensions/animation: candidate is a non-animated custom bush; exact candidate selection/scale remains an art decision.
+- Collision: low/non-full foliage collision.
+- Notes/blockers: the generic purchased bush may be used as explicitly temporary `PLACEHOLDER` art; it must not be presented as final Moonglow art.
+
+### 7. Sandstone family — existing tracked assets
+
+- Requested assets/existing registry IDs:
+  - 16×16 full block with four variants → `custom_sandstone_brick`.
+  - 16×5 wall family → `regular_sandstone_wall` (existing visual geometry is 16×5×32 and neighbor-aware).
+  - `ornate_sandstone_window`.
+  - `sandstone_window`.
+  - `sandstone_post`.
+  - `ornate_sandstone_post`.
+  - `sandstone_battlement`.
+  - `sandstone_column`.
+- Category: existing blocks/items; no raw import required.
+- Source model/texture paths: tracked `src/main/resources/assets/britannia_mod/models/block/structure/sandstone/**` and `textures/block/structure/sandstone/**`; exact blockstates and item models already exist.
+- Source format/provenance: Git-tracked JSON/PNG at starting HEAD `50061f07231271e67591b2720ddf21cf4fa54fcc`.
+- Import status: `FOUND`.
+- Final Java/resource targets: existing `BlockRegistry`/`ItemRegistry` holders and same tracked resource paths; reuse rather than duplicate.
+- Required behavior: preserve four texture variants on `custom_sandstone_brick`; preserve neighbor-aware `DoubleWallBlock` states for the wall/window/post/battlement/column family.
+- Dimensions/animation: `custom_sandstone_brick` is a full block; existing straight sandstone family models are 16×5×32. No animation.
+- Collision: existing custom block/wall collision should be audited during Milestone 2 live validation.
+- Notes/blockers: the owner listed “sandstone battlement” twice; both references map to the single existing `sandstone_battlement` unless a distinct ornate battlement is later requested. Existing `ornate_sandstone_wall` and `sandstone_block_wall` also remain available but were not newly requested.
+
+### 8. Globe
+
+- Requested asset: globe decoration.
+- Proposed registry ID/category: `britannia_mod:globe`; decorative block/item.
+- Source model/texture: `globe.zip::Nexo/pack/assets/minecraft/models/lanshan/essentials/globe/large_globe.json` and matching texture; mini/retro alternatives also exist.
+- Format/checksum: JSON `5b52c322a76177b9fde48934c43fb4eb2e5cc6ed204adbd271cd115460d2dff2`; PNG `a8e9affe05c5eb7131cb5cd6a3b39c04a2f1f754b86d3aaad9c044dcde0e2d6e`.
+- Import status: `FOUND`.
+- Proposed targets: normal decorative block/item resources and registry/localization/loot/creative entries.
+- Required behavior: decoration only.
+- Dimensions/animation: large model about 15×24×12 voxels, no animation.
+- Collision: narrow pedestal/globe approximation, not full cube.
+- Notes/blockers: choose large versus mini/retro during Milestone 2 visual review without changing the registry ID.
+
+### 9. Crate container family
+
+#### Small crate
+
+- Proposed registry ID/category: `britannia_mod:small_crate`; one-block container.
+- Source: `Nexo Assets - Crates & Barrels.zip::Raw Files/models/crate.json` and `Raw Files/textures/crate.png`.
+- Format/checksum: JSON `3de490b572b01174427e0a6233977d2861f3433c0668cbcd6716f3c74146608b`; PNG `d98c6fbcb91a272b81d2968d0c2b1c3c187023aec254431cab0c7a68f7c29f10`.
+- Import status: `FOUND`.
+- Proposed targets: crate block/block entity, registry/menu hookup, blockstate/model/item/texture, localization/loot.
+- Required behavior: persistent server-authoritative inventory; suggested 9 slots pending crate-family design.
+- Dimensions/animation/collision: source bounds 12×11×12 voxels; no animation; fitted crate collision.
+
+#### Medium crate
+
+- Proposed registry ID/category: `britannia_mod:medium_crate`; container.
+- Source: no specifically medium geometry/texture. `crate_stack.json` is a two-crate stack (about 27×22×13 voxels) and is not a credible single medium crate without owner approval.
+- Format/checksum: none assigned.
+- Import status: `MISSING`.
+- Proposed targets: same crate family paths using `medium_crate` final ID.
+- Required behavior: persistent server-authoritative inventory; suggested 27 slots pending design.
+- Dimensions/animation/collision: footprint deferred to placeholder/final art; no animation expected.
+- Notes/blockers: create a recognizable medium-crate placeholder or obtain art; do not silently relabel a stack as a medium crate.
+
+#### Large crate
+
+- Proposed registry ID/category: `britannia_mod:large_crate`; likely multiblock container.
+- Source: `Nexo Assets - Crates & Barrels.zip::Raw Files/models/large_crate.json` and `Raw Files/textures/large_crate.png`.
+- Format/checksum: JSON `a0e821d18adf7637844d29226eaee5bbd4963f3852feade1854570ca036deb5b`; PNG `095664941d9bdbf7d3dfb734f58a174d3f931f4a3b3a932bf53997314beea65d`.
+- Import status: `FOUND`.
+- Proposed targets: authoritative multiblock crate root/block entity plus part blocks, menu hookup, resources/localization/loot.
+- Required behavior: persistent server-authoritative inventory; suggested 54 slots pending design; one inventory/drop regardless of broken part.
+- Dimensions/animation/collision: bounds about 27.5×18.5×21 voxels, crossing one block on x/z/y; no animation; deliberate multiblock footprint/collision required.
+- Notes/blockers: `large_crate_stack` and mixed-stack models are alternate decorations, not the requested single container.
+
+### 10. Water well
+
+- Requested asset: 2-block-high water well.
+- Proposed registry ID/category: `britannia_mod:water_well`; functional two-block structure.
+- Source model: preferred candidate `shizuart_farmer_props.zip::ItemsAdder/contents/shizuart_furnitures/models/farmer_props/farmer_well.json`; a larger `medieval_market_well` alternative also exists.
+- Source texture: shared `.../textures/farmer_props/farmer_props.png`.
+- Format/checksum: JSON `34f6ffd7a127c526ed0bece211dd88883633aabf5d6912b70aa716ceaa083ded`; PNG `e382264c5753533a713aef1f852a0522c602435e8bfb7839d1d940fb2eb265f6`.
+- Import status: `FOUND`.
+- Proposed targets: two-block root/part implementation, `BlockRegistry`/`ItemRegistry`, well models/textures, localization/loot; water interaction service using existing item types.
+- Required behavior: server-authoritatively fill watering cans, vanilla buckets, and pitchers without duplication; correct empty-pitcher registration for water behavior only.
+- Dimensions/animation: candidate bounds x `-5..14`, y `4..31.5`, z `-1.5..25.5`; about two blocks high with a cross-cell footprint. No animation.
+- Collision: masonry/base/roof approximation with reachable interaction shape.
+- Notes/blockers: final origin and horizontal footprint need Blockbench/in-game review; pitcher registration correction belongs to Milestone 5.
+
+### 11. Double-sided ladder
+
+- Requested asset: ground-placeable, double-sided, climbable 3-block-high ladder, axe-destructible in Adventure mode.
+- Proposed registry ID/category: `britannia_mod:ladder`; functional multiblock utility structure.
+- Candidate source model: `shizuart_farmer_props.zip::ItemsAdder/contents/shizuart_furnitures/models/farmer_props/farmer_stepladder.json`.
+- Source texture: shared farmer-props atlas.
+- Format/checksum: JSON `cc4f5a7439f0f50e67e0fb3f831415c99517e85072bb4ecb81169c66f667c595`; PNG `e382264c5753533a713aef1f852a0522c602435e8bfb7839d1d940fb2eb265f6`.
+- Import status: `PARTIAL`.
+- Proposed targets: custom 3-high multiblock block/item, narrow Adventure predicate handling, axe mineability/break predicates, blockstate/model/item/texture/localization/loot.
+- Required behavior: atomic ground placement, climbable from both faces, whole-structure teardown, narrow Adventure placement, axe destruction.
+- Dimensions/animation: candidate bounds x `-1..17`, y `-4..31.97734`, z `-1.27734..31.27734` (roughly 2.25 blocks high rather than 3); no animation.
+- Collision: narrow stair/rung traversal shapes, not a flat vanilla ladder or full cubes.
+- Notes/blockers: source needs extension/re-authoring to 48-voxel height and traversal validation.
+
+### 12. Scarecrow
+
+- Requested asset: decorative 2-block-high scarecrow.
+- Proposed registry ID/category: `britannia_mod:scarecrow`; decorative multiblock.
+- Preferred source: `Medieval Market Furniture Set.zip` raw `medieval_market_scarecrow.json`/`.bbmodel` and matching PNG. A ShizuArt farmer scarecrow is a viable alternate.
+- Format/checksum: preferred JSON `7983b8f2e8aac3d47b60b26fb4616b2bd77699d4f424da0915733c285dabd5ec`; PNG `256f992e8daeb3240d58d4dc9e184f26d631334824d8066a1bcd148688068992`.
+- Import status: `FOUND`.
+- Proposed targets: two-block root/part, block/item registry, blockstate/model/item/texture, localization/loot.
+- Required behavior: decoration only; no crop-protection mechanic.
+- Dimensions/animation: preferred bounds about 25×31.7×16 voxels; Shizu alternate about 30×31.5×25; no animation.
+- Collision: narrow post/body shape and coherent two-block placement.
+- Notes/blockers: choose between the two complete art styles during Milestone 3 visual review.
+
+### 13. Fern
+
+- Requested asset: small transparent fern.
+- Proposed registry ID/category: `britannia_mod:fern`; decorative plant.
+- Candidate model/texture: `ShizuArt_Plants_Bundle.zip` `flora_small_plant.json` plus shared `flora.png` atlas.
+- Format/checksum: JSON `411a870c47d8c9694c3445b5eed99f96bff4122d3fb1a687f69fc424c5bba7c3`; PNG `d67371f36eecc14f672edce002346f88b822cee8540560b56cf5a9fd0c769dfe`.
+- Import status: `PARTIAL` — no file is identified as a fern, and atlas UV inspection alone is insufficient to rename it final art.
+- Proposed targets: transparent plant block, blockstate/model/item/texture, localization/loot/placement tags/creative tab.
+- Required behavior: no world generation; use existing substrate/replaceability conventions.
+- Dimensions/animation: candidate about 28.6×14.1×28.6 voxels; no animation.
+- Collision: low/non-full or empty plant collision.
+- Notes/blockers: owner visual approval or a fern-specific placeholder is required.
+
+### 14. Dress form
+
+- Requested asset: decorative 2-block-high dress form.
+- Proposed registry ID/category: `britannia_mod:dress_form`; decorative multiblock.
+- Source model/texture: `Nexo Assets - Tailoring Station.zip` `mannequin.json` and `mannequin.png`.
+- Format/checksum: JSON `88a5952ff5dd73cd698de3ddf56fbc4c91c28aafaf4794e3063db81da6caa7d3`; PNG `ae9dcbecaebe225d1f6b567548d0e6f387bf8582325e47e0c6e8b3f318eb9d54`.
+- Import status: `FOUND`.
+- Proposed targets: two-block decorative root/part and standard resources/registry/localization/loot.
+- Required behavior: decoration only; must not become an armor stand.
+- Dimensions/animation: exact 14×32×8-voxel envelope; no animation.
+- Collision: narrow base/post/torso approximation.
+- Notes/blockers: source vendor calls it mannequin; final player-facing name remains Dress Form.
+
+### 15. Folded cloth
+
+- Requested asset: placeable folded-cloth decoration and textile output.
+- Proposed registry ID/category: `britannia_mod:folded_cloth`; placeable block item that is also a processing output.
+- Source model/texture: tailoring pack `fabric_stack.json` and `fabric_stack.png`.
+- Format/checksum: JSON `462b4e66336f694fd1e7d43a905bdbba3bb3b3b31252e2533c53a61fb00d5c5a`; PNG `e3684fe6d38beaa0b207e8c5a684e287ee98ce70405353355d689c170ecd4f5e`.
+- Import status: `FOUND`.
+- Proposed targets: block/item registration using one ID, standard resources, localization/loot/creative tab; later loom recipe data.
+- Required behavior: later accept 5 `ball_of_yarn` or 5 `spool_of_thread` for one folded cloth at the loom.
+- Dimensions/animation: model bounds 14×12×13 voxels; no animation.
+- Collision: shallow fitted stack collision.
+- Notes/blockers: no separate inventory-only item is needed unless later UI constraints require one.
+
+### 16. Loom
+
+- Requested asset: 2-block-wide × 3-block-high loom.
+- Proposed registry ID/category: `britannia_mod:loom`; structural multiblock with a narrowly authorized conversion interaction.
+- Candidate source model/texture: tailoring pack `loom.json` and `loom.png`; `standing_loom` is a smaller alternate, while `tailoring_station` is three blocks wide.
+- Format/checksum: loom JSON `c26734be38e00153790ff3eac416501e6ed3c9ef72ff9f9c708da9b245328966`; PNG `b8b30210c695878d61732fbb7eec613ad11af4f3e1244a77064973a3c6b5f5fa`.
+- Import status: `PARTIAL`.
+- Proposed targets: authoritative multiblock root/parts, optional root block entity if processing state requires it, models/textures, registries/localization/loot, data-driven conversion definitions.
+- Required behavior: 5 balls of yarn → 1 folded cloth or 5 spools of thread → 1 folded cloth; no broader tailoring system.
+- Dimensions/animation: candidate bounds x `-16..16`, y `0..32`, z `-4..32` (2 wide but only 2 high); no animation.
+- Collision: loom frame/working area approximation across the declared footprint.
+- Notes/blockers: source must be extended/re-authored to the specified 3-block height; recipe timing/interaction UI is deferred to its implementation milestone.
+
+### 17. Bolt of cloth
+
+- Requested asset: bolt of cloth resource/decoration.
+- Proposed registry ID/category: `britannia_mod:bolt_of_cloth`; placeable block item unless later textile design chooses item-only.
+- Source model/texture: none. `fabric_stack` is assigned to folded cloth and `fabric_spools` depicts spools, not a cloth bolt.
+- Source format/checksum: none.
+- Import status: `MISSING`.
+- Proposed targets: standard block/item model/texture paths with one final ID, localization/loot/creative entry.
+- Required behavior: no processing contract yet.
+- Dimensions/animation/collision: small placeable prop; no animation; fitted placeholder collision.
+- Notes/blockers: placeholder or owner-supplied art required.
+
+### 18. Spinning wheel and textile outputs
+
+#### Spinning wheel
+
+- Proposed registry ID/category: `britannia_mod:spinning_wheel`; functional processing block/structure.
+- Source model/texture: none. `standing_loom` and `tailoring_station` are not spinning wheels and will not be silently relabeled.
+- Source format/checksum: none.
+- Import status: `MISSING`.
+- Proposed targets: processing block/root block entity, recipes/data, standard resources/registries/localization/loot.
+- Required behavior: wool → `ball_of_yarn`; cotton/flax/future silk → `spool_of_thread`; server-authoritative and duplication-safe.
+- Dimensions/animation/collision: deferred to placeholder/final art; animation not required by current contract.
+- Notes/blockers: physical footprint cannot be derived from current art.
+
+#### Ball of yarn
+
+- Proposed registry ID/category: `britannia_mod:ball_of_yarn`; processing item.
+- Source model/texture: none.
+- Import status: `MISSING`.
+- Proposed targets: `ItemRegistry`, `models/item/ball_of_yarn.json`, `textures/item/ball_of_yarn.png`, localization/creative tab.
+- Required behavior: output from wool and valid 5-item loom input.
+- Dimensions/animation/collision: inventory item, no block collision/animation.
+- Notes/blockers: item placeholder/icon required.
+
+#### Spool of thread
+
+- Proposed registry ID/category: `britannia_mod:spool_of_thread`; processing item.
+- Candidate source: tailoring pack `fabric_spools.json`/`.png`.
+- Format/checksum: JSON `d1024c6b217116bce9069a2b46c0a014635131fab56809b5cd9652f65aed1b78`; PNG `d94ac30cf6e7c7b2e0e3f70e6bfd9f72251500e628570bf193e4fda6fe6fbfcc`.
+- Import status: `PARTIAL` — complete placeable spool geometry exists, but a dedicated inventory icon/item representation still needs design.
+- Proposed targets: `ItemRegistry`, item model/texture/localization/creative tab; optionally a placeable decoration only if explicitly retained.
+- Required behavior: output from cotton/flax/future silk and valid 5-item loom input.
+- Dimensions/animation/collision: source prop is about 17×32×15 voxels; no animation. Item-only form has no collision.
+- Notes/blockers: avoid making a two-block-tall prop the default handheld item model without transform review.
+
+#### Silk textile input
+
+- Proposed registry ID/category: `britannia_mod:silk`; future textile material item.
+- Source model/texture: none; tracked fabric material/palette definitions named `silk` are data definitions, not inventory items.
+- Import status: `MISSING`.
+- Proposed targets: future `ItemRegistry` entry and item resources only when silk acquisition is defined.
+- Required behavior: spinning-wheel input distinct from `britannia_mod:spiders_silk`.
+- Dimensions/animation/collision: inventory item.
+- Notes/blockers: creation/acquisition is explicitly deferred; do not substitute spiders' silk.
+
+### 19. Display cases
+
+- Requested asset: decorative 1×2 case segments with single/end/middle/corner neighbor visuals.
+- Proposed registry ID/category: `britannia_mod:display_case`; neighbor-aware two-block decorative family.
+- Source model/texture: none. No `display`, `case`, or `showcase` candidate appears in the raw tree, outer archives, or nested archives.
+- Source format/checksum: none.
+- Import status: `MISSING`.
+- Proposed targets: one block class/family with lower/upper structure and bounded horizontal connection state; blockstate/multipart models for single/end/middle/corner; standard registries/resources/localization/loot.
+- Required behavior: visual connection only; no storage and no displayed-item inventory.
+- Dimensions/animation: one block per segment, two blocks high; no animation.
+- Collision: fitted glass/frame case shape, recomputed with neighbors where needed.
+- Notes/blockers: placeholder model set must visibly distinguish all four required connection states.
+
+### 20. Pewter mug
+
+- Proposed registry ID/category: `britannia_mod:pewter_mug`; small placeable decorative block item.
+- Source model/texture/format/checksum: none.
+- Import status: `MISSING`.
+- Proposed targets: standard block/item resources and registry/localization/loot/creative entries.
+- Required behavior: decoration only.
+- Dimensions/animation/collision: small tabletop prop, no animation, small fitted collision.
+- Notes/blockers: placeholder or owner art required.
+
+### 21. Kettle
+
+- Proposed registry ID/category: `britannia_mod:kettle`; placeable decorative block item.
+- Source model/texture/format/checksum: none. Market `pot`/`hangingpot` assets are not identified as kettles.
+- Import status: `MISSING`.
+- Proposed targets: standard block/item resources and registry/localization/loot/creative entries.
+- Required behavior: decoration only; no cooking.
+- Dimensions/animation/collision: tabletop prop, no animation, fitted collision.
+- Notes/blockers: placeholder or owner art required.
+
+### 22. Plates and silverware
+
+- Proposed registry ID/category: `britannia_mod:plates_and_silverware`; combined place-setting decorative block item unless later art proves separate pieces.
+- Source model/texture/format/checksum: none. The farmer `fork` is an agricultural pitchfork and is not silverware.
+- Import status: `MISSING`.
+- Proposed targets: standard block/item resources and registry/localization/loot/creative entries.
+- Required behavior: decoration only.
+- Dimensions/animation/collision: shallow tabletop prop, no animation, very low fitted collision.
+- Notes/blockers: current inventory cannot determine combined versus separate source art; use one combined placeholder because no extra variants are authorized.
+
+## Special-check conclusions
+
+- White ibis model/texture: found; animated Blockbench source is usable.
+- Scarlet ibis texture: missing; must be derived or placeholder-generated in Milestone 6.
+- Six merchant-cart colors: not found; only red, purple, and a different base wagon exist.
+- Display-case states: no source models found for single/end/middle/corner.
+- Crate sizes: only `crate` and `large_crate` are distinct single-crate geometries; medium is missing. Stack models are not size substitutes.
+- Loom: model/texture found, but geometry is 2 blocks high rather than the requested 3.
+- Spinning wheel: missing; `standing_loom` is not a spinning wheel.
+- Fountain: source matches the requested 2×2×3 envelope after origin normalization.
+- Training dummy: animated source exists, but its 20×44×14-voxel punching-bag geometry does not match the requested 32×48 multiblock silhouette.
+- Moongate: animated source exists, but raw 32×43×32 bounds must be reduced/re-authored to the owner-requested 32-voxel height and one logical block.
+- Water well/scarecrow/dress form: complete source candidates match their approximate two-block-height requirements.
+- Ladder: source is approximately 2.25 blocks high and requires a 3-block adaptation.
+
+## Models requiring dimensional re-authoring
+
+| Requested asset | Source model | Measured source bounds | Required envelope | Re-authoring required |
+|---|---|---|---|---|
+| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block with a 32-voxel-high visual | Reduce height by 11 voxels, re-origin, fit the interaction footprint, and migrate away from the separate top block without changing teleport behavior |
+| Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Re-author silhouette/anchors to 2-wide × 3-high, retain/retime the hit animation, and author root/part occupancy separately from visual bounds |
+| Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Extend/rebuild to 48-voxel height, normalize origin, and author traversal/collision independently |
+| Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Extend/rebuild the frame to 48-voxel height and normalize it to the authoritative 2×3 multiblock root |
+
+The fountain needs origin normalization but already fits its requested 2×2×3 envelope. The water well, scarecrow, and dress form fit their approximate two-block-height contracts. Large-crate art crosses cell bounds and therefore needs multiblock placement/collision authoring, but no owner-specified voxel envelope requires visual re-scaling.
+
+## Placeholder proposal for later milestones
+
+No placeholders were created in Milestone 1. Proposed placeholder work:
+
+1. Medium crate.
+2. Blue, green, yellow, and white merchant-cart art using the approved palette.
+3. Scarlet ibis only if safe recoloring cannot be produced from white art.
+4. Moonglow bush and fern unless generic candidates receive art approval.
+5. Bolt of cloth.
+6. Spinning wheel.
+7. Ball of yarn and a dedicated spool-of-thread item representation.
+8. Future silk inventory item when acquisition is designed.
+9. Display-case single/end/middle/corner set.
+10. Pewter mug.
+11. Kettle.
+12. Combined plates-and-silverware place setting.
+13. Reworked/placeholder geometry for moongate, training dummy, ladder, and loom where the found source does not meet required bounds.
+
+## Unassigned source packs
+
+- `blood` folder/ZIP: no requested Milestone 1 asset match.
+- `elitecreatures-medieval_market_decoration_v2.zip`: contains alternate crates/market props, but no clean small/medium/large size family and no other requested exact match.
+- Garden Essentials and ShizuArt plant packs contain many generic plants/bushes; only candidate mappings above are assigned.
+- Extra barrels, mixed crate stacks, market furniture, farmer props, plants, and alternate training-dummy colors remain unassigned and must not be imported opportunistically.
