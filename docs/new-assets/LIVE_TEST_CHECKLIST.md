@@ -338,3 +338,31 @@ Automated checks cover the single-cell structure, exact 16×32×16 model envelop
 - Legacy-world migration result:
 - Screenshots or log path:
 - Accepted placeholder/replacement notes:
+
+## Milestone 11 — Cross-System Audit Live Spot Checks
+
+Automated checks cover exact registrations and the complete static data surface. These final spot checks bridge the audit into Milestone 12 owner validation.
+
+### Creative and presentation audit
+
+- [ ] Search the Britannia creative tab for every Milestones 2–10 asset; verify each final item appears exactly once and no legacy moongate top appears.
+- [ ] Confirm the ibis spawn egg and city moongate disclose temporary art, and yarn/thread/spinning wheel/display case retain conspicuous placeholder labeling.
+- [ ] Inspect the globe and folded cloth against transparent backgrounds; verify their transparent pixels render cleanly after the cutout-layer correction.
+- [ ] Confirm all sandstone family names are present and readable, including `Sandstone Brick`.
+
+### Tool and regression audit
+
+- [ ] Mine the water well with a pickaxe and the training dummy with an axe; verify expected tool behavior and atomic multiblock teardown.
+- [ ] Spot-check the requested decorative blocks for expected collision, sound/material behavior, item drops, and render layers.
+- [ ] Repeat one representative live interaction from each functional family: crate persistence, all three water containers, Adventure ladder placement, Jhelom ibis population, training strike, spinning/loom conversion, display-case neighbor update, and city moongate travel.
+- [ ] Confirm the client and dedicated server launch without new-assets missing-model, missing-texture, malformed-data, or registration errors.
+
+### Milestone 11 acceptance record
+
+- Tester/date:
+- Creative/localization result:
+- Render/tool result:
+- Cross-system regression result:
+- Client/dedicated-server result:
+- Screenshots or log path:
+- Accepted placeholder/replacement notes:

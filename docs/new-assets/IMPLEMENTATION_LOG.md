@@ -566,4 +566,33 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 10 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 10 as `f5fc7084` (`Integrate one-block city moongate`).
+
+## Milestone 11 — Cross-System Polish and Creative/Data Audit
+
+### Scope completed
+
+- Starting HEAD: `f5fc7084`.
+- Audited 37 requested block IDs plus `ball_of_yarn`, `spool_of_thread`, and the ibis entity/spawn egg across registration, item exposure, creative placement, localization, blockstates/models, loot, tool tags, render layers, placeholder disclosure, manifest status, and principal functional integration points.
+- Added `NewAssetsCrossSystemAuditTest` as a permanent regression guard for that complete surface.
+- Corrected missing cutout rendering for the globe and folded cloth, pickaxe mineability for the water well, axe mineability for the training dummy, and localization for the custom sandstone brick.
+- Added explicit temporary-art wording to the ibis spawn egg and city moongate player-facing names.
+- Confirmed that Jhelom ibis population bootstrap, training-dummy service, crate storage, all three authorized water containers, Adventure ladder placement, textile ratios, decorative-only display cases, and existing city-moongate teleportation remain wired.
+- Confirmed silk is the only intentionally missing manifest asset. It remains a future textile material distinct from `britannia_mod:spiders_silk`.
+- Recorded the family-level result and closure boundary in `MILESTONE_11_AUDIT.md`.
+
+### Validation status
+
+- Focused `NewAssetsCrossSystemAuditTest`: PASS; four tests completed with zero failures.
+- Gradle 8.9 `build --no-configuration-cache`: PASS; 1,712 tests completed, 17 skipped, zero failures or errors.
+- Dedicated-server GameTests: PASS; all 347 required tests passed.
+- Development-client startup reached completed resource reload and block-atlas creation. No audited new-assets model, texture, localization, or render warnings were logged; the existing 44x44 dungeon-moongate mip warning and unrelated pre-existing resource warnings remain outside this milestone.
+
+### Validation still requiring owner live review
+
+- Creative-tab presentation, in-world visual quality, collision/interaction feel, representative multiplayer behavior, and placeholder acceptance remain on the Milestone 11/12 live checklist.
+
+### Commit status
+
+- Milestone 11 remains uncommitted pending owner review and explicit commit authorization.

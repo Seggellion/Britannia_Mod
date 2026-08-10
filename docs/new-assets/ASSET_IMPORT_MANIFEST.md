@@ -384,7 +384,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed targets: future `ItemRegistry` entry and item resources only when silk acquisition is defined.
 - Required behavior: spinning-wheel input distinct from `britannia_mod:spiders_silk`.
 - Dimensions/animation/collision: inventory item.
-- Notes/blockers: creation/acquisition is explicitly deferred; do not substitute spiders' silk.
+- Notes/blockers: Silk is a distinct future textile material whose creation/acquisition is explicitly deferred; it must not alias `britannia_mod:spiders_silk`.
 
 ### 19. Display cases
 
