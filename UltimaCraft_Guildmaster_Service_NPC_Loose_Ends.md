@@ -192,13 +192,21 @@ different spelling" that I could not determine myself.
 
 ---
 
-## 7. Milestone 2's screen is still undrawn — **CARRIED**
+## 7. Milestone 2 — **CLOSED**
 
-Milestone 2's **data path is complete end to end** — Rails type → registry payload → mod parser →
-eligibility evaluation → S2C payload — but nothing renders it. `ServiceNpcSpawnScreen` still shows
-only the city/type/enabled controls: no taught-skill list, no supply lines, no
-registered-but-unstaffed reason. An admin therefore still cannot see from the block why a
-Guildmaster did not appear, which was the point of the milestone.
+The data path (Rails type → registry payload → mod parser → eligibility evaluation → S2C payload)
+and the readout that displays it are both done. `ServiceNpcSpawnScreen` now shows the taught-skill
+list, per-supply required-vs-available lines, and an explanation when a block is registered but
+unstaffed — so "I configured it and nothing appeared" is self-diagnosing at the block instead of
+only on the Rails admin page.
+
+`ServiceNpcSpawnPresentation` formats the rows **once per payload**, in `acceptState`, never in
+`render`. Render runs every frame while this data changes about three times a session, so the draw
+loop is an indexed walk over pre-built strings that allocates nothing. Extracting it for that
+reason is also what put it under JUnit, since an `AbstractContainerScreen` cannot be constructed by
+either harness — the same split `BankDialogueLayout` uses.
+
+Verified: 1752 JUnit tests, 0 failures. A bank teller renders no new rows at all, asserted.
 
 Milestone 3 (interaction routing) is **done**: `GuildmasterProxyService` mirrors
 `BankingProxyService.resolve()`, `interactAt` routes banking first then guild training, and the
