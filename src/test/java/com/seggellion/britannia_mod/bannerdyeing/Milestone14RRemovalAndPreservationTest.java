@@ -62,8 +62,9 @@ class Milestone14RRemovalAndPreservationTest {
         // integrated total of 693. New-assets milestone 2 adds eight decorative
         // block items without restoring any of the rejected banner content.
         // New-assets milestone 3 adds ten decorative multiblock items, and
-        // milestone 4 adds three crate block items.
-        assertEquals(756, repositoryItems);
+        // milestone 4 adds three crate block items, and milestone 5 adds the
+        // water-well and Adventure-ladder block items.
+        assertEquals(758, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

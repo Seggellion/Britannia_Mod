@@ -359,4 +359,43 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 4 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 4 as `6c9761dd` (`Add crate container family`).
+
+## Milestone 5 — Water Well and Adventure Ladder
+
+### Scope implemented
+
+- Starting HEAD: `6c9761dd`.
+- Added final `water_well` and `ladder` block/item IDs using the existing atomic multiblock placement and whole-structure teardown infrastructure.
+- The well occupies an authoritative 1x2x2 volume and handles all interactions server-side. It fills watering cans to 12 charges, converts vanilla buckets to water buckets, and marks registered pitchers as filled with water without accepting unrelated containers.
+- Corrected `pitcher_empty` to register the existing water-only `PitcherItem` while preserving its `BlockItem` placement behavior.
+- The ladder occupies an authoritative 1x1x3 volume, is tagged climbable across every part, has deliberate two-sided rails/rungs collision, places from the ground, tears down as one structure, and drops once.
+- Adventure placement permission is confined to the ladder item. Adventure break permission is added to axes for only the custom ladder; the existing two-handed axe handler preserves its log/fruit-tree behavior and now recognizes this ladder as well.
+
+### Art, provenance, and dimensional re-authoring
+
+- Added `tools/new-assets/import_milestone5.ps1` as a deterministic importer that reads `shizuart_farmer_props.zip` without modifying the archive.
+- Normalized the temporary purchased farmer-well model to x `0..16`, y `0..32`, z `0..32` inside the well's 1x2x2 structure.
+- Re-authored the temporary purchased stepladder into a 48-voxel-high model with x `0..16`, y `-16..32`, z `0..16`. The model renders from the middle of the three structure cells so all elements remain inside Minecraft's permitted extended-model range.
+- Both assets use the purchased 256x256 ARGB farmer-props atlas under final resource IDs. They are classified `PLACEHOLDER` and require later replacement.
+
+### Validation performed
+
+- Focused unit/regression tests: PASS. Coverage verifies both authoritative footprints, pitcher placement plus water state, all three accepted well container families, rejection of unrelated containers, and exact repository-item count 758.
+- Dedicated-server GameTests: PASS; all 341 required tests passed. Milestone 5 tests exercise all three server-side well conversions and Adventure placement, climbability of all three ladder cells, child-part teardown, and exactly one ladder-item drop.
+- `gradlew.bat build --no-daemon --no-configuration-cache`: PASS after the client-model correction; 1,690 tests completed, 17 skipped, zero failures or errors.
+- Initial client validation correctly rejected a ladder root model extending above y=32. The resource was translated to y `-16..32` and moved to the middle structure cell; the subsequent client resource reload logged no Milestone 5 model or texture failures. Unrelated pre-existing missing-resource warnings remain elsewhere in the mod.
+
+### Validation still requiring an interactive client/multiplayer session
+
+- In-world well/ladder alignment, UVs, all four orientations, fitted collision, double-sided climb feel, obstruction rollback, and save/reload require live review.
+- Creative/Survival/Adventure item behavior and a two-client permission/synchronization pass remain on the live checklist.
+
+### Tooling note
+
+- The feature worktree's Git LFS wrapper pointer was temporarily materialized for Gradle validation and restored exactly before handoff.
+
+### Commit status
+
+- Milestone 5 remains uncommitted pending owner review and explicit commit authorization.

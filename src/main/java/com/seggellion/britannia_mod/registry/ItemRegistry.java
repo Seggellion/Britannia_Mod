@@ -3,6 +3,8 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.item.RaisedBlockItem;
 import com.seggellion.britannia_mod.item.DecorativeMultiblockItem;
+import com.seggellion.britannia_mod.item.AdventureLadderItem;
+import com.seggellion.britannia_mod.item.PitcherItem;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.ModSounds;
@@ -650,8 +652,8 @@ public static final DeferredHolder<Item, CropSeedItem> RUTABAGA_SEEDS = cropSeed
 
     // The Juice Press Output
 // Keep this one as a standard BlockItem (so clicking air with an empty pitcher does nothing)
-    public static final DeferredHolder<Item, BlockItem> PITCHER_EMPTY = ITEMS.register("pitcher_empty",
-            () -> new BlockItem(BlockRegistry.PITCHER_EMPTY_BLOCK.get(), new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, PitcherItem> PITCHER_EMPTY = ITEMS.register("pitcher_empty",
+            () -> new PitcherItem(BlockRegistry.PITCHER_EMPTY_BLOCK.get(), new Item.Properties().stacksTo(1)));
 
     // Update these to use your new PitcherJuiceItem class
     public static final DeferredHolder<Item, BlockItem> PITCHER_RED_GRAPE_JUICE = ITEMS.register("pitcher_red_grape_juice",
@@ -1943,6 +1945,8 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> SMALL_CRATE_ITEM = ITEMS.register("small_crate", () -> new DecorativeMultiblockItem(BlockRegistry.SMALL_CRATE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MEDIUM_CRATE_ITEM = ITEMS.register("medium_crate", () -> new DecorativeMultiblockItem(BlockRegistry.MEDIUM_CRATE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new DecorativeMultiblockItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> WATER_WELL_ITEM = ITEMS.register("water_well", () -> new DecorativeMultiblockItem(BlockRegistry.WATER_WELL.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LADDER_ITEM = ITEMS.register("ladder", () -> new AdventureLadderItem(BlockRegistry.LADDER.get(), new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {

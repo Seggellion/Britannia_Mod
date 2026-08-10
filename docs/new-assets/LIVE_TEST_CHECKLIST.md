@@ -122,3 +122,41 @@ Build and dedicated-server GameTests pass. The checks below require an interacti
 - Multiplayer result:
 - Screenshots or log path:
 - Accepted placeholders/replacement notes:
+
+## Milestone 5 — Water Well and Adventure Ladder
+
+The focused tests, full dedicated-server GameTest suite, and automated client resource startup pass. The checks below require an interactive client or multiplayer session and remain open until performed and accepted.
+
+- [x] Launch the development client through resource reload and confirm no `water_well` or `ladder` model/texture failures are logged. (2026-08-10; unrelated pre-existing resource warnings remain.)
+
+### Water well
+
+- [ ] Confirm the water well item appears exactly once in the Britannia decor creative tab and is labeled as temporary art.
+- [ ] Place the 1x2x2 well in all four orientations; verify scale, UVs, roof/base alignment, interaction reach, fitted collision, and obstruction rollback.
+- [ ] In Survival, fill a partially used watering can and verify it becomes exactly 12 charges without duplicating the stack.
+- [ ] Fill one vanilla bucket and one empty pitcher; verify the correct water bucket and water-only pitcher results, stack handling, sound, and no duplication.
+- [ ] Try glass bottles and unrelated items; verify the well does not consume or transform them.
+- [ ] Interact with every well part, then break root and child parts; verify whole teardown and exactly one well item drop.
+
+### Adventure ladder
+
+- [ ] Confirm the ladder item appears exactly once in the Britannia decor creative tab and is labeled as temporary art.
+- [ ] In Adventure mode, place the ladder against ordinary ground in all four orientations and verify no unrelated block-placement permission was granted.
+- [ ] Block each required cell in turn; verify placement fails atomically without consuming the item or leaving partial blocks.
+- [ ] Climb from both faces and verify all three cells are climbable with usable narrow stair/rung collision.
+- [ ] Break the ladder from bottom, middle, and top using several vanilla axes plus the two-handed axe; verify whole teardown and exactly one ladder drop.
+- [ ] Verify non-axe tools cannot break the custom ladder in Adventure mode and that axe Adventure permission did not expand to unrelated blocks.
+- [ ] Repeat placement/breaking in Creative and Survival and save/reload all four orientations.
+
+### Multiplayer
+
+- [ ] Repeat well filling and Adventure ladder placement/breaking with two clients on a dedicated server; verify authoritative inventory changes, permissions, and teardown remain synchronized.
+
+### Milestone 5 acceptance record
+
+- Tester/date:
+- Client/dedicated-server result:
+- Water-container result:
+- Adventure permission/climbing result:
+- Screenshots or log path:
+- Accepted placeholders/replacement notes:

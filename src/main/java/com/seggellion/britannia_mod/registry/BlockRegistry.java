@@ -4,6 +4,8 @@ import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
 import com.seggellion.britannia_mod.block.DecorativePlantBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.block.WaterWellBlock;
+import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
@@ -2318,6 +2320,29 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             BLOCK_ENTITY_TYPES.register("crate", () -> BlockEntityType.Builder.of(
                     CrateBlockEntity::new,
                     SMALL_CRATE.get(), MEDIUM_CRATE.get(), LARGE_CRATE.get()).build(null));
+
+    public static final DeferredHolder<Block, WaterWellBlock> WATER_WELL = BLOCKS.register("water_well", () ->
+            new WaterWellBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.5F)
+                            .sound(SoundType.STONE).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 0, 0, 1, 0, 1,
+                    (x, y, z) -> y == 0
+                            ? Block.box(1, 0, 1, 15, 12, 15)
+                            : Shapes.or(
+                                    Block.box(1, 0, 1, 3, 16, 15),
+                                    Block.box(13, 0, 1, 15, 16, 15),
+                                    Block.box(0, 13, 0, 16, 16, 16))));
+
+    public static final DeferredHolder<Block, LadderMultiblockBlock> LADDER = BLOCKS.register("ladder", () ->
+            new LadderMultiblockBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F)
+                            .sound(SoundType.LADDER).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 0, 0, 2, 0, 0,
+                    (x, y, z) -> Shapes.or(
+                            Block.box(1, 0, 2, 3, 16, 14),
+                            Block.box(13, 0, 2, 15, 16, 14),
+                            Block.box(1, 4, 2, 15, 6, 14),
+                            Block.box(1, 12, 2, 15, 14, 14))));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

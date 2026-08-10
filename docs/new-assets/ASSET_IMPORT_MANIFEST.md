@@ -66,8 +66,8 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Small crate | `small_crate` | `PLACEHOLDER` | Temporary purchased art; 9-slot container implemented in Milestone 4 |
 | Medium crate | `medium_crate` | `PLACEHOLDER` | Unmistakable code-authored placeholder; 27-slot container implemented in Milestone 4 |
 | Large crate | `large_crate` | `PLACEHOLDER` | Temporary purchased art normalized to an authoritative 2x2x2 structure; 54-slot container implemented in Milestone 4 |
-| Water well | `water_well` | `FOUND` | None |
-| Ladder | `ladder` | `PARTIAL` | Extend/re-author source to 3-block height |
+| Water well | `water_well` | `PLACEHOLDER` | Temporary purchased art normalized to a functional 1x2x2 well in Milestone 5 |
+| Ladder | `ladder` | `PLACEHOLDER` | Temporary purchased art re-authored to a 3-block/48-voxel structure in Milestone 5 |
 | Scarecrow | `scarecrow` | `PLACEHOLDER` | Temporary purchased art implemented as a two-block-high structure |
 | Fern | `fern` | `PLACEHOLDER` | Temporary purchased small-flora art imported in Milestone 2 |
 | Dress form | `dress_form` | `PLACEHOLDER` | Temporary purchased mannequin art implemented under the final ID |
@@ -244,12 +244,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source model: preferred candidate `shizuart_farmer_props.zip::ItemsAdder/contents/shizuart_furnitures/models/farmer_props/farmer_well.json`; a larger `medieval_market_well` alternative also exists.
 - Source texture: shared `.../textures/farmer_props/farmer_props.png`.
 - Format/checksum: JSON `34f6ffd7a127c526ed0bece211dd88883633aabf5d6912b70aa716ceaa083ded`; PNG `e382264c5753533a713aef1f852a0522c602435e8bfb7839d1d940fb2eb265f6`.
-- Import status: `FOUND`.
-- Proposed targets: two-block root/part implementation, `BlockRegistry`/`ItemRegistry`, well models/textures, localization/loot; water interaction service using existing item types.
+- Import status: `PLACEHOLDER` — temporary purchased art and the final functional ID were implemented in Milestone 5.
+- Final targets: `WaterWellBlock`, shared transactional multiblock placement, `WaterSourceInteraction`, `BlockRegistry`/`ItemRegistry`, blockstate/model/item/texture resources, localization, empty loot, creative tab, and cutout registration.
 - Required behavior: server-authoritatively fill watering cans, vanilla buckets, and pitchers without duplication; correct empty-pitcher registration for water behavior only.
-- Dimensions/animation: candidate bounds x `-5..14`, y `4..31.5`, z `-1.5..25.5`; about two blocks high with a cross-cell footprint. No animation.
-- Collision: masonry/base/roof approximation with reachable interaction shape.
-- Notes/blockers: final origin and horizontal footprint need Blockbench/in-game review; pitcher registration correction belongs to Milestone 5.
+- Dimensions/animation: normalized bounds x `0..16`, y `0..32`, z `0..32`; authoritative 1x2x2 occupancy (four cells). No animation.
+- Collision: deliberate per-cell stone/masonry collision with interaction available from every valid part.
+- Notes/blockers: `pitcher_empty` now uses the existing water-only `PitcherItem` while remaining a placeable pitcher block item. Interactive footprint, UV, and reach review remains open; the art remains temporary.
 
 ### 11. Double-sided ladder
 
@@ -258,12 +258,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Candidate source model: `shizuart_farmer_props.zip::ItemsAdder/contents/shizuart_furnitures/models/farmer_props/farmer_stepladder.json`.
 - Source texture: shared farmer-props atlas.
 - Format/checksum: JSON `cc4f5a7439f0f50e67e0fb3f831415c99517e85072bb4ecb81169c66f667c595`; PNG `e382264c5753533a713aef1f852a0522c602435e8bfb7839d1d940fb2eb265f6`.
-- Import status: `PARTIAL`.
-- Proposed targets: custom 3-high multiblock block/item, narrow Adventure predicate handling, axe mineability/break predicates, blockstate/model/item/texture/localization/loot.
+- Import status: `PLACEHOLDER` — temporary purchased art was re-authored and the final functional ID was implemented in Milestone 5.
+- Final targets: `LadderMultiblockBlock`, `AdventureLadderItem`, shared transactional multiblock placement, narrowly scoped Adventure place/break predicates, climbable/axe tags, blockstate/model/item/texture resources, localization, empty loot, creative tab, and cutout registration.
 - Required behavior: atomic ground placement, climbable from both faces, whole-structure teardown, narrow Adventure placement, axe destruction.
-- Dimensions/animation: candidate bounds x `-1..17`, y `-4..31.97734`, z `-1.27734..31.27734` (roughly 2.25 blocks high rather than 3); no animation.
+- Dimensions/animation: re-authored to a full 48-voxel visual with model bounds x `0..16`, y `-16..32`, z `0..16`, rendered from the middle cell of an authoritative 1x1x3 structure. No animation.
 - Collision: narrow stair/rung traversal shapes, not a flat vanilla ladder or full cubes.
-- Notes/blockers: source needs extension/re-authoring to 48-voxel height and traversal validation.
+- Notes/blockers: the first 0..48 root model exceeded Minecraft's extended-element parser limit, so the unchanged 48-voxel visual was translated to -16..32 and rendered from the middle cell. Interactive double-sided climbing, traversal feel, and all-or-nothing placement still require live review; the art remains temporary.
 
 ### 12. Scarecrow
 
@@ -441,8 +441,8 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Fountain: source matches the requested 2×2×3 envelope after origin normalization.
 - Training dummy: animated source exists, but its 20×44×14-voxel punching-bag geometry does not match the requested 32×48 multiblock silhouette.
 - Moongate: animated source exists, but raw 32×43×32 bounds must be reduced/re-authored to the owner-requested 32-voxel height and one logical block.
-- Water well/scarecrow/dress form: complete source candidates match their approximate two-block-height requirements.
-- Ladder: source is approximately 2.25 blocks high and requires a 3-block adaptation.
+- Water well/scarecrow/dress form: complete source candidates match their approximate two-block-height requirements; the well was normalized to its final 1x2x2 Milestone 5 footprint.
+- Ladder: the approximately 2.25-block source was re-authored to a full 3-block/48-voxel visual in Milestone 5.
 
 ## Models requiring dimensional re-authoring
 
@@ -450,7 +450,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 |---|---|---|---|---|
 | Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block with a 32-voxel-high visual | Reduce height by 11 voxels, re-origin, fit the interaction footprint, and migrate away from the separate top block without changing teleport behavior |
 | Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Re-author silhouette/anchors to 2-wide × 3-high, retain/retime the hit animation, and author root/part occupancy separately from visual bounds |
-| Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Extend/rebuild to 48-voxel height, normalize origin, and author traversal/collision independently |
+| Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Completed in Milestone 5: extended/rebuilt to x `0..16`, y `-16..32`, z `0..16`, rendered from the middle structure cell, with independent double-sided traversal collision |
 | Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Extend/rebuild the frame to 48-voxel height and normalize it to the authoritative 2×3 multiblock root |
 
 The fountain needs origin normalization but already fits its requested 2×2×3 envelope. The water well, scarecrow, and dress form fit their approximate two-block-height contracts. Large-crate art crosses cell bounds and therefore needs multiblock placement/collision authoring, but no owner-specified voxel envelope requires visual re-scaling.

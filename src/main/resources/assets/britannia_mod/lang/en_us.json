@@ -1452,5 +1452,7 @@
   "container.britannia_mod.crate": "Crate",
   "container.britannia_mod.small_crate": "Small Crate",
   "container.britannia_mod.medium_crate": "Medium Crate",
-  "container.britannia_mod.large_crate": "Large Crate"
+  "container.britannia_mod.large_crate": "Large Crate",
+  "block.britannia_mod.water_well": "Water Well (Temporary Art)",
+  "block.britannia_mod.ladder": "Double-Sided Ladder (Temporary Art)"
 }

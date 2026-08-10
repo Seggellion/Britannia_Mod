@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 /** Transactional placement item for {@link DecorativeMultiblockBlock}. */
-public final class DecorativeMultiblockItem extends BlockItem {
+public class DecorativeMultiblockItem extends BlockItem {
     public DecorativeMultiblockItem(DecorativeMultiblockBlock block, Properties properties) {
         super(block, properties);
     }
@@ -49,7 +49,7 @@ public final class DecorativeMultiblockItem extends BlockItem {
                     || level.getBlockEntity(position) != null
                     || !level.getBlockState(position).canBeReplaced(placeContext)
                     || !level.mayInteract(player, position)
-                    || !player.mayUseItemAt(position, Direction.UP, stack)) {
+                    || !mayPlaceCell(context, player, position, stack)) {
                 return InteractionResult.FAIL;
             }
             if (cell.y() == block.minimumY()) {
@@ -85,6 +85,12 @@ public final class DecorativeMultiblockItem extends BlockItem {
             stack.shrink(1);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** Allows a narrowly scoped item subclass to authorize its own occupied cells. */
+    protected boolean mayPlaceCell(
+            UseOnContext context, Player player, BlockPos position, ItemStack stack) {
+        return player.mayUseItemAt(position, Direction.UP, stack);
     }
 
     private static boolean placeOrRollback(ServerLevel level, List<PlacementCell> placement) {

@@ -17,6 +17,7 @@ public class ModTags {
         public static final TagKey<Block> FRUIT_TREE_LEAVES = createTag("fruit_tree_leaves");
         public static final TagKey<Block> FRUIT_TREE_FRUITS = createTag("fruit_tree_fruits");
         public static final TagKey<Block> FRUIT_TREE_BLOCKS = createTag("fruit_tree_blocks");
+        public static final TagKey<Block> ADVENTURE_LADDERS = createTag("adventure_ladders");
 
         private static TagKey<Block> createTag(String name) {
             return BlockTags.create(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, name));

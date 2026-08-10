@@ -1,16 +1,18 @@
 package com.seggellion.britannia_mod.item;
 
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.block.Block;
 
-public class PitcherItem extends Item {
+/** Placeable empty pitcher that can carry water in its item data. */
+public class PitcherItem extends BlockItem {
     private static final String KEY_FILLED = "FilledWithWater";
 
-    public PitcherItem(Properties properties) {
-        super(properties);
+    public PitcherItem(Block block, Properties properties) {
+        super(block, properties);
     }
 
     public void fillWithWater(ItemStack stack) {
