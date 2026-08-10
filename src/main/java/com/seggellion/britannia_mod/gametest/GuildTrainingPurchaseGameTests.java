@@ -88,6 +88,73 @@ public final class GuildTrainingPurchaseGameTests {
                 "an unaffordable grant must take nothing at all");
     }
 
+    // ---------- Milestone 7 item 5: transaction isolation ----------
+
+    @GameTest(batch = "world_state_entity", template = TEMPLATE, timeoutTicks = 100)
+    public static void aDoubleClickSubmitsOnlyOnePurchase(GameTestHelper helper) {
+        withRegistry(() -> {
+            java.util.concurrent.atomic.AtomicInteger submissions =
+                    new java.util.concurrent.atomic.AtomicInteger();
+            // Deliberately a future that never completes, modelling the real client: an HTTP call
+            // resolves on another thread some ticks later. An already-completed future would fire
+            // whenComplete inline, and MinecraftServer.execute runs inline when already on the
+            // server thread, so the in-flight window would collapse to zero and this would pass
+            // for the wrong reason - it would be measuring timing rather than the guard.
+            GuildTrainingService.useClientForTesting((server, request) -> {
+                submissions.incrementAndGet();
+                return new CompletableFuture<>();
+            });
+
+            ServerPlayer player = helper.makeMockServerPlayerInLevel();
+            ServiceNpcEntity guildmaster = guildmaster(helper);
+            player.moveTo(guildmaster.getX(), guildmaster.getY(), guildmaster.getZ());
+            giveGold(player, START_GOLD);
+
+            GuildTrainingService.purchase(player, guildmaster, SKILL);
+            GuildTrainingService.purchase(player, guildmaster, SKILL);
+
+            // One submission is the guard's actual contract. Each purchase mints its own
+            // idempotency key, so a second submission is not a retry Rails would deduplicate -
+            // it is a distinct purchase it would correctly bill for.
+            check(submissions.get() == 1,
+                    "a double click must submit one purchase, submitted " + submissions.get());
+            check(goldOf(player) == START_GOLD,
+                    "nothing may be charged before Rails answers (found " + goldOf(player) + " gold)");
+            GuildTrainingService.resetClientForTesting();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(batch = "world_state_entity", template = TEMPLATE, timeoutTicks = 100)
+    public static void oneBuyerDoesNotBlockAnother(GameTestHelper helper) {
+        withRegistry(() -> {
+            GuildTrainingService.useClientForTesting((server, request) ->
+                    CompletableFuture.completedFuture(new GuildTrainingWriteResult.Applied(40, 40, 4.0D)));
+
+            ServiceNpcEntity guildmaster = guildmaster(helper);
+            ServerPlayer first = helper.makeMockServerPlayerInLevel();
+            ServerPlayer second = helper.makeMockServerPlayerInLevel();
+            for (ServerPlayer player : List.of(first, second)) {
+                player.moveTo(guildmaster.getX(), guildmaster.getY(), guildmaster.getZ());
+                giveGold(player, START_GOLD);
+            }
+
+            // The guard is keyed on the player, not held globally: one buyer in flight must never
+            // stop a different buyer from training at the same Guildmaster.
+            GuildTrainingService.purchase(first, guildmaster, SKILL);
+            GuildTrainingService.purchase(second, guildmaster, SKILL);
+
+            helper.runAfterDelay(3L, () -> {
+                check(goldOf(first) == START_GOLD - 40,
+                        "the first buyer was not charged (found " + goldOf(first) + " gold)");
+                check(goldOf(second) == START_GOLD - 40,
+                        "the second buyer was blocked by the first (found " + goldOf(second) + " gold)");
+                GuildTrainingService.resetClientForTesting();
+                helper.succeed();
+            });
+        });
+    }
+
     // ---------- Harness ----------
 
     private static void run(
@@ -98,10 +165,7 @@ public final class GuildTrainingPurchaseGameTests {
                     (server, request) -> CompletableFuture.completedFuture(outcome));
 
             ServerPlayer player = helper.makeMockServerPlayerInLevel();
-            ServiceNpcEntity guildmaster = helper.spawn(EntityRegistry.SERVICE_NPC.get(), new BlockPos(1, 1, 1));
-            guildmaster.setWorldNpcPublicId(UUID.randomUUID());
-            guildmaster.setPersonalName("Marcus");
-            guildmaster.setServiceNpcTypeKey(TYPE_KEY);
+            ServiceNpcEntity guildmaster = guildmaster(helper);
             // Adjacent, so GuildmasterProxyService.resolve's distance check passes.
             player.moveTo(guildmaster.getX(), guildmaster.getY(), guildmaster.getZ());
 
@@ -120,6 +184,14 @@ public final class GuildTrainingPurchaseGameTests {
                 helper.succeed();
             });
         });
+    }
+
+    private static ServiceNpcEntity guildmaster(GameTestHelper helper) {
+        ServiceNpcEntity entity = helper.spawn(EntityRegistry.SERVICE_NPC.get(), new BlockPos(1, 1, 1));
+        entity.setWorldNpcPublicId(UUID.randomUUID());
+        entity.setPersonalName("Marcus");
+        entity.setServiceNpcTypeKey(TYPE_KEY);
+        return entity;
     }
 
     private static void giveGold(ServerPlayer player, int gold) {
