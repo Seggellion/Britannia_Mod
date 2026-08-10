@@ -185,6 +185,87 @@ class ServiceNpcRegistryParserGuildmasterTest {
         );
     }
 
+    // ---------- minimum_city_supplies (Milestone 7: shared-payload compatibility) ----------
+
+    @Test
+    void parsesTheEconomicGate() {
+        ServiceNpcRegistryParser.ParseResult result = parse(
+                "\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": {\"food\": 200, \"gold\": 1},");
+
+        assertAccepted(result);
+        ServiceNpcTypeDefinition guild = result.snapshot().serviceNpcTypes().get("warrior_guildmaster");
+        assertEquals(200.0, guild.minimumCitySupplies().get("food"));
+        assertEquals(1.0, guild.minimumCitySupplies().get("gold"));
+    }
+
+    @Test
+    void anAbsentEconomicGateParsesAsUngated() {
+        // The compatibility case that matters: a Rails build predating the gate omits the member
+        // entirely. Requiring it would reject the whole registry and take bank tellers down too.
+        ServiceNpcRegistryParser.ParseResult result = parse(taughtSkills("\"swords\""));
+
+        assertAccepted(result);
+        assertTrue(result.snapshot().serviceNpcTypes()
+                .get("warrior_guildmaster").minimumCitySupplies().isEmpty());
+    }
+
+    @Test
+    void anExplicitlyNullEconomicGateParsesAsUngated() {
+        ServiceNpcRegistryParser.ParseResult result = parse(
+                "\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": null,");
+
+        assertAccepted(result);
+        assertTrue(result.snapshot().serviceNpcTypes()
+                .get("warrior_guildmaster").minimumCitySupplies().isEmpty());
+    }
+
+    @Test
+    void aBankTellerIsUngatedEvenBesideAGatedGuildmaster() {
+        ServiceNpcRegistryParser.ParseResult result = parse(
+                "\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": {\"food\": 200},");
+
+        assertAccepted(result);
+        assertTrue(result.snapshot().serviceNpcTypes().get("bank_teller").minimumCitySupplies().isEmpty(),
+                "publishing an economic gate must never gate the banker");
+    }
+
+    @Test
+    void theEconomicGateIsImmutable() {
+        ServiceNpcRegistryParser.ParseResult result = parse(
+                "\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": {\"food\": 200},");
+
+        assertAccepted(result);
+        assertThrows(UnsupportedOperationException.class, () -> result.snapshot()
+                .serviceNpcTypes().get("warrior_guildmaster").minimumCitySupplies().put("gold", 1.0));
+    }
+
+    @Test
+    void rejectsANonObjectEconomicGate() {
+        assertRejected(parse("\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": 200,"),
+                "minimum_city_supplies must be an object");
+    }
+
+    @Test
+    void rejectsANonNumericMinimum() {
+        assertRejected(
+                parse("\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": {\"food\": \"lots\"},"),
+                "must be a number");
+    }
+
+    @Test
+    void rejectsANegativeMinimum() {
+        assertRejected(
+                parse("\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": {\"food\": -1},"),
+                "non-negative finite number");
+    }
+
+    @Test
+    void rejectsAMalformedSupplyKey() {
+        assertRejected(
+                parse("\"taught_skill_slugs\": [\"swords\"], \"minimum_city_supplies\": {\"Food Supply\": 200},"),
+                "invalid supply key");
+    }
+
     // ---------- Fixture ----------
 
     private static ServiceNpcTypeDefinition acceptedGuildmaster(String taughtSkillsMember) {
