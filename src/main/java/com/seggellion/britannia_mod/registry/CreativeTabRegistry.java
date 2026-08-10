@@ -385,7 +385,6 @@ public class CreativeTabRegistry {
 
                 safeAccept(output, ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_BLOCK_ITEM.get());
-                safeAccept(output, ItemRegistry.MOONGATE_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.DUNGEON_MOONGATE_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.DUNGEON_MOONGATE_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_LINKING_WAND.get());

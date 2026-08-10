@@ -56,7 +56,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Requested asset | Proposed/existing registry ID | Status | Placeholder proposal |
 |---|---|---|---|
 | Ibis, white/scarlet | `ibis` with persistent variant | `PLACEHOLDER` | White source imported unchanged; UV-safe scarlet recolor and all runtime behavior implemented in Milestone 6 |
-| Moongate visual replacement | existing `moongate_block` | `PARTIAL` | Reworked 32-voxel model required; do not create another gate ID |
+| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID now uses one logical block and a re-authored 32-voxel model; purchased art remains temporary |
 | Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
 | Training dummy | `training_dummy` | `PLACEHOLDER` | Implemented in Milestone 7; purchased punching-bag art re-authored to exact 32×48 visible bounds and must be replaced later |
 | Fountain | `fountain` | `PLACEHOLDER` | Temporary source art normalized to the requested 2x2x3 structure |
@@ -106,12 +106,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source model: `moongate\portal.bbmodel`.
 - Source textures: `moongate\portal_texture.png` through `portal_texture6.png`.
 - Format/checksum: Blockbench `.bbmodel` `a22ccc954d3f7b8a36670c017da4f506d0bb18b326700f416b1e8931d0dd48a7`; texture checksums are recorded in the inventory evidence. Textures are ARGB and range from 32×32 to animated strips of 128×1536.
-- Import status: `PARTIAL`.
-- Proposed targets: existing `MoongateBlock`, `moongate_block` registration, teleport handler/tick handler; replacement geometry/animation/texture resources under existing moongate paths; remove dependence on `moongate_top` only when Milestone 10 safely migrates existing worlds.
+- Import status: `PLACEHOLDER` — implemented in Milestone 10 under the existing final ID with temporary purchased art.
+- Final targets: existing `MoongateBlock` and `moongate_block` registration; re-authored `models/block/moongate_block.json`; six temporary source textures under `textures/block/new_assets/moongate`; existing teleport handler/tick handler unchanged. The legacy top block/item IDs remain registered only for old-save compatibility.
 - Required behavior: preserve existing destination/configuration, mount/escort, and cooldown behavior while moving to one logical block.
 - Dimensions/animation: raw bounds x `-16..16`, y `-1.5..41.5`, z `-16..16`; `idle` 3s and `spawn` 1.5s. Owner target is 32 voxels high.
 - Collision: portal interaction volume must be deliberate and must not use the raw 32×32×43 bounds unchanged.
-- Notes/blockers: source is wider/taller than the target and requires re-origin/rescale/re-authoring. This targets `MoongateBlock`, not a new teleport network; paired-dungeon visual parity can be reviewed separately in Milestone 10.
+- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The one-cell block is pass-through; its 32-voxel model intentionally renders above that cell. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
 
 ### 3. Merchant carts — six colors
 
@@ -440,7 +440,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Spinning wheel: missing; `standing_loom` is not a spinning wheel.
 - Fountain: source matches the requested 2×2×3 envelope after origin normalization.
 - Training dummy: animated source exists, but its 20×44×14-voxel punching-bag geometry does not match the requested 32×48 multiblock silhouette.
-- Moongate: animated source exists, but raw 32×43×32 bounds must be reduced/re-authored to the owner-requested 32-voxel height and one logical block.
+- Moongate: completed in Milestone 10; raw 32×43×32 bounds were re-authored to the owner-requested 16×32×16 visual on one logical block.
 - Water well/scarecrow/dress form: complete source candidates match their approximate two-block-height requirements; the well was normalized to its final 1x2x2 Milestone 5 footprint.
 - Ladder: the approximately 2.25-block source was re-authored to a full 3-block/48-voxel visual in Milestone 5.
 
@@ -448,7 +448,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 
 | Requested asset | Source model | Measured source bounds | Required envelope | Re-authoring required |
 |---|---|---|---|---|
-| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block with a 32-voxel-high visual | Reduce height by 11 voxels, re-origin, fit the interaction footprint, and migrate away from the separate top block without changing teleport behavior |
+| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block with a 32-voxel-high visual | Completed in Milestone 10: scaled/re-originated to x/z `0..16` and y `0..32`; retained the legacy top registry IDs as invisible self-cleaning compatibility aliases without changing teleport behavior |
 | Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Completed in Milestone 7: transformed to exact 32×48×14 bounds, retimed to a one-second one-shot hit, and paired with separate atomic 2×3 occupancy/collision |
 | Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Completed in Milestone 5: extended/rebuilt to x `0..16`, y `-16..32`, z `0..16`, rendered from the middle structure cell, with independent double-sided traversal collision |
 | Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Extend/rebuild the frame to 48-voxel height and normalize it to the authoritative 2×3 multiblock root |

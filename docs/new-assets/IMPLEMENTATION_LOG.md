@@ -538,4 +538,32 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 9 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 9 as `b852d912` (`Add connected display cases`).
+
+## Milestone 10 — One-Block City Moongate
+
+### Scope implemented
+
+- Starting HEAD: `b852d912`.
+- Updated the existing `britannia_mod:moongate_block` in place; no parallel block ID, teleport network, block entity, or packet was added.
+- Kept the random-city teleport path intact, including Jhelom, mount and active-escort transport, momentum reset, destination chunk loading, and the 100-tick cooldown.
+- Left the paired dungeon moongate block, top, block entity, linking wand, and paired-destination behavior separate and unchanged.
+
+### Art and migration
+
+- Imported all six purchased portal textures as explicitly temporary placeholder art through deterministic `import_milestone10.ps1` checksum validation.
+- Re-authored the raw 32×43×32-voxel layered portal into a 16×32×16 envelope. The registered block still occupies one pass-through interaction cell while its model renders 32 voxels high.
+- Removed the legacy `moongate_top` item from the creative tab, but retained its block and item registry IDs so existing chunks and inventories remain loadable. The old top now renders invisibly and removes itself on placement, neighbor update, or a random server tick.
+- Registered the final city moongate on the translucent render layer and added scaled inventory transforms for its tall model.
+
+### Validation status
+
+- Focused resource, registry, teleport-preservation, legacy migration, and model/atlas contract tests: PASS.
+- Gradle 8.9 `build --no-configuration-cache`: PASS; 1,708 tests completed, 17 skipped, zero failures or errors.
+- Dedicated-server GameTests: PASS; all 347 required tests passed. The Milestone 10 test proves the final city gate occupies one pass-through cell, creates no block entity, and removes a placed legacy top without disturbing the final gate.
+- Development-client startup completed resource reload and block-atlas creation with no `moongate_block`, Milestone 10 model, or imported portal-texture warnings/errors. The existing 44×44 `dungeon_moongate_block` mip warning and other unrelated pre-existing resource warnings remain outside this milestone.
+
+### Commit status
+
+- Milestone 10 remains uncommitted pending owner review and explicit commit authorization.

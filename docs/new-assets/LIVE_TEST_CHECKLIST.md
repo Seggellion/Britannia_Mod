@@ -303,3 +303,38 @@ Automated checks cover the two-cell lifecycle, server-derived connections, absen
 - Decorative-only boundary result:
 - Screenshots or log path:
 - Accepted placeholder/replacement notes:
+
+## Milestone 10 — One-Block City Moongate
+
+Automated checks cover the single-cell structure, exact 16×32×16 model envelope, source-atlas dimensions, legacy-top cleanup, pass-through collision, registry preservation, and the unchanged teleport contract. The following presentation and live-world checks require a client.
+
+### Art and interaction
+
+- [ ] Confirm `Moongate` appears exactly once in the Britannia creative tab and `Legacy Moongate Top` does not appear there.
+- [ ] Place the city moongate and inspect the temporary layered portal, animated atlases, translucent sorting, floor swirl, lighting, particles, hum, inventory model, and exact 32-voxel visible height.
+- [ ] Walk through from both faces and from slightly off-center; verify its one-cell pass-through trigger volume feels deliberate and does not require an invisible upper block.
+- [ ] Test Survival targeting/break behavior and confirm the unbreakable/no-drop contract remains unchanged.
+
+### Teleport preservation
+
+- [ ] Travel repeatedly after each cooldown and confirm random-city destinations still include Jhelom and the other established cities.
+- [ ] Verify the five-second/100-tick re-entry cooldown prevents immediate looping and permits a later trip.
+- [ ] Travel while mounted and with an active escort; confirm both arrive with the player and momentum/navigation remain stable.
+- [ ] Confirm the linking wand and paired dungeon moongates still link and teleport independently of the city gate.
+
+### Legacy-world migration
+
+- [ ] Load a backed-up world containing old `moongate_block` + `moongate_top` pairs; verify the new full-height visual appears immediately and old top cells disappear without drops or missing-registry warnings.
+- [ ] Load an inventory containing a legacy top item; verify the stack remains loadable even though it is hidden from creative search.
+- [ ] Save/reload migrated chunks and confirm no top cells return and city gates still teleport.
+
+### Milestone 10 acceptance record
+
+- Tester/date:
+- Client/resource result:
+- Single-cell/32-voxel presentation result:
+- City teleport/mount/escort result:
+- Dungeon-pair regression result:
+- Legacy-world migration result:
+- Screenshots or log path:
+- Accepted placeholder/replacement notes:
