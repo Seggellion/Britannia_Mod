@@ -1445,5 +1445,12 @@
   "block.britannia_mod.fountain": "Fountain (Temporary Art)",
   "block.britannia_mod.scarecrow": "Scarecrow (Temporary Art)",
   "block.britannia_mod.dress_form": "Dress Form (Temporary Art)",
-  "block.britannia_mod.loom": "Loom (Temporary Art)"
+  "block.britannia_mod.loom": "Loom (Temporary Art)",
+  "block.britannia_mod.small_crate": "Small Crate (Temporary Art)",
+  "block.britannia_mod.medium_crate": "Medium Crate (Placeholder)",
+  "block.britannia_mod.large_crate": "Large Crate (Temporary Art)",
+  "container.britannia_mod.crate": "Crate",
+  "container.britannia_mod.small_crate": "Small Crate",
+  "container.britannia_mod.medium_crate": "Medium Crate",
+  "container.britannia_mod.large_crate": "Large Crate"
 }

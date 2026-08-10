@@ -63,9 +63,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Moonglow bush | `moonglow_bush` | `PLACEHOLDER` | Temporary purchased purple-flower bush imported in Milestone 2 |
 | Sandstone family | existing IDs | `VALIDATED` | Existing connected family reused; no duplicate IDs |
 | Globe | `globe` | `PLACEHOLDER` | Temporary purchased large-globe art imported in Milestone 2 |
-| Small crate | `small_crate` | `FOUND` | None |
-| Medium crate | `medium_crate` | `MISSING` | Required |
-| Large crate | `large_crate` | `FOUND` | None |
+| Small crate | `small_crate` | `PLACEHOLDER` | Temporary purchased art; 9-slot container implemented in Milestone 4 |
+| Medium crate | `medium_crate` | `PLACEHOLDER` | Unmistakable code-authored placeholder; 27-slot container implemented in Milestone 4 |
+| Large crate | `large_crate` | `PLACEHOLDER` | Temporary purchased art normalized to an authoritative 2x2x2 structure; 54-slot container implemented in Milestone 4 |
 | Water well | `water_well` | `FOUND` | None |
 | Ladder | `ladder` | `PARTIAL` | Extend/re-author source to 3-block height |
 | Scarecrow | `scarecrow` | `PLACEHOLDER` | Temporary purchased art implemented as a two-block-high structure |
@@ -210,9 +210,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:small_crate`; one-block container.
 - Source: `Nexo Assets - Crates & Barrels.zip::Raw Files/models/crate.json` and `Raw Files/textures/crate.png`.
 - Format/checksum: JSON `3de490b572b01174427e0a6233977d2861f3433c0668cbcd6716f3c74146608b`; PNG `d98c6fbcb91a272b81d2968d0c2b1c3c187023aec254431cab0c7a68f7c29f10`.
-- Import status: `FOUND`.
-- Proposed targets: crate block/block entity, registry/menu hookup, blockstate/model/item/texture, localization/loot.
-- Required behavior: persistent server-authoritative inventory; suggested 9 slots pending crate-family design.
+- Import status: `PLACEHOLDER` — temporary purchased art and the final container ID were implemented in Milestone 4.
+- Final targets: `CrateBlock`, `CrateBlockEntity`, shared multiblock placement item, registries, vanilla one-row chest menu, blockstate/model/item/texture, localization, empty block loot, creative tab, cutout layer, and axe tag.
+- Required behavior: persistent server-authoritative 9-slot inventory.
 - Dimensions/animation/collision: source bounds 12×11×12 voxels; no animation; fitted crate collision.
 
 #### Medium crate
@@ -220,22 +220,22 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:medium_crate`; container.
 - Source: no specifically medium geometry/texture. `crate_stack.json` is a two-crate stack (about 27×22×13 voxels) and is not a credible single medium crate without owner approval.
 - Format/checksum: none assigned.
-- Import status: `MISSING`.
-- Proposed targets: same crate family paths using `medium_crate` final ID.
-- Required behavior: persistent server-authoritative inventory; suggested 27 slots pending design.
-- Dimensions/animation/collision: footprint deferred to placeholder/final art; no animation expected.
-- Notes/blockers: create a recognizable medium-crate placeholder or obtain art; do not silently relabel a stack as a medium crate.
+- Import status: `PLACEHOLDER` — an unmistakable magenta/black code-authored placeholder and the final container ID were implemented in Milestone 4.
+- Final targets: same crate family implementation/resources using the `medium_crate` final ID and vanilla three-row chest menu.
+- Required behavior: persistent server-authoritative 27-slot inventory.
+- Dimensions/animation/collision: one-block placeholder bounds x/z `0.5..15.5`, y `0..14`; fitted collision; no animation.
+- Notes/blockers: replacement art remains required. No stack model was silently relabeled.
 
 #### Large crate
 
 - Proposed registry ID/category: `britannia_mod:large_crate`; likely multiblock container.
 - Source: `Nexo Assets - Crates & Barrels.zip::Raw Files/models/large_crate.json` and `Raw Files/textures/large_crate.png`.
 - Format/checksum: JSON `a0e821d18adf7637844d29226eaee5bbd4963f3852feade1854570ca036deb5b`; PNG `095664941d9bdbf7d3dfb734f58a174d3f931f4a3b3a932bf53997314beea65d`.
-- Import status: `FOUND`.
-- Proposed targets: authoritative multiblock crate root/block entity plus part blocks, menu hookup, resources/localization/loot.
-- Required behavior: persistent server-authoritative inventory; suggested 54 slots pending design; one inventory/drop regardless of broken part.
-- Dimensions/animation/collision: bounds about 27.5×18.5×21 voxels, crossing one block on x/z/y; no animation; deliberate multiblock footprint/collision required.
-- Notes/blockers: `large_crate_stack` and mixed-stack models are alternate decorations, not the requested single container.
+- Import status: `PLACEHOLDER` — temporary purchased art and the final multiblock container ID were implemented in Milestone 4.
+- Final targets: `CrateBlock`, one root `CrateBlockEntity`, shared transactional multiblock item, registries, vanilla six-row chest menu, resources/localization/empty loot/client cutout/axe tag.
+- Required behavior: persistent server-authoritative 54-slot inventory; all child interactions resolve to the one root inventory; breaking any part tears down the structure and drops contents and block item once.
+- Dimensions/animation/collision: normalized bounds x `0.25..27.75`, y `0.5..19`, z `0.46815..21.53185`; authoritative 2x2x2 occupancy; no animation; deliberate per-cell collision.
+- Notes/blockers: `large_crate_stack` and mixed-stack models remain unassigned alternate decorations. Temporary art requires later replacement and interactive footprint review.
 
 ### 10. Water well
 

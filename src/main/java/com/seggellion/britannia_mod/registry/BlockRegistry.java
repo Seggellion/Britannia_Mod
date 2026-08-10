@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
 import com.seggellion.britannia_mod.block.DecorativePlantBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
+import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
@@ -90,6 +91,7 @@ import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
 import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
 import com.seggellion.britannia_mod.block.ChessBoardBlock;
@@ -2283,6 +2285,39 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                     (x, y, z) -> y == 1
                             ? Block.box(1, 0, 4, 15, 8, 12)
                             : Block.box(2, 0, 4, 14, 16, 12)));
+
+    public static final DeferredHolder<Block, CrateBlock> SMALL_CRATE = BLOCKS.register("small_crate", () ->
+            new CrateBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    9, "container.britannia_mod.small_crate",
+                    0, 0, 0, 0, 0, 0,
+                    (x, y, z) -> Block.box(2, 0, 2, 14, 11, 14)));
+
+    public static final DeferredHolder<Block, CrateBlock> MEDIUM_CRATE = BLOCKS.register("medium_crate", () ->
+            new CrateBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    27, "container.britannia_mod.medium_crate",
+                    0, 0, 0, 0, 0, 0,
+                    (x, y, z) -> Block.box(1, 0, 1, 15, 14, 15)));
+
+    public static final DeferredHolder<Block, CrateBlock> LARGE_CRATE = BLOCKS.register("large_crate", () ->
+            new CrateBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    54, "container.britannia_mod.large_crate",
+                    0, 1, 0, 1, 0, 1,
+                    (x, y, z) -> {
+                        double maxX = x == 0 ? 16.0D : 12.0D;
+                        double maxZ = z == 0 ? 16.0D : 6.0D;
+                        return Block.box(0, 0, 0, maxX, y == 0 ? 16.0D : 3.0D, maxZ);
+                    }));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrateBlockEntity>> CRATE_BLOCK_ENTITY_TYPE =
+            BLOCK_ENTITY_TYPES.register("crate", () -> BlockEntityType.Builder.of(
+                    CrateBlockEntity::new,
+                    SMALL_CRATE.get(), MEDIUM_CRATE.get(), LARGE_CRATE.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

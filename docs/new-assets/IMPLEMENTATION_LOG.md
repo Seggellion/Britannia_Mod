@@ -315,4 +315,48 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 3 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 3 as `1abae182` (`Add decorative multiblock structures`).
+
+## Milestone 4 — Crate Container Family
+
+### Scope implemented
+
+- Starting HEAD: `1abae182`.
+- Added final `small_crate`, `medium_crate`, and `large_crate` block/item IDs with 9-, 27-, and 54-slot inventories respectively, using vanilla one-, three-, and six-row chest menus.
+- Added `CrateBlock` and `CrateBlockEntity`: only the authoritative root creates/persists an inventory, all valid child interactions resolve to that root, all inventory changes are server-authoritative, and `ContainerHelper` provides disk persistence.
+- Small and medium crates occupy one cell. The large crate uses atomic 2x2x2 placement, one root inventory, per-cell fitted collision, whole-structure teardown, one crate-item drop, and one contents drop regardless of the broken part.
+- Reused the Milestone 3 transactional placement infrastructure and added a pre-teardown root hook so container contents are emitted exactly once while the block entity still exists.
+- Corrected the shared asymmetric-footprint local z-axis transform discovered while integrating the corner-anchored large crate. Existing symmetric/one-cell Milestone 3 structures retain their occupied volumes, and the all-direction anchor regression tests pass.
+- Added comparator output on each crate's root and assigned all three wooden crates to axe mineability.
+
+### Art and provenance
+
+- Added `tools/new-assets/import_milestone4.ps1` as a deterministic, read-only-source crate importer.
+- Normalized temporary purchased small-crate art to its final namespace. It remains 12x11x12 voxels with a 64x64 ARGB texture.
+- Added an unmistakable code-authored magenta/black medium-crate placeholder with bounds x/z `0.5..15.5`, y `0..14`; no source stack was relabeled as a medium crate.
+- Translated the temporary purchased large-crate model, including rotation origins, to x `0.25..27.75`, y `0.5..19`, z `0.46815..21.53185` inside its authoritative 2x2x2 structure. Its source texture remains 128x128 ARGB.
+- All purchased crate art is classified `PLACEHOLDER` and remains replacement work. The raw archive was never modified.
+
+### Validation performed
+
+- Deterministic importer: PASS after correcting PowerShell tuple grouping; all 12 generated crate JSON resources parse successfully.
+- Resource audit: PASS; no retained `Crates & Barrels`, `workshop_six`, or `Raw Files` model references.
+- Focused unit/regression tests: PASS. Coverage verifies 9/27/54 capacities, large-inventory NBT round trip through first/last slots, one root across eight large-crate cells, supported row-count enforcement, multiblock transform regression, and exact repository-item count 756.
+- Dedicated-server GameTests: PASS; all 339 required tests passed. The new test opens a server chest menu, verifies one large-crate block entity, breaks a child in Survival, checks whole teardown, and proves exactly seven stored diamonds plus one crate item drop.
+- The first GameTest assertion used the framework's default Creative player and therefore correctly received no block item; the test now explicitly selects Survival before validating the drop contract.
+- `gradlew.bat build --no-daemon --no-configuration-cache`: PASS; 1,687 tests completed, 17 skipped, zero failures or errors.
+- `gradlew.bat runClient --no-daemon --no-configuration-cache`: PASS for Milestone 4 resource startup. The client completed resource reload, initialized the sound engine and texture atlases, and logged no `small_crate`, `medium_crate`, or `large_crate` model/texture failures. Numerous unrelated pre-existing missing-resource warnings remain elsewhere in the mod.
+
+### Validation still requiring an interactive client/multiplayer session
+
+- In-world visual alignment, UVs, inventory icons, collision feel, opening sounds, and all four orientations require live review.
+- Save/reload persistence, shift-click behavior, root/child breaking while populated, simultaneous two-client access, and breaking while another client has the menu open remain on the live checklist.
+
+### Tooling note
+
+- The feature worktree's Git LFS wrapper pointer was temporarily materialized for Gradle validation and is restored before handoff.
+
+### Commit status
+
+- Milestone 4 remains uncommitted pending owner review and explicit commit authorization.

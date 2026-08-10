@@ -10,6 +10,9 @@
     "britannia_mod:merchant_cart_white",
     "britannia_mod:scarecrow",
     "britannia_mod:dress_form",
-    "britannia_mod:loom"
+    "britannia_mod:loom",
+    "britannia_mod:small_crate",
+    "britannia_mod:medium_crate",
+    "britannia_mod:large_crate"
   ]
 }

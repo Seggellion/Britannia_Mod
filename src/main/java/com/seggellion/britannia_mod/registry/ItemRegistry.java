@@ -1940,6 +1940,9 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> SCARECROW_ITEM = ITEMS.register("scarecrow", () -> new DecorativeMultiblockItem(BlockRegistry.SCARECROW.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> DRESS_FORM_ITEM = ITEMS.register("dress_form", () -> new DecorativeMultiblockItem(BlockRegistry.DRESS_FORM.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LOOM_ITEM = ITEMS.register("loom", () -> new DecorativeMultiblockItem(BlockRegistry.LOOM.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SMALL_CRATE_ITEM = ITEMS.register("small_crate", () -> new DecorativeMultiblockItem(BlockRegistry.SMALL_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MEDIUM_CRATE_ITEM = ITEMS.register("medium_crate", () -> new DecorativeMultiblockItem(BlockRegistry.MEDIUM_CRATE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new DecorativeMultiblockItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {

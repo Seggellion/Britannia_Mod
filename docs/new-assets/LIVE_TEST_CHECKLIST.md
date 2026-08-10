@@ -85,3 +85,40 @@ Build and dedicated-server GameTests pass. The checks below require an interacti
 - Visual/collision result:
 - Screenshots or log path:
 - Accepted placeholders/replacement notes:
+
+## Milestone 4 — Crate Container Family
+
+Build and dedicated-server GameTests pass. The checks below require an interactive client or multiplayer session and remain open until performed and accepted.
+
+- [x] Launch the development client through resource reload and confirm no small-, medium-, or large-crate model/texture failures are logged. (2026-08-10; unrelated pre-existing resource warnings remain.)
+
+### Placement and visuals
+
+- [ ] Confirm small, medium, and large crate items appear exactly once in the Britannia decor creative tab.
+- [ ] Place all three crates in all four orientations and verify model alignment, UVs, inventory icons, fitted collision, and opening sounds.
+- [ ] Confirm the small and large labels identify temporary art and the magenta/black medium crate is unmistakably a placeholder.
+- [ ] Verify the large crate occupies the intended 2x2x2 volume and blocked placement leaves no partial structure or consumed item.
+- [ ] Save and reload each placed crate in every orientation.
+
+### Inventory and persistence
+
+- [ ] Confirm small crate exposes 9 slots, medium 27 slots, and large 54 slots using the expected vanilla chest screens.
+- [ ] Insert partial and full stacks into the first/last slots of each crate; save, exit, reload, and verify exact items/counts persist.
+- [ ] Shift-click items in and out until each crate is full; verify no loss, duplication, or inaccessible slots.
+- [ ] Break each crate while empty and while populated; verify stored contents plus exactly one matching crate item drop.
+- [ ] Break the large crate from its root and from several different child cells; verify identical whole-structure teardown and one inventory drop.
+
+### Multiplayer
+
+- [ ] Open the same crate simultaneously with two clients; move items from both clients and verify both views stay synchronized.
+- [ ] Have one client break a populated large crate while another has it open; verify the menu closes safely and contents drop once.
+- [ ] Place/break crates on a dedicated server and confirm no client-only menu or block-entity errors appear in logs.
+
+### Milestone 4 acceptance record
+
+- Tester/date:
+- Client/dedicated-server result:
+- Persistence result:
+- Multiplayer result:
+- Screenshots or log path:
+- Accepted placeholders/replacement notes:

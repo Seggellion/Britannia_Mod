@@ -38,7 +38,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * offset, so any cell can resolve the root without a block entity. Only the root renders the
  * complete model; the other cells provide occupancy and deliberately authored collision.
  */
-public final class DecorativeMultiblockBlock extends Block {
+public class DecorativeMultiblockBlock extends Block {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 26);
     private static final ThreadLocal<Boolean> MUTATING = ThreadLocal.withInitial(() -> false);
@@ -121,7 +121,15 @@ public final class DecorativeMultiblockBlock extends Block {
     }
 
     public Cell cell(BlockState state) {
+        if (!hasValidPart(state)) {
+            throw new IllegalArgumentException("Block state contains an unused decorative multiblock part");
+        }
         return cells.get(state.getValue(PART));
+    }
+
+    public boolean hasValidPart(BlockState state) {
+        int part = state.getValue(PART);
+        return part >= 0 && part < cells.size();
     }
 
     /** Converts the minimum footprint corner selected by the item into the model/root cell. */
@@ -129,14 +137,14 @@ public final class DecorativeMultiblockBlock extends Block {
         Direction right = facing.getClockWise();
         return minimumPosition
                 .relative(right, -minX)
-                .relative(facing, -minZ)
+                .relative(facing, minZ)
                 .above(-minY);
     }
 
     public BlockPos worldPosition(BlockPos anchor, Direction facing, Cell cell) {
         return anchor
                 .relative(facing.getClockWise(), cell.x())
-                .relative(facing, cell.z())
+                .relative(facing.getOpposite(), cell.z())
                 .above(cell.y());
     }
 
@@ -145,7 +153,7 @@ public final class DecorativeMultiblockBlock extends Block {
         Cell cell = cell(state);
         return position
                 .relative(facing.getCounterClockWise(), cell.x())
-                .relative(facing.getOpposite(), cell.z())
+                .relative(facing, cell.z())
                 .below(cell.y());
     }
 
@@ -198,7 +206,7 @@ public final class DecorativeMultiblockBlock extends Block {
             Player player,
             boolean willHarvest,
             FluidState fluid) {
-        if (level instanceof ServerLevel server && !MUTATING.get()) {
+        if (level instanceof ServerLevel server && !MUTATING.get() && hasValidPart(state)) {
             dismantle(server, anchorPosition(pos, state), state.getValue(FACING),
                     !player.hasInfiniteMaterials());
             return true;
@@ -224,14 +232,14 @@ public final class DecorativeMultiblockBlock extends Block {
             BlockPos pos,
             Explosion explosion,
             java.util.function.BiConsumer<ItemStack, BlockPos> dropConsumer) {
-        if (level instanceof ServerLevel server && !MUTATING.get()) {
+        if (level instanceof ServerLevel server && !MUTATING.get() && hasValidPart(state)) {
             dismantle(server, anchorPosition(pos, state), state.getValue(FACING), false);
         }
     }
 
     @Override
     public void onBlockExploded(BlockState state, Level level, BlockPos pos, Explosion explosion) {
-        if (level instanceof ServerLevel server && !MUTATING.get()) {
+        if (level instanceof ServerLevel server && !MUTATING.get() && hasValidPart(state)) {
             dismantle(server, anchorPosition(pos, state), state.getValue(FACING), false);
         }
     }
@@ -240,7 +248,8 @@ public final class DecorativeMultiblockBlock extends Block {
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (level instanceof ServerLevel server
                 && !state.is(newState.getBlock())
-                && !MUTATING.get()) {
+                && !MUTATING.get()
+                && hasValidPart(state)) {
             dismantle(server, anchorPosition(pos, state), state.getValue(FACING), false);
         }
         super.onRemove(state, level, pos, newState, moving);
@@ -255,7 +264,7 @@ public final class DecorativeMultiblockBlock extends Block {
             BlockPos neighborPos,
             boolean moving) {
         super.neighborChanged(state, level, pos, neighbor, neighborPos, moving);
-        if (level instanceof ServerLevel server && !MUTATING.get()) {
+        if (level instanceof ServerLevel server && !MUTATING.get() && hasValidPart(state)) {
             BlockPos anchor = anchorPosition(pos, state);
             if (!structureMatches(server, anchor, state.getValue(FACING))) {
                 dismantle(server, anchor, state.getValue(FACING), false);
@@ -287,6 +296,7 @@ public final class DecorativeMultiblockBlock extends Block {
 
     private void dismantle(ServerLevel level, BlockPos anchor, Direction facing, boolean dropItem) {
         duringMutation(() -> {
+            beforeDismantle(level, anchor, facing);
             int flags = Block.UPDATE_ALL_IMMEDIATE | Block.UPDATE_SUPPRESS_DROPS;
             for (int index = cells.size() - 1; index >= 0; index--) {
                 Cell cell = cells.get(index);
@@ -303,6 +313,10 @@ public final class DecorativeMultiblockBlock extends Block {
         if (dropItem && asItem() != net.minecraft.world.item.Items.AIR) {
             popResource(level, anchor, new ItemStack(asItem()));
         }
+    }
+
+    /** Called exactly once while the authoritative root still exists, before any part is removed. */
+    protected void beforeDismantle(ServerLevel level, BlockPos anchor, Direction facing) {
     }
 
     private static VoxelShape rotateY(VoxelShape shape, int quarterTurnsClockwise) {
