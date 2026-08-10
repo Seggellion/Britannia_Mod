@@ -398,4 +398,40 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 5 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 5 as `e602f341` (`Add water well and adventure ladder`).
+
+## Milestone 6 — Ibis Entity, Variants, and Jhelom Population
+
+### Scope implemented
+
+- Starting HEAD: `e602f341`.
+- Added one `britannia_mod:ibis` creature entity and spawn egg. White and scarlet are synchronized integer variants on that entity type, selected server-side and persisted in NBT.
+- Added the GeckoLib model/renderer and converted the source `walk`, `idle`, and `eating` animations.
+- Added a dedicated `JhelomIbisPopulation` policy over the exact three `CityRegistry` Jhelom AABBs. It counts and caps ibis at 15 across the combined areas, independently of the generic 10-per-area city-animal cap.
+- Ibis joins outside Jhelom or above the cap are rejected server-side. Population replenishment selects only Jhelom positions and only loaded chunks. No biome modifier or global natural-spawn registration was added.
+
+### Art, provenance, and deterministic import
+
+- Added `tools/new-assets/import_milestone6.ps1`; it reads the raw `.bbmodel` and texture without modifying either source.
+- Converted 60 exported bones, 89 cubes, and all three source animations into final GeckoLib resources.
+- Copied the purchased 512×512 ARGB white texture byte-for-byte (SHA-256 `5127c6846e013cc7021bc63c906693526685d1787906fc24ca4a43c232fa2507`).
+- The image-generation edit established the approved natural scarlet palette, but its direct output was rejected because it changed the atlas to 1254×1254 RGB and removed transparency. The importer instead performs a deterministic connected neutral-plumage recolor: 14,355 pixels change while all 262,144 alpha values and the exact UV atlas dimensions remain unchanged.
+- Both the purchased white art and generated scarlet recolor are `PLACEHOLDER` assets to be replaced later.
+
+### Validation performed
+
+- Java and test sources compile successfully.
+- Focused unit tests pass for the three-area/15-total policy, exact cap boundaries, safe variant fallback, source checksum, texture dimensions/alpha invariants, three animation names, and absence of global biome-spawn registration.
+- `gradlew.bat build --no-daemon --no-configuration-cache`: PASS; 1,695 tests completed, 17 skipped, zero failures or errors.
+- Dedicated-server GameTests: PASS; all 343 required tests passed. The two Milestone 6 tests cover both variants on one entity type and the scarlet NBT save/reload round trip.
+- Development-client startup reached completed resource reload and renderer registration with no ibis-specific model, animation, texture, or renderer errors. Unrelated pre-existing resource warnings remain elsewhere in the mod.
+
+### Validation still requiring an interactive client/multiplayer session
+
+- In-world model scale, pivot alignment, UVs, animation transitions, scarlet appearance, hitbox, sounds, and creative spawn-egg presentation require live review.
+- Natural replenishment in each Jhelom area, the combined 15-bird cap under simultaneous chunk loading, outside-region rejection, restart persistence, and two-client variant synchronization remain on the live checklist.
+
+### Commit status
+
+- Milestone 6 remains uncommitted pending owner review and explicit commit authorization.

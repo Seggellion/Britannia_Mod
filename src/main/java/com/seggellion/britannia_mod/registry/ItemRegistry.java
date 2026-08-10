@@ -1510,6 +1510,16 @@ public static final DeferredHolder<Item, BlockItem> CURTAIN_FOUNDATION_ITEM =
             )
     );
 
+    public static final DeferredHolder<Item, DeferredSpawnEggItem> IBIS_SPAWN_EGG = ITEMS.register(
+            "ibis_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.IBIS_ENTITY,
+                    0xE9E2D2,
+                    0xC83F36,
+                    new Item.Properties()
+            )
+    );
+
         public static final DeferredHolder<Item, DeferredSpawnEggItem> WRAITH_SPAWN_EGG = ITEMS.register(
             "wraith_spawn_egg",
             () -> new DeferredSpawnEggItem(

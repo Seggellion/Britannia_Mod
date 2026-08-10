@@ -160,3 +160,38 @@ The focused tests, full dedicated-server GameTest suite, and automated client re
 - Adventure permission/climbing result:
 - Screenshots or log path:
 - Accepted placeholders/replacement notes:
+
+## Milestone 6 — Ibis Entity, Variants, and Jhelom Population
+
+The focused automated tests cover the regional policy and asset invariants. The checks below require an interactive client or multiplayer session and remain open until performed and accepted.
+
+- [x] Launch the development client through resource reload and confirm no ibis-specific renderer or resource errors are logged. (2026-08-10; unrelated pre-existing resource warnings remain.)
+
+### Art and entity behavior
+
+- [ ] Confirm the ibis spawn egg appears exactly once in the Britannia creative tab and uses the `Ibis Spawn Egg` label.
+- [ ] Spawn white and scarlet variants and inspect model scale, pivots, UV seams, transparency, beak/eye/leg preservation, hitbox, shadow, and the temporary scarlet palette.
+- [ ] Observe walking and idle transitions; verify neither animation snaps, drifts, or leaves parts behind. Confirm the imported eating animation resource loads without errors even though no eating mechanic is authorized yet.
+- [ ] Save and reload both variants and restart the server; verify each bird retains its variant.
+
+### Jhelom population policy
+
+- [ ] Visit and load each of the three configured Jhelom areas; verify ibis replenish only inside those boundaries.
+- [ ] Keep all three Jhelom areas loaded simultaneously and verify the combined population never exceeds exactly 15, regardless of its distribution among the areas.
+- [ ] Add or retain other city animals and verify they neither consume the 15-ibis allowance nor cause ibis to consume the generic city-animal allowance.
+- [ ] Attempt spawn-egg/command spawning immediately outside Jhelom and after the combined population reaches 15; verify the server rejects the ibis without ghost entities.
+- [ ] Restart with a mixed white/scarlet population and verify persistence plus cap reconciliation remain stable.
+
+### Multiplayer
+
+- [ ] With two clients in different Jhelom areas, verify both see the same variants and population, and that simultaneous area loading cannot race above 15.
+
+### Milestone 6 acceptance record
+
+- Tester/date:
+- Client/dedicated-server result:
+- Variant/art result:
+- Regional population/cap result:
+- Persistence/multiplayer result:
+- Screenshots or log path:
+- Accepted placeholder/replacement notes:

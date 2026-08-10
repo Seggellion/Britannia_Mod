@@ -429,6 +429,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SHADE_SPAWN_EGG.get());
                 safeAccept(output, ItemRegistry.WISP_SPAWN_EGG.get());
                 safeAccept(output, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
+                safeAccept(output, ItemRegistry.IBIS_SPAWN_EGG.get());
 
                 // NPC spawn blocks
                 safeAccept(output, ItemRegistry.BRITANNIA_SPAWN_BLOCK_ITEM.get());   

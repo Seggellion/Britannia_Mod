@@ -55,7 +55,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 
 | Requested asset | Proposed/existing registry ID | Status | Placeholder proposal |
 |---|---|---|---|
-| Ibis, white/scarlet | `ibis` with persistent variant | `PARTIAL` | Derive scarlet safely in Milestone 6; placeholder only if recoloring is unsafe |
+| Ibis, white/scarlet | `ibis` with persistent variant | `PLACEHOLDER` | White source imported unchanged; UV-safe scarlet recolor and all runtime behavior implemented in Milestone 6 |
 | Moongate visual replacement | existing `moongate_block` | `PARTIAL` | Reworked 32-voxel model required; do not create another gate ID |
 | Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
 | Training dummy | `training_dummy` | `PARTIAL` | Re-author/scale source to required 2×3-block structure |
@@ -92,12 +92,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source model: `white ibis\white ibis.bbmodel`.
 - Source textures: `white ibis\texture.png`; no scarlet texture found anywhere in the raw tree or archives.
 - Format/checksum: Blockbench `.bbmodel` `da2731a389fb01d103b5cab181561c55389ab13c91e35daf16b80a0dca8a7a2c`; 512×512 ARGB PNG `5127c6846e013cc7021bc63c906693526685d1787906fc24ca4a43c232fa2507`.
-- Import status: `PARTIAL` — white art is complete; scarlet art is missing but may be derived later.
-- Proposed targets: `EntityRegistry`; `entity/IbisEntity.java`; ibis model/renderer classes; `assets/britannia_mod/geo/ibis.geo.json`; `animations/ibis.animation.json`; `textures/entity/ibis_white.png`; `textures/entity/ibis_scarlet.png`.
-- Required behavior: Jhelom-only regional spawning with one independent 15-ibis total across the three Jhelom AABBs; no global biome spawn.
+- Import status: `PLACEHOLDER` — implemented in Milestone 6. The purchased white model/texture remain temporary art, and the derived scarlet texture is also temporary pending live acceptance and eventual replacement.
+- Final targets: `EntityRegistry`; `entity/IbisEntity.java`; `entity/IbisVariant.java`; ibis model/renderer classes; `JhelomIbisPopulation`; `assets/britannia_mod/geo/ibis.geo.json`; `animations/ibis.animation.json`; `textures/entity/ibis_white.png`; `textures/entity/ibis_scarlet.png`; spawn egg, localization, and loot resources.
+- Required behavior: implemented as one entity type with a synchronized integer variant selected server-side and persisted as `IbisVariant`; Jhelom-only regional spawning uses one independent 15-ibis total across the three Jhelom AABBs and does not register global biome spawning.
 - Dimensions/animation: source bounds x `-3..3`, y `-5.07779..13.15677`, z `-22.37905..8.3`; animations `walk` 2s, `idle` 6s, `eating` 6s.
 - Collision: animal-sized hitbox authored independently from visual bounds.
-- Notes/blockers: scarlet generation is Milestone 6, not Milestone 1. Preserve white source, alpha, UV layout, outlines, eyes, beak, and legs.
+- Notes/blockers: the white PNG is copied byte-for-byte. The image-generation pass supplied the approved scarlet palette only because its raster output changed atlas dimensions and alpha; `import_milestone6.ps1` applies that palette deterministically only to connected neutral plumage, preserving the 512×512 atlas, every alpha value, UV layout, eyes, beak, and legs. The generated placeholder requires live visual acceptance.
 
 ### 2. Moongate visual replacement
 

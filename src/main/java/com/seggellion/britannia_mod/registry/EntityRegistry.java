@@ -33,6 +33,7 @@ import com.seggellion.britannia_mod.entity.GargoyleStoneEntity;
 import com.seggellion.britannia_mod.entity.GorillaEntity;
 import com.seggellion.britannia_mod.entity.TurkeyEntity;
 import com.seggellion.britannia_mod.entity.HindEntity;
+import com.seggellion.britannia_mod.entity.IbisEntity;
 import com.seggellion.britannia_mod.entity.GreatHartEntity;
 import com.seggellion.britannia_mod.entity.BearBlackEntity;
 import com.seggellion.britannia_mod.entity.BearBrownEntity;
@@ -508,6 +509,14 @@ public static final DeferredHolder<EntityType<?>, EntityType<HindEntity>> HIND_E
                     .build("britannia_mod:hind")
     );
 
+public static final DeferredHolder<EntityType<?>, EntityType<IbisEntity>> IBIS_ENTITY = ENTITIES.register(
+            "ibis",
+            () -> EntityType.Builder.of(IbisEntity::new, MobCategory.CREATURE)
+                    .sized(0.65F, 1.15F)
+                    .clientTrackingRange(8)
+                    .build("britannia_mod:ibis")
+    );
+
     public static final DeferredHolder<EntityType<?>, EntityType<GreatHartEntity>> GREAT_HART_ENTITY = ENTITIES.register(
             "great_hart",
             () -> EntityType.Builder.of(GreatHartEntity::new, MobCategory.CREATURE)
@@ -682,6 +691,7 @@ event.put(BEAR_BROWN_ENTITY.get(), BearBrownEntity.createAttributes().build());
         event.put(BEAR_GRIZZLY_ENTITY.get(), BearGrizzlyEntity.createAttributes().build());
         event.put(TURKEY_ENTITY.get(), TurkeyEntity.createAttributes().build());
         event.put(HIND_ENTITY.get(), HindEntity.createAttributes().build());
+        event.put(IBIS_ENTITY.get(), IbisEntity.createAttributes().build());
         event.put(GREAT_HART_ENTITY.get(), GreatHartEntity.createAttributes().build());
 
         event.put(RAT_ENTITY.get(), RatEntity.createAttributes().build());
