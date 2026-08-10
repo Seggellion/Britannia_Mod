@@ -273,4 +273,46 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 2 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 2 as `3075a1052a27c0225e8f640e1906deaa660e2548` (`Add low-risk decorative assets`).
+
+## Milestone 3 — Large Decorative Multiblocks
+
+### Scope implemented
+
+- Starting HEAD: `3075a1052a27c0225e8f640e1906deaa660e2548`.
+- Added final block/item IDs for six merchant-cart colors plus `fountain`, `scarecrow`, `dress_form`, and `loom`.
+- Added reusable `DecorativeMultiblockBlock` and `DecorativeMultiblockItem` infrastructure with horizontal orientation, authoritative part/root addressing, deliberate per-cell collision, root-only rendering, atomic placement preflight, transactional rollback, integrity checks, whole-structure teardown, and exactly one manual item drop.
+- Placement rejects unloaded chunks, world-border/world-height violations, protected cells, block entities, non-replaceable cells, missing base support, and any partial obstruction before mutating the world.
+- Structures use the requested occupancy: carts 3x3x3, fountain 2x2x3, scarecrow 2x1x2, dress form 1x1x2, and loom 2x1x3.
+- The loom is structural/decorative only in this milestone. The approved 5-yarn or 5-thread to 1-folded-cloth conversion remains deferred until the corresponding textile inputs and processing contract are ready.
+
+### Art and provenance
+
+- Added `tools/new-assets/import_milestone3.ps1` as a deterministic, read-only-source import/normalization script.
+- Merchant cart red/purple, fountain, scarecrow, dress form, and loom use temporary source/purchased-pack art under final Britannia IDs. Blue/green/yellow/white carts reuse the temporary cart geometry with obvious vanilla wool color placeholders.
+- Re-authored the loom from its approximately 32x32x36 source bounds to an exact 32x48x16-voxel model envelope, satisfying its 2-wide by 3-high contract.
+- Normalized the fountain to x/z `0..32` while retaining its 46-voxel vertical range; normalized scarecrow to x `0..25`, y `0..31.71682`, z `0..16`; retained dress-form bounds x `1..15`, y `0..32`, z `4..12`.
+- Raw source files and archives remained read-only. All copied purchased art remains classified `PLACEHOLDER` and must be replaced later.
+
+### Validation performed
+
+- Re-ran the deterministic importer successfully and parsed all 43 generated Milestone 3 JSON resources.
+- Verified zero legacy source-namespace texture references and zero unresolved local model/texture references.
+- Verified generated model bounds for every asset/color and PNG dimensions/color modes, including animated fountain water metadata.
+- Added unit coverage for cart part count/root selection, root-only rendering, all-direction anchor round trips, minimum-cell mapping, and the 27-part state-space limit.
+- Added a dedicated-server GameTest proving that removal of a fountain child tears down its whole structure.
+- The first server launch exposed Minecraft's cache bake visiting unused values in the shared 0..26 `PART` property for smaller structures. `getShape` now returns an empty shape for unused state values.
+- `gradlew.bat runGameTestServer --no-daemon --no-configuration-cache`: PASS; all 338 required GameTests passed after the guard fix.
+- Focused unit/preservation tests: PASS, including the intentional repository-item count update from 743 to 753.
+- `gradlew.bat build --no-daemon --no-configuration-cache`: PASS; 1,683 tests completed, 17 skipped, zero failed or errored.
+
+### Validation still requiring an interactive client
+
+- Place every structure in all four orientations and verify scale, UVs, cutout/translucent rendering, collision, obstruction rejection, whole teardown, one drop, and save/reload persistence.
+- Fountain water animation/translucency and the six merchant-cart color treatments require visual acceptance.
+- These checks are recorded in `docs/new-assets/LIVE_TEST_CHECKLIST.md`.
+
+### Commit status
+
+- Milestone 3 remains uncommitted pending owner review and explicit commit authorization.

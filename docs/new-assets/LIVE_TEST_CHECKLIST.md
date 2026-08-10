@@ -43,3 +43,45 @@ Build and dedicated-server game tests pass. The checks below require an interact
 - Visual/collision result:
 - Screenshots or log path:
 - Accepted placeholders/replacement notes:
+
+## Milestone 3 — Large Decorative Multiblocks
+
+Build and dedicated-server GameTests pass. The checks below require an interactive client and remain open until performed and accepted.
+
+### Global multiblock behavior
+
+- [ ] Confirm all ten new items appear exactly once in the Britannia decor creative tab with their temporary/placeholder labels.
+- [ ] Place every asset facing north, east, south, and west; verify the selected minimum cell remains the intended placement anchor.
+- [ ] Obstruct each occupied cell in turn and verify placement fails without consuming the item or leaving partial blocks.
+- [ ] Verify placement fails when any base-layer cell lacks solid support.
+- [ ] Break the root and at least one child cell in Survival; verify the whole structure disappears and exactly one matching item drops.
+- [ ] Save, exit, and reload with each structure placed; verify every part, orientation, and collision shape persists.
+
+### Merchant carts
+
+- [ ] Place red, purple, blue, green, yellow, and white carts side by side; verify each approved color is unmistakable.
+- [ ] Verify every cart occupies its intended centered 3x3x3 cell volume and does not block the entire volume with full-cube collision.
+- [ ] Verify wheel/body collision is usable in all four orientations.
+- [ ] Confirm all six treatments are acceptable as temporary art pending replacement.
+
+### Fountain
+
+- [ ] Verify the fountain occupies 2x2x3 cells, renders from the middle-layer root without duplicate geometry, and aligns to the ground.
+- [ ] Verify animated water renders translucent without opaque squares, z-fighting, or missing texture frames.
+- [ ] Walk around/into the basin and verify the deliberate basin/pillar collision is usable.
+
+### Scarecrow, dress form, and loom
+
+- [ ] `scarecrow`: verify the 2x1x2 structure, cutout edges, narrow post/body collision, and ground alignment.
+- [ ] `dress_form`: verify the 1x1x2 structure, cutout edges, narrow base/torso collision, and that it has no armor-stand behavior.
+- [ ] `loom`: verify the re-authored 32x48x16-voxel model fills its 2x1x3 structure, is not vertically distorted, and has usable frame collision.
+- [ ] Confirm the loom has no crafting/storage UI yet and does not consume yarn/thread in this milestone.
+
+### Milestone 3 acceptance record
+
+- Tester/date:
+- Client launch result:
+- Placement/rollback/teardown result:
+- Visual/collision result:
+- Screenshots or log path:
+- Accepted placeholders/replacement notes:

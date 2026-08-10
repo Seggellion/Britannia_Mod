@@ -1,0 +1,43 @@
+{
+    "multipart":  [
+                      {
+                          "when":  {
+                                       "facing":  "north",
+                                       "part":  "13"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/merchant_cart_white"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "facing":  "east",
+                                       "part":  "13"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/merchant_cart_white",
+                                        "y":  90
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "facing":  "south",
+                                       "part":  "13"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/merchant_cart_white",
+                                        "y":  180
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "facing":  "west",
+                                       "part":  "13"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/merchant_cart_white",
+                                        "y":  270
+                                    }
+                      }
+                  ]
+}

@@ -1,6 +1,15 @@
 {
   "replace": false,
   "values": [
-    "britannia_mod:globe"
+    "britannia_mod:globe",
+    "britannia_mod:merchant_cart_red",
+    "britannia_mod:merchant_cart_purple",
+    "britannia_mod:merchant_cart_blue",
+    "britannia_mod:merchant_cart_green",
+    "britannia_mod:merchant_cart_yellow",
+    "britannia_mod:merchant_cart_white",
+    "britannia_mod:scarecrow",
+    "britannia_mod:dress_form",
+    "britannia_mod:loom"
   ]
 }

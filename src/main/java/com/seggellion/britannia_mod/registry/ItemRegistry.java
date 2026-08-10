@@ -2,6 +2,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.item.RaisedBlockItem;
+import com.seggellion.britannia_mod.item.DecorativeMultiblockItem;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.ModSounds;
@@ -1928,6 +1929,17 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> PEWTER_MUG_ITEM = ITEMS.register("pewter_mug", () -> new BlockItem(BlockRegistry.PEWTER_MUG.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> KETTLE_ITEM = ITEMS.register("kettle", () -> new BlockItem(BlockRegistry.KETTLE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> PLATES_AND_SILVERWARE_ITEM = ITEMS.register("plates_and_silverware", () -> new BlockItem(BlockRegistry.PLATES_AND_SILVERWARE.get(), new Item.Properties()));
+
+    public static final DeferredHolder<Item, Item> MERCHANT_CART_RED_ITEM = ITEMS.register("merchant_cart_red", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_RED.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MERCHANT_CART_PURPLE_ITEM = ITEMS.register("merchant_cart_purple", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_PURPLE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MERCHANT_CART_BLUE_ITEM = ITEMS.register("merchant_cart_blue", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_BLUE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MERCHANT_CART_GREEN_ITEM = ITEMS.register("merchant_cart_green", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_GREEN.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MERCHANT_CART_YELLOW_ITEM = ITEMS.register("merchant_cart_yellow", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_YELLOW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> MERCHANT_CART_WHITE_ITEM = ITEMS.register("merchant_cart_white", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_WHITE.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> FOUNTAIN_ITEM = ITEMS.register("fountain", () -> new DecorativeMultiblockItem(BlockRegistry.FOUNTAIN.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SCARECROW_ITEM = ITEMS.register("scarecrow", () -> new DecorativeMultiblockItem(BlockRegistry.SCARECROW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> DRESS_FORM_ITEM = ITEMS.register("dress_form", () -> new DecorativeMultiblockItem(BlockRegistry.DRESS_FORM.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> LOOM_ITEM = ITEMS.register("loom", () -> new DecorativeMultiblockItem(BlockRegistry.LOOM.get(), new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {

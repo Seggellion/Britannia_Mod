@@ -57,9 +57,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 |---|---|---|---|
 | Ibis, white/scarlet | `ibis` with persistent variant | `PARTIAL` | Derive scarlet safely in Milestone 6; placeholder only if recoloring is unsafe |
 | Moongate visual replacement | existing `moongate_block` | `PARTIAL` | Reworked 32-voxel model required; do not create another gate ID |
-| Merchant carts, six colors | `merchant_cart_<color>` | `PARTIAL` | Four color variants need approved names/art |
+| Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
 | Training dummy | `training_dummy` | `PARTIAL` | Re-author/scale source to required 2×3-block structure |
-| Fountain | `fountain` | `FOUND` | None |
+| Fountain | `fountain` | `PLACEHOLDER` | Temporary source art normalized to the requested 2x2x3 structure |
 | Moonglow bush | `moonglow_bush` | `PLACEHOLDER` | Temporary purchased purple-flower bush imported in Milestone 2 |
 | Sandstone family | existing IDs | `VALIDATED` | Existing connected family reused; no duplicate IDs |
 | Globe | `globe` | `PLACEHOLDER` | Temporary purchased large-globe art imported in Milestone 2 |
@@ -68,11 +68,11 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Large crate | `large_crate` | `FOUND` | None |
 | Water well | `water_well` | `FOUND` | None |
 | Ladder | `ladder` | `PARTIAL` | Extend/re-author source to 3-block height |
-| Scarecrow | `scarecrow` | `FOUND` | None |
+| Scarecrow | `scarecrow` | `PLACEHOLDER` | Temporary purchased art implemented as a two-block-high structure |
 | Fern | `fern` | `PLACEHOLDER` | Temporary purchased small-flora art imported in Milestone 2 |
-| Dress form | `dress_form` | `FOUND` | None |
+| Dress form | `dress_form` | `PLACEHOLDER` | Temporary purchased mannequin art implemented under the final ID |
 | Folded cloth | `folded_cloth` | `PLACEHOLDER` | Temporary purchased fabric-stack art imported in Milestone 2 |
-| Loom | `loom` | `PARTIAL` | Source is 2 blocks high, requested structure is 3 high |
+| Loom | `loom` | `PLACEHOLDER` | Temporary purchased model re-authored to the requested 32x48x16-voxel envelope |
 | Bolt of cloth | `bolt_of_cloth` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Spinning wheel | `spinning_wheel` | `MISSING` | Required |
 | Ball of yarn | `ball_of_yarn` | `MISSING` | Item icon/model required |
@@ -119,12 +119,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry IDs/category: approved `merchant_cart_red`, `merchant_cart_purple`, `merchant_cart_blue`, `merchant_cart_green`, `merchant_cart_yellow`, and `merchant_cart_white`; decorative multiblock blocks.
 - Source models/textures: `Medieval Market Furniture Set.zip` raw entries `medieval_market_wagon_red`, `medieval_market_wagon_purple`, and uncolored/base `medieval_market_wagon2`, each with `.json`, `.bbmodel`, and `.png` art.
 - Source format/checksums: Minecraft JSON/PNG and Blockbench. Model hashes: base `418e47bfae3acf3e24f20d3853e0c3fa90a1375f5e538c4b27e104170794703b`, purple `2f94428ac2534f0abdf2bd15ae89a72f169e5219d255d397013ea8d6bd564c01`, red `2212cc3bf20136d25e7a4619d3ad9b0c9f94dc6060188a14f393b162c3ad941e`.
-- Import status: `PARTIAL` — only red, purple, and a materially different base wagon are present; no six-color set exists.
-- Proposed targets: shared merchant-cart block/multiblock implementation; per-color blockstate/model/texture resources; `BlockRegistry`, `ItemRegistry`, localization, loot, creative tab.
+- Import status: `PLACEHOLDER` — all six final IDs are implemented in Milestone 3. Red/purple use temporary purchased wagon art; blue/green/yellow/white reuse that temporary geometry with conspicuous vanilla wool color placeholders.
+- Final targets: `DecorativeMultiblockBlock`, `DecorativeMultiblockItem`, per-color blockstate/model/item resources, registries, localization, empty block loot tables, creative tab, and axe-mineability tags.
 - Required behavior: decoration only; share placement/teardown code and geometry where art allows.
 - Dimensions/animation: base bounds about 25×24×35 voxels; red/purple about 36×38×47 voxels. No animation metadata.
 - Collision: authored cart body/wheel shapes, not full cubes.
-- Notes/blockers: red/purple geometries match each other, but `wagon2` is not simply a third texture on the same model. Blue/green/yellow/white temporary textures or unmistakable placeholders still need to be produced in Milestone 3.
+- Notes/blockers: each cart occupies an authoritative centered 3x3x3 structure, places atomically, tears down as a whole, and drops once. All six models remain replacement-art candidates; interactive visual/collision review is still required.
 
 ### 4. Training dummy
 
@@ -148,12 +148,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source model: `fountain\models\item\tiered_fountain_angel.json` with related tiered/water models.
 - Source textures: `fountain\textures\tiered_fountain.png`, `fountain_water.png`, and animation `.mcmeta` for water.
 - Format/checksum: JSON `81e97f1937863dc06b0d047c78af8d47e9817b4256783683dbe4925d563d6a5f`; texture `7d8800aac2053571a703968ecf23b632cf3f35a7d81e05a1267938bafbb31ffb`; water texture `c5c6a8c797899105dd0cd42b38f896ca2022922269576d8746d43064db624637`.
-- Import status: `FOUND`.
-- Proposed targets: multiblock root/parts and `assets/britannia_mod/{blockstates,models/block,models/item,textures/block}` fountain resources; registries/localization/loot.
+- Import status: `PLACEHOLDER` — normalized and implemented as temporary art in Milestone 3.
+- Final targets: `DecorativeMultiblockBlock`, `DecorativeMultiblockItem`, and `assets/britannia_mod/{blockstates,models/block,models/item,textures/block}` fountain resources; registries/localization/empty loot/client translucent layer.
 - Required behavior: decorative, atomic place/teardown, one drop.
 - Dimensions/animation: angel model bounds x/z `-8..24` (exact 32×32 footprint) and y `-16..30` (46 voxels, compatible with a 3-block envelope); animated water texture.
 - Collision: basin/pillar shapes matching visible footprint as closely as practical.
-- Notes/blockers: normalize origin and split/render coherently across the authoritative 2×2×3 structure.
+- Notes/blockers: the model was translated to x/z `0..32` and retains y `-16..30`, rendered from the middle-layer root across an authoritative 2x2x3 structure. Interactive water-animation, translucency, and collision review remains open.
 
 ### 6. Moonglow bush
 
@@ -271,12 +271,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:scarecrow`; decorative multiblock.
 - Preferred source: `Medieval Market Furniture Set.zip` raw `medieval_market_scarecrow.json`/`.bbmodel` and matching PNG. A ShizuArt farmer scarecrow is a viable alternate.
 - Format/checksum: preferred JSON `7983b8f2e8aac3d47b60b26fb4616b2bd77699d4f424da0915733c285dabd5ec`; PNG `256f992e8daeb3240d58d4dc9e184f26d631334824d8066a1bcd148688068992`.
-- Import status: `FOUND`.
-- Proposed targets: two-block root/part, block/item registry, blockstate/model/item/texture, localization/loot.
+- Import status: `PLACEHOLDER` — preferred purchased art was normalized and implemented in Milestone 3.
+- Final targets: shared multiblock block/item implementation, block/item registry, blockstate/model/item/texture, localization, empty loot, creative tab, cutout layer, and axe-mineability tag.
 - Required behavior: decoration only; no crop-protection mechanic.
 - Dimensions/animation: preferred bounds about 25×31.7×16 voxels; Shizu alternate about 30×31.5×25; no animation.
 - Collision: narrow post/body shape and coherent two-block placement.
-- Notes/blockers: choose between the two complete art styles during Milestone 3 visual review.
+- Notes/blockers: the Medieval Market candidate was selected and translated to x `0..25`, y `0..31.71682`, z `0..16`; it occupies a 2x1x2 authoritative structure. Art is temporary and interactive review remains open.
 
 ### 13. Fern
 
@@ -297,12 +297,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:dress_form`; decorative multiblock.
 - Source model/texture: `Nexo Assets - Tailoring Station.zip` `mannequin.json` and `mannequin.png`.
 - Format/checksum: JSON `88a5952ff5dd73cd698de3ddf56fbc4c91c28aafaf4794e3063db81da6caa7d3`; PNG `ae9dcbecaebe225d1f6b567548d0e6f387bf8582325e47e0c6e8b3f318eb9d54`.
-- Import status: `FOUND`.
-- Proposed targets: two-block decorative root/part and standard resources/registry/localization/loot.
+- Import status: `PLACEHOLDER` — purchased mannequin art was implemented under the final Dress Form ID in Milestone 3.
+- Final targets: shared multiblock block/item implementation and standard resources/registry/localization/empty loot/client cutout/axe tag.
 - Required behavior: decoration only; must not become an armor stand.
 - Dimensions/animation: exact 14×32×8-voxel envelope; no animation.
 - Collision: narrow base/post/torso approximation.
-- Notes/blockers: source vendor calls it mannequin; final player-facing name remains Dress Form.
+- Notes/blockers: source vendor calls it mannequin; final player-facing name remains Dress Form (Temporary Art). It occupies a 1x1x2 authoritative structure and must not behave as an armor stand.
 
 ### 15. Folded cloth
 
@@ -323,12 +323,12 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Proposed registry ID/category: `britannia_mod:loom`; structural multiblock with a narrowly authorized conversion interaction.
 - Candidate source model/texture: tailoring pack `loom.json` and `loom.png`; `standing_loom` is a smaller alternate, while `tailoring_station` is three blocks wide.
 - Format/checksum: loom JSON `c26734be38e00153790ff3eac416501e6ed3c9ef72ff9f9c708da9b245328966`; PNG `b8b30210c695878d61732fbb7eec613ad11af4f3e1244a77064973a3c6b5f5fa`.
-- Import status: `PARTIAL`.
-- Proposed targets: authoritative multiblock root/parts, optional root block entity if processing state requires it, models/textures, registries/localization/loot, data-driven conversion definitions.
-- Required behavior: 5 balls of yarn → 1 folded cloth or 5 spools of thread → 1 folded cloth; no broader tailoring system.
-- Dimensions/animation: candidate bounds x `-16..16`, y `0..32`, z `-4..32` (2 wide but only 2 high); no animation.
+- Import status: `PLACEHOLDER` — temporary purchased art was re-authored and implemented in Milestone 3.
+- Final targets: shared authoritative multiblock block/item implementation, models/textures, registries/localization, empty loot, creative tab, client cutout, and axe-mineability tag. Processing definitions remain deferred.
+- Required behavior: structural/decorative in Milestone 3. Later convert 5 balls of yarn to 1 folded cloth or 5 spools of thread to 1 folded cloth; no broader tailoring system.
+- Dimensions/animation: re-authored model bounds x `0..32`, y `-16..32`, z `0..16`, exactly 32x48x16 voxels across a 2x1x3 authoritative structure; no animation.
 - Collision: loom frame/working area approximation across the declared footprint.
-- Notes/blockers: source must be extended/re-authored to the specified 3-block height; recipe timing/interaction UI is deferred to its implementation milestone.
+- Notes/blockers: source scaling/re-authoring is complete. Yarn/thread item availability and the duplication-safe conversion interaction remain deferred to the textile-processing milestone.
 
 ### 17. Bolt of cloth
 

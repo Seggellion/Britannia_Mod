@@ -261,6 +261,16 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PEWTER_MUG_ITEM.get());
                 safeAccept(output, ItemRegistry.KETTLE_ITEM.get());
                 safeAccept(output, ItemRegistry.PLATES_AND_SILVERWARE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_RED_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_PURPLE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_BLUE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_GREEN_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_YELLOW_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_WHITE_ITEM.get());
+                safeAccept(output, ItemRegistry.FOUNTAIN_ITEM.get());
+                safeAccept(output, ItemRegistry.SCARECROW_ITEM.get());
+                safeAccept(output, ItemRegistry.DRESS_FORM_ITEM.get());
+                safeAccept(output, ItemRegistry.LOOM_ITEM.get());
                 safeAccept(output, ItemRegistry.SPITTOON_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_WEAPONS_1_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_1_ITEM.get());

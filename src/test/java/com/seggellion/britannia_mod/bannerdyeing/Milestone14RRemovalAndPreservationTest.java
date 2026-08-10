@@ -61,7 +61,8 @@ class Milestone14RRemovalAndPreservationTest {
         // Villa integration adds its construction item set on top of the previous
         // integrated total of 693. New-assets milestone 2 adds eight decorative
         // block items without restoring any of the rejected banner content.
-        assertEquals(743, repositoryItems);
+        // New-assets milestone 3 adds ten decorative multiblock items.
+        assertEquals(753, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));
