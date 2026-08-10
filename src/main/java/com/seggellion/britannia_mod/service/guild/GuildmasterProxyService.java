@@ -1,13 +1,17 @@
 package com.seggellion.britannia_mod.service.guild;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.economy.CoinConversion;
+import com.seggellion.britannia_mod.economy.MerchantEconomyService;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
+import com.seggellion.britannia_mod.network.NetworkHandler;
+import com.seggellion.britannia_mod.network.payload.GuildTrainingOpenS2CPayload;
 import com.seggellion.britannia_mod.skill.SkillManager;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,11 +31,12 @@ import java.util.UUID;
  * dedup set here yet. Adding them now would be unexercised machinery around a call that does not
  * exist. Milestone 5 introduces the confirmed {@code skills/set} write and will need all three.
  *
- * <h2>Milestone 3 scope</h2>
- * The playbook's gate for this milestone is that a Guildmaster can be spawned and opened with
- * "placeholder/read-only training content if necessary". This sends exactly that: a diegetic
- * summary of what the guild teaches and where the player currently stands. No money moves, no
- * skill changes, and no screen opens — the real training UI is Milestone 6.
+ * <h2>What it sends</h2>
+ * Milestone 6 replaced Milestone 3's placeholder chat with the real training screen. Every offer
+ * is priced here, on the server, because the client has neither the skill definitions nor the
+ * guild's taught-skill set to price from — and none of it is authoritative anyway: the screen
+ * sends back a slug, and {@link GuildTrainingService} recomputes the whole quote before a coin
+ * moves.
  */
 public final class GuildmasterProxyService {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -81,38 +86,40 @@ public final class GuildmasterProxyService {
                 player.getStringUUID(), resolved.serviceNpcTypeKey(), resolved.taughtSkillSlugs().size()
         );
 
-        player.displayClientMessage(Component.literal(GREETING), false);
+        // Milestone 6 replaces Milestone 3's placeholder chat lines with the real screen. Every
+        // figure is derived here, on the server, because the client has neither the skill
+        // definitions nor the guild's taught-skill set to derive them from.
+        List<GuildTrainingOpenS2CPayload.Offer> offers = new ArrayList<>(resolved.taughtSkillSlugs().size());
+        int availableGold = MerchantEconomyService.countCoins(player) / CoinConversion.COPPER_PER_GOLD;
         for (String slug : resolved.taughtSkillSlugs()) {
-            player.displayClientMessage(Component.literal(offerLine(player, slug)), false);
+            int currentTenths = Math.round(SkillManager.getSkill(player, slug) * 10.0F);
+            int capTenths = Math.min(
+                    GUILDMASTER_MAX_TENTHS, Math.round(SkillManager.maxValueForSlug(slug) * 10.0F));
+            int headroom = Math.max(0, capTenths - currentTenths);
+            offers.add(new GuildTrainingOpenS2CPayload.Offer(
+                    slug,
+                    SkillManager.displayNameForSlug(slug),
+                    currentTenths,
+                    capTenths,
+                    // Pre-minimised so the screen never decides affordability: one gold per tenth
+                    // makes the affordable count and the price the same number.
+                    Math.min(headroom, availableGold)
+            ));
         }
+
+        NetworkHandler.sendToPlayer(player, new GuildTrainingOpenS2CPayload(
+                entity.getId(), guildTitle(resolved), entity.getPersonalName(), offers));
     }
 
-    /**
-     * One line per taught skill: what it is called, where the player stands, and what the guild can
-     * still take them to. Reads the player's live value through {@link SkillManager} rather than a
-     * captured snapshot, so it is honest at the moment of asking.
-     */
-    static String offerLine(ServerPlayer player, String slug) {
-        int currentTenths = Math.round(SkillManager.getSkill(player, slug) * 10.0F);
-        int headroom = Math.max(0, GUILDMASTER_MAX_TENTHS - currentTenths);
-        String name = SkillManager.displayNameForSlug(slug);
-        String current = formatTenths(currentTenths);
-
-        if (headroom == 0) {
-            return "  " + name + " (" + current + ") - I can teach thee no more of this.";
-        }
-        // headroom in tenths is also the price in gold: 1 gold buys 0.1 skill.
-        return "  " + name + " (" + current + ") - I can take thee to "
-                + formatTenths(GUILDMASTER_MAX_TENTHS) + " for " + headroom + " gold.";
+    private static String guildTitle(ResolvedGuildmaster resolved) {
+        return GuildmasterCapability.roleTitle(resolved.serviceNpcTypeKey())
+                .orElse("Guildmaster");
     }
 
     /** Fixed-point rendering; never {@code float} formatting, per the tenths discipline. */
     static String formatTenths(int tenths) {
         return (tenths / 10) + "." + Math.abs(tenths % 10);
     }
-
-    public static final String GREETING =
-            "The guildmaster looks thee over: \"Here is what our guild can teach.\"";
 
     public record ResolvedGuildmaster(
             UUID entityUuid,
