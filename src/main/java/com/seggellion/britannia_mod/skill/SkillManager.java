@@ -513,6 +513,37 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
         return pretty.toString();
     }
 
+    /**
+     * The configured maximum for a skill, from the Rails-published definition, falling back to the
+     * same 100 this class already assumes when definitions have not loaded.
+     *
+     * <p>Guildmaster milestone 5: the training ceiling is the stricter of 40.0 and this, so a
+     * Guildmaster can never push a skill past its own cap.
+     */
+    public static float maxValueForSlug(String slug) {
+        if (slug == null || slug.isBlank()) return 100f;
+        SkillDef def = SKILL_DEFS.get(slug.toLowerCase(Locale.ROOT));
+        return def == null ? 100f : def.max();
+    }
+
+    /**
+     * Records an authoritative value that Rails has <em>already</em> committed, and syncs it to the
+     * client. Deliberately does not POST anything back.
+     *
+     * <p>Guildmaster milestone 5. {@link #setSkillAdmin} and {@link #awardSkillGain} both write
+     * locally and then fire a request at Rails; for a training purchase that ordering is inverted —
+     * Rails commits the skill, the treasury credit and the ledger row together first, and this only
+     * brings the in-memory cache into line with what was already stored. Posting again here would
+     * write the value twice and, worse, could overwrite a newer one.
+     */
+    public static void applyConfirmedValue(ServerPlayer player, String skillName, float value) {
+        if (player == null || skillName == null) return;
+        String key = skillName.toLowerCase(Locale.ROOT);
+        PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills()).set(key, value);
+        PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
+        player.server.execute(() -> sendSkillSync(player));
+    }
+
     public static SkillSnapshot getSkillSnapshot(UUID playerUUID, String skillName) {
         SkillDataState state = PLAYER_SKILL_STATES.getOrDefault(playerUUID, SkillDataState.NOT_LOADED);
         return new SkillSnapshot(state, getSkill(playerUUID, skillName));
