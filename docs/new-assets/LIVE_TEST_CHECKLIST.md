@@ -366,3 +366,33 @@ Automated checks cover exact registrations and the complete static data surface.
 - Client/dedicated-server result:
 - Screenshots or log path:
 - Accepted placeholder/replacement notes:
+
+## Milestone 12 — Consolidated Owner Validation and Closure
+
+Run this section as the final acceptance pass. If a spot check fails, use the corresponding earlier milestone section for the complete diagnostic procedure. Record screenshots and logs in `MILESTONE_12_CLOSURE_REPORT.md`.
+
+### Recommended run order
+
+- [ ] Launch the target client and dedicated server; retain both `latest.log` files and confirm no new-assets registration, malformed-data, missing-model, or missing-texture failures.
+- [ ] Audit the Britannia creative tab once: every final asset appears exactly once, legacy moongate top is absent, and temporary/placeholder names are clear.
+- [ ] Place the decorative set, six carts, fountain, scarecrow, dress form, loom, sandstone family, crates, well, ladder, training dummy, spinning wheel, display cases, and city moongate; spot-check orientation, model envelope, transparency, collision, sound/material, tool, drop, and atomic teardown.
+- [ ] Save and reload the world; verify placed multiblocks, crate inventories, ibis variants, display-case connections, and migrated city moongates persist correctly.
+- [ ] Exercise all functional families: crate storage, three authorized water containers, Adventure ladder placement/removal, Jhelom ibis population, training strikes, spinning/loom conversion, display-case recomputation, and city/dungeon moongate regression.
+- [ ] Use two clients for crate access, ibis synchronization/population observation, training-dummy cooldown/animation, and rapid textile interactions.
+- [ ] Confirm the integrated skill service recognizes `swordsmanship`, `mace_fighting`, `fencing`, and `tactics`, or record the authoritative replacement slugs before closure.
+- [ ] Review every remaining temporary/purchased/generated or code-authored placeholder and explicitly accept it for this closure or identify the required replacement.
+- [ ] Complete the closure record and explicitly authorize or reject project closure and the final isolated commit.
+
+### Final acceptance record
+
+- Tester/date: Owner approval recorded in the Codex task, 2026-08-10; no separate interactive test record supplied.
+- Game/modpack version: Not separately supplied.
+- Client and dedicated-server log paths: Automated development-client and GameTest-server evidence is recorded in `IMPLEMENTATION_LOG.md`; no owner-session logs supplied.
+- Screenshot/video paths: None supplied.
+- Creative/decorative result: Accepted by owner without separate live evidence.
+- Functional/multiplayer/persistence result: Automated suites accepted by owner; no separate multiplayer-session evidence supplied.
+- Confirmed skill slugs: Not separately confirmed; existing provisional slugs accepted at closure with the integration caveat retained.
+- Placeholder acceptance/replacement notes: Current temporary/placeholder state accepted for closure; replacement remains future work.
+- Failed checks and disposition: No failures reported; unperformed live evidence remains explicitly documented.
+- Project closure approved: Yes.
+- Final isolated commit authorized: Yes.

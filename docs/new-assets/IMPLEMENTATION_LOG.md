@@ -595,4 +595,27 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 11 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 11 as `775806db` (`Audit new asset integrations`).
+
+## Milestone 12 — Owner Live Validation and Project Closure
+
+### Closure preparation
+
+- Starting HEAD: `775806db`.
+- Consolidated the automated evidence, required owner-observed checks, known exceptions, replacement-art backlog, and final closure gates in `MILESTONE_12_CLOSURE_REPORT.md`.
+- Added a single ordered Milestone 12 live-validation pass to `LIVE_TEST_CHECKLIST.md`; the earlier milestone sections remain the detailed procedures for any failed spot check.
+- Corrected the dimensional re-authoring matrix to record the loom work completed in Milestone 3.
+- Preserved the project boundary: no merge or push is authorized, silk remains deferred, display cases remain decorative-only, and all temporary/placeholder art remains replaceable under its final IDs.
+
+### Current status
+
+- Automated readiness is green based on the approved Milestone 11 evidence: 1,712 tests with zero failures or errors, all 347 required GameTests passed, and client resource reload completed without audited new-assets warnings.
+- The owner explicitly approved Milestone 12 and authorized its isolated commit on 2026-08-10. No separate live-session evidence or canonical combat-skill slug confirmation was supplied; those evidence gaps remain recorded in the closure report rather than being represented as tests that were run.
+- The approval accepts the current temporary/placeholder presentation for this closure, consistent with the prior direction that purchased packs are temporary and will be replaced later.
+- The project is owner-approved for closure with the documented evidence exceptions. No merge or push was performed, and future replacement art or textile-silk work is outside this milestone sequence.
+
+### Commit status
+
+- Owner approval and explicit final commit authorization were received.
+- This closure record is included in the final isolated Milestone 12 commit.
