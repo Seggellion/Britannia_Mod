@@ -73,7 +73,12 @@ public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatab
     private boolean stepToggle = false;
 
 private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
-    private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
+    /**
+     * Widened from private for {@code ServiceNpcEntity.updateDisplayName()}, which composes a
+     * different string but must render it in the same font. Visibility only — no behavior change,
+     * and no existing subclass reads it.
+     */
+    protected static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 
     protected String getRoleTitle() {
         return "Citizen";

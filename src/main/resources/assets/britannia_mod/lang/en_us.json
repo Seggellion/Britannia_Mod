@@ -1427,5 +1427,9 @@
   "block.britannia_mod.plaster_wall_support_diagonal_east_half": "Plaster Wall Support Diagonal East (Half)",
   "block.britannia_mod.plaster_wall_support_diagonal_south_half": "Plaster Wall Support Diagonal South (Half)",
   "block.britannia_mod.ceiling_planks": "Ceiling Planks",
-  "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge"
+  "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge",
+  "screen.britannia_mod.guild.offer.at_cap": "%s %s - taught in full",
+  "screen.britannia_mod.guild.offer.no_gold": "%s %s - not enough gold",
+  "screen.britannia_mod.guild.offer.buy": "%s %s -> %s for %s gold",
+  "screen.britannia_mod.guild.close": "Close"
 }

@@ -563,6 +563,25 @@ registrar.playToClient(
 );
 
 // Milestone 9 Slice 3a: real deposit/withdrawal triggers from the Bank Box screen
+registrar.playToClient(
+    com.seggellion.britannia_mod.network.payload.GuildTrainingOpenS2CPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.GuildTrainingOpenS2CPayload.STREAM_CODEC,
+    net.neoforged.fml.loading.FMLEnvironment.dist.isClient()
+        ? com.seggellion.britannia_mod.network.ClientNetworkHandler::handleGuildTrainingOpen
+        : (payload, ctx) -> { }
+);
+// Guildmaster milestone 6: the training request. Intent only - the packet names a
+// Guildmaster and a skill, and every price, value and balance is derived server-side.
+registrar.playToServer(
+    com.seggellion.britannia_mod.network.payload.GuildTrainingRequestC2SPayload.TYPE,
+    com.seggellion.britannia_mod.network.payload.GuildTrainingRequestC2SPayload.STREAM_CODEC,
+    (payload, ctx) -> ctx.enqueueWork(() -> {
+        if (ctx.player() instanceof ServerPlayer p) {
+            com.seggellion.britannia_mod.service.guild.GuildTrainingPacketService
+                .handleTrainingRequest(p, payload);
+        }
+    })
+);
 registrar.playToServer(
     com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload.TYPE,
     com.seggellion.britannia_mod.network.payload.BankDepositRequestC2SPayload.STREAM_CODEC,

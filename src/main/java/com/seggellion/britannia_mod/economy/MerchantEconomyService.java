@@ -388,7 +388,9 @@ public final class MerchantEconomyService {
         return total;
     }
 
-    private static void removeAllCoins(ServerPlayer player) {
+    /** Widened for GuildTrainingService: the count-remove-give-change idiom is the only sanctioned
+     * way to charge coins, and a second inventory scanner is exactly what this avoids. */
+    public static void removeAllCoins(ServerPlayer player) {
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
             if (stack.isEmpty()) continue;

@@ -25,6 +25,11 @@ public final class ServiceNpcSpawnScreen extends AbstractContainerScreen<Service
             .withZone(ZoneId.systemDefault());
 
     private ServiceNpcSpawnStateS2CPayload state;
+    /**
+     * The taught-skill and city-economy readout, pre-formatted. Rebuilt only when a payload
+     * arrives, never during render.
+     */
+    private ServiceNpcSpawnPresentation presentation = ServiceNpcSpawnPresentation.empty();
     private UUID selectedCityId;
     private String selectedTypeKey;
     private boolean selectedEnabled = true;
@@ -161,6 +166,10 @@ public final class ServiceNpcSpawnScreen extends AbstractContainerScreen<Service
                 || !payload.pos().equals(menu.pos())
                 || !payload.spawnPointId().equals(menu.spawnPointId())) return;
         state = payload;
+        // Formatted here rather than in renderLabels: render runs every frame, and this data
+        // changes only when a payload arrives (open, save, refresh). Building the strings once
+        // keeps the draw loop allocation-free.
+        presentation = ServiceNpcSpawnPresentation.of(payload);
         selectedCityId = payload.cityPublicId();
         selectedTypeKey = payload.serviceNpcTypeKey();
         selectedEnabled = payload.enabled();
@@ -204,7 +213,21 @@ public final class ServiceNpcSpawnScreen extends AbstractContainerScreen<Service
         if (state.lastErrorCode() != null) {
             graphics.drawString(font, "Error: " + state.lastErrorCode(), 12, 174, 0xFF6666, false);
         }
+
+        // Indexed walk over an array-backed list of pre-built strings: no iterator, no
+        // concatenation, no formatting, no boxing. Everything here was computed once in
+        // acceptState.
+        List<ServiceNpcSpawnPresentation.Line> readout = presentation.lines();
+        for (int index = 0; index < readout.size(); index++) {
+            ServiceNpcSpawnPresentation.Line line = readout.get(index);
+            graphics.drawString(font, line.text(), 12, READOUT_TOP + index * READOUT_ROW_HEIGHT,
+                    line.color(), false);
+        }
     }
+
+    /** Below the existing status block, which ends at the error line at y=174. */
+    private static final int READOUT_TOP = 190;
+    private static final int READOUT_ROW_HEIGHT = 10;
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

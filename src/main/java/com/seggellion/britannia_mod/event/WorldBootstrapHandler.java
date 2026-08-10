@@ -80,7 +80,8 @@ public final class WorldBootstrapHandler {
         try {
             BootstrapCityRegistryCache.replace(BootstrapCityRegistrySnapshot.available(
                 data.cities().stream()
-                    .map(city -> new BootstrapCityDefinition(UUID.fromString(city.publicId()), city.name()))
+                    .map(city -> new BootstrapCityDefinition(
+                        UUID.fromString(city.publicId()), city.name(), citySupplies(city)))
                     .toList()
             ));
         } catch (RuntimeException exception) {
@@ -123,6 +124,46 @@ public final class WorldBootstrapHandler {
         ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
         LOGGER.info("World bootstrap applied: {} fish, {} regions, {} cities",
             data.fish().size(), data.regions().size(), data.cities().size());
+    }
+
+    /**
+     * The city's commodity levels, keyed exactly as Rails'
+     * {@code CityStaffing::EconomicEligibility::SUPPLY_COLUMNS} keys them, so the Guildmaster
+     * spawn-block readout compares like with like.
+     *
+     * <p>These seven are the ones the bootstrap's {@code supplies} object carries, and each maps
+     * straight to the {@code cities.*_supply} column of the same name (verified against
+     * {@code Api::WorldBootstrapController}, which builds them from {@code city.food_supply},
+     * {@code city.alcohol_supply} and so on).
+     *
+     * <p><b>The precious metals come from the treasury, not from {@code *_supply} columns.</b>
+     * The bootstrap publishes {@code treasury.gold/silver/copper} from {@code city.gold_amount}
+     * and friends -- {@code get_treasury_reserve(...)} over TreasuryBalance rows, the coin a city
+     * actually holds. Rails'{@code EconomicEligibility} reads those same methods, by owner
+     * decision, because the {@code silver_supply}/{@code gold_supply}/{@code copper_supply}
+     * columns are a different quantity that is seeded to zero and moved only by precious-metal
+     * commodity trades. Gating on those would have meant no Guildmaster ever spawned.
+     *
+     * <p>{@code reagents} has no bootstrap field at all, so a requirement on it reads as UNKNOWN
+     * rather than as a false zero.
+     *
+     * <p>{@code Map.ofEntries} rather than {@code Map.of}: this is exactly ten pairs, the limit of
+     * {@code Map.of}'s overloads, and the next supply added would silently fail to compile in a
+     * confusing way.
+     */
+    private static Map<String, Double> citySupplies(WorldBootstrapAPI.CityBootstrapData city) {
+        return Map.ofEntries(
+            Map.entry("food", city.food()),
+            Map.entry("wood", city.wood()),
+            Map.entry("metal", city.metal()),
+            Map.entry("stone", city.stone()),
+            Map.entry("textile", city.textile()),
+            Map.entry("alcohol", city.alcohol()),
+            Map.entry("technology", city.tech()),
+            Map.entry("gold", (double) city.gold()),
+            Map.entry("silver", (double) city.silver()),
+            Map.entry("copper", (double) city.copper())
+        );
     }
 
     private static final class Coordinator implements AutoCloseable {

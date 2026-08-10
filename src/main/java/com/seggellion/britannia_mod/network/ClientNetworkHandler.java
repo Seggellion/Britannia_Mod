@@ -383,6 +383,19 @@ private static MutableComponent uoMessage(String text) {
      * <p>{@link BankNavigation#refreshRoute} owns the decision so it can be tested without a
      * client; see its docs for the one behaviour deliberately preserved rather than improved.
      */
+    /**
+     * Guildmaster milestone 6. Opens the training screen unconditionally: this payload is only
+     * ever sent in direct response to the player interacting with a Guildmaster, so unlike
+     * banking there is no refresh case that must avoid re-opening a dismissed screen.
+     */
+    public static void handleGuildTrainingOpen(
+            com.seggellion.britannia_mod.network.payload.GuildTrainingOpenS2CPayload payload,
+            IPayloadContext ctx
+    ) {
+        ctx.enqueueWork(() -> net.minecraft.client.Minecraft.getInstance().setScreen(
+                new com.seggellion.britannia_mod.client.screen.guild.GuildmasterTrainingScreen(payload)));
+    }
+
     public static void handleBankAccountOpened(BankAccountOpenedS2CPayload payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             Minecraft minecraft = Minecraft.getInstance();

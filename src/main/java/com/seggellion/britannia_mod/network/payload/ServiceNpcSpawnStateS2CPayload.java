@@ -7,8 +7,10 @@ import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
 import com.seggellion.britannia_mod.menu.ServiceNpcSpawnMenu;
 import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
 import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnEligibility;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnRegistrationState;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnValidationError;
+import com.seggellion.britannia_mod.skill.SkillManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -45,10 +47,32 @@ public record ServiceNpcSpawnStateS2CPayload(
         @Nullable UUID assignedNpcPublicId,
         @Nullable String assignedNpcDisplayName,
         long assignmentRevision,
-        @Nullable Long lastSuccessfulSyncEpochMillis
+        @Nullable Long lastSuccessfulSyncEpochMillis,
+        List<String> taughtSkillLabels,
+        ServiceNpcSpawnEligibility.Status eligibilityStatus,
+        List<SupplyLine> supplyRequirements
 ) implements CustomPacketPayload {
     public record CityOption(UUID publicId, String displayName) {}
     public record ServiceTypeOption(String key, String displayName) {}
+
+    /**
+     * Guildmaster milestone 2. One of the selected type's configured supply minimums and how the
+     * selected city measures against it.
+     *
+     * <p>{@code measured} is false when the bootstrap carries no figure for that supply, which is
+     * what makes the whole readout {@link ServiceNpcSpawnEligibility.Status#UNKNOWN}. It is
+     * deliberately distinguishable from a real zero, so the screen never reports a shortfall it
+     * cannot actually see.
+     */
+    public record SupplyLine(String supply, double required, double available, boolean measured) {
+        public boolean satisfied() {
+            return measured && available >= required;
+        }
+    }
+
+    /** Bounded like every other collection on this payload. */
+    private static final int MAX_TAUGHT_SKILL_LABELS = 64;
+    private static final int MAX_SUPPLY_LINES = 32;
 
     public static final Type<ServiceNpcSpawnStateS2CPayload> TYPE = new Type<>(
             ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "service_npc_spawn_state")
@@ -59,6 +83,8 @@ public record ServiceNpcSpawnStateS2CPayload(
     public ServiceNpcSpawnStateS2CPayload {
         cityOptions = List.copyOf(cityOptions);
         serviceTypeOptions = List.copyOf(serviceTypeOptions);
+        taughtSkillLabels = List.copyOf(taughtSkillLabels);
+        supplyRequirements = List.copyOf(supplyRequirements);
     }
 
     public static void send(
@@ -131,13 +157,24 @@ public record ServiceNpcSpawnStateS2CPayload(
                     null,
                     null,
                     0L,
-                    null
+                    null,
+                    List.of(),
+                    ServiceNpcSpawnEligibility.Status.SATISFIED,
+                    List.of()
             );
         }
 
         UUID cityId = blockEntity.getCityPublicId();
         String typeKey = blockEntity.getServiceNpcTypeKey();
         ServiceNpcTypeDefinition storedType = typeKey == null ? null : typeSnapshot.serviceNpcTypes().get(typeKey);
+        // Evaluated against the SAVED selection, not whatever the admin is currently browsing in
+        // the dropdown: this payload is only rebuilt on open/save/refresh, and reporting a city's
+        // economy against an unsaved selection would show a verdict for a configuration Rails has
+        // never been told about.
+        ServiceNpcSpawnEligibility.Result eligibility = ServiceNpcSpawnEligibility.evaluate(
+                storedType,
+                cityId == null ? null : citySnapshot.find(cityId)
+        );
         String networkTypeKey = boundedOrFallback(
                 typeKey,
                 ServiceNpcSpawnPayloadCodec.MAX_TYPE_KEY_BYTES,
@@ -174,8 +211,42 @@ public record ServiceNpcSpawnStateS2CPayload(
                 blockEntity.getAssignedNpcPublicId(),
                 networkAssignedDisplayName,
                 blockEntity.getAssignmentRevision(),
-                blockEntity.getLastSuccessfulSyncEpochMillis()
+                blockEntity.getLastSuccessfulSyncEpochMillis(),
+                taughtSkillLabelsFor(storedType),
+                eligibility.status(),
+                supplyLinesFor(eligibility)
         );
+    }
+
+    /**
+     * The taught skills of the <em>saved</em> type, resolved to display names server-side.
+     *
+     * <p>Resolved here rather than on the client because the client has no skill definitions at
+     * all -- {@code ClientSkillTable} holds only the viewing player's own values, keyed by slug,
+     * with no names. {@link SkillManager#displayNameForSlug} reads the Rails-published definition
+     * and falls back to a prettified slug, so a skill the server has not loaded a definition for
+     * still reads as "Animal Lore" rather than "animal-lore".
+     */
+    private static List<String> taughtSkillLabelsFor(@Nullable ServiceNpcTypeDefinition type) {
+        if (type == null) return List.of();
+        return type.taughtSkillSlugs().stream()
+                .limit(MAX_TAUGHT_SKILL_LABELS)
+                .map(SkillManager::displayNameForSlug)
+                .filter(label -> isBounded(label, ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES))
+                .toList();
+    }
+
+    private static List<SupplyLine> supplyLinesFor(ServiceNpcSpawnEligibility.Result eligibility) {
+        return eligibility.requirements().stream()
+                .limit(MAX_SUPPLY_LINES)
+                .filter(requirement -> isBounded(requirement.supply(), ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES))
+                .map(requirement -> new SupplyLine(
+                        requirement.supply(),
+                        requirement.required(),
+                        requirement.available() == null ? 0.0D : requirement.available(),
+                        requirement.available() != null
+                ))
+                .toList();
     }
 
     private static void encode(FriendlyByteBuf buffer, ServiceNpcSpawnStateS2CPayload payload) {
@@ -209,6 +280,17 @@ public record ServiceNpcSpawnStateS2CPayload(
         buffer.writeLong(payload.assignmentRevision);
         buffer.writeBoolean(payload.lastSuccessfulSyncEpochMillis != null);
         if (payload.lastSuccessfulSyncEpochMillis != null) buffer.writeLong(payload.lastSuccessfulSyncEpochMillis);
+        buffer.writeVarInt(payload.taughtSkillLabels.size());
+        payload.taughtSkillLabels.forEach(label ->
+                ServiceNpcSpawnPayloadCodec.writeUtf(buffer, label, ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES));
+        buffer.writeVarInt(payload.eligibilityStatus.ordinal());
+        buffer.writeVarInt(payload.supplyRequirements.size());
+        payload.supplyRequirements.forEach(line -> {
+            ServiceNpcSpawnPayloadCodec.writeUtf(buffer, line.supply(), ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES);
+            buffer.writeDouble(line.required());
+            buffer.writeDouble(line.available());
+            buffer.writeBoolean(line.measured());
+        });
     }
 
     private static ServiceNpcSpawnStateS2CPayload decode(FriendlyByteBuf buffer) {
@@ -259,8 +341,37 @@ public record ServiceNpcSpawnStateS2CPayload(
                 readNullableUuid(buffer),
                 readNullableString(buffer, ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES),
                 buffer.readLong(),
-                buffer.readBoolean() ? buffer.readLong() : null
+                buffer.readBoolean() ? buffer.readLong() : null,
+                // Java evaluates arguments left to right, so these three read after every inline
+                // read above and stay in wire order. They are method calls rather than locals for
+                // exactly that reason: locals declared before this return would read too early.
+                readTaughtSkillLabels(buffer),
+                readEnum(buffer, ServiceNpcSpawnEligibility.Status.values()),
+                readSupplyLines(buffer)
         );
+    }
+
+    private static List<String> readTaughtSkillLabels(FriendlyByteBuf buffer) {
+        int count = readCount(buffer, MAX_TAUGHT_SKILL_LABELS);
+        List<String> labels = new ArrayList<>(count);
+        for (int index = 0; index < count; index++) {
+            labels.add(ServiceNpcSpawnPayloadCodec.readUtf(buffer, ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES));
+        }
+        return labels;
+    }
+
+    private static List<SupplyLine> readSupplyLines(FriendlyByteBuf buffer) {
+        int count = readCount(buffer, MAX_SUPPLY_LINES);
+        List<SupplyLine> lines = new ArrayList<>(count);
+        for (int index = 0; index < count; index++) {
+            lines.add(new SupplyLine(
+                    ServiceNpcSpawnPayloadCodec.readUtf(buffer, ServiceNpcSpawnPayloadCodec.MAX_LABEL_BYTES),
+                    buffer.readDouble(),
+                    buffer.readDouble(),
+                    buffer.readBoolean()
+            ));
+        }
+        return lines;
     }
 
     private static int readCount(FriendlyByteBuf buffer, int maximum) {

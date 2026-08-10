@@ -76,7 +76,13 @@ public record SkillSnapshot(SkillDataState state, float value) {
     // Get def if ready, else a conservative default so MP can gain immediately
     SkillDef def = SKILL_DEFS.getOrDefault(
         key,
-        new SkillDef(key, capitalize(key), 100f, 1.0f, true, true) // fallback until API loads
+        // Fallback until the API loads. gainOnFailure is false to match every seeded Rails
+        // row: it used to be true, which meant a failed attempt gained skill before definitions
+        // arrived and stopped gaining once they did - the same action behaving differently
+        // depending on whether an HTTP fetch had completed. Rails is authoritative, so the
+        // fallback agrees with it. Whether failure should grant gain at all is an era question
+        // (pre-AOS yes at reduced weight, AOS no) and belongs in the Rails data, not here.
+        new SkillDef(key, capitalize(key), 100f, 1.0f, true, false)
     );
 
     // Respect success/failure flags
@@ -115,7 +121,8 @@ public static float awardSkillGain(ServerPlayer player, String skillName, float 
     PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
     SkillDef def = SKILL_DEFS.getOrDefault(
         key,
-        new SkillDef(key, capitalize(key), 100f, 1.0f, true, true)
+        // Matches the seeded Rails default, per the note in trySkillGain above.
+        new SkillDef(key, capitalize(key), 100f, 1.0f, true, false)
     );
 
     float current = p.get(key);
@@ -478,6 +485,70 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
     public static float getSkill(java.util.UUID playerUUID, String skillName) {
         PlayerSkills ps = PLAYER_SKILLS.get(playerUUID);
         return (ps == null) ? 0f : ps.get(skillName);
+    }
+
+    /**
+     * The human-readable name for a skill slug, from the Rails-published definition when one has
+     * been loaded, otherwise a prettified form of the slug itself.
+     *
+     * <p>Guildmaster milestone 2. Added because nothing outside this class could previously read a
+     * skill's display name at all -- {@code SKILL_DEFS} is private and {@code ClientSkillTable}
+     * holds only the viewing player's own values, keyed by slug, with no names. The Guildmaster
+     * spawn-screen readout needs "Animal Lore", not "animal-lore".
+     *
+     * <p>The fallback is load-bearing rather than defensive: {@code SKILL_DEFS} is populated on the
+     * first player login, so a dedicated server that has not yet had one -- or one whose skill
+     * config fetch failed -- would otherwise render every label blank.
+     */
+    public static String displayNameForSlug(String slug) {
+        if (slug == null || slug.isBlank()) return "";
+        SkillDef def = SKILL_DEFS.get(slug.toLowerCase(Locale.ROOT));
+        if (def != null && def.displayName() != null && !def.displayName().isBlank()) {
+            return def.displayName();
+        }
+        StringBuilder pretty = new StringBuilder(slug.length());
+        boolean startOfWord = true;
+        for (char character : slug.toCharArray()) {
+            if (character == '-' || character == '_') {
+                pretty.append(' ');
+                startOfWord = true;
+                continue;
+            }
+            pretty.append(startOfWord ? Character.toUpperCase(character) : character);
+            startOfWord = false;
+        }
+        return pretty.toString();
+    }
+
+    /**
+     * The configured maximum for a skill, from the Rails-published definition, falling back to the
+     * same 100 this class already assumes when definitions have not loaded.
+     *
+     * <p>Guildmaster milestone 5: the training ceiling is the stricter of 40.0 and this, so a
+     * Guildmaster can never push a skill past its own cap.
+     */
+    public static float maxValueForSlug(String slug) {
+        if (slug == null || slug.isBlank()) return 100f;
+        SkillDef def = SKILL_DEFS.get(slug.toLowerCase(Locale.ROOT));
+        return def == null ? 100f : def.max();
+    }
+
+    /**
+     * Records an authoritative value that Rails has <em>already</em> committed, and syncs it to the
+     * client. Deliberately does not POST anything back.
+     *
+     * <p>Guildmaster milestone 5. {@link #setSkillAdmin} and {@link #awardSkillGain} both write
+     * locally and then fire a request at Rails; for a training purchase that ordering is inverted —
+     * Rails commits the skill, the treasury credit and the ledger row together first, and this only
+     * brings the in-memory cache into line with what was already stored. Posting again here would
+     * write the value twice and, worse, could overwrite a newer one.
+     */
+    public static void applyConfirmedValue(ServerPlayer player, String skillName, float value) {
+        if (player == null || skillName == null) return;
+        String key = skillName.toLowerCase(Locale.ROOT);
+        PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills()).set(key, value);
+        PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
+        player.server.execute(() -> sendSkillSync(player));
     }
 
     public static SkillSnapshot getSkillSnapshot(UUID playerUUID, String skillName) {
