@@ -215,6 +215,26 @@ in source, 342 passed, up from 340.
 
 ---
 
+## 7b. Milestone 5's purchase path has no direct test coverage — **OPEN**
+
+The suite is green, but that is not the same as this being covered. Every decision that can cost a
+player money was deliberately extracted into `GuildTrainingQuote` and `GuildTrainingCharge`, which
+have 23 cases between them. `GuildTrainingService.purchase` and `GuildTrainingClient` have none:
+what remains in them is threading, revalidation and I/O, which needs a running server.
+
+The seam to test through already exists — `GuildTrainingService.useClientForTesting`. A GameTest
+mirroring `BankingProxyServiceGameTests` should assert the four paths where money is at stake:
+
+- a `Rejected` result charges nothing
+- a `TransportFailure` charges nothing
+- an `Applied` granting less than requested charges the **granted** amount
+- funds changed between quote and commit abandons the charge and takes nothing
+- a replay (`ALREADY_APPLIED`) charges nothing
+
+Recorded as owed rather than implied-covered. The feature is approved and usable without it, but
+these are the assertions that would catch a regression in the one area where a bug costs players
+real currency.
+
 ## 8. Unproven claim: denial produces no entity — **CARRIED**
 
 Milestone 4's gate asks for "allow decision spawns one NPC, deny spawns none". Structurally this
