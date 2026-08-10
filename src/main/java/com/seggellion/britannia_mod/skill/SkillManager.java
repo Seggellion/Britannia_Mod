@@ -76,7 +76,13 @@ public record SkillSnapshot(SkillDataState state, float value) {
     // Get def if ready, else a conservative default so MP can gain immediately
     SkillDef def = SKILL_DEFS.getOrDefault(
         key,
-        new SkillDef(key, capitalize(key), 100f, 1.0f, true, true) // fallback until API loads
+        // Fallback until the API loads. gainOnFailure is false to match every seeded Rails
+        // row: it used to be true, which meant a failed attempt gained skill before definitions
+        // arrived and stopped gaining once they did - the same action behaving differently
+        // depending on whether an HTTP fetch had completed. Rails is authoritative, so the
+        // fallback agrees with it. Whether failure should grant gain at all is an era question
+        // (pre-AOS yes at reduced weight, AOS no) and belongs in the Rails data, not here.
+        new SkillDef(key, capitalize(key), 100f, 1.0f, true, false)
     );
 
     // Respect success/failure flags
@@ -115,7 +121,8 @@ public static float awardSkillGain(ServerPlayer player, String skillName, float 
     PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
     SkillDef def = SKILL_DEFS.getOrDefault(
         key,
-        new SkillDef(key, capitalize(key), 100f, 1.0f, true, true)
+        // Matches the seeded Rails default, per the note in trySkillGain above.
+        new SkillDef(key, capitalize(key), 100f, 1.0f, true, false)
     );
 
     float current = p.get(key);
