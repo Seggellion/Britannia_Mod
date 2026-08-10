@@ -25,7 +25,7 @@
 - Ibis cap: working requirement is 15 ibis total across all three Jhelom areas, counted independently of other city animals.
 - Moongate: update existing `MoongateBlock`; collapse the current two-block teleporter implementation to one logical block with a 32-voxel-high custom model while preserving teleport behavior.
 - Water well: supports watering cans, vanilla buckets, and pitchers. Correct the existing empty-pitcher registration for water behavior only.
-- Training dummy: axes are supported. Canonical combat skill slugs remain unknown and must be resolved before Milestone 7 implementation.
+- Training dummy: axes are supported. Milestone 7 isolates the working slugs `swordsmanship`, `mace_fighting`, `fencing`, and `tactics`; the external skill service must confirm them before release.
 - Silk: a future textile material/item distinct from `britannia_mod:spiders_silk`.
 - Loom: later processing rule is 5 `ball_of_yarn` or 5 `spool_of_thread` → 1 `folded_cloth`; no broader tailoring UI/crafting system is authorized.
 - Display cases: decorative and neighbor-connected only; no storage or displayed-item inventory.
@@ -58,7 +58,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Ibis, white/scarlet | `ibis` with persistent variant | `PLACEHOLDER` | White source imported unchanged; UV-safe scarlet recolor and all runtime behavior implemented in Milestone 6 |
 | Moongate visual replacement | existing `moongate_block` | `PARTIAL` | Reworked 32-voxel model required; do not create another gate ID |
 | Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
-| Training dummy | `training_dummy` | `PARTIAL` | Re-author/scale source to required 2×3-block structure |
+| Training dummy | `training_dummy` | `PLACEHOLDER` | Implemented in Milestone 7; purchased punching-bag art re-authored to exact 32×48 visible bounds and must be replaced later |
 | Fountain | `fountain` | `PLACEHOLDER` | Temporary source art normalized to the requested 2x2x3 structure |
 | Moonglow bush | `moonglow_bush` | `PLACEHOLDER` | Temporary purchased purple-flower bush imported in Milestone 2 |
 | Sandstone family | existing IDs | `VALIDATED` | Existing connected family reused; no duplicate IDs |
@@ -133,13 +133,13 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source model: direct gray JSON under `training_dummy\resourcepack\...\training_dummy_gray.json`; animated ModelEngine blueprint `training_dummy.zip::fv_punching_bags/plugins/ModelEngine/blueprints/fv_punching_bag_gray.bbmodel`.
 - Source texture: direct 128×128 ARGB `...\fv_punching_bag\gray.png`; eight other color textures are unrelated optional variants.
 - Format/checksum: animated `.bbmodel` hash `9d63b0d4e9ffec0a33bc02071f3f97e5facfc79dd00a4b682815f8c459eaac7a`; direct JSON `cc7291f83211b86882bcfb3f6241acdfea721e24454a3e571bdd2bbb8346c17f`; gray PNG `c33911195d7c4f83c8cb7bfff6309a6c5f9c1dc9885d4b1b1f777f1a61c44b88`.
-- Import status: `PARTIAL`.
-- Proposed targets: authoritative multiblock root/parts, animated root block entity/renderer, training event service, model/animation/texture resources, registries/localization/loot.
+- Import status: `PLACEHOLDER` — implemented in Milestone 7 with temporary purchased punching-bag art.
+- Final targets: authoritative multiblock root/parts, animated root block entity/renderer, training event service, model/animation/texture resources, registries/localization/loot.
 - Required behavior: Swordsmanship/Mace Fighting/Fencing training to 25.0; axes supported; small Tactics chance; no Wrestling/Anatomy/Lumberjacking; 3-second per-player server cooldown; no weapon durability loss.
-- Dimensions/animation: blueprint bounds x `-10..10`, y `4..48`, z `-7..7` (about 20×44×14 visible voxels), with `hit` animation reported as 5s. It is a punching bag, not a 32×48 training-dummy silhouette.
+- Dimensions/animation: source blueprint bounds x `-10..10`, y `4..48`, z `-7..7` were deterministically transformed to exact 32×48×14 visible bounds. The five-second looping source `hit` animation was retimed to a one-second non-looping server trigger.
 - Collision: 2×3 multiblock occupancy with narrower deliberate strike/collision shapes.
-- Notes/blockers: canonical skill slugs and non-axe weapon mapping remain unresolved. Animation must be retimed or triggered independently from the 3-second cooldown.
-- Owner resolution: all axes map to Swordsmanship. Canonical skill slugs remain unresolved.
+- Notes/blockers: final art and interactive collision/animation review remain open. The working skill slugs require external-service confirmation.
+- Owner resolution: all axes map to Swordsmanship. Milestone 7 maps ordinary Bladed to Swordsmanship, Bashing to Mace Fighting, Polearms/explicit thrusting blades to Fencing, and leaves Throwing unsupported.
 
 ### 5. Fountain
 
@@ -449,7 +449,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Requested asset | Source model | Measured source bounds | Required envelope | Re-authoring required |
 |---|---|---|---|---|
 | Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block with a 32-voxel-high visual | Reduce height by 11 voxels, re-origin, fit the interaction footprint, and migrate away from the separate top block without changing teleport behavior |
-| Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Re-author silhouette/anchors to 2-wide × 3-high, retain/retime the hit animation, and author root/part occupancy separately from visual bounds |
+| Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Completed in Milestone 7: transformed to exact 32×48×14 bounds, retimed to a one-second one-shot hit, and paired with separate atomic 2×3 occupancy/collision |
 | Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Completed in Milestone 5: extended/rebuilt to x `0..16`, y `-16..32`, z `0..16`, rendered from the middle structure cell, with independent double-sided traversal collision |
 | Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Extend/rebuild the frame to 48-voxel height and normalize it to the authoritative 2×3 multiblock root |
 

@@ -276,6 +276,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.LARGE_CRATE_ITEM.get());
                 safeAccept(output, ItemRegistry.WATER_WELL_ITEM.get());
                 safeAccept(output, ItemRegistry.LADDER_ITEM.get());
+                safeAccept(output, ItemRegistry.TRAINING_DUMMY_ITEM.get());
                 safeAccept(output, ItemRegistry.SPITTOON_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_WEAPONS_1_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_1_ITEM.get());

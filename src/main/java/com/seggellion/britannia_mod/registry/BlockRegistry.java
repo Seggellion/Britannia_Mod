@@ -6,6 +6,8 @@ import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
 import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
+import com.seggellion.britannia_mod.block.TrainingDummyBlock;
+import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
@@ -2343,6 +2345,16 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             Block.box(13, 0, 2, 15, 16, 14),
                             Block.box(1, 4, 2, 15, 6, 14),
                             Block.box(1, 12, 2, 15, 14, 14))));
+
+    public static final DeferredHolder<Block, TrainingDummyBlock> TRAINING_DUMMY = BLOCKS.register(
+            "training_dummy", () -> new TrainingDummyBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TrainingDummyBlockEntity>>
+            TRAINING_DUMMY_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+                    "training_dummy", () -> BlockEntityType.Builder.of(
+                            TrainingDummyBlockEntity::new, TRAINING_DUMMY.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

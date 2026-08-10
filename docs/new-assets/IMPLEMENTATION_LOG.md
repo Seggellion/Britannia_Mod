@@ -434,4 +434,40 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 ### Commit status
 
-- Milestone 6 remains uncommitted pending owner review and explicit commit authorization.
+- Owner approval and explicit commit authorization were received.
+- Committed Milestone 6 as `8b8feaf4` (`Add Jhelom ibis variants`).
+
+## Milestone 7 — Training Dummy Skill Trainer
+
+### Scope implemented
+
+- Starting HEAD: `8b8feaf4`.
+- Added `britannia_mod:training_dummy` as one atomic, directional 2-wide × 3-high multiblock with one root block entity and a GeckoLib renderer. Breaking any cell removes the whole structure; sneaking intentionally bypasses training so an owner can dismantle it normally.
+- Added a server-authoritative left-click interceptor. Supported main-hand strikes cancel block/item use before mining durability can be consumed; only the server-side `START` action is accepted, so client repeats, hold packets, offhand activity, and duplicate start/stop sequences cannot grant additional attempts.
+- Added a persistent per-player 60-tick cooldown. An accepted strike plays the synchronized one-shot animation even when its random skill-gain roll does not succeed; cooldown rejections do not replay it.
+- Added an activity-capped `SkillManager.trySkillGainCapped` path so Swordsmanship, Mace Fighting, and Fencing cannot cross 25.0. A small 10% accepted-hit roll attempts ordinary Tactics gain. Wrestling, Anatomy, and Lumberjacking are never referenced by the trainer.
+- Weapon classification uses registered item types and authoritative Blacksmith catalogue categories, never display names. All Axes and ordinary Bladed weapons map to Swordsmanship; Bashing maps to Mace Fighting; Polearms and explicit thrusting blade IDs map to Fencing; Throwing, bows, unsupported items, and empty hands are rejected.
+- The repository does not contain an authoritative combat-skill bootstrap. The isolated working slugs are `swordsmanship`, `mace_fighting`, `fencing`, and `tactics`; these require integration confirmation against the external skill service before release.
+
+### Art, dimensions, and deterministic import
+
+- Added `tools/new-assets/import_milestone7.ps1`; it reads the purchased archive/direct item model without modifying source files.
+- Re-authored the 20×44-voxel punching-bag blueprint to exact visible x/y bounds of 32×48 voxels, retained its 14-voxel depth, and gave it deliberate per-cell collision across the authoritative 2×3 structure.
+- Retimed the source five-second looping `hit` animation to a one-second non-looping `animation.training_dummy.hit` trigger.
+- The gray 128×128 source art remains a `PLACEHOLDER`: it is a punching bag rather than final Ultima-style training-dummy art and must be replaced later.
+
+### Validation performed
+
+- Focused policy/classification/asset tests: PASS.
+- `gradlew.bat build --no-daemon --no-configuration-cache`: PASS; 1,700 tests completed, 17 skipped, zero failures or errors.
+- Dedicated-server GameTests: PASS; all 344 required tests passed. The Milestone 7 test covers one authoritative animation owner, two-player cooldown isolation, repeat rejection, accepted animation count, supported axes/swords, unsupported/unarmed rejection, and unchanged durability.
+- Development-client startup reached completed resource reload with no training-dummy model, blockstate, texture, animation, or renderer warnings/errors. Unrelated pre-existing resource warnings remain elsewhere in the mod.
+
+### Validation still requiring an interactive client/multiplayer session
+
+- Final world scale, pivots, UVs, facing, collision feel, hit animation replay, sound/feedback, item presentation, and sneak-to-dismantle behavior require live review.
+- The exact external skill slugs, real skill persistence/sync, 25.0 boundary, 10% Tactics behavior, dual-wield/offhand behavior, and two-client cooldown/animation synchronization remain on the live checklist.
+
+### Commit status
+
+- Milestone 7 remains uncommitted pending owner review and explicit commit authorization.

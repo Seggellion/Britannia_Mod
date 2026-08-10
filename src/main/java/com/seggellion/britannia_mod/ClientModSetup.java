@@ -46,6 +46,7 @@ import com.seggellion.britannia_mod.block.BlueTentRenderer;
 import com.seggellion.britannia_mod.block.AdaptiveRoofRenderer;
 import com.seggellion.britannia_mod.block.PurpleTentRenderer;
 import com.seggellion.britannia_mod.block.renderer.ArmoireRenderer;
+import com.seggellion.britannia_mod.block.renderer.TrainingDummyRenderer;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 //import com.seggellion.britannia_mod.block.HouseSignRenderer;
@@ -478,6 +479,7 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.TRAINING_DUMMY_BLOCK_ENTITY_TYPE.get(), TrainingDummyRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE.get(), ThreeHeightLightRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);

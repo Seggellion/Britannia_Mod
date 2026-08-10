@@ -195,3 +195,41 @@ The focused automated tests cover the regional policy and asset invariants. The 
 - Persistence/multiplayer result:
 - Screenshots or log path:
 - Accepted placeholder/replacement notes:
+
+## Milestone 7 — Training Dummy Skill Trainer
+
+Automated unit tests, the full build, the dedicated GameTest server, and client resource reload pass. The checks below require an interactive client connected to the real skill service.
+
+- [x] Launch the development client through resource reload and confirm no training-dummy-specific model, blockstate, texture, animation, or renderer warnings/errors are logged. (2026-08-10; unrelated pre-existing warnings remain.)
+
+### Structure and presentation
+
+- [ ] Confirm the temporary `Training Dummy (Temporary Art)` item appears exactly once in the Britannia creative tab and places an atomic 2-wide × 3-high structure in every facing.
+- [ ] Inspect world scale, pivots, UVs, transparency, item presentation, deliberate collision, and reachability of all six cells.
+- [ ] Break each root/child position while sneaking; verify the whole structure is removed with exactly one item and no orphaned cells.
+
+### Skill behavior
+
+- [ ] Confirm the live skill service accepts the working slugs `swordsmanship`, `mace_fighting`, `fencing`, and `tactics`; record any canonical replacements before release.
+- [ ] Strike with every axe class and representative ordinary Bladed items; verify Swordsmanship is the only weapon skill attempted.
+- [ ] Strike with representative Bashing items; verify Mace Fighting is the only weapon skill attempted.
+- [ ] Strike with representative Polearms and explicit thrusting blades (dagger, kryss, assassin spike, leafblade, sai, shortblade, and tekagi families); verify Fencing is the only weapon skill attempted.
+- [ ] Try Throwing weapons, bows, tools, empty hand, offhand-only weapons, and unsupported items; verify no training, cooldown, animation, mining cancellation, or durability change occurs.
+- [ ] Test at 24.9, 25.0, and above 25.0; verify no trained weapon skill can cross or gain above 25.0. Confirm no strike ever trains Wrestling, Anatomy, or Lumberjacking.
+- [ ] Record enough accepted strikes to verify Tactics attempts are occasional (configured 10%), never substituted for the mapped weapon skill, and remain governed by the normal Tactics skill definition.
+
+### Cooldown, animation, and multiplayer
+
+- [ ] Spam left-click, hold attack, swap weapons, alternate root/child cells, and generate START/STOP/ABORT sequences; verify at most one accepted strike per player per 60 ticks and no weapon durability loss.
+- [ ] Confirm every accepted strike replays the one-second hit animation even when the gain roll fails, while rejected cooldown spam does not restart it.
+- [ ] With two clients striking the same dummy, verify cooldowns remain independent and both clients see identical server-triggered animation playback.
+
+### Milestone 7 acceptance record
+
+- Tester/date:
+- Client/dedicated-server result:
+- Skill slug/mapping/cap result:
+- Cooldown/durability/multiplayer result:
+- Art/animation/collision result:
+- Screenshots or log path:
+- Accepted placeholder/replacement notes:

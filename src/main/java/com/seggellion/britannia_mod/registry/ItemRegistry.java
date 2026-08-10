@@ -1957,6 +1957,7 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> LARGE_CRATE_ITEM = ITEMS.register("large_crate", () -> new DecorativeMultiblockItem(BlockRegistry.LARGE_CRATE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> WATER_WELL_ITEM = ITEMS.register("water_well", () -> new DecorativeMultiblockItem(BlockRegistry.WATER_WELL.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LADDER_ITEM = ITEMS.register("ladder", () -> new AdventureLadderItem(BlockRegistry.LADDER.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> TRAINING_DUMMY_ITEM = ITEMS.register("training_dummy", () -> new DecorativeMultiblockItem(BlockRegistry.TRAINING_DUMMY.get(), new Item.Properties()));
 
 
     public static void register(IEventBus modEventBus) {

@@ -1456,5 +1456,6 @@
   "container.britannia_mod.medium_crate": "Medium Crate",
   "container.britannia_mod.large_crate": "Large Crate",
   "block.britannia_mod.water_well": "Water Well (Temporary Art)",
-  "block.britannia_mod.ladder": "Double-Sided Ladder (Temporary Art)"
+  "block.britannia_mod.ladder": "Double-Sided Ladder (Temporary Art)",
+  "block.britannia_mod.training_dummy": "Training Dummy (Temporary Art)"
 }
