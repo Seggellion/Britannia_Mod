@@ -480,6 +480,39 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
         return (ps == null) ? 0f : ps.get(skillName);
     }
 
+    /**
+     * The human-readable name for a skill slug, from the Rails-published definition when one has
+     * been loaded, otherwise a prettified form of the slug itself.
+     *
+     * <p>Guildmaster milestone 2. Added because nothing outside this class could previously read a
+     * skill's display name at all -- {@code SKILL_DEFS} is private and {@code ClientSkillTable}
+     * holds only the viewing player's own values, keyed by slug, with no names. The Guildmaster
+     * spawn-screen readout needs "Animal Lore", not "animal-lore".
+     *
+     * <p>The fallback is load-bearing rather than defensive: {@code SKILL_DEFS} is populated on the
+     * first player login, so a dedicated server that has not yet had one -- or one whose skill
+     * config fetch failed -- would otherwise render every label blank.
+     */
+    public static String displayNameForSlug(String slug) {
+        if (slug == null || slug.isBlank()) return "";
+        SkillDef def = SKILL_DEFS.get(slug.toLowerCase(Locale.ROOT));
+        if (def != null && def.displayName() != null && !def.displayName().isBlank()) {
+            return def.displayName();
+        }
+        StringBuilder pretty = new StringBuilder(slug.length());
+        boolean startOfWord = true;
+        for (char character : slug.toCharArray()) {
+            if (character == '-' || character == '_') {
+                pretty.append(' ');
+                startOfWord = true;
+                continue;
+            }
+            pretty.append(startOfWord ? Character.toUpperCase(character) : character);
+            startOfWord = false;
+        }
+        return pretty.toString();
+    }
+
     public static SkillSnapshot getSkillSnapshot(UUID playerUUID, String skillName) {
         SkillDataState state = PLAYER_SKILL_STATES.getOrDefault(playerUUID, SkillDataState.NOT_LOADED);
         return new SkillSnapshot(state, getSkill(playerUUID, skillName));

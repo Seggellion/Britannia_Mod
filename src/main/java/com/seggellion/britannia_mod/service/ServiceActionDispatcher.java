@@ -2,13 +2,20 @@ package com.seggellion.britannia_mod.service;
 
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.service.banking.BankingProxyService;
+import com.seggellion.britannia_mod.service.guild.GuildmasterProxyService;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Set;
 
 public final class ServiceActionDispatcher {
     private static final String UNAVAILABLE_MESSAGE = "Banking services are not available yet.";
-    private static final Set<String> SUPPORTED_SERVICES = Set.of("bank.open", "bank.create_check");
+    /**
+     * Guildmaster milestone 1. Its own wording, not {@link #UNAVAILABLE_MESSAGE}'s: a player
+     * asking a Warrior Guildmaster for training must never be told banking is unavailable.
+     */
+    private static final String TRAINING_UNAVAILABLE_MESSAGE = "Training services are not available yet.";
+    private static final Set<String> SUPPORTED_SERVICES =
+            Set.of("bank.open", "bank.create_check", "guild.train");
 
     /**
      * Context-free dialogue-menu path. Unchanged by Milestone 7 Slice A: it has no
@@ -39,6 +46,10 @@ public final class ServiceActionDispatcher {
                     ServiceResultCode.SERVICE_NOT_AVAILABLE,
                     UNAVAILABLE_MESSAGE
             );
+            case "guild.train" -> new ServiceActionResult(
+                    ServiceResultCode.SERVICE_NOT_AVAILABLE,
+                    TRAINING_UNAVAILABLE_MESSAGE
+            );
             default -> throw new IllegalStateException("Closed dispatcher accepted an unknown service");
         };
     }
@@ -54,5 +65,16 @@ public final class ServiceActionDispatcher {
      */
     public static void dispatchBankOpen(ServerPlayer player, ServiceNpcEntity entity) {
         BankingProxyService.handle(player, entity);
+    }
+
+    /**
+     * The live-context {@code guild.train} path, added in Guildmaster milestone 3 as the exact
+     * counterpart of {@link #dispatchBankOpen}: reached from
+     * {@link ServiceNpcEntity#interactAt}, which already runs on the logical server with a real
+     * player and entity to revalidate against. Scoped to {@code guild.train} only; no other
+     * service key is affected, and the banking path above is untouched.
+     */
+    public static void dispatchGuildTrain(ServerPlayer player, ServiceNpcEntity entity) {
+        GuildmasterProxyService.handle(player, entity);
     }
 }

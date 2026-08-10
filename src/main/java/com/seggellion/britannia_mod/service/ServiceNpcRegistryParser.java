@@ -18,7 +18,31 @@ public final class ServiceNpcRegistryParser {
     private static final Pattern DEFINITION_KEY = Pattern.compile("[a-z][a-z0-9]*(?:_[a-z0-9]+)*");
     private static final Pattern SERVICE_KEY = Pattern.compile("[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*");
     private static final Pattern ENTITY_TYPE_KEY = Pattern.compile("[a-z0-9_.-]+:[a-z0-9_./-]+");
-    private static final Set<String> SUPPORTED_SERVICE_KEYS = Set.of("bank.open", "bank.create_check");
+    private static final Set<String> SUPPORTED_SERVICE_KEYS =
+            Set.of("bank.open", "bank.create_check", "guild.train");
+    /**
+     * Guildmaster milestone 1. A {@code skills.slug} as Rails' friendly_id actually produces
+     * one: {@code parameterize} lowercases and joins words with {@code -}, so "Animal Taming"
+     * becomes {@code animal-taming}. Underscores are accepted too because {@code slug} is a
+     * plain string column an admin can also set by hand. Deliberately NOT
+     * {@link #DEFINITION_KEY}: that pattern rejects hyphens, and reusing it here would make
+     * every multi-word skill unpublishable.
+     */
+    private static final Pattern SKILL_SLUG = Pattern.compile("[a-z0-9]+(?:[-_][a-z0-9]+)*");
+    private static final String GUILD_TRAIN_SERVICE_KEY = "guild.train";
+    /** Bounded like every other parsed collection here; RunUO's largest guild teaches eleven. */
+    private static final int MAX_TAUGHT_SKILLS = 64;
+    private static final int MAX_SKILL_SLUG_LENGTH = 64;
+    /**
+     * A plain commodity name as Rails' {@code CityStaffing::EconomicEligibility::SUPPLY_COLUMNS}
+     * keys them ({@code food}, {@code silver}, {@code alcohol}, …) — deliberately not the
+     * {@code *_supply} column names, and deliberately not validated against a hardcoded list here:
+     * Rails already validates the key set at save time, and duplicating that list in the mod would
+     * make adding a commodity a two-repo change for no safety gain.
+     */
+    private static final Pattern SUPPLY_KEY = Pattern.compile("[a-z][a-z0-9_]*");
+    /** Comfortably above the eleven real city supply columns. */
+    private static final int MAX_SUPPLY_REQUIREMENTS = 32;
     private static final List<String> INTERPOLATION_TOKENS = List.of(
             "%{city_name}",
             "%{npc_name}",
@@ -230,6 +254,17 @@ public final class ServiceNpcRegistryParser {
                 throw invalid("Service NPC type " + key + " does not allow dialogue services " + usedServices);
             }
 
+            List<String> taughtSkillSlugs = parseTaughtSkillSlugs(value, key);
+            boolean teaches = uniqueAllowedServices.contains(GUILD_TRAIN_SERVICE_KEY);
+            if (teaches && taughtSkillSlugs.isEmpty()) {
+                throw invalid("Service NPC type " + key + " allows " + GUILD_TRAIN_SERVICE_KEY
+                        + " but teaches no skills");
+            }
+            if (!teaches && !taughtSkillSlugs.isEmpty()) {
+                throw invalid("Service NPC type " + key + " declares taught skills without allowing "
+                        + GUILD_TRAIN_SERVICE_KEY);
+            }
+
             ServiceNpcTypeDefinition npcType = new ServiceNpcTypeDefinition(
                     key,
                     requiredString(value, "display_name"),
@@ -237,6 +272,8 @@ public final class ServiceNpcRegistryParser {
                     entityTypeKey,
                     defaultDialogueKey,
                     allowedServiceKeys,
+                    taughtSkillSlugs,
+                    parseMinimumCitySupplies(value, key),
                     requiredBoolean(value, "active"),
                     requiredBoolean(value, "spawnable"),
                     positiveRevision(value)
@@ -246,6 +283,86 @@ public final class ServiceNpcRegistryParser {
             }
         }
         return npcTypes;
+    }
+
+    /**
+     * The optional {@code taught_skill_slugs} member. Absent or JSON null becomes the empty
+     * list so a Rails build that predates the Guildmaster milestone still parses cleanly —
+     * this member must never become required, or the mod would stop accepting an older
+     * server's registry entirely (and take {@code bank_teller} down with it, since a rejected
+     * registry falls back to the empty snapshot wholesale).
+     */
+    private static List<String> parseTaughtSkillSlugs(JsonObject value, String typeKey) {
+        JsonElement element = value.get("taught_skill_slugs");
+        if (element == null || element.isJsonNull()) {
+            return List.of();
+        }
+        if (!element.isJsonArray()) {
+            throw invalid("Service NPC type " + typeKey + " taught_skill_slugs must be an array");
+        }
+
+        JsonArray values = element.getAsJsonArray();
+        if (values.size() > MAX_TAUGHT_SKILLS) {
+            throw invalid("Service NPC type " + typeKey + " teaches too many skills");
+        }
+
+        List<String> slugs = new ArrayList<>();
+        Set<String> unique = new HashSet<>();
+        for (JsonElement entry : values) {
+            String slug = requiredString(entry, "Service NPC type " + typeKey + " taught skill");
+            if (slug.length() > MAX_SKILL_SLUG_LENGTH || !SKILL_SLUG.matcher(slug).matches()) {
+                throw invalid("Service NPC type " + typeKey + " has an invalid taught skill slug " + slug);
+            }
+            if (!unique.add(slug)) {
+                throw invalid("Service NPC type " + typeKey + " has duplicate taught skill " + slug);
+            }
+            slugs.add(slug);
+        }
+        return slugs;
+    }
+
+    /**
+     * The optional {@code minimum_city_supplies} member: minimum city commodity levels Rails
+     * requires before it will staff this type. Optional for the same reason
+     * {@code taught_skill_slugs} is — an older Rails server omits it, and requiring it would
+     * reject the entire registry and take bank tellers down.
+     *
+     * <p>Values are read as {@code double} rather than the integer discipline used elsewhere in
+     * this parser: the underlying {@code cities.*_supply} columns are Postgres floats, and
+     * rounding a threshold here would silently disagree with the Rails-side check this readout
+     * exists to mirror.
+     */
+    private static Map<String, Double> parseMinimumCitySupplies(JsonObject value, String typeKey) {
+        JsonElement element = value.get("minimum_city_supplies");
+        if (element == null || element.isJsonNull()) {
+            return Map.of();
+        }
+        if (!element.isJsonObject()) {
+            throw invalid("Service NPC type " + typeKey + " minimum_city_supplies must be an object");
+        }
+
+        JsonObject supplies = element.getAsJsonObject();
+        if (supplies.size() > MAX_SUPPLY_REQUIREMENTS) {
+            throw invalid("Service NPC type " + typeKey + " has too many supply requirements");
+        }
+
+        Map<String, Double> minimums = new LinkedHashMap<>();
+        for (String supply : supplies.keySet()) {
+            if (!SUPPLY_KEY.matcher(supply).matches()) {
+                throw invalid("Service NPC type " + typeKey + " has an invalid supply key " + supply);
+            }
+            JsonElement raw = supplies.get(supply);
+            if (raw == null || !raw.isJsonPrimitive() || !raw.getAsJsonPrimitive().isNumber()) {
+                throw invalid("Service NPC type " + typeKey + " supply " + supply + " must be a number");
+            }
+            double minimum = raw.getAsDouble();
+            if (!Double.isFinite(minimum) || minimum < 0.0D) {
+                throw invalid("Service NPC type " + typeKey + " supply " + supply
+                        + " must be a non-negative finite number");
+            }
+            minimums.put(supply, minimum);
+        }
+        return minimums;
     }
 
     private static long positiveRevision(JsonObject value) {

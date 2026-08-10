@@ -1,10 +1,13 @@
 package com.seggellion.britannia_mod.entity;
 
 import com.seggellion.britannia_mod.service.ServiceActionDispatcher;
+import com.seggellion.britannia_mod.service.ServiceNpcDisplayName;
 import com.seggellion.britannia_mod.service.banking.BankingCapability;
+import com.seggellion.britannia_mod.service.guild.GuildmasterCapability;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -65,9 +68,44 @@ public class ServiceNpcEntity extends CitizenEntity {
         super(type, level);
     }
 
+    /**
+     * The published role for this NPC's live service type, falling back to the generic label.
+     * Only Guildmasters currently publish one (see {@link GuildmasterCapability#roleTitle}), so a
+     * bank teller still reports {@code "Service NPC"} exactly as before.
+     *
+     * <p>Nothing reads this hook for this class today — {@link #updateDisplayName()} deliberately
+     * queries {@link GuildmasterCapability} directly rather than calling it, because it needs to
+     * distinguish "has a published role" from "fell back to the generic label", which a plain
+     * {@code String} return cannot express. Kept in sync anyway so the inherited
+     * {@code CitizenEntity} hook never reports something false about a Guildmaster.
+     */
     @Override
     protected String getRoleTitle() {
-        return "Service NPC";
+        return GuildmasterCapability.roleTitle(this.serviceNpcTypeKey).orElse("Service NPC");
+    }
+
+    /**
+     * Renders {@code "Marcus the Warrior Guildmaster"} for a Guildmaster, and defers to
+     * {@link CitizenEntity#updateDisplayName()} — personal name alone — for every other Service
+     * NPC. Deliberately narrow: applying the combined form to all Service NPCs would rename every
+     * existing bank teller in the world, which this milestone has no mandate to do.
+     *
+     * <p>Both halves come from server-owned state ({@code personalName} from the Rails World NPC
+     * record, the role from the server-side registry cache), and the result lands in vanilla's
+     * synchronized custom-name field — so the client renders the full title without needing the
+     * registry, and without a new synced field for the service type key.
+     */
+    @Override
+    protected void updateDisplayName() {
+        String roleTitle = GuildmasterCapability.roleTitle(this.serviceNpcTypeKey).orElse(null);
+        if (roleTitle == null) {
+            super.updateDisplayName();
+            return;
+        }
+        this.setCustomName(Component
+                .literal(ServiceNpcDisplayName.combine(this.getPersonalName(), roleTitle))
+                .withStyle(UO_STYLE));
+        this.setCustomNameVisible(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -143,10 +181,21 @@ public class ServiceNpcEntity extends CitizenEntity {
     @Override
     public InteractionResult interactAt(Player player, Vec3 hit, InteractionHand hand) {
         if (hand == InteractionHand.MAIN_HAND && !level().isClientSide
-                && player instanceof ServerPlayer serverPlayer
-                && BankingCapability.supportsBankOpen(this.getServiceNpcTypeKey())) {
-            ServiceActionDispatcher.dispatchBankOpen(serverPlayer, this);
-            return InteractionResult.sidedSuccess(false);
+                && player instanceof ServerPlayer serverPlayer) {
+            String typeKey = this.getServiceNpcTypeKey();
+            // Guildmaster milestone 3. Ordered, not exclusive: a type is checked for banking first
+            // so an existing bank teller reaches exactly the same branch it always did, byte for
+            // byte. Nothing in the seeded data grants both capabilities, and if some future type
+            // ever did, banking winning is the safe answer -- it is the flow with a Rails-side
+            // session behind it.
+            if (BankingCapability.supportsBankOpen(typeKey)) {
+                ServiceActionDispatcher.dispatchBankOpen(serverPlayer, this);
+                return InteractionResult.sidedSuccess(false);
+            }
+            if (GuildmasterCapability.supportsGuildTrain(typeKey)) {
+                ServiceActionDispatcher.dispatchGuildTrain(serverPlayer, this);
+                return InteractionResult.sidedSuccess(false);
+            }
         }
         return super.interactAt(player, hit, hand);
     }
@@ -197,8 +246,17 @@ public class ServiceNpcEntity extends CitizenEntity {
         return serviceNpcTypeKey;
     }
 
+    /**
+     * Refreshes the nameplate, because the role title is derived from this value and it always
+     * arrives <em>after</em> the personal name that {@code CitizenEntity.setPersonalName()}
+     * already rendered. {@code ServiceNpcAssignmentReconciler.applyAssignmentData} sets the
+     * personal name first and the type key four lines later; without this, a freshly reconciled
+     * Guildmaster would render as a bare personal name until something else happened to touch
+     * the name again.
+     */
     public void setServiceNpcTypeKey(@Nullable String serviceNpcTypeKey) {
         this.serviceNpcTypeKey = serviceNpcTypeKey;
+        updateDisplayName();
     }
 
     public long getDefinitionRevision() {
@@ -248,5 +306,10 @@ public class ServiceNpcEntity extends CitizenEntity {
                 ? tag.getInt("HomePostRadius")
                 : DEFAULT_HOME_RESTRICTION_RADIUS;
         NbtUtils.readBlockPos(tag, "HomePost").ifPresent(pos -> assignHomePost(pos, homePostRadius));
+        // super.readAdditionalSaveData already rendered the nameplate from the personal name
+        // alone, before ServiceNpcTypeKey above was assigned to the field directly (not through
+        // the setter). Re-render now that the role is known, so a Guildmaster keeps its title
+        // across a chunk reload or server restart rather than reverting to a bare name.
+        updateDisplayName();
     }
 }

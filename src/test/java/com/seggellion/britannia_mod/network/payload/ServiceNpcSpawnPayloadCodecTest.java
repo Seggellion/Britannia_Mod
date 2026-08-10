@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.network.payload;
 
+import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnEligibility;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnRegistrationState;
 import com.seggellion.britannia_mod.service.spawn.ServiceNpcSpawnValidationError;
 import io.netty.buffer.Unpooled;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ServiceNpcSpawnPayloadCodecTest {
@@ -60,12 +62,28 @@ class ServiceNpcSpawnPayloadCodecTest {
                 assignedNpcId,
                 "Geoffrey",
                 2L,
-                123456789L
+                123456789L,
+                // Guildmaster milestone 2. Deliberately no defaulting constructor overload on this
+                // record, unlike the domain records: a wire payload that silently fills in fields
+                // is how an encode/decode pair drifts out of sync without a test noticing.
+                List.of("Swordsmanship", "Tactics"),
+                ServiceNpcSpawnEligibility.Status.BELOW_MINIMUM,
+                List.of(
+                        new ServiceNpcSpawnStateS2CPayload.SupplyLine("food", 200.0, 143.5, true),
+                        // measured=false is the UNKNOWN case, and has to survive the round trip
+                        // distinguishably from a real zero.
+                        new ServiceNpcSpawnStateS2CPayload.SupplyLine("silver", 5.0, 0.0, false)
+                )
         );
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
 
         ServiceNpcSpawnStateS2CPayload.STREAM_CODEC.encode(buffer, payload);
 
-        assertEquals(payload, ServiceNpcSpawnStateS2CPayload.STREAM_CODEC.decode(buffer));
+        ServiceNpcSpawnStateS2CPayload decoded = ServiceNpcSpawnStateS2CPayload.STREAM_CODEC.decode(buffer);
+        assertEquals(payload, decoded);
+        assertEquals(List.of("Swordsmanship", "Tactics"), decoded.taughtSkillLabels());
+        assertEquals(ServiceNpcSpawnEligibility.Status.BELOW_MINIMUM, decoded.eligibilityStatus());
+        assertFalse(decoded.supplyRequirements().get(0).satisfied(), "143.5 does not meet 200");
+        assertFalse(decoded.supplyRequirements().get(1).measured(), "an unmeasured supply must stay unmeasured");
     }
 }
