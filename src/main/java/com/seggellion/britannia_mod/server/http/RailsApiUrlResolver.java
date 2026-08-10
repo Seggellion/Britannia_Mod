@@ -206,6 +206,12 @@ public final class RailsApiUrlResolver {
         PLAYER_SKILLS("player_skills", "uuid", "username", "shard"),
         SKILL_GAIN("skills/gain"),
         SKILL_SET("skills/set"),
+        /**
+         * Guildmaster training. Its own operation rather than another {@code skills/*} action
+         * because a purchase writes a skill, credits a city treasury and records a ledger row as
+         * one transaction — see {@code GuildTraining::Purchase}.
+         */
+        GUILD_TRAINING("guild_training"),
         BLESSED_ITEMS("blessed_items", "minecraft_uuid"),
         ORE_VEINS("ore_veins", "shard"),
         SHARD_USER_ADJUST_STATS("shard_users/:user_id/adjust_stats"),
