@@ -457,5 +457,33 @@ Minecraft: compileJava BUILD SUCCESSFUL; runGameTestServer --rerun-tasks
 ```
 
 ### Stopped
-Milestone 7 complete. Milestone 8 (commodity and recipe eligibility engine) not started,
+Milestone 7 complete.
+
+## 2026-08-11 — Milestone 8: Commodity and recipe eligibility engine
+
+Owner approved resuming ("i approve"). Rails-only, commit `9583763`.
+
+`EconomicCatalog::ProductAvailability` is now THE single explainable listing/stock/price
+decision (playbook §9): the vendor catalog delegates every row to it (batch plumbing: one
+eligibility evaluation + one commodity index), and the Milestone 14 retail transaction will
+re-validate purchases through the same service. New over Milestone 7: the NPC activation
+decision is an input (ineligible Vendor lists nothing, nested reasons preserved under
+`npc_not_eligible`), and available units are capped at the RunUO 999 maximum-stock tier
+(reconstruction design §15/§23 — the project's documented stock-cap precedent). Mandatory
+listing rule stays fail-closed; the acceptance round-trip (commodity absent → delisted;
+restored → relisted) is covered, including catalog/decision parity for purchase-time callers.
+
+Validation:
+```text
+bash bin/codex_test <availability + catalog suites> → 11 runs, 47 assertions, 0 failures
+bash bin/codex_test <all four M5–M8 economy suites> → 23 runs, 116 assertions, 0 failures
+bash bin/codex_test (full) → 1405 runs, 0 errors; failure count varies 1–4 per run,
+  ALL from the pre-existing set: the deterministic CityFoodSupplyRecalculator baseline plus
+  the known non-transactional cheque-leak flake family (bank_cheques file passes 13/13 in
+  isolation). Correction to the 9583763 commit message, which cited the single-failure run:
+  the accurate statement is 0 errors with only pre-existing/flaky failures.
+```
+
+### Stopped
+Milestone 8 complete. Milestone 9 (city provenance on Vendor/Trader products) not started,
 per stop rule.
