@@ -1,5 +1,5 @@
 {
-  "credit": "Proposed perpendicular medium-family planar geometry derived from the authoritative 128 x 128 alpha bounds for britannia_mod:banner/medium/iron_quarter/geometry",
+  "credit": "Seggellion from Ultimacraft.com",
   "parent": "minecraft:block/block",
   "render_type": "minecraft:translucent",
   "textures": {

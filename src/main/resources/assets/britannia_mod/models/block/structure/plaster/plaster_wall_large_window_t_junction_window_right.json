@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.11",
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft.com",
 	"parent": "minecraft:block/block",
 	"render_type": "minecraft:cutout",
 	"ambientocclusion": false,
