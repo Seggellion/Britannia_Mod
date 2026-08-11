@@ -599,6 +599,45 @@ bridge); jewelry carrier exists. Genuine gaps: ranged/bowyer family and leather/
 tailor family have neither items nor carriers — recorded as implementation gaps for their
 Milestone 17 families.
 
+## Owner approvals recorded (2026-08-10, "I approve" on the cleanup-pass summary)
+
+- **OQ-1**: Option A repair approved and EXECUTED (record below).
+- **OQ-3**: the five proposed trader types approved as proposed (reagent, provision, textile,
+  glass, scribe). The glass+scribe→reagent consolidation option remains available until the
+  first new-trader implementation begins — flag then if preferred.
+- **OQ-4**: class-based payout denomination policy ratified (raw→Copper,
+  processed/provisions/tools/textiles/finished→Silver, jewelry/gems and ≥500 GP→Gold).
+- **OQ-7**: mobile-fulfillment concept approved (Rails-authoritative offer/denomination/
+  treasury; entity fulfillment with receipt-guarded idempotency).
+- **OQ-8**: vendor merge table approved as recommended (matrix §8).
+- Milestone 3 authorized and completed (Rails commit `15bf968`).
+
+**Still genuinely open (small):** (a) magic/alchemy consumable items yes/no; (b) deed-economy
+mapping; (c) `Hammer` disambiguation (3 rows); (d) confirmation of the seeded nine-metal rank
+order (iron 1 … valorite 9 — admin-editable data, defaults live).
+
+## OQ-1 RESOLVED (2026-08-10) — repair record per checklist
+
+```text
+Databases: ultimacraft_test plus ultimacraft_test-0 … ultimacraft_test-15 (17 total)
+Previous owner: ultimacraft (superuser)   New owner: ultimacraft_codex_test
+Test role: ultimacraft_codex_test (peer auth via Unix socket, per docs/local_test_database.md)
+Repair commands (approved Option A):
+  DROP DATABASE IF EXISTS "<each test db>";   -- as ultimacraft, TCP
+  bash bin/setup_test_database                -- recreated ultimacraft_test owned by codex role
+  (parallel worker DBs recreated automatically from db/schema.rb on the next suite run;
+   one extra step was needed after the Milestone 3 migrations: bin/rails db:schema:dump in the
+   test env, because config/environments/test.rb sets dump_schema_after_migration = false)
+bin/codex_test result (baseline, pre-Milestone-3): 1340 runs, 6338 assertions, 1 failure —
+  Economy::CityFoodSupplyRecalculatorTest (expected 100.0, actual 99.7), deterministic,
+  pre-existing at banking @ 35653f5.
+bin/codex_test result (post-Milestone-3): 1369 runs, 6435 assertions, 0 errors, 1 failure —
+  the same pre-existing recalculator failure. One order-dependent flake observed once
+  (Admin::BankChequesControllerTest in-limbo aggregate, leaked 500-copper cheque from another
+  test); passes in isolation and on reruns — known non-transactional-leak class.
+Development database untouched throughout.
+```
+
 ## OQ-1 status note (2026-08-10, diagnosis complete — awaiting repair approval)
 
 Full diagnosis performed (read-only; no ownership, grants, or data changed):

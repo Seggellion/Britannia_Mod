@@ -138,10 +138,24 @@ Date: 2026-08-10.
   missing). Re-bucketed retail-row statuses and the class-based payout policy are recorded in
   RUNUO_VENDOR_MATRIX.md §3–§4.
 - **OQ-1 diagnosis facts (2026-08-10):** `ultimacraft` is a superuser role reachable via local
-  TCP password auth; all 18 `ultimacraft_*` databases and all 91 `ultimacraft_test` tables are
-  owned by `ultimacraft`; `ultimacraft_codex_test` has schema USAGE but no table privileges
-  and no default ACLs. Purely a local ownership problem; repair options documented in
-  OPEN_QUESTIONS (awaiting owner approval; nothing changed).
+  TCP password auth; all 18 `ultimacraft_*` databases and all 91 `ultimacraft_test` tables were
+  owned by `ultimacraft`; `ultimacraft_codex_test` had schema USAGE but no table privileges
+  and no default ACLs. Purely a local ownership problem.
+- **OQ-1 REPAIRED (2026-08-10, owner-approved Option A):** 17 test DBs dropped and recreated
+  via `bin/setup_test_database`; `ultimacraft_test` now owned by `ultimacraft_codex_test`;
+  canonical test flow works again. Rails baseline at `banking`@35653f5: 1340 runs, **1
+  deterministic pre-existing failure** (`Economy::CityFoodSupplyRecalculatorTest`, expected
+  100.0 actual 99.7) plus one known order-dependent flake class (non-transactional leak into
+  `Admin::BankChequesControllerTest`; passes isolated). Environment note: the test env sets
+  `dump_schema_after_migration = false`, so after running new migrations `bin/rails
+  db:schema:dump` (test env) is required or the parallel worker DBs stay on the old schema.
+- **Milestone 3 landed (Rails `15bf968`):** canonical currency ladder corrected in data +
+  fallbacks; `economic_npc_types`, `shard_npc_type_policies` (polymorphic over both NPC
+  specializations), typed requirement rules + evaluator, `EconomicNpcs::Eligibility` domain
+  API; `city_commodities` gained `npc_buy_enabled`/`npc_sell_enabled`/`production_enabled`
+  (default true, not yet consumed) and `form` (backfilled by convention);
+  `material_definitions` + nine-metal seed (default ranks iron 1 … valorite 9, owner-editable).
+  Post-change full suite: 1369 runs, 0 errors, 1 pre-existing failure.
 
 ## 5. Test inventory relevant to this project (for when the test DB is repaired)
 - Rails: `test/controllers/api/trader_transactions_controller_test.rb`, `merchant_transactions_controller_test.rb`, `transactions_legacy_purchase_idempotency_test.rb`, `city_commodities_controller_test.rb`, `npcs_controller_test.rb`, `service_npc_spawn_operations_controller_test.rb`, `world_bootstrap_*`, `world_state_changes_controller_test.rb`, `test/services/city_staffing/*`, plus banking auth/concurrency suites.

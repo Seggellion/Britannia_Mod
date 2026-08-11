@@ -228,3 +228,49 @@ Milestone 2 complete pending owner review of OQ-3…OQ-9. Milestone 3 not starte
   carriers.
 - Regenerated + revalidated the mapping (`parse_runuo_vendors.py` → 74/84/1015/915;
   `validate_mapping.py` → OK, all invariants hold). Milestone 3 still not started.
+
+## 2026-08-10 — OQ-1 repair (owner-approved Option A) + Milestone 3
+
+### OQ-1 repair executed
+Dropped the 17 `ultimacraft_test*` databases as the `ultimacraft` role, recreated via
+`bash bin/setup_test_database` (now owned by `ultimacraft_codex_test`), verified ownership by
+query. Full record in OPEN_QUESTIONS "OQ-1 RESOLVED". Development DB untouched.
+Baseline re-established: **1340 runs, 1 pre-existing failure** (CityFoodSupplyRecalculator,
+deterministic — reran twice in isolation, fails both times; not repaired, unrelated).
+
+### Milestone 3 — Rails economic NPC domain contract + canonical currency correction
+Commit `15bf968` on Rails `feature/vendor-trader-economy` (27 files, +1333/−161). Contents:
+- Currency: `CANONICAL_BASE_VALUES` (1/100/10,000), data migration correcting existing
+  copper/silver/gold rows (dev rows were live at 1/10/100), canonical fallbacks replacing the
+  obsolete literals in `SaleTransactionProcessor#currency_breakdown` and the legacy
+  wine/salvage controller branch.
+- `EconomicNpcType` (kind vendor|trader; mirrors ServiceNpcType constraints; typed
+  `default_requirements`), `ShardNpcTypePolicy` (polymorphic over BOTH specializations —
+  owner decision #2; replace-not-merge requirements; raw/processed multipliers),
+  `NpcRequirements::RuleSet`/`Evaluate` (closed typed rules, fail-closed against the shared
+  supply map, machine-readable reasons), `EconomicNpcs::EffectivePolicy`/`Eligibility`
+  (admin-neutral domain API; revision = max(type, policy)).
+- `city_commodities`: `npc_buy_enabled`/`npc_sell_enabled`/`production_enabled` (default true,
+  inert until the eligibility engine consumes them) + `form` raw/processed/finished/other with
+  convention backfill (owner decisions #8/#9).
+- `MaterialDefinition` + nine-metal seed (`db:seed:material_definitions`, iron rank 1 …
+  valorite rank 9 — DEFAULT ladder awaiting owner confirmation, admin-editable).
+- 29 new tests incl. the canonical magery example evaluated per shard.
+
+### Validation actually run
+```text
+bash bin/setup_test_database                    → Test database is ready (codex-owned)
+bin/rails db:schema:dump (test env)             → schema.rb updated (test env disables
+                                                  dump_schema_after_migration; worker DBs
+                                                  rebuild from schema.rb — 58 UndefinedTable
+                                                  errors before the dump, 0 after)
+bash bin/codex_test <6 new files>               → 29 runs, 87 assertions, 0 failures, 0 errors
+bash bin/codex_test (full, post-change)         → 1369 runs, 6435 assertions, 0 errors,
+                                                  1 failure (pre-existing recalculator);
+                                                  one order-dependent cheque flake observed
+                                                  once, passes isolated and on rerun
+```
+
+### Scope discipline
+Not started: Shard Admin UI (Milestone 4), spawn-post convergence (M5+), catalogs/Products
+evolution, transaction APIs, staffing automation. Stopped after Milestone 3 for owner review.
