@@ -382,5 +382,43 @@ cache recreation test), and recreate the correct registry-named entity without i
 duplication (post UUID ≠ WorldNpc id ≠ entity UUID asserted). Legacy blocks untouched.
 
 ### Stopped
-Milestone 5 complete. Milestone 6 (economic NPC bootstrap/assignment projection driven by
-Rails activation decisions) not started, per stop rule.
+Milestone 5 complete.
+
+## 2026-08-11 — Milestone 6: Economic NPC bootstrap and assignment projection
+
+Owner approved resuming ("i approve"). Rails-only milestone (commit `5d425ed`) — the
+Milestone 5 architecture already projects assignments into Minecraft, which is the point:
+activation is decided entirely in Rails and reaches the mod through existing plumbing.
+
+- `EconomicStaffing::Reconcile` (city row lock + in-transaction audit, mirroring
+  `CityStaffing::Reconcile`): per economic type, evaluates `EconomicNpcs::Eligibility`;
+  eligible → fills every enabled, registered economic post, preferring an existing active,
+  unassigned World NPC of the profession (service-typed World NPCs excluded) before minting
+  via `WorldNpcs::Create`; ineligible → closes assignments with the machine-readable
+  eligibility reasons in the audit change rows, never deleting/retiring World NPC identity.
+  Milestone 6 population policy is one-NPC-per-eligible-post; formula/hysteresis/scheduling
+  stay in Milestone 15 as planned.
+- `EconomicStaffingReconciliationJob` + `Admin::EconomicStaffingReconciliationsController`
+  (perform_later-from-admin-action, the app's established shape); per-city "Reconcile
+  staffing" button on the eligibility preview page.
+- `EconomicNpcRegistrySerializer` gains an optional shard scope: the per-shard bootstrap now
+  publishes `shard_enabled`, `policy_revision`, and `effective_revision` per type (playbook's
+  "economic eligibility revision" metadata). The NeoForge parser reads a closed member set,
+  so the additions are wire-compatible with the Milestone 5 client unchanged.
+
+### Validation actually run
+```text
+bash bin/codex_test test/services/economic_staffing_reconcile_test.rb
+  → 6 runs, 37 assertions, 0 failures, 0 errors
+  (acceptance: a shard policy edit alone deactivates and reactivates the NPC assignment
+   through authoritative state, publishing world-state changes; the SAME World NPC is
+   reused on reactivation; audit rows carry the applied changes)
+bash bin/codex_test (full) → 1394 runs, 6551 assertions, 0 errors, 1 failure
+  (the deterministic pre-existing CityFoodSupplyRecalculator baseline only)
+Minecraft: no changes this milestone — the M5 GameTest suite (352/352 passed) already
+  covers assignment projection/withdrawal, which is the Java half of this acceptance.
+```
+
+### Stopped
+Milestone 6 complete. Milestone 7 (generic Vendor definition and sell-to-player catalog)
+not started, per stop rule.
