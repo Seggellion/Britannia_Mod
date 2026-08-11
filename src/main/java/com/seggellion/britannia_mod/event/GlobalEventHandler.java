@@ -37,6 +37,12 @@ public class GlobalEventHandler {
         if (stack.isEmpty()) {
             return;
         }
+        String originCity = com.seggellion.britannia_mod.item.CityProvenanceItemData.cityName(stack);
+        if (originCity != null) {
+            event.getToolTip().add(net.minecraft.network.chat.Component
+                    .literal("Origin: " + originCity)
+                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+        }
         if (stack.getItem() instanceof WeightedCommodityItem || stack.getItem() instanceof GrapesItem) {
             return;
         }

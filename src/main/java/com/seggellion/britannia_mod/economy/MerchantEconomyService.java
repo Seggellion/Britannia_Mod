@@ -109,7 +109,7 @@ public final class MerchantEconomyService {
                                     return;
                                 }
 
-                                grantProducts(player, prepared.entries());
+                                grantProducts(player, prepared.entries(), merchant);
                                 player.sendSystemMessage(Component.literal("Purchase complete: " + prepared.totalCopper() + " copper."));
                                 TransactionSuccessS2CPayload.send(player);
                             }));
@@ -279,7 +279,8 @@ public final class MerchantEconomyService {
         }
     }
 
-    private static void grantProducts(ServerPlayer player, List<PurchasedEntry> entries) {
+    private static void grantProducts(ServerPlayer player, List<PurchasedEntry> entries,
+                                      AbstractEconomyMerchantEntity merchant) {
         for (PurchasedEntry entry : entries) {
             Product product = entry.entry().product();
             ItemStack template = product.stack();
@@ -295,6 +296,9 @@ public final class MerchantEconomyService {
                 if (!WeightedCommodityItem.hasWeight(stack)) {
                     WeightedCommodityItem.setWeight(stack, generatedOutputWeight(player, entry.entry()));
                 }
+                // Vendor/Trader Milestone 9: server-side origin-city provenance
+                // from the reconciler-stamped authoritative assignment city.
+                com.seggellion.britannia_mod.item.CityProvenanceItemData.applyFromVendor(stack, merchant);
                 if (!player.getInventory().add(stack)) {
                     player.drop(stack, false);
                 }
