@@ -584,5 +584,31 @@ the app's documented non-transactional test classes; scoping or cleanup support 
 de-flake it.
 
 ### Stopped
-Milestone 12 complete. Milestone 13 (recipe-valued weapons and metal goods) not started,
-per stop rule.
+Milestone 12 complete.
+
+## 2026-08-11 — Milestone 13: Recipe-valued weapons and metal goods
+
+Owner approved resuming. Rails `9ff24cb`; Minecraft passthrough commit.
+
+Products declare variable-material requirements ({material_family, quantity});
+`ProductAvailability` selects the HIGHEST enabled material from MaterialDefinition rank
+data whose metal/ingot commodity exists, is production-enabled, priced, and supplied --
+walking down the ladder on shortfall and failing closed (no_eligible_material /
+missing_baseline_material / no_material_rank_data). Retail price = Product baseline (RunUO
+Iron anchor) + material delta converted into the Product denomination (provisional nearest
+rounding, ECONOMY_RULES section 2); quality = Fine (owner tier); rows carry
+selected_material/quality, passed through the Minecraft catalog custom data for the
+Milestone 17 item construction. Guard fix caught by tests: material-only products are not
+"without production requirements".
+
+Acceptance proven: price tracks the city material market with no Java constants; supply
+fallback walks the rank ladder to iron and fails closed past it; disabled rank rows are
+skipped; recipe-quantity changes change the valuation.
+
+Validation: focused 15 runs/67 assertions/0 failures (M13 + M7/M8 regression); full suite
+1420 runs/0 errors (pre-existing recalculator + one known flake this run); compileJava
+BUILD SUCCESSFUL.
+
+### Stopped
+Milestone 13 complete. Milestone 14 (Vendor retail transactions and city production
+consumption) not started, per stop rule.
