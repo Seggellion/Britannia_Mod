@@ -649,5 +649,52 @@ route + controller boot verified via rails runner/routes; GameTests 359/359 (354
 existing + 5 new exact-denomination settlement tests); compileJava BUILD SUCCESSFUL.
 
 ### Stopped
-Milestone 14 complete. Milestone 15 (Rails-driven activation and population) not
-started, per stop rule.
+Milestone 14 complete.
+
+## 2026-08-11 — Owner decision pass (pre-Milestone-15)
+
+All remaining owner decisions resolved and applied (MC `c9057709`): magic/alchemy
+consumables DEFERRED (60 rows UNSUPPORTED_PENDING_MAGIC); deed retail stays with the
+existing house-deed service (30 rows SERVICE_EXISTING_SYSTEM); per-profession hammer
+items (3 rows MISSING_ITEM with planned carpenter/stonecrafter/tinker_hammer ids,
+landing with their Milestone 17 families); all five new trader types kept. The 53
+unresolved buyback rows fell to zero (49 OWNER_MAPPED twin-consistent, 4
+OWNER_UNSUPPORTED); validator + RunuoBuybackCoverageTest enforce the owner_decision
+records. Zero owner decisions remain open before Milestones 15-19.
+
+## 2026-08-11 — Milestone 15: Rails-driven activation and population
+
+Owner approved resuming. Rails `0d6320a`; NO Java changes (activation flows through the
+existing Milestone 5/6 world-state assignment projection — the acceptance criterion "no
+Java deployment required to change economic spawn requirements" holds by construction).
+
+Owner decision #10 lands in full. Hysteresis = minimum active/inactive dwell durations
+(EffectivePolicy-resolved: type defaults 300s/300s, shard policy overrides nullable =
+inherit, Shard-Admin-editable in both places): economically ineligible assignments
+younger than min_active_seconds are HELD open; posts whose last ECONOMIC closure is
+younger than min_inactive_seconds are HELD empty — no oscillation around thresholds.
+Administrative gates (type_inactive/shard_disabled/city_not_on_shard) bypass dwell in
+both directions with their own closure reason. Async reconciliation: economic commits
+(commodities, treasury balances, economic policies, type definitions) MARK hosting
+cities dirty (cheap update_all, never the engine inline); EconomicStaffingSweepJob
+drains marks every 5 minutes via Solid Queue with a mid-reconcile-safe conditional
+clear; system runs log structured events instead of AdminActionAudit rows. Reconcile is
+now scoped to types with posts in the reconciled city (retires the Milestone 12
+leak-sensitivity note).
+
+Acceptance proven (playbook example verbatim: alcohol > 100 AND treasury gold >= 20):
+below threshold ineligible with machine-readable reasons; crossing assigns; falling
+below is dwell-held then closes; recovery is dwell-held then reassigns the SAME
+persistent World NPC; a second shard's own thresholds and dwell overrides act
+independently; requirement changes propagate with zero Java.
+
+Validation: hysteresis suite 5 runs/55 assertions/0 failures; staffing suites 11/73/0;
+recurring-schedule test 3/11/0; full suite 1432 runs/0 errors (only the two documented
+pre-existing failures, both pass isolated). Environment note: a schema.rb dumped
+without RAILS_ENV=test poisoned the main test DB via maintain_test_schema! (phantom-
+applied migration); repaired by un-record + re-migrate + re-dump + worker-DB reload —
+recorded in the baseline docs conventions.
+
+### Stopped
+Milestone 15 complete. Milestone 16 (legacy MerchantSpawnBlock/TraderSpawnBlock
+migration) not started, per stop rule.
