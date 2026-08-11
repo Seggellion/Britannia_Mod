@@ -22,7 +22,7 @@ Canonical comparative values:  Copper = 1    Silver = 100    Gold = 10,000
   (Milestone 3; PROJECT_FACTS §4b). After correction, `Currency.base_value` is an
   analytics/comparison input only.
 
-## 2. Vendor retail pricing (OWNER DECISION; calibration OPEN)
+## 2. Vendor retail pricing (OWNER DECISION; calibration RATIFIED, Milestone 19)
 
 RunUO GP calibration: **1 RunUO GP = 1 UltimaCraft Gold**. RunUO-imported vendor products
 default to gold denomination; RunUO price = the Iron-baseline finished-product anchor (it
@@ -46,19 +46,33 @@ final_vendor_price     = runuo_iron_baseline
   copper-equivalents look large.
 - Vendor -> Player payments credit the city treasury in the paid denomination.
 
-### 2a. OPEN CALIBRATION items (to be fixed during the pricing milestone)
+### 2a. RATIFIED calibration (Milestone 19) — enforced by `PricingCalibrationTest`
+
+Each rule below is executable policy: the named test fails if the
+implementation drifts.
 
 ```text
-approved_production_adjustment   formula/curve not yet calibrated (must be tested against
-                                 expected RunUO price ranges)
-material_delta unit bridging     material_delta is computed in commodity-price units
-                                 (copper-comparative); the conversion of that delta into the
-                                 Product's denomination (e.g. gold) uses the canonical
-                                 comparative values — exact rounding below
-denomination rounding policy     floor / nearest / ceiling / tick-size within the Product's
-                                 denomination; must be explicit, documented, and tested;
-                                 fractional remainders are never converted into another
-                                 denomination
+approved_production_adjustment = 0
+    The RunUO price IS the finished-good anchor: it already embeds
+    craftsmanship, labor, margin and game balance (see section 2). Adding a
+    second adjustment on top would double-count. With the baseline material
+    selected, the retail price therefore equals the RunUO anchor exactly.
+    A future shard-tunable retail multiplier would be a NEW policy input
+    (admin data, never a Java constant) — it is not needed for parity.
+
+material_delta unit bridging
+    delta_in_denomination = material_delta_value / CANONICAL_BASE_VALUES[denomination]
+    Commodity prices are copper-comparative; the canonical base values
+    (copper 1, silver 100, gold 10,000) bridge them into the Product's own
+    denomination. Raw copper-comparative units are never added to a gold price.
+    The delta scales with the recipe quantity, not just the material price.
+
+denomination rounding policy = NEAREST whole, floor 1
+    Rounding is nearest-whole (half up) WITHIN the Product's denomination:
+    1.4 -> +1, 1.6 -> +2. The quoted unit price is always whole in its own
+    denomination, and a fractional remainder is never converted or expressed
+    in another denomination. A price is floored at 1 — retail is never free.
+    Purchase totals round the same way (unit_price x quantity, nearest).
 ```
 
 ## 3. Trader payout valuation (OWNER DECISION; strategy details IMPLEMENTATION)
@@ -185,7 +199,14 @@ stock_unit = "count"   ->  quantity is canonical (discrete goods)
   `SaleTransactionProcessor`'s second copy of it) is retired; classification
   is per-row data with a category-based default for new rows.
 
-Calibration follow-ups (OPEN, non-blocking): real `unit_weight` values for
-count-canonical commodities whose derived weight feeds city supply columns
-(wine bottles), and the reagent family's unit decision when Milestone 17
-implements it.
+Calibration follow-ups — RESOLVED (Milestone 19):
+
+- **Wine bottles keep `unit_weight` 1.0.** This is calibrated, not a
+  placeholder: RunUO's `BeverageBottle` is `Weight = 1.0` stone in the pinned
+  source, so a bottle weighing one stone means `alcohol_supply` in stones is
+  numerically the bottle count. Requirement thresholds written against
+  `alcohol_supply` therefore read naturally as bottles.
+- **The reagent family is weight-canonical** (owner roadmap pass, 2026-08-11):
+  reagents are fungible bulk goods measured by weight like every other
+  bulk family, and they feed `cities.reagents_supply` through the standard
+  category-supply recalculation.

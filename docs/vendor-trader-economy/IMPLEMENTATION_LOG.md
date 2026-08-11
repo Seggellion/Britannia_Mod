@@ -893,5 +893,63 @@ failures; compileJava BUILD SUCCESSFUL; GameTest server all 365 required tests
 passed (363 + 2 new diagnostics tests).
 
 ### Stopped
-Milestone 18 complete. Milestone 19 (final differential and economy validation)
-not started, per stop rule.
+Milestone 18 complete.
+
+## 2026-08-11 — Milestone 19: Final differential and economy validation
+
+Owner approved resuming (and approved making the legacy admin transactions
+surface read-only). Rails `2f4494e`; Minecraft commit in this revision.
+
+THE differential suite (`economy_validation_test`, 9 runs/207 assertions) proves the
+playbook's required matrix in one place through the real services: Vendor behavior
+(never buys from a player; product gating, commodity prerequisites, material/quality
+policy, city provenance, treasury credit in the paid denomination), Trader behavior
+(buys eligible items at market value, treasury-funded, city supply grows, unfundable
+payouts rejected WHOLE, raw/processed valued distinctly, idempotent replay committing
+once on both sides), and Shard rules (two shards running different requirements over
+identical economies with zero Java; an admin policy edit alone flipping authoritative
+staffing). RunUO coverage is enforced by the two JUnit coverage tests plus a Rails-side
+accounting assertion over all 1,015 audited rows.
+
+Spawn behavior was already covered by the existing ServiceNpcSpawn/WorldState suites
+(post identity, save/reload, chunk unload, collision repair, outage/recovery); the one
+genuine economy-specific gap is now closed by `EconomicProjectionDurabilityGameTests`
+-- the reconciler stamps (worldNpcPublicId / economicNpcTypeKey /
+economicCityPublicId) survive the NBT round-trip, and an unstamped projection never
+invents one. Without that, a restarted world would silently fall back to the legacy
+catalog and legacy settlement.
+
+ECONOMY_RULES section 2a is RATIFIED, not provisional, and executable
+(`pricing_calibration_test`): production adjustment = 0 (the RunUO anchor already
+embeds labor/margin; a second term double-counts); the material delta bridges
+copper-comparative units into the product denomination via the canonical base values
+and scales with recipe quantity; rounding is NEAREST whole within the denomination
+(1.4 down / 1.6 up), floored at 1, with no cross-denomination spill. The owner-deferred
+wine unit_weight closed with DATA: RunUO's BeverageBottle is Weight = 1.0 stone in the
+pinned source, so 1.0 is calibrated and alcohol_supply in stones IS the bottle count.
+
+Hardening: the material commodity identity now has ONE definition
+(`ProductAvailability.material_identity_key`) resolved by both the availability and
+purchase paths; the Milestone 6 staffing suite is city-scoped like Milestone 15's
+(which cleared the previously varying full-suite failures). Owner decision applied:
+the legacy CMS transactions surface is read-only -- its new/create/edit/update actions
+were provably dead (strong params named columns this table does not have), so only
+destroy functioned, which is exactly what was removed.
+
+Final deliverables completed: API_CONTRACT.md and MIGRATION_PLAN.md written;
+PROJECT_FACTS and COMPATIBILITY_MAP brought to delivered state (their earlier
+Milestone-3-era text is retained as history); OPEN_QUESTIONS gained a "Final status"
+section enumerating every scheduled item and bounded limit, so no blocker is silently
+treated as implemented. The largest recorded limit is honest and unfixed: trader sale
+item reservation is in-memory, so a crash between reservation and the Rails response
+loses items (no double-spend or idempotency risk) -- recorded as the top follow-up.
+
+Validation: validation 9 runs/207 assertions; calibration 7/27; legacy transactions
+3/14; full Rails suite 1473 runs/7437 assertions/0 errors with only the pre-existing
+deterministic recalculator failure; compileJava BUILD SUCCESSFUL; GameTest server all
+367 required tests passed (365 + 2 new durability tests).
+
+### Stopped
+Milestone 19 complete. The Vendor/Trader economy program (Milestones 0-19) is
+delivered. Milestone 20 (TownPerson regional population) and Milestone 21 (item
+content) are owner-scheduled and NOT started, per stop rule.

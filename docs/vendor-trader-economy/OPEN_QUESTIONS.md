@@ -761,3 +761,44 @@ the reagent family's unit decision at Milestone 17.
 
 Roadmap after this pass: M18 observability → M19 validation/calibration → M20
 TownPerson regional population → M21 item content (models/textures/mechanics).
+
+## Final status — Milestone 19 (2026-08-11)
+
+Per the playbook's closing requirement, this section enumerates EVERY item that
+is not fully implemented, so none is silently treated as done.
+
+**No open owner decisions remain.** Everything below is scheduled work or a
+recorded limit, not a pending question.
+
+### Scheduled by owner decision
+
+| Item | Disposition |
+|---|---|
+| TownPerson regional population (decision #12) | **Milestone 20.** Legacy TownPersons are preserved meanwhile; `townPersonAmount` survives in migration receipts for that system to consume. |
+| 548 retail rows pending item creation | **Milestone 21** (models/textures/food mechanics; produce partly exists; weapons/armor already craftable and partially added). Each created item makes its row seedable by re-running the rollout generator. |
+| Textile + scribe commodity families | **Milestone 21**, with their items. Glass and reagents shipped in the 2026-08-11 roadmap pass. |
+| `black_pearl` retail row | Milestone 21 (its commodity exists; the ITEM does not). |
+| 8 registered-but-inactive vendor types | Activate as data when their items/families land — no deploy required. |
+
+### Recorded limits (implemented behavior, deliberately bounded)
+
+- **Magic/alchemy consumable retail (60 rows)** — deferred by owner decision;
+  rows are explicitly `UNSUPPORTED_PENDING_MAGIC`, revisitable.
+- **Deed retail (30 rows)** — owned by the existing house-deed service.
+- **Mobile fulfillment / AnimalBuyInfo (29 rows)** — the OQ-7 concept is
+  approved but unimplemented; rows are explicitly excluded, not silently
+  dropped.
+- **Trader sale item reservation is in-memory** — `ServerEconomyService`
+  removes items before the Rails call and refunds on every failure path, but a
+  server crash in that window loses the reservation (banking's durable local
+  receipts have no equivalent here). Bounded by the sale window; no idempotency
+  or double-spend risk, only a crash-window item-loss risk. **Not fixed in this
+  program** — recorded as the top hardening candidate for follow-up work.
+- **`EconomicStaffingSweepJob` serializes city reconciles** in one run;
+  acceptable at current city counts, revisit past hundreds of dirty cities per
+  window.
+- **Legacy merchant/trader heartbeat** keeps running for any block that has not
+  yet converted; it retires with the last legacy block.
+- **Per-profession presentation** — ~30 professions share the generic vendor
+  entity, and the three profession hammers share the blacksmith hammer model.
+  Cosmetic; swappable per type as admin data.

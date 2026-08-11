@@ -528,3 +528,25 @@ action; blocks all Rails test execution and therefore Milestone 3+ Rails work);
 **OQ-2** resolved 2026-08-10 — pinned RunUO reference checkout exists at
 `C:\projects\runuo-reference` @ `71b2794f12eb6f948b1c5598ae8b350401a22d4d`
 (remote `https://github.com/runuo/runuo.git`, read-only; recorded in PROJECT_FACTS).
+
+## Final state (Milestone 19, 2026-08-11)
+
+**OQ-1 is resolved** (test-database ownership repaired 2026-08-10); the blocker
+note above is historical.
+
+Legacy paths and their delivered disposition:
+
+| Legacy mechanism | Final state |
+|---|---|
+| `MerchantSpawnBlock` / `TraderSpawnBlock` | Migrate in place onto authoritative posts (Milestone 16); registry ids retained so old chunks always load. |
+| Legacy `sourceId`/heartbeat NPC sync | Bypassed per block at conversion; retires with the last legacy block. |
+| `MerchantRecipes` / `CraftableRegistry` valuation | Never consulted by the economic path; Rails `Product.requirements` is the sole authority. |
+| Legacy copper-valued `reserveCoins` settlement | Economic purchases use exact-denomination reservation instead; legacy merchants keep the old path until migrated. |
+| `shard_user.currency` credits | Not written by any new flow. |
+| Parallel weight+quantity commodity truths | Collapsed into one canonical supply amount with a derived mirror. |
+| Admin ledger edit/delete | Removed — economy transactions are read-only in admin. |
+| `townPersonAmount` side-spawning | Stops at conversion; existing TownPersons preserved for Milestone 20. |
+
+The compatibility risks catalogued earlier in this document are therefore
+either eliminated or carry an explicit, tested boundary. Remaining bounded
+limits are enumerated in `OPEN_QUESTIONS.md` §"Final status".

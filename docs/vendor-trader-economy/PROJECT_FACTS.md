@@ -160,3 +160,55 @@ Date: 2026-08-10.
 ## 5. Test inventory relevant to this project (for when the test DB is repaired)
 - Rails: `test/controllers/api/trader_transactions_controller_test.rb`, `merchant_transactions_controller_test.rb`, `transactions_legacy_purchase_idempotency_test.rb`, `city_commodities_controller_test.rb`, `npcs_controller_test.rb`, `service_npc_spawn_operations_controller_test.rb`, `world_bootstrap_*`, `world_state_changes_controller_test.rb`, `test/services/city_staffing/*`, plus banking auth/concurrency suites.
 - Minecraft unit: `src/test/java/...` (bannerdyeing, bank, tools). Minecraft GameTests: `gametest/ServiceNpc*`, `GuildmasterServiceNpcGameTests`, `WorldStateSync*`, `Banking*` (run via `runGameTestServer`). No Trader/Merchant-specific automated tests exist on the Minecraft side.
+
+## 6. Final system facts (Milestone 19, 2026-08-11)
+
+The sections above are the historical record from discovery onward; this is the
+delivered state.
+
+**Authority split.** Rails owns prices, production requirements, availability,
+eligibility, staffing and the ledger. Minecraft owns blocks, entities, screens
+and physical inventory, and materializes Rails decisions. No economic rule
+lives in a Java constant.
+
+**Delivered surfaces.** `GET economic_catalog`, `POST economic_purchase`,
+`POST trader_transactions` (economic routing on `world_npc_public_id`), plus
+the shared spawn-post outbox and world-state cursor — see `API_CONTRACT.md`.
+
+**Scale of the rollout.** 33 vendor economic NPC types (25 active), 15 trader
+types, 98 Products across 302 seeded RunUO retail rows; the remaining 713 rows
+carry explicit exclusion reasons. Coverage is machine-enforced by
+`RunuoRetailRolloutCoverageTest` and `RunuoBuybackCoverageTest`.
+
+**Currency.** Copper 1 / Silver 100 / Gold 10,000; exact-denomination
+settlement everywhere; one payout representation (physical coins /
+`currency_grant`); no Minter in this project.
+
+**Supply.** One canonical amount per commodity (`stock_unit` + `unit_weight`);
+bulk families are weight-canonical, discrete goods count-canonical, and the
+mirror column is always derived.
+
+**Test inventory as delivered** (supersedes section 5's "no Trader/Merchant
+tests exist"):
+- Rails economy suites: `economy_validation_test` (the Milestone 19
+  differential matrix), `pricing_calibration_test` (ratified §2a policy),
+  `economic_vendor_purchase_test`, `economic_trader_sale_test`,
+  `raw_processed_trader_pricing_test`, `recipe_valued_metal_goods_test`,
+  `economic_catalog_for_vendor_test`, `economic_catalog_product_availability_test`,
+  `economic_vendor_rollout_test`, `economic_staffing_reconcile_test`,
+  `economic_staffing_hysteresis_test`, `legacy_spawn_block_support_test`,
+  `city_commodity_stock_unit_test`, admin diagnostics/transactions controller
+  tests, and the sweep's recurring-schedule test.
+- Minecraft GameTests: `EconomicNpcSpawnPostGameTests`,
+  `EconomicVendorPurchaseGameTests`, `EconomicProjectionDurabilityGameTests`,
+  `LegacySpawnBlockMigrationGameTests`, `SpawnPostDiagnosticsGameTests`,
+  `CityProvenanceGameTests`, plus the pre-existing ServiceNpcSpawn/WorldState
+  suites that cover post identity, reload, outage and collision repair.
+- Minecraft JUnit: `RunuoRetailRolloutCoverageTest`,
+  `RunuoBuybackCoverageTest`, `GenericVendorRoleTitleTest`.
+
+**Environment note.** The OQ-1 test-database blocker recorded above was
+repaired on 2026-08-10 (Option A) and Rails tests have run every milestone
+since. After any new migration, dump the schema with `RAILS_ENV=test` **and**
+refresh the parallel worker databases, or the full suite errors en masse while
+focused runs pass.
