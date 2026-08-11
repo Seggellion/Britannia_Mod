@@ -738,3 +738,26 @@ classification lists (CityCommodity, SaleTransactionProcessor) retired in
 favor of per-row data. Follow-ups recorded in ECONOMY_RULES §9: unit_weight
 calibration for count rows feeding weight-summed supply columns (wine), and
 the reagent family's unit decision at Milestone 17.
+
+## Owner roadmap pass — 2026-08-11 (post-Milestone-17): open items dispositioned
+
+1. **TownPerson regional population (decision #12): dedicated Milestone 20**, after
+   Milestone 19. The Milestone 16 migration already preserved everything it needs
+   (townPersonAmount in receipts, entities in-world).
+2. **The 548 pending-item retail rows: dedicated Milestone 21**, after Milestone 20.
+   Owner direction verbatim: the LLM creates the models, textures, and food
+   mechanics; many of the produce items already exist; the weapons and armor are
+   already craftable and should be partially added. Each created item makes its row
+   seedable by re-running the rollout generator.
+3. **OQ-5 commodity families: glass + reagents created NOW** (this pass): weight-
+   canonical bulk commodities (glass|raw|sand; reagents|raw|<the eight UO reagents>,
+   feeding the existing cities.reagents_supply column). Reagent retail rows now seed
+   (7 products across mage/holy_mage/alchemist/herbalist/glassblower); the glass
+   family stands ready for Milestone 21's bottle items (SBGlassblower's implementable
+   stock turned out to be mostly reagent overlap — its true glass items pend M21).
+   Textile + scribe families land with their items (Milestone 21).
+4. **Wine unit_weight calibration: deferred to Milestone 19 §2a** with real data;
+   until then alcohol_supply reads as bottle count.
+
+Roadmap after this pass: M18 observability → M19 validation/calibration → M20
+TownPerson regional population → M21 item content (models/textures/mechanics).

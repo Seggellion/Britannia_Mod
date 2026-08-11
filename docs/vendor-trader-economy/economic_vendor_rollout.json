@@ -12,7 +12,7 @@
    "vendor_classes": [
     "Alchemist"
    ],
-   "active": false
+   "active": true
   },
   {
    "key": "armorer_vendor",
@@ -145,7 +145,7 @@
    "vendor_classes": [
     "Glassblower"
    ],
-   "active": false
+   "active": true
   },
   {
    "key": "healer_vendor",
@@ -156,7 +156,7 @@
    "vendor_classes": [
     "Healer"
    ],
-   "active": false
+   "active": true
   },
   {
    "key": "herbalist_vendor",
@@ -167,7 +167,7 @@
    "vendor_classes": [
     "Herbalist"
    ],
-   "active": false
+   "active": true
   },
   {
    "key": "holy_mage_vendor",
@@ -178,7 +178,7 @@
    "vendor_classes": [
     "HolyMage"
    ],
-   "active": false
+   "active": true
   },
   {
    "key": "innkeeper_vendor",
@@ -222,7 +222,7 @@
    "vendor_classes": [
     "Mage"
    ],
-   "active": false
+   "active": true
   },
   {
    "key": "mapmaker_vendor",
@@ -475,11 +475,16 @@
    "runuo_type": "Bloodmoss",
    "price_gold": 5,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "herbalist_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|blood_moss",
      "quantity": 1.0
     }
    ]
@@ -880,11 +885,17 @@
    "runuo_type": "Garlic",
    "price_gold": 3,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "healer_vendor",
+    "herbalist_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|garlic",
      "quantity": 1.0
     }
    ]
@@ -895,11 +906,17 @@
    "runuo_type": "Ginseng",
    "price_gold": 3,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "healer_vendor",
+    "herbalist_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|ginseng",
      "quantity": 1.0
     }
    ]
@@ -1188,11 +1205,16 @@
    "runuo_type": "MandrakeRoot",
    "price_gold": 3,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "herbalist_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|mandrake",
      "quantity": 1.0
     }
    ]
@@ -1251,11 +1273,16 @@
    "runuo_type": "Nightshade",
    "price_gold": 3,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "herbalist_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|nightshade",
      "quantity": 1.0
     }
    ]
@@ -1543,11 +1570,15 @@
    "runuo_type": "SpidersSilk",
    "price_gold": 3,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|spiders_silk",
      "quantity": 1.0
     }
    ]
@@ -1589,11 +1620,15 @@
    "runuo_type": "SulfurousAsh",
    "price_gold": 3,
    "vendors": [
+    "alchemist_vendor",
+    "glassblower_vendor",
+    "holy_mage_vendor",
+    "mage_vendor",
     "provisioner_vendor"
    ],
    "commodity_requirements": [
     {
-     "key": "leather|processed|leather",
+     "key": "reagents|raw|sulphurous_ash",
      "quantity": 1.0
     }
    ]
@@ -1953,13 +1988,13 @@
  ],
  "row_status_counts": {
   "excluded_no_retail_vendor": 19,
-  "excluded_pending_commodity_family": 36,
+  "excluded_pending_commodity_family": 1,
   "excluded_pending_item": 548,
   "excluded_pending_magic": 60,
   "excluded_pending_mobile_fulfillment": 29,
   "excluded_service": 30,
   "excluded_unsupported": 26,
-  "seeded": 116,
+  "seeded": 151,
   "seeded_material": 151
  }
 }

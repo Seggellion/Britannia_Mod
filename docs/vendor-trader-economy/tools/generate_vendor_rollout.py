@@ -82,6 +82,11 @@ CANONICAL_KEYS = {
     "wood|logs|oak", "stone|common|stone",
     "metal|ingots|iron", "metal|ingots|gold",
     "leather|processed|leather",
+    # Owner roadmap pass 2026-08-11: the OQ-5 glass and reagent families.
+    "glass|raw|sand",
+    "reagents|raw|black_pearl", "reagents|raw|blood_moss", "reagents|raw|garlic",
+    "reagents|raw|ginseng", "reagents|raw|mandrake", "reagents|raw|nightshade",
+    "reagents|raw|spiders_silk", "reagents|raw|sulphurous_ash",
 }
 
 # Name-pattern input rules, checked in order against the lowercased RunUO type.
@@ -112,6 +117,17 @@ NAME_RULES = [
       "kettle"), "metal|ingots|iron"),
     (("torch", "lute", "drum", "harp", "tambourine", "flute", "fishingpole",
       "shepherdscrook", "club", "walkingstick"), "wood|logs|oak"),
+    # Reagent retail (mage/alchemist/herbalist rows) restocks from the city's
+    # own reagent supply; glasswork consumes raw sand.
+    (("blackpearl",), "reagents|raw|black_pearl"),
+    (("bloodmoss",), "reagents|raw|blood_moss"),
+    (("garlic",), "reagents|raw|garlic"),
+    (("ginseng",), "reagents|raw|ginseng"),
+    (("mandrake",), "reagents|raw|mandrake"),
+    (("nightshade",), "reagents|raw|nightshade"),
+    (("spiderssilk", "spidersilk"), "reagents|raw|spiders_silk"),
+    (("sulfurousash", "sulphurousash"), "reagents|raw|sulphurous_ash"),
+    (("bottle", "flask", "vial", "blowpipe", "glass", "jar"), "glass|raw|sand"),
 ]
 
 # Vendor-family fallback inputs (only where a canonical family exists).
@@ -133,7 +149,7 @@ FAMILY_FALLBACK = {
     "cobbler_vendor": "leather|processed|leather",
     "leather_worker_vendor": "leather|processed|leather",
     "weaver_vendor": None,        # textile family pending (OQ-5)
-    "glassblower_vendor": None,   # glass family pending (OQ-5)
+    "glassblower_vendor": "glass|raw|sand",
     "alchemist_vendor": None,     # reagent family pending (OQ-5)
     "mage_vendor": None,
     "holy_mage_vendor": None,

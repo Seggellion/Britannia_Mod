@@ -220,8 +220,9 @@ explicitly excluded**, machine-enforced by `RunuoRetailRolloutCoverageTest`
 (mirrored to Rails `db/seeds/data/` and seeded by
 `db:seed:economic_vendor_rollout`).
 
-Vendors: 33 vendor economic NPC types (19 ACTIVE with seeded catalogs; 14
-registered INACTIVE awaiting items/commodity families — explicit and
+Vendors: 33 vendor economic NPC types (25 ACTIVE with seeded catalogs after
+the 2026-08-11 owner roadmap pass added the glass + reagent commodity
+families; 8 registered INACTIVE awaiting their items — explicit and
 admin-activatable). Presentation: dedicated entities where they exist
 (baker/tavernkeeper/costermonger); every other profession shares the
 Milestone 17 `britannia_mod:vendor` generic entity whose role title
@@ -230,14 +231,14 @@ admin-editable `minecraft_entity_type_key` swap later, never a deploy.
 The remaining 41 vendor classes are explicitly merged (OQ-8), trader
 aliases, service, guildmaster territory, or unsupported by design.
 
-Retail rows (1,015): 267 seeded (116 fixed-input products + 151
-metal-family material products across 98 unique Products; prices are RunUO
+Retail rows (1,015): 302 seeded after the roadmap pass (151 fixed-input +
+151 metal-family material rows across 98 unique Products; prices are RunUO
 GP as GOLD per the ratified 1:1 rule; requirements are PROVISIONAL family
 conventions over canonical commodity keys only, admin-editable, Milestone
-19 §2a owns calibration); 748 explicitly excluded: 548 pending item
-creation, 60 magic-deferred, 36 pending commodity families (glass/
-reagent/textile/scribe — OQ-5), 30 deed/service, 29 mobile fulfillment
-(OQ-7 concept approved, unimplemented), 26 unsupported, 19 in
+19 §2a owns calibration); 713 explicitly excluded: 548 pending item
+creation (Milestone 21), 60 magic-deferred, 1 pending commodity family
+(black_pearl item pends Milestone 21), 30 deed/service, 29 mobile
+fulfillment (OQ-7 concept approved, unimplemented), 26 unsupported, 19 in
 merged/service vendors without a retail home.
 
 The three owner-decided profession hammers (carpenter/stonecrafter/tinker)

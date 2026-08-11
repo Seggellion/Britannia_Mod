@@ -166,9 +166,11 @@ stock_unit = "count"   ->  quantity is canonical (discrete goods)
   unit_weight`) and can never act as a second source of truth; a direct write
   to the mirror is overwritten from the canonical column.
 - Bulk families (weight): fish, wood, stone, ore, meat, grain, metal,
-  textile, and every food-supply category (food, produce, animal_product,
-  cooking_ingredient, dairy, eggs, groceries, bone, fat). Flour is the
-  canonical example: `grain|milled|flour` is weight-based supply.
+  textile, glass, reagents (the latter two added by the 2026-08-11 owner
+  roadmap pass), and every food-supply category (food, produce,
+  animal_product, cooking_ingredient, dairy, eggs, groceries, bone, fat).
+  Flour is the canonical example: `grain|milled|flour` is weight-based
+  supply.
 - Discrete goods (count): wine/alcohol bottles today; weapons, armor, tools,
   furniture, potions, animals as their commodity families arrive.
 - Pricing and availability read `inventory_level` (aliased `supply`)
