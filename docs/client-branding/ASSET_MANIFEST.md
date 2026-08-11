@@ -63,6 +63,12 @@ The vanilla renderer displays a 256x44 normal/rare title from a 256x64 logical t
 
 `ClientBrandingTitleAssetTest` locks the three runtime hashes, dimensions, alpha contract, safe bounds, normal/rare parity, edition transparency, and exact title-directory file set.
 
+### Code-rendered title subtitle
+
+Milestone 3 adds no image asset. `TitleBrandingRenderer` listens only to client `ScreenEvent.Render.Post` events for `TitleScreen` and draws the literal `Version 18` through the vanilla font. `TitleBrandingLayout` centers the line from the current GUI width and fixes its baseline at GUI Y 76: vanilla logo top 30 + logo height 44 + a 2-pixel gap. The color is opaque warm parchment `#F0E2B6` with the vanilla text shadow. This keeps the subtitle responsive to framebuffer and GUI-scale changes without baking text into either wordmark PNG.
+
+Exact live framebuffer validation passed at 1280x720/Auto, 1920x1080/2, 2560x1440/3, and 3440x1440/4. The three title PNG hashes and all three protected-background hashes remained unchanged after Milestone 3.
+
 ## Black pre-world resources
 
 All black assets must be true opaque `#000000` with no alpha variation, gradient, noise, color profile surprise, or decorative marks.

@@ -362,3 +362,77 @@ feat(client): replace title branding with UltimaCraft
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 3 - Version 18 title subtitle
+
+Date: 2026-08-11
+
+Status: Gate 3 passed
+
+Production behavior changed: Yes - the main title now displays `Version 18` beneath the UltimaCraft wordmark
+
+Starting commit: `fe481f059691093a9beced355e24effce7f329f0`
+
+### Implementation
+
+- Added a client-only game-bus subscriber for `ScreenEvent.Render.Post`.
+- Restricted rendering to `TitleScreen`; every other screen returns without drawing.
+- Rendered the exact literal `Version 18` with the vanilla font and shadow in opaque warm parchment `#F0E2B6`.
+- Centered from the current GUI width and placed the baseline at GUI Y 76: title top 30 + title height 44 + a 2-pixel gap.
+- Kept the subtitle code-rendered; no title PNG, protected background file, mixin, or mixin registration changed.
+
+`TitleBrandingLayoutTest` adds four deterministic checks for exact copy, odd/even centering, title-relative Y placement, and button clearance at the logical GUI heights represented by the live validation matrix.
+
+### Live title matrix
+
+Minecraft framebuffer captures verified exact dimensions rather than desktop-window dimensions. The validation harness accounted for Windows' 125% display scaling and waited for the final client resource-initialization signal before capture.
+
+| Resolution | GUI scale | Result |
+|---:|---:|---|
+| 1280x720 | Auto | Pass |
+| 1920x1080 | 2 | Pass |
+| 2560x1440 | 3 | Pass |
+| 3440x1440 | 4 | Pass |
+
+Every case showed exact `Version 18` copy centered directly beneath the complete UltimaCraft wordmark. The line remained readable, clear of the rotating splash and first button, and stable through GUI-scale and aspect-ratio changes. Title controls, runtime/legal attribution, and the protected chest-to-medallion background remained present.
+
+Screenshots are ignored runtime evidence under `build/client-branding-validation/milestone-3`; they are not packaged or committed. The temporary capture harness was removed, and the local development GUI scale was restored to 2.
+
+### Automated, build, and package validation
+
+Focused result: all four `TitleBrandingLayoutTest` checks passed.
+
+The installed pinned Gradle 8.9 distribution was used because the tracked wrapper remains the Milestone 0 Git LFS pointer.
+
+- transformation, compilation, resource processing, regular and all-in-one JAR assembly, scaffold compilation, and test compilation completed;
+- 1,799 tests executed: 1,761 passed, 21 failed, 17 skipped;
+- the same 21 pre-existing banner/scaffold asset-integrity tests failed as in Milestones 0-2;
+- the four-test increase from 1,795 is exactly `TitleBrandingLayoutTest`;
+- no new failing test class or failure count was introduced;
+- the assembled JAR contains `TitleBrandingLayout.class`, `TitleBrandingRenderer.class`, and the three unchanged title PNGs.
+
+Protected/background hashes remain the Milestone 0 values, and all title-asset hashes remain the Milestone 2 values.
+
+### Gate 3 checklist
+
+- [x] Exact visible subtitle text is `Version 18`.
+- [x] Subtitle is code-rendered and not baked into title art.
+- [x] Rendering is client-only and restricted to `TitleScreen`.
+- [x] Subtitle is centered relative to the vanilla title box and responsive to GUI width.
+- [x] Subtitle clears the title art, rotating splash, and menu controls across the exact matrix.
+- [x] Wordmark and edition assets remain byte-identical to Milestone 2.
+- [x] Protected title background files remain byte-identical to Milestone 0.
+- [x] Focused subtitle tests pass.
+- [x] Full build failure count and classes match the recorded baseline exactly.
+- [x] JAR assembly contains the intended renderer/layout classes and unchanged title assets.
+- [x] No unrelated tracked file changed.
+
+Gate 3 passes because the exact responsive subtitle is integrated at the title-only render boundary without changing the approved wordmark, protected background, or any non-title screen.
+
+Planned local commit message:
+
+```text
+feat(client): add Version 18 title subtitle
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.

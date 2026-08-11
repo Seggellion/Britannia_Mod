@@ -48,6 +48,19 @@ Minecraft framebuffer screenshots, rather than desktop crops, verified the exact
 
 Across the matrix, no vanilla Minecraft title artwork remained. The separate bottom-corner Minecraft/NeoForge version and copyright strings were intentionally preserved as runtime/legal attribution. The protected chest-to-medallion background, vanilla splash rendering, title buttons, mod-added button, language/accessibility controls, and attribution link remained present. `Version 18` is intentionally absent until Milestone 3.
 
+## Milestone 3 subtitle matrix
+
+Minecraft framebuffer screenshots again verified the exact client render size. Each capture was taken only after client resource initialization completed.
+
+| Resolution | GUI scale | Result |
+|---:|---:|---|
+| 1280x720 | Auto | Pass - `Version 18` centered under the wordmark with clear space before the first button |
+| 1920x1080 | 2 | Pass - subtitle remained readable and separate from the rotating splash |
+| 2560x1440 | 3 | Pass - title-relative position and centered alignment remained stable |
+| 3440x1440 | 4 | Pass - ultrawide layout preserved with no clipping, stretching, or collision |
+
+Across the matrix, the exact visible copy was `Version 18`. The code-rendered line remained centered on the vanilla 256-pixel title box at GUI Y 76, two logical pixels below the title artwork. The wordmark, rotating splash, title controls, runtime/legal attribution, and protected chest-to-medallion background remained unchanged. Ignored evidence is stored under `build/client-branding-validation/milestone-3` and is not packaged or committed.
+
 ## Main and core navigation
 
 | Screen/state | Representative class | Current background mechanism | Desired result | Later implementation/verification |
