@@ -152,3 +152,53 @@ Work performed:
 
 Validation: documentation-only change; no automated suites apply. Rails tests still blocked
 (pre-existing OQ-1 breakage, re-verified via psql).
+
+## 2026-08-10 — Milestone 2: RunUO coverage audit and Vendor/Trader matrix
+
+### Source authority established
+- No local RunUO checkout existed anywhere searched; created a dedicated read-only reference
+  clone at `C:\projects\runuo-reference` from `https://github.com/runuo/runuo.git` and checked
+  out exactly `71b2794f12eb6f948b1c5598ae8b350401a22d4d` (verified via `git rev-parse HEAD`).
+  Never modified; kept outside the implementation worktrees. (OQ-2 resolved.)
+
+### Audit performed
+- Wrote `tools/parse_runuo_vendors.py`: balanced-paren C# scanner over the entire pinned
+  `Scripts/` tree — every `class X : SBInfo` catalog (InternalBuyInfo/InternalSellInfo bodies,
+  all four buy-info classes, if/else condition tracking, commented-row capture) and every
+  `InitSBInfo` implementor (base class, title, SB composition with conditions). The scan
+  covers vendors outside `Mobiles/Vendors/` (healers, Banker, faction vendors, ML-quest
+  trainers, Guildmasters).
+- Generated the project-owned machine-readable mapping
+  `runuo_ultimacraft_mapping.json` (schema 1.0.0): 74 vendors, 84 catalogs, 1,015 buy rows,
+  915 sell rows, all rows status-classified with owner rules embedded (1 GP = 1 Gold, retail
+  denomination gold, canonical 1/100/10,000, vendors never buy from players).
+- Wrote `tools/validate_mapping.py` (duplicate keys, statusless rows, invalid denominations,
+  unknown trader targets, unknown item ids, missing catalogs). Run result: **OK — all
+  invariants hold** (exact output recorded below).
+- Produced `RUNUO_VENDOR_MATRIX.md` (coverage, status distributions, five proposed new trader
+  types, commodity/material/quality gap audits, currency-correction tracking) and
+  `ECONOMY_RULES.md` (denomination rules, retail pricing formula + open calibration items,
+  valuation strategy registry, availability gating, material/quality rules, arbitrage
+  invariant, treasury flow).
+- PROJECT_FACTS §4d and OPEN_QUESTIONS OQ-3…OQ-9 updated with audit facts and owner-review
+  queues.
+
+### Commands and results (automated validation)
+```text
+python tools/parse_runuo_vendors.py
+  vendors=74 catalogs=84 buy_rows=1015 sell_rows=915 conditional_rows=119 inactive_rows=10
+python tools/validate_mapping.py
+  OK: 74 vendors, 84 catalogs, 1015 buy rows, 915 sell rows — all invariants hold
+```
+Rails test suite: **not run — still blocked** by the OQ-1 database-ownership breakage
+(re-verified via psql this session). No Rails code was changed in this milestone; the
+1/10/100 currency correction is explicitly scheduled for Milestone 3 behind the OQ-1 repair.
+Gradle suites: not rerun — no Minecraft production code changed (docs/tools only).
+
+### Explicitly NOT implemented (per milestone scope)
+Generalized economic NPC schema, spawn-post convergence, runtime vendor/trader rollout,
+TownPerson population, Minter/denomination exchange, Product transaction APIs, Shard Admin
+rules, automatic staffing, legacy block migration, commodity/Product seed creation.
+
+### Stopped
+Milestone 2 complete pending owner review of OQ-3…OQ-9. Milestone 3 not started.

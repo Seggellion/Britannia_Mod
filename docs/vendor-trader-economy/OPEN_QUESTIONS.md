@@ -558,6 +558,38 @@ The checkout is never modified and is kept separate from the implementation work
 
 ---
 
+## Milestone 2 owner-review items (added 2026-08-10)
+
+These are data-mapping proposals awaiting owner confirmation, produced by the RunUO audit
+(`runuo_ultimacraft_mapping.json`, summarized in RUNUO_VENDOR_MATRIX.md). They are review
+queues, not blockers.
+
+OQ-3. Five proposed NEW trader types (textile_trader 51 rows, reagent_trader 81,
+provision_trader 59, glass_trader 21, scribe_trader 12) — confirm, rename, merge, or reject.
+
+OQ-4. Payout denomination proposals for 915 buyback rows (copper 75 / silver 370 / gold 11 /
+unresolved 459) — the raw→copper, processed/finished→silver, ≥500GP→gold heuristic needs
+owner ratification, and the 459 unresolved rows need classification (mostly tied to OQ-5
+form data).
+
+OQ-5. New commodity families required by the mapping: reagents, textile inputs
+(cloth/thread/wool/cotton/flax), glass, scribe (paper/scrolls), plus metal-ingot commodity
+mappings for shadow_iron..valorite. Confirm which become Rails commodities vs
+UNSUPPORTED_BY_DESIGN.
+
+OQ-6. 694 retail rows with no confident UltimaCraft item match (REQUIRES_OWNER_MAPPING) —
+need triage into PROPOSED_DIRECT_ITEM / REQUIRES_NEW_ITEM / UNSUPPORTED_BY_DESIGN, likely in
+profession-family batches during Milestone 17 planning.
+
+OQ-7. 21 AnimalBuyInfo rows (creatures with control slots) — owner path needed (animal
+trainer vendor selling mobs is a different transaction class than ItemStack products).
+
+OQ-8. 10 REQUIRES_OWNER_MAPPING vendors (GolemCrafter, GypsyMaiden, RealEstateBroker, Thief,
+Vagabond, VarietyDealer, EvilHealer, PricedHealer, Hamato, Ryuichi).
+
+OQ-9. Quality carriers missing for armor and ranged-weapon product families (matrix §7) —
+needed before those vendor families roll out.
+
 ## OQ-1 status note (2026-08-10)
 
 Re-verified during the Milestone 1 documentation correction: `ultimacraft_test` is still owned by

@@ -102,6 +102,32 @@ Date: 2026-08-10.
   detached checkout). Read-only reference — never modified, kept separate from the
   implementation worktrees.
 
+## 4d. RunUO source audit facts (Milestone 2, 2026-08-10)
+
+- Audited directly from the pinned checkout (§4c), via
+  `docs/vendor-trader-economy/tools/parse_runuo_vendors.py` (reproducible; validated by
+  `tools/validate_mapping.py`).
+- Coverage: **74 vendor classes** (55 NPC-dir entries incl. 13 Guildmaster classes, 5 healers,
+  Banker, 6 faction vendors, 3 ML-quest trainer NPCs, player-vendor classes), **84 SBInfo
+  catalogs** (57 root + 8 Armors + 6 SE + 8 Weapons + 4 faction + SBNinja/SBSamurai refs),
+  **1,015 buy rows**, **915 sell rows**, 119 conditional rows, 10 commented-out rows,
+  21 AnimalBuyInfo / 55 BeverageBuyInfo / 1 PresetMapBuyInfo specialized rows,
+  425 distinct buy types / 409 distinct sell types. Cross-reference validated: no
+  referenced-but-unparsed catalogs.
+- `runuo_vendor_catalog.json` (11 vendors / 12 catalogs) is confirmed non-exhaustive (~15% of
+  the vendor set) and is superseded as a coverage source by
+  `docs/vendor-trader-economy/runuo_ultimacraft_mapping.json`.
+- Machine-readable mapping status totals: vendors — 33 PROPOSED_VENDOR, 5 EXISTING_MERCHANT,
+  14 EXISTING_SERVICE_NPC (incl. 12 Guildmasters), 4 PROPOSED_TRADER_ALIAS, 9 SERVICE_ONLY,
+  10 REQUIRES_OWNER_MAPPING, 11 UNSUPPORTED_BY_DESIGN (per-row statuses in the JSON; the
+  Guildmaster count is folded differently in the summary table — see matrix §2 note).
+  Buy rows — 694 REQUIRES_OWNER_MAPPING, 218 VARIABLE_MATERIAL_PRODUCT,
+  82 PROPOSED_DIRECT_ITEM (93 rows carry concrete item ids), 21 MOBILE. Sell rows —
+  546 PROPOSED_DEFAULT (existing traders), 224 REQUIRES_NEW_TRADER (textile/reagent/
+  provision/glass/scribe proposals), 145 REQUIRES_OWNER_MAPPING.
+- All 1,015 retail rows carry `denomination: gold` and their RunUO GP price (owner calibration
+  1 GP = 1 Gold). All rows carry explicit statuses — no silent gaps (validator-enforced).
+
 ## 5. Test inventory relevant to this project (for when the test DB is repaired)
 - Rails: `test/controllers/api/trader_transactions_controller_test.rb`, `merchant_transactions_controller_test.rb`, `transactions_legacy_purchase_idempotency_test.rb`, `city_commodities_controller_test.rb`, `npcs_controller_test.rb`, `service_npc_spawn_operations_controller_test.rb`, `world_bootstrap_*`, `world_state_changes_controller_test.rb`, `test/services/city_staffing/*`, plus banking auth/concurrency suites.
 - Minecraft unit: `src/test/java/...` (bannerdyeing, bank, tools). Minecraft GameTests: `gametest/ServiceNpc*`, `GuildmasterServiceNpcGameTests`, `WorldStateSync*`, `Banking*` (run via `runGameTestServer`). No Trader/Merchant-specific automated tests exist on the Minecraft side.
