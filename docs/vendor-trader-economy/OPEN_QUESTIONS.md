@@ -712,3 +712,29 @@ HairStylist's two special dyes (no appearance system).
 in Milestone 19, where real pricing data informs it.
 
 With this pass, no owner decisions remain open ahead of Milestones 15–19.
+
+## Owner architecture directive — canonical supply units (2026-08-11)
+
+Binding, recorded from the owner's statement on the flour weight-vs-quantity finding:
+
+- One canonical `supply` amount per commodity; never authoritative weight AND
+  quantity in parallel. `city_commodities.stock_unit` ("weight" | "count")
+  names the authoritative column; `unit_weight` derives the mirror.
+- Bulk/fungible commodities (flour, grain, ore, ingots, lumber, fish, meat,
+  wool, coal, stone and similar) are weight-canonical. Discrete finished
+  goods (weapons, armor, tools, furniture, potions, animals) are
+  count-canonical.
+- Minecraft ItemStack quantities derive from canonical supply and unit
+  weight (Rails `available_units` already implements this division).
+- Pricing operates against normalized supply vs target supply, unit-agnostic
+  (`inventory_level` / `max_supply_cap` — verified already compliant).
+- Production recipes consume/produce canonical units (grain → flour by
+  weight; iron → longsword consumes weight, produces count).
+
+Applied 2026-08-11 (see ECONOMY_RULES §9 and the implementation log): flour
+and the whole grain family migrated to weight; the plural `metal|ingots` rows
+the old singular-`ingot` hardcoded check missed are healed; both hardcoded
+classification lists (CityCommodity, SaleTransactionProcessor) retired in
+favor of per-row data. Follow-ups recorded in ECONOMY_RULES §9: unit_weight
+calibration for count rows feeding weight-summed supply columns (wine), and
+the reagent family's unit decision at Milestone 17.

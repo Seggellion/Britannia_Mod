@@ -150,3 +150,40 @@ Implemented via locked, idempotent Rails services (GuildTraining::Purchase treas
 existing transaction idempotency; banking-style local receipts for the Minecraft item leg).
 Vendor revenue moves currency (player → city); it does not destroy it — shard-level sinks are
 future city-expense systems, not Vendor price manipulation.
+
+## 9. Canonical supply units (OWNER DIRECTIVE, 2026-08-11)
+
+One authoritative supply representation per commodity, named by
+`city_commodities.stock_unit`:
+
+```text
+stock_unit = "weight"  ->  weight is canonical  (bulk/fungible goods)
+stock_unit = "count"   ->  quantity is canonical (discrete goods)
+```
+
+- The mirror column is DERIVED through `unit_weight` on every save
+  (`quantity = floor(weight / unit_weight)` or `weight = quantity x
+  unit_weight`) and can never act as a second source of truth; a direct write
+  to the mirror is overwritten from the canonical column.
+- Bulk families (weight): fish, wood, stone, ore, meat, grain, metal,
+  textile, and every food-supply category (food, produce, animal_product,
+  cooking_ingredient, dairy, eggs, groceries, bone, fat). Flour is the
+  canonical example: `grain|milled|flour` is weight-based supply.
+- Discrete goods (count): wine/alcohol bottles today; weapons, armor, tools,
+  furniture, potions, animals as their commodity families arrive.
+- Pricing and availability read `inventory_level` (aliased `supply`)
+  normalized against `max_supply_cap` -- they are unit-agnostic by
+  construction and unchanged by this directive.
+- Production recipes consume and produce canonical units: grain -> flour
+  moves weight; iron -> longsword consumes ingot weight and produces a
+  counted product (`ProductAvailability` divides canonical supply by the
+  per-unit requirement, which is already the derived-count rule Minecraft
+  ItemStacks need).
+- The old hardcoded `weight_based_inventory?` category list (and
+  `SaleTransactionProcessor`'s second copy of it) is retired; classification
+  is per-row data with a category-based default for new rows.
+
+Calibration follow-ups (OPEN, non-blocking): real `unit_weight` values for
+count-canonical commodities whose derived weight feeds city supply columns
+(wine bottles), and the reagent family's unit decision when Milestone 17
+implements it.

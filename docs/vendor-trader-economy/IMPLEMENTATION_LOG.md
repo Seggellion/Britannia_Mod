@@ -696,5 +696,53 @@ applied migration); repaired by un-record + re-migrate + re-dump + worker-DB rel
 recorded in the baseline docs conventions.
 
 ### Stopped
-Milestone 15 complete. Milestone 16 (legacy MerchantSpawnBlock/TraderSpawnBlock
-migration) not started, per stop rule.
+Milestone 15 complete.
+
+(Record correction: the approval that resumed Milestone 15 was a misunderstanding --
+the owner intended it for the owner-decision application only. The owner accepted the
+delivered milestone after the fact.)
+
+## 2026-08-11 — Owner architecture directive: canonical supply units (corrective)
+
+Owner directive applied (Rails commit in this revision; OPEN_QUESTIONS + ECONOMY_RULES
+section 9 record it verbatim). One authoritative supply representation per commodity:
+`city_commodities.stock_unit` ("weight" | "count") names the canonical column and
+`unit_weight` derives the mirror on every save -- a direct write to the mirror can
+never survive as a second truth (model-enforced, invariant-tested). Bulk/fungible
+families are weight-canonical: fish, wood, stone, ore, meat, GRAIN (flour explicitly,
+per the directive's example), metal, textile, and every food-supply category. Discrete
+goods (wine bottles today; weapons/tools/potions/animals when their families arrive)
+stay count-canonical. New rows default from the category; explicit stock_unit wins.
+
+Findings from the mandated inspection, all healed: the classification lived as a
+hardcoded category|subcategory list in CityCommodity#weight_based_inventory? AND as a
+second, diverged copy in SaleTransactionProcessor#weighted_commodity? (both retired --
+stock_unit is the single authority); the plural `metal|ingots` rows missed the
+singular-`ingot` check and were silently count-based; the grain family was
+count-based purely historically; the legacy processor's count branch let payload
+weight leak into count-denominated supply (now: count moves by count). Writers
+(EconomicVendorPurchase, EconomicTraderSale, SaleTransactionProcessor) now write the
+canonical column only. Trader-sale deltas for weight goods without payload weight
+derive through unit_weight instead of the raw count.
+
+Verified already compliant, unchanged: pricing normalizes inventory_level against
+max_supply_cap (unit-agnostic); ProductAvailability divides canonical supply by the
+per-unit requirement -- exactly the derived-ItemStack-count rule the directive asks
+for, so no Minecraft changes are needed.
+
+Migration backfills stock_unit for existing rows, seeds weight from the legacy count
+where a switching row had no tracked weight, and derives all mirrors once; check
+constraints close the unit set and force unit_weight > 0.
+
+Follow-ups (ECONOMY_RULES section 9): unit_weight calibration for count rows whose
+derived weight feeds weight-summed city supply columns (wine bottles); reagent-family
+unit decision at Milestone 17.
+
+Validation: new invariant suite 6 runs/23 assertions/0 failures; M14 purchase suite
+re-asserts flour consumption BY WEIGHT (4/16/0); economy regression band 35 runs/173
+assertions with only the documented pre-existing recalculator failure; full suite
+tally recorded in the corrective commit message.
+
+### Stopped
+Canonical supply units corrective complete. Milestone 16 (legacy
+MerchantSpawnBlock/TraderSpawnBlock migration) not started, per stop rule.
