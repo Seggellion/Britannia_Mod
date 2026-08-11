@@ -560,5 +560,29 @@ Validation: Rails focused 2 runs/35 assertions/0 failures; full 1413 runs/0 erro
 Per-row runtime accept-lists land with the Milestone 17 profession families.
 
 ### Stopped
-Milestone 11 complete. Milestone 12 (raw/processed Trader pricing policy) not started,
+Milestone 11 complete.
+
+## 2026-08-11 — Milestone 12: Raw and processed material Trader pricing
+
+Owner approved resuming. Rails `134a983` (test-only — the policy machinery itself landed in
+Milestone 10; this milestone proves it against the playbook fixtures).
+
+- Acceptance: raw wheat and processed flour trade under DIFFERENT shard-configured
+  multipliers while sharing the same authoritative CityCommodity market (equal starting
+  prices asserted), payouts in the ratified tiers (discounted copper vs full-value silver).
+- A shard policy row alone changes the payout for the same category (shard-configurable).
+- All eight legacy trader categories (wood, fish, ore, stone, fur/leather, grain, produce,
+  meat) price a representative commodity through the shared engine with the raw discount
+  and a real city-supply increase.
+
+Validation: focused 3 runs/31 assertions/0 failures; full suite 1416 runs/0 errors —
+failures this run were the pre-existing recalculator, the known spawn-point concurrency
+race, and the order-dependent leak into EconomicStaffingReconcileTest (passes 2/2 with the
+new suite in isolation). Robustness note for Milestone 19: EconomicStaffing::Reconcile
+iterates every EconomicNpcType row, which makes its suite sensitive to type rows leaked by
+the app's documented non-transactional test classes; scoping or cleanup support would
+de-flake it.
+
+### Stopped
+Milestone 12 complete. Milestone 13 (recipe-valued weapons and metal goods) not started,
 per stop rule.
