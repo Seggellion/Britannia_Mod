@@ -838,5 +838,60 @@ JUnit coverage tests green; compileJava BUILD SUCCESSFUL; GameTest server all 36
 required tests passed on the final build.
 
 ### Stopped
-Milestone 17 complete. Milestone 18 (observability, admin diagnostics, hardening) not
-started, per stop rule.
+Milestone 17 complete.
+
+## 2026-08-11 — Owner roadmap pass (post-Milestone-17)
+
+All open items dispositioned (Rails `9540d01`, MC `44933f09`): M20 = TownPerson
+regional population; M21 = item content (LLM-created models/textures/mechanics);
+glass + reagent commodity families created immediately (25/33 vendor types active,
+302/1015 retail rows seeded; reagent inputs corrected); wine unit_weight deferred to
+M19 section 2a. Roadmap: M18 -> M19 -> M20 -> M21.
+
+## 2026-08-11 — Milestone 18: Observability, admin diagnostics, and hardening
+
+Owner approved resuming. Rails commit + Minecraft commit in this revision.
+
+Acceptance: operators explain vendor/product/trader/treasury outcomes without
+database edits.
+
+Rails: `Admin::EconomicDiagnosticsController` -- one read-only page per city
+answering the acceptance questions from the SAME domain services the economy
+executes: eligibility with machine-readable reasons, effective policy + dwell,
+posts (state/revision/last-seen), assignments + recent economic closures
+(hysteresis holds explained), the FULL catalog including unavailable rows with
+reasons the game API omits, treasury balances per denomination with the payout
+rule stated, staffing-sweep dirty state, and recent transactions.
+`Admin::EconomicTransactionsController` -- READ-ONLY ledger history with filters
+(city/shard/npc_type/type/player/idempotency_key), settlement metadata, and line
+items; read-only-by-construction is itself asserted (no edit route exists).
+Hardening found and fixed en route: `ForVendor` dropped ProductAvailability's
+selected_material/quality, so the catalog API never actually emitted the
+Milestone 13 construction data (purchases were unaffected -- the M14 response
+carries it from the decision); rows now include both.
+
+Minecraft: `/economy post` (permission 2) formats `SpawnPostDiagnostics.collect`
+-- post UUID, city, decoded economic type, enabled/registration/revision/error,
+assigned NPC + assignment revision, last sync/ack, pending outbox depth, economic
+registry revision, and duplicate stamped-projection detection (radius 64 scan for
+live CitizenEntities sharing the assignment's worldNpcPublicId). Collection lives
+in a testable class; the command only formats.
+
+Performance verification: docs/vendor-trader-economy/PERFORMANCE_NOTES.md checks
+every playbook bullet against its enforcing code (no per-tick Rails requests;
+one-snapshot catalogs; BoundedHttp 1MB caps + 5/10/15s timeouts; bounded
+executor queue 32; version-cursor world-state; Pagy admin pagination;
+revision-gated invalidation with purchase-time authority; durable-outbox retry;
+jittered poller) and records two honest gaps for Milestone 19 (legacy heartbeat
+until migration completes; sweep serialization at extreme city counts).
+
+Validation: diagnostics + transactions focused suites 7 runs/40 assertions/0
+failures (the Rails commit message says 44 -- written before the final tally;
+40 is correct); ForVendor + rollout suites green on the new fields; full Rails
+suite 1454 runs/0 errors with only the two documented pre-existing flaky
+failures; compileJava BUILD SUCCESSFUL; GameTest server all 365 required tests
+passed (363 + 2 new diagnostics tests).
+
+### Stopped
+Milestone 18 complete. Milestone 19 (final differential and economy validation)
+not started, per stop rule.
