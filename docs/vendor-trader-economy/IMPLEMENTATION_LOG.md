@@ -790,5 +790,53 @@ the documented deterministic recalculator failure); compileJava BUILD SUCCESSFUL
 GameTest server all 363 required tests passed (359 existing + 4 new).
 
 ### Stopped
-Milestone 16 complete. Milestone 17 (full RunUO vendor rollout) not started, per stop
-rule.
+Milestone 16 complete.
+
+## 2026-08-11 — Milestone 17: Full RunUO vendor rollout
+
+Owner approved resuming. Rails `57a74ce`; Minecraft commit in this revision.
+
+Acceptance: the matrix reports EVERY RunUO Vendor and retail row as implemented or
+explicitly excluded, machine-enforced by the new `RunuoRetailRolloutCoverageTest`
+(retail twin of Milestone 11's buyback coverage test). Generated data-driven by
+`tools/generate_vendor_rollout.py` into `economic_vendor_rollout.json` (mirrored to
+Rails `db/seeds/data/`, seeded by `db:seed:economic_vendor_rollout`; conservative:
+never overwrites existing types/products, always ensures listings).
+
+Vendors: 33 vendor economic NPC types (19 ACTIVE with catalogs; 14 registered
+INACTIVE awaiting items/commodity families -- explicit, admin-activatable). The other
+41 vendor classes: OQ-8 merges, trader aliases, service, guildmaster territory, or
+unsupported by design. Presentation: dedicated entities where they exist; every other
+profession shares the new `britannia_mod:vendor` GenericVendorEntity whose role title
+humanizes the stamped type key (VendorRoleTitles, JUnit-covered) -- per-profession
+visuals become an admin `minecraft_entity_type_key` swap, never a deploy.
+
+Retail rows (1,015): 267 seeded -- 116 fixed-input + 151 metal-family
+material-machinery rows across 98 unique Products; RunUO GP as GOLD (ratified 1:1);
+requirements are PROVISIONAL family conventions over canonical CommoditySeeder keys
+only, admin-editable, Milestone 19 section-2a owns calibration. 748 explicitly
+excluded: 548 pending item creation, 60 magic-deferred, 36 pending commodity families
+(glass/reagent/textile/scribe, OQ-5), 30 deed/service, 29 mobile fulfillment (OQ-7),
+26 unsupported, 19 without a retail home in merged/service vendors.
+
+The three owner-decided profession hammers (carpenter/stonecrafter/tinker) are REAL
+registered items (interim visuals parent the blacksmith hammer model) and their rows
+are seeded products. Corrective folded in because the metal family made it live: the
+Milestone 13 material lookup's singular `metal|ingot` identity would never have
+matched the canonical plural `metal|ingots` CommoditySeeder rows -- fixed in both the
+availability and purchase paths (M19 note: centralize the identity); tests updated.
+
+Family flows proven end-to-end in the rollout suite: a generated weapon values
+through material selection and sells with gold treasury credit + provenance data; a
+tavern product consumes canonical weight supply on purchase. Hysteresis suite
+assertions city-scoped (leak-proof against non-transactional neighbors).
+
+Validation: rollout + purchase + metal + eligibility + hysteresis focused suites all
+green; full Rails suite 1447 runs/0 errors (only the four documented pre-existing
+flaky failures, re-verified isolated); mapping validator all invariants hold; both
+JUnit coverage tests green; compileJava BUILD SUCCESSFUL; GameTest server all 363
+required tests passed on the final build.
+
+### Stopped
+Milestone 17 complete. Milestone 18 (observability, admin diagnostics, hardening) not
+started, per stop rule.
