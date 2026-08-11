@@ -78,13 +78,14 @@ Across all six starts, the UltimaCraft wordmark, exact `Version 18` subtitle, ti
 
 ## Milestone 5 complete pre-world sweep
 
-The final sweep combined live 1920x1080 framebuffer inspection with Minecraft 1.21.1/NeoForge 21.1.72 source inspection. "Menu resource set" below means the five Milestone 1 opaque-black overrides: `menu_background`, `menu_list_background`, `header_separator`, `footer_separator`, and `tab_header_background`. No new renderer, mixin, event fill, panorama resource, or `inworld_*` resource was needed.
+The final sweep combined live 1920x1080 framebuffer inspection with Minecraft 1.21.1/NeoForge 21.1.72 source inspection. "Menu resource set" below means the five Milestone 1 opaque-black overrides: `menu_background`, `menu_list_background`, `header_separator`, `footer_separator`, and `tab_header_background`. A post-sweep live report found that loading/status frames could still expose the panorama before that resource layer covered it. The accepted correction adds a narrow `Screen#renderPanorama` mixin guard for loading/status classes; it adds no panorama or `inworld_*` resource and does not intercept the title, onboarding, ordinary menus, or portal/end branches.
 
 ### Main navigation and options
 
 | Screen/state | Old source/renderer | Final mechanism | Black result and controls |
 |---|---|---|---|
 | Main title | Protected `TitleScreenBackgroundMixin`; `TitleScreen#renderBackground` is empty | Explicit title exception | Live pass: chest/medallion, wordmark, subtitle, splash, buttons, and attribution preserved |
+| Title website entry | Vanilla `menu.online` button opens `RealmsMainScreen` | `ScreenEvent.Init.Post` replaces that exact button in place | Live pass: exact `Ultimacraft website` label in the Realms slot; click uses Minecraft's platform browser API for `https://www.ultimacraft.com` |
 | Options from title | `Screen#renderBackground` -> panorama/blur -> `MENU_BACKGROUND` | Opaque `menu_background` | Live pass: black; sliders, buttons, disabled states, tooltips, and Done visible |
 | Language | Standard background plus list | Menu resource set | Cumulative live pass: black list/body/separators; selected row, scrollbar, narration text, and buttons visible |
 | Accessibility | `OptionsSubScreen` standard background | Menu resource set | Cumulative live pass: black; controls, sliders, focus, and footer visible |
@@ -123,14 +124,14 @@ The final sweep combined live 1920x1080 framebuffer inspection with Minecraft 1.
 | Join Multiplayer | Standard background plus server list | Menu/list/separator resources | Live pass: black; scanning status and enabled/disabled server actions visible |
 | Add/Edit Server | Standard background with fields | Opaque `menu_background` | Live pass: black; name/address fields, resource-pack control, Done, and Cancel visible |
 | Direct Connection | Standard background with address field | Opaque `menu_background` | Live pass: black; address field, Join, and Cancel visible |
-| Connecting | `ConnectScreen` standard background/status | Opaque `menu_background` | Source-verified; loopback attempt traversed this path before the captured refusal, with status/cancel widgets untouched |
+| Connecting | `ConnectScreen` standard background/status | Loading panorama guard plus opaque `menu_background` | Policy-tested: panorama call becomes immediate black; status/cancel widgets remain untouched |
 | Disconnected/error | `DisconnectedScreen` standard background | Opaque `menu_background` | Live pass using closed loopback port: black; reason and Back to Server List visible |
-| Receiving/loading level, reason `OTHER` | Explicit panorama/blur/menu draw | Opaque `menu_background` drawn last | Source-verified and exercised by local world load; pre-world surface becomes black while portal/end reasons retain their special branch |
-| Generic waiting/progress | Standard background/status draw | Opaque `menu_background` | Source-verified; status text, progress, and narration remain functional |
+| Receiving/loading level, reason `OTHER` | Explicit panorama/blur/menu draw | Loading panorama guard plus opaque `menu_background` | Policy-tested: panorama call becomes immediate black; portal/end reasons never call it and retain their special branches |
+| Generic waiting/progress | Standard background/status draw | Loading panorama guard plus opaque `menu_background` | Policy-tested; status text, progress, actions, and narration remain functional |
 | Realms main/error | `RealmsScreen` standard rendering | Opaque `menu_background` | Live pass on the reachable invalid-session state: black; error copy and OK visible |
 | Realms configuration/invite/reset/backup | Realms `Screen` subclasses with standard backgrounds/lists | Menu resource set | Source-verified; authenticated-only variants were not reachable in the offline development session |
 | Realms notification overlay on title | Transparent `RealmsNotificationsScreen` over title | Explicit transparent-title exception | Source-verified: no background draw, so the protected title remains visible |
-| Generic message/notice | `GenericMessageScreen` explicitly draws panorama/blur/menu | Opaque `menu_background` drawn last | Source-verified: black in the same render call; message/narration remains above it |
+| Generic message/notice | `GenericMessageScreen` explicitly draws panorama/blur/menu | Loading panorama guard plus opaque `menu_background` | Live pass during world open: solid black with progress/status content; message/narration remains above it |
 | Confirmation/alert | `ConfirmScreen`/`AlertScreen` standard background | Opaque `menu_background` | Source-verified; action semantics and widgets remain untouched |
 | Accessibility onboarding | Standard pre-world flow | Opaque `menu_background` | Live pass: black; guidance, narration affordances, and actions visible |
 | Quick Play failure/warning | Standard/generic message flow | Opaque `menu_background` | Source-verified through the standard/generic routes; launch-only variant was not forced |
@@ -139,12 +140,12 @@ The final sweep combined live 1920x1080 framebuffer inspection with Minecraft 1.
 ### Transition and gameplay guards
 
 - A title-to-Options transition was sampled for 40 consecutive desktop frames at 25 ms intervals. Five exposed-background points per frame (200 samples total) were exactly RGB `(0,0,0)`; no one-frame panorama flash appeared.
-- `GenericMessageScreen` and `ReceivingLevelScreen.Reason.OTHER` draw the opaque menu resource in the same call after panorama/blur, closing the source-level transition gap for those direct consumers.
+- `LoadingScreenPanoramaMixin` intercepts only the panorama call for `GenericMessageScreen`, `ReceivingLevelScreen`, `ConnectScreen`, `LevelLoadingScreen`, `GenericWaitingScreen`, and `ProgressScreen`, drawing opaque black before any status content. Live world-open evidence shows a solid-black progress screen with no panorama.
 - Live in-world captures passed for the normal world/HUD, inventory, pause menu, and Options opened from pause. They retained the world-backed/blurred vanilla presentation rather than becoming black.
 - Container rendering remains on `AbstractContainerScreen`'s world/GUI path. Project-owned gameplay screens either supply their own renderer or, as with `MenuScreen`, deliberately suppress inherited background rendering. No broad post-render fill can reach them.
 - All four `inworld_*` resources and all panorama resources remain absent. Portal/end transition branches and the end-poem portal presentation remain unchanged.
 
-Gate 5 coverage therefore closes every row in this matrix as live-passed, cumulatively live-passed, or explicitly source-verified where authentication/launch/error setup was impractical. Ignored evidence is stored under `build/client-branding-validation/milestone-5` and is not packaged or committed.
+Gate 5 coverage, including the post-sweep correction, therefore closes every row in this matrix as live-passed, cumulatively live-passed, or explicitly policy/source-verified where authentication/launch/error setup was impractical. Correction evidence is stored under `build/client-branding-validation/milestone-5-correction` and is not packaged or committed.
 
 ## Main and core navigation
 

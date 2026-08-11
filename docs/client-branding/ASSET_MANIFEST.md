@@ -12,7 +12,7 @@ Source/candidate images must not be placed under `src/main/resources`. Only sele
 |---|---|---|---|---|
 | Approved background animation | `src/main/resources/assets/britannia_mod/textures/screens/chest_sequence.png` | PNG, 992x6448, RGB/24-bit, no alpha, 5,303,243 bytes | `7187FB8CA89FF959CB57022BEC15C113EE44FC4F15B2839B02D0D6E7217B0B30` | Unmodified |
 | Title background renderer | `src/main/java/com/seggellion/britannia_mod/mixin/TitleScreenBackgroundMixin.java` | Client mixin targeting `TitleScreen` | `70C9D1EAE4C95F42DC08E8029002FB890B782452E2517E263A3E2378C517AD62` | Unmodified |
-| Mixin registration | `src/main/resources/britannia_mod.mixins.json` | Registers title mixin in client list | `436DB321C6FB7CF10CA81849D367148D71E42AAEC757EC39AE2FE574FF9BF1B1` | Unmodified |
+| Mixin registration | `src/main/resources/britannia_mod.mixins.json` | Retains title mixin and registers the loading-screen panorama guard | `585E7F65AD1543F8B81F83FFD15702D54BB2042E25C5F994A2FA593E1B3098A6` | Milestone 5 correction; title registration retained |
 
 ### Protected render behavior
 
@@ -85,7 +85,7 @@ All five files are deterministic, opaque-black PNGs: every pixel is exactly ARGB
 
 The assembled Milestone 1 JAR contains all five paths above and no client-branding `inworld_*` or panorama override.
 
-Milestone 5 completed the full pre-world screen sweep without discovering another runtime asset target. Standard inherited screens, direct `Screen.MENU_BACKGROUND` consumers, `GenericMessageScreen`, `ReceivingLevelScreen.Reason.OTHER`, the non-poem credits renderer, and reachable NeoForge/Realms states all resolve through the same five-resource set. A 40-frame title-to-Options transition check found zero non-black values across 200 exposed-background samples. Live gameplay guards confirmed that the world/HUD, inventory, pause menu, and in-world Options continue to use their original paths. The accepted Milestone 5 runtime asset set is therefore unchanged from Milestone 1: exactly these five black PNGs, with every `inworld_*` and panorama override still absent.
+Milestone 5 completed the full pre-world screen sweep without discovering another runtime asset target. A later live issue report established that loading/status frames could still expose the panorama before the normal opaque menu texture covered it. The correction adds no image asset: `LoadingScreenPanoramaMixin` replaces the panorama call with an immediate opaque-black fill only for the six loading/status screen families recorded in `SCREEN_MATRIX.md`. Title, onboarding, ordinary menus, portal/end branches, all `inworld_*` resources, and all panorama resources remain untouched. The accepted runtime asset set therefore remains exactly these five black PNGs.
 
 The vanilla pre-world menu/list assets are translucent; replacing them with opaque black hides the panorama drawn beneath standard non-title screens. No panorama face or overlay asset is planned at baseline because relying on `panorama_overlay.png` alpha is specifically avoided.
 

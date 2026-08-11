@@ -11,6 +11,7 @@
     "PlayerListAccessorMixin"
   ],
   "client": [
+    "LoadingScreenPanoramaMixin",
     "TitleScreenBackgroundMixin",
     "client.CreativeModeInventoryScreenAccessor",
     "client.ItemStackFarmingPresentationMixin"

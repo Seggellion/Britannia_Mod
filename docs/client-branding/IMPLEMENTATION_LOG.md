@@ -629,3 +629,96 @@ feat(client): complete pre-world background cleanup
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 5 correction - loading backgrounds and website entry
+
+Date: 2026-08-11
+
+Status: Correction passed; Milestone 6 not started
+
+Production behavior changed: Yes - loading/status panoramas are now black, and the title Realms button is now the UltimaCraft website entry
+
+Starting commit: `c6bef97d61d7a4135cdc2c1d06b62ff8ec459ae4`
+
+### Loading-screen correction
+
+The user-reported live behavior superseded the initial Gate 5 source-only conclusion for transient loading frames. Minecraft's loading/status classes call `Screen#renderPanorama` before drawing their status content, and that call can become visible before the ordinary opaque menu resource covers the frame.
+
+Added `LoadingScreenPanoramaMixin`, a client-only injection at the head of that one decorative call. `LoadingScreenBackgroundPolicy` limits replacement to:
+
+- `GenericMessageScreen`;
+- `ReceivingLevelScreen` when its renderer actually calls the panorama path;
+- `ConnectScreen`;
+- `LevelLoadingScreen`;
+- `GenericWaitingScreen`;
+- `ProgressScreen`.
+
+For those classes the mixin fills the current GUI bounds with opaque `#000000` and cancels only the panorama draw. The screen then continues normally, retaining progress percentages, loading/status text, narration, and cancel/action controls. The title, accessibility onboarding, ordinary options/menu screens, and all other panorama callers fail the policy predicate and remain untouched. Nether portal and end portal receiving paths never call `renderPanorama`, so their special rendering is preserved.
+
+No panorama face, panorama overlay, or `inworld_*` resource was added.
+
+### Title website entry
+
+Added `TitleWebsiteButtonBranding`, a client game-bus subscriber for `ScreenEvent.Init.Post`.
+
+- It runs only for `TitleScreen`.
+- It identifies the exact vanilla Realms button by its `menu.online` component.
+- It removes that widget and inserts a replacement at the same X/Y/width/height.
+- The exact visible label is `Ultimacraft website`.
+- The click action uses Minecraft's supported `Util.getPlatform().openUri` path with the exact URI `https://www.ultimacraft.com`.
+- Multiplayer, Mods, Options, language, accessibility, Quit, and copyright controls are unchanged.
+
+The Realms notification overlay remains a transparent title-layer concern; only the main-menu entry button/action is replaced.
+
+### Live validation
+
+The client launched successfully with the new mixin active. Exact 1920x1080 framebuffer evidence confirmed:
+
+- `Ultimacraft website` occupies the former Minecraft Realms slot on the protected UltimaCraft title screen;
+- the wordmark, `Version 18`, splash, chest/medallion background, remaining buttons, and attribution are unchanged;
+- opening the existing local validation world displays a solid-black loading surface with its `0%` progress indicator and no panorama.
+
+Ignored evidence is stored under `build/client-branding-validation/milestone-5-correction`. The temporary capture helper was deleted, the client was closed cleanly, and local GUI/multiplayer-warning options remain restored.
+
+### Automated, build, hash, and package validation
+
+Added five tests:
+
+- two `LoadingScreenBackgroundPolicyTest` cases lock all six loading/status inclusions and the title/onboarding/ordinary-screen exclusions;
+- three `TitleWebsiteButtonBrandingTest` cases lock the exact label, HTTPS host, Realms-only recognition, and in-place geometry.
+
+The focused eight-test set, including the three existing background-policy checks, passed.
+
+Full build comparison:
+
+- transformation, compilation, resource processing, regular/all-in-one JAR assembly, scaffold compilation, and test compilation completed;
+- 1,807 tests executed: 1,769 passed, 21 failed, 17 skipped;
+- the five-test increase from 1,802 is exactly the new correction coverage;
+- the same 21 pre-existing banner/scaffold asset-integrity tests failed;
+- no new failing class or failure count was introduced.
+
+The regular JAR contains `LoadingScreenBackgroundPolicy.class`, `LoadingScreenPanoramaMixin.class`, `TitleWebsiteButtonBranding.class`, and the updated client mixin registration. The protected chest sequence and `TitleScreenBackgroundMixin` hashes remain unchanged. `britannia_mod.mixins.json` changed only to register the loading guard and now has SHA-256 `585E7F65AD1543F8B81F83FFD15702D54BB2042E25C5F994A2FA593E1B3098A6`.
+
+### Correction checklist
+
+- [x] Loading/status panorama calls are replaced by opaque black.
+- [x] Loading text, progress, narration, and controls remain rendered.
+- [x] Title, onboarding, ordinary menus, portal/end transitions, and in-world paths are excluded.
+- [x] No panorama or `inworld_*` resource override was added.
+- [x] Minecraft Realms main-menu button is absent.
+- [x] Exact `Ultimacraft website` replacement occupies the same slot.
+- [x] Website action targets exactly `https://www.ultimacraft.com` through Minecraft's platform browser API.
+- [x] Protected title presentation remains unchanged.
+- [x] Focused correction/protection tests pass.
+- [x] Full build failure count and classes match baseline.
+- [x] JAR registration/classes and hashes are verified.
+- [x] Temporary validation helper is removed and local options are restored.
+- [x] Milestone 6 was not started.
+
+Planned local commit message:
+
+```text
+fix(client): black out loading screens and add website link
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.
