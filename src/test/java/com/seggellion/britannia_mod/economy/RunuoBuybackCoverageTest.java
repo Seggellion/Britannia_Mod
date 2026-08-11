@@ -32,7 +32,11 @@ final class RunuoBuybackCoverageTest {
             "reagent_trader", "provision_trader", "textile_trader", "glass_trader", "scribe_trader"
     );
     private static final Set<String> SELL_STATUSES = Set.of(
-            "PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER", "REQUIRES_OWNER_MAPPING"
+            "PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER", "REQUIRES_OWNER_MAPPING",
+            // Owner decision pass 2026-08-11: the formerly-unresolved rows are now
+            // routed (OWNER_MAPPED, twin-consistent) or explicitly excluded from the
+            // economy (OWNER_UNSUPPORTED: housing-service tools, appearance dyes).
+            "OWNER_MAPPED", "OWNER_UNSUPPORTED"
     );
     private static final Set<String> PAYOUT_DENOMINATIONS = Set.of(
             "copper", "silver", "gold", "unresolved"
@@ -74,18 +78,27 @@ final class RunuoBuybackCoverageTest {
                         id + " has no valid buyback_status: " + status);
 
                 switch (status) {
-                    case "PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER" -> {
+                    case "PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER", "OWNER_MAPPED" -> {
                         String trader = row.has("target_trader") && !row.get("target_trader").isJsonNull()
                                 ? row.get("target_trader").getAsString() : null;
                         assertTrue(trader != null && KNOWN_TRADERS.contains(trader),
                                 id + " maps to an unknown trader: " + trader);
                         assertFalse(row.get("valuation_strategy").isJsonNull(),
                                 id + " has no valuation strategy");
+                        if ("OWNER_MAPPED".equals(status)) {
+                            assertTrue(row.has("owner_decision"),
+                                    id + " owner-mapped row lost its decision record");
+                        }
                     }
                     case "REQUIRES_OWNER_MAPPING" -> {
                         // Explicitly unresolved is allowed — but must stay explicit.
                         assertTrue(row.has("payout_denomination_status"),
                                 id + " unresolved row lost its denomination status");
+                    }
+                    case "OWNER_UNSUPPORTED" -> {
+                        // Owner-excluded rows must carry the decision that excluded them.
+                        assertTrue(row.has("owner_decision"),
+                                id + " owner-unsupported row lost its decision record");
                     }
                     default -> fail(id + " unreachable status " + status);
                 }

@@ -41,8 +41,16 @@ VENDOR_STATUSES = {
 BUY_STATUSES = {
     "DIRECT_MATCH", "LIKELY_MATCH", "MISSING_ITEM", "SERVICE_OR_MOBILE",
     "UNSUPPORTED", "OWNER_REVIEW", "VARIABLE_MATERIAL_PRODUCT",
+    # Owner decision pass 2026-08-11: magic retail deferred; deed retail stays
+    # with the existing house-deed service.
+    "UNSUPPORTED_PENDING_MAGIC", "SERVICE_EXISTING_SYSTEM",
 }
-SELL_STATUSES = {"PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER", "REQUIRES_OWNER_MAPPING"}
+SELL_STATUSES = {
+    "PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER", "REQUIRES_OWNER_MAPPING",
+    # Owner decision pass 2026-08-11: formerly-unresolved rows routed (or
+    # explicitly excluded) by owner decision; both must stay auditable.
+    "OWNER_MAPPED", "OWNER_UNSUPPORTED",
+}
 FORMS = {"raw", "processed", "finished", "unclassified"}
 
 
@@ -116,6 +124,13 @@ def main() -> int:
                     )
             if st == "REQUIRES_NEW_TRADER" and not row.get("target_trader"):
                 errors.append(f"{rid}: REQUIRES_NEW_TRADER without proposed trader key")
+            if st == "OWNER_MAPPED":
+                if not row.get("target_trader"):
+                    errors.append(f"{rid}: OWNER_MAPPED without a target trader")
+                if not row.get("owner_decision"):
+                    errors.append(f"{rid}: OWNER_MAPPED without its owner_decision record")
+            if st == "OWNER_UNSUPPORTED" and not row.get("owner_decision"):
+                errors.append(f"{rid}: OWNER_UNSUPPORTED without its owner_decision record")
             if row.get("form") not in FORMS:
                 errors.append(f"{rid}: invalid form {row.get('form')!r}")
             if row.get("payout_denomination_proposal") not in PAYOUT_DENOMS:

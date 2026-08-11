@@ -51,22 +51,26 @@ metal armor directly.
 
 | Bucket | Count | Meaning |
 |---|---|---|
-| MISSING_ITEM | 473 | Clean item concept, no UltimaCraft item exists (food dishes, containers, tools, clothing, instruments…) |
+| MISSING_ITEM | 476 | Clean item concept, no UltimaCraft item exists (food dishes, containers, tools, clothing, instruments…; includes the 3 decided per-profession Hammer rows) |
 | VARIABLE_MATERIAL_PRODUCT | 226 | Weapon/armor/shield/smith catalogs (material-family Products); item matches recorded alongside: 151 direct/likely, 75 missing |
 | LIKELY_MATCH | 102 | Confident alias/near match (e.g. MandrakeRoot→mandrake, SackFlour→flour, BreadLoaf→bread) |
 | DIRECT_MATCH | 66 | Exact id match (britannia_mod or vanilla) |
-| OWNER_REVIEW | 93 | Only 3 real decisions — see below |
+| UNSUPPORTED_PENDING_MAGIC | 60 | Owner decision 2026-08-11: magic/alchemy consumable retail deferred until a consumable/magic system is designed (revisitable) |
+| SERVICE_EXISTING_SYSTEM | 30 | Owner decision 2026-08-11: deed retail stays owned by the existing house-deed service |
 | SERVICE_OR_MOBILE | 29 | 21 AnimalBuyInfo mobiles, 1 PresetMap, appearance consumables |
 | UNSUPPORTED | 26 | Faction stock, player-vendor contracts, communication crystals |
+| OWNER_REVIEW | 0 | All 93 resolved by the 2026-08-11 owner decision pass (below) |
 
-**The 93 OWNER_REVIEW rows reduce to exactly three decisions:**
-1. **Magic/alchemy consumables** (potions, scrolls, spellbooks, recall runes, wizard hats;
-   includes the 3 programmatic spell-scroll loop rows `types[i]` in SBMage/SBHolyMage/
-   SBVarietyDealer that expand to the full circle-scroll list) — does UltimaCraft's magic
-   system get purchasable consumable items?
-2. **Deed economy** (28 house/boat/aquarium/guild/commodity deed rows) — how RunUO deed retail
-   maps onto UltimaCraft's existing house-deed system (Architect/RealEstate decision).
-3. **`Hammer` disambiguation** (3 rows: hammer_pick vs war_hammer vs black_smiths_hammer).
+**The 93 former OWNER_REVIEW rows — owner decisions recorded 2026-08-11:**
+1. **Magic/alchemy consumables (60 rows** incl. the 3 programmatic spell-scroll loops**)** —
+   DEFERRED: no purchasable magic consumables in this project; rows are
+   `UNSUPPORTED_PENDING_MAGIC` and revisitable when a consumable/magic system is designed.
+2. **Deed economy (30 rows)** — deeds stay owned by the existing house-deed service
+   (`SERVICE_EXISTING_SYSTEM`); consistent with RealEstateBroker's SERVICE classification.
+3. **`Hammer` (3 rows)** — each crafting profession gets its own hammer item; only
+   `blacksmith_hammer` exists today. Rows are `MISSING_ITEM` with planned ids
+   `carpenter_hammer` (SBCarpenter), `stonecrafter_hammer` (SBStoneCrafter),
+   `tinker_hammer` (SBTinker) — item creation lands with their Milestone 17 families.
 
 All retail rows remain `denomination: gold` (1 RunUO GP = 1 Gold), `requirements_status:
 unresolved` (Rails Product seeding is Milestone 3+; never from Minecraft recipes).
@@ -77,7 +81,9 @@ unresolved` (Rails Product seeding is Milestone 3+; never from Minecraft recipes
 |---|---|
 | PROPOSED_DEFAULT (existing traders) | 638 |
 | REQUIRES_NEW_TRADER (5 proposals, §4a) | 224 |
-| REQUIRES_OWNER_MAPPING | 53 (Thief 7, VarietyDealer 30, RealEstateBroker 2, Dryad 12, misc) |
+| OWNER_MAPPED (2026-08-11 decision pass) | 49 — each routed with its already-approved same-type twin (VarietyDealer 30, Dryad 7, Thief 7, RealEstateBroker 2, HairStylist 1, FortuneTeller 1, Veterinarian 1) |
+| OWNER_UNSUPPORTED (2026-08-11 decision pass) | 4 — Architect housing tools (2, existing house-deed service), HairStylist special dyes (2, no appearance system) |
+| REQUIRES_OWNER_MAPPING | 0 |
 
 ### 4a. OQ-3 — proposed new Trader types with provenance
 
@@ -89,8 +95,8 @@ unresolved` (Rails Product seeding is Milestone 3+; never from Minecraft recipes
 | glass_trader | 21 | SBGlassblower (21) | bottles, blowpipes — note: rows overlap reagent/alchemy stock; could merge into reagent_trader |
 | scribe_trader | 12 | SBMapmaker (7), SBScribe (5) | blank scrolls/maps, books, pens |
 
-Consolidation option for owner: `glass_trader` and `scribe_trader` are small; both could fold
-into `reagent_trader` (alchemy/arcana supply) leaving three new types instead of five.
+Consolidation option CLOSED (owner decision 2026-08-11): all five trader types stay as
+approved and seeded in Milestone 11 — no glass/scribe consolidation.
 
 ### 4b. OQ-4 — payout denomination policy (class-based)
 
@@ -121,7 +127,7 @@ ItemRegistry).
 | reagents | 7/8 (black_pearl missing) | none (cities have `reagents_supply` column only) | reagent commodity family + black_pearl item |
 | textiles (cloth/thread/yarn/wool/cotton/flax) | NO | none | items + commodity family |
 | glass (sand/bottles) | NO | none | items + commodity family |
-| scribe (paper/blank scrolls) | NO | none | items + commodity family (pends magic decision) |
+| scribe (paper/blank scrolls) | NO | none | items + commodity family (stands on its own — 2026-08-11: blank scrolls/maps/books are physical scribe goods; only MAGIC consumable retail is deferred) |
 | form classification | n/a | subcategory conventions only | explicit raw/processed/finished column (owner decision #9) |
 | economic permissions | n/a | none | npc_buy/npc_sell/production_enabled data (owner decision #8) |
 

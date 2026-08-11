@@ -614,6 +614,8 @@ Milestone 17 families.
 
 **Still genuinely open (small):** (a) magic/alchemy consumable items yes/no; (b) deed-economy
 mapping; (c) `Hammer` disambiguation (3 rows).
+→ **ALL RESOLVED by the 2026-08-11 owner decision pass — see the section at the end of this
+file.**
 
 **2026-08-10 second approval ("i approve" on the Milestone 3 report):** the seeded nine-metal
 rank ladder (iron 1 … valorite 9) is confirmed as the working default (remains admin-editable
@@ -677,3 +679,36 @@ Both touch ONLY `ultimacraft_test*`; `ultimacraft_development` is untouched eith
 in dev (not just a migration default), and `ultimacraft_test.currencies` is empty. The
 Milestone 3 correction must therefore include a data migration to the canonical
 1/100/10,000 values for existing rows, not only new-row defaults.
+## Owner decision pass — 2026-08-11 (pre-Milestone-15): ALL remaining decisions resolved
+
+Recorded verbatim from the owner's answers; applied to `runuo_ultimacraft_mapping.json`
+(validator + `RunuoBuybackCoverageTest` both green after the edit).
+
+1. **Magic/alchemy consumables: NO — deferred explicitly.** The 60 retail rows (57 explicit
+   + 3 programmatic spell-scroll loops) are `UNSUPPORTED_PENDING_MAGIC`. Vendors ship
+   without magic stock; rows stay auditable and revisitable when a consumable/magic system
+   is designed. Reagent ingredients keep trading as already approved (OQ-3).
+2. **Deed economy: existing housing system.** The 30 deed rows are
+   `SERVICE_EXISTING_SYSTEM` — deed retail stays owned by the working house-deed flow,
+   consistent with RealEstateBroker's SERVICE classification (OQ-8).
+3. **`Hammer` rows: each crafting profession gets its own hammer item.** Only
+   `blacksmith_hammer` exists today. The 3 rows are `MISSING_ITEM` with planned ids
+   `britannia_mod:carpenter_hammer` (SBCarpenter), `britannia_mod:stonecrafter_hammer`
+   (SBStoneCrafter), `britannia_mod:tinker_hammer` (SBTinker) — item creation lands with
+   their Milestone 17 profession families.
+4. **New trader types: keep all five** (reagent, provision, textile, glass, scribe) as
+   approved and seeded in Milestone 11. The glass/scribe→reagent consolidation option is
+   CLOSED.
+
+**Derived buyback routing (the 53 `REQUIRES_OWNER_MAPPING` rows → 0):** 49 rows became
+`OWNER_MAPPED` by copying the already-approved routing of the SAME RunUO item type
+elsewhere in the mapping (twin-consistent: one item type, one buying trader) — VarietyDealer
+30, Dryad 7, Thief 7 (incl. Lockpick → provision_trader; `lockpick_tools` exists),
+RealEstateBroker 2, HairStylist 1, FortuneTeller 1, Veterinarian 1. 4 rows became
+`OWNER_UNSUPPORTED`: Architect's InteriorDecorator/HousePlacementTool (housing service) and
+HairStylist's two special dyes (no appearance system).
+
+**Deliberately NOT decided here:** ECONOMY_RULES §2a rounding/adjustment calibration stays
+in Milestone 19, where real pricing data informs it.
+
+With this pass, no owner decisions remain open ahead of Milestones 15–19.
