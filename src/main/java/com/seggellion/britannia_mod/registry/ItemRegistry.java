@@ -209,8 +209,24 @@ public static final DeferredHolder<Item, Item> COPPER_BEADS = ITEMS.register("co
 
         // Tools
 
-public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.register("blacksmith_hammer", 
+public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.register("blacksmith_hammer",
         () -> new BlackSmithsHammerItem(new Item.Properties().stacksTo(1))
+);
+
+// Vendor/Trader Milestone 17 (owner decision 2026-08-11): each crafting
+// profession gets its own hammer item. Plain items for now -- their
+// profession crafting systems arrive with their own features; the economy
+// needs the items to exist so the RunUO Hammer retail rows resolve.
+public static final DeferredHolder<Item, Item> CARPENTER_HAMMER = ITEMS.register("carpenter_hammer",
+        () -> new Item(new Item.Properties().stacksTo(1))
+);
+
+public static final DeferredHolder<Item, Item> STONECRAFTER_HAMMER = ITEMS.register("stonecrafter_hammer",
+        () -> new Item(new Item.Properties().stacksTo(1))
+);
+
+public static final DeferredHolder<Item, Item> TINKER_HAMMER = ITEMS.register("tinker_hammer",
+        () -> new Item(new Item.Properties().stacksTo(1))
 );
 
 

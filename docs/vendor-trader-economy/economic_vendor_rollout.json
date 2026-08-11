@@ -1,0 +1,1965 @@
+{
+ "generated_by": "docs/vendor-trader-economy/tools/generate_vendor_rollout.py",
+ "milestone": 17,
+ "pricing": "runuo_gp_price as GOLD (owner rule: 1 RunUO GP = 1 UltimaCraft Gold)",
+ "vendor_types": [
+  {
+   "key": "alchemist_vendor",
+   "display_name": "the alchemist",
+   "profession_key": "alchemist",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Alchemist"
+   ],
+   "active": false
+  },
+  {
+   "key": "armorer_vendor",
+   "display_name": "the armorer",
+   "profession_key": "armorer",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Armorer"
+   ],
+   "active": true
+  },
+  {
+   "key": "baker",
+   "display_name": "the baker",
+   "profession_key": "baker",
+   "entity": "britannia_mod:baker",
+   "existing": true,
+   "vendor_classes": [
+    "Baker"
+   ],
+   "active": true
+  },
+  {
+   "key": "bard_vendor",
+   "display_name": "the bard",
+   "profession_key": "bard",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Bard"
+   ],
+   "active": true
+  },
+  {
+   "key": "beekeeper_vendor",
+   "display_name": "the beekeeper",
+   "profession_key": "beekeeper",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Beekeeper"
+   ],
+   "active": false
+  },
+  {
+   "key": "blacksmith_vendor",
+   "display_name": "the blacksmith",
+   "profession_key": "blacksmith",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Blacksmith",
+    "IronWorker"
+   ],
+   "active": true
+  },
+  {
+   "key": "bowyer_vendor",
+   "display_name": "the bowyer",
+   "profession_key": "bowyer",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Bowyer"
+   ],
+   "active": true
+  },
+  {
+   "key": "butcher_vendor",
+   "display_name": "the butcher",
+   "profession_key": "butcher",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Butcher"
+   ],
+   "active": true
+  },
+  {
+   "key": "carpenter_vendor",
+   "display_name": "the carpenter",
+   "profession_key": "carpenter",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Carpenter"
+   ],
+   "active": true
+  },
+  {
+   "key": "cobbler_vendor",
+   "display_name": "the cobbler",
+   "profession_key": "cobbler",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Cobbler"
+   ],
+   "active": false
+  },
+  {
+   "key": "cook_vendor",
+   "display_name": "the cook",
+   "profession_key": "cook",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Cook"
+   ],
+   "active": true
+  },
+  {
+   "key": "costermonger",
+   "display_name": "the farmer",
+   "profession_key": "costermonger",
+   "entity": "britannia_mod:costermonger",
+   "existing": true,
+   "vendor_classes": [
+    "Farmer"
+   ],
+   "active": true
+  },
+  {
+   "key": "glassblower_vendor",
+   "display_name": "the alchemist",
+   "profession_key": "glassblower",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Glassblower"
+   ],
+   "active": false
+  },
+  {
+   "key": "healer_vendor",
+   "display_name": "Healer",
+   "profession_key": "healer",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Healer"
+   ],
+   "active": false
+  },
+  {
+   "key": "herbalist_vendor",
+   "display_name": "the herbalist",
+   "profession_key": "herbalist",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Herbalist"
+   ],
+   "active": false
+  },
+  {
+   "key": "holy_mage_vendor",
+   "display_name": "the Holy Mage",
+   "profession_key": "holy_mage",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "HolyMage"
+   ],
+   "active": false
+  },
+  {
+   "key": "innkeeper_vendor",
+   "display_name": "the innkeeper",
+   "profession_key": "innkeeper",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "InnKeeper"
+   ],
+   "active": true
+  },
+  {
+   "key": "jeweler_vendor",
+   "display_name": "the jeweler",
+   "profession_key": "jeweler",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Jeweler"
+   ],
+   "active": true
+  },
+  {
+   "key": "leather_worker_vendor",
+   "display_name": "the leather worker",
+   "profession_key": "leather_worker",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "LeatherWorker"
+   ],
+   "active": false
+  },
+  {
+   "key": "mage_vendor",
+   "display_name": "the mage",
+   "profession_key": "mage",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Mage"
+   ],
+   "active": false
+  },
+  {
+   "key": "mapmaker_vendor",
+   "display_name": "the mapmaker",
+   "profession_key": "mapmaker",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Mapmaker"
+   ],
+   "active": false
+  },
+  {
+   "key": "miller_vendor",
+   "display_name": "the miller",
+   "profession_key": "miller",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Miller"
+   ],
+   "active": true
+  },
+  {
+   "key": "provisioner_vendor",
+   "display_name": "the provisioner",
+   "profession_key": "provisioner",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Provisioner"
+   ],
+   "active": true
+  },
+  {
+   "key": "rancher_vendor",
+   "display_name": "the rancher",
+   "profession_key": "rancher",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Rancher"
+   ],
+   "active": false
+  },
+  {
+   "key": "ranger_vendor",
+   "display_name": "the ranger",
+   "profession_key": "ranger",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Ranger"
+   ],
+   "active": false
+  },
+  {
+   "key": "scribe_vendor",
+   "display_name": "the scribe",
+   "profession_key": "scribe",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Scribe"
+   ],
+   "active": false
+  },
+  {
+   "key": "shipwright_vendor",
+   "display_name": "the shipwright",
+   "profession_key": "shipwright",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Shipwright"
+   ],
+   "active": false
+  },
+  {
+   "key": "stone_crafter_vendor",
+   "display_name": "the stone crafter",
+   "profession_key": "stone_crafter",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "StoneCrafter"
+   ],
+   "active": true
+  },
+  {
+   "key": "tailor_vendor",
+   "display_name": "the tailor",
+   "profession_key": "tailor",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Tailor"
+   ],
+   "active": true
+  },
+  {
+   "key": "tavernkeeper",
+   "display_name": "the barkeeper",
+   "profession_key": "tavernkeeper",
+   "entity": "britannia_mod:tavernkeeper",
+   "existing": true,
+   "vendor_classes": [
+    "Barkeeper",
+    "TavernKeeper",
+    "Waiter"
+   ],
+   "active": true
+  },
+  {
+   "key": "tinker_vendor",
+   "display_name": "the tinker",
+   "profession_key": "tinker",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Tinker"
+   ],
+   "active": true
+  },
+  {
+   "key": "weaponsmith_vendor",
+   "display_name": "the weaponsmith",
+   "profession_key": "weaponsmith",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Weaponsmith"
+   ],
+   "active": true
+  },
+  {
+   "key": "weaver_vendor",
+   "display_name": "the weaver",
+   "profession_key": "weaver",
+   "entity": "britannia_mod:vendor",
+   "existing": false,
+   "vendor_classes": [
+    "Weaver"
+   ],
+   "active": true
+  }
+ ],
+ "products": [
+  {
+   "item_id": "britannia_mod:axe",
+   "title": "Axe",
+   "runuo_type": "Axe",
+   "price_gold": 40,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:bardiche",
+   "title": "Bardiche",
+   "runuo_type": "Bardiche",
+   "price_gold": 60,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:bascinet",
+   "title": "Bascinet",
+   "runuo_type": "Bascinet",
+   "price_gold": 18,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:battle_axe",
+   "title": "Battle Axe",
+   "runuo_type": "BattleAxe",
+   "price_gold": 26,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:blacksmith_hammer",
+   "title": "Smith Hammer",
+   "runuo_type": "SmithHammer",
+   "price_gold": 21,
+   "vendors": [
+    "blacksmith_vendor",
+    "jeweler_vendor",
+    "tinker_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:bladed_staff",
+   "title": "Bladed Staff",
+   "runuo_type": "BladedStaff",
+   "price_gold": 40,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:blood_moss",
+   "title": "Bloodmoss",
+   "runuo_type": "Bloodmoss",
+   "price_gold": 5,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:bone_harvester",
+   "title": "Bone Harvester",
+   "runuo_type": "BoneHarvester",
+   "price_gold": 35,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:broadsword",
+   "title": "Broadsword",
+   "runuo_type": "Broadsword",
+   "price_gold": 35,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:bronze_shield",
+   "title": "Bronze Shield",
+   "runuo_type": "BronzeShield",
+   "price_gold": 66,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:buckler",
+   "title": "Buckler",
+   "runuo_type": "Buckler",
+   "price_gold": 50,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:candle",
+   "title": "Candle",
+   "runuo_type": "Candle",
+   "price_gold": 6,
+   "vendors": [
+    "innkeeper_vendor",
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|milled|flour",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:carpenter_hammer",
+   "title": "Hammer",
+   "runuo_type": "Hammer",
+   "price_gold": 17,
+   "vendors": [
+    "carpenter_vendor",
+    "stone_crafter_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "meat|pork|raw_pork",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:cheese",
+   "title": "Cheese Pizza",
+   "runuo_type": "CheesePizza",
+   "price_gold": 8,
+   "vendors": [
+    "baker",
+    "tavernkeeper",
+    "cook_vendor",
+    "innkeeper_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|milled|flour",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:chess_board",
+   "title": "Board",
+   "runuo_type": "Board",
+   "price_gold": 3,
+   "vendors": [
+    "carpenter_vendor",
+    "stone_crafter_vendor",
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "wood|logs|oak",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:close_helmet",
+   "title": "Close Helm",
+   "runuo_type": "CloseHelm",
+   "price_gold": 18,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:copper_beads",
+   "title": "Beads",
+   "runuo_type": "Beads",
+   "price_gold": 27,
+   "vendors": [
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|gold",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:copper_necklace",
+   "title": "Necklace",
+   "runuo_type": "Necklace",
+   "price_gold": 26,
+   "vendors": [
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|gold",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:cotton",
+   "title": "Cotton",
+   "runuo_type": "Cotton",
+   "price_gold": 102,
+   "vendors": [
+    "tailor_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:crescent_blade",
+   "title": "Crescent Blade",
+   "runuo_type": "CrescentBlade",
+   "price_gold": 37,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:cutlass",
+   "title": "Cutlass",
+   "runuo_type": "Cutlass",
+   "price_gold": 24,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:dagger",
+   "title": "Dagger",
+   "runuo_type": "Dagger",
+   "price_gold": 21,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:daisho",
+   "title": "Daisho",
+   "runuo_type": "Daisho",
+   "price_gold": 66,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:diamond_mace",
+   "title": "Diamond",
+   "runuo_type": "Diamond",
+   "price_gold": 200,
+   "vendors": [
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|gold",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:double_axe",
+   "title": "Double Axe",
+   "runuo_type": "DoubleAxe",
+   "price_gold": 52,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 3.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:double_bladed_staff",
+   "title": "Double Bladed Staff",
+   "runuo_type": "DoubleBladedStaff",
+   "price_gold": 35,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 3.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:drums",
+   "title": "Drums",
+   "runuo_type": "Drums",
+   "price_gold": 21,
+   "vendors": [
+    "bard_vendor",
+    "carpenter_vendor",
+    "stone_crafter_vendor",
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "wood|logs|oak",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:emerald_mace",
+   "title": "Emerald",
+   "runuo_type": "Emerald",
+   "price_gold": 100,
+   "vendors": [
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|gold",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:executioners_axe",
+   "title": "Executioners Axe",
+   "runuo_type": "ExecutionersAxe",
+   "price_gold": 30,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:flax",
+   "title": "Flax",
+   "runuo_type": "Flax",
+   "price_gold": 102,
+   "vendors": [
+    "tailor_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:flour",
+   "title": "Sack Flour",
+   "runuo_type": "SackFlour",
+   "price_gold": 3,
+   "vendors": [
+    "baker",
+    "cook_vendor",
+    "miller_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|milled|flour",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:garlic",
+   "title": "Garlic",
+   "runuo_type": "Garlic",
+   "price_gold": 3,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:ginseng",
+   "title": "Ginseng",
+   "runuo_type": "Ginseng",
+   "price_gold": 3,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:grapes",
+   "title": "Grapes",
+   "runuo_type": "Grapes",
+   "price_gold": 3,
+   "vendors": [
+    "costermonger",
+    "innkeeper_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "produce|fruit|concord_grapes",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:halberd",
+   "title": "Halberd",
+   "runuo_type": "Halberd",
+   "price_gold": 42,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:hammer_pick",
+   "title": "Hammer Pick",
+   "runuo_type": "HammerPick",
+   "price_gold": 26,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:hanging_lantern",
+   "title": "Lantern",
+   "runuo_type": "Lantern",
+   "price_gold": 2,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|iron",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:heater_shield",
+   "title": "Heater Shield",
+   "runuo_type": "HeaterShield",
+   "price_gold": 231,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:helmet",
+   "title": "Helmet",
+   "runuo_type": "Helmet",
+   "price_gold": 31,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:kama",
+   "title": "Kama",
+   "runuo_type": "Kama",
+   "price_gold": 61,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:katana",
+   "title": "Katana",
+   "runuo_type": "Katana",
+   "price_gold": 33,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:kryss",
+   "title": "Kryss",
+   "runuo_type": "Kryss",
+   "price_gold": 32,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:lajatang",
+   "title": "Lajatang",
+   "runuo_type": "Lajatang",
+   "price_gold": 108,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:lance",
+   "title": "Lance",
+   "runuo_type": "Lance",
+   "price_gold": 34,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:lap_harp",
+   "title": "Lap Harp",
+   "runuo_type": "LapHarp",
+   "price_gold": 21,
+   "vendors": [
+    "bard_vendor",
+    "carpenter_vendor",
+    "stone_crafter_vendor",
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "wood|logs|oak",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:large_battle_axe",
+   "title": "Large Battle Axe",
+   "runuo_type": "LargeBattleAxe",
+   "price_gold": 33,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:lockpick_tools",
+   "title": "Lockpick",
+   "runuo_type": "Lockpick",
+   "price_gold": 12,
+   "vendors": [
+    "provisioner_vendor",
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|iron",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:longsword",
+   "title": "Longsword",
+   "runuo_type": "Longsword",
+   "price_gold": 55,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:lute",
+   "title": "Lute",
+   "runuo_type": "Lute",
+   "price_gold": 21,
+   "vendors": [
+    "bard_vendor",
+    "carpenter_vendor",
+    "stone_crafter_vendor",
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "wood|logs|oak",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:mace",
+   "title": "Mace",
+   "runuo_type": "Mace",
+   "price_gold": 28,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:mandrake",
+   "title": "Mandrake Root",
+   "runuo_type": "MandrakeRoot",
+   "price_gold": 3,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:maul",
+   "title": "Maul",
+   "runuo_type": "Maul",
+   "price_gold": 21,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:metal_kite_shield",
+   "title": "Metal Kite Shield",
+   "runuo_type": "MetalKiteShield",
+   "price_gold": 123,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:metal_shield",
+   "title": "Metal Shield",
+   "runuo_type": "MetalShield",
+   "price_gold": 121,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:nightshade",
+   "title": "Nightshade",
+   "runuo_type": "Nightshade",
+   "price_gold": 3,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:no_dachi",
+   "title": "No Dachi",
+   "runuo_type": "NoDachi",
+   "price_gold": 82,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:norse_helm",
+   "title": "Norse Helm",
+   "runuo_type": "NorseHelm",
+   "price_gold": 18,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:pike_polearm",
+   "title": "Pike",
+   "runuo_type": "Pike",
+   "price_gold": 39,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:pitcher_empty",
+   "title": "Pitcher",
+   "runuo_type": "Pitcher",
+   "price_gold": 7,
+   "vendors": [
+    "tavernkeeper",
+    "costermonger",
+    "innkeeper_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|whole|barley",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:plate_helm",
+   "title": "Plate Helm",
+   "runuo_type": "PlateHelm",
+   "price_gold": 21,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.5
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:ringmail_gloves",
+   "title": "Ringmail Gloves",
+   "runuo_type": "RingmailGloves",
+   "price_gold": 93,
+   "vendors": [
+    "blacksmith_vendor",
+    "armorer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 3.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:sai",
+   "title": "Sai",
+   "runuo_type": "Sai",
+   "price_gold": 56,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:sapphire_mace",
+   "title": "Sapphire",
+   "runuo_type": "Sapphire",
+   "price_gold": 100,
+   "vendors": [
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|gold",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:scepter",
+   "title": "Scepter",
+   "runuo_type": "Scepter",
+   "price_gold": 39,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:scimitar",
+   "title": "Scimitar",
+   "runuo_type": "Scimitar",
+   "price_gold": 36,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:scissors",
+   "title": "Scissors",
+   "runuo_type": "Scissors",
+   "price_gold": 11,
+   "vendors": [
+    "tailor_vendor",
+    "jeweler_vendor",
+    "tinker_vendor",
+    "weaver_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "metal|ingots|iron",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:scythe",
+   "title": "Scythe",
+   "runuo_type": "Scythe",
+   "price_gold": 39,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:shadow_iron_ingot",
+   "title": "Iron Ingot",
+   "runuo_type": "IronIngot",
+   "price_gold": 5,
+   "vendors": [
+    "blacksmith_vendor",
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:short_spear",
+   "title": "Short Spear",
+   "runuo_type": "ShortSpear",
+   "price_gold": 23,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:shuriken",
+   "title": "Shuriken",
+   "runuo_type": "Shuriken",
+   "price_gold": 18,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:skinning_knife",
+   "title": "Skinning Knife",
+   "runuo_type": "SkinningKnife",
+   "price_gold": 14,
+   "vendors": [
+    "blacksmith_vendor",
+    "butcher_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:spear",
+   "title": "Spear",
+   "runuo_type": "Spear",
+   "price_gold": 31,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:spiders_silk",
+   "title": "Spiders Silk",
+   "runuo_type": "SpidersSilk",
+   "price_gold": 3,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:stonecrafter_hammer",
+   "title": "Hammer",
+   "runuo_type": "Hammer",
+   "price_gold": 17,
+   "vendors": [
+    "stone_crafter_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "meat|pork|raw_pork",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:straw",
+   "title": "Straw Hat",
+   "runuo_type": "StrawHat",
+   "price_gold": 7,
+   "vendors": [
+    "provisioner_vendor",
+    "tailor_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:sulphurous_ash",
+   "title": "Sulfurous Ash",
+   "runuo_type": "SulfurousAsh",
+   "price_gold": 3,
+   "vendors": [
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:tekagi",
+   "title": "Tekagi",
+   "runuo_type": "Tekagi",
+   "price_gold": 55,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:tessen",
+   "title": "Tessen",
+   "runuo_type": "Tessen",
+   "price_gold": 83,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:tinker_hammer",
+   "title": "Hammer",
+   "runuo_type": "Hammer",
+   "price_gold": 17,
+   "vendors": [
+    "jeweler_vendor",
+    "tinker_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "meat|pork|raw_pork",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:two_handed_axe",
+   "title": "Two Handed Axe",
+   "runuo_type": "TwoHandedAxe",
+   "price_gold": 32,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:viking_sword",
+   "title": "Viking Sword",
+   "runuo_type": "VikingSword",
+   "price_gold": 55,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:wakizashi",
+   "title": "Wakizashi",
+   "runuo_type": "Wakizashi",
+   "price_gold": 38,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:war_axe",
+   "title": "War Axe",
+   "runuo_type": "WarAxe",
+   "price_gold": 29,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:war_cleaver",
+   "title": "Cleaver",
+   "runuo_type": "Cleaver",
+   "price_gold": 15,
+   "vendors": [
+    "blacksmith_vendor",
+    "butcher_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:war_fork",
+   "title": "War Fork",
+   "runuo_type": "WarFork",
+   "price_gold": 32,
+   "vendors": [
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:war_hammer",
+   "title": "War Hammer",
+   "runuo_type": "WarHammer",
+   "price_gold": 25,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "britannia_mod:war_mace",
+   "title": "War Mace",
+   "runuo_type": "WarMace",
+   "price_gold": 31,
+   "vendors": [
+    "blacksmith_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:apple",
+   "title": "Apple",
+   "runuo_type": "Apple",
+   "price_gold": 3,
+   "vendors": [
+    "costermonger",
+    "innkeeper_vendor",
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "produce|fruit|apple",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:arrow",
+   "title": "Arrow",
+   "runuo_type": "Arrow",
+   "price_gold": 2,
+   "vendors": [
+    "provisioner_vendor",
+    "bowyer_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "leather|processed|leather",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:bow",
+   "title": "Bow",
+   "runuo_type": "Bow",
+   "price_gold": 35,
+   "vendors": [
+    "blacksmith_vendor",
+    "bowyer_vendor",
+    "weaponsmith_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:bread",
+   "title": "Bread Loaf",
+   "runuo_type": "BreadLoaf",
+   "price_gold": 6,
+   "vendors": [
+    "baker",
+    "tavernkeeper",
+    "cook_vendor",
+    "innkeeper_vendor",
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|milled|flour",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:cake",
+   "title": "Cake",
+   "runuo_type": "Cake",
+   "price_gold": 13,
+   "vendors": [
+    "baker",
+    "cook_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|milled|flour",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:carrot",
+   "title": "Carrot",
+   "runuo_type": "Carrot",
+   "price_gold": 3,
+   "vendors": [
+    "costermonger"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "produce|vegetable|carrots",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:cookie",
+   "title": "Cookies",
+   "runuo_type": "Cookies",
+   "price_gold": 3,
+   "vendors": [
+    "baker"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "grain|milled|flour",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:egg",
+   "title": "Eggs",
+   "runuo_type": "Eggs",
+   "price_gold": 3,
+   "vendors": [
+    "costermonger"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "eggs|chicken|chicken_egg",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:feather",
+   "title": "Feather",
+   "runuo_type": "Feather",
+   "price_gold": 2,
+   "vendors": [
+    "bowyer_vendor"
+   ],
+   "material_requirements": [
+    {
+     "material_family": "metal",
+     "quantity": 2.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:pumpkin",
+   "title": "Pumpkin",
+   "runuo_type": "Pumpkin",
+   "price_gold": 11,
+   "vendors": [
+    "costermonger"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "produce|vegetable|pumpkin",
+     "quantity": 1.0
+    }
+   ]
+  },
+  {
+   "item_id": "minecraft:torch",
+   "title": "Torch",
+   "runuo_type": "Torch",
+   "price_gold": 7,
+   "vendors": [
+    "innkeeper_vendor",
+    "provisioner_vendor"
+   ],
+   "commodity_requirements": [
+    {
+     "key": "wood|logs|oak",
+     "quantity": 1.0
+    }
+   ]
+  }
+ ],
+ "row_status_counts": {
+  "excluded_no_retail_vendor": 19,
+  "excluded_pending_commodity_family": 36,
+  "excluded_pending_item": 548,
+  "excluded_pending_magic": 60,
+  "excluded_pending_mobile_fulfillment": 29,
+  "excluded_service": 30,
+  "excluded_unsupported": 26,
+  "seeded": 116,
+  "seeded_material": 151
+ }
+}

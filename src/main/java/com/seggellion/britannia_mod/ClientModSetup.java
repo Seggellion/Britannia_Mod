@@ -592,6 +592,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.PRODUCE_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.FUR_LEATHER_TRADER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.BAKER.get(), CitizenEntityRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.VENDOR.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.TAVERNKEEPER.get(), CitizenEntityRenderer::new);
         event.registerEntityRenderer(EntityRegistry.COSTERMONGER.get(), CitizenEntityRenderer::new);
     }
