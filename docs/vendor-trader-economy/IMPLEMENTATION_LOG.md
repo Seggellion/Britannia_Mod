@@ -202,3 +202,29 @@ rules, automatic staffing, legacy block migration, commodity/Product seed creati
 
 ### Stopped
 Milestone 2 complete pending owner review of OQ-3…OQ-9. Milestone 3 not started.
+
+## 2026-08-10 — Open-question cleanup pass (post-Milestone 2, pre-Milestone 3)
+
+- **OQ-1 diagnosed, nothing repaired**: connected as the `ultimacraft` role (owner-supplied
+  credentials, used only in-session; not recorded in documentation) and enumerated owners,
+  roles, and privileges. Root cause: all `ultimacraft_test*` databases and every table inside
+  were created/owned by the superuser role `ultimacraft`; the codex role has no table grants.
+  Two repair options written up in OPEN_QUESTIONS for owner approval. Bonus finding from
+  read-only inspection: dev `currencies` rows confirm the obsolete 1/10/100 ladder LIVE
+  (copper 1 / silver 10 / gold 100); test `currencies` empty — folded into the Milestone 3
+  correction scope (data migration required, not just defaults).
+- **OQ-6 reclassified**: expanded the matcher's item universe with the 202 dynamically
+  registered blacksmithing craftables (+ ItemRegistry re-extraction: 397 ids) and re-bucketed
+  the 1,015 retail rows (DIRECT_MATCH 66 / LIKELY_MATCH 102 / MISSING_ITEM 473 /
+  SERVICE_OR_MOBILE 29 / UNSUPPORTED 26 / OWNER_REVIEW 93 / VARIABLE_MATERIAL 226). The 93
+  OWNER_REVIEW rows reduce to three decisions (magic consumables, deed economy, Hammer
+  disambiguation).
+- **OQ-4 resolved to policy**: class-based payout denominations applied as data
+  (copper 83 / silver 787 / gold 11); 34 exceptions remain, all tied to OQ-8 vendors.
+- **OQ-3/OQ-5/OQ-8 tables** and the **OQ-7 mobile-fulfillment proposal** written into
+  RUNUO_VENDOR_MATRIX.md §4a/§5/§8/§7b.
+- **OQ-9 settled as carrier gaps only** (Fine policy untouched): melee/metal armor/shields
+  and jewelry have carriers; ranged and leather/cloth families have neither items nor
+  carriers.
+- Regenerated + revalidated the mapping (`parse_runuo_vendors.py` → 74/84/1015/915;
+  `validate_mapping.py` → OK, all invariants hold). Milestone 3 still not started.

@@ -84,11 +84,13 @@ Date: 2026-08-10.
   - `test/controllers/api/world_bootstrap_profile_test.rb:174` — fixture `base_value = 1` for
     all currencies.
 - No seed creates `Currency` rows; `Admin::TreasuriesController` allows admins to edit
-  `base_value` by hand, so **live rows cannot be inferred from the migration default**. Live
-  values are unverifiable from this environment (peer role reaches only the broken
-  `ultimacraft_test*` DBs; the development DB is out of bounds). Verification + a safe data
-  migration to 1/100/10,000 + fallback-constant removal + regression tests are scheduled for
-  Milestone 3 (blocked on the OQ-1 test-DB repair). Historical migrations are not to be edited.
+  `base_value` by hand. **VERIFIED LIVE 2026-08-10** (read-only SELECT during the OQ-1
+  diagnosis): `ultimacraft_development.currencies` = copper 1 / silver 10 / gold 100 — the
+  obsolete ladder is real data in dev, not just a migration default; `ultimacraft_test.currencies`
+  is empty. Consequence: the legacy trader-sale `currency_breakdown` has been splitting payouts
+  at 1 gold per 100 copper of value (1% of canonical gold worth). The Milestone 3 correction
+  needs a data migration for existing rows plus the fallback-constant removal and regression
+  tests. Historical migrations are not to be edited.
 - Ladder-agnostic consumers that become correct once the data is fixed:
   `Treasury#total_reserve_value`, admin treasury ordering, admin city-form ordering.
   `TreasuryBalance`'s `PAR_COINS_PER_INGOT`/strength math is reserve-vs-coins policy, not the
@@ -127,6 +129,19 @@ Date: 2026-08-10.
   provision/glass/scribe proposals), 145 REQUIRES_OWNER_MAPPING.
 - All 1,015 retail rows carry `denomination: gold` and their RunUO GP price (owner calibration
   1 GP = 1 Gold). All rows carry explicit statuses — no silent gaps (validator-enforced).
+- **Item universe correction (OQ cleanup pass):** the matchable UltimaCraft item set is
+  ItemRegistry (397 ids — the earlier 298 count missed multi-line registrations) plus the
+  **202 Blacksmithing craftable outputs** dynamically registered by `BlacksmithItemRegistry`
+  from `data/britannia_mod/blacksmithing/craftables.json` (all `BlacksmithEquipmentItem`,
+  which carries `BlacksmithItemData` material + quality). This covers essentially the whole
+  RunUO melee-weapon and metal-armor family. 7 of 8 UO reagents exist as items (black_pearl
+  missing). Re-bucketed retail-row statuses and the class-based payout policy are recorded in
+  RUNUO_VENDOR_MATRIX.md §3–§4.
+- **OQ-1 diagnosis facts (2026-08-10):** `ultimacraft` is a superuser role reachable via local
+  TCP password auth; all 18 `ultimacraft_*` databases and all 91 `ultimacraft_test` tables are
+  owned by `ultimacraft`; `ultimacraft_codex_test` has schema USAGE but no table privileges
+  and no default ACLs. Purely a local ownership problem; repair options documented in
+  OPEN_QUESTIONS (awaiting owner approval; nothing changed).
 
 ## 5. Test inventory relevant to this project (for when the test DB is repaired)
 - Rails: `test/controllers/api/trader_transactions_controller_test.rb`, `merchant_transactions_controller_test.rb`, `transactions_legacy_purchase_idempotency_test.rb`, `city_commodities_controller_test.rb`, `npcs_controller_test.rb`, `service_npc_spawn_operations_controller_test.rb`, `world_bootstrap_*`, `world_state_changes_controller_test.rb`, `test/services/city_staffing/*`, plus banking auth/concurrency suites.

@@ -39,8 +39,8 @@ VENDOR_STATUSES = {
     "UNSUPPORTED_BY_DESIGN",
 }
 BUY_STATUSES = {
-    "PROPOSED_DIRECT_ITEM", "VARIABLE_MATERIAL_PRODUCT", "MOBILE",
-    "REQUIRES_OWNER_MAPPING",
+    "DIRECT_MATCH", "LIKELY_MATCH", "MISSING_ITEM", "SERVICE_OR_MOBILE",
+    "UNSUPPORTED", "OWNER_REVIEW", "VARIABLE_MATERIAL_PRODUCT",
 }
 SELL_STATUSES = {"PROPOSED_DEFAULT", "REQUIRES_NEW_TRADER", "REQUIRES_OWNER_MAPPING"}
 FORMS = {"raw", "processed", "finished", "unclassified"}
@@ -52,7 +52,13 @@ def main() -> int:
 
     known_traders = set(data["uc_reference"]["traders"])
     reg = REPO / "src/main/java/com/seggellion/britannia_mod/registry/ItemRegistry.java"
-    uc_items = set(re.findall(r'register\(\s*"([a-z0-9_]+)"', reg.read_text(encoding="utf-8", errors="replace")))
+    uc_items = set(re.findall(r'register\s*\(\s*"([a-z0-9_]+)"', reg.read_text(encoding="utf-8", errors="replace")))
+    craftables = REPO / "src/main/resources/data/britannia_mod/blacksmithing/craftables.json"
+    if craftables.exists():
+        for recipe in json.loads(craftables.read_text(encoding="utf-8-sig")).get("recipes", []):
+            out = recipe.get("output", "")
+            if out.startswith("britannia_mod:"):
+                uc_items.add(out.split(":", 1)[1])
 
     vendors = data["vendors"]
     catalogs = data["catalogs"]
@@ -116,6 +122,11 @@ def main() -> int:
                 errors.append(
                     f"{rid}: invalid payout denomination {row.get('payout_denomination_proposal')!r}"
                 )
+            if row.get("payout_denomination_status") not in {
+                "PROPOSED_CLASS_POLICY", "OWNER_EXCEPTION",
+                "PROPOSED_REQUIRES_OWNER_REVIEW",
+            }:
+                errors.append(f"{rid}: invalid payout_denomination_status")
 
     if errors:
         print(f"FAILED: {len(errors)} violations")

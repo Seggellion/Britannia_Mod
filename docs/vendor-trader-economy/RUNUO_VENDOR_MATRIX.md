@@ -8,7 +8,10 @@ seeds Rails in later milestones (`runuo_vendor_catalog.json` is superseded as a 
 
 Source authority: pinned RunUO checkout `C:\projects\runuo-reference` @
 `71b2794f12eb6f948b1c5598ae8b350401a22d4d` (`https://github.com/runuo/runuo.git`, read-only).
-Every number below was extracted from that tree, not from the safety-filtered catalog JSON.
+
+Updated 2026-08-10 (OQ cleanup pass): item universe expanded with the 202 dynamically-registered
+Blacksmithing craftable outputs; retail rows re-bucketed; Trader payout denominations resolved by
+economic-class policy; owner-review queues reduced to genuine decisions.
 
 ## 1. Coverage totals (completeness accounting)
 
@@ -21,159 +24,170 @@ Conditional rows (Core.AOS/ML/SE/etc.):          119   (56 buy / 63 sell)
 Commented-out (inactive) source rows:             10   (recorded, never active)
 Specialized buy-info rows: Animal 21, Beverage 55, PresetMap 1
 Distinct RunUO buy types: 425   Distinct RunUO sell types: 409
-Cross-reference check: every catalog referenced by a vendor was parsed; no
-catalog is referenced-but-missing (validated).
+Cross-reference check: every catalog referenced by a vendor was parsed (validated).
 ```
-
-The prior `runuo_vendor_catalog.json` covered 11 vendors / 12 catalogs — ~15% of the vendor set.
-Its engine-model documentation remains valid; its catalog data is now superseded by this audit.
 
 ## 2. Vendor mapping status (74 classes)
 
 | Status | Count | Meaning |
 |---|---|---|
-| PROPOSED_VENDOR | 33 | New UltimaCraft economic Vendor definition proposed (key recorded per row) |
-| EXISTING_MERCHANT | 5 | Covered by baker / tavernkeeper / costermonger (Baker, TavernKeeper, Barkeeper, Waiter, Farmer) |
-| EXISTING_SERVICE_NPC | 2 | Banker/GypsyBanker → `bank_teller`; (12 Guildmasters also EXISTING_SERVICE_NPC — see note) |
-| PROPOSED_TRADER_ALIAS | 4 | Economic role already covered by a Trader (Fisherman, Furtrader, Tanner, Miner) |
-| SERVICE_ONLY | 9 | No economy catalog to map (hair stylists, Monk, KeeperOfChivalry, abstract bases, IharaSoko) |
-| REQUIRES_OWNER_MAPPING | 10 | Owner decision needed (GolemCrafter, GypsyMaiden, RealEstateBroker, Thief, Vagabond, VarietyDealer, Evil/PricedHealer, Hamato, Ryuichi) |
-| UNSUPPORTED_BY_DESIGN | 11 | Player-vendor subsystem (3), RunUO faction subsystem (6), quest mobiles (2+) |
+| PROPOSED_VENDOR | 33 | New UltimaCraft economic Vendor definition proposed (key per row) |
+| EXISTING_MERCHANT | 5 | Baker, TavernKeeper, Barkeeper, Waiter, Farmer → baker/tavernkeeper/costermonger |
+| EXISTING_SERVICE_NPC | 14 | Banker + GypsyBanker → `bank_teller`; 12 Guildmasters → Guildmaster system |
+| PROPOSED_TRADER_ALIAS | 4 | Fisherman, Furtrader, Tanner, Miner — role covered by a Trader |
+| SERVICE_ONLY | 9 | No economy catalog (stylists, Monk, KeeperOfChivalry, abstract bases, IharaSoko, PricedHealer) |
+| REQUIRES_OWNER_MAPPING | 10 | See §8 recommendations table |
+| UNSUPPORTED_BY_DESIGN | 11 | Player-vendor subsystem (3), faction subsystem (6), quest mobiles (2) |
 
-Note: the 12 `*Guildmaster` classes are counted inside EXISTING_SERVICE_NPC in the JSON
-(status field per row); UltimaCraft's Guildmaster Service NPC system already models them. Their
-SB catalogs (guild supplies) still appear in the catalog audit and their rows are classified.
+Every vendor row carries `vendor_can_buy_from_player: false` (owner rule) — all RunUO SellInfo
+behavior is redirected to Traders.
 
-Per the owner rule, **every vendor row carries `vendor_can_buy_from_player: false`** — all RunUO
-SellInfo behavior is redirected to Traders (§4).
+## 3. Player-purchase (Vendor retail) rows — 1,015 (OQ-6 buckets)
 
-## 3. Player-purchase (Vendor retail) rows — 1,015
+The item universe for matching is ItemRegistry (397 ids) **plus the 202 Blacksmithing craftable
+outputs** dynamically registered from `data/britannia_mod/blacksmithing/craftables.json`
+(`BlacksmithItemRegistry`), plus a curated vanilla set — this resolves most RunUO weapons and
+metal armor directly.
 
-| Status | Count | Meaning |
+| Bucket | Count | Meaning |
 |---|---|---|
-| REQUIRES_OWNER_MAPPING | 694 | No confident UltimaCraft item match yet; each row retains RunUO type + GP price |
-| VARIABLE_MATERIAL_PRODUCT | 218 | Weapon/armor/shield/smith catalogs — material-family Products (metal rank policy applies) |
-| PROPOSED_DIRECT_ITEM | 82 | Confident item-id proposal (93 rows carry a concrete `uc_item_id`; britannia_mod or vanilla) |
-| MOBILE | 21 | AnimalBuyInfo (creatures with control slots) — out of item economy; needs owner path |
-| — PresetMapBuyInfo | 1 | Counted in REQUIRES_OWNER_MAPPING (map-entry product) |
+| MISSING_ITEM | 473 | Clean item concept, no UltimaCraft item exists (food dishes, containers, tools, clothing, instruments…) |
+| VARIABLE_MATERIAL_PRODUCT | 226 | Weapon/armor/shield/smith catalogs (material-family Products); item matches recorded alongside: 151 direct/likely, 75 missing |
+| LIKELY_MATCH | 102 | Confident alias/near match (e.g. MandrakeRoot→mandrake, SackFlour→flour, BreadLoaf→bread) |
+| DIRECT_MATCH | 66 | Exact id match (britannia_mod or vanilla) |
+| OWNER_REVIEW | 93 | Only 3 real decisions — see below |
+| SERVICE_OR_MOBILE | 29 | 21 AnimalBuyInfo mobiles, 1 PresetMap, appearance consumables |
+| UNSUPPORTED | 26 | Faction stock, player-vendor contracts, communication crystals |
 
-Denomination: **all 1,015 retail rows are `gold`** per the owner calibration
-(1 RunUO GP = 1 UltimaCraft Gold; baseline price preserved per row as `runuo_gp_price`;
-62 rows are ≥500 GP). `requirements_status` is `unresolved` for every row — Rails
-`Product.requirements` seeding is Milestone 3+ design work and is **not** derived from Minecraft
-recipes (owner prohibition).
+**The 93 OWNER_REVIEW rows reduce to exactly three decisions:**
+1. **Magic/alchemy consumables** (potions, scrolls, spellbooks, recall runes, wizard hats;
+   includes the 3 programmatic spell-scroll loop rows `types[i]` in SBMage/SBHolyMage/
+   SBVarietyDealer that expand to the full circle-scroll list) — does UltimaCraft's magic
+   system get purchasable consumable items?
+2. **Deed economy** (28 house/boat/aquarium/guild/commodity deed rows) — how RunUO deed retail
+   maps onto UltimaCraft's existing house-deed system (Architect/RealEstate decision).
+3. **`Hammer` disambiguation** (3 rows: hammer_pick vs war_hammer vs black_smiths_hammer).
+
+All retail rows remain `denomination: gold` (1 RunUO GP = 1 Gold), `requirements_status:
+unresolved` (Rails Product seeding is Milestone 3+; never from Minecraft recipes).
 
 ## 4. Player-buyback rows (→ Traders) — 915
 
-| Status | Count | Meaning |
+| Status | Count |
+|---|---|
+| PROPOSED_DEFAULT (existing traders) | 638 |
+| REQUIRES_NEW_TRADER (5 proposals, §4a) | 224 |
+| REQUIRES_OWNER_MAPPING | 53 (Thief 7, VarietyDealer 30, RealEstateBroker 2, Dryad 12, misc) |
+
+### 4a. OQ-3 — proposed new Trader types with provenance
+
+| Proposed trader | Rows | Source catalogs (rows) | Representative buyback items |
+|---|---|---|---|
+| reagent_trader | 81 | SBMage (33), SBAlchemist (19), SBHolyMage (17), SBHerbalist (7), SBHealer (5) | reagents (Bloodmoss, BlackPearl, Garlic…), potions, spell scrolls, bandages, mortar & pestle |
+| provision_trader | 59 | SBProvisioner (54), SBBard (5) | packs/bags, bedrolls, lanterns, arrows, gems (provisioner rows), instruments (Lute, Drums…) |
+| textile_trader | 51 | SBTailor (36), SBWeaver (8), SBCobbler (4), SBSEHats (3) | cloth bolts, yarn, clothing, footwear, hats |
+| glass_trader | 21 | SBGlassblower (21) | bottles, blowpipes — note: rows overlap reagent/alchemy stock; could merge into reagent_trader |
+| scribe_trader | 12 | SBMapmaker (7), SBScribe (5) | blank scrolls/maps, books, pens |
+
+Consolidation option for owner: `glass_trader` and `scribe_trader` are small; both could fold
+into `reagent_trader` (alchemy/arcana supply) leaving three new types instead of five.
+
+### 4b. OQ-4 — payout denomination policy (class-based)
+
+Owner-proposed policy (applied as data; every row carries `payout_denomination_status`):
+
+```text
+Tier rule:  raw resources → Copper;  processed goods, provisions, tools, textiles,
+            finished equipment → Silver;  jewelry/gems and any row ≥ 500 GP → Gold
+Result:     copper 83   silver 787   gold 11   unresolved 34
+```
+
+The only remaining exceptions (34 rows, `OWNER_EXCEPTION`) are stock of owner-review vendors:
+SBThief (7), SBVarietyDealer (30 − overlap), SBRealEstateBroker (2), SBDryad (unsupported quest
+vendor). They inherit whatever the OQ-8 vendor decisions choose — no separate denomination
+review needed.
+
+## 5. Commodity gap audit (updated)
+
+Corrections from the item-universe expansion: **7 of 8 UO reagents already exist as items**
+(blood_moss, garlic, ginseng, mandrake, nightshade, spiders_silk, sulphurous_ash; only
+black_pearl is missing). The gap is the **commodity family** (reagent city-economy rows), not
+the items. Metal ingot items exist for all 9 tiers (iron/gold via vanilla; the other 7 via
+ItemRegistry).
+
+| Family | Items exist? | Commodity rows/convention | Gap |
+|---|---|---|---|
+| metal ingots (9 tiers) | YES (all) | `metal/ingot` mapped only for copper/silver/gold | commodity mappings for shadow_iron, tin, agapite, verite, valorite (+iron/gold) |
+| reagents | 7/8 (black_pearl missing) | none (cities have `reagents_supply` column only) | reagent commodity family + black_pearl item |
+| textiles (cloth/thread/yarn/wool/cotton/flax) | NO | none | items + commodity family |
+| glass (sand/bottles) | NO | none | items + commodity family |
+| scribe (paper/blank scrolls) | NO | none | items + commodity family (pends magic decision) |
+| form classification | n/a | subcategory conventions only | explicit raw/processed/finished column (owner decision #9) |
+| economic permissions | n/a | none | npc_buy/npc_sell/production_enabled data (owner decision #8) |
+
+## 6. Material gap audit
+
+226 VARIABLE_MATERIAL_PRODUCT rows. Material family metal (weapons/metal armor/shields), wood
+(wooden shields/staves), leather (leather/studded armor).
+
+```text
+Metal items:      COMPLETE — 202 blacksmithing craftables cover the RunUO metal set
+Metal rank data:  MISSING — no economic rank anywhere (owner decision #7: Rails data required)
+Ingot commodities: partial (see §5)
+Iron baseline:    RunUO GP recorded per row
+Leather/cloth:    items missing entirely (tailor family) — see §7
+```
+
+## 7. Quality gap audit (OQ-9 — carriers only; Fine policy is decided)
+
+| Family | Carrier | Status |
 |---|---|---|
-| PROPOSED_DEFAULT | 546 | Mapped to an existing UltimaCraft trader (owner review pending) |
-| REQUIRES_NEW_TRADER | 224 | Mapped to a proposed new trader type (below) |
-| REQUIRES_OWNER_MAPPING | 145 | No defensible target yet (Thief/VarietyDealer stock, misc catalogs) |
+| Melee weapons, metal armor, shields | `BlacksmithEquipmentItem` + `BlacksmithItemData` (material + int quality) | **Carrier EXISTS** (202 outputs); needs the decided 1|2 → 4-tier bridge |
+| Legacy fixed weapons (dagger, viking_sword, two_handed_axe) | `QualitySwordItem`/`QualityToolItem` (1–4) | Carrier exists, ladder matches |
+| Jewelry | `MaterialQualityJewelryItem` | Carrier exists |
+| Ranged (bows/crossbows/arrows) | — | **GAP: no items and no carrier** (bowyer family) |
+| Leather/studded/cloth armor, hats | — | **GAP: no items and no carrier** (tailor family) |
 
-Existing-trader distribution (PROPOSED_DEFAULT): salvage_trader 221, alcohol_trader 89,
-fur_leather_trader 57, meat_trader 47, wood_trader 46, stone_trader 39, produce_trader 22,
-grain_trader 16, ore_trader 6, fish_trader 3.
+Recorded as implementation gaps for the relevant Milestone 17 profession families; the quality
+policy itself (NPC output = Fine) is settled and not reopened.
 
-**Proposed new trader types (owner review required):**
+## 7b. OQ-7 — AnimalBuyInfo (mobile offers) proposed architecture
 
-```text
-textile_trader    51 rows   (tailor/weaver/cobbler/hats goods)
-reagent_trader    81 rows   (alchemist/herbalist/mage/holy-mage/healer reagents & potions)
-provision_trader  59 rows   (provisioner/bard/ranger general goods)
-glass_trader      21 rows   (glassblower)
-scribe_trader     12 rows   (scribe/mapmaker scrolls, books, maps)
-```
-
-Form classification: raw 75, processed 158, finished 212, unclassified 470.
-Payout denomination proposals (all `PROPOSED_REQUIRES_OWNER_REVIEW`): copper 75, silver 370,
-gold 11, unresolved 459. The proposal heuristic is: raw → copper; processed/finished → silver;
-any ≥500 GP → gold; unclassified → unresolved. **These are mapping data for owner review, not
-final rules** (per the Milestone 2 instruction).
-
-Valuation strategies recorded per row: `salvage_material_quality_value` for salvage-target
-rows, `current_commodity_value` for classified commodity forms, `unresolved` otherwise. Wine
-quality valuation binds at the strategy level (see ECONOMY_RULES.md).
-
-## 5. Commodity gap audit
-
-Known UltimaCraft commodity identities (from `economy/CommodityMappings.java` static map +
-dynamic key families):
+RunUO's 21 AnimalBuyInfo rows sell living creatures with control-slot requirements. Proposal
+(design only, not implemented):
 
 ```text
-grain/whole: wheat, barley, oats, rye        grain/milled: flour, oat_flour, rye_flour
-produce/vegetable: carrot, pumpkin, potato (+ costermonger produce family)
-animal_product: bone, fat, egg, dairy(milk/cheese/butter)
-fur/pelts: rabbit, wolf, bear, deer          leather: raw_hide; processed leather
-Dynamic families: wood/logs/<wood_type>, fish/raw/<fish_type>, ore/raw/<ore_type>,
-stone/blocks/<stone_type>, metal/ingot|salvage/<material>, meat/<animal>/<cut>,
-alcohol/wine (WineData)
+Rails: economic offer rows of fulfillment kind MOBILE —
+       entity_type key, amount + denomination, city/treasury coupling identical to
+       item retail (player pays denomination → treasury credited), plus offer policy
+       (control-slot requirement projected as display/validation data)
+Minecraft: purchase-time validation unchanged (Rails quote authoritative);
+       fulfillment constructs a living entity near the vendor instead of an ItemStack —
+       spawn via the same guarded reconciliation idiom as Service NPC entities,
+       recording the spawned entity UUID on the local receipt so a crash/retry can
+       detect completed fulfillment instead of double-spawning; ownership/taming
+       assigned server-side
+No Product.requirements consumption by default (RunUO stables don't consume city
+commodities); city provenance not applied to mobiles unless owner wants tagged livestock.
 ```
 
-Gaps exposed by the RunUO mapping (commodity **missing** or **needs new data**):
+This keeps Rails price/denomination/treasury authority intact; only the fulfillment leg
+differs. Needs owner sign-off before any Milestone 17 animal-trainer work.
 
-```text
-reagents            REQUIRES_NEW_COMMODITY family (8 RunUO reagent types + potions) —
-                    cities have a reagents_supply column but no commodity rows convention
-textile inputs      cloth/thread/yarn/wool/cotton/flax — no commodity family exists
-glass inputs        sand/glass — none exists
-scribe inputs       blank scrolls/paper — none exists
-metal ingots        commodity family exists (metal/ingot) but only copper/silver/gold are
-                    item-mapped in Java; shadow_iron..valorite ingots exist as items with
-                    NO commodity mapping entries
-form classification needs explicit raw/processed/finished data (owner decision #9) —
-                    the current subcategory conventions cover only part of the mapped set
-economic permissions (npc_buy/npc_sell/production_enabled) — new Rails data for every
-                    commodity the mapping touches (owner decision #8)
-```
+## 8. OQ-8 — the ten REQUIRES_OWNER_MAPPING vendors
 
-## 6. Material gap audit (variable-material products)
-
-218 rows across 16 weapon/armor/shield/smith catalogs are VARIABLE_MATERIAL_PRODUCT with
-material_family = metal (wooden shields/staves → wood family; leather/studded armor →
-leather family — recorded per catalog in the JSON).
-
-```text
-Material family: metal
-UltimaCraft materials (items exist):   iron, copper, tin, silver, gold, shadow_iron,
-                                       agapite, verite, valorite  (UOMetalToolMaterial)
-Commodity mapping:                     ore/raw/<type> exists (PurityOreItem);
-                                       metal/ingot rows exist only for copper/silver/gold
-Economic rank:                         MISSING — no rank data anywhere (owner decision #7:
-                                       explicit Rails rank required; enum order unusable)
-Iron baseline:                         RunUO GP price recorded per row (the Iron anchor)
-Variant support status:                blocked on Rails material-rank data + ingot
-                                       commodity coverage (Milestone 3 schema work)
-```
-
-## 7. Quality gap audit
-
-NPC product types needing equipment quality (target: **Fine** on the
-Crude/Basic/Fine/Exceptional ladder):
-
-```text
-Swords/melee weapons     QualitySwordItem      quality int 1-4 supported; names match ladder
-Tools/shovels            QualityToolItem/QualityShovelItem   1-4 supported
-Blacksmith-crafted gear  BlacksmithItemData    writes 1|2 (Normal|Exceptional) — BRIDGE NEEDED
-Jewelry                  MaterialQualityJewelryItem          quality int supported
-Armor (RunUO rows)       no UltimaCraft armor quality carrier identified — GAP for armor
-                         products (218-row family includes armor catalogs)
-Bows/ranged              no quality carrier identified — GAP
-```
-
-Compatibility work recorded: bridge blacksmithing 1|2 onto the 4-tier ladder without
-corrupting existing items (owner decision #6); define quality carriers for armor/ranged
-before their vendor families roll out (Milestone 17 families).
-
-## 8. Currency correction tracking (Milestone 2 documentation duty)
-
-Canonical comparative values: **Copper 1 / Silver 100 / Gold 10,000**. Old `1/10/100`
-survivals found (complete list in PROJECT_FACTS §4b): treasuries migration default/comment,
-`sale_transaction_processor.rb` fallbacks, `trader_transactions_controller.rb` legacy-branch
-fallbacks, one bootstrap test fixture. Live `Currency.base_value` rows unverifiable until the
-OQ-1 test-DB repair. The narrowly-scoped data/code correction + regression tests are
-**scheduled for Milestone 3** (implementation work does not belong in this data milestone and
-Rails tests cannot currently run).
+| RunUO vendor | Sells (from pinned source) | Recommendation |
+|---|---|---|
+| GolemCrafter | SBTinker + SBVagabond stock (tinker parts, jewels) | Merge into `tinker_vendor`; golem mechanics unsupported |
+| GypsyMaiden | SBProvisioner stock | Merge into `provisioner_vendor` |
+| RealEstateBroker | 2 scribe items; role is housing service | SERVICE (UltimaCraft house-deed economy already exists); fold 2 rows into scribe stock |
+| Thief | lockpicks, lanterns, keys, packs | Merge into `provisioner_vendor`; Lockpick item = owner call (no thievery system) |
+| Vagabond | SBTinker + SBVagabond (gold/jewelry buyer) | Merge into `jeweler_vendor` retail; buyback already → salvage_trader |
+| VarietyDealer | mixed reagents/provisions/magic | Merge into `provisioner_vendor` + reagent stock per row |
+| EvilHealer | SBHealer stock | Merge into `healer_vendor` |
+| PricedHealer | empty catalog | SERVICE_ONLY |
+| Hamato | BookOfBushido only | Guildmaster/skill-training territory → existing Service NPC system (or unsupported until SE skills) |
+| Ryuichi | BookOfNinjitsu only | Same as Hamato |
 
 ## 9. What Milestone 3 consumes from this matrix
 
@@ -181,12 +195,12 @@ Rails tests cannot currently run).
 runuo_ultimacraft_mapping.json →
   economic NPC definitions        (vendors[]: uc_key, status)
   Rails Product seed candidates   (buy_rows: type, runuo_gp_price, denomination=gold,
-                                   uc_item_id where proposed, requirements unresolved)
+                                   uc_item_id where matched, requirements unresolved)
   Vendor/Product associations     (vendor → catalog → rows)
   Trader buyback mappings         (sell_rows: target_trader, valuation_strategy, form,
-                                   payout denomination proposals)
-  New-trader/commodity/material/quality gap lists (this document §4–§7)
+                                   economic_class, payout denomination policy)
+  New-trader/commodity/material/quality gap lists (§4–§7)
 ```
 
-No runtime system may read `runuo_vendor_catalog.json` or this mapping directly; Rails
-becomes authoritative once seeded (owner decision #13 / data-flow rule).
+No runtime system may read `runuo_vendor_catalog.json` or this mapping directly; Rails becomes
+authoritative once seeded.

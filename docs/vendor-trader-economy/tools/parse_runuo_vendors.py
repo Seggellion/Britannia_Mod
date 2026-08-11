@@ -440,7 +440,7 @@ FINISHED_GOODS_CATALOGS = {
     "SBChainmailArmor", "SBHelmetArmor", "SBLeatherArmor", "SBSELeatherArmor",
     "SBMetalShields", "SBPlateArmor", "SBRingmailArmor", "SBStuddedArmor",
     "SBWoodenShields", "SBJewel", "SBVagabond", "SBWeaponSmith", "SBSEHats",
-    "SBCobbler", "SBTailor",
+    "SBCobbler", "SBTailor", "SBBlacksmith", "SBSEArmor",
 }
 
 # Per-catalog proposed buyback trader targets. Every proposal has status
@@ -476,6 +476,8 @@ CATALOG_BUYBACK_TRADER: dict[str, str] = {
     "SBStavesWeapon": "salvage_trader",
     "SBSwordWeapon": "salvage_trader",
     "SBSEWeapons": "salvage_trader",
+    "SBBlacksmith": "salvage_trader",
+    "SBSEArmor": "salvage_trader",
     "SBChainmailArmor": "salvage_trader",
     "SBHelmetArmor": "salvage_trader",
     "SBLeatherArmor": "fur_leather_trader",
@@ -550,8 +552,18 @@ def snake(name: str) -> str:
 
 
 def load_uc_items(repo: Path) -> set[str]:
-    reg = repo / "src/main/java/com/seggellion/britannia_mod/registry/ItemRegistry.java"
-    items = set(re.findall(r'register\(\s*"([a-z0-9_]+)"', read(reg)))
+    """Item-id universe: ItemRegistry (multiline-tolerant) + the dynamically
+    registered Blacksmithing craftable outputs (BlacksmithItemRegistry reads
+    data/britannia_mod/blacksmithing/craftables.json at runtime)."""
+    base = repo / "src/main/java/com/seggellion/britannia_mod"
+    items = set(re.findall(r'register\s*\(\s*"([a-z0-9_]+)"', read(base / "registry/ItemRegistry.java")))
+    craftables = repo / "src/main/resources/data/britannia_mod/blacksmithing/craftables.json"
+    if craftables.exists():
+        data = json.loads(craftables.read_text(encoding="utf-8-sig"))
+        for recipe in data.get("recipes", []):
+            out = recipe.get("output", "")
+            if out.startswith("britannia_mod:"):
+                items.add(out.split(":", 1)[1])
     return items
 
 
@@ -563,24 +575,136 @@ VANILLA_ITEMS = {
 }
 
 
-def map_buy_row_item(type_name: str, uc_items: set[str]) -> tuple[str | None, str]:
-    """Returns (uc_item_id, mapping_status)."""
+# Curated aliases: RunUO snake name -> UltimaCraft id (only applied when the
+# target actually exists in the loaded item universe).
+ITEM_ALIASES = {
+    "mandrake_root": "mandrake",
+    "bloodmoss": "blood_moss",
+    "sulfurous_ash": "sulphurous_ash",
+    "lamb_leg": "leg_of_lamb",
+    "cheese_wheel": "cheese",
+    "cheese_wedge": "cheese",
+    "sack_flour": "flour",
+    "bread_loaf": "bread",
+    "pike": "pike_polearm",
+    "short_music_stand": "music_stand",
+    "bass_drum": "drums",
+    "hammer": "black_smiths_hammer",
+    "smith_hammer": "black_smiths_hammer",
+    "interior_decorator": "interior_decorator_tool",
+}
+
+# Rows that belong to game systems the owner has not designed yet — surfaced
+# as OWNER_REVIEW rather than silently invented as items.
+MAGIC_SYSTEM_RE = re.compile(
+    r"Potion$|Scroll$|Spellbook|Runebook|RecallRune|Wand$|NecromancerSpellbook|MagicWiz"
+)
+UNSUPPORTED_RE = re.compile(
+    r"Contract|FactionExplosionTrap|FactionGasTrap|FactionSawTrap|FactionSpikeTrap"
+    r"|Silver$|BroadcastCrystal|ReceiverCrystal"
+)
+SERVICE_RE = re.compile(r"^SpecialBeardDye$|^SpecialHairDye$|^HairDye$|^VacationWafer$")
+
+
+def map_buy_row_item(type_name: str, uc_items: set[str], catalog: str) -> tuple[str | None, str, str | None]:
+    """Returns (uc_item_id, mapping_status, note)."""
+    if catalog.startswith("SBFaction"):
+        return None, "UNSUPPORTED", "RunUO faction subsystem"
+    if UNSUPPORTED_RE.search(type_name):
+        return None, "UNSUPPORTED", "player-vendor/faction/communication subsystem"
+    if SERVICE_RE.search(type_name):
+        return None, "SERVICE_OR_MOBILE", "appearance/service consumable"
+    if MAGIC_SYSTEM_RE.search(type_name):
+        return None, "OWNER_REVIEW", "magic/alchemy consumable system not yet designed"
+    if type_name.endswith("Deed"):
+        return None, "OWNER_REVIEW", "deed economy decision (UltimaCraft house-deed system exists)"
+
     s = snake(type_name)
-    candidates = [s, s.replace("_loaf", ""), s + "s", s[:-1] if s.endswith("s") else s]
-    for c in candidates:
-        if c in uc_items:
-            return f"britannia_mod:{c}", "PROPOSED_DIRECT_ITEM"
-    for c in candidates:
-        if c in VANILLA_ITEMS:
-            return f"minecraft:{c}", "PROPOSED_DIRECT_ITEM"
-    return None, "REQUIRES_OWNER_MAPPING"
+    exact = [s, ITEM_ALIASES.get(s, "")]
+    for c in exact:
+        if c and c in uc_items:
+            status = "DIRECT_MATCH" if c == s else "LIKELY_MATCH"
+            return f"britannia_mod:{c}", status, None
+    if s in VANILLA_ITEMS:
+        return f"minecraft:{s}", "DIRECT_MATCH", None
+    near = [s + "s", s[:-1] if s.endswith("s") else "", s.replace("_loaf", "")]
+    for c in near:
+        if c and c in uc_items:
+            return f"britannia_mod:{c}", "LIKELY_MATCH", None
+        if c and c in VANILLA_ITEMS:
+            return f"minecraft:{c}", "LIKELY_MATCH", None
+    # conservative unique-substring candidate
+    subs = [i for i in uc_items if (s in i or i in s) and min(len(s), len(i)) >= 5
+            and abs(len(i) - len(s)) <= 8]
+    if len(subs) == 1:
+        return f"britannia_mod:{subs[0]}", "LIKELY_MATCH", None
+    if len(subs) > 1:
+        return None, "OWNER_REVIEW", f"multiple candidates: {sorted(subs)[:4]}"
+    return None, "MISSING_ITEM", None
+
+
+# OQ-4: per-catalog economic class for Trader payout denomination policy.
+# Tiers (owner policy proposal): raw_resource -> copper; everything processed,
+# crafted, consumable, or finished -> silver; any row >= 500 GP -> gold.
+CATALOG_ECON_CLASS: dict[str, str] = {
+    # provisions / prepared food / drink
+    "SBProvisioner": "provisions", "SBInnKeeper": "provisions", "SBTavernKeeper": "provisions",
+    "SBBarkeeper": "provisions", "SBWaiter": "provisions", "SBCook": "provisions",
+    "SBSECook": "provisions", "SBBaker": "provisions", "SBFarmer": "raw_produce",
+    "SBRancher": "raw_produce", "SBButcher": "provisions", "SBBeekeeper": "provisions",
+    "SBFisherman": "raw_produce", "SBBard": "provisions", "SBRanger": "provisions",
+    # magic / scribe supplies
+    "SBMage": "magic_supplies", "SBAlchemist": "magic_supplies", "SBHerbalist": "magic_supplies",
+    "SBHolyMage": "magic_supplies", "SBHealer": "magic_supplies", "SBKeeperOfChivalry": "magic_supplies",
+    "SBScribe": "scribe_supplies", "SBMapmaker": "scribe_supplies", "SBFortuneTeller": "magic_supplies",
+    "SBMonk": "provisions", "SBHairStylist": "service_goods", "SBVeterinarian": "magic_supplies",
+    # tools / components / craft outputs
+    "SBTinker": "tools_components", "SBSmithTools": "tools_components",
+    "SBGlassblower": "glassware", "SBArchitect": "tools_components",
+    "SBCarpenter": "wood_goods", "SBSECarpenter": "wood_goods", "SBShipwright": "wood_goods",
+    "SBBowyer": "wood_goods", "SBSEBowyer": "wood_goods", "SBStoneCrafter": "stone_goods",
+    "SBMiner": "raw_resource", "SBMiller": "processed_food",
+    # textiles / leather
+    "SBTailor": "textile_goods", "SBWeaver": "textile_goods", "SBCobbler": "textile_goods",
+    "SBSEHats": "textile_goods", "SBTanner": "leather_goods", "SBLeatherWorker": "leather_goods",
+    "SBFurtrader": "raw_resource",
+    # equipment
+    "SBWeaponSmith": "finished_equipment", "SBAxeWeapon": "finished_equipment",
+    "SBKnifeWeapon": "finished_equipment", "SBMaceWeapon": "finished_equipment",
+    "SBPoleArmWeapon": "finished_equipment", "SBRangedWeapon": "finished_equipment",
+    "SBSpearForkWeapon": "finished_equipment", "SBStavesWeapon": "finished_equipment",
+    "SBSwordWeapon": "finished_equipment", "SBSEWeapons": "finished_equipment",
+    "SBChainmailArmor": "finished_equipment", "SBHelmetArmor": "finished_equipment",
+    "SBBlacksmith": "finished_equipment", "SBSEArmor": "finished_equipment",
+    "SBSEFood": "provisions",
+    "SBLeatherArmor": "finished_equipment", "SBSELeatherArmor": "finished_equipment",
+    "SBMetalShields": "finished_equipment", "SBPlateArmor": "finished_equipment",
+    "SBRingmailArmor": "finished_equipment", "SBStuddedArmor": "finished_equipment",
+    "SBWoodenShields": "finished_equipment", "SBSamurai": "finished_equipment",
+    "SBNinja": "finished_equipment",
+    # luxury
+    "SBJewel": "jewelry_gems", "SBVagabond": "jewelry_gems",
+    # owner-review stock
+    "SBThief": None, "SBVarietyDealer": None, "SBAnimalTrainer": None,
+    "SBHouseDeed": None, "SBRealEstateBroker": None, "SBBanker": None,
+    "SBPlayerBarkeeper": None, "SBVagrant": None,
+}
+
+ECON_CLASS_DENOM = {
+    "raw_resource": "copper", "raw_produce": "copper",
+    "provisions": "silver", "processed_food": "silver", "magic_supplies": "silver",
+    "scribe_supplies": "silver", "tools_components": "silver", "glassware": "silver",
+    "wood_goods": "silver", "stone_goods": "silver", "textile_goods": "silver",
+    "leather_goods": "silver", "finished_equipment": "silver", "service_goods": "silver",
+    "jewelry_gems": "gold",
+}
 
 
 VARIABLE_MATERIAL_CATALOGS = {
     "SBAxeWeapon", "SBKnifeWeapon", "SBMaceWeapon", "SBPoleArmWeapon", "SBRangedWeapon",
     "SBSpearForkWeapon", "SBStavesWeapon", "SBSwordWeapon", "SBSEWeapons",
     "SBChainmailArmor", "SBHelmetArmor", "SBMetalShields", "SBPlateArmor",
-    "SBRingmailArmor", "SBWeaponSmith", "SBBlacksmith",
+    "SBRingmailArmor", "SBWeaponSmith", "SBBlacksmith", "SBSEArmor",
 }
 
 
@@ -627,19 +751,26 @@ def main() -> int:
         for row in cat["buy_rows"]:
             t = row.get("type")
             if row["buy_info_class"] == "AnimalBuyInfo":
-                row["mapping_status"] = "MOBILE"
+                row["mapping_status"] = "SERVICE_OR_MOBILE"
+                row["fulfillment"] = "MOBILE"
                 row["uc_item_id"] = None
             elif row["buy_info_class"] == "PresetMapBuyInfo":
-                row["mapping_status"] = "REQUIRES_OWNER_MAPPING"
+                row["mapping_status"] = "SERVICE_OR_MOBILE"
+                row["fulfillment"] = "PRESET_MAP"
                 row["uc_item_id"] = None
             elif t:
-                uc_id, status = map_buy_row_item(t, uc_items)
+                uc_id, status, note = map_buy_row_item(t, uc_items, cat["catalog"])
                 row["uc_item_id"] = uc_id
-                row["mapping_status"] = (
-                    "VARIABLE_MATERIAL_PRODUCT" if variable_material else status
-                )
+                if note:
+                    row["mapping_note"] = note
+                if variable_material:
+                    row["mapping_status"] = "VARIABLE_MATERIAL_PRODUCT"
+                    row["item_match"] = status  # keep the match verdict alongside
+                else:
+                    row["mapping_status"] = status
             else:
-                row["mapping_status"] = "REQUIRES_OWNER_MAPPING"
+                row["mapping_status"] = "OWNER_REVIEW"
+                row["mapping_note"] = "row without a parsed type"
             row["denomination"] = "gold"          # owner rule: RunUO GP -> Gold
             row["runuo_gp_price"] = row.get("price")
             row["requirements_status"] = "unresolved"  # Rails Product seeding, M3+
@@ -667,10 +798,20 @@ def main() -> int:
                 else "current_commodity_value" if form != "unclassified"
                 else "unresolved"
             )
-            row["payout_denomination_proposal"] = payout_denomination_proposal(
-                form, row.get("price")
+            econ_class = CATALOG_ECON_CLASS.get(cat["catalog"])
+            row["economic_class"] = econ_class
+            proposal = payout_denomination_proposal(form, row.get("price"))
+            if proposal == "unresolved" and econ_class:
+                # OQ-4 class policy: class default, high-GP override to gold.
+                if isinstance(row.get("price"), int) and row["price"] >= 500:
+                    proposal = "gold"
+                else:
+                    proposal = ECON_CLASS_DENOM[econ_class]
+            row["payout_denomination_proposal"] = proposal
+            row["payout_denomination_status"] = (
+                "PROPOSED_CLASS_POLICY" if proposal != "unresolved"
+                else "OWNER_EXCEPTION"
             )
-            row["payout_denomination_status"] = "PROPOSED_REQUIRES_OWNER_REVIEW"
 
     result = {
         "schema_version": "1.0.0",

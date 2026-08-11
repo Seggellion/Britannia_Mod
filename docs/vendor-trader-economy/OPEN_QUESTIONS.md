@@ -558,41 +558,79 @@ The checkout is never modified and is kept separate from the implementation work
 
 ---
 
-## Milestone 2 owner-review items (added 2026-08-10)
+## Milestone 2 owner-review items (updated 2026-08-10 OQ cleanup pass)
 
-These are data-mapping proposals awaiting owner confirmation, produced by the RunUO audit
-(`runuo_ultimacraft_mapping.json`, summarized in RUNUO_VENDOR_MATRIX.md). They are review
-queues, not blockers.
+Findings and shrunken queues from the cleanup pass; full detail in RUNUO_VENDOR_MATRIX.md.
 
-OQ-3. Five proposed NEW trader types (textile_trader 51 rows, reagent_trader 81,
-provision_trader 59, glass_trader 21, scribe_trader 12) — confirm, rename, merge, or reject.
+OQ-3 (**tables ready, matrix §4a**): five proposed trader types with buyback provenance —
+reagent_trader (81), provision_trader (59), textile_trader (51), glass_trader (21),
+scribe_trader (12). Owner options: approve all five, or consolidate glass+scribe into
+reagent_trader (three new types). Not created yet.
 
-OQ-4. Payout denomination proposals for 915 buyback rows (copper 75 / silver 370 / gold 11 /
-unresolved 459) — the raw→copper, processed/finished→silver, ≥500GP→gold heuristic needs
-owner ratification, and the 459 unresolved rows need classification (mostly tied to OQ-5
-form data).
+OQ-4 (**resolved to a policy + 34 exceptions, matrix §4b**): class-based tiers applied as
+data — raw → Copper (83 rows), processed/provisions/tools/textiles/finished equipment →
+Silver (787), jewelry/gems and ≥500 GP → Gold (11). Only 34 `OWNER_EXCEPTION` rows remain,
+all stock of the OQ-8 vendors (Thief/VarietyDealer/RealEstateBroker/Dryad) — they inherit the
+OQ-8 outcomes. Owner action: ratify the tier policy.
 
-OQ-5. New commodity families required by the mapping: reagents, textile inputs
-(cloth/thread/wool/cotton/flax), glass, scribe (paper/scrolls), plus metal-ingot commodity
-mappings for shadow_iron..valorite. Confirm which become Rails commodities vs
-UNSUPPORTED_BY_DESIGN.
+OQ-5 (**gap table ready, matrix §5**): reagent ITEMS mostly exist (7/8; black_pearl missing)
+— the gap is commodity families: reagents, textiles, glass, scribe; metal-ingot commodity
+mappings missing for 7 of 9 tiers; plus the decided form/permission columns. Owner action:
+confirm which families become Rails commodities.
 
-OQ-6. 694 retail rows with no confident UltimaCraft item match (REQUIRES_OWNER_MAPPING) —
-need triage into PROPOSED_DIRECT_ITEM / REQUIRES_NEW_ITEM / UNSUPPORTED_BY_DESIGN, likely in
-profession-family batches during Milestone 17 planning.
+OQ-6 (**auto-classified, matrix §3**): 1,015 retail rows now bucketed — 473 MISSING_ITEM,
+226 VARIABLE_MATERIAL_PRODUCT (151 with item matches via the 202 blacksmithing craftables),
+102 LIKELY_MATCH, 66 DIRECT_MATCH, 29 SERVICE_OR_MOBILE, 26 UNSUPPORTED, 93 OWNER_REVIEW.
+The 93 reduce to 3 decisions: (a) magic/alchemy consumable items yes/no, (b) deed-economy
+mapping, (c) Hammer disambiguation.
 
-OQ-7. 21 AnimalBuyInfo rows (creatures with control slots) — owner path needed (animal
-trainer vendor selling mobs is a different transaction class than ItemStack products).
+OQ-7 (**proposal written, matrix §7b**): AnimalBuyInfo as a Rails-authoritative MOBILE
+fulfillment kind — same quote/denomination/treasury path, entity-spawning fulfillment with
+receipt-guarded idempotency. Owner sign-off needed before animal-trainer work.
 
-OQ-8. 10 REQUIRES_OWNER_MAPPING vendors (GolemCrafter, GypsyMaiden, RealEstateBroker, Thief,
-Vagabond, VarietyDealer, EvilHealer, PricedHealer, Hamato, Ryuichi).
+OQ-8 (**recommendations table ready, matrix §8**): 6 merges (GolemCrafter→tinker,
+GypsyMaiden/Thief/VarietyDealer→provisioner, Vagabond→jeweler, EvilHealer→healer),
+2 service-only (PricedHealer, RealEstateBroker), 2 guildmaster-territory (Hamato, Ryuichi).
+Owner action: approve/adjust per row.
 
-OQ-9. Quality carriers missing for armor and ranged-weapon product families (matrix §7) —
-needed before those vendor families roll out.
+OQ-9 (**carrier gaps identified, matrix §7; Fine policy NOT reopened**): melee/metal-armor/
+shield carrier exists (BlacksmithEquipmentItem, 202 outputs; needs the decided 1|2→4-tier
+bridge); jewelry carrier exists. Genuine gaps: ranged/bowyer family and leather/cloth
+tailor family have neither items nor carriers — recorded as implementation gaps for their
+Milestone 17 families.
 
-## OQ-1 status note (2026-08-10)
+## OQ-1 status note (2026-08-10, diagnosis complete — awaiting repair approval)
 
-Re-verified during the Milestone 1 documentation correction: `ultimacraft_test` is still owned by
-role `ultimacraft` and `SELECT` still fails for `ultimacraft_codex_test`. The repair remains an
-outstanding local-admin action; the `Currency.base_value` data correction (canonical
-1/100/10,000) is prepared as a Milestone 3 item behind it.
+Full diagnosis performed (read-only; no ownership, grants, or data changed):
+
+- Failure: `bin/codex_test` → `db:prepare` → `PG::InsufficientPrivilege: permission denied for
+  table schema_migrations`, connecting as `ultimacraft_codex_test` (peer auth, Unix socket).
+- Root cause: all 18 `ultimacraft_*` databases (dev + test + 16 parallel workers) and **all 91
+  tables inside `ultimacraft_test`** are owned by role `ultimacraft`; the codex role has schema
+  USAGE but zero table privileges (`has_table_privilege(...'SELECT') = false`) and there are no
+  default ACLs to inherit. The test DBs were evidently recreated by a Rails run executing as
+  `ultimacraft`, locking the canonical test role out entirely.
+- Roles: `ultimacraft` is a **superuser** (rolsuper=t, createdb, createrole) reachable via TCP
+  password auth; `ultimacraft_codex_test` is the intended limited role (createdb only).
+- This is purely a local WSL PostgreSQL ownership problem, not a Rails code defect.
+
+Proposed repair (NOT performed — needs explicit owner approval; pick one):
+
+```text
+Option A (clean, matches docs/local_test_database.md):  as ultimacraft:
+  DROP DATABASE "ultimacraft_test"; DROP DATABASE "ultimacraft_test-0"; … "-15";
+  then as the normal user: bin/setup_test_database   (codex role recreates and owns)
+
+Option B (no drop): for each of the 17 test databases, as ultimacraft:
+  ALTER DATABASE "<db>" OWNER TO ultimacraft_codex_test;
+  and inside each: REASSIGN OWNED BY ultimacraft TO ultimacraft_codex_test;
+  then bin/setup_test_database to verify migrations.
+```
+
+Both touch ONLY `ultimacraft_test*`; `ultimacraft_development` is untouched either way.
+
+**Live-data finding unlocked by the diagnosis (read-only SELECT):** the development database's
+`currencies` rows are `copper=1, silver=10, gold=100` — the obsolete ladder is CONFIRMED LIVE
+in dev (not just a migration default), and `ultimacraft_test.currencies` is empty. The
+Milestone 3 correction must therefore include a data migration to the canonical
+1/100/10,000 values for existing rows, not only new-row defaults.
