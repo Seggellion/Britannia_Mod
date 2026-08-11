@@ -1,87 +1,552 @@
-# Vendor/Trader Economy — OPEN_QUESTIONS
+Vendor/Trader Economy — OPEN_QUESTIONS
 
-Unresolved items that cannot be answered confidently from source. Nothing here is silently treated
-as decided.
+This document records the owner-approved architecture decisions that resolve the questions raisedduring Milestones 0–1, followed by the small number of operational questions that remain genuinelyopen.
 
-1. **Economic NPC types: extend `ServiceNpcType` or a sibling table?** `ServiceNpcType` requires a
-   `default_service_dialogue_set` and validates guildmaster/skill coherence; vendors/traders need
-   catalogs and valuation strategies instead. Options: (a) add a `kind` (service|vendor|trader) and
-   relax dialogue requirements per kind; (b) a new `economic_npc_types` table sharing
-   `ServiceNpcSpawnPoint`/`NpcSpawnAssignment`/`WorldNpc` (spawn point's `service_npc_type` FK would
-   need generalizing). Milestone 3 design decision; both avoid a second identity system.
+Resolved decisions are not implementation suggestions. Codex must treat them as projectrequirements unless later owner direction explicitly supersedes them.
 
-2. **Shard scoping of requirements.** `service_npc_types.minimum_city_supplies` is per type,
-   global across shards. The playbook requires per-shard configurability. Does the owner want a
-   shard-override table for *service* NPCs too, or only for the new economic types?
+Resolved Architecture Decisions
 
-3. **Treasury coupling direction.** Trader payouts must debit a treasury; today's
-   `currency_breakdown` grants coins without any debit. Which balance field should fund NPC
-   purchases — `coins_outstanding` (symmetric with `GuildTraining::Purchase#credit_treasury` and
-   with what `City#gold_amount` reads) or `reserve`? The Guildmaster owner note ("training gold
-   lands in coins_outstanding") suggests coins_outstanding, but a *debit* below zero must be
-   impossible — needs an owner-approved failure semantics (reject sale vs partial payout).
+1. Economic NPC type architecture
 
-4. **Recipe authority for valuation.** Minecraft is the only recipe authority
-   (`economy/MerchantRecipes` for merchants, `skill/crafting/CraftableRegistry` + data recipes for
-   crafting). For Rails to price recipe-derived products without trusting the client, recipe
-   compositions must be exported/seeded to Rails (initial recommendation), or quotes must carry
-   client-claimed compositions (rejected by playbook's no-client-trust rules?). Decide the export
-   format and the sync/versioning story in Milestones 2–3.
+Decision: use a generalized NPC type foundation with Service and Economic specializations.
 
-5. **Player payout representation.** Trader sales currently pay players twice-over in
-   representation: Rails credits `shard_user.currency` (JSON ledger) AND Minecraft grants physical
-   coin items from the response. Banking treats physical coins + bank accounts as the real economy.
-   Which representation is authoritative for the new flows, and should the shard_user ledger credit
-   be retired?
+Do not keep expanding ServiceNpcType until it becomes a catch-all model for unrelated NPC roles.
 
-6. **"One tier below maximum" quality.** Three coexisting scales: blacksmithing writes 1|2
-   (Normal|Exceptional, `skill/BlacksmithCrafting.java:111`); `QualitySwordItem.getQualityName`
-   names 1–4 (Crude/Basic/Fine/Exceptional); crops use 0–100. On the metal-goods scale actually in
-   use (1|2), "one below max" = Normal, which defeats the playbook's "high quality" intent. Owner
-   must pick the canonical ladder for NPC-produced goods (e.g. adopt the 1–4 ladder and use 3
-   "Fine", or extend blacksmithing's scale).
+The target model should preserve one shared persistent NPC/spawn architecture while allowingrole-specific configuration:
 
-7. **"Highest eligible material" rule.** `UOMetalToolMaterial` has no explicit tier ranking
-   (enum order is not sorted by strength; gold sits between iron and shadow_iron). What defines
-   "highest": the RunUO ore ladder (iron→…→valorite), durability, or a new explicit rank column in
-   Rails commodity/material data?
+general NPC type / role definition
+    |
+    +-- Service NPC specialization
+    |     dialogue
+    |     service actions
+    |     guildmaster/skill configuration
+    |
+    +-- Economic NPC specialization
+          kind: vendor | trader
+          product/catalog policy
+          valuation strategy
+          economic eligibility
 
-8. **Commodity saleability flag.** `city_commodities` has no saleable/eligibility column; the
-   playbook requires "commodity sale eligibility". New column vs policy table vs derived from
-   category — Rails-side design, Milestone 3.
+WorldNpc, persistent spawn-post identity, and NpcSpawnAssignment remain shared concepts.
 
-9. **Raw vs processed classification.** Currently subcategory conventions (`raw`, `logs`,
-   `whole`/`milled`, `ingot`). Is a convention list acceptable as the Rails-configurable policy
-   input, or should commodities gain an explicit `form` (raw|processed) column so shard multipliers
-   can bind to data rather than string conventions?
+The current ServiceNpcSpawnPoint foreign-key shape may therefore need to be generalized orreplaced by a common NPC spawn-post/type relationship. Do not create a second persistent NPCidentity system for Vendors or Traders.
 
-10. **Reconciliation trigger for economic population.** `CityStaffing::Reconcile` is admin-triggered
-    only. Economic NPCs reacting to commodity/treasury changes need a trigger (scheduled job,
-    after-commit hook on threshold crossings, or explicit admin action only?). Also whether the
-    no-hysteresis oscillation behavior (documented in `EconomicEligibility`) is acceptable for
-    vendors, which are more visible than Guildmasters.
+Milestone 3 must choose the exact Rails table/class shape by extending current project conventions,but the architectural direction above is decided.
 
-11. **Alcohol/wine/salvage legacy branch.** These roles bypass `SaleTransactionProcessor`
-    (wine/salvage-specific persistence in the controller). The new Trader architecture must either
-    absorb wine quality valuation (`CityCommodity#calculate_wine_value`) and salvage
-    material/quality valuation into the strategy registry, or keep the legacy branch alive during
-    migration. Which wins, and when?
+2. Shard scoping of requirements
 
-12. **Townsperson side-spawning.** Legacy Trader/Merchant blocks also maintain `townPersonAmount`
-    ambient townspeople under the same sourceId. Where does that responsibility live after
-    migration (separate ambient-population post? Rails-staffed? dropped)?
+Decision: shard-specific NPC policy overrides apply to both Service NPCs and Economic NPCs.
 
-13. **Rails test environment repair.** All `ultimacraft_test*` databases are owned by role
-    `ultimacraft`, so the canonical `bin/codex_test` flow is broken for every checkout (see
-    PROJECT_FACTS §2). Requires the user/local admin to drop or re-own them; until then no Rails
-    baseline can be recorded and Milestone 3+ Rails work is blocked by AGENTS.md's own rule.
+Global NPC-type requirements may remain defaults, but individual shards must be able to overrideactivation/staffing requirements.
 
-14. **RunUO catalog completeness.** `runuo_vendor_catalog.json` is safety-filtered (11 vendors /
-    12 catalogs; restricted rows omitted). Milestone 2 must audit the pinned RunUO tree
-    (`runuo/runuo` @ `71b2794f`) directly — confirm the pinned source is available locally or must
-    be fetched, and where it lives.
+The target pattern is conceptually:
 
-15. **Merchant price acceptance.** Rails accepts client-submitted merchant line prices
-    (`merchant_purchase_processor.rb` `submitted_line_price` first). The target says Rails-priced
-    only. Is a compatibility window needed for old clients during migration, or is a hard cutover
-    acceptable on this private shard?
+global NPC type defaults
+        |
+        v
+shard-specific NPC type policy
+        |
+        v
+city eligibility evaluation
+
+This applies to Service NPCs as well as Vendors/Traders so the project does not end up with twoincompatible staffing-rule systems.
+
+Shard Admin must manage these overrides.
+
+3. Treasury coupling direction
+
+Decision: Trader payouts debit the city's circulating treasury balance represented bycoins_outstanding.
+
+This is the inverse of economic flows that credit coins_outstanding, including Guildmastertraining revenue.
+
+Required behavior:
+
+Trader buys from player
+    city treasury coins_outstanding decreases
+    city economic/commodity supply increases
+    player receives payment
+
+Treasury debit must be atomic and must never reduce the balance below zero.
+
+If the city cannot afford the entire transaction, reject the sale.
+
+Do not partially purchase a player's submitted transaction by default.
+
+Do not silently fall back to reserve.
+
+Implement the debit through a locked/idempotent Rails transaction service rather than directunprotected arithmetic.
+
+4. NPC product recipe authority
+
+Decision: Rails Product is the authoritative source for NPC products and NPC productionrequirements.
+
+The existing Rails products table already contains:
+
+item_id
+requirements JSONB
+price
+
+That model should be evolved into the authoritative NPC economic product definition instead ofcreating a second recipe authority.
+
+Critical rule
+
+Do not use vanilla Minecraft recipes, legacy Minecraft recipes, MerchantRecipes,CraftableRegistry, datapack crafting recipes, or any other Minecraft crafting recipe as therecipe authority for Vendor/Trader production or valuation.
+
+Minecraft/player crafting and NPC economic production are separate systems.
+
+For NPC products:
+
+Rails Product
+    |
+    +-- item_id
+    +-- requirements
+    +-- baseline/default price
+    +-- Vendor associations/policy
+    +-- material-family policy where applicable
+    +-- quality policy
+    |
+    v
+city-economy availability + pricing
+
+Product.requirements should be expanded beyond the current generic:
+
+{
+  "wood": 0,
+  "metal": 0,
+  "stone": 0
+}
+
+so that it can express real Rails commodity requirements.
+
+The exact JSON schema should follow project conventions and be versionable, but conceptually itmust support:
+
+fixed commodity requirements;
+
+quantities;
+
+variable material-family requirements such as metal;
+
+future non-material economic requirements if needed.
+
+Default NPC products/requirements must be generated from a project-owned Rails seed/import source.
+
+RunUO provides historical/default Vendor data. Rails becomes the actual UltimaCraft game-designauthority.
+
+Shard customization
+
+Every shard must ultimately be able to override NPC production requirements without modifying Java.
+
+Prefer global/default Product definitions plus shard-scoped overrides rather than blindlyduplicating the entire Product table for every shard.
+
+The exact Rails representation is a Milestone 3 implementation detail, not an open owner decision.
+
+5. Player payout representation
+
+Decision: physical currency and the banking/account system are the authoritative player-valuerepresentations for new economic transactions.
+
+The current Trader path must not continue double-representing one payout by both:
+
+crediting shard_user.currency, and
+
+granting physical coin items.
+
+For the new Vendor/Trader economy:
+
+stop crediting shard_user.currency for new Trader-sale flows;
+
+pay through the established physical-coin/banking economic path;
+
+retain legacy reads only as long as required for compatibility;
+
+migrate/deprecate the old JSON ledger once no supported flow depends on it.
+
+One transaction must create value in exactly one authoritative player representation.
+
+6. NPC product quality
+
+Decision: NPC-manufactured equipment uses the richer four-tier quality ladder and should beFine, not maximum Exceptional.
+
+Canonical intent:
+
+Crude
+Basic
+Fine          <- NPC-produced high-quality goods
+Exceptional   <- maximum
+
+The current blacksmithing 1|2 Normal|Exceptional representation must not force NPC goods to useNormal.
+
+Milestone implementation must normalize or bridge the existing quality representations safelywithout corrupting existing item data.
+
+Crop quality remains a separate system and does not define equipment quality.
+
+7. Material eligibility, ordering, and fallback
+
+Decision: material progression must be explicit data, not Java enum order, durability, or animplicit string sort.
+
+Rails must know the intended UltimaCraft/UO economic progression for material families such asmetal.
+
+For each base Product, Rails determines which material variants are currently producible from thecity's available commodities.
+
+Iron is the normal baseline material.
+
+Higher-value material variants become eligible when that material exists in sufficient city supplyfor the Product's Rails requirements.
+
+Catalog behavior
+
+All economically supported material variants may exist conceptually in the product/economy model,but the current interface does not need to show every material variation simultaneously.
+
+For each base product slot, display the highest-value currently producible material variant.
+
+Example:
+
+Valorite product is producible
+    -> display Valorite variant
+
+Valorite becomes unavailable
+    -> fall back to next-highest producible material
+
+...
+
+only Iron remains
+    -> display Iron variant
+
+This gives prosperous cities visibly better merchandise without flooding the interface with everymaterial variation.
+
+Do not use UOMetalToolMaterial enum ordinal as the economic rank.
+
+Create/import an explicit material rank/policy in Rails.
+
+8. Commodity economic eligibility
+
+Decision: commodity economic permissions must be explicit Rails data.
+
+Do not permanently derive saleability from category/subcategory strings.
+
+A single ambiguous saleable boolean is not sufficient because different directions may needdifferent policy.
+
+The Rails design should support at least the equivalent of:
+
+npc_buy_enabled
+npc_sell_enabled
+production_enabled
+
+or an associated policy object that represents the same independent permissions.
+
+This must remain compatible with shard-specific overrides where required.
+
+9. Raw vs processed classification
+
+Decision: commodities need explicit form/classification data.
+
+Do not make long-term pricing policy depend on conventions such as:
+
+raw
+logs
+whole
+milled
+ingot
+
+Existing commodity records should be backfilled from current conventions and reviewed.
+
+The target model should support an explicit classification such as:
+
+raw
+processed
+finished
+other
+
+The final enum names may follow existing project terminology.
+
+Shard pricing policies can then bind to explicit data, for example:
+
+raw purchase multiplier
+processed purchase multiplier
+
+instead of inspecting commodity-name strings.
+
+10. Economic NPC reconciliation
+
+Decision: economic NPC eligibility is Rails-authoritative and reconciles asynchronously.
+
+Do not run the complete staffing/population engine directly inside commodity or treasuryafter_commit callbacks.
+
+Economic changes should enqueue or mark reconciliation work, while a periodic reconciliation jobprovides eventual-consistency recovery.
+
+Vendor/Trader activation must also use hysteresis and/or minimum active/inactive durations so visibleNPCs do not oscillate around a threshold.
+
+Conceptually:
+
+activation threshold != immediate deactivation threshold
+
+or an equivalent bounded stability policy.
+
+Shard Admin should ultimately control the relevant thresholds/policies.
+
+Minecraft receives the resulting authoritative assignment/activation state. It does not independentlycalculate whether a Vendor should exist.
+
+11. Wine, alcohol, and salvage legacy branches
+
+Decision: the new Trader valuation-strategy architecture absorbs the existing specializedvaluation behavior.
+
+Do not permanently retain separate transaction systems for wine and salvage.
+
+Preserve their existing valuation semantics by implementing dedicated closed strategies, forexample conceptually:
+
+WineQualityValue
+SalvageMaterialQualityValue
+
+During migration, legacy controller paths may delegate into the new strategies so behavior remainscompatible.
+
+After differential/parity tests prove the generic transaction path produces the same intendedresults, route those Trader transactions through the common processor and retire the legacybranches.
+
+12. TownPerson economic population
+
+Decision: TownPersons remain an important economic sink and visible expression of city wealth,but they no longer belong to individual Trader/Merchant spawn blocks.
+
+Legacy townPersonAmount / shared-sourceId side-spawning should be migrated away.
+
+The target architecture is:
+
+Rails city economy
+    |
+    | food supply
+    | alcohol supply
+    | treasury/wealth
+    | future economic inputs
+    v
+desired TownPerson population
+    |
+    v
+Minecraft regional population manager
+    |
+    v
+valid random spawn/despawn locations within the city region
+
+Population behavior
+
+TownPerson population should grow and decline nonlinearly with economic prosperity.
+
+The desired population function should feel exponential during normal prosperity growth, but mustbe bounded by configured limits.
+
+Do not use an unbounded exponential formula.
+
+Use a capped nonlinear curve or equivalent model that provides:
+
+very low population for poor cities;
+
+gradual initial growth;
+
+visibly faster growth for prosperous cities;
+
+a hard maximum population cap.
+
+Rails should own the desired population calculation and shard/city configuration.
+
+At minimum the eventual policy should be able to represent:
+
+minimum population
+maximum population
+food influence
+alcohol influence
+wealth/gold influence
+growth-curve parameters
+spawn/despawn rate limits
+
+Minecraft spawning
+
+TownPersons should spawn throughout the existing authoritative city Region rather than around aMerchantSpawnBlock or TraderSpawnBlock.
+
+Candidate positions must be validated against current world conditions, including:
+
+correct city region;
+
+correct dimension;
+
+loaded chunks only;
+
+valid ground;
+
+sufficient headroom;
+
+no solid/liquid invalid placement;
+
+reasonable player distance;
+
+local TownPerson density/cap.
+
+Do not force-load chunks merely to satisfy desired population.
+
+Gradual reconciliation
+
+Do not instantly spawn or despawn a large population difference.
+
+Minecraft should gradually converge toward the Rails desired count, producing the visual effect ofpopulation growth, decline, and migration rather than mass appearance/disappearance.
+
+Existing legacy TownPersons must be preserved during migration until the new regional populationsystem has parity.
+
+13. RunUO catalog completeness
+
+Decision: the pinned RunUO source is the completeness authority.
+
+runuo_vendor_catalog.json is a normalized project input and may contain verified mappings, but itmust not be treated as proof that the entire RunUO Vendor/catalog set has been imported.
+
+Milestone 2 must audit the pinned RunUO source at the approved commit and produce a project-ownedcomplete Vendor/buyback mapping.
+
+RunUO data is used to create/default Rails Product and economic-NPC definitions.
+
+Once imported/seeded, Rails is authoritative for UltimaCraft configuration.
+
+The only remaining operational question for this item is the exact local location of the pinnedRunUO checkout, documented below.
+
+14. Merchant price authority and migration
+
+Decision: Rails is authoritative for all new Merchant/Vendor prices.
+
+Do not trust submitted_line_price.
+
+A compatibility window may preserve the old request field temporarily, but Rails must ignore thesubmitted value and calculate/return the authoritative price itself.
+
+Once supported Minecraft deployments no longer require the deprecated field, remove it.
+
+A private shard does not justify retaining client-authoritative economic pricing.
+
+Product Pricing Clarification
+
+The RunUO item price is a baseline price anchor for the Iron/default version of a product.
+
+It is not the final fixed price for all material variants.
+
+It is also not replaced by a simple raw-material-only calculation.
+
+RunUO pricing already represents non-material economic value such as craftsmanship, labor, shopmargin, and game-balance value.
+
+For a variable-material product, the target pricing concept is:
+
+RunUO Iron baseline price
+    +
+difference between current selected-material cost
+and the reference/current Iron material cost
+    +
+approved UltimaCraft economic/production adjustment
+
+Conceptually:
+
+baseline_material_cost =
+    Product material quantity
+    * reference/current Iron commodity value
+
+selected_material_cost =
+    Product material quantity
+    * current selected-material city commodity value
+
+material_delta =
+    selected_material_cost - baseline_material_cost
+
+final_retail_price =
+    RunUO Iron baseline
+    + material_delta
+    + approved production/economy adjustment
+
+The exact calibrated formula belongs in ECONOMY_RULES.md and must be tested against expected RunUOprice ranges.
+
+Do not use a straight material-cost comparison as the entire retail price.
+
+Do not use fixed Java price constants.
+
+Vendor Currency Rule
+
+Decision: city Vendors sell NPC products in Gold coins.
+
+This is intentionally expensive and is part of the UltimaCraft economic design.
+
+Product prices must reflect current city commodity/material costs and the RunUO baseline.
+
+Player purchases from Vendors credit the authoritative city treasury.
+
+Vendor retail is intended to be economically meaningful rather than a cheap substitute for playergathering and crafting.
+
+Product Availability Clarification
+
+A Rails Product is not automatically for sale merely because it exists.
+
+The runtime catalog must be derived from:
+
+Product active/configured
+AND economic NPC active
+AND shard policy allows it
+AND all Product.requirements resolve to real city commodities
+AND required commodities are production-enabled
+AND sufficient city supply exists
+AND material variant is eligible
+AND treasury/economy policy permits the sale
+
+If any required commodity does not exist in the city economy, the Product must not be listed.
+
+Do not substitute a vanilla Minecraft ingredient.
+
+Do not substitute a legacy Minecraft recipe.
+
+Do not synthesize missing commodities client-side.
+
+Remaining Operational Open Questions
+
+Only the following items remain genuinely unresolved.
+
+OQ-1. Rails test database ownership repair
+
+All discovered ultimacraft_test* databases are currently owned by role ultimacraft, while thecanonical Codex test workflow expects the project's dedicated test role/environment.
+
+The test environment must be repaired before Milestone 3+ Rails implementation work proceeds.
+
+Required local/admin action is one of:
+
+safely recreate the affected test databases under the expected test role; or
+
+safely transfer ownership/privileges according to the project's established test setup.
+
+Do not alter production database ownership.
+
+Do not weaken AGENTS.md testing requirements to bypass this issue.
+
+Once repaired, record:
+
+database names
+owner
+test role
+exact repair command
+bin/codex_test result
+
+in PROJECT_FACTS.md / IMPLEMENTATION_LOG.md.
+
+This is an environment prerequisite, not an architecture question.
+
+OQ-2. Local pinned RunUO source location
+
+Milestone 2 needs the pinned RunUO source checkout used as the completeness authority.
+
+Required source:
+
+repository: runuo/runuo
+commit: 71b2794f12eb6f948b1c5598ae8b350401a22d4d
+
+Codex must determine whether that exact commit already exists locally.
+
+If present:
+
+record the absolute local path;
+
+verify the repository remote;
+
+verify git rev-parse HEAD or the inspected tree is exactly the pinned commit;
+
+do not modify the checkout.
+
+If absent:
+
+obtain or create a read-only/reference checkout of exactly the pinned commit using the project'sapproved workflow;
+
+keep it separate from the UltimaCraft implementation worktrees;
+
+record its location and commit in PROJECT_FACTS.md.
+
+Do not substitute the current RunUO default branch or another commit.
