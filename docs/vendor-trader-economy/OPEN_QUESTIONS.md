@@ -613,8 +613,12 @@ Milestone 17 families.
 - Milestone 3 authorized and completed (Rails commit `15bf968`).
 
 **Still genuinely open (small):** (a) magic/alchemy consumable items yes/no; (b) deed-economy
-mapping; (c) `Hammer` disambiguation (3 rows); (d) confirmation of the seeded nine-metal rank
-order (iron 1 … valorite 9 — admin-editable data, defaults live).
+mapping; (c) `Hammer` disambiguation (3 rows).
+
+**2026-08-10 second approval ("i approve" on the Milestone 3 report):** the seeded nine-metal
+rank ladder (iron 1 … valorite 9) is confirmed as the working default (remains admin-editable
+data). Milestone 4 authorized and completed (Rails `37277cc`): economic NPC types, shard
+policies, and eligibility previews are now fully Shard-Admin-manageable with audit history.
 
 ## OQ-1 RESOLVED (2026-08-10) — repair record per checklist
 

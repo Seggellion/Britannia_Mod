@@ -272,5 +272,48 @@ bash bin/codex_test (full, post-change)         → 1369 runs, 6435 assertions, 
 ```
 
 ### Scope discipline
-Not started: Shard Admin UI (Milestone 4), spawn-post convergence (M5+), catalogs/Products
-evolution, transaction APIs, staffing automation. Stopped after Milestone 3 for owner review.
+Not started at Milestone 3 close: Shard Admin UI (Milestone 4), spawn-post convergence (M5+),
+catalogs/Products evolution, transaction APIs, staffing automation.
+
+## 2026-08-10 — Milestone 4: Shard Admin management for economic NPC rules
+
+Owner approved resuming ("i approve"); the seeded nine-metal rank ladder is thereby confirmed
+as the working default. Rails commit `37277cc` (19 files, +1046/−73):
+
+- `Admin::EconomicNpcTypesController` — index/show/new/create/edit/update over the economic
+  type registry. Typed fields only; key immutable after creation; `definition_revision`
+  auto-bumps on change; create/update audited via `AdminActionAudit.record!`.
+- `Admin::ShardNpcTypePoliciesController` (nested under types) — per-shard enable/disable,
+  raw/processed payout multipliers, and requirement overrides with an explicit
+  inherit-vs-override checkbox (nil = inherit defaults; override = replace, possibly empty).
+  Policy `revision` bumps on change; create/update/destroy audited.
+- `Admin::EconomicNpcEligibilitiesController#show` — read-only per-city eligibility preview
+  for one type × shard, calling the SAME `EconomicNpcs::Eligibility` service used outside
+  Admin (playbook acceptance criterion), rendering machine-readable reasons and the
+  requirements in force.
+- `NpcRequirements::FormParams` — maps structured admin requirement rows onto the closed
+  typed rule vocabulary (no free-form expressions; malformed numerics surface as model
+  validation errors). One fix during testing: ActionController::Parameters handled via
+  `to_unsafe_h` — safe because rows are read field-by-field against the closed vocabulary.
+- Views under `app/views/admin/economic_npc_types|shard_npc_type_policies|
+  economic_npc_eligibilities`, a sidebar link, and nested admin routes.
+
+Guardrails honored: typed fields, no code evaluation, admin session/role gating from
+`Admin::ApplicationController`, validation against real shard/supply/currency keys (closed
+maps), revision history + immutable audit rows, safe defaults (new types inactive).
+
+### Validation actually run
+```text
+bash bin/codex_test <3 admin test files>   → 13 runs, 50 assertions, 0 failures, 0 errors
+  (includes the acceptance test: magery gate configured entirely via admin HTTP actions,
+   evaluated ineligible→eligible by the shared domain service)
+bash bin/codex_test (full)                 → 1382 runs, 6481–6483 assertions, 0 errors;
+  failures per run: the deterministic pre-existing CityFoodSupplyRecalculator baseline,
+  plus occasional members of the known order/timing flake class
+  (ServiceNpcSpawnPointsConcurrencyTest race — passes 3/3 isolated;
+   Admin::BankChequesController leak — previously verified isolated-pass)
+```
+
+### Stopped
+Milestone 4 complete. Milestone 5 (Merchant/Trader spawn posts converge on Service NPC
+identity rules — first Minecraft-side implementation milestone) not started, per stop rule.
