@@ -535,5 +535,30 @@ reserveItems reservation still lacks banking-style local receipts (pre-existing 
 issue; Rails-side idempotency plus refund-on-replay bound the exposure).
 
 ### Stopped
-Milestone 10 complete. Milestone 11 (full RunUO buyback-to-Trader coverage) not started,
+Milestone 10 complete.
+
+## 2026-08-11 — Milestone 11: Full RunUO buyback-to-Trader coverage
+
+Owner approved resuming. Rails `50abc0a`; Minecraft coverage-test commit + this log.
+
+- Machine-readable completeness test IN THE BUILD: `RunuoBuybackCoverageTest` (JUnit, runs
+  in `gradlew test`) walks all 915+ sell rows of `runuo_ultimacraft_mapping.json` — every
+  row must target a known Trader (10 legacy + 5 approved new types) with a valuation
+  strategy, or carry an explicit unresolved status with denomination bookkeeping; also
+  asserts every vendor keeps `vendor_can_buy_from_player=false`. Coverage cannot regress
+  silently. Result: BUILD SUCCESSFUL — the matrix reports 100% accounted-for buyback rows
+  (638 mapped to existing traders, 224 to the approved new types, 53 explicitly unresolved
+  pending the open owner decisions — magic consumables, deed economy, Thief/VarietyDealer).
+- Rails: `db:seed:economic_trader_types` seeds the fifteen Trader EconomicNpcTypes every
+  mapped row targets (legacy categories on their existing entity types; new five inactive
+  until their Milestone 17 families). Negative tests prove the specialty-Vendor rule at the
+  transaction layer (Vendor assignment → `trader_not_assigned`, nothing mutated) and
+  registry coverage/idempotence.
+
+Validation: Rails focused 2 runs/35 assertions/0 failures; full 1413 runs/0 errors
+(pre-existing recalculator only this run). Minecraft coverage test BUILD SUCCESSFUL.
+Per-row runtime accept-lists land with the Milestone 17 profession families.
+
+### Stopped
+Milestone 11 complete. Milestone 12 (raw/processed Trader pricing policy) not started,
 per stop rule.
