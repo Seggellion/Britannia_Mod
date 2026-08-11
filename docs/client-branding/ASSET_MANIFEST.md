@@ -85,6 +85,8 @@ All five files are deterministic, opaque-black PNGs: every pixel is exactly ARGB
 
 The assembled Milestone 1 JAR contains all five paths above and no client-branding `inworld_*` or panorama override.
 
+Milestone 5 completed the full pre-world screen sweep without discovering another runtime asset target. Standard inherited screens, direct `Screen.MENU_BACKGROUND` consumers, `GenericMessageScreen`, `ReceivingLevelScreen.Reason.OTHER`, the non-poem credits renderer, and reachable NeoForge/Realms states all resolve through the same five-resource set. A 40-frame title-to-Options transition check found zero non-black values across 200 exposed-background samples. Live gameplay guards confirmed that the world/HUD, inventory, pause menu, and in-world Options continue to use their original paths. The accepted Milestone 5 runtime asset set is therefore unchanged from Milestone 1: exactly these five black PNGs, with every `inworld_*` and panorama override still absent.
+
 The vanilla pre-world menu/list assets are translucent; replacing them with opaque black hides the panorama drawn beneath standard non-title screens. No panorama face or overlay asset is planned at baseline because relying on `panorama_overlay.png` alpha is specifically avoided.
 
 ## Splash corpus target

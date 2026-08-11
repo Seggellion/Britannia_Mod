@@ -76,6 +76,76 @@ Two additional independent 1280x720/Auto starts selected `Truth brought receipts
 
 Across all six starts, the UltimaCraft wordmark, exact `Version 18` subtitle, title controls, runtime/legal attribution, and protected chest-to-medallion background remained present. The vanilla yellow, angled, pulsing splash treatment was intentionally retained. Ignored evidence is stored under `build/client-branding-validation/milestone-4`; the temporary capture harness was removed and the local development GUI scale was restored to 2.
 
+## Milestone 5 complete pre-world sweep
+
+The final sweep combined live 1920x1080 framebuffer inspection with Minecraft 1.21.1/NeoForge 21.1.72 source inspection. "Menu resource set" below means the five Milestone 1 opaque-black overrides: `menu_background`, `menu_list_background`, `header_separator`, `footer_separator`, and `tab_header_background`. No new renderer, mixin, event fill, panorama resource, or `inworld_*` resource was needed.
+
+### Main navigation and options
+
+| Screen/state | Old source/renderer | Final mechanism | Black result and controls |
+|---|---|---|---|
+| Main title | Protected `TitleScreenBackgroundMixin`; `TitleScreen#renderBackground` is empty | Explicit title exception | Live pass: chest/medallion, wordmark, subtitle, splash, buttons, and attribution preserved |
+| Options from title | `Screen#renderBackground` -> panorama/blur -> `MENU_BACKGROUND` | Opaque `menu_background` | Live pass: black; sliders, buttons, disabled states, tooltips, and Done visible |
+| Language | Standard background plus list | Menu resource set | Cumulative live pass: black list/body/separators; selected row, scrollbar, narration text, and buttons visible |
+| Accessibility | `OptionsSubScreen` standard background | Menu resource set | Cumulative live pass: black; controls, sliders, focus, and footer visible |
+| Video Settings | `OptionsSubScreen` standard background | Menu resource set | Cumulative live pass: black; option grid, sliders, scrollbar, and footer visible |
+| Controls | `OptionsSubScreen` standard background | Menu resource set | Cumulative live pass: black; navigation controls and footer visible |
+| Key Binds | Standard background plus keybind list | Menu/list/separator resources | Source-verified from the live Controls route; conflict text, focus, and list sprites are not overridden |
+| Mouse Settings | `OptionsSubScreen` standard background | Opaque `menu_background` | Source-verified from the live Controls route; functional option widgets are not overridden |
+| Sound Settings | `OptionsSubScreen` standard background | Opaque `menu_background` | Live pass: black; volume controls and Done remain visible |
+| Chat Settings | `OptionsSubScreen` standard background | Opaque `menu_background` | Source-verified from live Options; chat widgets are outside the overridden asset set |
+| Skin Customization | `OptionsSubScreen` standard background | Opaque `menu_background` | Live pass: black; model/part toggles and Done remain visible |
+| Resource Packs | Standard background plus two pack lists | Menu/list/separator resources | Cumulative live pass: black; icons, compatibility text, list controls, and footer visible |
+| Telemetry/Data Collection | Standard background plus disclosure list | Menu/list/separator resources | Source-verified; disabled in the development session, with disclosure/legal widgets untouched |
+| Credits and Attribution selector | Standard inherited background | Opaque `menu_background` | Live pass: black; Credits, Attribution, Licenses, and Done visible |
+| Credits roll | `WinScreen` non-poem path directly renders `Screen.MENU_BACKGROUND` | Opaque `menu_background` | Live pass: black rolling presentation; UltimaCraft heading and credit content retained |
+| Online Options | Standard inherited background | Opaque `menu_background` | Live pass: black; Realms/server-listing controls and tooltip visible |
+| NeoForge Mods list | NeoForge list screen with standard/direct menu consumers | Menu resource set | Live pass: black; mod list, search, sorting, Config, folder, and Done controls visible |
+
+### World selection and creation
+
+| Screen/state | Old source/renderer | Final mechanism | Black result and controls |
+|---|---|---|---|
+| Select World | Standard background plus `WorldSelectionList` | Menu/list/separator resources | Live pass: black; thumbnail, metadata, search field, and enabled/disabled actions visible |
+| Create World | Standard body/footer plus direct `tab_header_background` consumer | Menu resource set including tab header | Live pass: black header/body/footer; name field, tabs, Create, and Cancel visible |
+| Game/World/More tabs | `CreateWorldScreen` tab content over the same background | Menu resource set | Live pass on all three tabs; tab focus and settings visible |
+| Game Rules | Standard background and scrolling rule list | Menu/list/separator resources | Live pass: black; categories, validation tooltip, values, scrollbar, Done, and Cancel visible |
+| Experiments | Standard background and experiment entries | Menu/list/separator resources | Live pass: black; warning copy, toggles, Done, and Cancel visible |
+| Data Packs during creation | `PackSelectionScreen` lists | Menu/list/separator resources | Live pass: black; available/selected packs, icons, folder, and Done visible |
+| Backup/restore/recreate confirmations | `ConfirmScreen` family | Opaque `menu_background` | Source-verified; destructive wording/buttons remain normal functional widgets |
+| Data-pack load failure/safe mode | Standard or `GenericMessageScreen` menu draw | Opaque `menu_background` | Source-verified, including direct menu draw; status copy and actions remain above black |
+
+### Multiplayer, Realms, messages, and notices
+
+| Screen/state | Old source/renderer | Final mechanism | Black result and controls |
+|---|---|---|---|
+| Multiplayer safety warning | `SafetyScreen` standard background | Opaque `menu_background` | Live pass: black; warning, checkbox, Proceed, and Back visible and operable |
+| Join Multiplayer | Standard background plus server list | Menu/list/separator resources | Live pass: black; scanning status and enabled/disabled server actions visible |
+| Add/Edit Server | Standard background with fields | Opaque `menu_background` | Live pass: black; name/address fields, resource-pack control, Done, and Cancel visible |
+| Direct Connection | Standard background with address field | Opaque `menu_background` | Live pass: black; address field, Join, and Cancel visible |
+| Connecting | `ConnectScreen` standard background/status | Opaque `menu_background` | Source-verified; loopback attempt traversed this path before the captured refusal, with status/cancel widgets untouched |
+| Disconnected/error | `DisconnectedScreen` standard background | Opaque `menu_background` | Live pass using closed loopback port: black; reason and Back to Server List visible |
+| Receiving/loading level, reason `OTHER` | Explicit panorama/blur/menu draw | Opaque `menu_background` drawn last | Source-verified and exercised by local world load; pre-world surface becomes black while portal/end reasons retain their special branch |
+| Generic waiting/progress | Standard background/status draw | Opaque `menu_background` | Source-verified; status text, progress, and narration remain functional |
+| Realms main/error | `RealmsScreen` standard rendering | Opaque `menu_background` | Live pass on the reachable invalid-session state: black; error copy and OK visible |
+| Realms configuration/invite/reset/backup | Realms `Screen` subclasses with standard backgrounds/lists | Menu resource set | Source-verified; authenticated-only variants were not reachable in the offline development session |
+| Realms notification overlay on title | Transparent `RealmsNotificationsScreen` over title | Explicit transparent-title exception | Source-verified: no background draw, so the protected title remains visible |
+| Generic message/notice | `GenericMessageScreen` explicitly draws panorama/blur/menu | Opaque `menu_background` drawn last | Source-verified: black in the same render call; message/narration remains above it |
+| Confirmation/alert | `ConfirmScreen`/`AlertScreen` standard background | Opaque `menu_background` | Source-verified; action semantics and widgets remain untouched |
+| Accessibility onboarding | Standard pre-world flow | Opaque `menu_background` | Live pass: black; guidance, narration affordances, and actions visible |
+| Quick Play failure/warning | Standard/generic message flow | Opaque `menu_background` | Source-verified through the standard/generic routes; launch-only variant was not forced |
+| Mojang/NeoForge startup/error notices | Loader/runtime-owned renderer | No broad replacement | Safely replaceable standard screens inherit black; required loader diagnostics outside Minecraft `Screen` remain intentionally untouched |
+
+### Transition and gameplay guards
+
+- A title-to-Options transition was sampled for 40 consecutive desktop frames at 25 ms intervals. Five exposed-background points per frame (200 samples total) were exactly RGB `(0,0,0)`; no one-frame panorama flash appeared.
+- `GenericMessageScreen` and `ReceivingLevelScreen.Reason.OTHER` draw the opaque menu resource in the same call after panorama/blur, closing the source-level transition gap for those direct consumers.
+- Live in-world captures passed for the normal world/HUD, inventory, pause menu, and Options opened from pause. They retained the world-backed/blurred vanilla presentation rather than becoming black.
+- Container rendering remains on `AbstractContainerScreen`'s world/GUI path. Project-owned gameplay screens either supply their own renderer or, as with `MenuScreen`, deliberately suppress inherited background rendering. No broad post-render fill can reach them.
+- All four `inworld_*` resources and all panorama resources remain absent. Portal/end transition branches and the end-poem portal presentation remain unchanged.
+
+Gate 5 coverage therefore closes every row in this matrix as live-passed, cumulatively live-passed, or explicitly source-verified where authentication/launch/error setup was impractical. Ignored evidence is stored under `build/client-branding-validation/milestone-5` and is not packaged or committed.
+
 ## Main and core navigation
 
 | Screen/state | Representative class | Current background mechanism | Desired result | Later implementation/verification |

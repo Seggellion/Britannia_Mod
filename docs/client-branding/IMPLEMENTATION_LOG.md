@@ -534,3 +534,98 @@ feat(client): replace vanilla splashes with UltimaCraft corpus
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 5 - Complete pre-world background cleanup
+
+Date: 2026-08-11
+
+Status: Gate 5 passed
+
+Production behavior changed: No - the Milestone 1 five-resource implementation already covered the complete discovered pre-world matrix
+
+Starting commit: `b85d50f1a80a059488b97d070d78cf75175aac77`
+
+### Renderer audit and implementation decision
+
+Re-audited Minecraft 1.21.1, NeoForge 21.1.72, Realms, and project-owned screen sources against every row in `SCREEN_MATRIX.md`.
+
+- Standard pre-world screens inherit `Screen#renderBackground`, which selects the normal `menu_background` only while no level is loaded.
+- Lists and framed screens consume the normal list/separator assets; `CreateWorldScreen` also consumes `tab_header_background` directly.
+- `GenericMessageScreen` and `ReceivingLevelScreen.Reason.OTHER` explicitly draw panorama/blur and then `MENU_BACKGROUND` in the same render method, so the opaque resource still closes their final surface.
+- The non-poem `WinScreen` credits path renders `Screen.MENU_BACKGROUND` directly and therefore receives the accepted black credits presentation. The end-poem/portal path remains separate.
+- Realms screens either inherit the standard path, deliberately remain transparent over the title, or render an underlying screen before a functional popup.
+- NeoForge's Mods list consumes the same standard/direct menu assets.
+- Active-world `Screen` rendering selects `inworld_menu_background`; containers and project-owned gameplay screens use their own guarded render paths.
+
+No uncovered production renderer was found. Adding another asset, event handler, post-render fill, or mixin would have widened scope without changing a failing matrix row, so Milestone 5 keeps the accepted runtime implementation unchanged and records the completed evidence instead.
+
+### Complete live and source-verified matrix
+
+The client ran at an exact 1920x1080 framebuffer and GUI scale 2. Live black-background passes covered:
+
+- protected title and pre-world Options;
+- Skin Customization, Music & Sounds, Credits & Attribution, the rolling credits presentation, and Online Options;
+- Select World; Create World Game/World/More tabs; Game Rules; Experiments; and Data Packs;
+- multiplayer safety onboarding, server list, Direct Connection, Add/Edit Server, and a deterministic disconnected screen produced through closed loopback port `127.0.0.1:1`;
+- the reachable Realms invalid-session state;
+- NeoForge Mods.
+
+Cumulative Milestone 1 evidence covers Language, Accessibility, Video, Controls, Resource Packs, the initial world-selection/creation/multiplayer routes, and loaded-world rendering. Source inspection closed the authentication-only Realms variants, launch-only Quick Play/error variants, Telemetry when disabled, confirmation/alert variants, generic waiting/progress, pre-world receiving-level, and direct generic-message routes. Each such variant resolves through a live-proven resource consumer; required labels, fields, lists, focus, disabled states, warnings, icons, narration, and action controls remain outside the overridden asset set.
+
+Ignored framebuffer evidence is stored under `build/client-branding-validation/milestone-5`. Temporary UI/capture helpers were deleted after the sweep; screenshots are not packaged or committed.
+
+### Flash and transition validation
+
+A title-to-Options transition was captured as 40 consecutive desktop frames at 25 ms intervals. Five exposed-background points were sampled in every frame: `(100,100)`, `(200,500)`, `(1700,500)`, `(100,900)`, and `(1800,900)`. All 200 samples were exactly RGB `(0,0,0)`, with no exposed panorama frame.
+
+The direct-render source audit additionally confirms that `GenericMessageScreen` and pre-world `ReceivingLevelScreen` draw the opaque menu resource after panorama/blur in the same call, preventing a resource-order flash on those paths.
+
+### In-world regression guards
+
+Live captures verified:
+
+- normal world and HUD rendering;
+- player inventory over the normal world-backed treatment;
+- pause menu over the normal blurred world;
+- Options opened from pause over the same in-world background.
+
+Project `MenuScreen` explicitly overrides `renderBackground` with an empty implementation, and project gameplay screens/containers remain on their own render paths. All four `inworld_*` resources and every panorama resource remain absent. Portal/end transitions and the end-poem portal presentation remain unchanged.
+
+### Automated, build, hash, and package validation
+
+Focused `ClientBrandingBackgroundPolicyTest` result: `BUILD SUCCESSFUL`; all three policy checks passed.
+
+The installed pinned Gradle 8.9 distribution was used because the tracked wrapper remains the Milestone 0 Git LFS pointer.
+
+- transformation, compilation, resource processing, regular/all-in-one JAR assembly, scaffold compilation, and test compilation completed;
+- 1,802 tests executed: 1,764 passed, 21 failed, 17 skipped;
+- the same 21 pre-existing banner/scaffold asset-integrity tests failed as in Milestones 0-4;
+- no new test, failing class, or failure count was introduced;
+- the regular JAR contains exactly the five accepted black GUI paths and no `inworld_*` or panorama override;
+- all five runtime hashes remain the Milestone 1 values;
+- all three protected title-background hashes remain the Milestone 0 values.
+
+### Gate 5 checklist
+
+- [x] Every row in the pre-world screen matrix is live-passed, cumulatively live-passed, or source-verified where authentication/launch/error setup is impractical.
+- [x] Options, accessibility/language/video/controls families, packs, world selection/creation, multiplayer/add/direct, Realms, credits, status/error, and NeoForge/project boundaries are covered.
+- [x] All practical pre-world screens are opaque black outside functional UI.
+- [x] Functional controls, content, focus, disabled states, lists, icons, warnings, tooltips, and narration remain visible/operable.
+- [x] Forty transition frames show no one-frame panorama flash.
+- [x] World/HUD, inventory, pause, in-world Options, containers, project gameplay screens, and portal/end paths remain guarded.
+- [x] No additional production code or resource was necessary.
+- [x] Focused background-policy tests pass.
+- [x] Full build failure count and classes match the recorded baseline exactly.
+- [x] JAR contents and protected/runtime hashes match the accepted manifests.
+- [x] Temporary validation helpers are removed and local options are restored.
+- [x] No unrelated tracked file changed.
+
+Gate 5 passes because the resource-first implementation now has complete matrix, transition, package, and gameplay-regression evidence, with no uncovered screen requiring a broader renderer intervention.
+
+Planned local commit message:
+
+```text
+feat(client): complete pre-world background cleanup
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.
