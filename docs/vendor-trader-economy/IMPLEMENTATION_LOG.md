@@ -485,5 +485,29 @@ bash bin/codex_test (full) → 1405 runs, 0 errors; failure count varies 1–4 p
 ```
 
 ### Stopped
-Milestone 8 complete. Milestone 9 (city provenance on Vendor/Trader products) not started,
+Milestone 8 complete.
+
+## 2026-08-11 — Milestone 9: City provenance on Vendor/Trader products
+
+Owner approved resuming ("i approve"). Minecraft-only, commit `92c6f1f6`.
+
+`item/CityProvenanceItemData` — BlacksmithItemData-style named compound in
+`minecraft:custom_data` carrying `origin_city_public_id` + `origin_city_name`. Stack
+equality prevents cross-origin merging; vanilla serialization preserves it everywhere;
+written server-side only from the reconciler-stamped authoritative assignment city
+(`applyFromVendor`; M14 will stamp from the Rails transaction payload). Merchant purchases
+stamp products for economic projections (legacy-block merchants stamp nothing); the global
+tooltip handler renders "Origin: <city>".
+
+Validation:
+```text
+compileJava BUILD SUCCESSFUL; runGameTestServer --rerun-tasks --no-configuration-cache
+  → "All 354 required tests passed" (5m19s) incl. the 2 new CityProvenanceGameTests:
+  Britain/Minoc stacks never merge, both fields survive NBT round-trip, identical
+  provenance stays stackable, vendor stamp uses the assignment city, legacy merchants
+  add nothing. Rails untouched this milestone.
+```
+
+### Stopped
+Milestone 9 complete. Milestone 10 (Trader player-sell transaction foundation) not started,
 per stop rule.
