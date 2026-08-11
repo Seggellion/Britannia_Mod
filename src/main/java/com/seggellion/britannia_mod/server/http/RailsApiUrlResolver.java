@@ -196,6 +196,7 @@ public final class RailsApiUrlResolver {
         CATALOG("catalog", "city", "role", "npc_type", "shard"),
         TRADER_CATALOG("trader_catalog"),
         CITY_COMMODITIES("city_commodities", "city"),
+        ECONOMIC_CATALOG("economic_catalog", "economic_npc_type_key", "city_public_id"),
         MERCHANT_PURCHASE("merchant_transactions"),
         TRADER_SALE("trader_transactions"),
         TRANSACTION("transactions"),

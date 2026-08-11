@@ -238,6 +238,8 @@ public final class ServiceNpcAssignmentReconciler {
         }
 
         canonical.setWorldNpcPublicId(worldNpc.publicId());
+        canonical.setEconomicNpcTypeKey(spawnPoint.economicNpcTypeKey());
+        canonical.setEconomicCityPublicId(spawnPoint.cityPublicId());
         canonical.setPersonalName(worldNpc.name());
         canonical.setGender(worldNpc.genderKey());
         BootstrapCityDefinition city = spawnPoint.cityPublicId() == null

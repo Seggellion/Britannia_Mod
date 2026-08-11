@@ -50,6 +50,7 @@ public final class EconomicNpcSpawnPostGameTests {
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
     private static final UUID SERVER_ID = UUID.fromString("22222222-2222-4222-8222-222222222222");
     private static final String TYPE_KEY = "m5_baker_vendor";
+    private static final UUID CITY_ID = UUID.fromString("33333333-3333-4333-8333-333333333333");
 
     private EconomicNpcSpawnPostGameTests() {
     }
@@ -141,6 +142,10 @@ public final class EconomicNpcSpawnPostGameTests {
         check("Marta Vendor".equals(entity.getPersonalName()), "entity name did not come from the World NPC");
         check("male".equals(entity.getGender()), "entity gender did not come from the World NPC");
         check(worldNpcId.equals(post.getAssignedNpcPublicId()), "block did not record the assignment");
+        check(TYPE_KEY.equals(entity.getEconomicNpcTypeKey()),
+                "projection was not stamped with its economic type key");
+        check(CITY_ID.equals(entity.getEconomicCityPublicId()),
+                "projection was not stamped with the authoritative city public id");
         check(!spawnPointId.equals(entity.getUUID()) && !worldNpcId.equals(entity.getUUID()),
                 "entity UUID must differ from post UUID and World NPC UUID");
 
@@ -176,7 +181,7 @@ public final class EconomicNpcSpawnPostGameTests {
             String npcName, String genderKey, long revision
     ) {
         ServiceNpcAssignmentSpawnPointDefinition spawnPoint = new ServiceNpcAssignmentSpawnPointDefinition(
-                spawnPointId, SERVER_ID, null, null, TYPE_KEY,
+                spawnPointId, SERVER_ID, CITY_ID, null, TYPE_KEY,
                 "Test Level", "minecraft:overworld",
                 absolutePos.getX(), absolutePos.getY(), absolutePos.getZ(), true, revision
         );
