@@ -223,6 +223,9 @@ public final class ServiceNpcAssignmentsCache extends SavedData {
         tag.putInt("X", point.x());
         tag.putInt("Y", point.y());
         tag.putInt("Z", point.z());
+        if (point.economicNpcTypeKey() != null) {
+            tag.putString("EconomicNpcTypeKey", point.economicNpcTypeKey());
+        }
         tag.putBoolean("Enabled", point.enabled());
         tag.putLong("Revision", point.revision());
         return tag;
@@ -234,6 +237,7 @@ public final class ServiceNpcAssignmentsCache extends SavedData {
                 tag.getUUID("MinecraftServerPublicId"),
                 tag.hasUUID("CityPublicId") ? tag.getUUID("CityPublicId") : null,
                 tag.contains("ServiceNpcTypeKey") ? tag.getString("ServiceNpcTypeKey") : null,
+                tag.contains("EconomicNpcTypeKey") ? tag.getString("EconomicNpcTypeKey") : null,
                 tag.getString("WorldName"),
                 tag.getString("DimensionKey"),
                 tag.getInt("X"),

@@ -67,6 +67,7 @@ public final class ServiceNpcAssignmentsParser {
                     requiredUuid(value, "minecraft_server_public_id"),
                     optionalUuid(value, "city_public_id"),
                     optionalString(value, "service_npc_type_key"),
+                    optionalString(value, "economic_npc_type_key"),
                     requiredString(value, "world_name"),
                     requiredString(value, "dimension_key"),
                     requiredInt(value, "x"),

@@ -28,7 +28,15 @@ public final class ServiceNpcSpawnRequestSerializer {
             root.addProperty("city_public_id", request.cityPublicId().toString());
         }
         if (request.serviceNpcTypeKey() != null) {
-            root.addProperty("service_npc_type_key", request.serviceNpcTypeKey());
+            // Vendor/Trader Milestone 5: economic keys travel the pipeline in the
+            // shared type-key slot with the economic: prefix and are decoded here,
+            // the single place that chooses the wire field (see EconomicNpcTypeKeys).
+            if (com.seggellion.britannia_mod.service.EconomicNpcTypeKeys.isEconomic(request.serviceNpcTypeKey())) {
+                root.addProperty("economic_npc_type_key",
+                        com.seggellion.britannia_mod.service.EconomicNpcTypeKeys.strip(request.serviceNpcTypeKey()));
+            } else {
+                root.addProperty("service_npc_type_key", request.serviceNpcTypeKey());
+            }
         }
         if (request.enabled() != null) root.addProperty("enabled", request.enabled());
         byte[] body = GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
