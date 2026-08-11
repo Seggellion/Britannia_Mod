@@ -31,13 +31,13 @@ Visual inspection shows a wooden chest opening to a red-lined medallion, surroun
 
 Any later milestone touching title rendering must re-run all three hashes above. A changed hash is a stop condition unless the change was explicitly approved as a necessary refactor that reproduces the same appearance.
 
-## Vanilla title targets
+## Title runtime assets
 
-| Planned runtime role | Exact future project path | Vanilla bundled size | Required asset contract | Status |
+| Runtime role | Project path | Dimensions | SHA-256 | Milestone 2 state |
 |---|---|---:|---|---|
-| UltimaCraft normal wordmark | `src/main/resources/assets/minecraft/textures/gui/title/minecraft.png` | 1024x256 | Transparent PNG; original `UltimaCraft` art; safe inside top 44/64 logical rows; legible around 250-350 px display width | Not created |
-| UltimaCraft rare-logo parity | `src/main/resources/assets/minecraft/textures/gui/title/minceraft.png` | 1024x256 | Same approved art and layout as normal logo, preventing rare vanilla fallback | Not created |
-| Suppress edition layer | `src/main/resources/assets/minecraft/textures/gui/title/edition.png` | 512x64 | Fully transparent PNG matching vanilla dimensions unless live sampling proves another exact size safer | Not created |
+| UltimaCraft normal wordmark | `src/main/resources/assets/minecraft/textures/gui/title/minecraft.png` | 1024x256 | `865EFD5DC70AEA7F1839919BC306B28C690F71DF33E50E5682C2BAB237655A3E` | Implemented; transparent original aged-gold wordmark |
+| UltimaCraft rare-logo parity | `src/main/resources/assets/minecraft/textures/gui/title/minceraft.png` | 1024x256 | `865EFD5DC70AEA7F1839919BC306B28C690F71DF33E50E5682C2BAB237655A3E` | Implemented; byte-identical to normal path |
+| Suppress edition layer | `src/main/resources/assets/minecraft/textures/gui/title/edition.png` | 512x64 | `CA5DE485B94EC28D85E83A70DF6704E4D08BF9340C5C7FF726242BB295B70235` | Implemented; every pixel fully transparent |
 
 The vanilla renderer displays a 256x44 normal/rare title from a 256x64 logical texture area and a 128x14 edition layer from 128x16 logical space. `Version 18` must remain code-rendered text; it must not be baked into these PNGs.
 
@@ -50,7 +50,18 @@ The vanilla renderer displays a 256x44 normal/rare title from a 256x64 logical t
 - Selection criterion: live readability at the actual 256-pixel title display, not full-resolution detail.
 - Final PNG must have real alpha and comfortable transparent padding; no accidental matte color or opaque canvas.
 
-Image generation and candidate selection are Milestone 2 work, not Milestone 0.
+### Milestone 2 generation and selection record
+
+- Generation mode: built-in image generation with a flat `#00FF00` chroma-key background, followed by the installed `remove_chroma_key.py` helper.
+- Three exact-spelling candidates were generated: charcoal stone/aged gold, bright aged gold/dark bronze, and ivory stone/antique brass.
+- The aged-gold/dark-bronze candidate was selected because it retained the strongest silhouette, widest useful coverage, and clearest letter identity at the actual 256x64 logical texture size.
+- Selected generated source: 1774x887 RGBA after conversion; source alpha bounds `(82,307)` through `(1692,582)` after one-pixel edge contraction.
+- Shipped wordmark: normalized to a 1024x256 RGBA canvas; visible alpha bounds `(43,8)` through `(979,167)`; 82,544 non-zero-alpha pixels and 17,530 antialiased edge pixels.
+- Rows 176 through 255 are fully transparent because vanilla displays only the top 44/64 logical rows.
+- Candidate sources, keyed images, normalized previews, contact sheet, and live screenshots remain under ignored `build` output and are not packaged.
+- Exact live framebuffer validation passed at 1280x720/Auto, 1920x1080/2, 2560x1440/3, and 3440x1440/4.
+
+`ClientBrandingTitleAssetTest` locks the three runtime hashes, dimensions, alpha contract, safe bounds, normal/rare parity, edition transparency, and exact title-directory file set.
 
 ## Black pre-world resources
 

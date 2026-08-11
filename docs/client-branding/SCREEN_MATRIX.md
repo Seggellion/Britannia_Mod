@@ -35,6 +35,19 @@ All captures used a fresh title-session route at GUI scale 2. Black backgrounds 
 
 Ignored screenshots and the disposable validation world are runtime evidence only and are not packaged or committed. The deterministic policy test separately enforces the absent `inworld_*` and panorama overrides.
 
+## Milestone 2 title matrix
+
+Minecraft framebuffer screenshots, rather than desktop crops, verified the exact client render size in every case.
+
+| Resolution | GUI scale | Result |
+|---:|---:|---|
+| 1280x720 | Auto | Pass - complete centered wordmark, exact spelling, no clipping, edition layer absent, controls visible |
+| 1920x1080 | 2 | Pass - wordmark readable at the smaller logical title footprint; splash and controls preserved |
+| 2560x1440 | 3 | Pass - title silhouette, transparent edges, protected background, and layout preserved |
+| 3440x1440 | 4 | Pass - ultrawide centering and scale preserved without stretching or clipping |
+
+Across the matrix, no vanilla Minecraft title artwork remained. The separate bottom-corner Minecraft/NeoForge version and copyright strings were intentionally preserved as runtime/legal attribution. The protected chest-to-medallion background, vanilla splash rendering, title buttons, mod-added button, language/accessibility controls, and attribution link remained present. `Version 18` is intentionally absent until Milestone 3.
+
 ## Main and core navigation
 
 | Screen/state | Representative class | Current background mechanism | Desired result | Later implementation/verification |

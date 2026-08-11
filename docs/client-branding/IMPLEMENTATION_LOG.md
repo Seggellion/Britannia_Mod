@@ -251,3 +251,114 @@ feat(client): establish non-game black background policy
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 2 - UltimaCraft title graphic
+
+Date: 2026-08-11
+
+Status: Gate 2 passed with final-quality generated art
+
+Production behavior changed: Yes - vanilla title and edition artwork is replaced by UltimaCraft branding
+
+Starting commit: `c918f9629452c0aa378f8a859dcea8f7b766160c`
+
+### Source measurement and integration decision
+
+Pinned Minecraft 1.21.1 source reconfirmed that `LogoRenderer` draws a 256x44 logo at Y 30 from the top 44 rows of a 256x64 logical texture, then draws a 128x14 edition layer at Y 67. The bundled high-resolution resources are 1024x256 for normal/rare title art and 512x64 for the edition layer. Normal and rare paths must match because the rare path is selected with probability `1.0E-4`.
+
+The resource-first Milestone 0 architecture remained valid: no Java renderer, new mixin, title-screen replacement, or coordinate patch was needed.
+
+### Image generation and selection
+
+Built-in image generation produced three exact-spelling candidates on flat `#00FF00` chroma-key backgrounds:
+
+1. charcoal stone faces with aged-gold edging;
+2. bright aged-gold faces with dark-bronze outlines;
+3. ivory stone faces with antique-brass edging.
+
+All three were converted with the installed chroma-key helper, normalized to the exact 1024x256 canvas, and compared at the actual 256x64 logical texture size. Candidate 2 was selected because it remained widest, brightest, and most immediately readable after the 4:1 downscale. Candidate 1 became too dark against black areas of the protected background, while candidate 3 used less of the available horizontal title box.
+
+Selected prompt:
+
+```text
+Use case: logo-brand
+Asset type: production candidate for a Minecraft 1.21.1 title-screen wordmark texture
+Primary request: one original wordmark containing the exact text "UltimaCraft", spelled U-l-t-i-m-a-C-r-a-f-t, with no other text
+Backdrop: perfectly flat uniform #00FF00 chroma key with no shadow, gradient, texture, reflection, or floor plane
+Style: original medieval high-fantasy display lettering; broad classical serif forms; warm aged-gold faces; restrained dark-bronze outlines; shallow engraved wear
+Composition: compact 4:1 single-line silhouette, centered with generous padding, all artwork inside the upper 69% of the target texture
+Constraints: exact capitalization, distinct letters, strong open counters, crisp opaque subject, readable at 256 pixels wide
+Avoid: Minecraft or official Ultima logo imitation, voxel/block forms, runes, extreme swashes, scenery, shields, swords, banners, frames, extra symbols, watermark, mockup, perspective tilt
+```
+
+The initial soft matte left 940 green-dominant low-alpha pixels after normalization. The image-generation workflow's prescribed one-pixel edge contraction reduced that to 41 resampling remnants; 40 have alpha 11 or lower and the last has alpha 23. No green-dominant pixel reaches the materially visible alpha threshold of 32, and visual inspection on black shows no fringe.
+
+### Runtime assets
+
+- `minecraft.png`: 1024x256 RGBA, SHA-256 `865EFD5DC70AEA7F1839919BC306B28C690F71DF33E50E5682C2BAB237655A3E`.
+- `minceraft.png`: byte-identical to `minecraft.png`, covering the vanilla rare-logo path.
+- `edition.png`: 512x64 RGBA, fully transparent, SHA-256 `CA5DE485B94EC28D85E83A70DF6704E4D08BF9340C5C7FF726242BB295B70235`.
+
+The wordmark has visible alpha bounds `(43,8)` through `(979,167)`. Rows 176-255 are fully transparent and therefore cannot be clipped by vanilla's top-44-of-64 sampling. Candidate files and previews remain ignored under `build/client-branding-logo-candidates`; only the three selected runtime PNGs are packaged.
+
+### Automated and packaged-resource validation
+
+Added `ClientBrandingTitleAssetTest` with four checks:
+
+1. the title runtime directory contains exactly the three selected assets;
+2. normal and rare title files are dimension-matched, byte-identical, and hash-locked;
+3. the wordmark has real transparency, substantial coverage, antialiased edges, safe bounds, no materially visible chroma key, and no content below row 175;
+4. the edition layer matches vanilla dimensions and is fully transparent.
+
+Focused result: all seven cumulative client-branding tests passed.
+
+The regular assembled JAR contains exactly `edition.png`, `minceraft.png`, and `minecraft.png` under `assets/minecraft/textures/gui/title`. Their JAR-entry hashes match the working-tree hashes. No keyed source, discarded candidate, normalized preview, contact sheet, or generation output is packaged.
+
+### Live title matrix
+
+Minecraft framebuffer captures verified exact dimensions rather than relying on desktop-window crops:
+
+| Resolution | GUI scale | Result |
+|---:|---:|---|
+| 1280x720 | Auto | Pass |
+| 1920x1080 | 2 | Pass |
+| 2560x1440 | 3 | Pass |
+| 3440x1440 | 4 | Pass |
+
+Every case showed the complete centered `UltimaCraft` wordmark, no vanilla Minecraft title/edition artwork, no clipping or stretching, readable letter identity, normal splash rendering, functional controls, preserved runtime/legal attribution, and the unchanged protected chest-to-medallion background. `Version 18` remains intentionally deferred to Milestone 3.
+
+### Full build comparison
+
+The installed pinned Gradle 8.9 distribution was used because the tracked wrapper remains the Milestone 0 Git LFS pointer.
+
+- transformation, compilation, resource processing, JAR assembly, scaffold compilation, and test compilation completed;
+- 1,795 tests executed: 1,757 passed, 21 failed, 17 skipped;
+- the same 21 pre-existing banner/scaffold asset-integrity tests failed as in Milestones 0 and 1;
+- the four-test increase from 1,791 is exactly `ClientBrandingTitleAssetTest`;
+- no new failing test class or failure count was introduced.
+
+### Gate 2 checklist
+
+- [x] Final art reads exactly `UltimaCraft` with no extra text.
+- [x] Wordmark is original and does not imitate the Minecraft or official Ultima logos.
+- [x] Three candidates were generated and evaluated at the real logical display size.
+- [x] Selected asset is final quality rather than a placeholder.
+- [x] Normal and rare logo paths are byte-identical.
+- [x] Vanilla edition art is suppressed by a dimension-matched transparent resource.
+- [x] Exact resolution/GUI-scale matrix passed, including ultrawide.
+- [x] No vanilla Minecraft title artwork remains visible.
+- [x] Protected title background files remain byte-identical to Milestone 0.
+- [x] Focused branding tests pass.
+- [x] Full build failure count and classes match the recorded baseline exactly.
+- [x] JAR contains only the selected title runtime assets, not candidates or generation artifacts.
+- [x] No unrelated tracked file changed.
+
+Gate 2 passes because the shipped generated wordmark is final quality, technically clean, readable across the required matrix, and integrated without changing the protected background or title-screen implementation.
+
+Planned local commit message:
+
+```text
+feat(client): replace title branding with UltimaCraft
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.
