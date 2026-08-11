@@ -61,6 +61,21 @@ Minecraft framebuffer screenshots again verified the exact client render size. E
 
 Across the matrix, the exact visible copy was `Version 18`. The code-rendered line remained centered on the vanilla 256-pixel title box at GUI Y 76, two logical pixels below the title artwork. The wordmark, rotating splash, title controls, runtime/legal attribution, and protected chest-to-medallion background remained unchanged. Ignored evidence is stored under `build/client-branding-validation/milestone-3` and is not packaged or committed.
 
+## Milestone 4 splash matrix
+
+Each matrix capture came from an independent client start after the final resource-initialization signal. Minecraft framebuffer screenshots again verified exact dimensions.
+
+| Resolution | GUI scale | Observed corpus line | Result |
+|---:|---:|---|---|
+| 1280x720 | Auto | `Valor trains offshore.` | Pass - readable, complete, and clear of `Version 18` |
+| 1920x1080 | 2 | `Yew keeps the prison offshore.` | Pass - normal angle/pulse placement and no collision |
+| 2560x1440 | 3 | `Skara Brae ferry departs eventually.` | Pass - complete text and stable title-relative layout |
+| 3440x1440 | 4 | `Seekers read the fine print.` | Pass - ultrawide title layout and splash placement preserved |
+
+Two additional independent 1280x720/Auto starts selected `Truth brought receipts.` and `Cove is not on the moongate menu.` All six observed values are exact, distinct rows in the shipped corpus. No vanilla corpus text, malformed character, empty splash, or username/date exception appeared during the August 11 validation session.
+
+Across all six starts, the UltimaCraft wordmark, exact `Version 18` subtitle, title controls, runtime/legal attribution, and protected chest-to-medallion background remained present. The vanilla yellow, angled, pulsing splash treatment was intentionally retained. Ignored evidence is stored under `build/client-branding-validation/milestone-4`; the temporary capture harness was removed and the local development GUI scale was restored to 2.
+
 ## Main and core navigation
 
 | Screen/state | Representative class | Current background mechanism | Desired result | Later implementation/verification |

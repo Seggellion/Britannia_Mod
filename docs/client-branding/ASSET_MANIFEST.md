@@ -89,11 +89,17 @@ The vanilla pre-world menu/list assets are translucent; replacing them with opaq
 
 ## Splash corpus target
 
-| Role | Exact future project path | Contract | Status |
+| Role | Exact project path | Contract | Milestone 4 state |
 |---|---|---|---|
-| Normal title splash corpus | `src/main/resources/assets/minecraft/texts/splashes.txt` | UTF-8 text, one trimmed non-empty original line per row; no normal vanilla corpus lines | Not created |
+| Normal title splash corpus | `src/main/resources/assets/minecraft/texts/splashes.txt` | UTF-8 text, one trimmed non-empty original line per row; no normal vanilla corpus lines | Implemented; 160 lines, maximum 45 code points, SHA-256 `02A45F05AA83B51792C8D5D093FC7619E64B572274730881CB4383A6D32A7E17` |
 
-The future validator must reject empty lines, duplicates, case-insensitive duplicates, trailing whitespace, malformed encoding, over-limit lines, and known vanilla corpus leakage. Hardcoded Christmas/New Year/Halloween and username exceptions are not assets and are documented in `INVENTORY.md`.
+The corpus is original microcopy researched and reviewed in `SPLASH_RESEARCH.md` and `SPLASH_EDITORIAL.md`. Minecraft's existing `SplashManager` continues to trim the resource, randomly select normal lines, and hand them to the vanilla yellow, angled, pulsing `SplashRenderer`; no title renderer or coordinate code changed.
+
+`ClientBrandingSplashCorpusTest` rejects a UTF-8 byte-order mark, malformed UTF-8, empty or untrimmed rows, control characters, exact/case/canonical duplicates, lines over the 55-code-point editorial limit, and normal vanilla 1.21.1 leakage. Its test-only fixture contains 441 sorted canonical SHA-256 prefixes derived from all 446 vanilla source rows, SHA-256 `FA7B8DE5D990BFA63A6C96271704BCF22BF85CCD8AE398DA87BB261A32167136`; it contains no vanilla copy and is not packaged.
+
+The regular assembled JAR contains exactly one `assets/minecraft/texts/splashes.txt` entry. Its extracted bytes match the working-tree corpus hash. The test fixture and both research documents are absent from the runtime JAR.
+
+Six independent live starts produced six different corpus lines across the required title matrix and two additional 1280x720/Auto rotations. Every observed line was readable, correctly encoded, and clear of `Version 18`. Hardcoded Christmas, New Year, Halloween, and rare username greetings are not assets; those existing renderer exceptions remain intentionally unchanged and are documented in `INVENTORY.md`.
 
 ## Vanilla baseline resources intentionally not targeted
 

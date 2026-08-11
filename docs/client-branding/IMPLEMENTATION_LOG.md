@@ -436,3 +436,101 @@ feat(client): add Version 18 title subtitle
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 4 - UltimaCraft splash corpus
+
+Date: 2026-08-11
+
+Status: Gate 4 passed
+
+Production behavior changed: Yes - normal title rotation now draws only from the researched UltimaCraft corpus
+
+Starting commit: `0b3e22e4a1cfb2ca5b6fabb102ca36a88b4c0ed7`
+
+### Research and editorial review
+
+Research preceded drafting. `SPLASH_RESEARCH.md` records official Ultima Online and Shroud of the Avatar sources plus repository source for project-specific mechanics. Coverage includes the Principles and eight Virtues, required cities and landmarks, Lord British, Avatar, classic companions and antagonists, Sosaria/Britannia, Codex and Gem vocabulary, moongates and facets, town criers, banks/currency, reagents, shrines, travel, skills, and training.
+
+`SPLASH_EDITORIAL.md` records the six-dimension 0-2 rubric for accuracy, relevance, humor/charm, clarity, brevity/fit, and originality. Every accepted line scored at least 9/12 with a non-zero accuracy score. The final 160-line composition is:
+
+- 42 Virtue/lore/people/world lines;
+- 50 city, landmark, and local-travel lines;
+- 40 classic play, NPC, magic, banking, and skill lines;
+- 18 repository-grounded UltimaCraft mechanic lines;
+- 10 branding/display/build-meta lines.
+
+All copy is newly written microcopy. No official prose, dialogue, lyric, or long quotation is reproduced.
+
+### Resource implementation and validator
+
+Added `assets/minecraft/texts/splashes.txt` at the exact vanilla namespace path selected in Milestone 0. The implementation is resource-only: Minecraft's existing `SplashManager` loads and randomly chooses the rows, and the existing `SplashRenderer` retains the yellow angled pulse. No Java production class, title coordinates, wordmark, subtitle, mixin, background, button, or legal/runtime attribution changed.
+
+Final corpus measurements:
+
+- 160 UTF-8 rows with no byte-order mark;
+- longest row: 45 code points, below the 55-point editorial limit and 70-point hard ceiling;
+- zero empty, untrimmed, control-character, exact, case-insensitive, or punctuation-insensitive duplicate rows;
+- zero canonical matches to the normal Minecraft 1.21.1 corpus;
+- SHA-256 `02A45F05AA83B51792C8D5D093FC7619E64B572274730881CB4383A6D32A7E17`.
+
+Added `ClientBrandingSplashCorpusTest` with three deterministic checks for encoding/count, line quality/uniqueness, and vanilla leakage. The leakage check uses a test-only set of 441 unique canonical hash prefixes derived from all 446 vanilla rows. The fixture contains no vanilla text and is not a runtime resource.
+
+Hardcoded December 24, January 1, October 31, and rare username greetings remain the accepted renderer exceptions recorded in Milestone 0; this milestone owns normal corpus rotation only.
+
+### Live title and rotation validation
+
+All captures were made after final resource initialization and verified against exact Minecraft framebuffer dimensions. Each row used an independent client start.
+
+| Resolution | GUI scale | Observed splash | Result |
+|---:|---:|---|---|
+| 1280x720 | Auto | `Valor trains offshore.` | Pass |
+| 1920x1080 | 2 | `Yew keeps the prison offshore.` | Pass |
+| 2560x1440 | 3 | `Skara Brae ferry departs eventually.` | Pass |
+| 3440x1440 | 4 | `Seekers read the fine print.` | Pass |
+
+Two further independent 1280x720/Auto restarts selected `Truth brought receipts.` and `Cove is not on the moongate menu.` The six distinct results establish normal random rotation in combination with the deterministic resource/vanilla validator. Every line was complete, correctly encoded, readable at the retained vanilla angle, and clear of `Version 18`.
+
+The exact UltimaCraft wordmark, subtitle, controls, runtime/legal attribution, and protected chest-to-medallion background remained unchanged. Screenshots are ignored evidence under `build/client-branding-validation/milestone-4`; the temporary harness was removed, and the local GUI scale was restored to 2.
+
+### Automated, build, and package validation
+
+Focused result: all three `ClientBrandingSplashCorpusTest` checks passed.
+
+The installed pinned Gradle 8.9 distribution was used because the tracked wrapper remains the Milestone 0 Git LFS pointer.
+
+- transformation, compilation, resource processing, regular/all-in-one JAR assembly, scaffold compilation, and test compilation completed;
+- 1,802 tests executed: 1,764 passed, 21 failed, 17 skipped;
+- the same 21 pre-existing banner/scaffold asset-integrity tests failed as in Milestones 0-3;
+- the three-test increase from 1,799 is exactly `ClientBrandingSplashCorpusTest`;
+- no new failing test class or failure count was introduced;
+- the regular JAR contains one `assets/minecraft/texts/splashes.txt` entry with 160 rows and byte-identical hash;
+- research, editorial, and test-hash files are absent from the runtime JAR.
+
+All three protected-background hashes remain the Milestone 0 values. All three title-asset hashes remain the Milestone 2 values.
+
+### Gate 4 checklist
+
+- [x] Research artifact covers the required Ultima/Ultima Online/Shroud/project vocabulary through authoritative and repository sources.
+- [x] Editorial artifact records composition, rubric, representative decisions, and rejections.
+- [x] Corpus contains 160 original, reviewed lines with a maximum length of 45.
+- [x] Validator rejects encoding, whitespace, empty, control, duplicate, over-limit, and vanilla-leak defects.
+- [x] Normal vanilla 1.21.1 splash corpus is fully replaced at the exact resource path.
+- [x] Vanilla random selection and yellow angled pulse remain intact.
+- [x] Six independent starts selected six distinct corpus rows.
+- [x] Exact resolution/GUI-scale matrix passed, including ultrawide.
+- [x] No observed line overlapped `Version 18` or changed title controls/attribution.
+- [x] Wordmark, subtitle code, title assets, and protected background remain unchanged.
+- [x] Focused splash tests pass.
+- [x] Full build failure count and classes match the recorded baseline exactly.
+- [x] JAR contains only the intended runtime corpus, not research/test artifacts.
+- [x] No unrelated tracked file changed.
+
+Gate 4 passes because a researched, independently reviewed, deterministic 160-line UltimaCraft corpus wholly owns normal splash rotation and passes automated, packaged-resource, and six-start live validation without changing the approved title composition.
+
+Planned local commit message:
+
+```text
+feat(client): replace vanilla splashes with UltimaCraft corpus
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.
