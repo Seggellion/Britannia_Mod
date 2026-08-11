@@ -509,5 +509,31 @@ compileJava BUILD SUCCESSFUL; runGameTestServer --rerun-tasks --no-configuration
 ```
 
 ### Stopped
-Milestone 9 complete. Milestone 10 (Trader player-sell transaction foundation) not started,
+Milestone 9 complete.
+
+## 2026-08-11 — Milestone 10: Trader player-sell transaction foundation
+
+Owner approved resuming. Rails `8c1ec95`, Minecraft payload patch committed alongside.
+
+`Economy::EconomicTraderSale`: Player -> Trader sales for economic projections (payload
+names the World NPC public id; legacy path untouched). Identity/city from the ACTIVE
+ASSIGNMENT, never the client; Rails-priced with shard raw/processed multipliers over
+explicit form data; npc_buy_enabled fail-closed; supply caps. Quote = amount + ONE
+denomination (ratified tiers raw→copper, processed/finished→silver; mixed baskets rejected
+whole; nearest-whole rounding documented as provisional). Treasury debited atomically in
+that denomination (locked coins_outstanding, never negative, whole-sale rejection when
+unfundable) — and every failure RAISES so the transaction rolls back partial mutations
+(tests caught that a plain return committed them). One payout representation
+(currency_grant only; shard_user.currency never written). Idempotent replay.
+
+Validation: focused 6 runs/22 assertions/0 failures. Full suite 1411 runs, 0 errors;
+failures are the pre-existing recalculator plus a known order-dependent leak into the
+staffing suite (passes 3/3 isolated). compileJava BUILD SUCCESSFUL; the GameTest suite was
+not rerun for the payload-field addition (covered by Rails routing tests; 354/354 as of
+Milestone 9). Known remaining hardening, tracked for Milestone 19: the Minecraft-side
+reserveItems reservation still lacks banking-style local receipts (pre-existing standing
+issue; Rails-side idempotency plus refund-on-replay bound the exposure).
+
+### Stopped
+Milestone 10 complete. Milestone 11 (full RunUO buyback-to-Trader coverage) not started,
 per stop rule.
