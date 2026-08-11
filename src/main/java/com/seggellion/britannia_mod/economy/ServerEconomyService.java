@@ -350,6 +350,15 @@ public final class ServerEconomyService {
         payload.addProperty("city_name", cityName);
         payload.addProperty("role", role);
         payload.addProperty("npc_id", trader.getUUID().toString());
+        // Vendor/Trader Milestone 10: economic projections identify themselves by
+        // their persistent World NPC id so Rails resolves city/identity from the
+        // assignment (never the client payload) and routes to the denomination-
+        // aware, treasury-debiting EconomicTraderSale.
+        if (trader instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
+                && citizen.getWorldNpcPublicId() != null
+                && citizen.getEconomicNpcTypeKey() != null) {
+            payload.addProperty("world_npc_public_id", citizen.getWorldNpcPublicId().toString());
+        }
         payload.addProperty("trader_uuid", trader.getUUID().toString());
         payload.addProperty("entity_id", trader.getId());
         payload.addProperty("shard", ModConfig.SHARD_NAME);
