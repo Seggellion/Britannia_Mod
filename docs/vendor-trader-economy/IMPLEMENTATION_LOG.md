@@ -420,5 +420,42 @@ Minecraft: no changes this milestone — the M5 GameTest suite (352/352 passed) 
 ```
 
 ### Stopped
-Milestone 6 complete. Milestone 7 (generic Vendor definition and sell-to-player catalog)
-not started, per stop rule.
+Milestone 6 complete.
+
+## 2026-08-11 — Milestone 7: Generic Vendor definition and sell-to-player catalog (Baker slice)
+
+Owner approved resuming ("i approve"). Rails `db0d036`, Minecraft `656cf812`.
+
+Rails: `EconomicCatalog::ForVendor` — the authoritative Vendor catalog from Product rows
+(ProductListing keyed by economic type key; global/shard/city listing scoping; owner decision
+#4 honored — Minecraft recipes never consulted). Per-row availability decisions with
+machine-readable reasons; stock floored from the limiting commodity; pricing precedence
+listing-override > positive baseline > legacy dynamic input-markup computed in Rails
+(price 0 = dynamic; strategy named per row — the calibrated RunUO formula binds at the
+pricing milestone). `products.price_denomination` added (closed set, nullable);
+`Product#commodity_requirements` normalizes typed + legacy shapes with save-time validation.
+Served by `GET economic_catalog` (signed shard auth, city by public id only, rate-limited,
+catalog revision digest). Baker slice seeded via `db:seed:economic_products_baker` (economic
+type `baker` + four products mirroring the legacy recipe outputs).
+
+Minecraft: the reconciler stamps economic projections with economic type key + city public
+id (NBT-persisted); `ServerCatalogService` resolves stamps on-thread and routes stamped
+entities to the economic_catalog endpoint (available rows only → Product list with
+denomination + max_quantity/catalog-revision custom data). Unstamped legacy-block merchants
+keep the local path; purchases stay on the legacy merchant flow until Milestone 14 (seed
+mirrors legacy outputs so both agree in the slice); Vendors expose no player-sell path.
+
+Validation:
+```text
+Rails: bash bin/codex_test test/services/economic_catalog_for_vendor_test.rb
+         → 7 runs, 26 assertions, 0 failures, 0 errors
+       bash bin/codex_test (full) → 1401 runs, 6567 assertions, 0 errors,
+         1 failure (pre-existing recalculator), 1 intentional skip
+Minecraft: compileJava BUILD SUCCESSFUL; runGameTestServer --rerun-tasks
+       --no-configuration-cache → "All 352 required tests passed" (8m54s),
+       incl. the extended stamp assertions on materialized projections
+```
+
+### Stopped
+Milestone 7 complete. Milestone 8 (commodity and recipe eligibility engine) not started,
+per stop rule.
