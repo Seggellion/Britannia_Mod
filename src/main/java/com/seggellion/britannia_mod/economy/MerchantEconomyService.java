@@ -57,6 +57,14 @@ public final class MerchantEconomyService {
         if (!(player.level() instanceof ServerLevel level)) return;
 
         Entity entity = level.getEntity(payload.entityId());
+        // Vendor/Trader Milestone 14: stamped economic projections settle
+        // through the Rails-authoritative retail transaction; the legacy
+        // MerchantRecipes/copper path below is for non-economic merchants only.
+        if (entity instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
+                && EconomicVendorPurchaseService.isEconomicVendor(citizen)) {
+            EconomicVendorPurchaseService.buyRequestedItems(player, citizen, payload);
+            return;
+        }
         if (!(entity instanceof AbstractEconomyMerchantEntity merchant) || !merchant.isAlive()) {
             fail(player, "Merchant not found.");
             return;

@@ -610,5 +610,44 @@ Validation: focused 15 runs/67 assertions/0 failures (M13 + M7/M8 regression); f
 BUILD SUCCESSFUL.
 
 ### Stopped
-Milestone 13 complete. Milestone 14 (Vendor retail transactions and city production
-consumption) not started, per stop rule.
+Milestone 13 complete.
+
+## 2026-08-11 — Milestone 14: Vendor retail transactions and city production consumption
+
+Owner approved resuming. Rails `6557a32`; Minecraft commit in this revision.
+
+Rails `Economy::EconomicVendorPurchase` (POST /api/economic_purchase, signed shard auth)
+is the authoritative retail commit: identity from the active assignment (vendor kind
+required), every line re-validated through the SAME `ProductAvailability` the catalog
+displays, stale quotes rejected (`quote_changed`, 409) rather than honored. Atomic
+effects under row locks: production inputs consumed (fixed commodity requirements plus
+the selected material ingot, re-checked, floored at zero -- reject, never oversell);
+treasury credited in the paid denomination with Currency/TreasuryBalance created on
+demand; one idempotent ledger row (replay returns the recorded outcome, no duplicate
+production or credit). Response carries construction data (material, quality, origin
+city).
+
+Minecraft `EconomicVendorPurchaseService`: stamped CitizenEntity projections route out
+of the legacy MerchantRecipes/copper path entirely. Buy re-quotes the Rails catalog
+server-side, enforces single-denomination checkout, reserves EXACTLY the quoted
+denomination (a player rich in gold but short one silver cannot pay a silver price --
+no automatic conversion), posts with expected prices, refunds in kind on rejection or
+outage, and constructs granted items from the response construction data
+(economic_material/economic_quality custom data + Milestone 9 city provenance). New
+`Endpoint.ECONOMIC_PURCHASE`. Weight is NOT invented from MerchantRecipes tables --
+Rails Product.requirements stays the sole production authority.
+
+Acceptance proven (with Milestone 10 as the Trader half of the pair): the full
+treasury/economy cycle -- Trader buys from players debiting coins_outstanding (M10),
+Vendor sells to players crediting coins_outstanding with production inputs consumed
+(this milestone), all in exact denominations against one treasury ledger.
+
+Validation: focused 4 runs/20 assertions/0 failures; regression band (M7/M8/M10/M12/M13
++ M14) 28 runs/140 assertions/0 failures; full Rails suite 1424 runs/0 errors (failures
+only in the three documented pre-existing flaky families, each re-verified isolated);
+route + controller boot verified via rails runner/routes; GameTests 359/359 (354
+existing + 5 new exact-denomination settlement tests); compileJava BUILD SUCCESSFUL.
+
+### Stopped
+Milestone 14 complete. Milestone 15 (Rails-driven activation and population) not
+started, per stop rule.

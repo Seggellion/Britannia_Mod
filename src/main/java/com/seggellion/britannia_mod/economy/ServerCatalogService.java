@@ -101,9 +101,9 @@ public final class ServerCatalogService {
      * Vendor/Trader Milestone 7: the Rails Product catalog is the authority for
      * economic Vendors -- prices, denominations, and availability are computed
      * in Rails; unavailable rows are simply not offered (fail closed, no
-     * fallback catalog). Purchases still flow through the legacy merchant path
-     * until the Milestone 14 retail transaction replaces it; the Baker seed
-     * mirrors the legacy recipe outputs so both stay consistent in the slice.
+     * fallback catalog). Purchases settle through {@link
+     * EconomicVendorPurchaseService} (Milestone 14), which re-quotes from this
+     * same endpoint server-side at buy time.
      */
     private static List<Product> fetchEconomicCatalog(
             ServerPlayer player, String economicTypeKey, java.util.UUID cityPublicId
