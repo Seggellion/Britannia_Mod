@@ -138,6 +138,14 @@ public final class ServerCatalogService {
             net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
             tag.putInt("max_quantity", availableUnits);
             tag.putString("economic_catalog_revision", catalogRevision);
+            // Vendor/Trader Milestone 13: material/quality metadata for
+            // recipe-valued goods; Milestone 17 item construction consumes it.
+            if (row.has("selected_material") && !row.get("selected_material").isJsonNull()) {
+                tag.putString("economic_material", row.get("selected_material").getAsString());
+            }
+            if (row.has("quality") && !row.get("quality").isJsonNull()) {
+                tag.putString("economic_quality", row.get("quality").getAsString());
+            }
             stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
                     net.minecraft.world.item.component.CustomData.of(tag));
 
