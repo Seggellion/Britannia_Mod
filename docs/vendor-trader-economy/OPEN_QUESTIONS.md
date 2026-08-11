@@ -550,3 +550,17 @@ keep it separate from the UltimaCraft implementation worktrees;
 record its location and commit in PROJECT_FACTS.md.
 
 Do not substitute the current RunUO default branch or another commit.
+
+**RESOLVED 2026-08-10:** no local checkout existed; a dedicated read-only reference checkout was
+created at `C:\projects\runuo-reference` (remote `https://github.com/runuo/runuo.git`), HEAD
+verified as exactly `71b2794f12eb6f948b1c5598ae8b350401a22d4d`. Recorded in PROJECT_FACTS §4c.
+The checkout is never modified and is kept separate from the implementation worktrees.
+
+---
+
+## OQ-1 status note (2026-08-10)
+
+Re-verified during the Milestone 1 documentation correction: `ultimacraft_test` is still owned by
+role `ultimacraft` and `SELECT` still fails for `ultimacraft_codex_test`. The repair remains an
+outstanding local-admin action; the `Currency.base_value` data correction (canonical
+1/100/10,000) is prepared as a Milestone 3 item behind it.

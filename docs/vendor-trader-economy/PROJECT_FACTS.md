@@ -69,6 +69,39 @@ Date: 2026-08-10.
 - Cities: resolved **by name** in all legacy economy APIs (`City.find_by(name:)`); `cities.public_id` UUID exists and is used by the Service NPC path.
 - Legacy Rails catalog endpoints for NPC screens: `products#catalog` (GET, merchant roles — dynamic price from `requirements` × `current_price`) and `products#trader_catalog` (POST — trader buy-side lists with currency conversion); Baker/Tavernkeeper/Costermonger catalogs are built Minecraft-side instead.
 
+## 4b. Currency ladder facts (verified 2026-08-10)
+
+- Minecraft canonical ratios (`economy/CoinConversion.java`, used by merchant checkout, banking,
+  and guild training): 1 silver = 100 copper, 1 gold = 100 silver, therefore 1 gold = 10,000
+  copper. **Owner-confirmed canonical: Copper 1 / Silver 100 / Gold 10,000.**
+- Rails still carries an obsolete 1/10/100 ladder in exactly these places:
+  - `db/migrate/20251006205944_treasuries.rb:15` — `base_value` default 1 with comment
+    "copper=1, silver=10, gold=100";
+  - `app/services/economy/sale_transaction_processor.rb:483-485` — `currency_breakdown`
+    fallbacks gold=100 / silver=10 / copper=1;
+  - `app/controllers/api/trader_transactions_controller.rb:151-152` — legacy wine/salvage
+    branch fallbacks gold=100.0 / silver=10.0;
+  - `test/controllers/api/world_bootstrap_profile_test.rb:174` — fixture `base_value = 1` for
+    all currencies.
+- No seed creates `Currency` rows; `Admin::TreasuriesController` allows admins to edit
+  `base_value` by hand, so **live rows cannot be inferred from the migration default**. Live
+  values are unverifiable from this environment (peer role reaches only the broken
+  `ultimacraft_test*` DBs; the development DB is out of bounds). Verification + a safe data
+  migration to 1/100/10,000 + fallback-constant removal + regression tests are scheduled for
+  Milestone 3 (blocked on the OQ-1 test-DB repair). Historical migrations are not to be edited.
+- Ladder-agnostic consumers that become correct once the data is fixed:
+  `Treasury#total_reserve_value`, admin treasury ordering, admin city-form ordering.
+  `TreasuryBalance`'s `PAR_COINS_PER_INGOT`/strength math is reserve-vs-coins policy, not the
+  inter-denomination ladder.
+
+## 4c. Pinned RunUO reference checkout (Milestone 2 source authority)
+
+- Absolute path: `C:\projects\runuo-reference` (Windows), created 2026-08-10.
+- Remote: `https://github.com/runuo/runuo.git` (origin).
+- HEAD verified: `71b2794f12eb6f948b1c5598ae8b350401a22d4d` (exactly the pinned commit;
+  detached checkout). Read-only reference — never modified, kept separate from the
+  implementation worktrees.
+
 ## 5. Test inventory relevant to this project (for when the test DB is repaired)
 - Rails: `test/controllers/api/trader_transactions_controller_test.rb`, `merchant_transactions_controller_test.rb`, `transactions_legacy_purchase_idempotency_test.rb`, `city_commodities_controller_test.rb`, `npcs_controller_test.rb`, `service_npc_spawn_operations_controller_test.rb`, `world_bootstrap_*`, `world_state_changes_controller_test.rb`, `test/services/city_staffing/*`, plus banking auth/concurrency suites.
 - Minecraft unit: `src/test/java/...` (bannerdyeing, bank, tools). Minecraft GameTests: `gametest/ServiceNpc*`, `GuildmasterServiceNpcGameTests`, `WorldStateSync*`, `Banking*` (run via `runGameTestServer`). No Trader/Merchant-specific automated tests exist on the Minecraft side.

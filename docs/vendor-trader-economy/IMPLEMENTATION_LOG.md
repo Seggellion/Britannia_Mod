@@ -120,3 +120,35 @@ RunUO inputs: `runuo_vendor_reconstruction_design.md` (full), `runuo_vendor_cata
 
 ### Stopped
 Milestone 1 complete. Milestone 2 (RunUO coverage audit) not started, per playbook stop condition.
+
+## 2026-08-10 — Milestone 1 finalization: owner decisions + currency correction pass
+
+Owner review landed three corrective inputs: the regenerated `OPEN_QUESTIONS.md` (14 binding
+decisions, committed `7734ab6d`), `UltimaCraft_Compatibility_Map_Review_Suggestions.md`, and
+`UltimaCraft_Currency_Denomination_and_NPC_Settlement_Context.md` (both now committed in this
+directory).
+
+Work performed:
+- `COMPATIBILITY_MAP.md` refactored into the required FACT / OWNER DECISION / IMPLEMENTATION
+  DETAIL / OPEN QUESTION structure. Forensic current-state sections preserved; stale target
+  conclusions replaced per the review document (§3–§23) and the currency context (§25):
+  generalized NPC type foundation, Rails Product recipe authority (Minecraft recipes prohibited),
+  RunUO→Product seeding flow, Fine quality, explicit material rank + highest-producible display
+  rule, RunUO Iron-baseline pricing, Gold-denominated RunUO retail, amount+denomination
+  transaction contracts, denomination-preserving treasury, canonical 1/100/10,000 ratios,
+  commodity permission/form data, shard overrides for both NPC families,
+  reconciliation-with-hysteresis, TownPerson regional population (+ new comparison-table row),
+  single payout representation, wine/salvage strategy absorption, catalog-snapshot vs
+  purchase-time authority, Minter explicitly out of scope, consolidated invariant list.
+- Currency-ladder audit completed per instruction (migrations, model, seeds, fallbacks, tests,
+  conversion code): all four Rails 1/10/100 survivals enumerated in PROJECT_FACTS §4b. Live
+  `Currency.base_value` rows remain unverifiable (test DBs still owned by `ultimacraft` —
+  re-verified today; dev DB out of bounds). The data/code correction is **scheduled for
+  Milestone 3** behind the OQ-1 repair; no historical migration will be edited; regression tests
+  will accompany the correction when the test environment permits.
+- Pinned RunUO reference checkout created and verified (PROJECT_FACTS §4c; OQ-2 resolved):
+  `C:\projects\runuo-reference` @ `71b2794f…`, remote `https://github.com/runuo/runuo.git`,
+  read-only.
+
+Validation: documentation-only change; no automated suites apply. Rails tests still blocked
+(pre-existing OQ-1 breakage, re-verified via psql).
