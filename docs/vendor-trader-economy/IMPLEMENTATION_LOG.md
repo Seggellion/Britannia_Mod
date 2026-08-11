@@ -744,5 +744,51 @@ assertions with only the documented pre-existing recalculator failure; full suit
 tally recorded in the corrective commit message.
 
 ### Stopped
-Canonical supply units corrective complete. Milestone 16 (legacy
-MerchantSpawnBlock/TraderSpawnBlock migration) not started, per stop rule.
+Canonical supply units corrective complete.
+
+## 2026-08-11 — Milestone 16: Migrate legacy MerchantSpawnBlock and TraderSpawnBlock
+
+Owner approved resuming. Rails `36db9e6`; Minecraft `854641f5` (+ log commit).
+
+Legacy posts converge in place onto the authoritative architecture. Minecraft
+`LegacySpawnBlockMigrator`, invoked from each legacy block entity's own tick cadence:
+despawn the legacy-MANAGED merchant/trader mob (Rails-synced,
+migrated_to_authoritative_post -- the assignment pipeline staffs the post, so leaving
+it would duplicate); write a full-fidelity rollback receipt to
+`LegacySpawnBlockMigrationLedger` (overworld SavedData: legacy block id, complete NBT,
+mapped type/city, townPersonAmount, outcome, replacing post UUID; never deleted by
+code); replace the block with a real ServiceNpcSpawnBlock whose fresh entity mints its
+stable UUID through the claim store like any player-placed post; apply the migrated
+configuration (city public id + economic:<type>), staging the durable pending UPSERT.
+Milestones 5/6/15 finish it: registration marks the city (new Rails rule in this
+milestone: economic post commits mark the staffing sweep), EconomicStaffing assigns,
+the projection materializes.
+
+Availability-safe: until a conversion SUCCEEDS (bootstrap city resolvable, type key
+mapped), legacy behavior runs untouched -- a backendless world keeps its merchants;
+the deprecated sourceId/heartbeat path is bypassed only when the new path takes over
+(playbook deprecation rule; parity proven by the new GameTests). No registry ids
+change; old chunks keep deserializing. TownPersons are never touched (decision #12 --
+preserved until the regional population system; townPersonAmount preserved in the
+receipt for it; only the deprecated side-spawning ends). Type mapping: the ten legacy
+trader keys ARE the Milestone 11 Rails keys; merchants map baker/tavernkeeper/
+costermonger -- Rails seeds the two new vendor types ACTIVE
+(db:seed:economic_vendor_types_legacy_merchants) because these NPCs already exist in
+live worlds; their catalogs arrive with Milestone 17.
+
+Rollback runbook: docs/vendor-trader-economy/LEGACY_SPAWN_BLOCK_MIGRATION.md
+(per-position restore from the receipt; known limits recorded).
+
+Acceptance proven: a world with configured legacy posts loads and converges -- config
+preserved (city/type on the new post + pending Rails registration), legacy merchant
+despawned, TownPerson alive, receipt complete; trader keys carry over; unconfigured/
+unresolvable blocks stay fully legacy with no receipts; an unavailable city registry
+blocks migration entirely.
+
+Validation: Rails 4 runs/49 assertions focused; full suite 1442 runs/0 errors (only
+the documented deterministic recalculator failure); compileJava BUILD SUCCESSFUL;
+GameTest server all 363 required tests passed (359 existing + 4 new).
+
+### Stopped
+Milestone 16 complete. Milestone 17 (full RunUO vendor rollout) not started, per stop
+rule.
