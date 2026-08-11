@@ -106,9 +106,45 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         }
         checkCooldown = CHECK_INTERVAL_TICKS;
 
+        // Vendor/Trader Milestone 16: converge onto the authoritative post
+        // architecture. Until a conversion SUCCEEDS (city resolved from the
+        // bootstrap registry, type mapped), everything below keeps running
+        // unchanged -- a world without its backend keeps its merchants.
+        if (com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrator
+                .migrateMerchantBlock(serverLevel, this)) {
+            return;
+        }
+
         maintainMerchant(serverLevel);
         maintainTownspeople(serverLevel);
         heartbeatIfDue(serverLevel);
+    }
+
+    /**
+     * Milestone 16 migration despawn: removes ONLY the legacy-managed merchant
+     * NPC (the authoritative assignment pipeline staffs the migrated post, so
+     * leaving it would duplicate). TownPersons and their tracked ids are
+     * deliberately untouched -- owner decision #12 preserves them until the
+     * regional population system reaches parity.
+     */
+    public void despawnManagedNpcForMigration(ServerLevel serverLevel) {
+        MerchantDefinition definition = definitionFor(merchantType);
+        Entity merchantEntity = findOwnedMerchantAnyType(serverLevel);
+        UUID npcId = merchantEntity != null ? merchantEntity.getUUID() : merchantNpcId;
+
+        if (npcId != null) {
+            boolean syncOk = CityDataSync.markLiveNpcInactive(
+                    serverLevel, npcId, definition.npcType(), cityName, sourceId.toString(),
+                    worldPosition.toShortString(), "despawned", "migrated_to_authoritative_post"
+            );
+            LOGGER.info("Legacy merchant despawned for migration source={} npc={} type={} city={} railsSync={}",
+                    sourceId, npcId, definition.npcType(), cityName, syncOk);
+            if (merchantEntity != null) {
+                merchantEntity.remove(RemovalReason.DISCARDED);
+            }
+        }
+        merchantNpcId = null;
+        savedMerchantData = null;
     }
 
     private void maintainMerchant(ServerLevel serverLevel) {
