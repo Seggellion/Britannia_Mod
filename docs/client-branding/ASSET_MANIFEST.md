@@ -2,7 +2,7 @@
 
 ## Manifest rules
 
-This file records protected assets and the exact resource targets discovered in Milestone 0. “Planned” entries are not present yet and were not created in this milestone. SHA-256 values are uppercase hexadecimal over the working-tree bytes on 2026-08-11.
+This file records protected assets and the exact resource targets discovered in Milestone 0, together with runtime assets accepted by later gates. SHA-256 values are uppercase hexadecimal over the working-tree bytes on 2026-08-11.
 
 Source/candidate images must not be placed under `src/main/resources`. Only selected, validated runtime assets belong in the packaged resource tree.
 
@@ -52,17 +52,21 @@ The vanilla renderer displays a 256x44 normal/rare title from a 256x64 logical t
 
 Image generation and candidate selection are Milestone 2 work, not Milestone 0.
 
-## Planned black pre-world resources
+## Black pre-world resources
 
 All black assets must be true opaque `#000000` with no alpha variation, gradient, noise, color profile surprise, or decorative marks.
 
-| Purpose | Exact future project path | Vanilla bundled size | Status/notes |
-|---|---|---:|---|
-| Standard pre-world menu | `src/main/resources/assets/minecraft/textures/gui/menu_background.png` | 16x16 | Planned; leave `inworld_menu_background.png` absent/unmodified |
-| Pre-world list body | `src/main/resources/assets/minecraft/textures/gui/menu_list_background.png` | 16x16 | Planned; leave `inworld_menu_list_background.png` absent/unmodified |
-| Pre-world header separator | `src/main/resources/assets/minecraft/textures/gui/header_separator.png` | 32x2 | Planned; leave `inworld_header_separator.png` absent/unmodified |
-| Pre-world footer separator | `src/main/resources/assets/minecraft/textures/gui/footer_separator.png` | 32x2 | Planned; leave `inworld_footer_separator.png` absent/unmodified |
-| Create World tab header | `src/main/resources/assets/minecraft/textures/gui/tab_header_background.png` | 16x16 | Candidate required for a fully black Create World header; validate tab-button contrast |
+| Purpose | Runtime project path | Dimensions | SHA-256 | Milestone 1 state |
+|---|---|---:|---|---|
+| Standard pre-world menu | `src/main/resources/assets/minecraft/textures/gui/menu_background.png` | 16x16 | `60A2CE1FED7CF673C4A141192E2CF99828A85787770D2F60B8B9422112A8E26C` | Implemented; `inworld_menu_background.png` remains absent |
+| Pre-world list body | `src/main/resources/assets/minecraft/textures/gui/menu_list_background.png` | 16x16 | `60A2CE1FED7CF673C4A141192E2CF99828A85787770D2F60B8B9422112A8E26C` | Implemented; `inworld_menu_list_background.png` remains absent |
+| Pre-world header separator | `src/main/resources/assets/minecraft/textures/gui/header_separator.png` | 32x2 | `33F00038999705206F7D85B1185F402D01180692AF08346D22DCC047917D950B` | Implemented; `inworld_header_separator.png` remains absent |
+| Pre-world footer separator | `src/main/resources/assets/minecraft/textures/gui/footer_separator.png` | 32x2 | `33F00038999705206F7D85B1185F402D01180692AF08346D22DCC047917D950B` | Implemented; `inworld_footer_separator.png` remains absent |
+| Create World tab header | `src/main/resources/assets/minecraft/textures/gui/tab_header_background.png` | 16x16 | `60A2CE1FED7CF673C4A141192E2CF99828A85787770D2F60B8B9422112A8E26C` | Implemented; tab labels and focus remain legible |
+
+All five files are deterministic, opaque-black PNGs: every pixel is exactly ARGB `0xFF000000`. `ClientBrandingBackgroundPolicyTest` enforces the dimensions and pixel contract, rejects any project override of the four `inworld_*` resources or seven panorama resources, and rechecks the three protected title hashes.
+
+The assembled Milestone 1 JAR contains all five paths above and no client-branding `inworld_*` or panorama override.
 
 The vanilla pre-world menu/list assets are translucent; replacing them with opaque black hides the panorama drawn beneath standard non-title screens. No panorama face or overlay asset is planned at baseline because relying on `panorama_overlay.png` alpha is specifically avoided.
 

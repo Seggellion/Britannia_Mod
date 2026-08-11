@@ -152,3 +152,102 @@ docs(client-branding): establish client branding baseline
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 1 - Non-game black background policy
+
+Date: 2026-08-11
+
+Status: Gate 1 passed
+
+Production behavior changed: Yes - pre-world menu backgrounds are now opaque black
+
+Starting commit: `6f180621ed31704155b3024794ddbd6b10bd1a08`
+
+### Implementation
+
+- Added exact-dimension opaque-black overrides for `menu_background.png`, `menu_list_background.png`, `header_separator.png`, `footer_separator.png`, and `tab_header_background.png` under `assets/minecraft/textures/gui`.
+- Every pixel in every override is exactly ARGB `0xFF000000`; there is no gradient, noise, transparency, embedded decoration, or panorama dependency.
+- Added no production Java, event hook, broad screen replacement, or new mixin.
+- Left all four `inworld_*` resources and every panorama face/overlay absent so Minecraft's existing level-aware resource selection remains authoritative.
+- Left the protected title animation asset, renderer mixin, and mixin registration byte-identical.
+
+### Deterministic policy test
+
+Added `ClientBrandingBackgroundPolicyTest` with three checks:
+
+1. all five runtime PNGs exist, decode, match the vanilla physical dimensions, and contain only opaque black pixels;
+2. the project contains no override for any protected `inworld_*` or panorama resource;
+3. the three approved title-background files retain their Milestone 0 SHA-256 values.
+
+Focused command:
+
+```text
+...\gradle-8.9\bin\gradle.bat test --tests com.seggellion.britannia_mod.client.branding.ClientBrandingBackgroundPolicyTest --no-configuration-cache --console=plain
+```
+
+Result: `BUILD SUCCESSFUL`; all three policy tests passed.
+
+### Live client validation
+
+The client was launched from isolated fresh title sessions at GUI scale 2 and captured at 1938x1038. The following routes passed visual inspection:
+
+- protected title screen;
+- Options;
+- Language;
+- Accessibility;
+- Video Settings;
+- Controls;
+- Resource Packs;
+- Select World with a populated world list;
+- Create World, including its tab header/body/footer;
+- Join Multiplayer;
+- NeoForge Mods list;
+- a loaded disposable single-player validation world.
+
+Every tested pre-world screen was uniformly black outside functional UI. Buttons, disabled states, sliders, scrollbars, text fields, focus outlines, list content, pack icons, world thumbnails, and footer controls remained legible. The loaded world retained normal world/HUD rendering with no black overlay. The title retained the protected chest-to-medallion presentation and existing controls.
+
+Screenshots and the validation save are ignored runtime evidence under `build/client-branding-validation` and `run`; neither is included in the milestone commit.
+
+### Full build and packaged-resource verification
+
+The repository's tracked wrapper remains the Milestone 0 Git LFS pointer, so the installed pinned Gradle 8.9 distribution was used directly. The client-branding worktree is outside the app sandbox's declared writable root; permissioned validation was therefore required for Gradle's project cache and outputs.
+
+Full build command:
+
+```text
+...\gradle-8.9\bin\gradle.bat build --no-configuration-cache --console=plain
+```
+
+Result:
+
+- transformation, compilation, resource processing, JAR assembly, scaffold compilation, and test compilation completed;
+- 1,791 tests executed: 1,753 passed, 21 failed, 17 skipped;
+- the same 21 pre-existing banner/scaffold asset-integrity tests failed as in Milestone 0;
+- the increase from 1,788 to 1,791 tests is exactly the three passing Milestone 1 policy tests;
+- no new failing test class or failure count was introduced.
+
+The assembled regular JAR contains all five exact client-branding GUI paths. It contains no client-branding `inworld_*` or panorama asset.
+
+### Gate 1 checklist
+
+- [x] Standard pre-world menu, list, separator, and Create World header resources are opaque black.
+- [x] Minimum live matrix passed: title, Options, Language, Accessibility, Video, Controls, Resource Packs, Select World, and Multiplayer.
+- [x] Create World and NeoForge Mods list received additional live coverage.
+- [x] Loaded-world rendering remained unchanged with no black overlay.
+- [x] Functional controls, list content, focus, disabled states, scrollbars, icons, text, and thumbnails remained visible.
+- [x] No `inworld_*` or panorama override was added.
+- [x] Protected title asset, mixin, and registration hashes still match Milestone 0.
+- [x] Focused policy tests pass.
+- [x] Full build failure count and classes match the recorded baseline exactly.
+- [x] JAR assembly includes the five intended runtime assets.
+- [x] No unrelated tracked file changed.
+
+Gate 1 passes because the resource-first policy produces opaque-black pre-world screens without regressing the title or active-world rendering.
+
+Planned local commit message:
+
+```text
+feat(client): establish non-game black background policy
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.

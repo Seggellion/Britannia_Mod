@@ -12,7 +12,28 @@ level != null                      -> preserve vanilla/current behavior
 
 “Resource-first” below means exact `assets/minecraft` overrides for the normal pre-world `menu_background`, `menu_list_background`, header/footer separators, and where needed `tab_header_background`. It does not mean changing button, slider, icon, text-field, focus, selection, or accessibility assets.
 
-This matrix is source-verified for Minecraft 1.21.1/NeoForge 21.1.72. Live visual coverage is intentionally deferred to the implementation milestones; rows marked “verify” are explicit acceptance cases, not assumptions.
+This matrix is source-verified for Minecraft 1.21.1/NeoForge 21.1.72. Milestone 1 live coverage is recorded below; remaining rows marked “verify” are explicit acceptance cases for later cumulative sweeps, not assumptions.
+
+## Milestone 1 live verification
+
+All captures used a fresh title-session route at GUI scale 2. Black backgrounds remained opaque at 1938x1038, while controls, labels, list content, focus outlines, scrollbars, pack icons, and world thumbnails remained visible.
+
+| Screen/state | Milestone 1 result |
+|---|---|
+| Main title | Pass - protected chest/medallion animation and vanilla title UI remained visible; no black policy regression |
+| Options | Pass - standard controls, FOV slider, and Done button remained legible |
+| Language | Pass - language list, selected row, scrollbar, explanatory text, and buttons remained legible |
+| Accessibility | Pass - controls, sliders, focus, and footer remained legible |
+| Video Settings | Pass - option grid, sliders, scrollbar, and footer remained legible |
+| Controls | Pass - action buttons, focus outline, and footer remained legible |
+| Resource Packs | Pass - available/selected pack lists, icons, text, focus, and footer remained legible |
+| Select World | Pass - populated list, thumbnail, metadata, search field, and action buttons remained legible |
+| Create World | Pass - black tab header/body/footer with tabs, fields, and Create/Cancel controls visible |
+| Join Multiplayer | Pass - server list/status area and enabled/disabled controls remained distinguishable |
+| NeoForge Mods list | Pass - list, details, search field, and controls remained legible |
+| Loaded single-player world | Pass - world, HUD, crosshair, onboarding hint, and normal gameplay rendering remained unchanged; no black overlay |
+
+Ignored screenshots and the disposable validation world are runtime evidence only and are not packaged or committed. The deterministic policy test separately enforces the absent `inworld_*` and panorama overrides.
 
 ## Main and core navigation
 
