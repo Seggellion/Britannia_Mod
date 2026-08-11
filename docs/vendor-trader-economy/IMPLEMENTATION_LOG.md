@@ -315,5 +315,72 @@ bash bin/codex_test (full)                 → 1382 runs, 6481–6483 assertions
 ```
 
 ### Stopped
-Milestone 4 complete. Milestone 5 (Merchant/Trader spawn posts converge on Service NPC
-identity rules — first Minecraft-side implementation milestone) not started, per stop rule.
+Milestone 4 complete.
+
+## 2026-08-10 — Milestone 5: Merchant/Trader spawn posts converge on Service NPC identity rules
+
+Owner approved resuming ("i approve"). Design (per owner decision #1): economic posts ARE
+Service NPC spawn posts configured with an Economic type — one shared block, claim store,
+outbox, registration protocol, receipts, collision repair, and assignment model. Legacy
+Trader/Merchant blocks remain untouched until Milestone 16.
+
+### Rails half (commit `4ad5711`, 13 files)
+- Operation envelope accepts exactly one of `service_npc_type_key` / `economic_npc_type_key`
+  per UPSERT (`AMBIGUOUS_NPC_TYPE` when both, `MALFORMED_REQUEST` when neither); economic
+  gating outcomes added to the closed vocabulary (INVALID/INACTIVE/NOT_SPAWNABLE).
+- `ServiceNpcSpawnPoint` gains an exclusive `economic_npc_type` FK; DB status-contract check
+  redefined to require exactly one type FK when registered (`num_nonnulls(...) = 1`).
+- `ApplyOperation` resolves/stores either kind through one `npc_type_attributes` writer
+  (switching kinds nils the other side); world-state payloads + assignments serializer
+  publish `economic_npc_type_key`; new `economic_npc_registry` bootstrap section
+  (`EconomicNpcRegistrySerializer`, deterministic digest in the ETag).
+- `NpcSpawnAssignment` compatibility generalized to the post's NPC type; a service-typed
+  World NPC cannot staff an economic post.
+- Tests: registration/replay/type-switch acceptance for a merchant + trader post, gating
+  outcomes, assignment via the shared model, serializer coverage; two existing contract
+  tests updated for the extended shape.
+
+### Minecraft half (commit `6ee2ef00`, 17 files)
+- Transport convention `EconomicNpcTypeKeys`: economic keys travel the existing pipeline in
+  the shared type-key slot with an `economic:` prefix (colon illegal in real keys), decoded
+  once in the wire serializer → emits `economic_npc_type_key`. No outbox schema change.
+- New `EconomicNpcRegistry{Cache,Snapshot,Parser,TypeDefinition}` parsing the bootstrap
+  section accept-or-empty wholesale; wired in `WorldBootstrapAPI.parseCore` and cleared on
+  server stop.
+- `ServiceNpcSpawnPayloadHandler.resolveTypeSelection`: service registry first, economic
+  fallback on TYPE/REGISTRY_UNAVAILABLE, full gating (bounded key, city, active, spawnable);
+  spawn screen lists economic types alongside service ones.
+- Spawn-point definitions carry an optional economic key through the bootstrap parser,
+  world-state candidate apply, and the durable assignments-cache NBT.
+- `ServiceNpcAssignmentReconciler.reconcileEconomic`: materializes economic assignments as
+  the registry-named entity type (never hardcoded), dedupes by World NPC public id
+  (lowest-UUID canonical), overwrites entity state with cache truth (name/gender/city),
+  restricts to the post, fails closed when registry/entity key missing; stale projections
+  discarded via the block's last-reconciled World NPC id when the assignment closes.
+
+### Validation actually run
+```text
+Rails: bash bin/codex_test test/services/service_npc_spawn_points_economic_posts_test.rb
+         → 6 runs, 32 assertions, 0 failures, 0 errors, 1 intentional skip
+       bash bin/codex_test (full) → 1388 runs, 6516 assertions, 0 errors;
+         failures = pre-existing recalculator + known isolated-pass concurrency flake
+Minecraft: ./gradlew compileJava --no-configuration-cache → BUILD SUCCESSFUL
+           ./gradlew runGameTestServer --rerun-tasks --no-configuration-cache
+             → "All 352 required tests passed", BUILD SUCCESSFUL in 7m39s
+             (includes the 3 new EconomicNpcSpawnPostGameTests: registry parse/wholesale
+              rejection; prefixed pipeline emitting the economic wire field; acceptance —
+              BakerEntity materialized, no duplication, recreation with fresh entity UUID,
+              withdrawal on assignment close)
+           Unit :test suite not rerun (its 13 pre-existing banner failures are unrelated;
+           no unit-test inputs changed)
+```
+
+### Acceptance criteria
+Merchant post + Trader post register (Rails test), retain stable identity across replay,
+receive assignment/state (shared NpcSpawnAssignment + reconciler), survive restart (durable
+cache recreation test), and recreate the correct registry-named entity without identity
+duplication (post UUID ≠ WorldNpc id ≠ entity UUID asserted). Legacy blocks untouched.
+
+### Stopped
+Milestone 5 complete. Milestone 6 (economic NPC bootstrap/assignment projection driven by
+Rails activation decisions) not started, per stop rule.
