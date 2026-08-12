@@ -693,3 +693,43 @@ first in-game.
 Both repositories. Rails: one serializer. Minecraft: three new classes
 (`QuestObjectiveTriggers`, `QuestObjectiveWatcher`, `QuestItemMatcher`), six touched production
 files, one new gametest class.
+
+### Owner decisions on review (2026-08-12)
+
+**1. The architecture is approved.** Server-authoritative objective detection is the desired end
+state, and client-asserted quest triggers remain prohibited. Nothing in a later milestone may
+reintroduce a path where a client tells the server that an objective was met.
+
+**2. `ItemBurnedS2CPayload` and `TriggerQuestS2CPayload` stay registered but inert.** They are not
+to be removed until a deliberate client/server protocol version bump or compatibility cleanup —
+keeping them registered is what stops a client built before this milestone desyncing on an unknown
+payload type. Recorded in the playbook's non-negotiable rules so it cannot be undone as incidental
+tidying inside another milestone.
+
+**3. Milestone 6 is strongly validated but NOT production-proven.** Its status is conditional
+until the live, Rails-backed, two-player matrix passes. That matrix was expanded on owner
+direction and now sits in the playbook's Milestone 8 as rows **L1–L10**, aimed squarely at the
+historical defect — a quest one particular player could not finish while others finished the same
+quest normally:
+
+| | Scenario |
+| --- | --- |
+| L1 | multiple simultaneous active quests, one per objective type |
+| L2 | relog *before* objective completion, then complete it |
+| L3 | QuestGiver interaction between objectives |
+| L4 | location, pickup and destroy objectives each after a relog |
+| L5 | simultaneous two-player progression through the same objective |
+| L6 | player isolation — one player completing must never advance another |
+| L7 | a location objective must fire **once** while the player stands in the zone |
+| L8 | reward integrity across a lost turn-in response |
+| L9 | cold-journal recovery with Rails initially down |
+| L10 | escort assignment across a server restart |
+
+Each row names the log events that decide it, and the milestone requires captured evidence per
+row: "it looked right in game" is explicitly not a pass, and a failing row becomes its own
+corrective rather than a reason to re-approve M6 on the automated suite alone.
+
+L7 deserves its own note: it is the one row that can only fail in a way a player would never
+report. The pre-M6 storm sent a trigger every second while someone stood in a zone; the fix is a
+combination of an in-flight guard and rewriting the quest's objectives from the response's new
+node, and a single extra `quest_objective_detected` line in that window is the whole regression.

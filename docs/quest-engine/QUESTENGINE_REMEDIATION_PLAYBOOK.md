@@ -33,6 +33,11 @@ check or re-derive the codebase to execute one.
 - **Never make quest completion non-idempotent.** After M4 every completion path must tolerate a
   replay without double-granting and without a bare failure.
 - **Do not change quest balance, quest text, rewards, or unrelated NPC systems.**
+- **Do not remove `ItemBurnedS2CPayload` or `TriggerQuestS2CPayload`.** Owner decision, 2026-08-12.
+  Both are inert after Milestone 6 -- their handlers act on nothing -- but they stay *registered*
+  so a client built before that milestone cannot desync on an unknown payload type. They come out
+  only in a deliberate client/server protocol version bump or compatibility cleanup, never as
+  incidental tidying inside another milestone.
 - Do not touch the pinned RunUO checkout at `C:\projects\runuo-reference` (@ `71b2794f`).
 - Never touch the `ultimacraft_development` database.
 - Never stage `gradle/wrapper/gradle-wrapper.jar` (it shows as modified in every worktree; leave
@@ -106,6 +111,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 | M4 | Idempotent completion transaction | Q-04, Q-10, Q-12 | both | medium |
 | M5 | Durable journal and fail-safe gate | Q-03, Q-09, Q-17 | both | medium |
 | M6 | Server-authoritative objectives | Q-02, Q-05, Q-06 | MC | high |
+| — | *M6 is code-complete and strongly validated, but **not production-proven** until the live matrix in M8 passes. Owner decision, 2026-08-12.* | | | |
 | M7 | QuestGiver identity and escort lifecycle | Q-08, Q-11, Q-13, Q-14 | MC | medium |
 | M8 | Regression suite and failure-injection validation | Q-15 | both | none |
 
@@ -619,16 +625,49 @@ failure conditions. No production behaviour changes.
 | Forged pickup trigger | rejected |
 | Rails 503 during turn-in | one retry, single reward |
 
+### Live validation — Rails-backed, two players, real client
+
+**Owner decision, 2026-08-12: Milestone 6 is treated as strongly validated but NOT
+production-proven until this matrix passes.** Automated coverage stops at the HTTP boundary — the
+gametest harness cannot answer a trigger — so the walk/pick-up/burn paths have never run
+end to end. This matrix is aimed squarely at the historical defect: *a quest that could not be
+finished by one particular player, while other players finished the same quest normally.*
+
+Run against a real Rails instance, with two accounts (**A** and **B**) on one shard, both holding
+quests from the same giver. Every row names the log events that decide it — the correlation id
+from Milestone 2 makes each traceable end to end, and **"it looked right in game" is not a pass**.
+
+| # | Scenario | Steps | Passes when |
+| --- | --- | --- | --- |
+| L1 | **Multiple simultaneous active quests** | A accepts three quests with different objective types (location, pickup, destroy) and leaves all three active | All three appear in the journal; each fires only its own objective; `quest_objective_detected` names the right `quest_state_id` every time |
+| L2 | **Relog before objective completion** | A accepts a location quest, walks *near but not into* the zone, quits to title, rejoins, then enters the zone | The objective fires **after** the relog. This is the exact case that was dead before M6 |
+| L3 | **QuestGiver interaction between objectives** | A completes objective 1, returns to the giver and takes the next dialogue step, then completes objective 2 | Both objectives fire; the dialogue step in between does not clear or duplicate either |
+| L4 | **All three objective types after relog** | Repeat L2 for pickup (drop the item, relog, pick it up) and destroy (relog, then burn the item) | Each fires post-relog; `quest_objective_applied` shows `completed` where the node ends the quest |
+| L5 | **Simultaneous two-player progression** | A and B hold the same quest and enter the same zone together | Both progress; two distinct `quest_objective_detected` lines with different `player_uuid`; neither blocks the other |
+| L6 | **Player isolation** | A completes the quest; B is still mid-objective | B's journal is untouched, B completes later, and B's reward is granted once. **A's completion must never advance B's state** |
+| L7 | **No repeat fire while standing in a zone** | A enters a location zone and stands still for ≥60 seconds | Exactly **one** `quest_objective_detected` for that trigger. Q-06's storm sent one per second; a second line here is a regression |
+| L8 | **Reward integrity across a lost response** | During a turn-in, interrupt the connection after Rails commits (stop the client, or block the response) | Retry replays: `quest_turn_in_replayed` with the same `granted_items`, reward in the inventory exactly once |
+| L9 | **Cold journal recovery** | Start the MC server with Rails down, join, bring Rails up, then act on a quest | `quest_journal_refresh_requested` → `quest_journal_refreshed` → the action proceeds. No `server_journal_not_loaded` refusal survives the recovery |
+| L10 | **Escort across a restart** | Activate an escort, restart the server, rejoin | The escort still carries its assignment tags and resumes following (M1's guarantee, under real conditions) |
+
+**Evidence to capture per row**: the correlation id, the `quest_objective_*` / `quest_turn_in_*`
+lines from both sides, and the resulting `player_quest_states` row. File them in the milestone
+report; a row with no log evidence is not a pass.
+
+**If any row fails**, the milestone stops there and the failure becomes its own corrective —
+Milestone 6 does not get re-approved on the strength of the automated suite alone.
+
 ### Verify
 Full Rails suite; `./gradlew test`; full GameTest server run with a fresh-log tally. State the
-new required-test count explicitly.
+new required-test count explicitly. Then the live matrix above.
 
 ### Acceptance
-Every scenario above is automated and green. Re-answer the health check's final question with
-evidence.
+Every automated scenario is green **and** every live row L1–L10 passes with captured evidence.
+Only then re-answer the health check's final question.
 
 ### Commit scope
-Tests + a `QUESTENGINE_HEALTH_CHECK.md` addendum recording the new verdict + log entry.
+Tests + a `QUESTENGINE_HEALTH_CHECK.md` addendum recording the new verdict + log entry, including
+the live-validation evidence.
 
 ---
 
@@ -641,6 +680,7 @@ The QuestEngine is healthy when:
 - no quest action is refused because of a transient in-memory condition, and every refusal is
   logged with a machine-readable reason and a correlation id (M2, M5);
 - no persisted state is destroyed by a cold cache (M1);
-- objective progress is decided by the server (M6);
+- objective progress is decided by the server (M6), **proven live** by the M8 matrix and not by
+  the automated suite alone;
 - quest giver identity survives rename, reload and escort activation (M7);
 - all of it is covered by automated tests that run in CI (M8).
