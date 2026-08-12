@@ -197,6 +197,7 @@ CraftableRegistry.init();
           NeoForge.EVENT_BUS.register(new StructureProtectionHandler());
         NeoForge.EVENT_BUS.addListener(this::onServerStarting);
         NeoForge.EVENT_BUS.addListener(this::onServerStarted);
+        com.seggellion.britannia_mod.economy.TraderSaleReservationRecovery.register();
         NeoForge.EVENT_BUS.addListener(this::onServerTick);
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
 
@@ -289,6 +290,9 @@ public void onServerStarted(ServerStartedEvent event) {
     ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
     com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.start(event.getServer());
     com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.runStartupReconciliation(event.getServer());
+    // Vendor/Trader Milestone 19.5: report trader-sale reservations stranded by
+    // a crash; the refund itself happens on that player's next login.
+    com.seggellion.britannia_mod.economy.TraderSaleReservationRecovery.reportStrandedReservations(event.getServer());
 }
 
 public void onServerTick(ServerTickEvent.Post event) {

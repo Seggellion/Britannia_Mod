@@ -66,6 +66,11 @@ the enforcement sites; nothing here is aspirational).
   failures; the Milestone 15 sweep's conditional mark-clear never loses work.
 - Purchase failures refund locally and never auto-retry (operator-visible,
   idempotency keys prevent double-commit on manual retry).
+- Trader sales hold their reserved items behind a durable receipt
+  (Milestone 19.5): two forced disk writes bracket the inventory removal, so a
+  crash mid-sale is recoverable rather than destructive. The cost is two
+  small SavedData flushes per sale, on the player-interaction path only —
+  never on a ticker.
 
 ## Verified gaps (recorded, not hidden)
 

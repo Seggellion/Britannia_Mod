@@ -788,12 +788,17 @@ recorded limit, not a pending question.
 - **Mobile fulfillment / AnimalBuyInfo (29 rows)** — the OQ-7 concept is
   approved but unimplemented; rows are explicitly excluded, not silently
   dropped.
-- **Trader sale item reservation is in-memory** — `ServerEconomyService`
-  removes items before the Rails call and refunds on every failure path, but a
-  server crash in that window loses the reservation (banking's durable local
-  receipts have no equivalent here). Bounded by the sale window; no idempotency
-  or double-spend risk, only a crash-window item-loss risk. **Not fixed in this
-  program** — recorded as the top hardening candidate for follow-up work.
+- ~~**Trader sale item reservation is in-memory**~~ — **FIXED in Milestone
+  19.5.** Reservations are now durable: a receipt is written and flushed to
+  disk before any item leaves the inventory, advanced to `ITEMS_REMOVED` once
+  the removal is force-saved, and resolved when the sale settles. A crash
+  refunds the items on that player's next login. The one deliberate asymmetry:
+  a receipt still in `RESERVED` (the removal never became durable, so the
+  player's saved inventory still holds the goods) is resolved WITHOUT a refund,
+  because duplication is unbounded inflation while the alternative is bounded
+  and visible. A `DISPATCHED` receipt IS refunded even though the sale may have
+  committed in Rails — that trade is made knowingly and every such refund is
+  logged with its idempotency key for ledger reconciliation.
 - **`EconomicStaffingSweepJob` serializes city reconciles** in one run;
   acceptable at current city counts, revisit past hundreds of dirty cities per
   window.

@@ -950,6 +950,47 @@ deterministic recalculator failure; compileJava BUILD SUCCESSFUL; GameTest serve
 367 required tests passed (365 + 2 new durability tests).
 
 ### Stopped
-Milestone 19 complete. The Vendor/Trader economy program (Milestones 0-19) is
-delivered. Milestone 20 (TownPerson regional population) and Milestone 21 (item
-content) are owner-scheduled and NOT started, per stop rule.
+Milestone 19 complete.
+
+## 2026-08-11 — Milestone 19.5: Durable trader-sale reservations
+
+Owner directed closing the known limit before Milestone 20. Minecraft-only; no
+Rails change (the ledger side was already exact via idempotency keys).
+
+The gap: `ServerEconomyService` removed a player's items, then called Rails,
+holding the reservation only in memory. A crash in that window destroyed the
+items with no record and no refund.
+
+The fix is ordering plus a durable receipt (`TraderSaleReservationStore`, an
+overworld SavedData; item payloads reuse the banking `BankItemCodec` rather
+than a second serialization path):
+
+1. the sale's idempotency key and the reservation PLAN are computed before any
+   item moves (`planReservation`);
+2. the receipt is written as `RESERVED` and flushed to disk;
+3. the items are removed and the player force-saved (banking's own durability
+   primitive), so their inventory-without-items is itself on disk;
+4. the receipt advances to `ITEMS_REMOVED` and is flushed again;
+5. it advances to `DISPATCHED` immediately before the Rails call and is
+   resolved on every terminal outcome -- success and all three refund paths.
+
+Recovery runs on player login (the event banking reconciliation already uses),
+with a startup scan that only reports, never minting items into an offline
+player. Only `ITEMS_REMOVED`/`DISPATCHED` receipts refund: a `RESERVED` receipt
+means the removal never became durable, so the player's saved inventory still
+holds the goods and refunding would duplicate them -- that asymmetry is the
+anti-duplication rule, chosen because duplication is unbounded inflation while
+the alternative is bounded and visible. A `DISPATCHED` receipt refunds even
+though the sale may have committed in Rails; that trade is made knowingly and
+logged with its key for ledger reconciliation.
+
+Validation: compileJava BUILD SUCCESSFUL; GameTest server all 370 required
+tests passed (367 + 3 new: a crash after removal refunds intact and recovery is
+idempotent; a never-durable reservation resolves WITHOUT refund while the
+player keeps exactly what they had; receipts survive the save/load boundary and
+never pay another player's reservation out to the wrong hands).
+
+### Stopped
+Milestone 19.5 complete. The Vendor/Trader economy program (Milestones 0-19.5)
+is delivered. Milestone 20 (TownPerson regional population) and Milestone 21
+(item content) are owner-scheduled and NOT started, per stop rule.
