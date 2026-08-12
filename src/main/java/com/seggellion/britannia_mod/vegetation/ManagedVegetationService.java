@@ -12,7 +12,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-import com.seggellion.britannia_mod.farming.GrainHarvestTools;
 import com.seggellion.britannia_mod.event.ManagedVegetationCutEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -171,7 +170,8 @@ public final class ManagedVegetationService {
                 .append(ManagedVegetationConfig.fernWeight()).append('/')
                 .append(ManagedVegetationConfig.flowerWeight())
                 .append(" natural_growth=").append(ManagedVegetationConfig.naturalGrowthEnabled())
-                .append(" natural_roll=1/").append(ManagedVegetationConfig.naturalGrowthChanceDenominator())
+                .append(" natural_roll=1/")
+                .append(ManagedVegetationConfig.effectiveNaturalGrowthChanceDenominator())
                 .append(" discovery=random-grass-ticks lifecycle=normal-server-ticks");
         return report.toString();
     }
@@ -199,7 +199,7 @@ public final class ManagedVegetationService {
 
     /** Performs one atomic, no-drop managed cut. Callers must cancel the vanilla break path. */
     public static boolean cutNode(ServerPlayer player, ServerLevel level, BlockPos clickedPosition) {
-        if (player == null || !GrainHarvestTools.isGrainHarvestBlade(player.getMainHandItem())) {
+        if (player == null || !ManagedVegetationCutTools.isSword(player.getMainHandItem())) {
             return false;
         }
         ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);

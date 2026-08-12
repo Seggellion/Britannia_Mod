@@ -73,6 +73,7 @@ class ManagedVegetationProfileTest {
     void naturalGrowthRollUsesOneInDenominatorSemantics() {
         assertTrue(ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_ENABLED);
         assertEquals(4_096, ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_CHANCE_DENOMINATOR);
+        assertEquals(2, ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR);
         RandomSource random = RandomSource.create(42L);
         assertTrue(ManagedVegetationConfig.oneIn(random, 1));
         assertThrows(IllegalArgumentException.class, () -> ManagedVegetationConfig.oneIn(random, 0));

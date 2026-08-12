@@ -14,7 +14,8 @@
   "client": [
     "TitleScreenBackgroundMixin",
     "client.CreativeModeInventoryScreenAccessor",
-    "client.ItemStackFarmingPresentationMixin"
+    "client.ItemStackFarmingPresentationMixin",
+    "client.ManagedVegetationAdventureModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

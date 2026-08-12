@@ -22,10 +22,12 @@ The default weighted profile is:
 | UltimaCraft flower | 5 | random registered species, stages 1 -> 7 |
 
 Cutting any occupied managed node returns it to the invisible controller state and schedules a
-randomized regrowth. Managed plants are cut only when
-`GrainHarvestTools.isGrainHarvestBlade` accepts the player's main-hand item. The complete plant
-is removed without drops, accepted non-creative blades take one durability, and either half of
-tall grass resolves to the same logical node. Unmanaged plants never enter this policy.
+randomized regrowth. Managed plants are cut by any vanilla `SwordItem`, including UltimaCraft's
+`QualitySwordItem`, with the blade tag retained as an extension point. Adventure-mode clients are
+allowed to send sword attacks for eligible vegetation shapes, while the server still requires a
+registered managed node before cutting. The complete plant is removed without drops, accepted
+non-creative blades take one durability, and either half of tall grass resolves to the same
+logical node. Unmanaged plants never enter this policy.
 
 Managed wild flowers are intentionally independent of `FarmingBlock` and farm ownership.
 `ManagedFlowerBlockEntity` is only a synchronized visual projection. The node's `SavedData` is
@@ -39,7 +41,8 @@ NeoForge generates the per-world server config `britannia-managed-vegetation.tom
 `managedVegetation` section contains:
 
 - `grassWeight`, `fernWeight`, and `flowerWeight` (defaults 75, 20, and 5)
-- `naturalGrowthEnabled` and `naturalGrowthChanceDenominator` (defaults true and 4096)
+- `naturalGrowthEnabled`, `naturalGrowthChanceDenominator`, and `naturalGrowthSpeedDivisor`
+  (defaults true, 4096, and 2; effective placement roll 1/8192)
 - `cutRegrowMinTicks` and `cutRegrowMaxTicks`
 - `grassGrowthMinTicks` and `grassGrowthMaxTicks`
 - `retryTicks`

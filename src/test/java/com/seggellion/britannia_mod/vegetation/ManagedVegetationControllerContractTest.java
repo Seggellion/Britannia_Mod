@@ -66,6 +66,20 @@ class ManagedVegetationControllerContractTest {
         assertTrue(placement.contains("BlockState::isAir"));
     }
 
+    @Test
+    void adventureClientSendsSwordAttacksForServerOwnedVegetationChecks() throws IOException {
+        String mixins = Files.readString(PROJECT.resolve("src/main/resources/britannia_mod.mixins.json"));
+        String adventure = source("mixin/client/ManagedVegetationAdventureModeMixin.java");
+        String handler = source("event/ManagedVegetationInteractionHandler.java");
+
+        assertTrue(mixins.contains("client.ManagedVegetationAdventureModeMixin"));
+        assertTrue(adventure.contains("blockActionRestricted"));
+        assertTrue(adventure.contains("gameType == GameType.ADVENTURE"));
+        assertTrue(adventure.contains("ManagedVegetationCutTools.isSword"));
+        assertTrue(handler.contains("ManagedVegetationService.resolveNode"));
+        assertTrue(handler.contains("ManagedVegetationCutTools.isSword"));
+    }
+
     private static String source(String relative) throws IOException {
         return Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/" + relative

@@ -10,6 +10,7 @@ public final class ManagedVegetationConfig {
     public static final int DEFAULT_FLOWER_WEIGHT = 5;
     public static final boolean DEFAULT_NATURAL_GROWTH_ENABLED = true;
     public static final int DEFAULT_NATURAL_GROWTH_CHANCE_DENOMINATOR = 4_096;
+    public static final int DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR = 2;
     public static final int DEFAULT_CUT_REGROW_MIN_TICKS = 1_200;
     public static final int DEFAULT_CUT_REGROW_MAX_TICKS = 2_400;
     public static final int DEFAULT_GRASS_GROWTH_MIN_TICKS = 2_400;
@@ -23,6 +24,7 @@ public final class ManagedVegetationConfig {
     private static final ModConfigSpec.IntValue FLOWER_WEIGHT;
     private static final ModConfigSpec.BooleanValue NATURAL_GROWTH_ENABLED;
     private static final ModConfigSpec.IntValue NATURAL_GROWTH_CHANCE_DENOMINATOR;
+    private static final ModConfigSpec.IntValue NATURAL_GROWTH_SPEED_DIVISOR;
     private static final ModConfigSpec.IntValue CUT_REGROW_MIN_TICKS;
     private static final ModConfigSpec.IntValue CUT_REGROW_MAX_TICKS;
     private static final ModConfigSpec.IntValue GRASS_GROWTH_MIN_TICKS;
@@ -43,12 +45,20 @@ public final class ManagedVegetationConfig {
                 "Allow vanilla grass-block random ticks to create managed vegetation in clear air above."
         ).define("naturalGrowthEnabled", DEFAULT_NATURAL_GROWTH_ENABLED);
         NATURAL_GROWTH_CHANCE_DENOMINATOR = builder.comment(
-                "One eligible managed-node discovery attempt per this many grass-block random ticks."
+                "Base natural-growth roll denominator retained for existing world compatibility."
         ).defineInRange(
                 "naturalGrowthChanceDenominator",
                 DEFAULT_NATURAL_GROWTH_CHANCE_DENOMINATOR,
                 1,
                 1_000_000
+        );
+        NATURAL_GROWTH_SPEED_DIVISOR = builder.comment(
+                "Additional natural-growth slowdown; 2 halves placement speed (effective default 1/8192)."
+        ).defineInRange(
+                "naturalGrowthSpeedDivisor",
+                DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR,
+                1,
+                1_000
         );
         CUT_REGROW_MIN_TICKS = builder.defineInRange(
                 "cutRegrowMinTicks", DEFAULT_CUT_REGROW_MIN_TICKS, 1, Integer.MAX_VALUE
@@ -95,8 +105,18 @@ public final class ManagedVegetationConfig {
         return NATURAL_GROWTH_CHANCE_DENOMINATOR.get();
     }
 
+    public static int naturalGrowthSpeedDivisor() {
+        return NATURAL_GROWTH_SPEED_DIVISOR.get();
+    }
+
+    public static long effectiveNaturalGrowthChanceDenominator() {
+        return (long) naturalGrowthChanceDenominator() * naturalGrowthSpeedDivisor();
+    }
+
     public static boolean shouldNaturallyGrow(RandomSource random) {
-        return naturalGrowthEnabled() && oneIn(random, naturalGrowthChanceDenominator());
+        return naturalGrowthEnabled()
+                && oneIn(random, naturalGrowthChanceDenominator())
+                && oneIn(random, naturalGrowthSpeedDivisor());
     }
 
     static boolean oneIn(RandomSource random, int denominator) {

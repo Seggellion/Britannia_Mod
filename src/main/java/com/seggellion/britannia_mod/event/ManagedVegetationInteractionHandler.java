@@ -1,6 +1,6 @@
 package com.seggellion.britannia_mod.event;
 
-import com.seggellion.britannia_mod.farming.GrainHarvestTools;
+import com.seggellion.britannia_mod.vegetation.ManagedVegetationCutTools;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationService;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,7 +20,7 @@ public final class ManagedVegetationInteractionHandler {
             return;
         }
         event.setCanceled(true);
-        if (GrainHarvestTools.isGrainHarvestBlade(player.getMainHandItem())) {
+        if (ManagedVegetationCutTools.isSword(player.getMainHandItem())) {
             ManagedVegetationService.cutNode(player, level, event.getPos());
         }
     }
@@ -34,7 +34,7 @@ public final class ManagedVegetationInteractionHandler {
             return;
         }
         event.setCanceled(true);
-        if (GrainHarvestTools.isGrainHarvestBlade(player.getMainHandItem())) {
+        if (ManagedVegetationCutTools.isSword(player.getMainHandItem())) {
             ManagedVegetationService.cutNode(player, level, event.getPos());
         }
     }

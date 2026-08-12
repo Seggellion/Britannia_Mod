@@ -1,9 +1,13 @@
 package com.seggellion.britannia_mod.vegetation;
 
+import com.seggellion.britannia_mod.item.QualitySwordItem;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,5 +51,13 @@ class ManagedVegetationCutPolicyTest {
         assertFalse(ManagedVegetationService.isOwnedState(
                 ManagedVegetationLifecycle.SHORT_GRASS, Blocks.FERN.defaultBlockState()
         ));
+    }
+
+    @Test
+    void everyVanillaOrUltimaCraftSwordIsAcceptedAsACuttingSword() {
+        assertTrue(ManagedVegetationCutTools.isSword(new ItemStack(Items.WOODEN_SWORD)));
+        assertTrue(ManagedVegetationCutTools.isSword(new ItemStack(Items.NETHERITE_SWORD)));
+        assertFalse(ManagedVegetationCutTools.isSword(new ItemStack(Items.WOODEN_AXE)));
+        assertTrue(SwordItem.class.isAssignableFrom(QualitySwordItem.class));
     }
 }
