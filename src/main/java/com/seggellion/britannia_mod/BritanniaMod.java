@@ -293,11 +293,14 @@ public void onServerStarted(ServerStartedEvent event) {
     // Vendor/Trader Milestone 19.5: report trader-sale reservations stranded by
     // a crash; the refund itself happens on that player's next login.
     com.seggellion.britannia_mod.economy.TraderSaleReservationRecovery.reportStrandedReservations(event.getServer());
+    // Vendor/Trader Milestone 20: regional TownPerson population convergence.
+    com.seggellion.britannia_mod.population.TownPersonPopulationManager.start(event.getServer());
 }
 
 public void onServerTick(ServerTickEvent.Post event) {
     ServiceNpcSpawnDeliveryProcessor.tick(event.getServer());
     com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.tick(event.getServer());
+    com.seggellion.britannia_mod.population.TownPersonPopulationManager.tick(event.getServer());
 }
 
 public void onServerStarting(ServerStartingEvent event) {

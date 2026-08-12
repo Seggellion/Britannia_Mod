@@ -197,6 +197,8 @@ public final class RailsApiUrlResolver {
         TRADER_CATALOG("trader_catalog"),
         CITY_COMMODITIES("city_commodities", "city"),
         ECONOMIC_CATALOG("economic_catalog", "economic_npc_type_key", "city_public_id"),
+        /** Vendor/Trader Milestone 20: desired TownPerson population + city regions. */
+        CITY_POPULATIONS("city_populations"),
         /**
          * Vendor/Trader Milestone 14: the Rails-authoritative Vendor retail
          * transaction. Prices are never sent as authority — the request carries
