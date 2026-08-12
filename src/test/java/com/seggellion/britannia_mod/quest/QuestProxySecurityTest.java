@@ -69,6 +69,47 @@ class QuestProxySecurityTest {
         assertEquals(REQUEST_UUID, QuestActionC2SPayload.STREAM_CODEC.decode(buffer).requestUuid());
     }
 
+    /**
+     * Milestone 4: the retry that makes a lost turn-in recoverable must stay a single, bounded
+     * second chance for the one action whose loss costs a player their reward. Retrying a 4xx
+     * would be retrying Rails' deliberate answer; retrying anything but a turn-in would be a
+     * guess; retrying twice would be a loop.
+     */
+    @Test
+    void onlyATurnInIsRetried_onceAndOnlyWhenTheServiceWasUnreachable() {
+        QuestActionC2SPayload turnIn = new QuestActionC2SPayload(
+            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "accept", -1, new UUID(0L, 0L), REQUEST_UUID);
+
+        assertTrue(QuestProxyService.shouldRetry(turnIn, 1, null, new RuntimeException("timeout")));
+        assertTrue(QuestProxyService.shouldRetry(turnIn, 1, null, null));
+        assertTrue(QuestProxyService.shouldRetry(turnIn, 1,
+            new QuestProxyService.Result(503, "{}"), null));
+
+        assertFalse(QuestProxyService.shouldRetry(turnIn, 1,
+            new QuestProxyService.Result(200, "{}"), null));
+        assertFalse(QuestProxyService.shouldRetry(turnIn, 1,
+            new QuestProxyService.Result(403, "{}"), null),
+            "a deliberate refusal must never be retried");
+        assertFalse(QuestProxyService.shouldRetry(turnIn, QuestProxyService.MAX_TURN_IN_ATTEMPTS,
+            new QuestProxyService.Result(503, "{}"), null),
+            "the retry is bounded at one");
+
+        for (QuestActionC2SPayload.Action action : QuestActionC2SPayload.Action.values()) {
+            if (action == QuestActionC2SPayload.Action.CHOOSE) continue;
+            QuestActionC2SPayload other = new QuestActionC2SPayload(
+                1L, action, 2L, "x", -1, new UUID(0L, 0L), REQUEST_UUID);
+            assertFalse(QuestProxyService.shouldRetry(other, 1,
+                new QuestProxyService.Result(503, "{}"), null),
+                action + " must not be retried");
+        }
+
+        QuestActionC2SPayload uncorrelated = new QuestActionC2SPayload(
+            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "accept", -1, new UUID(0L, 0L), "");
+        assertFalse(QuestProxyService.shouldRetry(uncorrelated, 1,
+            new QuestProxyService.Result(503, "{}"), null),
+            "without a correlation id a retry could double-complete, so it is refused");
+    }
+
     @Test
     void rewardValidatorRejectsClientScaleCountsAndMalformedIds() {
         QuestModels.ItemData valid = new QuestModels.ItemData();

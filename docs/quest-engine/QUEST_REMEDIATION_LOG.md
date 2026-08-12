@@ -402,3 +402,87 @@ back.
 
 Rails only. Controller, processor, model, one migration, `schema.rb` version line, three test
 files. No Minecraft change.
+
+---
+
+## Milestone 4 — Idempotent completion transaction (Q-04, Q-10, Q-12) (2026-08-12)
+
+### The defect
+
+Rails committed the completion while the reward items existed **only in that one HTTP response**.
+A timeout after the commit cost the player the reward permanently, and the retry was refused —
+the row had left the active journal, so it read as "Quest not active." Alongside that, effects ran
+inside `EffectApplier`'s own transaction while the state advance ran outside it (Q-10), and
+nothing locked the row, so two turn-ins arriving together could both advance (Q-12).
+
+### The change
+
+**A completion is now recorded, not just performed.** `player_quest_states` gains
+`completion_request_uuid` (indexed, partial) and `completion_result` (jsonb) — the exact payload
+returned. `Processor#call` replays that payload verbatim for the *same* correlation id, so a
+Minecraft retry receives the same `granted_items` and grants the reward exactly once overall.
+
+**A different correlation id against a finished quest is refused, not replayed** — answering it
+from the stored result would let any later request re-collect the reward. It returns the new,
+distinct `"Quest already completed."` with `reason=already_completed`, so an operator can tell it
+apart from a quest that was never active.
+
+**One transaction, one lock.** Effects and the state advance now share a transaction, and the row
+is re-read `FOR UPDATE` inside it. Two turn-ins serialize: the loser sees the winner's completed
+row instead of advancing the quest again.
+
+**`trigger_node` got the same guarantee**, through a shared `stored_completion_replay` helper —
+a trigger can end a quest too, and losing its response costs the same rewards.
+
+**Minecraft retries a turn-in once.** `QuestProxyService.dispatch` re-sends a CHOOSE — and only a
+CHOOSE — on an unreachable service, carrying the *same* `requestUuid`. That is what makes the
+recovery work: if the first attempt committed and only its response was lost, Rails replays it.
+The policy lives in a package-visible `shouldRetry` so it is testable without a server: never on a
+4xx (that is Rails answering deliberately), never more than once, never without a correlation id
+(a retry without one could double-complete).
+
+### Verification
+
+- **Rails full suite: 1367 runs, 6470 assertions, 1 failure** — the known deterministic
+  `CityFoodSupplyRecalculator`. Baseline at M0 was 1344/1.
+- New `quest_completion_idempotency_test.rb` (5): replay returns the same rewards, a replay does
+  not re-apply effects, a different id is refused, a completion without a correlation id still
+  works and stores no replay, and a failing effect leaves neither the effects nor the advance
+  applied.
+- New `test/services/quest_engine/completion_concurrency_test.rb` (2): two simultaneous turn-ins
+  complete the quest exactly once, and afterwards the winner's id replays while the loser's never
+  becomes a completion.
+- **GameTest: all 357 required tests passed** (fresh-log verified, `latest.log` deleted first).
+  MC unit suite 1791 tests, the same 21 pre-existing banner failures.
+- **Both guarantees mutation-tested.** Removing the stored completion fails 4 tests across both
+  files; removing `state.lock!` fails the concurrency test **3 runs out of 3** — without the lock
+  both turn-ins advance, every time. Restored and re-verified green.
+
+### Judgement calls
+
+**The concurrency test drives `Processor` directly, not HTTP.** Two integration sessions issuing
+their first request concurrently race ActionDispatch's lazy route finalization, which produced a
+spurious `404 No route matches` and said nothing about quest completion. The row lock is what is
+under test, so the HTTP layer was removed from the equation. The file gives up transactional
+fixtures (a shared transactional connection would serialize the threads and defeat the point) and
+therefore cleans up its own committed rows in teardown.
+
+**`schema.rb` was hand-edited to exactly this migration's DDL** rather than committed from
+`db:schema:dump`, for the reason recorded in M3 — the generated dump also drops
+`enable_extension "pg_stat_statements"` and rewrites every check-constraint string. The hand-edit
+was then cross-checked against a real dump: identical for the three lines that matter.
+
+### Observed, not fixed
+
+- `completion_result` stores the response as jsonb, so a replay returns symbolized keys rather
+  than the original Ruby objects. Equivalent through `render json:`, which is the only consumer,
+  but worth knowing if anything ever consumes a replay in-process.
+- Old completions carry no `completion_request_uuid`, so a retry of a quest completed before this
+  milestone is still refused rather than replayed. Backfilling is impossible — the payload was
+  never stored — and forcing a replay without one would be inventing a reward.
+
+### Scope discipline
+
+Both repositories. Rails: controller, processor, one migration, `schema.rb`, three test files.
+Minecraft: one production file (the bounded retry) and one test. No change to what a successful
+first-attempt turn-in does.

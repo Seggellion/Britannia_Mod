@@ -38,6 +38,8 @@ public final class QuestProxyService {
     private static final int MAX_RESPONSE_BYTES = 262_144;
     private static final UUID ZERO_UUID = new UUID(0L, 0L);
     private static final String INVALID_QUEST_ACTION = "{\"success\":false,\"error\":\"invalid_quest_action\"}";
+    /** A turn-in gets one second chance; anything more is guessing. */
+    static final int MAX_TURN_IN_ATTEMPTS = 2;
 
     private QuestProxyService() {}
 
@@ -66,7 +68,21 @@ public final class QuestProxyService {
         }
 
         QuestActionTelemetry.requested(player, request, intent.argument());
+        dispatch(player, request, intent, 1);
+    }
 
+    /**
+     * Sends the action to Rails, retrying a turn-in ONCE on an unavailable service.
+     *
+     * <p>The retry carries the same {@code requestUuid}, which is the entire point: if the first
+     * attempt actually committed and only its response was lost, Rails replays that stored
+     * completion -- same reward, granted once overall -- instead of refusing a quest it has
+     * already finished (finding Q-04). Retrying anything else, or retrying more than once, would
+     * be a guess; this is a single, bounded second chance for the one action whose loss costs a
+     * player their reward.
+     */
+    private static void dispatch(ServerPlayer player, QuestActionC2SPayload request,
+                                 ResolvedIntent intent, int attempt) {
         MinecraftServer server = player.server;
         String playerUuid = player.getStringUUID();
         UUID connectedPlayerId = player.getUUID();
@@ -80,6 +96,13 @@ public final class QuestProxyService {
                         QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.RESPONSE,
                             "player_session_changed_response_dropped",
                             ServerQuestTable.journalSize(connectedPlayerId));
+                        return;
+                    }
+                    if (shouldRetry(request, attempt, result, failure)) {
+                        LOGGER.warn("event=quest_action_retry request_uuid={} action={} attempt={} status={}",
+                            request.requestUuid(), request.action(), attempt,
+                            result == null ? -1 : result.statusCode);
+                        dispatch(player, request, intent, attempt + 1);
                         return;
                     }
                     if (failure != null || result == null) {
@@ -99,6 +122,19 @@ public final class QuestProxyService {
                 "quest_queue_full", ServerQuestTable.journalSize(connectedPlayerId));
             send(player, request.requestId(), 503, "{\"success\":false,\"error\":\"quest_queue_full\"}");
         }
+    }
+
+    /**
+     * Whether this attempt earns a retry. Package-visible so the policy can be tested without a
+     * server: only a turn-in, only once, and only when the service was unreachable -- never on a
+     * 4xx, which is Rails answering deliberately.
+     */
+    static boolean shouldRetry(QuestActionC2SPayload request, int attempt, Result result, Throwable failure) {
+        if (request == null || request.action() != QuestActionC2SPayload.Action.CHOOSE) return false;
+        if (attempt >= MAX_TURN_IN_ATTEMPTS) return false;
+        if (request.requestUuid() == null || request.requestUuid().isBlank()) return false;
+        if (failure != null || result == null) return true;
+        return result.statusCode == 503;
     }
 
     private static void reject(ServerPlayer player, QuestActionC2SPayload request,
@@ -369,5 +405,5 @@ public final class QuestProxyService {
     }
 
     private record ResolvedIntent(String argument, String questGiverName, UUID questGiverUuid) {}
-    private record Result(int statusCode, String body) {}
+    record Result(int statusCode, String body) {}
 }
