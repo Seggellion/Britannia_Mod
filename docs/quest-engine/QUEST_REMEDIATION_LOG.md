@@ -799,3 +799,67 @@ content change, staged as their own commit so the diff stays reviewable.
 
 Minecraft: one entity, one block entity, two call sites, one new gametest class, four file moves.
 Rails: one comment. No change to what a correctly-named giver does.
+
+---
+
+## Milestone 8 — Regression suite and live validation runbook (Q-15) (2026-08-12)
+
+### What this milestone can and cannot close
+
+The automated half is done and green. **The live half is owner-executed and is not done**, and
+Milestone 8 is therefore *not* closed by this entry — it is closed when the ten rows in
+`QUESTENGINE_LIVE_VALIDATION_RUNBOOK.md` pass with captured evidence.
+
+That is not a scheduling excuse. The gametest harness has no Rails to answer a quest trigger, so
+**no automated test in this programme has ever walked a player into a zone, picked an item up, or
+burned one and watched the answer come back**. Everything up to the request and everything after
+the response is pinned; the round trip is not, and pretending otherwise would repeat the mistake
+that let the original defect survive — a quest that *looked* fine.
+
+### Automated gaps closed
+
+**Rails** — `quest_multiplayer_isolation_test.rb` (6): one player completing a shared quest leaves
+the other untouched and still completable; each player is rewarded once for their own completion;
+a player's journal never contains another's quest; a turn-in for an unknown player fails
+deliberately **and logs `quest_player_unresolved`**; a merged identity does not lock a player out;
+an active identity is preferred over a merged one holding the same uuid.
+
+**GameTest** — `QuestLifecycleGameTests` (5): quest data survives death and respawn (the journal is
+keyed by something the entity replacement cannot take with it); a reloaded quest giver keeps its
+Rails identity across a genuinely new runtime id; interacting with something that is not a quest
+giver is refused at `NPC_RESOLVE`; a distant giver is refused the same way; a stale client acting
+on a quest the server does not hold gets an explicit `quest_not_in_server_journal`.
+
+### Verification
+
+- **GameTest: all 379 required tests passed** (fresh-log verified). Programme total: 349 at M0 →
+  379, all thirty added by this remediation.
+- **Rails: 1383 runs, 6566 assertions, 1 failure** — the known deterministic
+  `CityFoodSupplyRecalculator` 99.7 ≠ 100.0, unrelated to quests and present since M0.
+- MC unit suite 1791 tests, the same 21 pre-existing `bannerdyeing` failures inherited from
+  `patch-18`'s tip commit.
+
+### The runbook
+
+`QUESTENGINE_LIVE_VALIDATION_RUNBOOK.md` turns the owner's scenario list into something executable
+rather than a list of intentions: per row, the reason it exists (which finding it would catch),
+the steps, the exact log events that decide it, and the SQL to read the resulting journal row. It
+opens with the log-capture commands for both sides and the rule that **a row with no captured
+evidence is not a pass** — with the note that "it looked right in game" is precisely how the
+original defect survived.
+
+Three rows are starred as the ones that map directly onto the historical report: **L2** (relog
+before objective completion — the defect in its purest form), **L6** (player isolation), and
+**L7** (a location objective firing once, the only row that can fail in a way no player would ever
+report).
+
+### Health check verdict
+
+Updated to **YES, WITH CONDITIONS**, with the condition named explicitly: the live runbook, not a
+further code change. Every BLOCKER and CRITICAL finding is closed and tabulated in the addendum,
+each with the milestone that closed it and how it was proven.
+
+### Scope discipline
+
+Tests and documentation only. No production code was changed in this milestone, in either
+repository.

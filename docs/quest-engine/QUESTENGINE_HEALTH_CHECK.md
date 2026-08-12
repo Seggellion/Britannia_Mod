@@ -473,7 +473,40 @@ shard client secret, no signature material in any of it.
 > networking and Rails-authoritative spawning architecture, would you trust it in production
 > multiplayer?
 
-> **NO.**
+> **NO** at the time of the investigation. **YES, WITH CONDITIONS** as of the Milestone 8
+> automated suite — see the addendum below.
+
+---
+
+## Addendum — verdict after Milestones 0–8 (2026-08-12)
+
+Every finding this document raised as BLOCKER or CRITICAL is closed:
+
+| Finding | Closed by | Evidence |
+| --- | --- | --- |
+| Q-01 turn-in identity (BLOCKER) | M3 | reproduction harness flipped; mutation-tested |
+| Q-16 escort destruction | M1 | mutation-tested (2 tests fail without the guard) |
+| Q-02 objectives dead after relog | M6 | detection moved to the server journal |
+| Q-03 cold journal disables quests | M5 | miss refetches; mutation-tested |
+| Q-04 reward lost on a lost response | M4 | replay by correlation id; mutation-tested |
+| Q-05 client-asserted objectives | M6 | refused; mutation-tested |
+| Q-06 trigger storm | M6 | in-flight guard + objective rewrite |
+| Q-09 stale journal across logout | M5 | forgotten on logout |
+| Q-10 split transaction, Q-12 no row lock | M4 | one transaction, `FOR UPDATE`; mutation-tested |
+| Q-08 identity from a display name, Q-11 escort re-spawn | M7 | durable field; entity preserved |
+| Q-07, Q-13, Q-14, Q-15, Q-17 | M3, M5, M7, M8 | — |
+
+**Suites**: Rails 1383 runs / 6566 assertions / 1 known deterministic failure; GameTest 379/379;
+MC unit 1791 with the 21 pre-existing banner failures inherited from `patch-18`.
+
+**The condition.** The automated suite cannot walk a player into a zone, pick an item up or burn
+one — the gametest harness has no Rails to answer a trigger. Milestone 6's round trip has
+therefore never run end to end, and by owner decision it stays **strongly validated but not
+production-proven** until the ten live rows in `QUESTENGINE_LIVE_VALIDATION_RUNBOOK.md` pass with
+captured evidence. Until then the honest answer is *yes, with conditions* — and the condition is
+that runbook, not a further code change.
+
+> Original verdict, for the record: **NO.**
 
 Reasons, in order:
 
