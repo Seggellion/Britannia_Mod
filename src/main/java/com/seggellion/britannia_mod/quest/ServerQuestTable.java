@@ -138,6 +138,17 @@ public final class ServerQuestTable {
         return playerUuid != null && QUESTS_BY_PLAYER.containsKey(playerUuid);
     }
 
+    /**
+     * How many quests this player's journal holds, or {@code -1} when it has never loaded.
+     * Logged on every rejection so "the journal was empty" and "the journal was never fetched"
+     * are distinguishable after the fact.
+     */
+    public static int journalSize(UUID playerUuid) {
+        if (playerUuid == null) return -1;
+        Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(playerUuid);
+        return quests == null ? -1 : quests.size();
+    }
+
     public static void removeAfterRailsQuitSuccess(ServerPlayer player, String questStateId) {
         if (player == null || questStateId == null || questStateId.isBlank()) return;
 

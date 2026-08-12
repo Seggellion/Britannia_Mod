@@ -16,9 +16,14 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 
 import java.util.UUID;
 
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
+
 // The GAME bus is for in-game events like block breaking, entity ticks, and deaths
 @EventBusSubscriber(modid = "britannia_mod", bus = EventBusSubscriber.Bus.GAME)
 public class QuestEventHandler {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     @SubscribeEvent
     public static void onEntityDeath(LivingDeathEvent event) {
@@ -58,7 +63,15 @@ public class QuestEventHandler {
                     player.connection.send(new ClientboundCustomPayloadPacket(new CloseScreenS2CPayload()));
                     
                     // FIXED: Using QuestServerAPI and passing the server instance
-                    QuestServerAPI.sendTrigger(player.server, playerUuidStr, questId, "escort_died", response -> {});
+                    final long escortQuestId = questId;
+                    QuestServerAPI.sendTrigger(player.server, playerUuidStr, questId, "escort_died", response -> {
+                        if (response == null || !response.success) {
+                            LOGGER.warn("event=quest_server_trigger_failed trigger_key=escort_died player_uuid={} "
+                                    + "quest_id={} error={}",
+                                player.getStringUUID(), escortQuestId,
+                                response == null ? "null_response" : response.error);
+                        }
+                    });
                 }
             } catch (IllegalArgumentException e) {
                 // The UUID tag was somehow malformed, safely ignore
@@ -75,8 +88,13 @@ public class QuestEventHandler {
             
             // FIXED: Passing the MinecraftServer object and converting the UUID to a String
             QuestServerAPI.recordKill(player.server, player.getUUID().toString(), mobType, response -> {
-                // Optional: If Rails returns a new count, display a message
-                // e.g., if (response != null && response.success) player.sendSystemMessage(...);
+                if (response == null || !response.success) {
+                    // Finding S-8: kill tracking used to fail invisibly, so a combat objective
+                    // that never advanced looked like a quest-design problem.
+                    LOGGER.warn("event=quest_record_kill_failed player_uuid={} mob_type={} error={}",
+                        player.getStringUUID(), mobType,
+                        response == null ? "null_response" : response.error);
+                }
             });
         }
     }

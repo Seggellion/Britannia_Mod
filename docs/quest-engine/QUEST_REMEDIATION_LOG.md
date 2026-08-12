@@ -216,3 +216,97 @@ green. The guard was then restored and the suite re-run clean (the 21:17 log abo
 
 Minecraft only. Three production files and one new test class. No Rails change, no behaviour
 change to any non-escort caller of the journal.
+
+---
+
+## Milestone 2 — Observability and correlation id (2026-08-11)
+
+### The problem
+
+Twelve paths could swallow a quest action (health check §8). The worst was
+`QuestProxyService.handle`: a bare `422 invalid_quest_action` that logged **nothing at all**, and
+into which several unrelated causes collapsed — a malformed payload, an unresolvable quest giver,
+a quest genuinely absent from the server journal, and a journal that was never fetched because the
+login bootstrap failed (Q-03). The last of those disables quests for a whole session, and it was
+indistinguishable from a client sending nonsense. On the Rails side, `Processor`'s
+`fail_fast("Quest not active.")` — the message affected players actually hit — explained nothing,
+which is precisely why a deterministic, permanent, player-specific defect read as flaky networking.
+
+### The change — Minecraft
+
+- `QuestActionC2SPayload` carries a **`requestUuid`**: a client-generated correlation id, bounded
+  to 36 chars at the codec, validated as a real UUID in `isValidShape`, and forwarded to Rails as
+  `request_uuid`. It authorizes nothing; it is a trace token.
+- New `QuestActionTelemetry` emits three structured events — `quest_action_requested`,
+  `quest_action_rejected`, `quest_action_result` — and retains the **last rejection per player**
+  (bounded to 256 entries, ids and reason codes only) so tests and, later, an operator command can
+  read the reason without scraping logs.
+- `handle` is restructured so each refusal names itself: `stage` ∈ {SHAPE, NPC_RESOLVE,
+  JOURNAL_GATE, DISPATCH, RESPONSE} plus a machine-readable `reason`. The wire response stays the
+  deliberately vague `invalid_quest_action` — the detail belongs in the server log, not in a reply
+  to a client that may be probing.
+- The two journal misses are now **different facts**: `server_journal_not_loaded` (Q-03; journal
+  never fetched, `journal_size=-1`) versus `quest_not_in_server_journal` (loaded, quest absent).
+  M5 is what makes the first re-fetch instead of reject; M2 just makes it visible.
+- Previously silent paths that now log: the player-session-changed response drop (S-2), both
+  `applyAuthoritativeResult` early returns and its catch (S-3, S-4), the unmatched-response drop
+  in `QuestClient` (S-9), and the two discarded `QuestServerAPI` callbacks — escort death and kill
+  recording (S-7, S-8).
+
+### The change — Rails
+
+- `request_uuid` is accepted, stripped to `[0-9a-fA-F-]` and bounded to 36 chars before it is
+  written anywhere — a correlation id that lands in a log line is a log-injection vector.
+- `transition` (the turn-in) logs `quest_turn_in_requested` and `quest_turn_in_result`.
+- `Processor` logs **`quest_turn_in_rejected`** before failing, carrying `user_id`,
+  `user_minecraft_uuid`, the candidate uuid list, and — the load-bearing number —
+  **`matching_rows` / `active_matching_rows`**: how many journal rows exist for this quest under
+  *any* spelling of the player's uuid. A refusal printed next to a non-zero `matching_rows` is
+  finding Q-01 caught in the act: the row is there, and only this code path cannot see it.
+- `Processor` now accepts `player_uuid_candidates:` **for logging only**. The lookup still uses
+  `@player.minecraft_uuid`; M3 is what changes the resolution. This milestone is behaviour-neutral
+  by construction.
+
+### Verification
+
+- `compileJava` BUILD SUCCESSFUL.
+- **GameTest: all 357 required tests passed** — the 353 baseline plus four new
+  `QuestActionTelemetryGameTests` (unloaded-journal reason, loaded-journal reason, malformed
+  correlation id, correlation id carried through). Fresh-log verified: the previous `latest.log`
+  was **deleted** before the run and the new one is stamped 21:51.
+- Unit suite: 1790 tests, 21 failures — the same seven `bannerdyeing` classes as the M0 baseline,
+  +2 tests from the extended `QuestProxySecurityTest` (malformed correlation ids, wire round-trip).
+- **Rails full suite: 1347 runs, 6377 assertions, 1 failure** — the known deterministic
+  `CityFoodSupplyRecalculator` 99.7 ≠ 100.0. Baseline was 1344/1; the delta is exactly the three
+  new observability tests.
+- The M0 reproduction harness still passes **unchanged**, which is the proof that M2 altered no
+  behaviour.
+
+Why these tests cannot pass degenerately: the two journal tests assert *different* exact reason
+strings from the *same* call site, differing only in whether the journal was loaded — no single
+constant satisfies both.
+
+### Honest note on the test scaffolding
+
+The first GameTest run failed all four new tests with
+`Payload britannia_mod:quest_action_result may not be sent to the client!`. Production code was
+never implicated: the telemetry lines were emitted correctly (they are in that run's log), and the
+throw came afterwards from a `makeMockServerPlayerInLevel` connection refusing a play-phase custom
+payload. The helper now tolerates **exactly** that message and rethrows anything else, so a real
+failure in the same call still fails the test.
+
+A second trap, previously documented and hit again: a `--rerun-tasks` GameTest run exceeded the
+10-minute tool timeout and left a **stale** `latest.log` reporting the earlier failing run. The
+fix used here is the reliable one — delete `latest.log`, run, and confirm the new file's mtime.
+
+### Observed, not fixed
+
+- `Endpoint.QUEST_JOURNAL` is still declared and never called, and its Rails route still points at
+  a `#show` action that does not exist (Q-17). M5 needs it and will implement it.
+- `QuestServerAPI`'s server-originated triggers still carry no correlation id; they are not part
+  of the reported failure and were left alone rather than widening this milestone.
+
+### Scope discipline
+
+Both repositories, instrumentation only. No control flow was changed other than splitting one
+unlogged rejection into named ones, and no response body, status code, or stored state differs.

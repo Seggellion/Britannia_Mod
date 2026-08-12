@@ -37,16 +37,35 @@ public final class QuestProxyService {
     private static final Gson GSON = new Gson();
     private static final int MAX_RESPONSE_BYTES = 262_144;
     private static final UUID ZERO_UUID = new UUID(0L, 0L);
+    private static final String INVALID_QUEST_ACTION = "{\"success\":false,\"error\":\"invalid_quest_action\"}";
 
     private QuestProxyService() {}
 
     public static void handle(ServerPlayer player, QuestActionC2SPayload request) {
-        ResolvedIntent intent = resolve(player, request);
-        if (intent == null || !authorizedForCurrentJournal(player, request)) {
-            send(player, request == null ? 0L : request.requestId(), 422,
-                "{\"success\":false,\"error\":\"invalid_quest_action\"}");
+        // Every rejection below used to be the same unlogged 422 (finding S-1): several distinct
+        // causes, one silent response, no way to tell them apart afterwards.
+        if (request == null) {
+            QuestActionTelemetry.rejected(player, null, QuestActionTelemetry.Stage.SHAPE,
+                "null_payload", ServerQuestTable.journalSize(player == null ? null : player.getUUID()));
+            send(player, 0L, 422, INVALID_QUEST_ACTION);
             return;
         }
+        if (!isValidShape(request)) {
+            reject(player, request, QuestActionTelemetry.Stage.SHAPE, shapeRejectionReason(request));
+            return;
+        }
+
+        ResolvedIntent intent = resolve(player, request);
+        if (intent == null) {
+            reject(player, request, QuestActionTelemetry.Stage.NPC_RESOLVE, "quest_giver_unresolved");
+            return;
+        }
+        if (!authorizedForCurrentJournal(player, request)) {
+            reject(player, request, QuestActionTelemetry.Stage.JOURNAL_GATE, journalRejectionReason(player));
+            return;
+        }
+
+        QuestActionTelemetry.requested(player, request, intent.argument());
 
         MinecraftServer server = player.server;
         String playerUuid = player.getStringUUID();
@@ -54,17 +73,83 @@ public final class QuestProxyService {
         try {
             ServerHttpExecutor.submit(server, () -> callRails(server, playerUuid, request, intent))
                 .whenComplete((result, failure) -> server.execute(() -> {
-                    if (server.getPlayerList().getPlayer(connectedPlayerId) != player) return;
+                    if (server.getPlayerList().getPlayer(connectedPlayerId) != player) {
+                        // The player's session changed while Rails was working. Rails may well
+                        // have committed; say so, because the two sides are now out of step
+                        // (finding S-2).
+                        QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.RESPONSE,
+                            "player_session_changed_response_dropped",
+                            ServerQuestTable.journalSize(connectedPlayerId));
+                        return;
+                    }
                     if (failure != null || result == null) {
+                        QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.DISPATCH,
+                            "quest_service_unavailable", ServerQuestTable.journalSize(connectedPlayerId));
                         send(player, request.requestId(), 503,
                             "{\"success\":false,\"error\":\"quest_service_unavailable\"}");
                         return;
                     }
                     applyAuthoritativeResult(player, request, intent, result);
+                    QuestActionTelemetry.result(player, request, result.statusCode,
+                        succeeded(result), grantedItemCount(result));
                     send(player, request.requestId(), result.statusCode, result.body);
                 }));
         } catch (RejectedExecutionException rejected) {
+            QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.DISPATCH,
+                "quest_queue_full", ServerQuestTable.journalSize(connectedPlayerId));
             send(player, request.requestId(), 503, "{\"success\":false,\"error\":\"quest_queue_full\"}");
+        }
+    }
+
+    private static void reject(ServerPlayer player, QuestActionC2SPayload request,
+                               QuestActionTelemetry.Stage stage, String reason) {
+        QuestActionTelemetry.rejected(player, request, stage, reason,
+            ServerQuestTable.journalSize(player == null ? null : player.getUUID()));
+        send(player, request.requestId(), 422, INVALID_QUEST_ACTION);
+    }
+
+    /**
+     * Which shape rule failed. The wire response stays the deliberately vague
+     * {@code invalid_quest_action}: the detail belongs in the server log, not in a reply to a
+     * client that may be probing.
+     */
+    private static String shapeRejectionReason(QuestActionC2SPayload request) {
+        if (request.requestId() <= 0) return "missing_request_id";
+        if (request.action() == null) return "missing_action";
+        if (request.questGiverUuid() == null) return "missing_quest_giver_uuid";
+        if (!validRequestUuid(request.requestUuid())) return "malformed_request_uuid";
+        if (request.action() == QuestActionC2SPayload.Action.INTERACT) return "invalid_interact_shape";
+        if (request.questId() <= 0) return "missing_quest_id";
+        return "invalid_action_arguments";
+    }
+
+    /**
+     * Distinguishes the two very different journal misses: the quest genuinely is not in a
+     * journal we hold, versus we never fetched one at all (finding Q-03 -- a failed login
+     * bootstrap silently disables quests for the whole session). M5 makes the second re-fetch.
+     */
+    private static String journalRejectionReason(ServerPlayer player) {
+        return ServerQuestTable.journalLoaded(player.getUUID())
+            ? "quest_not_in_server_journal"
+            : "server_journal_not_loaded";
+    }
+
+    private static boolean succeeded(Result result) {
+        if (result.statusCode < 200 || result.statusCode >= 300) return false;
+        try {
+            return booleanValue(JsonParser.parseString(result.body).getAsJsonObject(), "success", false);
+        } catch (RuntimeException invalid) {
+            return false;
+        }
+    }
+
+    private static int grantedItemCount(Result result) {
+        try {
+            JsonObject root = JsonParser.parseString(result.body).getAsJsonObject();
+            return root.has("granted_items") && root.get("granted_items").isJsonArray()
+                ? root.getAsJsonArray("granted_items").size() : 0;
+        } catch (RuntimeException invalid) {
+            return 0;
         }
     }
 
@@ -83,6 +168,9 @@ public final class QuestProxyService {
 
             JsonObject payload = new JsonObject();
             payload.addProperty("player_uuid", playerUuid);
+            // The correlation id travels with the request so the Rails log line for this exact
+            // action can be found from the Minecraft one, and the reverse.
+            payload.addProperty("request_uuid", request.requestUuid() == null ? "" : request.requestUuid());
             switch (request.action()) {
                 case INTERACT -> payload.addProperty("npc_name", intent.argument());
                 case TRIGGER -> payload.addProperty("trigger_key", intent.argument());
@@ -108,17 +196,30 @@ public final class QuestProxyService {
             }
             return new Result(status, body);
         } catch (Exception error) {
-            LOGGER.warn("Quest proxy request failed for action={}: {}", request.action(), error.toString());
+            LOGGER.warn("event=quest_rails_call_failed request_uuid={} action={} error={}",
+                request.requestUuid(), request.action(), error.toString());
             return new Result(503, "{\"success\":false,\"error\":\"quest_service_unavailable\"}");
         }
     }
 
     private static void applyAuthoritativeResult(ServerPlayer player, QuestActionC2SPayload request,
                                                  ResolvedIntent intent, Result result) {
-        if (result.statusCode < 200 || result.statusCode >= 300) return;
+        if (result.statusCode < 200 || result.statusCode >= 300) {
+            LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
+                    + "quest_id={} reason=rails_rejected rails_status={}",
+                request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
+                result.statusCode);
+            return;
+        }
         try {
             JsonObject root = JsonParser.parseString(result.body).getAsJsonObject();
-            if (!booleanValue(root, "success", true)) return;
+            if (!booleanValue(root, "success", true)) {
+                LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
+                        + "quest_id={} reason=rails_reported_failure rails_error={}",
+                    request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
+                    string(root, "error"));
+                return;
+            }
 
             List<ClientQuestEntry> accepted = QuestEntryParser.parseRailsAcceptSuccess(root, intent.questGiverName());
             accepted.forEach(entry -> ServerQuestTable.addFromRailsAcceptSuccess(player, entry));
@@ -144,12 +245,15 @@ public final class QuestProxyService {
             }
             ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
         } catch (RuntimeException invalid) {
-            LOGGER.warn("Quest proxy response could not update the authoritative server journal");
+            LOGGER.warn("event=quest_journal_not_updated request_uuid={} action={} player_uuid={} "
+                    + "quest_id={} reason=unreadable_response detail={}",
+                request.requestUuid(), request.action(), player.getStringUUID(), request.questId(),
+                invalid.toString());
         }
     }
 
+    /** Callers must have validated the shape first; {@code handle} does. */
     private static ResolvedIntent resolve(ServerPlayer player, QuestActionC2SPayload request) {
-        if (!isValidShape(request)) return null;
         if (request.action() != QuestActionC2SPayload.Action.INTERACT) {
             String displayName = "";
             if (!ZERO_UUID.equals(request.questGiverUuid())) {
@@ -173,7 +277,7 @@ public final class QuestProxyService {
 
     static boolean isValidShape(QuestActionC2SPayload request) {
         if (request == null || request.requestId() <= 0 || request.action() == null
-            || request.questGiverUuid() == null) return false;
+            || request.questGiverUuid() == null || !validRequestUuid(request.requestUuid())) return false;
         if (request.action() == QuestActionC2SPayload.Action.INTERACT) {
             return request.questId() == 0L && request.argument() != null && request.argument().isEmpty()
                 && request.questGiverEntityId() > 0 && !ZERO_UUID.equals(request.questGiverUuid());
@@ -206,6 +310,19 @@ public final class QuestProxyService {
     private static Map<String, String> pathParameters(QuestActionC2SPayload request) {
         return request.action() == QuestActionC2SPayload.Action.INTERACT
             ? Map.of() : Map.of("quest_id", Long.toString(request.questId()));
+    }
+
+    /**
+     * The correlation id must be a real UUID string. It authorizes nothing, but it is logged and
+     * forwarded to Rails, so an unbounded or control-laden value would be a log-injection vector.
+     */
+    static boolean validRequestUuid(String value) {
+        if (value == null || value.length() != QuestActionC2SPayload.MAX_REQUEST_UUID_LENGTH) return false;
+        try {
+            return UUID.fromString(value).toString().equalsIgnoreCase(value);
+        } catch (RuntimeException invalid) {
+            return false;
+        }
     }
 
     private static boolean validArgument(String value) {
