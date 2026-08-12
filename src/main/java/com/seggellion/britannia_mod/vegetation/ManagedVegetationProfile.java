@@ -15,6 +15,7 @@ public final class ManagedVegetationProfile {
     public static final ResourceLocation GRASS_FAMILY_ID = id("grass_family");
     public static final ResourceLocation FERN_ID = id("fern");
     public static final ResourceLocation FLOWER_ID = id("random_flower");
+    public static final ResourceLocation BLOOD_MOSS_ID = id("blood_moss");
 
     private final List<ManagedVegetationEntry> entries;
     private final int totalWeight;
@@ -49,11 +50,44 @@ public final class ManagedVegetationProfile {
     }
 
     public static ManagedVegetationProfile configured() {
+        return configured(false);
+    }
+
+    public static ManagedVegetationProfile configured(boolean swamp) {
         return ofWeights(
                 ManagedVegetationConfig.grassWeight(),
                 ManagedVegetationConfig.fernWeight(),
-                ManagedVegetationConfig.flowerWeight()
+                ManagedVegetationConfig.flowerWeight(),
+                swamp
         );
+    }
+
+    public static ManagedVegetationProfile ofWeights(
+            int grassWeight,
+            int fernWeight,
+            int flowerWeight,
+            boolean swamp
+    ) {
+        if (swamp) {
+            return new ManagedVegetationProfile(List.of(
+                    new ManagedVegetationEntry(
+                            GRASS_FAMILY_ID,
+                            grassWeight,
+                            ManagedVegetationGrowthStrategy.GRASS_FAMILY
+                    ),
+                    new ManagedVegetationEntry(
+                            FERN_ID,
+                            fernWeight,
+                            ManagedVegetationGrowthStrategy.STATIC_FERN
+                    ),
+                    new ManagedVegetationEntry(
+                            BLOOD_MOSS_ID,
+                            flowerWeight,
+                            ManagedVegetationGrowthStrategy.STATIC_BLOOD_MOSS
+                    )
+            ));
+        }
+        return ofWeights(grassWeight, fernWeight, flowerWeight);
     }
 
     public static ManagedVegetationProfile ofWeights(int grassWeight, int fernWeight, int flowerWeight) {

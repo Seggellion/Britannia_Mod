@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.block.entity.ManagedFlowerBlockEntity;
 import com.seggellion.britannia_mod.farming.FlowerDefinition;
+import com.seggellion.britannia_mod.wildresource.SwampBiomeRules;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -150,7 +151,7 @@ public final class ManagedVegetationManager {
                 case REGROWING -> spawnFromProfile(level, data, current, now);
                 case SHORT_GRASS -> growTallGrass(level, data, current, now);
                 case FLOWER -> growFlower(level, data, current, now);
-                case TALL_GRASS, FERN -> reconcileMaturePlant(level, data, current, now);
+                case TALL_GRASS, FERN, BLOOD_MOSS -> reconcileMaturePlant(level, data, current, now);
             }
         } catch (RuntimeException exception) {
             LOGGER.warn("Managed vegetation transition failed at {}: {}",
@@ -170,7 +171,7 @@ public final class ManagedVegetationManager {
             retry(data, node, now);
             return;
         }
-        ManagedVegetationEntry entry = ManagedVegetationProfile.configured().select(level.random);
+        ManagedVegetationEntry entry = profileFor(level, position).select(level.random);
         spawnEntry(level, data, node, entry, now);
     }
 
@@ -198,6 +199,12 @@ public final class ManagedVegetationManager {
                     data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
                 }
             }
+            case STATIC_BLOOD_MOSS -> {
+                data.update(node.bloodMoss(entry.id()));
+                if (!level.setBlock(position, BlockRegistry.BLOOD_MOSS.get().defaultBlockState(), 3)) {
+                    data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
+                }
+            }
             case FLOWER_STAGES -> spawnFlower(level, data, node, entry, now);
         }
     }
@@ -209,7 +216,7 @@ public final class ManagedVegetationManager {
             ResourceLocation entryId
     ) {
         ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
-        ManagedVegetationEntry entry = ManagedVegetationProfile.configured().byId(entryId).orElse(null);
+        ManagedVegetationEntry entry = profileFor(level, position).byId(entryId).orElse(null);
         if (entry == null || data.nodeAt(position).isEmpty()
                 || !ManagedVegetationService.rerollNode(level, position)) {
             return false;
@@ -344,6 +351,12 @@ public final class ManagedVegetationManager {
             case FERN -> reconcileSingleBlock(
                     level, position, Blocks.FERN.defaultBlockState(), state -> state.is(Blocks.FERN)
             );
+            case BLOOD_MOSS -> reconcileSingleBlock(
+                    level,
+                    position,
+                    BlockRegistry.BLOOD_MOSS.get().defaultBlockState(),
+                    state -> state.is(BlockRegistry.BLOOD_MOSS.get())
+            );
             case TALL_GRASS -> reconcileTallGrass(level, position);
             case FLOWER -> reconcileFlower(level, node);
         };
@@ -414,6 +427,10 @@ public final class ManagedVegetationManager {
             throw new IllegalArgumentException("Flower definition and a positive timing multiplier are required");
         }
         return Math.multiplyExact((long) definition.growthProfile().baseGrowthTicks(), multiplier);
+    }
+
+    static ManagedVegetationProfile profileFor(ServerLevel level, BlockPos position) {
+        return ManagedVegetationProfile.configured(SwampBiomeRules.isSwamp(level, position));
     }
 
     private static void growTallGrass(

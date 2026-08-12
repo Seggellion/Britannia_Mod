@@ -125,6 +125,7 @@ import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
 import com.seggellion.britannia_mod.block.ManagedFlowerBlock;
 import com.seggellion.britannia_mod.block.SulphurousAshBlock;
 import com.seggellion.britannia_mod.block.BlackLippedOysterBlock;
+import com.seggellion.britannia_mod.block.BloodMossBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -290,6 +291,18 @@ public static final DeferredHolder<Block, BlackLippedOysterBlock> BLACK_LIPPED_O
                 .strength(0.4F)
                 .sound(SoundType.CALCITE)
                 .noCollission()
+                .noOcclusion()
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, BloodMossBlock> BLOOD_MOSS = BLOCKS.register(
+        "blood_moss",
+        () -> new BloodMossBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_RED)
+                .replaceable()
+                .noCollission()
+                .instabreak()
+                .sound(SoundType.MOSS_CARPET)
                 .noOcclusion()
                 .pushReaction(PushReaction.DESTROY))
 );

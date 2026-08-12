@@ -37,6 +37,22 @@ class ManagedVegetationProfileTest {
     }
 
     @Test
+    void swampProfileReplacesOnlyTheFivePercentFlowerSlotWithBloodMoss() {
+        ManagedVegetationProfile ordinary = ManagedVegetationProfile.ofWeights(75, 20, 5, false);
+        ManagedVegetationProfile swamp = ManagedVegetationProfile.ofWeights(75, 20, 5, true);
+
+        assertEquals(100, ordinary.totalWeight());
+        assertEquals(100, swamp.totalWeight());
+        assertEquals(75, swamp.byId(ManagedVegetationProfile.GRASS_FAMILY_ID).orElseThrow().weight());
+        assertEquals(20, swamp.byId(ManagedVegetationProfile.FERN_ID).orElseThrow().weight());
+        assertEquals(5, swamp.byId(ManagedVegetationProfile.BLOOD_MOSS_ID).orElseThrow().weight());
+        assertTrue(swamp.byId(ManagedVegetationProfile.FLOWER_ID).isEmpty());
+        assertTrue(ordinary.byId(ManagedVegetationProfile.BLOOD_MOSS_ID).isEmpty());
+        assertEquals(ManagedVegetationProfile.BLOOD_MOSS_ID, swamp.selectByRoll(95).id());
+        assertEquals(ManagedVegetationProfile.BLOOD_MOSS_ID, swamp.selectByRoll(99).id());
+    }
+
+    @Test
     void newEntriesDoNotChangeTheSelectionAlgorithm() {
         ResourceLocation shrub = ResourceLocation.fromNamespaceAndPath("britannia_mod", "future_shrub");
         ManagedVegetationProfile profile = new ManagedVegetationProfile(List.of(

@@ -48,6 +48,7 @@ public abstract class ManagedVegetationAdventureModeMixin {
         return state.is(Blocks.SHORT_GRASS)
                 || state.is(Blocks.TALL_GRASS)
                 || state.is(Blocks.FERN)
+                || state.is(BlockRegistry.BLOOD_MOSS.get())
                 || state.is(BlockRegistry.MANAGED_FLOWER.get());
     }
 }

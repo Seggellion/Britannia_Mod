@@ -61,6 +61,10 @@ public record ManagedVegetationNode(
         return occupied(ManagedVegetationLifecycle.FERN, entryId, NO_TRANSITION);
     }
 
+    public ManagedVegetationNode bloodMoss(ResourceLocation entryId) {
+        return occupied(ManagedVegetationLifecycle.BLOOD_MOSS, entryId, NO_TRANSITION);
+    }
+
     public ManagedVegetationNode flower(
             ResourceLocation entryId,
             ResourceLocation speciesId,

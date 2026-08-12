@@ -67,6 +67,7 @@ public final class ManagedVegetationCommands {
                 .then(Commands.literal("spawn")
                         .then(spawnFamily("grass", ManagedVegetationProfile.GRASS_FAMILY_ID))
                         .then(spawnFamily("fern", ManagedVegetationProfile.FERN_ID))
+                        .then(spawnFamily("blood_moss", ManagedVegetationProfile.BLOOD_MOSS_ID))
                         .then(spawnFamily("flower", ManagedVegetationProfile.FLOWER_ID)))
         );
     }

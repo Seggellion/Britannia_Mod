@@ -6,6 +6,7 @@ public enum ManagedVegetationLifecycle {
     SHORT_GRASS,
     TALL_GRASS,
     FERN,
+    BLOOD_MOSS,
     FLOWER;
 
     public boolean occupied() {

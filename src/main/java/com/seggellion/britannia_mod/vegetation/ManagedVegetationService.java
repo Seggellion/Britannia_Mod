@@ -253,6 +253,7 @@ public final class ManagedVegetationService {
             case SHORT_GRASS -> state.is(Blocks.SHORT_GRASS);
             case TALL_GRASS -> state.is(Blocks.TALL_GRASS);
             case FERN -> state.is(Blocks.FERN);
+            case BLOOD_MOSS -> state.is(BlockRegistry.BLOOD_MOSS.get());
             case FLOWER -> state.is(BlockRegistry.MANAGED_FLOWER.get());
             case REGROWING -> state.is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get());
         };
