@@ -11,6 +11,7 @@ import com.seggellion.britannia_mod.network.payload.ClientboundSyncQuestsPayload
 import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.quest.QuestCleanupService;
+import com.seggellion.britannia_mod.quest.QuestJournalRefresh;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
@@ -60,6 +61,12 @@ public final class WorldBootstrapHandler {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         Coordinator coordinator = COORDINATORS.get(player.server);
         if (coordinator != null) coordinator.invalidate(player.getUUID());
+
+        // Finding Q-09: the quest journal used to survive logout, so a re-login whose bootstrap
+        // failed silently reused the previous session's view. Dropping it is only safe now that
+        // a miss refetches (Milestone 5) instead of refusing outright.
+        ServerQuestTable.forget(player.getUUID());
+        QuestJournalRefresh.forget(player.getUUID());
     }
 
     public static void onServerStopping(MinecraftServer server) {
@@ -226,7 +233,8 @@ public final class WorldBootstrapHandler {
                     data != null ? data.shard() : "<unknown>",
                     data != null ? data.httpStatus() : -1,
                     data != null ? data.status() : failureCode);
-                LOGGER.warn("World bootstrap did not complete code={} player={}; {} cached regions remain",
+                LOGGER.warn("World bootstrap did not complete code={} player={}; {} cached regions remain; "
+                        + "quest journal is unloaded and quest actions will fetch it on demand",
                     failureCode, player.getGameProfile().getName(), RegionCache.count());
                 return;
             }

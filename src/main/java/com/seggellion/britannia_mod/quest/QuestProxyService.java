@@ -63,10 +63,50 @@ public final class QuestProxyService {
             return;
         }
         if (!authorizedForCurrentJournal(player, request)) {
+            // A miss against a journal we never loaded is not evidence that the quest is not
+            // the player's (finding Q-03): the login bootstrap is allowed to fail, and when it
+            // does this table stays empty for the session. Fetch it once and decide properly.
+            if (!ServerQuestTable.journalLoaded(player.getUUID())) {
+                QuestJournalRefresh.Request outcome = QuestJournalRefresh.refresh(player,
+                    () -> resumeAfterJournalRefresh(player, request, intent));
+                if (outcome == QuestJournalRefresh.Request.STARTED
+                    || outcome == QuestJournalRefresh.Request.JOINED_IN_FLIGHT) {
+                    LOGGER.info("event=quest_journal_refresh_requested request_uuid={} player_uuid={} outcome={}",
+                        request.requestUuid(), player.getStringUUID(), outcome);
+                    return;
+                }
+                reject(player, request, QuestActionTelemetry.Stage.JOURNAL_GATE,
+                    outcome == QuestJournalRefresh.Request.REFUSED_COOLDOWN
+                        ? "journal_refresh_cooling_down" : "journal_refresh_saturated");
+                return;
+            }
             reject(player, request, QuestActionTelemetry.Stage.JOURNAL_GATE, journalRejectionReason(player));
             return;
         }
 
+        QuestActionTelemetry.requested(player, request, intent.argument());
+        dispatch(player, request, intent, 1);
+    }
+
+    /**
+     * The second and final look at an action that missed a cold journal. Whatever the refresh
+     * achieved, this answers: there is no third attempt, so a player never waits on a loop.
+     */
+    private static void resumeAfterJournalRefresh(ServerPlayer player, QuestActionC2SPayload request,
+                                                  ResolvedIntent intent) {
+        if (player.server.getPlayerList().getPlayer(player.getUUID()) != player) {
+            QuestActionTelemetry.rejected(player, request, QuestActionTelemetry.Stage.RESPONSE,
+                "player_session_changed_before_journal_refresh_completed",
+                ServerQuestTable.journalSize(player.getUUID()));
+            return;
+        }
+        if (!authorizedForCurrentJournal(player, request)) {
+            reject(player, request, QuestActionTelemetry.Stage.JOURNAL_GATE,
+                ServerQuestTable.journalLoaded(player.getUUID())
+                    ? "quest_not_in_server_journal_after_refresh"
+                    : "server_journal_unavailable");
+            return;
+        }
         QuestActionTelemetry.requested(player, request, intent.argument());
         dispatch(player, request, intent, 1);
     }

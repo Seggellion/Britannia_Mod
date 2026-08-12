@@ -133,6 +133,16 @@ public final class ServerQuestTable {
         return quests.containsKey(normalizedStateId) ? JournalState.ACTIVE : JournalState.INACTIVE;
     }
 
+    /**
+     * Drops everything known about a player, returning their journal to UNKNOWN.
+     *
+     * <p>Called on logout. This was unsafe before Milestone 5 -- an UNKNOWN journal simply
+     * refused every quest action -- and is correct now that a miss fetches the journal instead.
+     */
+    public static void forget(UUID playerUuid) {
+        if (playerUuid != null) QUESTS_BY_PLAYER.remove(playerUuid);
+    }
+
     /** Whether this player's journal has been loaded at all in this server run. */
     public static boolean journalLoaded(UUID playerUuid) {
         return playerUuid != null && QUESTS_BY_PLAYER.containsKey(playerUuid);

@@ -486,3 +486,85 @@ was then cross-checked against a real dump: identical for the three lines that m
 Both repositories. Rails: controller, processor, one migration, `schema.rb`, three test files.
 Minecraft: one production file (the bounded retry) and one test. No change to what a successful
 first-attempt turn-in does.
+
+---
+
+## Milestone 5 — Durable journal and fail-safe gate (Q-03, Q-09, Q-17) (2026-08-12)
+
+### The defect
+
+`ServerQuestTable` authorizes every quest write and is filled **only** by the login bootstrap,
+which `WorldBootstrapHandler.complete` is explicitly allowed to abandon — on a timeout, a queue
+rejection, a stale generation, a cancelled session, or unavailable server authentication. A player
+whose bootstrap failed therefore had every CHOOSE, TRIGGER and ABANDON refused for the rest of
+their session. There was no way to recover, because the endpoint that would have served their
+journal on demand had never been written: `get 'status/:player_uuid' => quest_states#show` was
+routed **twice** and `#show` did not exist (Q-17), so `Endpoint.QUEST_JOURNAL` had never been
+called from Minecraft.
+
+### The change
+
+**Rails now has the journal endpoint.** `#show` is shard-scoped, candidate-aware and returns
+`accepted_quests` through the same `QuestJournalEntrySerializer` the world bootstrap uses — the
+two cannot disagree. An unknown player gets a deliberate 404 rather than an empty success. The
+duplicated route line is gone.
+
+**A cold journal fetches instead of refusing.** `QuestProxyService` distinguishes "the quest is
+not in a journal I hold" from "I hold no journal": the second triggers `QuestJournalRefresh` and
+re-evaluates the action once the journal lands. The gate is unchanged for a journal that *is*
+loaded, so a quest that genuinely is not the player's is still refused — now as
+`quest_not_in_server_journal_after_refresh`, which is a materially different fact.
+
+**The refresh is bounded**, because a miss-triggered fetch must never become a way to make the
+server hammer Rails: one fetch in flight per player, at most four actions waiting on it, and a
+15-second cooldown after a failure. A failed refresh still answers the action
+(`server_journal_unavailable`) rather than leaving it hanging, and there is no second attempt —
+a player never waits on a loop.
+
+**Logout forgets the journal** (Q-09). That was unsafe before this milestone: an UNKNOWN journal
+simply refused everything, so dropping it on logout would have armed the very bug. Now that a
+miss refetches, a re-login can no longer inherit a stale view — and the bootstrap-failure log line
+says explicitly that the journal is unloaded and actions will fetch it on demand.
+
+### Verification
+
+- **GameTest: all 362 required tests passed** (fresh-log verified). Six new
+  `QuestJournalRefreshGameTests` — cold journal fetches and proceeds, a genuinely absent quest is
+  refused with its own reason, a failed refresh still answers, a failed refresh cools down instead
+  of hammering, a loaded journal is never refetched, and logout forgets the journal.
+- **Mutation-tested**: restoring the pre-M5 gate (refuse on a cold journal) fails exactly the four
+  refresh tests. Restored, re-run clean at 362.
+- MC unit suite 1791 tests, the same 21 pre-existing banner failures.
+- **Rails: 1373 runs, 6486 assertions, 1 failure** — the known deterministic recalculator.
+  Six new `quest_journal_endpoint_test.rb` cases: serves the journal, finds rows under every uuid
+  spelling, omits inactive quests, is shard-scoped, 404s an unknown player, requires auth.
+
+### Two test corrections worth recording
+
+**My M5 tests asserted synchronously against an asynchronous refresh.** The first run failed all
+of them with "the quest action was refused without recording a reason" and "saw 0 fetches" — the
+refresh completes on a later server tick, which never arrives inside a synchronous test body. They
+now poll with `helper.succeedWhen`. Production code was not implicated.
+
+**Two Milestone 2 tests had pinned the old gate.** `unloadedJournalRejectionNamesItself` asserted
+that a cold journal is refused immediately — exactly what this milestone removes — so its scenario
+moved into the M5 file, which owns that path and can control the transport. Its sibling
+`rejectionCarriesTheClientCorrelationId` now loads the journal first, so it keeps testing what it
+was written for (the correlation id on a rejection) rather than depending on a path that no longer
+rejects. Net gametest count: 357 + 6 − 1 = 362.
+
+### Observed, not fixed
+
+- `Api::WorldBootstrapController` still carries its own `minecraft_uuid_candidates` without the
+  upper-case spellings M3 added. `#show` uses the controller-local version that does have them, so
+  the two can differ for an upper-case stored row: the refetch would find it, the bootstrap would
+  not. Harmless today (the M3 migration normalized those rows) and left alone rather than widening
+  this milestone, but it is the last copy of that logic worth consolidating.
+- The refresh path carries no correlation id into the Rails request (`#show` logs
+  `request_uuid=nil`), because the fetch is not a quest action. Worth adding if a trace ever needs
+  to span the refetch.
+
+### Scope discipline
+
+Both repositories. Rails: controller (`#show`), routes, one new test file. Minecraft: one new
+class, three touched production files, one new gametest class, two adjusted M2 gametests.

@@ -39,28 +39,6 @@ public final class QuestActionTelemetryGameTests {
     private QuestActionTelemetryGameTests() {
     }
 
-    /**
-     * The Q-03 case: this player's journal was never loaded (a failed or in-flight bootstrap).
-     * The action is still refused -- that behaviour is M5's to change -- but it must no longer be
-     * indistinguishable from garbage input.
-     */
-    @GameTest(template = TEMPLATE)
-    public static void unloadedJournalRejectionNamesItself(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
-        QuestActionTelemetry.clear(player.getUUID());
-
-        handleExpectingRejection(player, choose(QUEST_ID, UUID.randomUUID().toString()));
-
-        QuestActionTelemetry.Rejection rejection = requireRejection(player);
-        check(rejection.stage() == QuestActionTelemetry.Stage.JOURNAL_GATE,
-            "expected a journal-gate rejection, got " + rejection.stage());
-        check("server_journal_not_loaded".equals(rejection.reason()),
-            "expected reason=server_journal_not_loaded, got " + rejection.reason());
-        check(rejection.journalSize() == -1,
-            "an unloaded journal must report size -1, got " + rejection.journalSize());
-        helper.succeed();
-    }
-
     /** A loaded journal that simply does not hold this quest is a different fact, and says so. */
     @GameTest(template = TEMPLATE)
     public static void loadedJournalWithoutTheQuestRejectsWithItsOwnReason(GameTestHelper helper) {
@@ -98,11 +76,18 @@ public final class QuestActionTelemetryGameTests {
         helper.succeed();
     }
 
-    /** The correlation id the client sent is carried on the rejection, so traces join up. */
+    /**
+     * The correlation id the client sent is carried on the rejection, so traces join up.
+     *
+     * <p>The journal is loaded first: since Milestone 5 an UNLOADED journal triggers a fetch
+     * rather than an immediate refusal, and that path is covered by
+     * {@code QuestJournalRefreshGameTests}.
+     */
     @GameTest(template = TEMPLATE)
     public static void rejectionCarriesTheClientCorrelationId(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         QuestActionTelemetry.clear(player.getUUID());
+        ServerQuestTable.replaceFromBootstrap(player, List.of());
         String requestUuid = UUID.randomUUID().toString();
 
         handleExpectingRejection(player, choose(QUEST_ID, requestUuid));
