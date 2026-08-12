@@ -31,6 +31,7 @@ import com.seggellion.britannia_mod.client.Keybinds;
 import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerVisualModels;
+import com.seggellion.britannia_mod.client.renderer.ManagedFlowerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.shrine.ShrineRenderer;
 import com.seggellion.britannia_mod.client.banner.BannerBlockEntityRenderer;
@@ -485,6 +486,9 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockEntityRegistry.WINE_BOTTLE_BE.get(), WineBottleBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.FARMING_BLOCK_BE.get(), FarmingBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), FlowerBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(
+                BlockEntityRegistry.MANAGED_FLOWER_BE.get(), ManagedFlowerBlockEntityRenderer::new
+        );
         event.registerBlockEntityRenderer(LargeStructureRegistry.LARGE_STRUCTURE.get(), ShrineRenderer::new);
         event.registerBlockEntityRenderer(
                 BannerBlockRegistry.BANNER_BLOCK_ENTITY.get(), BannerBlockEntityRenderer::new);

@@ -24,6 +24,7 @@ import com.seggellion.britannia_mod.block.entity.ThreeHeightLightBlockEntity;
 import com.seggellion.britannia_mod.block.entity.GrapeVineBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.block.entity.FlowerBlockEntity;
+import com.seggellion.britannia_mod.block.entity.ManagedFlowerBlockEntity;
 import com.seggellion.britannia_mod.block.entity.CommunityFarmBlockEntity;
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WeightedWoodBlockEntity;
@@ -167,6 +168,13 @@ public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ThreeHeig
                     () -> BlockEntityType.Builder.of(
                             FlowerBlockEntity::new,
                             BlockRegistry.FLOWER_BLOCK.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ManagedFlowerBlockEntity>> MANAGED_FLOWER_BE =
+            BLOCK_ENTITIES.register("managed_flower_be",
+                    () -> BlockEntityType.Builder.of(
+                            ManagedFlowerBlockEntity::new,
+                            BlockRegistry.MANAGED_FLOWER.get()
                     ).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CommunityFarmBlockEntity>> COMMUNITY_FARM_BLOCK_BE =

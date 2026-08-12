@@ -122,6 +122,7 @@ import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.FlowerBlock;
 import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
+import com.seggellion.britannia_mod.block.ManagedFlowerBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -257,6 +258,17 @@ public static final DeferredHolder<Block, ManagedVegetationControllerBlock> MANA
                     .isViewBlocking((state, level, pos) -> false)
                     .isSuffocating((state, level, pos) -> false))
     );
+
+public static final DeferredHolder<Block, ManagedFlowerBlock> MANAGED_FLOWER = BLOCKS.register(
+        "managed_flower",
+        () -> new ManagedFlowerBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.PLANT)
+                .noCollission()
+                .noOcclusion()
+                .instabreak()
+                .sound(SoundType.GRASS)
+                .pushReaction(PushReaction.DESTROY))
+);
 
 public static final DeferredHolder<Block, CornStalkBlock> CORN_STALK_BLOCK = BLOCKS.register(
             "corn_stalk_block",

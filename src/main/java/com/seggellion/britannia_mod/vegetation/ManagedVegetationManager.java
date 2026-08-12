@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.vegetation;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.block.entity.ManagedFlowerBlockEntity;
+import com.seggellion.britannia_mod.farming.FlowerDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -137,7 +139,8 @@ public final class ManagedVegetationManager {
             switch (current.lifecycle()) {
                 case REGROWING -> spawnFromProfile(level, data, current, now);
                 case SHORT_GRASS -> growTallGrass(level, data, current, now);
-                case TALL_GRASS, FERN, FLOWER -> data.update(
+                case FLOWER -> growFlower(level, data, current, now);
+                case TALL_GRASS, FERN -> data.update(
                         current.schedule(ManagedVegetationNode.NO_TRANSITION)
                 );
             }
@@ -176,8 +179,104 @@ public final class ManagedVegetationManager {
                     data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
                 }
             }
-            case FLOWER_STAGES -> retry(data, node, now);
+            case FLOWER_STAGES -> spawnFlower(level, data, node, entry, now);
         }
+    }
+
+    private static void spawnFlower(
+            ServerLevel level,
+            ManagedVegetationSavedData data,
+            ManagedVegetationNode node,
+            ManagedVegetationEntry entry,
+            long now
+    ) {
+        var species = ManagedFlowerSpecies.select(level.random);
+        FlowerDefinition definition = ManagedFlowerSpecies.definition(species).orElse(null);
+        if (definition == null) {
+            retry(data, node, now);
+            return;
+        }
+        long transitionTime = now + flowerStageDelay(
+                definition, ManagedVegetationConfig.flowerStageTickMultiplier()
+        );
+        ManagedVegetationNode flowerNode = node.flower(entry.id(), species, 1, transitionTime);
+        data.update(flowerNode);
+        if (!level.setBlock(node.position(), BlockRegistry.MANAGED_FLOWER.get().defaultBlockState(), 3)
+                || !(level.getBlockEntity(node.position()) instanceof ManagedFlowerBlockEntity flower)
+                || !flower.initialize(species, 1)) {
+            if (level.getBlockState(node.position()).is(BlockRegistry.MANAGED_FLOWER.get())) {
+                level.setBlock(node.position(), Blocks.AIR.defaultBlockState(), 3);
+            }
+            data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
+            level.setBlock(
+                    node.position(), BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get().defaultBlockState(), 3
+            );
+        }
+    }
+
+    private static void growFlower(
+            ServerLevel level,
+            ManagedVegetationSavedData data,
+            ManagedVegetationNode node,
+            long now
+    ) {
+        var species = node.flowerSpeciesId().orElse(null);
+        FlowerDefinition definition = species == null
+                ? null : ManagedFlowerSpecies.definition(species).orElse(null);
+        if (definition == null) {
+            resetInvalidFlower(level, data, node, now);
+            return;
+        }
+        if (!ManagedVegetationPlacementRules.hasValidSubstrate(level::getBlockState, node.position())
+                || !level.getBlockState(node.position()).is(BlockRegistry.MANAGED_FLOWER.get())
+                || !(level.getBlockEntity(node.position()) instanceof ManagedFlowerBlockEntity flower)
+                || !flower.matches(species, node.flowerStage())
+                || !isClear(level, node.position().above())
+                || !isClear(level, node.position().above(2))) {
+            retry(data, node, now);
+            return;
+        }
+        if (node.flowerStage() >= 7) {
+            data.update(node.schedule(ManagedVegetationNode.NO_TRANSITION));
+            return;
+        }
+
+        int nextStage = node.flowerStage() + 1;
+        long nextTransition = nextStage == 7
+                ? ManagedVegetationNode.NO_TRANSITION
+                : now + flowerStageDelay(definition, ManagedVegetationConfig.flowerStageTickMultiplier());
+        ManagedVegetationNode advanced = node.flower(
+                node.vegetationEntryId().orElseThrow(), species, nextStage, nextTransition
+        );
+        data.update(advanced);
+        if (!flower.setGrowthStage(species, nextStage)) {
+            data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
+        }
+    }
+
+    private static void resetInvalidFlower(
+            ServerLevel level,
+            ManagedVegetationSavedData data,
+            ManagedVegetationNode node,
+            long now
+    ) {
+        if (level.getBlockState(node.position()).is(BlockRegistry.MANAGED_FLOWER.get())) {
+            level.setBlock(node.position(), Blocks.AIR.defaultBlockState(), 3);
+        }
+        ManagedVegetationNode regrowing = node.beginRegrowth(now + ManagedVegetationConfig.retryTicks());
+        data.update(regrowing);
+        if (canSpawnAt(level, node.position())) {
+            level.setBlock(
+                    node.position(), BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get().defaultBlockState(), 3
+            );
+        }
+    }
+
+    static long flowerStageDelay(FlowerDefinition definition, int multiplier) {
+        if (definition == null || multiplier <= 0) {
+            throw new IllegalArgumentException("Flower definition and a positive timing multiplier are required");
+        }
+        return Math.multiplyExact((long) definition.growthProfile().baseGrowthTicks(), multiplier);
     }
 
     private static void growTallGrass(

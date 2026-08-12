@@ -52,8 +52,28 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
             return;
         }
 
+        renderVisual(
+                entity.getBlockPos(), entity.getBlockState(), state.speciesId(), state.growthStage(),
+                state.color().tintValue(), FLOWER_RENDER_Y_OFFSET, poseStack, bufferSource,
+                packedLight, packedOverlay
+        );
+    }
+
+    /** Shared renderer used by farm flowers and independent managed wild flowers. */
+    public static void renderVisual(
+            net.minecraft.core.BlockPos position,
+            BlockState renderState,
+            ResourceLocation speciesId,
+            int growthStage,
+            int tint,
+            double yOffset,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int packedLight,
+            int packedOverlay
+    ) {
         FlowerVisualModels.RenderPlan plan = FlowerVisualModels.resolve(
-                state.speciesId(), state.growthStage(), state.color().tintValue()
+                speciesId, growthStage, tint
         );
         Minecraft minecraft = Minecraft.getInstance();
         ModelManager modelManager = minecraft.getModelManager();
@@ -64,11 +84,10 @@ public final class FlowerBlockEntityRenderer implements BlockEntityRenderer<Flow
 
         TextureAtlasSprite baseSprite = minecraft.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS)
                 .apply(resolved.assets().baseTextureId());
-        BlockState renderState = entity.getBlockState();
         poseStack.pushPose();
-        poseStack.translate(0.5D, FLOWER_RENDER_Y_OFFSET, 0.5D);
+        poseStack.translate(0.5D, yOffset, 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(CropVisualRotation.yawFor(
-                entity.getBlockPos(), plan.visualSpecies().toString()
+                position, plan.visualSpecies().toString()
         )));
         poseStack.translate(-0.5D, 0.0D, -0.5D);
 
