@@ -80,6 +80,36 @@ public final class ManagedVegetationService {
         });
     }
 
+    public static boolean forceTransition(ServerLevel level, BlockPos position) {
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        ManagedVegetationNode node = data.nodeAt(position).orElse(null);
+        if (node == null) {
+            return false;
+        }
+        data.update(node.schedule(level.getGameTime()));
+        return true;
+    }
+
+    public static boolean rerollNode(ServerLevel level, BlockPos position) {
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        ManagedVegetationNode node = data.nodeAt(position).orElse(null);
+        if (node == null) {
+            return false;
+        }
+        ManagedVegetationNode regrowing = node.beginRegrowth(level.getGameTime());
+        data.update(regrowing);
+        if (node.lifecycle().occupied()) {
+            removeOwnedPlant(level, node);
+        }
+        BlockState current = level.getBlockState(position);
+        if (current.isAir() || current.is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get())) {
+            level.setBlock(
+                    position, BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get().defaultBlockState(), 3
+            );
+        }
+        return true;
+    }
+
     /** Resolves a canonical node from its base or the upper half of managed tall grass. */
     public static Optional<ManagedVegetationNode> resolveNode(ServerLevel level, BlockPos clickedPosition) {
         return resolveNode(ManagedVegetationSavedData.get(level), clickedPosition);

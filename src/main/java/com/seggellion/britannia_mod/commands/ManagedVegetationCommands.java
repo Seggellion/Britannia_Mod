@@ -37,6 +37,18 @@ public final class ManagedVegetationCommands {
                                         context.getSource(),
                                         BlockPosArgument.getLoadedBlockPos(context, "position")
                                 ))))
+                .then(Commands.literal("force")
+                        .then(Commands.argument("position", BlockPosArgument.blockPos())
+                                .executes(context -> force(
+                                        context.getSource(),
+                                        BlockPosArgument.getLoadedBlockPos(context, "position")
+                                ))))
+                .then(Commands.literal("reroll")
+                        .then(Commands.argument("position", BlockPosArgument.blockPos())
+                                .executes(context -> reroll(
+                                        context.getSource(),
+                                        BlockPosArgument.getLoadedBlockPos(context, "position")
+                                ))))
         );
     }
 
@@ -81,6 +93,28 @@ public final class ManagedVegetationCommands {
                 node.flowerStage(),
                 node.nextTransitionGameTime()
         )), false);
+        return 1;
+    }
+
+    private static int force(CommandSourceStack source, BlockPos position) {
+        if (!ManagedVegetationService.forceTransition(source.getLevel(), position)) {
+            source.sendFailure(Component.literal("No managed vegetation node exists at " + position.toShortString()));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal(
+                "Forced the next managed vegetation transition at " + position.toShortString()
+        ), true);
+        return 1;
+    }
+
+    private static int reroll(CommandSourceStack source, BlockPos position) {
+        if (!ManagedVegetationService.rerollNode(source.getLevel(), position)) {
+            source.sendFailure(Component.literal("No managed vegetation node exists at " + position.toShortString()));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal(
+                "Returned managed vegetation to regrowth at " + position.toShortString()
+        ), true);
         return 1;
     }
 }

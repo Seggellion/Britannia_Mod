@@ -771,6 +771,7 @@
   "item.britannia_mod.orfluer_seeds": "Orfluer Seeds",
   "block.britannia_mod.flower_block": "Planted Flower",
   "block.britannia_mod.managed_vegetation_controller": "Managed Vegetation Node",
+  "block.britannia_mod.managed_flower": "Managed Wild Flower",
   "message.britannia_mod.flower.protected": "That flower is protected.",
   "message.britannia_mod.flower.poppy_stage_seven_requirements": "Poppy stage 7 requires Farming 100 and an authorized skinning knife.",
   "item.britannia_mod.weighted_wood_item": "Weighted Wood",
