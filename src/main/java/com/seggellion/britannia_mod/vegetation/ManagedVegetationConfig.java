@@ -73,11 +73,13 @@ public final class ManagedVegetationConfig {
     }
 
     public static int cutRegrowDelay(RandomSource random) {
-        return randomBetween(random, CUT_REGROW_MIN_TICKS.get(), CUT_REGROW_MAX_TICKS.get());
+        int minimum = CUT_REGROW_MIN_TICKS.get();
+        return randomBetween(random, minimum, Math.max(minimum, CUT_REGROW_MAX_TICKS.get()));
     }
 
     public static int grassGrowthDelay(RandomSource random) {
-        return randomBetween(random, GRASS_GROWTH_MIN_TICKS.get(), GRASS_GROWTH_MAX_TICKS.get());
+        int minimum = GRASS_GROWTH_MIN_TICKS.get();
+        return randomBetween(random, minimum, Math.max(minimum, GRASS_GROWTH_MAX_TICKS.get()));
     }
 
     public static int retryTicks() {

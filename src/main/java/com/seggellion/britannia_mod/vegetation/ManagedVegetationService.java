@@ -17,7 +17,7 @@ public final class ManagedVegetationService {
         }
         ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
         ManagedVegetationNode node = ManagedVegetationNode.regrowing(
-                position, ManagedVegetationNode.NO_TRANSITION
+                position, level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random)
         );
         if (!data.register(node)) {
             return false;
@@ -40,7 +40,7 @@ public final class ManagedVegetationService {
                 state -> state.isAir() || state.is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get())
         );
         return valid && data.register(ManagedVegetationNode.regrowing(
-                position, ManagedVegetationNode.NO_TRANSITION
+                position, level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random)
         ));
     }
 
