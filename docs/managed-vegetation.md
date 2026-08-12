@@ -5,10 +5,11 @@ position is the plant block directly above a vanilla grass block. Nodes require 
 position and the next two blocks above it to remain clear and dry. Nearby vanilla or
 player-placed vegetation is not managed and retains its normal behavior.
 
-Ordinary grass blocks do **not** automatically become managed nodes. Nodes must be explicitly
-registered by a command or a future placement/world-generation integration. The scheduler runs
-from normal server ticks and deliberately does not use Minecraft random block ticks, so changing
-`randomTickSpeed` does not accelerate managed regrowth.
+Every ordinary vanilla grass block is a potential substrate. Its existing random block tick may
+discover a node only when the block directly above it and the next two blocks are air and dry.
+The grass substrate is never replaced, and existing plants, decorations, fluids, or solid blocks
+above it are never overwritten. Discovery is controlled by `randomTickSpeed`; after discovery,
+the persistent vegetation lifecycle uses normal server time so timer durations remain stable.
 
 ## Lifecycle
 
@@ -38,6 +39,7 @@ NeoForge generates the per-world server config `britannia-managed-vegetation.tom
 `managedVegetation` section contains:
 
 - `grassWeight`, `fernWeight`, and `flowerWeight` (defaults 75, 20, and 5)
+- `naturalGrowthEnabled` and `naturalGrowthChanceDenominator` (defaults true and 4096)
 - `cutRegrowMinTicks` and `cutRegrowMaxTicks`
 - `grassGrowthMinTicks` and `grassGrowthMaxTicks`
 - `retryTicks`
@@ -67,7 +69,8 @@ All commands require permission level 2 and a loaded target position:
 /managedvegetation spawn flower <x y z>
 ```
 
-`add` expects the canonical plant position, not the supporting grass block. `addhere` registers
+Natural nodes need no command: eligible grass blocks discover them through random ticks. `add`
+expects the canonical plant position, not the supporting grass block. `addhere` registers
 the air block at the command source's feet, which is convenient while standing on grass. `debug`
 reports registration, substrate, clearance, lifecycle, remaining normal-tick delay, configured
 weights, and whether an ordinary position is unmanaged. `force` makes the current scheduled
@@ -84,8 +87,10 @@ For a quick test in a cheats-enabled world, stand on a clear grass block and run
 /managedvegetation spawn grass ~ ~ ~
 ```
 
-Repeat the last command with `fern` or `flower`. Adventure mode and peaceful difficulty do not
-disable the system; the commands still require permission level 2.
+Repeat the last command with `fern` or `flower`. To observe natural discovery instead, leave the
+air above grass clear and increase `randomTickSpeed`; `/managedvegetation debug ~ ~ ~` reports
+whether that air position is eligible and still waiting for its roll. Adventure mode and peaceful
+difficulty do not disable the system; the commands still require permission level 2.
 
 ## Persistence, recovery, and performance
 
@@ -97,11 +102,11 @@ time. Runtime indexes provide:
 - a chunk-to-node index, used only when a chunk naturally loads;
 - a bounded chunk-load queue of 4,096 entries per level, processing at most 64 chunks per tick.
 
-There is no per-tick full-node scan, no forced chunk loading, no client timer, and no block entity
-for grass, fern, tall grass, or the invisible controller. A lightweight block entity exists only
-while a managed flower is visible. Unloaded overdue nodes retain their persisted due time and are
-reconciled after their chunk naturally loads. Recovery repairs only air or the node's own partial
-representation and never overwrites an unrelated block.
+There is no per-tick full-node or grass-block scan, no forced chunk loading, no client timer, and
+no block entity for grass, fern, tall grass, or the invisible controller. A lightweight block
+entity exists only while a managed flower is visible. Unloaded overdue nodes retain their
+persisted due time and are reconciled after their chunk naturally loads. Recovery repairs only
+air or the node's own partial representation and never overwrites an unrelated block.
 
 For thousands of nodes, ordinary tick cost is proportional to transitions currently due, not the
 total node count. The main future optimization point, if transition bursts become very large, is

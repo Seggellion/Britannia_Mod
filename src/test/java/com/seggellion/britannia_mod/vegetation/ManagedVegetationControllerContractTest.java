@@ -51,6 +51,21 @@ class ManagedVegetationControllerContractTest {
         assertTrue(commands.contains("spawnFamily(\"flower\""));
     }
 
+    @Test
+    void ordinaryGrassRandomTicksDiscoverOnlyAirAboveTheSubstrate() throws IOException {
+        String mixins = Files.readString(PROJECT.resolve("src/main/resources/britannia_mod.mixins.json"));
+        String naturalGrowth = source("mixin/GrassBlockNaturalGrowthMixin.java");
+        String service = source("vegetation/ManagedVegetationService.java");
+        String placement = source("vegetation/ManagedVegetationPlacementRules.java");
+
+        assertTrue(mixins.contains("GrassBlockNaturalGrowthMixin"));
+        assertTrue(naturalGrowth.contains("SpreadingSnowyDirtBlock.class"));
+        assertTrue(naturalGrowth.contains("state.is(Blocks.GRASS_BLOCK)"));
+        assertTrue(naturalGrowth.contains("grassPosition.above()"));
+        assertTrue(service.contains("tryRegisterNaturalNode"));
+        assertTrue(placement.contains("BlockState::isAir"));
+    }
+
     private static String source(String relative) throws IOException {
         return Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/" + relative

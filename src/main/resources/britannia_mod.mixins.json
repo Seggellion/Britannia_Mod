@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "britannia_mod.refmap.json",
   "mixins": [
+    "GrassBlockNaturalGrowthMixin",
     "LivingEntityBedMixin",
     "PlayerSleepMixin",
     "PlayerListInvokerMixin",

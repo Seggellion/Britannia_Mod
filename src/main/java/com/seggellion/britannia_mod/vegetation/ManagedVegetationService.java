@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,13 +25,27 @@ public final class ManagedVegetationService {
     }
 
     public static boolean registerNode(ServerLevel level, BlockPos position) {
+        return registerNode(
+                level,
+                position,
+                level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random)
+        );
+    }
+
+    /** Called only from vanilla grass random ticks; never replaces the substrate or occupied space. */
+    public static boolean tryRegisterNaturalNode(ServerLevel level, BlockPos position, RandomSource random) {
+        if (!ManagedVegetationConfig.shouldNaturallyGrow(random)) {
+            return false;
+        }
+        return registerNode(level, position, level.getGameTime());
+    }
+
+    private static boolean registerNode(ServerLevel level, BlockPos position, long firstTransitionTime) {
         if (!ManagedVegetationPlacementRules.canRegister(level::getBlockState, position)) {
             return false;
         }
         ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
-        ManagedVegetationNode node = ManagedVegetationNode.regrowing(
-                position, level.getGameTime() + ManagedVegetationConfig.cutRegrowDelay(level.random)
-        );
+        ManagedVegetationNode node = ManagedVegetationNode.regrowing(position, firstTransitionTime);
         if (!data.register(node)) {
             return false;
         }
@@ -129,10 +144,13 @@ public final class ManagedVegetationService {
                     .append(" fluid=").append(!state.getFluidState().isEmpty());
         }
         if (node == null) {
-            report.append("\nstatus=UNMANAGED; ordinary grass never auto-registers. Use /managedvegetation add ")
-                    .append(position.getX()).append(' ')
-                    .append(position.getY()).append(' ')
-                    .append(position.getZ());
+            boolean eligible = ManagedVegetationPlacementRules.canRegister(level::getBlockState, position);
+            report.append("\nstatus=UNMANAGED natural_eligible=").append(eligible);
+            if (eligible) {
+                report.append("; waiting for the grass block below to pass its random growth roll");
+            } else {
+                report.append("; substrate or three-block air/fluids check prevents natural growth");
+            }
         } else {
             long dueIn = node.nextTransitionGameTime() == ManagedVegetationNode.NO_TRANSITION
                     ? ManagedVegetationNode.NO_TRANSITION
@@ -152,7 +170,9 @@ public final class ManagedVegetationService {
                 .append(ManagedVegetationConfig.grassWeight()).append('/')
                 .append(ManagedVegetationConfig.fernWeight()).append('/')
                 .append(ManagedVegetationConfig.flowerWeight())
-                .append(" scheduler=normal-server-ticks randomTickSpeed=ignored");
+                .append(" natural_growth=").append(ManagedVegetationConfig.naturalGrowthEnabled())
+                .append(" natural_roll=1/").append(ManagedVegetationConfig.naturalGrowthChanceDenominator())
+                .append(" discovery=random-grass-ticks lifecycle=normal-server-ticks");
         return report.toString();
     }
 
