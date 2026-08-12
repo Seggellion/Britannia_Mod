@@ -1,5 +1,6 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.wildresource.DaggerTools;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -23,9 +24,8 @@ public final class BlackLippedOysterBlock extends Block implements AdventureHarv
         return SHAPE;
     }
 
-    /** Enabled with authoritative dagger recognition in the next harvest milestone. */
     @Override
     public boolean allowsAdventureHarvest(ItemStack tool) {
-        return false;
+        return DaggerTools.isDagger(tool);
     }
 }
