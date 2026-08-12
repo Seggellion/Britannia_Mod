@@ -863,3 +863,74 @@ each with the milestone that closed it and how it was proven.
 
 Tests and documentation only. No production code was changed in this milestone, in either
 repository.
+
+---
+
+## Risk acceptance — M8 split and continued progression (owner decision, 2026-08-12)
+
+**M8A — Automated QuestEngine regression validation: PASSED.**
+**M8B — Live Rails-backed multiplayer validation: DEFERRED / OUTSTANDING.**
+
+M8B is accepted as **not a blocker** for continued development. The stated grounds, recorded as
+given: every identified BLOCKER and CRITICAL finding is closed, the automated remediation suite is
+green, and the remaining validation requires infrastructure that is not reasonably available in the
+automated harness.
+
+What this decision does **not** do, stated explicitly because deferred obligations decay:
+
+- it does not weaken or remove the runbook — all ten rows remain required before the QuestEngine
+  may be called fully production-validated;
+- it does not mark any live row as passed. **No row may be recorded as passed until it has actually
+  been executed with captured evidence**, and the runbook now says so at the top;
+- it does not change the health check's verdict, which stays **YES, WITH CONDITIONS** with M8B named
+  as the condition.
+
+### Change control for future milestones
+
+Future milestones may proceed **unless** they materially modify any of:
+
+1. QuestEngine networking
+2. player identity resolution
+3. QuestGiver identity
+4. objective detection
+5. completion semantics
+6. Rails quest persistence
+
+A milestone touching any of those six must rerun the relevant automated QuestEngine regression
+suite and state in its report which suites it reran, and may **expand** the M8B obligation rather
+than inherit it unchanged. This is now a non-negotiable rule in the playbook rather than a note,
+for the same reason the payload-retention decision was promoted there: the failure mode is a later
+milestone quietly assuming someone else validated this.
+
+The suites to rerun, by area:
+
+| Area touched | Rerun |
+| --- | --- |
+| networking, objective detection, QuestGiver identity | `runGameTestServer` (379) + `QuestProxySecurityTest` |
+| player identity resolution, Rails persistence | `quest_completion_identity_test`, `quest_multiplayer_isolation_test`, `quest_journal_endpoint_test`, the migration test |
+| completion semantics | `quest_completion_idempotency_test`, `completion_concurrency_test` |
+
+### Corrective protocol for live-discovered defects
+
+A defect found in live validation or production-like testing gets a dedicated corrective
+regression milestone: reproduce automatically wherever possible, add the failing test **before**
+the fix, implement the smallest root-cause correction, rerun the affected suites, repeat the
+corresponding live row. **Every live-discovered defect leaves behind an automated regression test
+wherever technically feasible.**
+
+That rule is the one worth defending. Six of this programme's findings — Q-01, Q-03, Q-04, Q-05,
+Q-06, Q-16 — are now pinned by tests that were mutation-checked to fail without their fix. A
+live-found defect that leaves behind only a code change is a defect that can come back.
+
+### Minimum live smoke set
+
+For the next convenient live window, ahead of the full matrix: **L2** (relog before objective
+completion), **L6** (player isolation), **L7** (one fire per zone entry), plus **one pickup** and
+**one destroy/burn** objective post-relog (the two halves of L4). Passing the smoke set does not
+close M8B.
+
+### Programme status
+
+**M0–M7 delivered; M8A passed; M8B outstanding.** The playbook defines no milestone beyond M8, so
+there is no next milestone to start — the remediation programme as scoped is complete. Remaining
+known work is listed in the completion report rather than invented here.

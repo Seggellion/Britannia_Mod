@@ -33,6 +33,11 @@ check or re-derive the codebase to execute one.
 - **Never make quest completion non-idempotent.** After M4 every completion path must tolerate a
   replay without double-granting and without a bare failure.
 - **Do not change quest balance, quest text, rewards, or unrelated NPC systems.**
+- **Changes to QuestEngine networking, player identity resolution, QuestGiver identity, objective
+  detection, completion semantics, or Rails quest persistence must rerun the relevant automated
+  QuestEngine regression suite**, and may expand the live-validation obligation in M8B. Owner
+  decision, 2026-08-12. Any milestone touching those six areas states in its report which suites
+  it reran and whether M8B grew. Everything else may proceed without re-validating QuestEngine.
 - **Do not remove `ItemBurnedS2CPayload` or `TriggerQuestS2CPayload`.** Owner decision, 2026-08-12.
   Both are inert after Milestone 6 -- their handlers act on nothing -- but they stay *registered*
   so a client built before that milestone cannot desync on an unknown payload type. They come out
@@ -113,7 +118,8 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 | M6 | Server-authoritative objectives | Q-02, Q-05, Q-06 | MC | high |
 | — | *M6 is code-complete and strongly validated, but **not production-proven** until the live matrix in M8 passes. Owner decision, 2026-08-12.* | | | |
 | M7 | QuestGiver identity and escort lifecycle | Q-08, Q-11, Q-13, Q-14 | MC | medium |
-| M8 | Regression suite and failure-injection validation | Q-15 | both | none |
+| M8A | Automated regression validation | Q-15 | both | none |
+| M8B | Live Rails-backed multiplayer validation | — | live | owner-executed |
 
 Ordering rationale: M1 first because it is actively destroying persisted state on every restart
 and the fix is a guard. M2 next so every later milestone is verifiable in production. M3 is the
@@ -593,6 +599,20 @@ Two or three commits (feature, file moves, Rails) + log entry.
 
 # Milestone 8 — Regression suite and failure-injection validation (Q-15)
 
+> **Status, owner decision 2026-08-12.** This milestone is split.
+>
+> **M8A — Automated QuestEngine regression validation: PASSED.** Rails 1383 runs / 6566 assertions
+> / 1 known deterministic failure; GameTest 379/379; MC unit 1791 with the 21 pre-existing banner
+> failures inherited from `patch-18`.
+>
+> **M8B — Live Rails-backed multiplayer validation: DEFERRED / OUTSTANDING.** Accepted as a
+> non-blocker for continued development, because every identified BLOCKER and CRITICAL finding is
+> closed, the automated suite is green, and the remaining validation needs infrastructure the
+> automated harness does not reasonably have. **M8B is not weakened and not removed**: the full
+> ten-row runbook remains required before the QuestEngine may be called fully production-validated,
+> and **no live row may be recorded as passed until it has actually been executed with captured
+> evidence**.
+
 ### Objective
 Turn §12 of the health check into a permanent suite and prove the system under multiplayer and
 failure conditions. No production behaviour changes.
@@ -662,8 +682,24 @@ Full Rails suite; `./gradlew test`; full GameTest server run with a fresh-log ta
 new required-test count explicitly. Then the live matrix above.
 
 ### Acceptance
-Every automated scenario is green **and** every live row L1–L10 passes with captured evidence.
-Only then re-answer the health check's final question.
+**M8A**: every automated scenario green. Met.
+
+**M8B**: every live row L1–L10 passed with captured evidence. Outstanding. Only then may the health
+check's final question be answered without conditions.
+
+**Minimum live smoke set** (owner decision, 2026-08-12) — the subset to run at the next convenient
+live window, ahead of the full matrix:
+
+| Row | Why it is in the minimum set |
+| --- | --- |
+| **L2** | relog before objective completion — the historical defect in its purest form |
+| **L6** | player isolation — the closest live analogue of the original report |
+| **L7** | one fire per zone entry — the only row that fails invisibly to players |
+| **L4 (pickup half)** | one pickup objective, post-relog |
+| **L4 (destroy half)** | one destroy/burn objective, post-relog |
+
+Passing the smoke set does **not** close M8B; it buys early confidence in the paths most likely to
+carry a regression.
 
 ### Commit scope
 Tests + a `QUESTENGINE_HEALTH_CHECK.md` addendum recording the new verdict + log entry, including
@@ -680,7 +716,8 @@ The QuestEngine is healthy when:
 - no quest action is refused because of a transient in-memory condition, and every refusal is
   logged with a machine-readable reason and a correlation id (M2, M5);
 - no persisted state is destroyed by a cold cache (M1);
-- objective progress is decided by the server (M6), **proven live** by the M8 matrix and not by
-  the automated suite alone;
+- objective progress is decided by the server (M6). Code-complete and covered by M8A; **fully
+  production-validated only once M8B passes** — an outstanding obligation, explicitly accepted as
+  a non-blocker for further development;
 - quest giver identity survives rename, reload and escort activation (M7);
 - all of it is covered by automated tests that run in CI (M8).

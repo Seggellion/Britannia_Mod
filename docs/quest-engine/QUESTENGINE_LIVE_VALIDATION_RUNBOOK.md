@@ -11,6 +11,33 @@ accounts, and **Milestone 6 stays conditionally approved until every row passes 
 
 ---
 
+## Status: OUTSTANDING
+
+Owner decision, 2026-08-12: this runbook is **M8B**, deferred but not dropped. It is accepted as a
+non-blocker for continued development — every BLOCKER and CRITICAL finding is closed and the
+automated suite (M8A) is green — and it **remains required before the QuestEngine may be called
+fully production-validated**.
+
+**No row below may be recorded as passed until it has actually been executed with captured
+evidence.** An unrun row stays unrun in this document.
+
+### Minimum live smoke set
+
+For the next convenient live window, five rows come first:
+
+| Row | |
+| --- | --- |
+| **L2** | relog before objective completion |
+| **L6** | player isolation |
+| **L7** | one fire per zone entry |
+| **L4** pickup half | one pickup objective, post-relog |
+| **L4** destroy half | one destroy/burn objective, post-relog |
+
+These are the paths most likely to carry a regression and the ones that map onto the original
+report. Passing them buys early confidence; it does **not** close M8B.
+
+---
+
 ## Before you start
 
 **Two accounts on one shard.** Call them **A** and **B**. Both need `shard_users` rows and a
@@ -205,11 +232,24 @@ recoverable in-world.
 
 ---
 
-## If a row fails
+## If a row fails — the corrective protocol
 
-Stop. Capture the correlation id and both sides' log lines, and record which row and which step.
-A failing row becomes its own corrective milestone — **it is not a reason to re-approve Milestone
-6 on the strength of the automated suite**, which by construction cannot see any of this.
+Owner decision, 2026-08-12. A defect found during live validation or production-like testing gets
+a **dedicated corrective regression milestone**, which must, in this order:
+
+1. reproduce the defect **automatically** wherever technically possible;
+2. add the failing regression test *before* the fix;
+3. implement the **smallest root-cause correction** — not a symptom patch, not a retry;
+4. rerun the affected automated suites;
+5. repeat the corresponding live runbook row.
+
+**Every live-discovered defect leaves behind an automated regression test wherever technically
+feasible.** That rule is what stops this programme's findings from being rediscovered: each of
+Q-01, Q-03, Q-04, Q-05, Q-06 and Q-16 is now pinned by a test that was mutation-checked to fail
+without its fix, and a live-found defect deserves the same treatment.
+
+A failing row is **not** a reason to re-approve Milestone 6 on the strength of the automated suite,
+which by construction cannot see any of this.
 
 ## When every row passes
 
