@@ -85,9 +85,18 @@ public class QuestDestinationBlockEntity extends BlockEntity {
                     // 2. Discard the escort ONLY because we know they are at the right place
                     escort.discard(); 
 
-                    // 3. Fire the Payload to the Client!
-                    String dynamicTriggerKey = "arrived_" + safeCityName; 
-                    
+                    // 3. Fire the trigger from HERE.
+                    //
+                    // Milestone 6: this used to tell the CLIENT that the escort had arrived and
+                    // wait for it to assert the trigger back -- a server-made decision routed
+                    // through an untrusted round trip, and one that broke entirely if the client
+                    // was stale. The server made the decision, so the server sends it.
+                    String dynamicTriggerKey = "arrived_" + safeCityName;
+                    String questStateId = tagValue(escort, "quest_state_id_");
+
+                    com.seggellion.britannia_mod.quest.QuestObjectiveWatcher.fireDirect(
+                        player, activeQuestId, questStateId, dynamicTriggerKey, "escort_arrival"
+                    );
                     com.seggellion.britannia_mod.network.payload.EscortArrivedS2CPayload.send(
                         player, activeQuestId, dynamicTriggerKey, npcName, npcGender, npcUuid
                     );

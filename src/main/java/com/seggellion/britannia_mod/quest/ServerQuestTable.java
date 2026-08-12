@@ -143,6 +143,37 @@ public final class ServerQuestTable {
         if (playerUuid != null) QUESTS_BY_PLAYER.remove(playerUuid);
     }
 
+    /** The environmental objectives pending on this quest, or NONE when it has none. */
+    public static QuestObjectiveTriggers triggersFor(UUID playerUuid, String questStateId) {
+        if (playerUuid == null) return QuestObjectiveTriggers.NONE;
+        Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(playerUuid);
+        if (quests == null) return QuestObjectiveTriggers.NONE;
+        ClientQuestEntry entry = quests.get(clean(questStateId));
+        return entry == null ? QuestObjectiveTriggers.NONE : entry.triggers();
+    }
+
+    /**
+     * Replaces one quest's objectives after Rails advanced its node.
+     *
+     * <p>Without this the server would keep seeing the objective it just completed and fire it
+     * again on the next tick, which is the storm finding Q-06 describes -- the old client-side
+     * check re-sent a location trigger every second for as long as the player stood in the zone.
+     */
+    public static void updateTriggers(ServerPlayer player, String questStateId,
+                                      QuestObjectiveTriggers triggers) {
+        if (player == null) return;
+        String key = clean(questStateId);
+        if (key.isBlank()) return;
+
+        QUESTS_BY_PLAYER.computeIfPresent(player.getUUID(), (uuid, existing) -> {
+            ClientQuestEntry entry = existing.get(key);
+            if (entry == null) return existing;
+            Map<String, ClientQuestEntry> quests = new LinkedHashMap<>(existing);
+            quests.put(key, entry.withTriggers(triggers));
+            return quests;
+        });
+    }
+
     /** Whether this player's journal has been loaded at all in this server run. */
     public static boolean journalLoaded(UUID playerUuid) {
         return playerUuid != null && QUESTS_BY_PLAYER.containsKey(playerUuid);

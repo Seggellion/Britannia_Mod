@@ -57,6 +57,14 @@ public final class QuestProxyService {
             return;
         }
 
+        // Milestone 6 (finding Q-05): objective progress is decided by the server. A TRIGGER
+        // arriving from a client is either a stale build or someone claiming an objective they
+        // have not met, and either way it is not evidence of anything.
+        if (request.action() == QuestActionC2SPayload.Action.TRIGGER) {
+            reject(player, request, QuestActionTelemetry.Stage.SHAPE, "client_trigger_not_authoritative");
+            return;
+        }
+
         ResolvedIntent intent = resolve(player, request);
         if (intent == null) {
             reject(player, request, QuestActionTelemetry.Stage.NPC_RESOLVE, "quest_giver_unresolved");

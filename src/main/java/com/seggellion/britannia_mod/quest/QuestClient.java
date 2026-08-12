@@ -33,10 +33,6 @@ public final class QuestClient {
         send(QuestActionC2SPayload.Action.START, questId, "", -1, zeroUuid(), "", true, callback);
     }
 
-    public static void sendTrigger(long questId, String triggerKey, Consumer<QuestModels.QuestResponse> callback) {
-        send(QuestActionC2SPayload.Action.TRIGGER, questId, triggerKey, -1, zeroUuid(), "", true, callback);
-    }
-
     public static void sendTransition(long questId, String choiceId, JsonObject context,
                                       Consumer<QuestModels.QuestResponse> callback) {
         send(QuestActionC2SPayload.Action.CHOOSE, questId, choiceId, -1, questGiverUuidFromContext(context),

@@ -616,3 +616,80 @@ column; widening a global user lookup is a different decision and is not this fi
 
 Rails only: one model method, two controller wrappers, one new test file. No Minecraft change, no
 behaviour change to any path that was already correct.
+
+---
+
+## Milestone 6 — Server-authoritative objectives (Q-02, Q-05, Q-06) (2026-08-12)
+
+### The defect
+
+Location, pickup and destroy objectives were detected on the **client**, which then asserted the
+trigger to the server. All three read one client static, `QuestManager.currentQuestState`, whose
+only writers are a successful in-session quest action and a server trigger result — **neither runs
+at login**. Three consequences:
+
+- after any relog no environmental objective fired at all, and with two active quests only the
+  most recently touched one could progress (Q-02);
+- a modified client could claim any objective it liked (Q-05);
+- the location check re-sent its trigger every twenty ticks for as long as a player stood in the
+  zone, with no debounce (Q-06).
+
+### The change
+
+**Objectives travel with the server's journal.** `QuestJournalEntrySerializer` publishes the
+current node's `triggers` (location volume, pickup tag, destroy tag + volume); `ClientQuestEntry`
+carries them as `QuestObjectiveTriggers`. They are deliberately **not** written by
+`QuestEntryCodecs`, so they never reach a client — quest solutions stay off the wire, and the
+client no longer needs them.
+
+**`QuestObjectiveWatcher` does the detecting**, over `ServerQuestTable.snapshot(player)` — every
+active quest, not one — on the server tick for locations, on the server side of
+`ItemEntityPickupEvent` for pickups (from the stack the server actually moved), and from the
+existing server-side item-destruction path for destroys.
+
+**The storm is closed by design.** One in-flight trigger per (quest state, trigger key), a
+ten-second cooldown after a rejection, and — the part that actually matters — a successful trigger
+**rewrites that quest's objectives from the response's new node**, so the objective just met is
+gone from the server's view without waiting for a refetch.
+
+**Client-asserted triggers are refused** with `client_trigger_not_authoritative`, and the two
+round trips that depended on the client asserting a server-made decision are gone: escort arrival
+now fires from `QuestDestinationBlockEntity` directly (its payload became presentation only,
+carrying the NPC's name so the screen still greets the right person), and the never-sent
+`TriggerQuestS2CPayload` handler no longer acts. `QuestClient.sendTrigger` is deleted.
+
+### Verification
+
+- **GameTest: all 368 required tests passed** (fresh-log verified) — 362 plus six new
+  `QuestObjectiveWatcherGameTests`: a client trigger is refused, every active quest carries its
+  own objectives, advancing a node clears the old one, the journal payload parses into usable
+  objectives, an objective missing its trigger key or item tag is dropped rather than half-built,
+  and **objectives do not survive the trip to the client**.
+- **Mutation-tested**: re-accepting client triggers fails exactly `aclientassertedtriggerisrefused`.
+  Restored, re-run clean at 368.
+- MC unit suite 1791 tests, the same 21 pre-existing banner failures.
+- **Rails: 1377 runs, 6546 assertions, 1 failure** — the known deterministic recalculator.
+
+### What is deliberately not covered by an automated test
+
+The end-to-end paths — walk into a zone, pick the item up, burn it — need a live Rails to answer
+the trigger, which the gametest harness has no way to provide. What is pinned here is everything
+up to the HTTP call and everything after the response: detection over the journal, the debounce,
+the objective rewrite, and the refusal of client assertions. **This is the milestone that most
+needs the two-player live validation the playbook schedules for M8**, and it is the one to watch
+first in-game.
+
+### Observed, not fixed
+
+- `ItemBurnedS2CPayload` and `TriggerQuestS2CPayload` are now inert but still registered, so an
+  older client cannot desync on an unknown payload type. Removing them belongs with a client
+  version bump, not here.
+- `QuestManager` remains as the dialogue screen's view model. Nothing gameplay-authoritative reads
+  it any more, which was the point; deleting it outright would churn the screens for no safety
+  gain.
+
+### Scope discipline
+
+Both repositories. Rails: one serializer. Minecraft: three new classes
+(`QuestObjectiveTriggers`, `QuestObjectiveWatcher`, `QuestItemMatcher`), six touched production
+files, one new gametest class.

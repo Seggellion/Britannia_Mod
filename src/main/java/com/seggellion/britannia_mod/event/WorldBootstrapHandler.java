@@ -12,6 +12,7 @@ import com.seggellion.britannia_mod.player.PlayerData;
 import com.seggellion.britannia_mod.player.PlayerDataStore;
 import com.seggellion.britannia_mod.quest.QuestCleanupService;
 import com.seggellion.britannia_mod.quest.QuestJournalRefresh;
+import com.seggellion.britannia_mod.quest.QuestObjectiveWatcher;
 import com.seggellion.britannia_mod.quest.ServerQuestTable;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
@@ -67,6 +68,7 @@ public final class WorldBootstrapHandler {
         // a miss refetches (Milestone 5) instead of refusing outright.
         ServerQuestTable.forget(player.getUUID());
         QuestJournalRefresh.forget(player.getUUID());
+        QuestObjectiveWatcher.forget(player.getUUID());
     }
 
     public static void onServerStopping(MinecraftServer server) {

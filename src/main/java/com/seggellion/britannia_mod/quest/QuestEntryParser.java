@@ -99,7 +99,8 @@ public final class QuestEntryParser {
             questKey = questId;
         }
 
-        return new ClientQuestEntry(questStateId, questId, questKey, questGiverName, name, brief, acceptedAt, status);
+        return new ClientQuestEntry(questStateId, questId, questKey, questGiverName, name, brief,
+                acceptedAt, status, QuestObjectiveTriggers.fromJournalEntry(entry));
     }
 
     private static void addEntry(List<ClientQuestEntry> entries, JsonObject quest, String fallbackQuestGiverName, String source) {

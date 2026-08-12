@@ -30,53 +30,14 @@ public class QuestPayloadHandler {
             ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
     private static final Style UO_STYLE = Style.EMPTY.withFont(FONT_UO_CLASSIC);
 
-public static void handleItemBurned(final ItemBurnedS2CPayload payload, final IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (context.flow().isClientbound()) {
-                ClientProxy.evaluateLavaQuest(payload.item(), payload.pos());
-            }
-        });
-    }
-
-
-public static class ClientProxy {
-        public static void openQuestUI(long questId, String triggerKey) {
-            // Because this is inside a separate class block, the server's
-            // ClassLoader won't crash when it sees these client-side references!
-            QuestClient.sendTrigger(questId, triggerKey, response -> {
-                if (response.success) {
-                    ClientNetworkHandler.openQuestDecisionScreen(response, "The Guardian", null);
-                }
-            });
-        }
-
-
-public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
-            QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
-            if (state == null || state.currentNode == null || state.currentNode.metadata == null) return;
-            if (state.currentNode.metadata.has("destroy_trigger")) {
-                com.google.gson.JsonObject destroyData = state.currentNode.metadata.getAsJsonObject("destroy_trigger");
-                String targetTag = destroyData.has("item_tag") ? destroyData.get("item_tag").getAsString() : "";
-                String triggerKey = destroyData.has("trigger_key") ? destroyData.get("trigger_key").getAsString() : "";
-                if (!targetTag.isEmpty() && !triggerKey.isEmpty()) {
-                    BlockPos min = new BlockPos(QuestEventHandlers.getSafeInt(destroyData, "min_x"), QuestEventHandlers.getSafeInt(destroyData, "min_y"), QuestEventHandlers.getSafeInt(destroyData, "min_z"));
-                    BlockPos max = new BlockPos(QuestEventHandlers.getSafeInt(destroyData, "max_x"), QuestEventHandlers.getSafeInt(destroyData, "max_y"), QuestEventHandlers.getSafeInt(destroyData, "max_z"));
-                    
-                    if (QuestEventHandlers.isInsideZone(pos, min, max)) {
-                        if (QuestEventHandlers.isQuestItemMatch(stack, targetTag)) {
-                            QuestManager.getInstance().clearState();
-                            QuestClient.sendTrigger(state.quest_id, triggerKey, response -> {
-                                if (response.success) {
-                                    ClientNetworkHandler.openQuestDecisionScreen(response, "The Guardian", null);
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-
+/**
+     * Milestone 6: this used to hand an item-destruction back to the CLIENT to decide whether it
+     * met a quest objective. The server evaluates its own journal now
+     * ({@code QuestObjectiveWatcher.onQuestItemDestroyed}), so nothing here asserts anything --
+     * the payload is retained only so an older client cannot desync on an unknown type.
+     */
+    public static void handleItemBurned(final ItemBurnedS2CPayload payload, final IPayloadContext context) {
+        context.enqueueWork(() -> LOGGER.debug("Ignoring legacy item-burned payload; objectives are server-side"));
     }
 
     public static void activateEscort(ServerPlayer player, long questId, String rawQuestStateId,
