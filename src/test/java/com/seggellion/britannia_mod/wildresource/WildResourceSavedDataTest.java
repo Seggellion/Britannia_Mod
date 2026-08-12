@@ -41,4 +41,28 @@ class WildResourceSavedDataTest {
         assertTrue(data.removeNode(position).isPresent());
         assertEquals(0, data.countInChunk(new ChunkPos(position), ASH));
     }
+
+    @Test
+    void invalidPersistedEntriesAreSkippedWithoutDiscardingValidState() {
+        WildResourceSavedData original = new WildResourceSavedData();
+        ChunkPos chunk = new ChunkPos(1, 2);
+        original.scheduleAttempt(chunk, ASH, 77L);
+        CompoundTag saved = original.save(new CompoundTag(), null);
+
+        CompoundTag invalidSchedule = new CompoundTag();
+        invalidSchedule.putString("ResourceId", "not a resource id");
+        invalidSchedule.putLong("Chunk", chunk.toLong());
+        invalidSchedule.putLong("NextAttempt", 88L);
+        saved.getList("Schedules", CompoundTag.TAG_COMPOUND).add(invalidSchedule);
+
+        CompoundTag invalidNode = new CompoundTag();
+        invalidNode.putString("ResourceId", "also invalid");
+        invalidNode.putLong("Position", BlockPos.ZERO.asLong());
+        invalidNode.putLong("PlacedAt", 1L);
+        saved.getList("Nodes", CompoundTag.TAG_COMPOUND).add(invalidNode);
+
+        WildResourceSavedData loaded = WildResourceSavedData.load(saved, null);
+        assertEquals(77L, loaded.nextAttempt(chunk, ASH));
+        assertTrue(loaded.nodeAt(BlockPos.ZERO).isEmpty());
+    }
 }

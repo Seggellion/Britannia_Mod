@@ -51,6 +51,7 @@ public final class WildResourceEntries {
                 WildResourcePlacementRules::isAshSupport,
                 WildResourceEntry.PlacementRule.ALLOW,
                 WildResourceProximity::hasLavaWithin,
+                WildResourceEntries::inspectAsh,
                 (level, position) -> level.setBlock(position, BlockRegistry.SULPHUROUS_ASH_PATCH.get().defaultBlockState(), 3),
                 (level, position, player, tool) -> WildResourceHarvestService.harvestOne(
                         level,
@@ -71,6 +72,7 @@ public final class WildResourceEntries {
                 WildResourcePlacementRules::isOysterSubstrate,
                 WildResourceEntry.PlacementRule.ALLOW,
                 WildResourceProximity::hasWaterWithin,
+                WildResourceEntries::inspectOyster,
                 (level, position) -> level.setBlock(
                         position, BlockRegistry.BLACK_LIPPED_OYSTER.get().defaultBlockState(), 3
                 ),
@@ -78,5 +80,39 @@ public final class WildResourceEntries {
                 WildResourceHarvestService::createOysterLoot
         ));
         bootstrapped = true;
+    }
+
+    private static WildResourceEntry.ExistingNodeState inspectAsh(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.core.BlockPos position
+    ) {
+        if (!level.getBlockState(position).is(BlockRegistry.SULPHUROUS_ASH_PATCH.get())) {
+            return WildResourceEntry.ExistingNodeState.MISSING_OR_REPLACED;
+        }
+        if (!WildResourcePlacementRules.isAshSupport(level, position)) {
+            return WildResourceEntry.ExistingNodeState.OWNED_INVALID;
+        }
+        return fromQuery(WildResourceProximity.lavaStatus(level, position));
+    }
+
+    private static WildResourceEntry.ExistingNodeState inspectOyster(
+            net.minecraft.server.level.ServerLevel level,
+            net.minecraft.core.BlockPos position
+    ) {
+        if (!level.getBlockState(position).is(BlockRegistry.BLACK_LIPPED_OYSTER.get())) {
+            return WildResourceEntry.ExistingNodeState.MISSING_OR_REPLACED;
+        }
+        if (!WildResourcePlacementRules.isOysterSubstrate(level, position)) {
+            return WildResourceEntry.ExistingNodeState.OWNED_INVALID;
+        }
+        return fromQuery(WildResourceProximity.waterStatus(level, position));
+    }
+
+    private static WildResourceEntry.ExistingNodeState fromQuery(WildResourceProximity.QueryResult result) {
+        return switch (result) {
+            case FOUND -> WildResourceEntry.ExistingNodeState.VALID;
+            case NOT_FOUND -> WildResourceEntry.ExistingNodeState.OWNED_INVALID;
+            case INCOMPLETE -> WildResourceEntry.ExistingNodeState.DEFER;
+        };
     }
 }

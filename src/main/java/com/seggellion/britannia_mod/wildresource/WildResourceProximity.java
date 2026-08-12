@@ -23,16 +23,33 @@ public final class WildResourceProximity {
     }
 
     public static boolean hasLavaWithin(ServerLevel level, BlockPos center) {
-        return hasMatchingWithin(center, ENVIRONMENT_RADIUS, new LoadedSectionAccess(level),
-                WildResourceProximity::isLava);
+        return lavaStatus(level, center) == QueryResult.FOUND;
     }
 
     public static boolean hasWaterWithin(ServerLevel level, BlockPos center) {
-        return hasMatchingWithin(center, ENVIRONMENT_RADIUS, new LoadedSectionAccess(level),
+        return waterStatus(level, center) == QueryResult.FOUND;
+    }
+
+    public static QueryResult lavaStatus(ServerLevel level, BlockPos center) {
+        return findMatchingWithin(center, ENVIRONMENT_RADIUS, new LoadedSectionAccess(level),
+                WildResourceProximity::isLava);
+    }
+
+    public static QueryResult waterStatus(ServerLevel level, BlockPos center) {
+        return findMatchingWithin(center, ENVIRONMENT_RADIUS, new LoadedSectionAccess(level),
                 WildResourceProximity::isWater);
     }
 
     static boolean hasMatchingWithin(
+            BlockPos center,
+            int radius,
+            SearchAccess access,
+            Predicate<BlockState> matcher
+    ) {
+        return findMatchingWithin(center, radius, access, matcher) == QueryResult.FOUND;
+    }
+
+    static QueryResult findMatchingWithin(
             BlockPos center,
             int radius,
             SearchAccess access,
@@ -48,7 +65,7 @@ public final class WildResourceProximity {
         int minimumZ = center.getZ() - radius;
         int maximumZ = center.getZ() + radius;
         if (minimumY > maximumY) {
-            return false;
+            return QueryResult.NOT_FOUND;
         }
 
         int minimumChunkX = SectionPos.blockToSectionCoord(minimumX);
@@ -60,7 +77,7 @@ public final class WildResourceProximity {
         for (int chunkX = minimumChunkX; chunkX <= maximumChunkX; chunkX++) {
             for (int chunkZ = minimumChunkZ; chunkZ <= maximumChunkZ; chunkZ++) {
                 if (!access.isChunkLoaded(chunkX, chunkZ)) {
-                    return false;
+                    return QueryResult.INCOMPLETE;
                 }
             }
         }
@@ -88,7 +105,7 @@ public final class WildResourceProximity {
                                 long deltaX = x - center.getX();
                                 if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ <= radiusSquared
                                         && matcher.test(access.stateAt(x, y, z))) {
-                                    return true;
+                                    return QueryResult.FOUND;
                                 }
                             }
                         }
@@ -96,7 +113,13 @@ public final class WildResourceProximity {
                 }
             }
         }
-        return false;
+        return QueryResult.NOT_FOUND;
+    }
+
+    public enum QueryResult {
+        FOUND,
+        NOT_FOUND,
+        INCOMPLETE
     }
 
     static boolean isLava(BlockState state) {

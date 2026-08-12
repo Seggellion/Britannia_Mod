@@ -59,6 +59,12 @@ class WildResourceProximityTest {
                 CENTER, 20, access, WildResourceProximity::isWater
         ));
         assertEquals(0, access.stateReads);
+        assertEquals(
+                WildResourceProximity.QueryResult.INCOMPLETE,
+                WildResourceProximity.findMatchingWithin(
+                        CENTER, 20, access, WildResourceProximity::isWater
+                )
+        );
     }
 
     @Test

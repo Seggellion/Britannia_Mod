@@ -24,6 +24,7 @@ public record WildResourceEntry(
         PlacementRule substrateRule,
         PlacementRule biomeRule,
         PlacementRule nearbyRule,
+        ExistingNodeValidator existingNodeValidator,
         PlacementStrategy placementStrategy,
         HarvestStrategy harvestStrategy,
         LootStrategy lootStrategy
@@ -36,6 +37,7 @@ public record WildResourceEntry(
         Objects.requireNonNull(substrateRule, "substrateRule");
         Objects.requireNonNull(biomeRule, "biomeRule");
         Objects.requireNonNull(nearbyRule, "nearbyRule");
+        Objects.requireNonNull(existingNodeValidator, "existingNodeValidator");
         Objects.requireNonNull(placementStrategy, "placementStrategy");
         Objects.requireNonNull(harvestStrategy, "harvestStrategy");
         Objects.requireNonNull(lootStrategy, "lootStrategy");
@@ -45,6 +47,29 @@ public record WildResourceEntry(
         if (maxNodesPerChunk <= 0) {
             throw new IllegalArgumentException("maxNodesPerChunk must be positive");
         }
+    }
+
+    /** Compatibility constructor for policy tests and entries with no persisted-world representation. */
+    public WildResourceEntry(
+            ResourceLocation id,
+            int spawnWeight,
+            int maxNodesPerChunk,
+            WildResourceTuning tuning,
+            CandidateGenerator candidateGenerator,
+            PlacementRule environmentRule,
+            PlacementRule substrateRule,
+            PlacementRule biomeRule,
+            PlacementRule nearbyRule,
+            PlacementStrategy placementStrategy,
+            HarvestStrategy harvestStrategy,
+            LootStrategy lootStrategy
+    ) {
+        this(
+                id, spawnWeight, maxNodesPerChunk, tuning, candidateGenerator,
+                environmentRule, substrateRule, biomeRule, nearbyRule,
+                (level, position) -> ExistingNodeState.VALID,
+                placementStrategy, harvestStrategy, lootStrategy
+        );
     }
 
     public boolean isValidPlacement(ServerLevel level, BlockPos position) {
@@ -74,6 +99,18 @@ public record WildResourceEntry(
     @FunctionalInterface
     public interface PlacementStrategy {
         boolean place(ServerLevel level, BlockPos position);
+    }
+
+    @FunctionalInterface
+    public interface ExistingNodeValidator {
+        ExistingNodeState inspect(ServerLevel level, BlockPos position);
+    }
+
+    public enum ExistingNodeState {
+        VALID,
+        DEFER,
+        OWNED_INVALID,
+        MISSING_OR_REPLACED
     }
 
     @FunctionalInterface

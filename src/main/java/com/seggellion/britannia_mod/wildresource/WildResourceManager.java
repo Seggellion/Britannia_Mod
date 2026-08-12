@@ -25,6 +25,7 @@ import java.util.ArrayList;
 public final class WildResourceManager {
     public static final int MAX_CHUNKS_PER_TICK = 16;
     public static final int MAX_RESOURCE_ATTEMPTS_PER_TICK = 32;
+    public static final int MAX_RECONCILIATIONS_PER_TICK = 16;
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final WildResourceManager INSTANCE = new WildResourceManager();
     private static final Map<ServerLevel, LoadedChunkQueue> LOADED_CHUNKS = new IdentityHashMap<>();
@@ -43,7 +44,19 @@ public final class WildResourceManager {
     @SubscribeEvent
     public void onChunkLoad(ChunkEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel level) {
-            LOADED_CHUNKS.computeIfAbsent(level, ignored -> new LoadedChunkQueue()).add(event.getChunk().getPos());
+            LoadedChunkQueue queue = LOADED_CHUNKS.computeIfAbsent(level, ignored -> new LoadedChunkQueue());
+            ChunkPos loaded = event.getChunk().getPos();
+            queue.add(loaded);
+            // A resource radius is 20 blocks, so a newly available chunk can unblock checks in
+            // loaded chunks up to two chunk coordinates away. This is a fixed 5x5 candidate set.
+            for (int offsetX = -2; offsetX <= 2; offsetX++) {
+                for (int offsetZ = -2; offsetZ <= 2; offsetZ++) {
+                    ChunkPos neighbor = new ChunkPos(loaded.x + offsetX, loaded.z + offsetZ);
+                    if (level.getChunkSource().getChunkNow(neighbor.x, neighbor.z) != null) {
+                        queue.requestReconciliation(neighbor);
+                    }
+                }
+            }
         }
     }
 
@@ -68,10 +81,19 @@ public final class WildResourceManager {
     public void afterServerTick(ServerTickEvent.Post event) {
         int remainingChunks = MAX_CHUNKS_PER_TICK;
         int remainingAttempts = MAX_RESOURCE_ATTEMPTS_PER_TICK;
+        int remainingReconciliations = MAX_RECONCILIATIONS_PER_TICK;
         for (ServerLevel level : event.getServer().getAllLevels()) {
             LoadedChunkQueue queue = LOADED_CHUNKS.get(level);
             if (queue == null) {
                 continue;
+            }
+            while (remainingReconciliations > 0) {
+                ChunkPos chunk = queue.pollReconciliation();
+                if (chunk == null) {
+                    break;
+                }
+                reconcileLoadedChunk(level, chunk);
+                remainingReconciliations--;
             }
             while (remainingChunks > 0 && remainingAttempts > 0) {
                 ChunkPos chunk = queue.rotate();
@@ -83,6 +105,28 @@ public final class WildResourceManager {
             }
             if (remainingChunks == 0 || remainingAttempts == 0) {
                 break;
+            }
+        }
+    }
+
+    static void reconcileLoadedChunk(ServerLevel level, ChunkPos chunk) {
+        if (level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null) {
+            return;
+        }
+        WildResourceSavedData data = WildResourceSavedData.get(level);
+        for (WildResourceNode node : data.nodesInChunk(chunk)) {
+            WildResourceEntry entry = WildResources.registry().find(node.resourceId()).orElse(null);
+            WildResourceEntry.ExistingNodeState state = entry == null
+                    ? WildResourceEntry.ExistingNodeState.MISSING_OR_REPLACED
+                    : entry.existingNodeValidator().inspect(level, node.position());
+            long nextAttempt = entry == null
+                    ? level.getGameTime()
+                    : level.getGameTime() + entry.tuning().nextRespawnDelay(level.random);
+            WildResourceReconciliation.Outcome outcome = WildResourceReconciliation.reconcile(
+                    data, node, entry, state, nextAttempt
+            );
+            if (outcome == WildResourceReconciliation.Outcome.REMOVE_OWNED_BLOCK) {
+                level.setBlock(node.position(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
         }
     }
@@ -173,17 +217,37 @@ public final class WildResourceManager {
     private static final class LoadedChunkQueue {
         private final ArrayDeque<ChunkPos> queue = new ArrayDeque<>();
         private final LinkedHashSet<Long> membership = new LinkedHashSet<>();
+        private final ArrayDeque<ChunkPos> reconciliationQueue = new ArrayDeque<>();
+        private final LinkedHashSet<Long> reconciliationMembership = new LinkedHashSet<>();
 
         void add(ChunkPos chunk) {
             if (membership.add(chunk.toLong())) {
                 queue.addLast(chunk);
             }
+            requestReconciliation(chunk);
         }
 
         void remove(ChunkPos chunk) {
             if (membership.remove(chunk.toLong())) {
                 queue.remove(chunk);
             }
+            if (reconciliationMembership.remove(chunk.toLong())) {
+                reconciliationQueue.remove(chunk);
+            }
+        }
+
+        void requestReconciliation(ChunkPos chunk) {
+            if (membership.contains(chunk.toLong()) && reconciliationMembership.add(chunk.toLong())) {
+                reconciliationQueue.addLast(chunk);
+            }
+        }
+
+        ChunkPos pollReconciliation() {
+            ChunkPos chunk = reconciliationQueue.pollFirst();
+            if (chunk != null) {
+                reconciliationMembership.remove(chunk.toLong());
+            }
+            return chunk;
         }
 
         ChunkPos rotate() {
