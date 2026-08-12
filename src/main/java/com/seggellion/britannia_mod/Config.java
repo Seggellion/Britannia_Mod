@@ -84,6 +84,11 @@ public static boolean disableTraderLlamaSpawning;
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event)
     {
+        // This legacy listener must ignore other Britannia config files. Without this guard,
+        // adding any independent config causes it to read its own SPEC before that spec is loaded.
+        if (event.getConfig().getSpec() != SPEC) {
+            return;
+        }
         logDirtBlock = LOG_DIRT_BLOCK.get();
         magicNumber = MAGIC_NUMBER.get();
         magicNumberIntroduction = MAGIC_NUMBER_INTRODUCTION.get();
