@@ -11,6 +11,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.seggellion.britannia_mod.farming.GrainHarvestTools;
+import com.seggellion.britannia_mod.event.ManagedVegetationCutEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 import java.util.Optional;
 
@@ -123,6 +125,14 @@ public final class ManagedVegetationService {
             );
         }
         level.playSound(null, base, SoundEvents.CROP_BREAK, SoundSource.BLOCKS, 0.8F, 1.0F);
+        NeoForge.EVENT_BUS.post(new ManagedVegetationCutEvent(
+                player,
+                level.dimension(),
+                base,
+                latest.vegetationEntryId().orElseThrow(),
+                latest.flowerSpeciesId(),
+                latest.flowerStage()
+        ));
         return true;
     }
 
