@@ -991,6 +991,57 @@ player keeps exactly what they had; receipts survive the save/load boundary and
 never pay another player's reservation out to the wrong hands).
 
 ### Stopped
-Milestone 19.5 complete. The Vendor/Trader economy program (Milestones 0-19.5)
-is delivered. Milestone 20 (TownPerson regional population) and Milestone 21
-(item content) are owner-scheduled and NOT started, per stop rule.
+Milestone 19.5 complete.
+
+## 2026-08-11 — Milestone 20: TownPerson regional population
+
+Owner approved resuming. Rails `dcd829d`; Minecraft commit in this revision.
+Owner decision #12 delivered: TownPersons stop belonging to Merchant/Trader
+spawn blocks and become a Rails-driven regional population.
+
+Rails owns HOW MANY. `population_policies` carries exactly the decision's named
+inputs (min/max population, food/alcohol/wealth influence, growth-curve
+parameters, spawn/despawn rate limits) as one row per shard with optional
+per-city overrides -- the ShardNpcTypePolicy shape, so operators meet one
+concept. `Population::DesiredPopulation` is the capped nonlinear curve:
+
+  prosperity = food_influence x food + alcohol_influence x alcohol
+             + wealth_influence x treasury gold
+  desired    = min + (max - min) x (1 - e^-((prosperity / scale)^exponent))
+
+Every required property falls out of the shape rather than being clamped on
+afterwards: nothing -> exactly the minimum; exponent > 1 -> shallow early
+growth then a visible boom; the exponential saturates, so the maximum is a hard
+cap by construction, never an unbounded exponential. Wealth reads the
+treasury's circulating coins_outstanding -- what the Vendor/Trader flows
+actually move -- not the legacy cities.gold_supply column.
+
+Minecraft owns WHERE and HOW FAST, never how many. `GET /api/city_populations`
+returns desired count, rate limits AND the authoritative city region bounds in
+one signed slow-cadence request (~5 min, matching the staffing sweep), so the
+manager needs no second lookup that could disagree about which region a city
+owns. `TownPersonPlacement` applies every condition the decision lists --
+inside the city region, LOADED CHUNKS ONLY (checked before any block lookup, so
+a rejected candidate never touches chunk loading), sturdy ground, headroom, no
+solid or liquid placement, a minimum player distance, and a local density cap
+-- and gives up quietly for the cycle when nothing valid is found, because
+population is cosmetic and must never drag chunks into memory.
+`TownPersonPopulationManager` converges by a pure, rate-limited delta so a town
+grows, shrinks and shifts over time instead of popping in and out; a backend
+outage leaves a living town untouched.
+
+Legacy TownPersons are PRESERVED and counted as their city's existing
+population, so the Milestone 16 migration's end of `townPersonAmount`
+side-spawning causes neither a cull nor double-counting.
+
+Validation: Rails 8 curve tests + 4 endpoint tests; full Rails suite 1485
+runs/7475 assertions/0 errors with only the pre-existing deterministic
+recalculator failure; compileJava BUILD SUCCESSFUL; GameTest server all 377
+required tests passed (370 + 7 new: rate-limited convergence in both
+directions, multi-cycle gradual growth, legacy preservation and top-up, every
+placement rejection reason, unloaded chunks never loaded or spawned into,
+region-less cities placing nobody, malformed rows skipped).
+
+### Stopped
+Milestone 20 complete. Milestone 21 (item content: models, textures and food
+mechanics) is owner-scheduled and NOT started, per stop rule.
