@@ -112,13 +112,13 @@ Six independent live starts produced six different corpus lines across the requi
 | In-world backgrounds | `inworld_menu_background.png`, `inworld_menu_list_background.png`, `inworld_header_separator.png`, `inworld_footer_separator.png` | Must remain vanilla/current to preserve in-world UI |
 | Functional GUI atlas/sprites | buttons, sliders, fields, list entries, icons, focus/selection/accessibility sprites | Outside branding scope and required for usability |
 
-## Future asset validation checklist
+## Gate 6 automated validation coverage
 
-- PNG parses successfully and reports the intended physical dimensions.
-- Title images contain useful transparent pixels and no opaque background.
-- Black assets are 100% opaque and every pixel is exactly RGB `(0,0,0)`.
-- Normal and rare title assets have identical approved content/layout.
-- No source-sized candidate, prompt output, contact sheet, or temporary image is packaged.
-- Generated JAR contains only the selected runtime assets at their exact paths.
-- Protected title hashes still match this manifest.
-- Resource reload and multiple GUI scales do not reveal seams, matte edges, or one-frame panorama flashes.
+- `ClientBrandingTitleAssetTest` parses the three title PNGs, locks their physical dimensions and hashes, verifies useful alpha/transparency and safe-area coverage, and requires the normal and rare wordmarks to be byte-identical.
+- `ClientBrandingBackgroundPolicyTest` parses all five black PNGs, checks every pixel is opaque RGB `(0,0,0)`, locks dimensions, rejects `inworld_*` and panorama overrides, and protects the approved title-background hashes.
+- `ClientBrandingSplashCorpusTest` validates strict UTF-8, size, trimming, readability, uniqueness, the 55-code-point editorial ceiling, and absence of every normal vanilla 1.21.1 splash.
+- `ClientBrandingRuntimeContractTest` locks all eleven exact runtime resource paths, allows only the eight approved files under the mod's `assets/minecraft/textures/gui` override tree and only `splashes.txt` under its text tree, requires event subscribers to declare `Dist.CLIENT`, and requires both branding mixins to remain exclusively in the mixin configuration's `client` section.
+- The regular production JAR contains the selected branding assets/classes and mixin registration. It contains no branding test class, vanilla-hash fixture, research document, candidate, prompt, contact sheet, or source-format image.
+- The CI-defined dedicated GameTest server loaded the mod in `Env=SERVER`, passed all 349 required tests, and shut down without loading client-only branding code.
+
+Resource reload and the complete resolution/GUI-scale visual matrix remain owner-facing Milestone 7 work and were not started by Gate 6.

@@ -722,3 +722,114 @@ fix(client): black out loading screens and add website link
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 6 - Automated regression coverage
+
+Date: 2026-08-11
+
+Status: Gate 6 passed with the inherited full-suite baseline exceptions recorded
+
+Production behavior changed: No
+
+Starting commit: `208aa5b4556b762e9cff40dd84b558d5d11bbbb4`
+
+### Coverage audit and additions
+
+The existing branding tests already covered the content-heavy contracts:
+
+- strict splash encoding, size, trimming, readability, exact/canonical uniqueness, and vanilla-line exclusion;
+- title PNG loading, exact dimensions, hashes, useful alpha, clean transparency, safe-area placement, and normal/rare parity;
+- transparent edition-layer dimensions and opacity;
+- exact dimensions and per-pixel opaque black for all five pre-world background assets;
+- absence of panorama and `inworld_*` overrides;
+- protected title-background hashes;
+- responsive `Version 18` layout, loading-screen policy, and website-button identity/geometry.
+
+Added `ClientBrandingRuntimeContractTest` with five cross-cutting tests that close the remaining Gate 6 gaps:
+
+1. all eleven branding runtime resources must exist at their exact production paths;
+2. the mod's `assets/minecraft/textures/gui` override tree may contain only the eight approved title/background PNGs, and its text override tree may contain only `splashes.txt`;
+3. both branding event subscribers must carry an explicit `Dist.CLIENT` restriction;
+4. all non-mixin branding types must remain under the client package;
+5. `LoadingScreenPanoramaMixin` and `TitleScreenBackgroundMixin` must be registered in the mixin configuration's `client` section and never in its common `mixins` section.
+
+No production Java, resource, build configuration, gameplay system, or live presentation changed.
+
+### Focused validation
+
+Command:
+
+```text
+C:\Users\dusti\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\bin\gradle.bat test --tests "com.seggellion.britannia_mod.client.branding.*" --tests "com.seggellion.britannia_mod.client.TitleBrandingLayoutTest" --tests "com.seggellion.britannia_mod.client.LoadingScreenBackgroundPolicyTest" --tests "com.seggellion.britannia_mod.client.TitleWebsiteButtonBrandingTest" --no-configuration-cache --console=plain
+```
+
+Result: `BUILD SUCCESSFUL`; all 24 focused branding tests passed, including all five new runtime-contract tests.
+
+### Clean full build
+
+Command:
+
+```text
+C:\Users\dusti\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\bin\gradle.bat clean build --no-configuration-cache --console=plain
+```
+
+Result:
+
+- a real `clean` removed prior project outputs;
+- Minecraft/NeoForge transformation, `compileJava`, resource processing, regular/all-in-one JAR assembly, scaffold compilation, and `compileTestJava` completed from the clean state;
+- 1,812 tests executed: 1,774 passed, 21 failed, 17 skipped;
+- the five-test increase from 1,807 is exactly `ClientBrandingRuntimeContractTest`, whose five cases all passed;
+- the same 21 pre-existing banner/scaffold asset-integrity cases failed in the same eight classes recorded at Milestone 0;
+- there is no new failure, error, skipped test, or failing class attributable to client branding.
+
+The Gradle `build` result remains failed only because the repository's inherited banner/scaffold baseline is not green. Repairing those unrelated runtime assets or expectations would violate this milestone's scope; all applicable branding automation is green.
+
+### Dedicated-server safety
+
+The repository's CI-defined command was run exactly through the installed pinned Gradle distribution:
+
+```text
+C:\Users\dusti\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\bin\gradle.bat runGameTestServer --no-configuration-cache --console=plain
+```
+
+Result: `BUILD SUCCESSFUL` in 34 seconds. ModLauncher reported `Env=SERVER`; Britannia 0.1.8 and its dependencies loaded; all 349 required GameTests passed; and the dedicated server saved and shut down cleanly. Neither client branding mixin nor either client event subscriber loaded on the server.
+
+Pre-existing development warnings about the absent optional local configuration, initial generated server properties, and development refmaps did not prevent startup or tests and are unrelated to branding.
+
+### Package and protection audit
+
+The clean regular JAR contains:
+
+- the three selected title PNGs, five black background PNGs, splash corpus, protected chest sequence, and mixin configuration at their exact runtime paths;
+- `LoadingScreenBackgroundPolicy`, `TitleBrandingLayout`, `TitleBrandingRenderer`, `TitleWebsiteButtonBranding`, `LoadingScreenPanoramaMixin`, and `TitleScreenBackgroundMixin` classes.
+
+It contains no branding test class, vanilla-splash hash fixture, client-branding research document, candidate, prompt, contact sheet, or source-format image. The protected hashes remain:
+
+- `chest_sequence.png`: `7187FB8CA89FF959CB57022BEC15C113EE44FC4F15B2839B02D0D6E7217B0B30`;
+- `TitleScreenBackgroundMixin.java`: `70C9D1EAE4C95F42DC08E8029002FB890B782452E2517E263A3E2378C517AD62`;
+- `britannia_mod.mixins.json`: `585E7F65AD1543F8B81F83FFD15702D54BB2042E25C5F994A2FA593E1B3098A6`.
+
+### Gate 6 checklist
+
+- [x] Splash corpus validation is green.
+- [x] Production asset presence and exact resource paths are locked.
+- [x] Production PNG dimensions and title alpha are locked.
+- [x] Every black replacement pixel is opaque black.
+- [x] Runtime override directories reject accidental candidate/source files.
+- [x] Client-only packages, subscribers, and mixin registration are locked.
+- [x] Focused 24-test branding suite is green.
+- [x] Clean build completes assembly and reproduces only the known 21-test repository baseline.
+- [x] Dedicated server loads safely and all 349 required GameTests pass.
+- [x] Production JAR contents and protected hashes are verified.
+- [x] No production behavior or unrelated file changed.
+- [x] Milestone 7 was not started.
+
+Gate 6 passes because every applicable client-branding regression check and the dedicated-server safety run are green. The only non-green full-suite results are the exact inherited, out-of-scope banner/scaffold baseline documented before branding work began.
+
+Planned local commit message:
+
+```text
+test(client): cover branding resources and splash corpus
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.
