@@ -556,7 +556,11 @@ def load_uc_items(repo: Path) -> set[str]:
     registered Blacksmithing craftable outputs (BlacksmithItemRegistry reads
     data/britannia_mod/blacksmithing/craftables.json at runtime)."""
     base = repo / "src/main/java/com/seggellion/britannia_mod"
-    items = set(re.findall(r'register\s*\(\s*"([a-z0-9_]+)"', read(base / "registry/ItemRegistry.java")))
+    registry_text = read(base / "registry/ItemRegistry.java")
+    items = set(re.findall(r'register\s*\(\s*"([a-z0-9_]+)"', registry_text))
+    # Milestone 21: include helper-registered items (see reaudit_missing_items.py).
+    items |= set(re.findall(
+        r'DeferredHolder<[^>]*>\s+\w+\s*=\s*[\w.]+\(\s*"([a-z0-9_]+)"', registry_text, re.S))
     craftables = repo / "src/main/resources/data/britannia_mod/blacksmithing/craftables.json"
     if craftables.exists():
         data = json.loads(craftables.read_text(encoding="utf-8-sig"))
@@ -564,6 +568,14 @@ def load_uc_items(repo: Path) -> set[str]:
             out = recipe.get("output", "")
             if out.startswith("britannia_mod:"):
                 items.add(out.split(":", 1)[1])
+        # BlacksmithItemRegistry also registers every distinct craftables
+        # INGREDIENT key (minus the vanilla-mapped ones) as a mod item.
+        vanilla_mapped = {"ingot", "board", "cloth", "bone", "boards_or_logs"}
+        for recipe in data.get("recipes", []):
+            for ingredient in recipe.get("ingredients", []):
+                key = ingredient.get("key", "")
+                if key and key not in vanilla_mapped:
+                    items.add(key)
     return items
 
 

@@ -60,13 +60,28 @@ def main() -> int:
 
     known_traders = set(data["uc_reference"]["traders"])
     reg = REPO / "src/main/java/com/seggellion/britannia_mod/registry/ItemRegistry.java"
-    uc_items = set(re.findall(r'register\s*\(\s*"([a-z0-9_]+)"', reg.read_text(encoding="utf-8", errors="replace")))
+    reg_text = reg.read_text(encoding="utf-8", errors="replace")
+    uc_items = set(re.findall(r'register\s*\(\s*"([a-z0-9_]+)"', reg_text))
+    # Milestone 21: helper-registered items (cookedFood and friends) declare a
+    # DeferredHolder whose initializer's first string literal is the id -- the
+    # narrow pattern missed ~175 real items and misclassified their rows.
+    uc_items |= set(re.findall(
+        r'DeferredHolder<[^>]*>\s+\w+\s*=\s*[\w.]+\(\s*"([a-z0-9_]+)"', reg_text, re.S))
     craftables = REPO / "src/main/resources/data/britannia_mod/blacksmithing/craftables.json"
     if craftables.exists():
-        for recipe in json.loads(craftables.read_text(encoding="utf-8-sig")).get("recipes", []):
+        craft_data = json.loads(craftables.read_text(encoding="utf-8-sig"))
+        for recipe in craft_data.get("recipes", []):
             out = recipe.get("output", "")
             if out.startswith("britannia_mod:"):
                 uc_items.add(out.split(":", 1)[1])
+        # BlacksmithItemRegistry also registers every distinct craftables
+        # INGREDIENT key (minus the vanilla-mapped ones) as a mod item.
+        vanilla_mapped = {"ingot", "board", "cloth", "bone", "boards_or_logs"}
+        for recipe in craft_data.get("recipes", []):
+            for ingredient in recipe.get("ingredients", []):
+                key = ingredient.get("key", "")
+                if key and key not in vanilla_mapped:
+                    uc_items.add(key)
 
     vendors = data["vendors"]
     catalogs = data["catalogs"]

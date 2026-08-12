@@ -774,11 +774,11 @@ recorded limit, not a pending question.
 
 | Item | Disposition |
 |---|---|
-| TownPerson regional population (decision #12) | **Milestone 20.** Legacy TownPersons are preserved meanwhile; `townPersonAmount` survives in migration receipts for that system to consume. |
-| 548 retail rows pending item creation | **Milestone 21** (models/textures/food mechanics; produce partly exists; weapons/armor already craftable and partially added). Each created item makes its row seedable by re-running the rollout generator. |
-| Textile + scribe commodity families | **Milestone 21**, with their items. Glass and reagents shipped in the 2026-08-11 roadmap pass. |
-| `black_pearl` retail row | Milestone 21 (its commodity exists; the ITEM does not). |
-| 8 registered-but-inactive vendor types | Activate as data when their items/families land — no deploy required. |
+| ~~TownPerson regional population (decision #12)~~ | **DONE — Milestone 20.** Rails decides how many; Minecraft decides where and how fast. Legacy TownPersons preserved as starting population. |
+| ~~548 retail rows pending item creation~~ | **DONE (bounded) — Milestone 21.** 426 rows recovered by re-auditing against the true item universe (the Milestone 2 extraction missed ~175 helper-registered items); 122 new items created (models/textures/food mechanics); metal armor rows resolve to the existing platemail/ringmail/chainmail craftables (owner: "already craftable — partially added"). **122 rows remain explicitly pending** in mechanics-bearing families — see RUNUO_VENDOR_MATRIX §11 for the family table (leather/studded armor 51, wood weapons 23, ranged 21, niche systems 14, skill books 5, whole fish 4, dyes 4). |
+| ~~Textile + scribe commodity families~~ | **DONE — Milestone 21.** `textile|raw|wool`, `textile|cloth|cloth`, `scribe|paper|paper` plus the five necromancy reagents; all weight-canonical. 31 of 33 vendor types now ACTIVE (rancher and shipwright stay registered-inactive pending mobile/boat fulfillment). |
+| ~~`black_pearl` retail row~~ | **DONE — Milestone 21** (item created; row seeded). |
+| ~~8 registered-but-inactive vendor types~~ | **DONE — Milestone 21** activated 6 of 8 by data (beekeeper, cobbler, leather worker, mapmaker, ranger, scribe); rancher + shipwright remain, still admin-activatable. |
 
 ### Recorded limits (implemented behavior, deliberately bounded)
 

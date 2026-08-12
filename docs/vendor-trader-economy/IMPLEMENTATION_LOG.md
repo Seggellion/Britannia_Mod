@@ -1043,5 +1043,68 @@ placement rejection reason, unloaded chunks never loaded or spawned into,
 region-less cities placing nobody, malformed rows skipped).
 
 ### Stopped
-Milestone 20 complete. Milestone 21 (item content: models, textures and food
-mechanics) is owner-scheduled and NOT started, per stop rule.
+Milestone 20 complete.
+
+## Milestone 21 — item content (2026-08-11)
+
+Owner start command: "Start Milestone 21 -- Be mindful of items that already
+exist." That mindfulness found the milestone's real story: the Milestone 2
+item-universe extraction only matched literal `register("...")` calls, so all
+~175 helper-registered items (`cookedFood` and friends -- the entire
+produce/food catalog) were invisible to the audit and their retail rows sat
+misclassified as MISSING_ITEM for nineteen milestones. The broadened
+DeferredHolder-aware extraction now lives in `validate_mapping.py`,
+`parse_runuo_vendors.py`, and the new `tools/reaudit_missing_items.py`, whose
+re-audit recovered **426 rows across 188 RunUO types with zero new assets**
+(exact snake_case first, then a reviewed alias table -- including the
+platemail/ringmail/chainmail craftables that RunUO names Plate*/Chain*/
+Ringmail*, satisfying the owner's "weapons and armor are already craftable --
+partially added"). Rule: a variable-material row resolved to a mod item keeps
+its varmat status (material machinery prices it); resolved to a vanilla id it
+becomes a fixed product, because material variants cannot apply to
+`minecraft:` ids.
+
+New content: **122 items** via `tools/generate_m21_items.py` (registrations
+after the hammer block, flat models, deterministic 16x16 textures, lang
+entries; idempotent). Foods carry real nutrition/saturation through the
+existing `cookedFood` weight-restore mechanics; gold jewelry rides the
+existing material-quality system and reuses the REAL jewelry textures (the
+copper convention). Clothing, tinker goods, carpentry tools, textile and
+scribe goods, gems, and necromancy reagents round out the set. The first
+GameTest run caught a real near-miss: amethyst and tourmaline were generated
+as duplicates of items BlacksmithItemRegistry already registers from the
+craftables INGREDIENT keys -- the `noItemIdIsRegisteredTwice` gametest failed
+exactly there, the two registrations were removed, the ingredient-key
+registrations joined the tools' item universe, and their placeholder models
+were repointed at the real generated art.
+
+Commodity families (Rails): `textile|raw|wool`, `textile|cloth|cloth`,
+`scribe|paper|paper`, and the five necromancy reagents (`bat_wing`,
+`daemon_blood`, `pig_iron`, `nox_crystal`, `grave_dust`) -- all
+weight-canonical (`scribe` joined `BULK_CATEGORIES`). Rollout regenerated:
+**707 of 1,015 retail rows seeded** (524 fixed + 183 material, 274 unique
+Products, 605 listings), **31 of 33 vendor types ACTIVE** (beekeeper, cobbler,
+leather worker, mapmaker, ranger and scribe newly active; rancher + shipwright
+stay registered-inactive pending mobile/boat fulfillment). The 122 rows still
+pending are mechanics-bearing families deliberately not faked as flat items
+(leather/studded armor 51, wood weapons 23, ranged 21, niche systems 14,
+skill books 5, whole fish 4, dyes 4) -- family table in
+RUNUO_VENDOR_MATRIX §11.
+
+One test-only fix outside the milestone's file set, honestly noted: the
+banner-dyeing `Milestone14RRemovalAndPreservationTest` keeps a running count
+of every registered item and expected 735; the three Milestone 17 hammers and
+these 122 items legitimately grow it to 860. The 13 banner-scaffold
+geometry-hash failures also present in `:test` predate this milestone (no
+`content/` or banner file is touched here) and belong to the banners feature
+line.
+
+Validation: mapping validator OK (74 vendors, 84 catalogs, 1,015 buy rows,
+915 sell rows); `compileJava` BUILD SUCCESSFUL; economy JUnit + updated count
+guard green; Rails focused suites green (rollout 5 runs/668 assertions) and
+full suite 1485 runs with only the pre-existing deterministic recalculator
+failure plus one unrelated spawn-point concurrency race flake; GameTest
+server: see completion report.
+
+### Stopped
+Milestone 21 complete. STOPPED: YES -- awaiting owner review.

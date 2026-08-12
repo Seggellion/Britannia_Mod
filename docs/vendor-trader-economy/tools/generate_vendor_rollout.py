@@ -87,6 +87,14 @@ CANONICAL_KEYS = {
     "reagents|raw|black_pearl", "reagents|raw|blood_moss", "reagents|raw|garlic",
     "reagents|raw|ginseng", "reagents|raw|mandrake", "reagents|raw|nightshade",
     "reagents|raw|spiders_silk", "reagents|raw|sulphurous_ash",
+    # Milestone 21: necromancy reagents join the reagent family -- their items
+    # exist now and reagent retail is goods-only regardless of magic deferral.
+    "reagents|raw|bat_wing", "reagents|raw|daemon_blood", "reagents|raw|pig_iron",
+    "reagents|raw|nox_crystal", "reagents|raw|grave_dust",
+    # Milestone 21: textile and scribe families (last OQ-5 remnants) unlock the
+    # tailor/weaver/scribe/mapmaker/healer retail rows created this milestone.
+    "textile|raw|wool", "textile|cloth|cloth",
+    "scribe|paper|paper",
 }
 
 # Name-pattern input rules, checked in order against the lowercased RunUO type.
@@ -97,7 +105,7 @@ NAME_RULES = [
     (("cheese",), "dairy|cheese|cheddar"),
     (("egg",), "eggs|chicken|chicken_egg"),
     (("milk",), "dairy|milk|cow_milk"),
-    (("honey",), "groceries|sweetener|honey"),
+    (("honey", "beeswax"), "groceries|sweetener|honey"),
     (("chicken",), "meat|chicken|raw_chicken"),
     (("beef", "steak", "ribs", "brisket", "roast"), "meat|beef|raw_beef"),
     (("pork", "bacon", "ham", "sausage",), "meat|pork|raw_pork"),
@@ -114,9 +122,14 @@ NAME_RULES = [
     (("grape",), "produce|fruit|concord_grapes"),
     (("backpack", "pouch", "bag", "belt"), "leather|processed|leather"),
     (("lantern", "key", "lockpick", "scissors", "tongs", "skillet", "pot", "pan",
-      "kettle"), "metal|ingots|iron"),
+      "kettle", "hatchet", "pickaxe", "shovel", "rollingpin", "butcherknife",
+      "heatingstand", "sextant", "clock", "gear", "axle", "hinge", "spring",
+      "nails", "fletcher", "ingot"), "metal|ingots|iron"),
     (("torch", "lute", "drum", "harp", "tambourine", "flute", "fishingpole",
-      "shepherdscrook", "club", "walkingstick"), "wood|logs|oak"),
+      "shepherdscrook", "club", "walkingstick", "kindling", "chess", "checker",
+      "backgammon", "dice", "saw", "plane", "drawknife", "froe", "scorp",
+      "inshave", "woodenshield"), "wood|logs|oak"),
+    (("mortar",), "stone|common|stone"),
     # Reagent retail (mage/alchemist/herbalist rows) restocks from the city's
     # own reagent supply; glasswork consumes raw sand.
     (("blackpearl",), "reagents|raw|black_pearl"),
@@ -127,7 +140,21 @@ NAME_RULES = [
     (("nightshade",), "reagents|raw|nightshade"),
     (("spiderssilk", "spidersilk"), "reagents|raw|spiders_silk"),
     (("sulfurousash", "sulphurousash"), "reagents|raw|sulphurous_ash"),
+    (("batwing",), "reagents|raw|bat_wing"),
+    (("daemonblood",), "reagents|raw|daemon_blood"),
+    (("pigiron",), "reagents|raw|pig_iron"),
+    (("noxcrystal",), "reagents|raw|nox_crystal"),
+    (("gravedust",), "reagents|raw|grave_dust"),
     (("bottle", "flask", "vial", "blowpipe", "glass", "jar"), "glass|raw|sand"),
+    # Milestone 21 textile/scribe rules. Order matters: "hatchet" is claimed by
+    # the metal rule above before "hat" can see it; crossbow "Bolt" rows are
+    # VARIABLE_MATERIAL_PRODUCT and never reach name rules, but the cloth rule
+    # still uses the full "boltofcloth" for safety.
+    (("wool", "yarn", "thread", "flax"), "textile|raw|wool"),
+    (("boltofcloth", "cloth", "bandage", "sewing", "bandana", "sash", "apron",
+      "dress", "shirt", "pants", "skirt", "tunic", "doublet", "cloak", "robe",
+      "hat", "cap", "bonnet", "hood", "kasa", "kilt", "jester"), "textile|cloth|cloth"),
+    (("scroll", "paper", "book", "map", "pen"), "scribe|paper|paper"),
 ]
 
 # Vendor-family fallback inputs (only where a canonical family exists).
@@ -145,18 +172,24 @@ FAMILY_FALLBACK = {
     "tinker_vendor": "metal|ingots|iron",
     "jeweler_vendor": "metal|ingots|gold",
     "provisioner_vendor": "leather|processed|leather",
-    "tailor_vendor": "leather|processed|leather",
+    # Milestone 21: tailors sew cloth (the explicit leather rule above still
+    # claims backpacks/pouches/belts); cobblers and leather workers stay on
+    # leather.
+    "tailor_vendor": "textile|cloth|cloth",
     "cobbler_vendor": "leather|processed|leather",
     "leather_worker_vendor": "leather|processed|leather",
-    "weaver_vendor": None,        # textile family pending (OQ-5)
+    "weaver_vendor": "textile|raw|wool",
     "glassblower_vendor": "glass|raw|sand",
-    "alchemist_vendor": None,     # reagent family pending (OQ-5)
+    # Mage-adjacent retail stays name-rule only: reagent rows resolve through
+    # the explicit reagent rules; anything else (wands, runebooks) has no
+    # honest commodity family and is excluded rather than guessed.
+    "alchemist_vendor": None,
     "mage_vendor": None,
     "holy_mage_vendor": None,
     "herbalist_vendor": None,
-    "healer_vendor": None,
-    "scribe_vendor": None,        # scribe family pending (OQ-5)
-    "mapmaker_vendor": None,
+    "healer_vendor": "textile|cloth|cloth",
+    "scribe_vendor": "scribe|paper|paper",
+    "mapmaker_vendor": "scribe|paper|paper",
 }
 
 # Metal variable-material quantity by product shape (provisional, section 2a).
@@ -296,7 +329,7 @@ def main():
 
     rollout = {
         "generated_by": "docs/vendor-trader-economy/tools/generate_vendor_rollout.py",
-        "milestone": 17,
+        "milestone": 21,
         "pricing": "runuo_gp_price as GOLD (owner rule: 1 RunUO GP = 1 UltimaCraft Gold)",
         "vendor_types": sorted(vendor_types.values(), key=lambda v: v["key"]),
         "products": sorted(products.values(), key=lambda p: p["item_id"]),
