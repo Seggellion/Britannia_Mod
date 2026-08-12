@@ -63,6 +63,7 @@ import com.seggellion.britannia_mod.banner.placement.BannerOrientationPreference
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationConfig;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationManager;
+import com.seggellion.britannia_mod.wildresource.WildResourceManager;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -138,6 +139,7 @@ CraftableRegistry.init();
         LargeStructureRegistry.register(modEventBus);
         ShrineIntegrityHandler.register();
         ManagedVegetationManager.register();
+        WildResourceManager.register();
 
         BlacksmithItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);
