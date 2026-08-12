@@ -121,6 +121,7 @@ import com.seggellion.britannia_mod.block.CommunityFarmBlock;
 import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.FlowerBlock;
+import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -243,6 +244,18 @@ public static final DeferredHolder<Block, FlowerBlock> FLOWER_BLOCK = BLOCKS.reg
                     .sound(SoundType.GRAVEL)
                     .isViewBlocking((state, level, pos) -> true)
                     .isSuffocating((state, level, pos) -> true))
+    );
+
+public static final DeferredHolder<Block, ManagedVegetationControllerBlock> MANAGED_VEGETATION_CONTROLLER = BLOCKS.register(
+            "managed_vegetation_controller",
+            () -> new ManagedVegetationControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.NONE)
+                    .noCollission()
+                    .noOcclusion()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .isViewBlocking((state, level, pos) -> false)
+                    .isSuffocating((state, level, pos) -> false))
     );
 
 public static final DeferredHolder<Block, CornStalkBlock> CORN_STALK_BLOCK = BLOCKS.register(

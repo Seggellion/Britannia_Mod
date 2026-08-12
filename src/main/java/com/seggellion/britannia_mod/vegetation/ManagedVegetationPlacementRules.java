@@ -26,8 +26,16 @@ public final class ManagedVegetationPlacementRules {
     }
 
     public static boolean canRegister(BlockLookup world, BlockPos nodePosition) {
+        return canRegister(world, nodePosition, BlockState::isAir);
+    }
+
+    public static boolean canRegister(
+            BlockLookup world,
+            BlockPos nodePosition,
+            Predicate<BlockState> usableState
+    ) {
         return hasValidSubstrate(world, nodePosition)
-                && hasVerticalSpace(world, nodePosition, BlockState::isAir);
+                && hasVerticalSpace(world, nodePosition, usableState);
     }
 
     public static boolean hasVerticalSpace(
