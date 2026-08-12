@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.block.entity.ManagedFlowerBlockEntity;
 import com.seggellion.britannia_mod.farming.FlowerDefinition;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
@@ -170,6 +171,17 @@ public final class ManagedVegetationManager {
             return;
         }
         ManagedVegetationEntry entry = ManagedVegetationProfile.configured().select(level.random);
+        spawnEntry(level, data, node, entry, now);
+    }
+
+    private static void spawnEntry(
+            ServerLevel level,
+            ManagedVegetationSavedData data,
+            ManagedVegetationNode node,
+            ManagedVegetationEntry entry,
+            long now
+    ) {
+        BlockPos position = node.position();
         switch (entry.growthStrategy()) {
             case GRASS_FAMILY -> {
                 ManagedVegetationNode shortGrass = node.shortGrass(
@@ -188,6 +200,29 @@ public final class ManagedVegetationManager {
             }
             case FLOWER_STAGES -> spawnFlower(level, data, node, entry, now);
         }
+    }
+
+    /** Immediate deterministic admin path; normal gameplay always uses the weighted scheduler. */
+    public static boolean debugSpawn(
+            ServerLevel level,
+            BlockPos position,
+            ResourceLocation entryId
+    ) {
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        ManagedVegetationEntry entry = ManagedVegetationProfile.configured().byId(entryId).orElse(null);
+        if (entry == null || data.nodeAt(position).isEmpty()
+                || !ManagedVegetationService.rerollNode(level, position)) {
+            return false;
+        }
+        ManagedVegetationNode regrowing = data.nodeAt(position).orElse(null);
+        if (regrowing == null || regrowing.lifecycle() != ManagedVegetationLifecycle.REGROWING
+                || !canSpawnAt(level, position)) {
+            return false;
+        }
+        spawnEntry(level, data, regrowing, entry, level.getGameTime());
+        ManagedVegetationNode result = data.nodeAt(position).orElse(null);
+        return result != null && result.lifecycle().occupied()
+                && result.vegetationEntryId().filter(entryId::equals).isPresent();
     }
 
     private static void spawnFlower(

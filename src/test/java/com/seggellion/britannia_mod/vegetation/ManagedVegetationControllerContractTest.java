@@ -37,12 +37,18 @@ class ManagedVegetationControllerContractTest {
     }
 
     @Test
-    void permissionedCommandsExposeAddRemoveAndInspect() throws IOException {
+    void permissionedCommandsExposeAdministrationAndDebugPaths() throws IOException {
         String commands = source("commands/ManagedVegetationCommands.java");
         assertTrue(commands.contains("hasPermission(2)"));
         assertTrue(commands.contains("literal(\"add\")"));
+        assertTrue(commands.contains("literal(\"addhere\")"));
         assertTrue(commands.contains("literal(\"remove\")"));
         assertTrue(commands.contains("literal(\"inspect\")"));
+        assertTrue(commands.contains("literal(\"debug\")"));
+        assertTrue(commands.contains("literal(\"spawn\")"));
+        assertTrue(commands.contains("spawnFamily(\"grass\""));
+        assertTrue(commands.contains("spawnFamily(\"fern\""));
+        assertTrue(commands.contains("spawnFamily(\"flower\""));
     }
 
     private static String source(String relative) throws IOException {

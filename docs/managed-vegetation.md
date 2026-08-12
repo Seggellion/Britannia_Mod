@@ -5,6 +5,11 @@ position is the plant block directly above a vanilla grass block. Nodes require 
 position and the next two blocks above it to remain clear and dry. Nearby vanilla or
 player-placed vegetation is not managed and retains its normal behavior.
 
+Ordinary grass blocks do **not** automatically become managed nodes. Nodes must be explicitly
+registered by a command or a future placement/world-generation integration. The scheduler runs
+from normal server ticks and deliberately does not use Minecraft random block ticks, so changing
+`randomTickSpeed` does not accelerate managed regrowth.
+
 ## Lifecycle
 
 The default weighted profile is:
@@ -51,16 +56,36 @@ All commands require permission level 2 and a loaded target position:
 
 ```text
 /managedvegetation add <x y z>
+/managedvegetation addhere
 /managedvegetation remove <x y z>
 /managedvegetation inspect <x y z>
+/managedvegetation debug <x y z>
 /managedvegetation force <x y z>
 /managedvegetation reroll <x y z>
+/managedvegetation spawn grass <x y z>
+/managedvegetation spawn fern <x y z>
+/managedvegetation spawn flower <x y z>
 ```
 
-`add` expects the canonical plant position, not the supporting grass block. `force` makes the
-current scheduled transition due on the next server tick. `reroll` safely removes an owned plant,
-returns the node to regrowth, and makes the next selection due. Neither internal block is exposed
-as a survival item or Creative Tab entry.
+`add` expects the canonical plant position, not the supporting grass block. `addhere` registers
+the air block at the command source's feet, which is convenient while standing on grass. `debug`
+reports registration, substrate, clearance, lifecycle, remaining normal-tick delay, configured
+weights, and whether an ordinary position is unmanaged. `force` makes the current scheduled
+random transition due on the next server tick. `reroll` safely removes an owned plant, returns the
+node to regrowth, and makes the next random selection due. `spawn` is a deterministic admin-only
+test path for each vegetation family. Neither internal block is exposed as a survival item or
+Creative Tab entry.
+
+For a quick test in a cheats-enabled world, stand on a clear grass block and run:
+
+```text
+/managedvegetation addhere
+/managedvegetation debug ~ ~ ~
+/managedvegetation spawn grass ~ ~ ~
+```
+
+Repeat the last command with `fern` or `flower`. Adventure mode and peaceful difficulty do not
+disable the system; the commands still require permission level 2.
 
 ## Persistence, recovery, and performance
 

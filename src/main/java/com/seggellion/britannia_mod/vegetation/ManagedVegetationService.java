@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.vegetation;
 
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -14,6 +15,7 @@ import com.seggellion.britannia_mod.farming.GrainHarvestTools;
 import com.seggellion.britannia_mod.event.ManagedVegetationCutEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
+import java.util.Locale;
 import java.util.Optional;
 
 /** Server-only registration and removal boundary for managed vegetation nodes. */
@@ -108,6 +110,54 @@ public final class ManagedVegetationService {
             );
         }
         return true;
+    }
+
+    public static String debugReport(ServerLevel level, BlockPos position) {
+        ManagedVegetationNode node = ManagedVegetationSavedData.get(level).nodeAt(position).orElse(null);
+        BlockState substrate = level.getBlockState(position.below());
+        StringBuilder report = new StringBuilder("Managed vegetation debug ")
+                .append(level.dimension().location()).append(' ')
+                .append(position.toShortString())
+                .append("\nregistered=").append(node != null)
+                .append(" substrate=").append(blockName(substrate))
+                .append(" substrate_valid=").append(substrate.is(Blocks.GRASS_BLOCK));
+        for (int offset = 0; offset < ManagedVegetationPlacementRules.REQUIRED_VERTICAL_SPACE; offset++) {
+            BlockPos checked = position.above(offset);
+            BlockState state = level.getBlockState(checked);
+            report.append("\nspace[").append(offset).append("]=")
+                    .append(blockName(state))
+                    .append(" fluid=").append(!state.getFluidState().isEmpty());
+        }
+        if (node == null) {
+            report.append("\nstatus=UNMANAGED; ordinary grass never auto-registers. Use /managedvegetation add ")
+                    .append(position.getX()).append(' ')
+                    .append(position.getY()).append(' ')
+                    .append(position.getZ());
+        } else {
+            long dueIn = node.nextTransitionGameTime() == ManagedVegetationNode.NO_TRANSITION
+                    ? ManagedVegetationNode.NO_TRANSITION
+                    : Math.max(0L, node.nextTransitionGameTime() - level.getGameTime());
+            report.append("\nlifecycle=").append(node.lifecycle())
+                    .append(" entry=").append(node.vegetationEntryId().map(Object::toString).orElse("<none>"))
+                    .append(" flower=").append(node.flowerSpeciesId().map(Object::toString).orElse("<none>"))
+                    .append(" stage=").append(node.flowerStage())
+                    .append(" due_in_ticks=").append(dueIn == ManagedVegetationNode.NO_TRANSITION ? "none" : dueIn)
+                    .append(" due_in_seconds=").append(
+                            dueIn == ManagedVegetationNode.NO_TRANSITION
+                                    ? "none"
+                                    : String.format(Locale.ROOT, "%.1f", dueIn / 20.0D)
+                    );
+        }
+        report.append("\nweights=")
+                .append(ManagedVegetationConfig.grassWeight()).append('/')
+                .append(ManagedVegetationConfig.fernWeight()).append('/')
+                .append(ManagedVegetationConfig.flowerWeight())
+                .append(" scheduler=normal-server-ticks randomTickSpeed=ignored");
+        return report.toString();
+    }
+
+    private static String blockName(BlockState state) {
+        return BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
     }
 
     /** Resolves a canonical node from its base or the upper half of managed tall grass. */
