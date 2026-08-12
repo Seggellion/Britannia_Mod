@@ -779,7 +779,7 @@ Result:
 - Minecraft/NeoForge transformation, `compileJava`, resource processing, regular/all-in-one JAR assembly, scaffold compilation, and `compileTestJava` completed from the clean state;
 - 1,812 tests executed: 1,774 passed, 21 failed, 17 skipped;
 - the five-test increase from 1,807 is exactly `ClientBrandingRuntimeContractTest`, whose five cases all passed;
-- the same 21 pre-existing banner/scaffold asset-integrity cases failed in the same eight classes recorded at Milestone 0;
+- the same 21 pre-existing banner/scaffold asset-integrity cases failed in the same seven classes recorded at Milestone 0;
 - there is no new failure, error, skipped test, or failing class attributable to client branding.
 
 The Gradle `build` result remains failed only because the repository's inherited banner/scaffold baseline is not green. Repairing those unrelated runtime assets or expectations would violate this milestone's scope; all applicable branding automation is green.
@@ -890,3 +890,122 @@ docs(client-branding): record live acceptance validation
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 8 - Final audit and handoff
+
+Date: 2026-08-11
+
+Status: Gate 8 passed; branch is integration-ready
+
+Production behavior changed: No
+
+Starting commit: `ac4872573d120e1bf270c7fc71019a06302c5ef7`
+
+Merge base with `patch-18`: `5c9f4f2f688d169997cb4e45757fcbe1e7079373`
+
+### Final branch audit
+
+The final feature range contains nine approved milestone commits before this handoff correction. Relative to the merge base, `client-branding` is nine commits ahead and zero commits behind. The cumulative diff contains 31 paths and 3,006 inserted lines before this final documentation update.
+
+Every changed path belongs to the authorized client-branding scope:
+
+- one line-ending policy update for the two hash-validated corpus files;
+- seven client-branding documents;
+- four client-only branding helpers/subscribers and one client-only loading mixin;
+- one client mixin registration;
+- nine exact Minecraft-namespace runtime resources;
+- seven branding test classes and one test-only vanilla splash hash fixture.
+
+There is no gameplay, block, entity, farming, economy, Rails, network-protocol, server-logic, custom service-UI, in-world HUD/inventory, or unrelated branch change. `git diff --check` passes for the complete merge-base range.
+
+All milestone commits are present in chronological order:
+
+1. `6f180621` — baseline reconnaissance;
+2. `c918f962` — non-game black background policy;
+3. `fe481f05` — UltimaCraft title graphic;
+4. `0b3e22e4` — `Version 18` subtitle;
+5. `b85d50f` — researched splash corpus;
+6. `c6bef97d` — complete pre-world sweep;
+7. `208aa5b4` — loading-screen correction and website button;
+8. `9b153076` — automated regression coverage;
+9. `ac487257` — owner-approved live acceptance evidence.
+
+The final documentation was reconciled with the implementation. One historical typo in the Milestone 6 entry was corrected from eight inherited failing classes to seven, matching both the Milestone 0 list and the fresh test XML.
+
+### Final validation
+
+Focused command:
+
+```text
+C:\Users\dusti\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\bin\gradle.bat test --tests "com.seggellion.britannia_mod.client.branding.*" --tests "com.seggellion.britannia_mod.client.TitleBrandingLayoutTest" --tests "com.seggellion.britannia_mod.client.LoadingScreenBackgroundPolicyTest" --tests "com.seggellion.britannia_mod.client.TitleWebsiteButtonBrandingTest" --no-configuration-cache --console=plain
+```
+
+Result: `BUILD SUCCESSFUL`; all 24 focused branding tests passed.
+
+Clean build command:
+
+```text
+C:\Users\dusti\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\bin\gradle.bat clean build --no-configuration-cache --console=plain
+```
+
+Result: production/scaffold compilation, resource processing, regular/all-in-one JAR assembly, and test compilation completed. The suite executed 1,812 tests: 1,774 passed, 21 failed, 17 skipped, and zero errored. The failures are the exact inherited banner/scaffold baseline across the same seven classes listed at Milestone 0; no branding test failed and no new failure appeared.
+
+Dedicated-server command:
+
+```text
+C:\Users\dusti\.gradle\wrapper\dists\gradle-8.9-bin\90cnw93cvbtalezasaz0blq0a\gradle-8.9\bin\gradle.bat runGameTestServer --no-configuration-cache --console=plain
+```
+
+Result: `BUILD SUCCESSFUL` in 30 seconds. ModLauncher reported `Env=SERVER`; all 349 required GameTests passed; the server saved and shut down cleanly; no client-branding runtime class loaded server-side.
+
+### Package, asset, and hygiene audit
+
+The freshly assembled regular JAR contains all nine selected Minecraft-namespace branding resources, all six required branding/title classes, and the mixin registration. Every packaged branding resource is byte-identical to its source file. The JAR contains no branding test class, vanilla splash hash fixture, client-branding research/editorial document, candidate, prompt, contact sheet, or source-format artwork.
+
+No branding production file contains a placeholder, temporary marker, draft, TODO, or FIXME. Repository-wide legacy placeholders and `tmp/manual-verification-server-stdin.gradle` predate this branch and are absent from the merge-base diff.
+
+Protected title presentation remains intact:
+
+- `chest_sequence.png`: `7187FB8CA89FF959CB57022BEC15C113EE44FC4F15B2839B02D0D6E7217B0B30`;
+- `TitleScreenBackgroundMixin.java`: `70C9D1EAE4C95F42DC08E8029002FB890B782452E2517E263A3E2378C517AD62`;
+- `britannia_mod.mixins.json`: `585E7F65AD1543F8B81F83FFD15702D54BB2042E25C5F994A2FA593E1B3098A6`.
+
+Milestone 7's owner-approved live matrix remains the final visual authority. No production file changed after that approval.
+
+### Integration notes
+
+- Integration source: `client-branding`.
+- Integration target: `patch-18`.
+- Expected merge base: `5c9f4f2f688d169997cb4e45757fcbe1e7079373`.
+- Preserve all milestone commits or merge the final branch tip according to the owner's integration policy.
+- Expect overlap only if the target independently changed `.gitattributes`, `britannia_mod.mixins.json`, the four new client branding class names, the loading mixin path, the nine Minecraft-namespace resource paths, or `docs/client-branding`.
+- Preserve `TitleScreenBackgroundMixin` and `chest_sequence.png` byte-for-byte during conflict resolution.
+- Preserve both `client` mixin registrations in `britannia_mod.mixins.json`: `LoadingScreenPanoramaMixin` and the pre-existing `TitleScreenBackgroundMixin`.
+- After integration, rerun the 24 focused branding tests, the clean build with its documented inherited baseline, and `runGameTestServer`; then perform a short title/loading smoke if target-side menu code changed.
+- Do not interpret the known 21 banner/scaffold failures as a branding regression unless their count or class set changes.
+
+### Gate 8 checklist
+
+- [x] Working tree started clean.
+- [x] Complete diff from merge base inspected.
+- [x] All changed paths are within client-branding scope.
+- [x] All approved milestone commits exist.
+- [x] Documentation matches implementation and validation output.
+- [x] No placeholder branding asset remains.
+- [x] No temporary generation/test evidence is shipped.
+- [x] Focused branding tests pass.
+- [x] Clean build reproduces only the inherited baseline after assembling artifacts.
+- [x] Dedicated server and all required GameTests pass.
+- [x] Production JAR contents and hashes are verified.
+- [x] Branch divergence and merge notes are recorded.
+- [x] No merge, push, rebase, tag, release, or deployment was performed.
+
+Gate 8 passes. The branch is ready for later integration, subject to the known repository-wide banner/scaffold baseline.
+
+Planned local commit message:
+
+```text
+docs(client-branding): finalize implementation handoff
+```
+
+No merge, push, rebase, tag, release, deployment, or remote mutation is authorized or performed.
