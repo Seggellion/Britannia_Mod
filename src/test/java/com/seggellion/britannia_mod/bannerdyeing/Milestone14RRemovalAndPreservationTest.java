@@ -60,7 +60,11 @@ class Milestone14RRemovalAndPreservationTest {
         // to the branch-local 550).
         // Villa integration adds its construction item set on top of the previous
         // integrated total of 693.
-        assertEquals(735, repositoryItems);
+        // Vendor/Trader economy item content adds the three profession hammers
+        // (Milestone 17) and 122 retail items (Milestone 21) on top of 735.
+        // (Amethyst and tourmaline are NOT added there: BlacksmithItemRegistry
+        // already registers every craftables ingredient key as an item.)
+        assertEquals(860, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));
