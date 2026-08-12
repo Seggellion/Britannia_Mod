@@ -42,8 +42,9 @@ public final class WildResourceInteractionHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onOrdinaryBreak(BlockEvent.BreakEvent event) {
-        if (event.getLevel() instanceof ServerLevel level) {
-            WildResourceHarvestService.recordOrdinaryBreak(level, event.getPos());
+        if (event.getLevel() instanceof ServerLevel level
+                && event.getPlayer() instanceof ServerPlayer player) {
+            WildResourceHarvestService.recordOrdinaryBreak(level, event.getPos(), player);
         }
     }
 }
