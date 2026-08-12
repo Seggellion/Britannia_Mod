@@ -568,3 +568,51 @@ rejects. Net gametest count: 357 + 6 − 1 = 362.
 
 Both repositories. Rails: controller (`#show`), routes, one new test file. Minecraft: one new
 class, three touched production files, one new gametest class, two adjusted M2 gametests.
+
+---
+
+## M5 follow-up — one definition of the journal uuid candidate list (2026-08-12)
+
+Owner-directed corrective, taken from M5's "observed, not fixed". Not a milestone.
+
+### The defect
+
+The candidate list that decides which journal rows belong to a player existed as **two private
+copies** — one in `Api::QuestStatesController`, one in `Api::WorldBootstrapController` — and they
+had drifted. Milestone 3 added the upper-case spellings to the quest copy only. The consequence
+is precisely the class of bug this programme exists to close: a journal row stored upper-case
+would be **found** when a quest action refetched the journal (M5) and **missed** by the bootstrap
+meant to supply that journal in the first place. Two code paths, one row, opposite answers.
+
+### The change
+
+`User.minecraft_uuid_candidates` is now the single definition, sitting beside
+`normalize_minecraft_uuid` and `compact_minecraft_uuid`, which it is built from. Both controllers
+delegate to it in a two-line private wrapper, so a caller reads the same name it always did and
+there is nowhere left for a copy to drift.
+
+The comment on it records **why the list exists at all**, which is the part worth keeping:
+`users.minecraft_uuid` normalizes on write and has a unique index, so it needs none of this. The
+string columns that merely *reference* a player do — `player_quest_states.player_uuid` was written
+for years before any normalizer existed and the 2026-06-02 migration did not touch it.
+
+Deliberately unchanged: `User.with_normalized_minecraft_uuid`, which looks up *users* rather than
+journal rows, and the two `find_or_create_player!`-style lookups in
+`SaleTransactionProcessor`/`ShardUsersController`. Those query a normalized, uniquely-indexed
+column; widening a global user lookup is a different decision and is not this fix.
+
+### Verification
+
+- New `journal_uuid_candidate_agreement_test.rb` (4): `User` owns the list; every canonical
+  spelling is offered whichever one is asked about; a malformed uuid yields only itself rather
+  than a nil-laden list; and — the one that matters — **the bootstrap and the journal endpoint
+  return the same quest for all four stored spellings**.
+- **Mutation-tested**: restoring the old bootstrap copy (drop the upper-case spellings) fails 5
+  tests, including the agreement test and two Milestone 3 regression tests. Restored, re-run green.
+- **Rails full suite: 1377 runs, 6547 assertions, 1 failure** — the known deterministic
+  `CityFoodSupplyRecalculator`.
+
+### Scope discipline
+
+Rails only: one model method, two controller wrappers, one new test file. No Minecraft change, no
+behaviour change to any path that was already correct.
