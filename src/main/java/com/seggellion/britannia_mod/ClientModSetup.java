@@ -15,6 +15,7 @@ import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
 import com.seggellion.britannia_mod.client.BritainMusicHandler;
 import com.seggellion.britannia_mod.client.ModModelLayers;
 import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
+import com.seggellion.britannia_mod.client.SwampEnvironmentEffects;
 import com.seggellion.britannia_mod.client.ThinWallClient;
 import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
 import com.seggellion.britannia_mod.client.model.ThinWallModels;
@@ -617,6 +618,7 @@ public class ClientModSetup {
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
+            NeoForge.EVENT_BUS.register(SwampEnvironmentEffects.class);
             clientGameHandlersRegistered = true;
         }
 
