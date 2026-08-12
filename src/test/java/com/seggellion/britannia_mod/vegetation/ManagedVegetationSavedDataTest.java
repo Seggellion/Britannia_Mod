@@ -60,4 +60,34 @@ class ManagedVegetationSavedDataTest {
 
         assertEquals(java.util.List.of(valid), loaded.snapshot().stream().toList());
     }
+
+    @Test
+    void reschedulingRemovesStaleDueEntries() {
+        ManagedVegetationSavedData data = new ManagedVegetationSavedData();
+        ManagedVegetationNode original = ManagedVegetationNode.regrowing(BlockPos.ZERO, 10L);
+        data.register(original);
+        ManagedVegetationNode rescheduled = original.schedule(30L);
+
+        data.update(rescheduled);
+
+        assertTrue(data.pollDue(10L, 8).isEmpty());
+        assertEquals(java.util.List.of(rescheduled), data.pollDue(30L, 8));
+    }
+
+    @Test
+    void highCycleQueueKeepsOneCanonicalNodeWithoutAccumulatingTransitions() {
+        ManagedVegetationSavedData data = new ManagedVegetationSavedData();
+        ManagedVegetationNode current = ManagedVegetationNode.regrowing(BlockPos.ZERO, 1L);
+        data.register(current);
+
+        for (long cycle = 1L; cycle <= 10_000L; cycle++) {
+            assertEquals(java.util.List.of(current), data.pollDue(cycle, 1));
+            current = current.schedule(cycle + 1L);
+            data.update(current);
+            assertEquals(1, data.snapshot().size());
+        }
+
+        assertTrue(data.pollDue(10_000L, 1).isEmpty());
+        assertEquals(java.util.List.of(current), data.pollDue(10_001L, 1));
+    }
 }

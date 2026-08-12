@@ -55,14 +55,27 @@ public final class ManagedVegetationService {
     public static boolean removeNode(ServerLevel level, BlockPos position) {
         ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
         ManagedVegetationNode node = data.nodeAt(position).orElse(null);
-        if (node == null || !data.remove(position)) {
+        if (node == null) {
             return false;
         }
+        if (!data.remove(position)) {
+            return false;
+        }
+        removeOwnedPlant(level, node);
         BlockState current = level.getBlockState(position);
         if (current.is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get())) {
             level.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
         }
         return true;
+    }
+
+    public static void scheduleReconciliation(ServerLevel level, BlockPos affectedPosition) {
+        ManagedVegetationSavedData data = ManagedVegetationSavedData.get(level);
+        resolveNode(data, affectedPosition).ifPresent(node -> {
+            if (node.lifecycle().occupied()) {
+                data.update(node.schedule(level.getGameTime() + ManagedVegetationConfig.retryTicks()));
+            }
+        });
     }
 
     /** Resolves a canonical node from its base or the upper half of managed tall grass. */
