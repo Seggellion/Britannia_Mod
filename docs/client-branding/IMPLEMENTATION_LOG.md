@@ -833,3 +833,60 @@ test(client): cover branding resources and splash corpus
 ```
 
 No push, merge, rebase, force operation, or remote mutation is authorized or performed.
+
+## Milestone 7 - Live client acceptance
+
+Date: 2026-08-11
+
+Status: Gate 7 passed — owner visually approved
+
+Production behavior changed: No
+
+Starting commit: `9b1530769597bdb8b9b312315fbd3b485520420a`
+
+### Live validation performed
+
+Ran the Minecraft 1.21.1 / NeoForge 21.1.72 development client through the complete required title-screen matrix:
+
+- 1280×720 at GUI scale Auto;
+- 1920×1080 at GUI scale 2;
+- 2560×1440 at GUI scale 3;
+- 3440×1440 at GUI scale 4.
+
+Exact framebuffer captures confirm that the protected chest/medallion background, full UltimaCraft wordmark, `Version 18`, rotating splash, `Ultimacraft website` replacement, remaining buttons, and legal/version text are visible and collision-free at every matrix point. No vanilla panorama, stretching, seam, stale frame, or clipped control was observed. Singleplayer, Options, Accessibility, Resource Packs, Select World, and return/escape navigation paths were exercised successfully; the website label, exact HTTPS target, platform-browser action, Realms-only identity, and geometry remain locked by the green Milestone 5 tests.
+
+`F3+T` completed and returned to an unchanged branded title screen. Representative Options, Accessibility, Resource Packs, and Select World screens rendered on opaque black while retaining readable content and controls. These final spot checks supplement the full Milestone 5 pre-world matrix.
+
+A 50-frame burst captured the transition into the existing disposable `New World`: Preparing Resources, the intermediate blank frame, `0%`, and progress through `100%` all rendered on black. Four safe corner locations were sampled in every frame (200 samples total) with zero non-black samples and no panorama or stale-frame flash.
+
+The world then rendered normally. Exact 1280×720 HUD, inventory, and pause captures show normal world-backed behavior with no pre-world black-background leakage. The world saved and each client process stopped cleanly; the resolution-matrix runs ended `BUILD SUCCESSFUL`.
+
+### Evidence and cleanup
+
+The full evidence record and owner checklist are in `docs/client-branding/VALIDATION.md`. Ignored captures remain under `build/client-branding-validation/milestone-7` for review only and will not enter the production JAR. The temporary window-control helper and noncanonical captures were removed.
+
+The pre-validation `run/options.txt` was restored byte-for-byte. Its before/after SHA-256 is `DCB76C9729A6C4F275D656F0BCF42706DECB7B4EC89E15A90159980D13790AC7`.
+
+No production Java, resource, build configuration, gameplay system, remote branch, or external service changed. Gate 6's focused tests, clean-build baseline, dedicated-server pass, package audit, and protected hashes carry forward because Milestone 7 changes documentation only.
+
+### Gate 7 status
+
+- [x] Required resolution/GUI-scale matrix captured and reviewed.
+- [x] Title composition and resize behavior pass.
+- [x] Pre-world menus remain black and readable.
+- [x] Loading transition remains black without a panorama or sampled flash.
+- [x] Resource reload preserves branding.
+- [x] In-world HUD, inventory, and pause rendering show no regression.
+- [x] Runtime options restored exactly and temporary tooling removed.
+- [x] Explicit owner visual approval received on 2026-08-11.
+- [x] Milestone 8 was not started.
+
+Gate 7 passed after the owner explicitly approved the visual evidence on 2026-08-11.
+
+Planned local commit message:
+
+```text
+docs(client-branding): record live acceptance validation
+```
+
+No push, merge, rebase, force operation, or remote mutation is authorized or performed.
