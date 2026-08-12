@@ -31,12 +31,17 @@ public final class WildResourceRegistry {
     }
 
     public Optional<WildResourceEntry> select(RandomSource random) {
-        if (entries.isEmpty()) {
+        return select(random, entries.values());
+    }
+
+    public Optional<WildResourceEntry> select(RandomSource random, Collection<WildResourceEntry> candidates) {
+        List<WildResourceEntry> selectable = List.copyOf(candidates);
+        if (selectable.isEmpty()) {
             return Optional.empty();
         }
-        int totalWeight = entries.values().stream().mapToInt(WildResourceEntry::spawnWeight).sum();
+        int totalWeight = selectable.stream().mapToInt(WildResourceEntry::spawnWeight).sum();
         int selected = random.nextInt(totalWeight);
-        for (WildResourceEntry entry : entries.values()) {
+        for (WildResourceEntry entry : selectable) {
             selected -= entry.spawnWeight();
             if (selected < 0) {
                 return Optional.of(entry);

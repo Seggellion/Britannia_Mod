@@ -16,6 +16,7 @@ import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Server-only round-robin driver for naturally loaded chunks. It performs a fixed amount of work,
@@ -97,24 +98,31 @@ public final class WildResourceManager {
         WildResourceSavedData data = WildResourceSavedData.get(level);
         LevelAttemptContext context = new LevelAttemptContext(level, data);
         long now = level.getGameTime();
-        int attempts = 0;
+        ArrayList<WildResourceEntry> dueEntries = new ArrayList<>();
         for (WildResourceEntry entry : WildResources.registry().entries()) {
             long nextAttempt = data.nextAttempt(chunk, entry.id());
             if (nextAttempt == WildResourceSavedData.UNSCHEDULED) {
                 data.scheduleAttempt(chunk, entry.id(), now + entry.tuning().nextAttemptDelay(level.random));
                 continue;
             }
-            if (nextAttempt <= now && attempts < attemptBudget) {
-                try {
-                    WildResourceSpawnScheduler.attempt(entry, chunk, now, context);
-                } catch (RuntimeException exception) {
-                    LOGGER.warn("Wild resource attempt {} in {} failed: {}", entry.id(), chunk, exception.getMessage());
-                    data.scheduleAttempt(chunk, entry.id(), now + entry.tuning().nextAttemptDelay(level.random));
-                }
-                attempts++;
+            if (nextAttempt <= now) {
+                dueEntries.add(entry);
             }
         }
-        return attempts;
+        if (attemptBudget <= 0) {
+            return 0;
+        }
+        WildResourceEntry selected = WildResources.registry().select(level.random, dueEntries).orElse(null);
+        if (selected == null) {
+            return 0;
+        }
+        try {
+            WildResourceSpawnScheduler.attempt(selected, chunk, now, context);
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Wild resource attempt {} in {} failed: {}", selected.id(), chunk, exception.getMessage());
+            data.scheduleAttempt(chunk, selected.id(), now + selected.tuning().nextAttemptDelay(level.random));
+        }
+        return 1;
     }
 
     private record LevelAttemptContext(ServerLevel level, WildResourceSavedData data)

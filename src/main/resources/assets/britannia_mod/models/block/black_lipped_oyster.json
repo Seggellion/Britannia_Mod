@@ -1,0 +1,24 @@
+{
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "britannia_mod:block/wild_resource/black_lipped_oyster",
+    "shells": "britannia_mod:block/wild_resource/black_lipped_oyster"
+  },
+  "elements": [
+    {
+      "from": [1, 0.05, 1],
+      "to": [15, 0.1, 15],
+      "shade": false,
+      "faces": {
+        "up": {
+          "texture": "#shells"
+        },
+        "down": {
+          "texture": "#shells",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

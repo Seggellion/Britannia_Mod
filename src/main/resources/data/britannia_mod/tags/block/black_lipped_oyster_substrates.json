@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:calcite",
+    {
+      "id": "britannia_mod:limestone",
+      "required": false
+    }
+  ]
+}

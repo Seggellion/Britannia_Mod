@@ -36,6 +36,20 @@ public final class WildResourceHarvestService {
         return true;
     }
 
+    /** Oyster harvest remains deliberately unavailable until the dagger/Black Pearl milestone. */
+    public static boolean harvestOyster(
+            ServerLevel level,
+            BlockPos position,
+            ServerPlayer player,
+            ItemStack tool
+    ) {
+        return false;
+    }
+
+    public static ItemStack createOysterLoot(ServerLevel level, BlockPos position, ServerPlayer player) {
+        return ItemStack.EMPTY;
+    }
+
     static void recordOrdinaryBreak(ServerLevel level, BlockPos position) {
         WildResourceSavedData data = WildResourceSavedData.get(level);
         WildResourceNode node = data.removeNode(position).orElse(null);

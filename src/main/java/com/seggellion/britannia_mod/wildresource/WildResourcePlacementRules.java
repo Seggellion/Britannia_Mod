@@ -35,6 +35,10 @@ public final class WildResourcePlacementRules {
         return isAshSupport(position, new LevelPlacementView(level));
     }
 
+    public static boolean isOysterSubstrate(ServerLevel level, BlockPos position) {
+        return isOysterSubstrate(position, new LevelPlacementView(level));
+    }
+
     static boolean isSafeTarget(BlockPos position, PlacementView view) {
         BlockState target = view.stateAt(position);
         return target.canBeReplaced() && target.getFluidState().isEmpty() && !view.hasBlockEntity(position);
@@ -43,6 +47,11 @@ public final class WildResourcePlacementRules {
     static boolean isAshSupport(BlockPos position, PlacementView view) {
         BlockState support = view.stateAt(position.below());
         return support.isFaceSturdy(view, position.below(), Direction.UP) && isNaturalAshSupport(support);
+    }
+
+    static boolean isOysterSubstrate(BlockPos position, PlacementView view) {
+        BlockState support = view.stateAt(position.below());
+        return support.is(Blocks.CALCITE) || support.is(WildResourceTags.BLACK_LIPPED_OYSTER_SUBSTRATES);
     }
 
     static boolean isNaturalAshSupport(BlockState state) {

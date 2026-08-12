@@ -124,6 +124,7 @@ import com.seggellion.britannia_mod.block.FlowerBlock;
 import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
 import com.seggellion.britannia_mod.block.ManagedFlowerBlock;
 import com.seggellion.britannia_mod.block.SulphurousAshBlock;
+import com.seggellion.britannia_mod.block.BlackLippedOysterBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -277,6 +278,17 @@ public static final DeferredHolder<Block, SulphurousAshBlock> SULPHUROUS_ASH_PAT
                 .mapColor(MapColor.COLOR_YELLOW)
                 .strength(0.1F)
                 .sound(SoundType.SAND)
+                .noCollission()
+                .noOcclusion()
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, BlackLippedOysterBlock> BLACK_LIPPED_OYSTER = BLOCKS.register(
+        "black_lipped_oyster",
+        () -> new BlackLippedOysterBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_PURPLE)
+                .strength(0.4F)
+                .sound(SoundType.CALCITE)
                 .noCollission()
                 .noOcclusion()
                 .pushReaction(PushReaction.DESTROY))

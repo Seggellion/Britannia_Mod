@@ -6,6 +6,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -66,6 +68,30 @@ class WildResourceEntryTest {
 
         assertEquals(TEST_ID, registry.select(RandomSource.create(2L)).orElseThrow().id());
         assertTrue(new WildResourceRegistry().select(RandomSource.create(2L)).isEmpty());
+    }
+
+    @Test
+    void weightedSelectionCanBeRestrictedToCurrentlyDueEntries() {
+        WildResourceRegistry registry = new WildResourceRegistry();
+        WildResourceEntry first = entry(new WildResourceTuning(20, 20, 40, 40, 1, 0));
+        WildResourceEntry second = new WildResourceEntry(
+                ResourceLocation.fromNamespaceAndPath("britannia_mod", "second"),
+                50,
+                1,
+                first.tuning(),
+                first.candidateGenerator(),
+                first.environmentRule(),
+                first.substrateRule(),
+                first.biomeRule(),
+                first.nearbyRule(),
+                first.placementStrategy(),
+                first.harvestStrategy(),
+                first.lootStrategy()
+        );
+        registry.register(first);
+        registry.register(second);
+
+        assertEquals(second, registry.select(RandomSource.create(5L), List.of(second)).orElseThrow());
     }
 
     private static WildResourceEntry entry(WildResourceTuning tuning) {
