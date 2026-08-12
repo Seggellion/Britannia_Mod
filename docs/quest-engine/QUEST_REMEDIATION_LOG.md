@@ -310,3 +310,95 @@ fix used here is the reliable one — delete `latest.log`, run, and confirm the 
 
 Both repositories, instrumentation only. No control flow was changed other than splitting one
 unlogged rejection into named ones, and no response body, status code, or stored state differs.
+
+---
+
+## Milestone 3 — Rails identity unification + journal uuid migration (Q-01, Q-07) (2026-08-12)
+
+**The blocker is closed.**
+
+### The defect
+
+`QuestEngine::Processor` resolved the journal row by `@player.minecraft_uuid`, byte-for-byte,
+while `trigger_node`, `quit` and the world bootstrap resolved it through a candidate list. Journal
+rows written before migration `20260602001000` still carry compact or upper-case uuids — that
+migration normalized `users.minecraft_uuid` and fourteen other tables, but not
+`player_quest_states.player_uuid`. An affected player could see the quest, progress it through
+triggers and quit it, and got `403 "Quest not active."` forever when they tried to turn it in.
+
+### The change
+
+**One resolver.** `resolve_player!` / `resolve_player` returns `[user, uuid_candidates]`, prefers
+`User.active_identity`, falls back, memoizes per request, and logs `quest_player_resolved` /
+`quest_player_unresolved`. **Every** action now uses it — `start`, `interact`, `clear_all`,
+`record_kill`, `abandon`, `trigger_node`, `transition`, `update_player_state`, `quit`. The three
+ad-hoc user lookups and every single-spelling state lookup are gone; `grep` for
+`minecraft_uuid: player_uuid` and `player_uuid: player_uuid` outside the two `create!` calls
+returns nothing.
+
+**Processor resolves by candidates**, with `player_uuid_candidates:` now required — it raises
+rather than defaulting, because a silent fallback to the old lookup is exactly how this defect
+would return.
+
+**Writes normalize.** `PlayerQuestState#normalize_player_uuid` (before_validation) means no new
+row can be written in a legacy spelling. A malformed uuid is preserved rather than blanked:
+losing a player's journal row is worse than storing an odd one.
+
+**Candidate spellings widened.** A test failure caught a real gap: the candidate list covered
+spellings of the *input*, not of the *stored column*, so an upper-case stored row still missed.
+The list now enumerates lower/upper × hyphenated/compact plus the raw input — enumerated rather
+than matched with `lower()` so the `(player_uuid, quest_id)` index stays usable.
+
+**Migration `20260812050147_normalize_player_quest_state_player_uuids`** — the table the
+2026-06-02 migration missed. Written to be safe rather than tidy: no row is ever deleted, no
+completed row is ever altered, a malformed uuid is left exactly as it is and reported, and the
+unique `(player_uuid, quest_id)` index is respected by never renaming a row into a collision —
+where two rows would land on the same normalized uuid for one quest, the most recently touched
+active row is kept and the others are abandoned in place. `down` is a deliberate no-op.
+
+### Verification
+
+- **The M0 reproduction harness is flipped and green.** `REPRO: turn-in is refused…` is now
+  `FIXED: turn-in completes for a journal row carrying a legacy compact uuid`, joined by an
+  upper-case case and an `ASYMMETRY IS GONE` case that drives `trigger_node`,
+  `update_player_state` and `abandon` across all three spellings. Renamed
+  `quest_completion_identity_repro_test.rb` → `quest_completion_identity_test.rb`; **its diff is
+  the evidence.** 8 runs, 28 assertions.
+- Migration test: 7 runs — normalizes compact and upper-case, keeps the newest active row and
+  **abandons rather than deletes** the duplicate, never touches a completed row, leaves malformed
+  uuids alone, is idempotent, and treats quests independently.
+- **Mutation-tested.** Reverting Processor's lookup to `@player.minecraft_uuid` fails exactly the
+  two `FIXED:` tests and nothing else; restored and re-run clean.
+- **Rails full suite: 1359 runs, 6416 assertions, 1 failure** — the known deterministic
+  `CityFoodSupplyRecalculator` 99.7 ≠ 100.0. (A separate run also showed the known intermittent
+  `ServiceNpcSpawnPointsConcurrencyTest` race; it passes in isolation and predates this work.)
+- Guards that must still hold, and do: a second turn-in is still refused (no double reward — M4
+  turns that into an idempotent replay), and another player's quest is still never resolved.
+
+### Two judgement calls worth recording
+
+**The schema dump was not committed as generated.** `db:schema:dump` in this environment also
+dropped `enable_extension "pg_stat_statements"` and rewrote every `check_constraint` string —
+unrelated environment and Postgres-rendering noise. The migration is data-only and adds no DDL,
+so `schema.rb` was restored and **only the version line bumped**. Committing the generated dump
+would have silently removed an extension other environments declare.
+
+**One M2 test asserted the defect.** `QuestObservabilityTest`'s refusal case drove a legacy
+compact row, which M3 legitimately makes succeed. It was moved to a genuinely finished quest, so
+it still pins `matching_rows` — and gained a companion asserting that an *active* legacy row
+completes and logs no rejection. That pairing is what makes the diagnostic meaningful: rows exist
+but none active = the quest really ended; an active row exists and we still refused = the bug is
+back.
+
+### Observed, not fixed
+
+- `Api::WorldBootstrapController` keeps its own private `minecraft_uuid_candidates` (without the
+  upper-case spellings). It already worked and is outside this milestone's file set; consolidating
+  the two copies belongs with M5, which touches that controller anyway.
+- Quest turn-in is still not idempotent: a lost response after a Rails commit still costs the
+  reward, and the retry is refused. That is M4, unchanged by this work.
+
+### Scope discipline
+
+Rails only. Controller, processor, model, one migration, `schema.rb` version line, three test
+files. No Minecraft change.
