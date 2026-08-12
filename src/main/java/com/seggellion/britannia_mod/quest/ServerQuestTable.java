@@ -18,6 +18,24 @@ public final class ServerQuestTable {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Map<UUID, Map<String, ClientQuestEntry>> QUESTS_BY_PLAYER = new ConcurrentHashMap<>();
 
+    /**
+     * What this mirror can honestly say about one quest state.
+     *
+     * <p>The distinction that matters is {@link #UNKNOWN}. This table is RAM only and is filled
+     * exclusively by the login bootstrap, which is allowed to fail. Between server start and a
+     * player's bootstrap landing -- and for the whole session if that bootstrap failed -- the
+     * table knows nothing about them. <b>"I have no record" is not "the quest is over"</b>, and a
+     * caller that destroys persisted state must never conflate the two.
+     */
+    public enum JournalState {
+        /** The journal is loaded for this player and lists this quest state. */
+        ACTIVE,
+        /** The journal is loaded for this player and does not list this quest state. */
+        INACTIVE,
+        /** The journal has not loaded for this player; nothing can be concluded. */
+        UNKNOWN
+    }
+
     private ServerQuestTable() {}
 
     public static void replaceFromBootstrap(ServerPlayer player, Collection<ClientQuestEntry> quests) {
@@ -54,9 +72,7 @@ public final class ServerQuestTable {
     }
 
     public static boolean hasActiveQuestState(ServerPlayer player, String questStateId) {
-        if (player == null || questStateId == null || questStateId.isBlank()) return false;
-        Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(player.getUUID());
-        return quests != null && quests.containsKey(questStateId.trim());
+        return player != null && hasActiveQuestState(player.getUUID(), questStateId);
     }
 
     public static boolean hasActiveQuestId(ServerPlayer player, long questId) {
@@ -97,12 +113,29 @@ public final class ServerQuestTable {
     }
 
     public static boolean hasActiveQuestState(UUID playerUuid, String questStateId) {
-        if (playerUuid == null) return false;
+        return questStateStatus(playerUuid, questStateId) == JournalState.ACTIVE;
+    }
+
+    /**
+     * The three-state answer. Prefer this over {@link #hasActiveQuestState} wherever a negative
+     * answer would cause persisted state to be destroyed: a boolean cannot distinguish "this
+     * quest ended" from "this journal has not loaded yet", and treating the second as the first
+     * deleted live escort assignments on every server restart.
+     */
+    public static JournalState questStateStatus(UUID playerUuid, String questStateId) {
+        if (playerUuid == null) return JournalState.UNKNOWN;
+
         Map<String, ClientQuestEntry> quests = QUESTS_BY_PLAYER.get(playerUuid);
-        if (quests == null || quests.isEmpty()) return false;
+        if (quests == null) return JournalState.UNKNOWN;
 
         String normalizedStateId = clean(questStateId);
-        return !normalizedStateId.isBlank() && quests.containsKey(normalizedStateId);
+        if (normalizedStateId.isBlank()) return JournalState.INACTIVE;
+        return quests.containsKey(normalizedStateId) ? JournalState.ACTIVE : JournalState.INACTIVE;
+    }
+
+    /** Whether this player's journal has been loaded at all in this server run. */
+    public static boolean journalLoaded(UUID playerUuid) {
+        return playerUuid != null && QUESTS_BY_PLAYER.containsKey(playerUuid);
     }
 
     public static void removeAfterRailsQuitSuccess(ServerPlayer player, String questStateId) {

@@ -164,6 +164,7 @@ public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
         private final double speedModifier;
         private final float startDist;
         private final float stopDist;
+        private boolean reportedUnknownJournal;
 
         public FollowPlayerGoal(net.minecraft.world.entity.Mob mob, net.minecraft.world.entity.player.Player player, double speed, float startDist, float stopDist) {
             this.mob = mob;
@@ -206,11 +207,24 @@ public static void evaluateLavaQuest(ItemStack stack, BlockPos pos) {
             if (this.mob.level().isClientSide()) {
                 return true;
             }
-            boolean active = ServerQuestTable.hasActiveQuestState(this.player.getUUID(), questStateId);
-            if (!active) {
-                clearInvalidEscortAssignment("inactive quest_state_id");
+
+            ServerQuestTable.JournalState status =
+                    ServerQuestTable.questStateStatus(this.player.getUUID(), questStateId);
+            if (status == ServerQuestTable.JournalState.UNKNOWN) {
+                // Same rule as EscortPlayerGoal: an unloaded journal is not evidence that the
+                // quest ended, so idle without destroying the persisted assignment.
+                if (!this.reportedUnknownJournal) {
+                    this.reportedUnknownJournal = true;
+                    LOGGER.debug("Injected escort idling because the quest journal has not loaded entity={} quest_state_id={}",
+                            this.mob.getStringUUID(), questStateId);
+                }
+                return false;
             }
-            return active;
+            if (status == ServerQuestTable.JournalState.INACTIVE) {
+                clearInvalidEscortAssignment("inactive quest_state_id");
+                return false;
+            }
+            return true;
         }
 
         private String tagValue(String prefix) {

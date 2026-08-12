@@ -16,6 +16,7 @@ public class EscortPlayerGoal extends Goal {
     private final double speedModifier;
     private final float stopDistance;
     private final float teleportDistance; // Teleports NPC if the player runs too fast
+    private boolean reportedUnknownJournal;
 
     public EscortPlayerGoal(PathfinderMob mob, double speedModifier, float stopDistance, float teleportDistance) {
         this.mob = mob;
@@ -108,11 +109,28 @@ public class EscortPlayerGoal extends Goal {
             return true;
         }
 
-        boolean active = ServerQuestTable.hasActiveQuestState(player.getUUID(), questStateId);
-        if (!active) {
-            clearInvalidEscortAssignment("inactive quest_state_id");
+        ServerQuestTable.JournalState status =
+                ServerQuestTable.questStateStatus(player.getUUID(), questStateId);
+        if (status == ServerQuestTable.JournalState.UNKNOWN) {
+            // The journal has not loaded for this player: the server restarted, or their login
+            // bootstrap is still in flight or failed. Idle, but do NOT touch the assignment --
+            // an absent cache is not evidence that the quest ended, and these tags are the only
+            // durable record of it.
+            reportUnknownJournal(questStateId);
+            return false;
         }
-        return active;
+        if (status == ServerQuestTable.JournalState.INACTIVE) {
+            clearInvalidEscortAssignment("inactive quest_state_id");
+            return false;
+        }
+        return true;
+    }
+
+    private void reportUnknownJournal(String questStateId) {
+        if (reportedUnknownJournal) return;
+        reportedUnknownJournal = true;
+        LOGGER.debug("Escort idling because the quest journal has not loaded entity={} quest_state_id={}",
+                mob.getStringUUID(), questStateId);
     }
 
     private String tagValue(String prefix) {

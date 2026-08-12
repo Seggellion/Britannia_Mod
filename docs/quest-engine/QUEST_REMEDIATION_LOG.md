@@ -125,3 +125,94 @@ committed here.
 ### Scope discipline
 
 No production code was changed in this milestone, in either repository.
+
+---
+
+## Milestone 1 — Stop the destruction: escort assignments (Q-16) (2026-08-11)
+
+### The defect
+
+`EscortPlayerGoal.hasActiveQuestAssignment` asked `ServerQuestTable.hasActiveQuestState(...)` — a
+boolean — and on `false` called `clearInvalidEscortAssignment`, which **permanently deletes** the
+entity tags that are the only durable record of an escort assignment (`escort_active`,
+`quest_escort_<player>`, `quest_state_id_<id>`, `quest_id_<id>`, `quest_key_<key>`).
+
+`ServerQuestTable` is RAM only and is filled solely by the login bootstrap, which is allowed to
+fail. Between server start and a player's bootstrap landing — and for the whole session if that
+bootstrap failed — the table holds nothing for that player. The goal ticks as soon as the chunk
+loads, so **an escort standing near its owner lost its assignment within the first ticks after
+every restart, irrecoverably.** A boolean cannot distinguish "this quest ended" from "I have no
+record yet", and the code treated the second as the first.
+
+### The change
+
+`ServerQuestTable` gains a three-state answer:
+
+```java
+public enum JournalState { ACTIVE, INACTIVE, UNKNOWN }
+public static JournalState questStateStatus(UUID playerUuid, String questStateId)
+public static boolean journalLoaded(UUID playerUuid)
+```
+
+- no map entry for the player → `UNKNOWN` (journal never loaded this run)
+- entry present, key present → `ACTIVE`
+- entry present, key absent (or a blank id) → `INACTIVE`
+
+Both escort goals — `EscortPlayerGoal` and the duplicate implementation inside
+`QuestPayloadHandler.FollowPlayerGoal` — now branch on it: `ACTIVE` follows, `INACTIVE` clears
+exactly as before, and **`UNKNOWN` idles without touching a single tag**, logging once per goal
+instance at `debug`. Both `hasActiveQuestState` overloads are reimplemented as
+`questStateStatus(...) == ACTIVE`, so every other caller keeps byte-identical behaviour and there
+is now one definition of the question.
+
+Deliberately unchanged in this milestone: `QuestDestinationBlockEntity` and
+`MoongateTeleportationHandler`, which also consult the journal but do not destroy state on a
+negative answer.
+
+### Verification
+
+`./gradlew compileJava` BUILD SUCCESSFUL.
+
+**GameTest: all 353 required tests passed** (fresh-log verified, `run/gametest/logs/latest.log`
+21:17) — the M0 baseline of 349 plus the four new
+`QuestEscortAssignmentGameTests`:
+
+1. `unloadedJournalPreservesTheAssignment` — no journal entry (a fresh mock player never
+   bootstraps, which is exactly the post-restart state): the escort idles and every tag survives.
+2. `loadedJournalWithTheQuestFollows` — journal loaded and listing the quest: follows, tags intact.
+3. `loadedJournalWithoutTheQuestClearsTheAssignment` — journal loaded, quest absent: still clears,
+   pinning the pre-existing behaviour that stops abandoned escorts following forever.
+4. `assignmentRecoversWhenTheJournalArrives` — idles through the unloaded window, then resumes on
+   its own once the journal lands, with no re-activation and no player action.
+
+**Mutation-tested, because a green test proves nothing until it can fail.** The `UNKNOWN` branch
+was temporarily disabled so the goal treated it as `INACTIVE` again (the pre-M1 behaviour) and the
+full GameTest server re-run:
+
+```
+353 GAME TESTS COMPLETE
+2 required tests failed :(
+   - assignmentrecoverswhenthejournalarrives
+   - unloadedjournalpreservestheassignment
+```
+
+Exactly the two tests that assert the fix failed; the two that pin preserved behaviour stayed
+green. The guard was then restored and the suite re-run clean (the 21:17 log above).
+
+**Unit suite**: 1788 tests, 21 failures — identical to the M0 baseline, same seven
+`bannerdyeing` classes. No new failure.
+
+### Observed, not fixed
+
+- `QuestPayloadHandler.FollowPlayerGoal` is a second, near-duplicate implementation of
+  `EscortPlayerGoal` that `activateEscort` adds imperatively on top of the goal every
+  `QuestGiverEntity` already registers. Both were fixed here because both could destroy state, but
+  the duplication itself is **M7's** to remove (Q-11).
+- `ServerQuestTable` entries are still never cleared on logout (Q-09). Clearing them today would
+  manufacture the `UNKNOWN` state on every relog; it is safe only once M5 makes a miss re-fetch
+  rather than reject.
+
+### Scope discipline
+
+Minecraft only. Three production files and one new test class. No Rails change, no behaviour
+change to any non-escort caller of the journal.
