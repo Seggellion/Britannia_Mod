@@ -123,6 +123,7 @@ import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.FlowerBlock;
 import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
 import com.seggellion.britannia_mod.block.ManagedFlowerBlock;
+import com.seggellion.britannia_mod.block.SulphurousAshBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -267,6 +268,17 @@ public static final DeferredHolder<Block, ManagedFlowerBlock> MANAGED_FLOWER = B
                 .noOcclusion()
                 .instabreak()
                 .sound(SoundType.GRASS)
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, SulphurousAshBlock> SULPHUROUS_ASH_PATCH = BLOCKS.register(
+        "sulphurous_ash_patch",
+        () -> new SulphurousAshBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_YELLOW)
+                .strength(0.1F)
+                .sound(SoundType.SAND)
+                .noCollission()
+                .noOcclusion()
                 .pushReaction(PushReaction.DESTROY))
 );
 

@@ -64,6 +64,8 @@ import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationConfig;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationManager;
 import com.seggellion.britannia_mod.wildresource.WildResourceManager;
+import com.seggellion.britannia_mod.wildresource.WildResourceEntries;
+import com.seggellion.britannia_mod.wildresource.WildResourceInteractionHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -139,7 +141,9 @@ CraftableRegistry.init();
         LargeStructureRegistry.register(modEventBus);
         ShrineIntegrityHandler.register();
         ManagedVegetationManager.register();
+        WildResourceEntries.bootstrap();
         WildResourceManager.register();
+        WildResourceInteractionHandler.register();
 
         BlacksmithItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);

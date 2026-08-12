@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.mixin.client;
 
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.block.AdventureHarvestableBlock;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationCutTools;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
@@ -33,9 +34,11 @@ public abstract class ManagedVegetationAdventureModeMixin {
             GameType gameType
     ) {
         BlockState state = level.getBlockState(position);
-        if (gameType == GameType.ADVENTURE
-                && ManagedVegetationCutTools.isSword(player.getMainHandItem())
-                && isManagedVegetationCandidate(state)) {
+        boolean managedVegetationAttack = ManagedVegetationCutTools.isSword(player.getMainHandItem())
+                && isManagedVegetationCandidate(state);
+        boolean wildResourceAttack = state.getBlock() instanceof AdventureHarvestableBlock harvestable
+                && harvestable.allowsAdventureHarvest(player.getMainHandItem());
+        if (gameType == GameType.ADVENTURE && (managedVegetationAttack || wildResourceAttack)) {
             return false;
         }
         return player.blockActionRestricted(level, position, gameType);

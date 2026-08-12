@@ -1,0 +1,60 @@
+package com.seggellion.britannia_mod.wildresource;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+
+/** Atomic server-side removal, loot, and cooldown accounting for special harvest paths. */
+public final class WildResourceHarvestService {
+    private WildResourceHarvestService() {
+    }
+
+    public static boolean harvestOne(
+            ServerLevel level,
+            BlockPos position,
+            ServerPlayer player,
+            Block expectedBlock,
+            Item expectedItem
+    ) {
+        WildResourceSavedData data = WildResourceSavedData.get(level);
+        WildResourceNode node = data.nodeAt(position).orElse(null);
+        WildResourceEntry entry = node == null ? null : WildResources.registry().find(node.resourceId()).orElse(null);
+        if (node == null || entry == null || !level.getBlockState(position).is(expectedBlock)) {
+            return false;
+        }
+        if (!level.setBlock(position, Blocks.AIR.defaultBlockState(), 3)) {
+            return false;
+        }
+        data.removeNode(position);
+        scheduleRespawn(level, data, entry, position);
+        Block.popResource(level, position, new ItemStack(expectedItem));
+        return true;
+    }
+
+    static void recordOrdinaryBreak(ServerLevel level, BlockPos position) {
+        WildResourceSavedData data = WildResourceSavedData.get(level);
+        WildResourceNode node = data.removeNode(position).orElse(null);
+        WildResourceEntry entry = node == null ? null : WildResources.registry().find(node.resourceId()).orElse(null);
+        if (entry != null) {
+            scheduleRespawn(level, data, entry, position);
+        }
+    }
+
+    private static void scheduleRespawn(
+            ServerLevel level,
+            WildResourceSavedData data,
+            WildResourceEntry entry,
+            BlockPos position
+    ) {
+        data.scheduleAttempt(
+                new ChunkPos(position),
+                entry.id(),
+                level.getGameTime() + entry.tuning().nextRespawnDelay(level.random)
+        );
+    }
+}
