@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 
@@ -30,6 +31,7 @@ public final class WildResourceManager {
     private static final WildResourceManager INSTANCE = new WildResourceManager();
     private static final Map<ServerLevel, LoadedChunkQueue> LOADED_CHUNKS = new IdentityHashMap<>();
     private static boolean registered;
+    private int dimensionCursor;
 
     private WildResourceManager() {
     }
@@ -82,31 +84,52 @@ public final class WildResourceManager {
         int remainingChunks = MAX_CHUNKS_PER_TICK;
         int remainingAttempts = MAX_RESOURCE_ATTEMPTS_PER_TICK;
         int remainingReconciliations = MAX_RECONCILIATIONS_PER_TICK;
+        List<LevelQueue> activeLevels = new ArrayList<>();
         for (ServerLevel level : event.getServer().getAllLevels()) {
             LoadedChunkQueue queue = LOADED_CHUNKS.get(level);
-            if (queue == null) {
-                continue;
+            if (queue != null) {
+                activeLevels.add(new LevelQueue(level, queue));
             }
-            while (remainingReconciliations > 0) {
-                ChunkPos chunk = queue.pollReconciliation();
-                if (chunk == null) {
-                    break;
+        }
+        if (activeLevels.isEmpty()) {
+            dimensionCursor = 0;
+            return;
+        }
+
+        int start = Math.floorMod(dimensionCursor, activeLevels.size());
+        while (remainingReconciliations > 0) {
+            boolean progressed = false;
+            for (int offset = 0; offset < activeLevels.size() && remainingReconciliations > 0; offset++) {
+                LevelQueue current = activeLevels.get((start + offset) % activeLevels.size());
+                ChunkPos chunk = current.queue().pollReconciliation();
+                if (chunk != null) {
+                    reconcileLoadedChunk(current.level(), chunk);
+                    remainingReconciliations--;
+                    progressed = true;
                 }
-                reconcileLoadedChunk(level, chunk);
-                remainingReconciliations--;
             }
-            while (remainingChunks > 0 && remainingAttempts > 0) {
-                ChunkPos chunk = queue.rotate();
-                if (chunk == null) {
-                    break;
-                }
-                remainingChunks--;
-                remainingAttempts -= processChunk(level, chunk, remainingAttempts);
-            }
-            if (remainingChunks == 0 || remainingAttempts == 0) {
+            if (!progressed) {
                 break;
             }
         }
+
+        while (remainingChunks > 0 && remainingAttempts > 0) {
+            boolean progressed = false;
+            for (int offset = 0; offset < activeLevels.size()
+                    && remainingChunks > 0 && remainingAttempts > 0; offset++) {
+                LevelQueue current = activeLevels.get((start + offset) % activeLevels.size());
+                ChunkPos chunk = current.queue().rotate();
+                if (chunk != null) {
+                    remainingChunks--;
+                    remainingAttempts -= processChunk(current.level(), chunk, remainingAttempts);
+                    progressed = true;
+                }
+            }
+            if (!progressed) {
+                break;
+            }
+        }
+        dimensionCursor = (start + 1) % activeLevels.size();
     }
 
     static void reconcileLoadedChunk(ServerLevel level, ChunkPos chunk) {
@@ -212,6 +235,9 @@ public final class WildResourceManager {
         public void schedule(ChunkPos chunk, WildResourceEntry entry, long nextAttempt) {
             data.scheduleAttempt(chunk, entry.id(), nextAttempt);
         }
+    }
+
+    private record LevelQueue(ServerLevel level, LoadedChunkQueue queue) {
     }
 
     private static final class LoadedChunkQueue {
