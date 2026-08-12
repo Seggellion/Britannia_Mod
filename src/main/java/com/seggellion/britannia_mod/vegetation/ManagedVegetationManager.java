@@ -160,18 +160,23 @@ public final class ManagedVegetationManager {
             return;
         }
         ManagedVegetationEntry entry = ManagedVegetationProfile.configured().select(level.random);
-        if (entry.growthStrategy() != ManagedVegetationGrowthStrategy.GRASS_FAMILY) {
-            // Other strategies are activated by their own implementation milestones.
-            retry(data, node, now);
-            return;
-        }
-
-        ManagedVegetationNode shortGrass = node.shortGrass(
-                entry.id(), now + ManagedVegetationConfig.grassGrowthDelay(level.random)
-        );
-        data.update(shortGrass);
-        if (!level.setBlock(position, Blocks.SHORT_GRASS.defaultBlockState(), 3)) {
-            data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
+        switch (entry.growthStrategy()) {
+            case GRASS_FAMILY -> {
+                ManagedVegetationNode shortGrass = node.shortGrass(
+                        entry.id(), now + ManagedVegetationConfig.grassGrowthDelay(level.random)
+                );
+                data.update(shortGrass);
+                if (!level.setBlock(position, Blocks.SHORT_GRASS.defaultBlockState(), 3)) {
+                    data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
+                }
+            }
+            case STATIC_FERN -> {
+                data.update(node.fern(entry.id()));
+                if (!level.setBlock(position, Blocks.FERN.defaultBlockState(), 3)) {
+                    data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
+                }
+            }
+            case FLOWER_STAGES -> retry(data, node, now);
         }
     }
 

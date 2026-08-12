@@ -41,6 +41,9 @@ class ManagedVegetationCutPolicyTest {
         assertTrue(ManagedVegetationService.isOwnedState(
                 ManagedVegetationLifecycle.TALL_GRASS, Blocks.TALL_GRASS.defaultBlockState()
         ));
+        assertTrue(ManagedVegetationService.isOwnedState(
+                ManagedVegetationLifecycle.FERN, Blocks.FERN.defaultBlockState()
+        ));
         assertFalse(ManagedVegetationService.isOwnedState(
                 ManagedVegetationLifecycle.SHORT_GRASS, Blocks.FERN.defaultBlockState()
         ));
