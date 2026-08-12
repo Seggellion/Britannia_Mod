@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.network;
 
 import com.seggellion.britannia_mod.network.payload.OpenQuestScreenS2CPayload;
 import com.seggellion.britannia_mod.network.payload.ItemBurnedS2CPayload;
+import com.seggellion.britannia_mod.entity.QuestGiverEntity;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.ClientQuestEntry;
 import com.seggellion.britannia_mod.quest.QuestCleanupService;
@@ -53,7 +54,7 @@ public class QuestPayloadHandler {
         }
 
         Entity oldEntity = level.getEntity(npcUuid);
-        if (!(oldEntity instanceof com.seggellion.britannia_mod.entity.QuestGiverEntity oldQuestGiver)
+        if (!(oldEntity instanceof QuestGiverEntity oldQuestGiver)
                 || !oldEntity.isAlive() || player.distanceToSqr(oldEntity) > 64.0D) {
             LOGGER.warn("Rejected authoritative escort activation because the nearby quest NPC was unavailable player={} quest_id={}",
                     player.getStringUUID(), questId);
@@ -61,23 +62,26 @@ public class QuestPayloadHandler {
         }
 
         String finalName = oldQuestGiver.getPersonalName();
-        String npcApiId = internalApiId(finalName);
+        String npcApiId = oldQuestGiver.resolveQuestGiverApiId();
         if (!isCompatibleQuestNpc(acceptedQuest, npcApiId)) {
             LOGGER.warn("Rejected authoritative escort activation for mismatched quest NPC player={} quest_id={}",
                     player.getStringUUID(), questId);
             return;
         }
 
-        CompoundTag sourceTag = new CompoundTag();
-        oldQuestGiver.saveWithoutId(sourceTag);
-        sourceTag.remove("UUID");
-        QuestCleanupService.clearSpawnerForRemovedQuestGiver(level, oldQuestGiver.getUUID(), npcApiId, 600);
-        oldEntity.discard();
+        // Milestone 7 (finding Q-11): the escort is the SAME entity.
+        //
+        // This used to copy the NPC's NBT, discard it and spawn a replacement, which gave the
+        // escort a brand-new UUID. Anything holding the old one -- an open dialogue's
+        // quest_giver_uuid, a spawner's tracked id, a log line an operator was following --
+        // was left pointing at an entity that no longer existed. Nothing about becoming an
+        // escort requires a different entity, so it no longer becomes one.
+        //
+        // The spawner is still told to forget it, so the post refills while this NPC is away.
+        QuestGiverEntity escort = oldQuestGiver;
+        QuestCleanupService.clearSpawnerForRemovedQuestGiver(level, escort.getUUID(), npcApiId, 600);
 
-        com.seggellion.britannia_mod.entity.QuestGiverEntity escort =
-                com.seggellion.britannia_mod.registry.EntityRegistry.QUEST_GIVER.get().create(level);
-        if (escort == null) return;
-        escort.load(sourceTag);
+        escort.clearRestriction();
         escort.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0F);
         escort.addTag("escort_active");
         escort.addTag("quest_escort_" + player.getUUID());
@@ -85,8 +89,6 @@ public class QuestPayloadHandler {
         escort.addTag("quest_state_id_" + questStateId);
         if (!npcApiId.isBlank()) escort.addTag("quest_key_" + npcApiId);
         escort.setPersistenceRequired();
-        escort.goalSelector.addGoal(2, new FollowPlayerGoal(escort, player, 1.2D, 5.0F, 2.0F));
-        level.addFreshEntity(escort);
 
         String displayString = finalName != null && finalName.contains(":") ? finalName.split(":", 2)[0] : finalName;
         player.sendSystemMessage(uoMessage(displayString + " joins your side. Lead the way."));

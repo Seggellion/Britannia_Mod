@@ -353,10 +353,9 @@ public final class QuestProxyService {
         Entity entity = player.serverLevel().getEntity(request.questGiverEntityId());
         if (!(entity instanceof QuestGiverEntity questGiver) || !entity.isAlive()
             || player.distanceToSqr(entity) > 64.0D || !entity.getUUID().equals(request.questGiverUuid())) return null;
-        String rawName = questGiver.getPersonalName();
-        String apiId = internalApiId(rawName);
+        String apiId = questGiver.resolveQuestGiverApiId();
         if (!validArgument(apiId)) return null;
-        return new ResolvedIntent(apiId, displayName(rawName), entity.getUUID());
+        return new ResolvedIntent(apiId, displayName(questGiver.getPersonalName()), entity.getUUID());
     }
 
     static boolean isValidShape(QuestActionC2SPayload request) {

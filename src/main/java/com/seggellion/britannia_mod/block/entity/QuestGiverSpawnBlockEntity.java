@@ -145,6 +145,7 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
                 String safeDest = randomDest.toLowerCase().replace("'", "").replace(" ", "_");
                 
                 npc.setPersonalName(randomName + ":escort_" + safeOrigin + "_to_" + safeDest);
+                npc.setQuestGiverApiId("escort_" + safeOrigin + "_to_" + safeDest);
                 npc.addTag("generic_escort");
                 npc.addTag("origin_" + safeOrigin);
                 npc.addTag("destination_" + safeDest);
@@ -164,10 +165,14 @@ enforceBoundary(sl, (QuestGiverEntity) currentNpc); // Active leash
                 npc.setGender("male");
                 npc.setCityName(cityName);
                 npc.setPersonalName(visualName + ":" + safeApiId);
+                npc.setQuestGiverApiId(safeApiId);
                 npc.addTag("generic_combat");
 
             } else {
+                // A plain giver's name IS its Rails key, which is exactly why the key now gets
+                // its own field: renaming this NPC used to change which quest it offered.
                 npc.setPersonalName(npcName);
+                npc.setQuestGiverApiId(npcName == null ? "" : npcName.trim());
                 npc.setCityName(cityName);
                 npc.setGender(this.gender != null && !this.gender.isEmpty() ? this.gender : "female");
             }

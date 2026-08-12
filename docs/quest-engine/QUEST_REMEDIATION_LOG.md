@@ -733,3 +733,69 @@ L7 deserves its own note: it is the one row that can only fail in a way a player
 report. The pre-M6 storm sent a trigger every second while someone stood in a zone; the fix is a
 combination of an in-flight guard and rewriting the quest's objectives from the response's new
 node, and a single extra `quest_objective_detected` line in that window is the whole regression.
+
+---
+
+## Milestone 7 — QuestGiver identity and escort lifecycle (Q-08, Q-11, Q-13, Q-14) (2026-08-12)
+
+### The defects
+
+**Identity was presentation.** The key Rails joins on — `quests.origin_npc` — was everything after
+the first colon in the NPC's `personalName`. Renaming a quest giver for display silently repointed
+it at a different quest, or at none. `QuestGiverEntity` already inherited a `worldNpcPublicId`
+from `CitizenEntity`; the quest spawner had never set it.
+
+**Becoming an escort made it a different entity.** `activateEscort` copied the NPC's NBT,
+discarded it and spawned a replacement, so the escort had a brand-new UUID while an open
+dialogue's `quest_giver_uuid`, the spawner's tracked id and every log line an operator was
+following still referred to the old one.
+
+### The change
+
+**`questGiverApiId` is a real field** — synched and saved on `QuestGiverEntity`, set explicitly by
+`QuestGiverSpawnBlockEntity` in all three spawn shapes (escort route, generic combat, plain
+giver). `resolveQuestGiverApiId()` returns it when set and falls back to the legacy colon parse
+when it is blank, logging once per entity so an operator can see how many are still legacy without
+being flooded. Both call sites that used to parse the display name now ask the entity.
+
+The fallback is not a hedge: every quest giver currently standing in a world has only the old
+encoding, and they must keep working until they respawn.
+
+**The escort is the same entity.** `activateEscort` now clears the home restriction, moves the
+NPC and applies the assignment tags in place. The spawner is still told to forget it, so the post
+refills while the NPC is away — the behaviour that motivated the original replacement is kept, the
+new UUID that came with it is not.
+
+**The quit contract is documented as single-meaning**: `:id` is the `PlayerQuestState` id end to
+end, which is what Minecraft has always sent. The quest-id fallback is now explicitly marked
+deprecated in the code that implements it — it already logs every use — and comes out once no
+client needs it.
+
+**Four files moved to match their packages** (`quest/network/`, `quest/events/`). Pure moves, no
+content change, staged as their own commit so the diff stays reviewable.
+
+### Verification
+
+- **GameTest: all 374 required tests passed** (fresh-log verified) — 368 plus six new
+  `QuestGiverIdentityGameTests`: a legacy giver still resolves, a legacy giver with no encoding
+  uses its whole name, the field survives a rename, the field wins over a stale encoding, the
+  field survives save/load, and **escort activation keeps the same entity, alive, with its
+  assignment and identity intact**.
+- **Mutation-tested**: ignoring the new field fails exactly the three tests that assert it —
+  rename, precedence, save/load — while the two legacy-fallback tests stay green, which is the
+  proof the fallback is genuinely independent of the field.
+- MC unit suite 1791 tests, the same 21 pre-existing banner failures. Rails quest controller suite
+  green (7 runs).
+
+### Observed, not fixed
+
+- `worldNpcPublicId` is still unset on quest givers. Populating it would let Rails join a quest
+  giver to a `world_npcs` row, which is the door to the option-D identity described in the health
+  check — but nothing needs it yet, and inventing an id with no consumer is how unused fields rot.
+- `QuestPayloadHandler.internalApiId` survives as a private helper with one remaining caller path.
+  It is the legacy parse itself, now reachable only through `resolveQuestGiverApiId`.
+
+### Scope discipline
+
+Minecraft: one entity, one block entity, two call sites, one new gametest class, four file moves.
+Rails: one comment. No change to what a correctly-named giver does.
