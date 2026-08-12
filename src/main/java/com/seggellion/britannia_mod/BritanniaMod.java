@@ -60,6 +60,7 @@ import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrityHandler;
 import com.seggellion.britannia_mod.banner.placement.BannerOrientationPreferenceLifecycle;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
+import com.seggellion.britannia_mod.vegetation.ManagedVegetationConfig;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -113,6 +114,11 @@ public class BritanniaMod {
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
+        modContainer.registerConfig(
+                ModConfig.Type.SERVER,
+                ManagedVegetationConfig.SPEC,
+                "britannia-managed-vegetation.toml"
+        );
         OreVeinLoader.loadOreVeins();
           BlessedItemSyncHandler.init();
         WorldBootstrapHandler.init();
