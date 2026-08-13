@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "britannia_mod:block/grabby_placed_item" },
+    "facing=east":  { "model": "britannia_mod:block/grabby_placed_item" },
+    "facing=south": { "model": "britannia_mod:block/grabby_placed_item" },
+    "facing=west":  { "model": "britannia_mod:block/grabby_placed_item" }
+  }
+}

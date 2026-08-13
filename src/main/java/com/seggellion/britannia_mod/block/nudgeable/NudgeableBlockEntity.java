@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.block.nudgeable;
 
+import com.seggellion.britannia_mod.grabbyhands.GrabbyInstanceState;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyProvenanceHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -12,10 +14,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class NudgeableBlockEntity extends BlockEntity {
+public class NudgeableBlockEntity extends BlockEntity implements GrabbyProvenanceHolder {
     protected Vec3 offset = Vec3.ZERO;
     public boolean allowYNudging = true;
     public boolean reducedNudging = false;
+    private GrabbyInstanceState grabbyState = GrabbyInstanceState.worldPlaced();
 
     protected NudgeableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -57,11 +60,23 @@ public class NudgeableBlockEntity extends BlockEntity {
     }
 
     @Override
+    public GrabbyInstanceState grabbyState() {
+        return grabbyState;
+    }
+
+    @Override
+    public void setGrabbyState(GrabbyInstanceState state) {
+        this.grabbyState = java.util.Objects.requireNonNull(state, "state");
+        setChanged();
+    }
+
+    @Override
     public void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putDouble("OffsetX", offset.x);
         tag.putDouble("OffsetY", offset.y);
         tag.putDouble("OffsetZ", offset.z);
+        grabbyState.write(tag);
     }
 
     @Override
@@ -72,6 +87,7 @@ public class NudgeableBlockEntity extends BlockEntity {
                 tag.getDouble("OffsetY"),
                 tag.getDouble("OffsetZ")
         );
+        grabbyState = GrabbyInstanceState.read(tag);
     }
 
     @Override
@@ -80,6 +96,7 @@ public class NudgeableBlockEntity extends BlockEntity {
         tag.putDouble("OffsetX", offset.x);
         tag.putDouble("OffsetY", offset.y);
         tag.putDouble("OffsetZ", offset.z);
+        grabbyState.writeClient(tag);
         return tag;
     }
 
@@ -91,6 +108,7 @@ public class NudgeableBlockEntity extends BlockEntity {
                 tag.getDouble("OffsetY"),
                 tag.getDouble("OffsetZ")
         );
+        grabbyState = GrabbyInstanceState.read(tag);
     }
 
     @Override

@@ -122,6 +122,25 @@ public static void register(final RegisterPayloadHandlersEvent event) {
             : (payload, context) -> {}
     );
 
+    registrar.playToClient(
+        com.seggellion.britannia_mod.network.payload.grabby.S2COpenGrabbyDestructionPromptPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.grabby.S2COpenGrabbyDestructionPromptPayload.STREAM_CODEC,
+        FMLLoader.getDist().isClient()
+            ? ClientNetworkHandler::handleOpenGrabbyDestructionPrompt
+            : (payload, context) -> {}
+    );
+
+    registrar.playToServer(
+        com.seggellion.britannia_mod.network.payload.grabby.C2SConfirmGrabbyDestructionPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.grabby.C2SConfirmGrabbyDestructionPayload.STREAM_CODEC,
+        (payload, context) -> context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer player) {
+                com.seggellion.britannia_mod.grabbyhands.destruction.GrabbyDestructionService
+                        .confirm(player, payload.sessionId());
+            }
+        })
+    );
+
     registrar.playToServer(
         BuyItemsC2SPayload.TYPE, BuyItemsC2SPayload.STREAM_CODEC,
         (payload, ctx) -> ctx.enqueueWork(() -> {

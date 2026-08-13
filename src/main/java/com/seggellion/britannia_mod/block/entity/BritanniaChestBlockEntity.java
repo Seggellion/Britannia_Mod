@@ -3,6 +3,11 @@ package com.seggellion.britannia_mod.block.entity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.BritanniaLockableChestBlock;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyInstanceState;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyPortableState;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyProvenanceHolder;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyTransportRefusal;
+import net.minecraft.world.item.BlockItem;
 import com.seggellion.britannia_mod.item.ChestKeyItem;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
@@ -25,9 +30,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.Optional;
 import java.util.UUID;
 
-public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvider, Container {
+public class BritanniaChestBlockEntity extends BlockEntity
+        implements MenuProvider, Container, GrabbyProvenanceHolder, GrabbyPortableState {
     private static final String TAG_LOCK_ID = "LockId";
     private static final String TAG_CHEST_KEY_SEEDED = "ChestKeySeeded";
     private static final String TAG_LOCKED = "Locked";
@@ -40,6 +47,7 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
     private boolean chestKeySeeded;
     private boolean locked;
     private int lockDifficulty = 1;
+    private GrabbyInstanceState grabbyState = GrabbyInstanceState.worldPlaced();
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         @Override
@@ -90,6 +98,7 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
         tag.putBoolean(TAG_CHEST_KEY_SEEDED, this.chestKeySeeded);
         tag.putBoolean(TAG_LOCKED, this.locked);
         tag.putInt(TAG_LOCK_DIFFICULTY, this.lockDifficulty);
+        grabbyState.write(tag);
     }
 
     @Override
@@ -105,6 +114,18 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
         this.chestKeySeeded = tag.getBoolean(TAG_CHEST_KEY_SEEDED);
         this.locked = tag.getBoolean(TAG_LOCKED);
         this.lockDifficulty = tag.contains(TAG_LOCK_DIFFICULTY) ? Math.clamp(tag.getInt(TAG_LOCK_DIFFICULTY), 1, 9) : getDefaultDifficulty(this.getBlockState());
+        this.grabbyState = GrabbyInstanceState.read(tag);
+    }
+
+    @Override
+    public GrabbyInstanceState grabbyState() {
+        return grabbyState;
+    }
+
+    @Override
+    public void setGrabbyState(GrabbyInstanceState state) {
+        this.grabbyState = java.util.Objects.requireNonNull(state, "state");
+        setChanged();
     }
 
     public UUID getOrCreateLockId() {
@@ -238,6 +259,102 @@ public class BritanniaChestBlockEntity extends BlockEntity implements MenuProvid
         if (this.level != null && !this.level.isClientSide) {
             this.openersCounter.incrementOpeners(player, this.level, this.worldPosition, this.getBlockState());
         }
+    }
+
+
+    // =============================================================
+    //   GRABBY HANDS TRANSPORT
+    // =============================================================
+
+    /**
+     * Contents ride in {@code BLOCK_ENTITY_DATA}, which {@code BlockItem.place} already restores.
+     *
+     * <p>Placement therefore needs no container-specific step: vanilla's
+     * {@code updateCustomBlockEntityTag} loads this straight back into the freshly created block
+     * entity. Deliberately not written into {@code getCloneItemStack}, because creative middle-click
+     * uses that and would become an inventory duplicator.
+     */
+    @Override
+    public boolean securedAgainstDestruction() {
+        // Only while actually locked. An unlocked chest is ordinary furniture and may be chopped.
+        return this.locked;
+    }
+
+    @Override
+    public int occupiedSlotCount() {
+        int occupied = 0;
+        for (ItemStack stack : this.items) {
+            if (!stack.isEmpty()) {
+                occupied++;
+            }
+        }
+        return occupied;
+    }
+
+    @Override
+    public void writePortableState(ItemStack portable, HolderLookup.Provider registries) {
+        // Everything saveAdditional writes, not just the contents. For the lockable chest that means
+        // the lock id, the locked flag, the difficulty and - critically - the ChestKeySeeded marker:
+        // LockpickingEventHandler calls seedChestKeyIfNeeded() on every right-click, so a chest that
+        // forgot it had already been keyed would mint a fresh key on every place/pickup cycle.
+        //
+        // Saving wholesale rather than field by field also means a field added here later travels
+        // without anyone remembering to update this method.
+        CompoundTag data = new CompoundTag();
+        this.saveAdditional(data, registries);
+        // Provenance is stamped fresh by the placement transaction; carrying the old placer would be
+        // both pointless and misleading.
+        data.remove(GrabbyInstanceState.TAG_KEY);
+        BlockItem.setBlockEntityData(portable, this.getType(), data);
+    }
+
+    /**
+     * Undoes a detach, and nothing more.
+     *
+     * <p>Deliberately narrower than {@link #writePortableState}: detaching only cleared the contents,
+     * so only the contents come back. Reloading the whole tag here would also reset provenance, which
+     * the transaction has already decided.
+     */
+    @Override
+    public void restorePortableState(ItemStack portable, HolderLookup.Provider registries) {
+        CompoundTag data = portable.getOrDefault(
+                net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(data, this.items, registries);
+        this.setChanged();
+    }
+
+    @Override
+    public boolean detachForTransport() {
+        if (this.isEmpty()) {
+            return false;
+        }
+        // The contents are already captured in the portable item. Clearing them here is what stops
+        // onRemove spilling a second copy onto the floor during pickup.
+        this.clearContent();
+        return true;
+    }
+
+    @Override
+    public Optional<GrabbyTransportRefusal> transportRefusal() {
+        if (this.openersCounter.getOpenerCount() > 0) {
+            return Optional.of(GrabbyTransportRefusal.IN_USE);
+        }
+        for (ItemStack stack : this.items) {
+            if (holdsContents(stack)) {
+                return Optional.of(GrabbyTransportRefusal.NESTED_CONTAINER);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Whether a stack is itself a container carrying something. */
+    private static boolean holdsContents(ItemStack stack) {
+        return !stack.getOrDefault(
+                        net.minecraft.core.component.DataComponents.BLOCK_ENTITY_DATA,
+                        net.minecraft.world.item.component.CustomData.EMPTY)
+                .isEmpty();
     }
 
     public void stopOpen(Player player) {

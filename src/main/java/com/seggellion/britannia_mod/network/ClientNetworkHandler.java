@@ -130,6 +130,14 @@ public class ClientNetworkHandler {
         });
     }
 
+    public static void handleOpenGrabbyDestructionPrompt(
+            com.seggellion.britannia_mod.network.payload.grabby.S2COpenGrabbyDestructionPromptPayload payload,
+            IPayloadContext context) {
+        context.enqueueWork(() -> Minecraft.getInstance().setScreen(
+                new com.seggellion.britannia_mod.client.screen.GrabbyDestructionScreen(
+                        payload.sessionId(), payload.objectName(), payload.occupiedSlots())));
+    }
+
     public static void handleOpenBlacksmithGui(OpenBlacksmithGuiS2CPayload payload, IPayloadContext context) {
         // enqueueWork ensures this runs on the main client rendering thread
         context.enqueueWork(() -> {

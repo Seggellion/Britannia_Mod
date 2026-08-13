@@ -476,6 +476,8 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockRegistry.BLUE_TENT_BLOCK_ENTITY_TYPE.get(), BlueTentRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.PURPLE_TENT_BLOCK_ENTITY_TYPE.get(), PurpleTentRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
+        event.registerBlockEntityRenderer(com.seggellion.britannia_mod.registry.GrabbyRegistry.PLACED_ITEM_BLOCK_ENTITY.get(),
+                com.seggellion.britannia_mod.client.renderer.GrabbyPlacedItemRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE.get(), ThreeHeightLightRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);

@@ -102,27 +102,22 @@ public static final EnumProperty<LabelColor> LABEL = EnumProperty.create("label"
         if (level.getBlockEntity(pos) instanceof WineBottleBlockEntity be) {
             // Use the helper method from your Item class to read the data
             be.setWineData(WineBottleBlockItem.getWineData(stack));
+            // Keep the exact source item so pickup restores this bottle rather than manufacturing a
+            // fresh one and losing whatever else the stack was carrying.
+            be.setOriginStack(stack);
         }
     }
 
     // --- DATA TRANSFER: Block -> Item (Middle Click / Pick Block) ---
     @Override
     public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        // FIX: Use 'this.asItem()' to dynamically get the correct colored item
-        ItemStack stack = new ItemStack(this.asItem()); 
-        
-        if (level.getBlockEntity(pos) instanceof WineBottleBlockEntity be) {
-            WineBottleBlockItem.setWineData(
-                stack,
-                be.getWineData().wineryName(),
-                be.getWineData().grapeType(),
-                be.getWineData().year(),
-                be.getWineData().quality(),
-                be.getWineData().region(),
-                be.getWineData().labelColor()
-            );
-        }
-        return stack;
+        // Restores the original item where this bottle was placed from one, and rebuilds from the wine
+        // fields for bottles that arrived by worldgen or an admin. Grabby Hands captures through this
+        // method, so a bottle keeps everything it was carrying without the transport layer ever
+        // needing to know that wine exists.
+        return level.getBlockEntity(pos) instanceof WineBottleBlockEntity be
+                ? be.portableStack(this.asItem())
+                : new ItemStack(this.asItem());
     }
     
     // Note: For Survival Drops (breaking the block), you usually use a Loot Table JSON 

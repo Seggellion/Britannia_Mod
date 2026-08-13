@@ -1427,5 +1427,10 @@
   "block.britannia_mod.plaster_wall_support_diagonal_east_half": "Plaster Wall Support Diagonal East (Half)",
   "block.britannia_mod.plaster_wall_support_diagonal_south_half": "Plaster Wall Support Diagonal South (Half)",
   "block.britannia_mod.ceiling_planks": "Ceiling Planks",
-  "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge"
+  "block.britannia_mod.ceiling_joist_edge": "Ceiling Joist Edge",
+  "screen.britannia_mod.grabby.destroy.title": "Destroy Object",
+  "screen.britannia_mod.grabby.destroy.body": "Destroy the %s? This cannot be undone.",
+  "screen.britannia_mod.grabby.destroy.body_with_contents": "Destroy the %s? Its contents (%s occupied slots) will spill onto the ground. This cannot be undone.",
+  "screen.britannia_mod.grabby.destroy.yes": "Yes, destroy it",
+  "screen.britannia_mod.grabby.destroy.no": "No, leave it"
 }

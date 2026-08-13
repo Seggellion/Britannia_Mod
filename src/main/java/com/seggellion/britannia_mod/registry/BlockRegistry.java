@@ -1074,6 +1074,7 @@ public static final DeferredHolder<Block, Block> GHOST_LIGHT = BLOCKS.register(
 public static final DeferredHolder<Block, Block> WALL_SCONCE = BLOCKS.register(
     "wall_sconce",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+        .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1083,6 +1084,7 @@ public static final DeferredHolder<Block, Block> WALL_SCONCE = BLOCKS.register(
 public static final DeferredHolder<Block, Block> CANDLE = BLOCKS.register(
     "candle",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1143,6 +1145,7 @@ public static final DeferredHolder<Block, Block> SMALL_IRON_CHANDELIER = BLOCKS.
 public static final DeferredHolder<Block, Block> CANDELABRA_SMALL = BLOCKS.register(
     "candelabra_small",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1177,6 +1180,7 @@ public static final DeferredHolder<Block, Block> WOODEN_LAMP_POST = BLOCKS.regis
 public static final DeferredHolder<Block, Block> LAMP_POST_REGULAR = BLOCKS.register(
     "lamp_post_regular",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1186,6 +1190,7 @@ public static final DeferredHolder<Block, Block> LAMP_POST_REGULAR = BLOCKS.regi
 public static final DeferredHolder<Block, Block> LAMP_POST_FANCY = BLOCKS.register(
     "lamp_post_fancy",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1205,6 +1210,7 @@ public static final DeferredHolder<Block, HangingItemBlock> HANGING_LANTERN =
 public static final DeferredHolder<Block, Block> TORCH_WALL = BLOCKS.register(
     "torch_wall",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1214,6 +1220,7 @@ public static final DeferredHolder<Block, Block> TORCH_WALL = BLOCKS.register(
 public static final DeferredHolder<Block, Block> TORCH_STANDING = BLOCKS.register(
     "torch_standing",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1223,6 +1230,7 @@ public static final DeferredHolder<Block, Block> TORCH_STANDING = BLOCKS.registe
 public static final DeferredHolder<Block, Block> BRAZIER_SMALL = BLOCKS.register(
     "brazier_small",
     () -> new CandelabraBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
@@ -1235,6 +1243,7 @@ public static final DeferredHolder<Block, Block> BRAZIER_SMALL = BLOCKS.register
         public static final DeferredHolder<Block, Block> YEW_TABLE = BLOCKS.register(
         "yew_table",
         () -> new RotatableFurnitureBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                 .mapColor(MapColor.WOOD)
                 .strength(0.3f)
                 .noOcclusion())
@@ -1243,6 +1252,7 @@ public static final DeferredHolder<Block, Block> BRAZIER_SMALL = BLOCKS.register
         public static final DeferredHolder<Block, Block> SMALL_TABLE = BLOCKS.register(
         "small_table",
         () -> new RotatableFurnitureBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                 .mapColor(MapColor.WOOD)
                 .strength(0.3f)
                 .noOcclusion())
@@ -1251,6 +1261,7 @@ public static final DeferredHolder<Block, Block> BRAZIER_SMALL = BLOCKS.register
                 public static final DeferredHolder<Block, Block> COUNTER = BLOCKS.register(
         "counter",
         () -> new RotatableFurnitureBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                 .mapColor(MapColor.WOOD)
                 .strength(0.3f)
                 .noOcclusion())
@@ -1934,6 +1945,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "magincia_style_throne",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -1945,6 +1957,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "wooden_throne",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -1955,6 +1968,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "chair_trinsic",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -1965,6 +1979,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "chair_vesper",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -1975,6 +1990,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "wooden_chair",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -1985,6 +2001,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "straw_chair",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -1995,6 +2012,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "stool",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -2005,6 +2023,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "footstool",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
@@ -2015,6 +2034,7 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
             "bench",
             () -> new ChairBlock(0.1,
                     BlockBehaviour.Properties.of()
+                    .sound(SoundType.WOOD)
                     .mapColor(MapColor.WOOD)
                     .strength(0.3f)
                     .noOcclusion()
