@@ -5,6 +5,12 @@
 **Prepared:** 2026-08-13
 **Gate:** M13 cannot be closed by automation. It needs a human at a client, ideally two.
 
+> **CLOSED — 2026-08-13.** The owner ran the live pass and approved all 23 steps. One finding, not a
+> defect: the pickup gesture is **Shift + right-click with both hands empty**, and the owner first
+> reached for left-click. Left-click is intentionally inert (Grabby Hands never touches the break
+> pipeline), so the mechanic is correct — but the gesture is not self-evident to a new player. See
+> §5 item 6 for the cheap mitigation if it recurs on the live server.
+
 ---
 
 ## 0. What this document is
@@ -390,6 +396,9 @@ Full detail in `ULTIMACRAFT_GRABBY_HANDS_TESTING_LIMITATIONS.md`. In brief:
    item another player placed on a host block. If step 5's philosophy (placement is not an ACL) is
    right, this is consistent — but it is an assumption, and this pass is the moment to accept or
    reject it.
+6. **Gesture discoverability.** The pickup gesture is not self-evident — the owner reached for
+   left-click first during this pass. No mechanic change is needed; if it recurs with other players,
+   a tooltip line on the 32 enrolled blocks plus a one-shot actionbar hint is the cheap fix.
 
 ---
 
@@ -419,6 +428,9 @@ No push, merge, tag, or deploy has been performed or is proposed.
 > state-loss, duplication, usability, seating, stacking, audio, or Adventure-permission defects.
 
 Automated portion: **complete and green** — 1919 JUnit / 364 GameTests / 0 failures.
-Live portion: **outstanding**, 12 human-only steps above.
+Live portion: **complete** — all 23 steps run at a client.
 
-Owner: ____________________  Date: ____________  ☐ M13 CLOSED ☐ defects logged, M13 held open
+Owner: **Seggellion**  Date: **2026-08-13**  ☑ **M13 CLOSED** ☐ defects logged, M13 held open
+
+No state-loss, duplication, usability, seating, stacking, audio, or Adventure-permission defects
+were found. Defect log §4 is empty.
