@@ -2272,6 +2272,47 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_WHITE =
             BLOCKS.register("merchant_cart_white", BlockRegistry::merchantCart);
 
+    private static DecorativeMultiblockBlock marketStall() {
+        return new DecorativeMultiblockBlock(
+                BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                        .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                -1, 1, 0, 2, 0, 0,
+                BlockRegistry::marketStallCellShape);
+    }
+
+    /** Collision follows the two side frames, rear cloth/counter, and high canopy. */
+    private static VoxelShape marketStallCellShape(int x, int y, int z) {
+        VoxelShape shape = Shapes.empty();
+        if (x != 0) {
+            double minX = x < 0 ? 0.0D : 12.0D;
+            double maxX = x < 0 ? 4.0D : 16.0D;
+            shape = Shapes.or(shape,
+                    Block.box(minX, 0, 0, maxX, 16, 4),
+                    Block.box(minX, 0, 14, maxX, 16, 16));
+        }
+
+        double curtainMinY = y == 0 ? 1.0D : 0.0D;
+        double curtainMaxY = y == 2 ? 12.0D : 16.0D;
+        shape = Shapes.or(shape, Block.box(0, curtainMinY, 15.5D, 16, curtainMaxY, 16));
+        if (y == 1) {
+            shape = Shapes.or(shape, Block.box(0, 8, 14, 16, 11, 16));
+        } else if (y == 2) {
+            shape = Shapes.or(shape,
+                    Block.box(0, 6, 0, 16, 12, 2),
+                    Block.box(0, 11.5D, 0, 16, 12, 16));
+        }
+        return shape;
+    }
+
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_RED =
+            BLOCKS.register("market_stall_red", BlockRegistry::marketStall);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_BLUE =
+            BLOCKS.register("market_stall_blue", BlockRegistry::marketStall);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_GREEN =
+            BLOCKS.register("market_stall_green", BlockRegistry::marketStall);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_PURPLE =
+            BLOCKS.register("market_stall_purple", BlockRegistry::marketStall);
+
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> FOUNTAIN = BLOCKS.register("fountain", () ->
             new DecorativeMultiblockBlock(
                     BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0F)

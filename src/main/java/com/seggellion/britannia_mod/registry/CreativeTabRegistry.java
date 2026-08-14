@@ -270,6 +270,10 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.MERCHANT_CART_GREEN_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_YELLOW_ITEM.get());
                 safeAccept(output, ItemRegistry.MERCHANT_CART_WHITE_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_RED_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_BLUE_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_GREEN_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_PURPLE_ITEM.get());
                 safeAccept(output, ItemRegistry.FOUNTAIN_ITEM.get());
                 safeAccept(output, ItemRegistry.SCARECROW_ITEM.get());
                 safeAccept(output, ItemRegistry.DRESS_FORM_ITEM.get());

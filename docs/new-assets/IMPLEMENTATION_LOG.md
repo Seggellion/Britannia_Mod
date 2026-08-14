@@ -746,3 +746,35 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 ### Commit status
 
 - Not committed; awaiting owner authorization.
+
+## Market Stall Block Family
+
+### Source analysis and import
+
+- Starting HEAD: `317a9bd76f32a47b4176fdcc7a30af09025a3f36` on branch `new-assets` in `C:\projects\britannia\new-assets`; unrelated owner changes to the kettle, pewter mug, and medieval-market pot texture were preserved.
+- Authoritative source: `C:\projects\britannia\raw fiels\models to import\medieval market\medieval_market_marketstall_red.bbmodel`, SHA-256 `F0CD41734254E5DE24FF5BB753F8FE1273D7B8D87DE11E60A9C0DC94FAF3B82E`. The read-only source was not changed.
+- The Blockbench `java_block` project contains 12 ungrouped root cubes, one embedded 256x256 PNG, box UVs, and source X rotations of `22.5` and `-45` degrees with their pivots preserved. Its raw element bounds are `x=-16..32`, `y=-12..32`, `z=-11.5..16`; rotation-aware visible bounds are `48 x 44.815764 x 27.531494` voxels.
+- The open/front side is local negative Z (north). The source's positive-Z cloth is the rear curtain. Runtime normalization keeps the exact width and height, compresses depth to the requested 16 voxels, and shifts the rotation-aware minimum Y to ground level. Final bounds are `x=-16..32`, `y=0..44.815764`, `z=0..16`, within the requested 3x1x3 occupied envelope.
+- `tools/new-assets/import_market_stall.py` validates the source checksum and structure, exports one canonical geometry model, extracts the red PNG byte-for-byte, and creates mask-driven blue, green, and purple cloth variants. Only red-dominant pixels inside the three canopy/curtain UV regions change; wood, rope/support details, alpha, highlights, folds, and all non-fabric RGBA values remain exact.
+- The three zero-thickness source cloth planes receive only a 0.01-voxel runtime thickness, with degenerate and hidden contact faces omitted to prevent z-fighting. Ambient occlusion is disabled for this imported model to avoid black coplanar/inside faces.
+
+### Runtime architecture
+
+- Four registry blocks/items (`market_stall_red`, `market_stall_blue`, `market_stall_green`, and `market_stall_purple`) share the existing `DecorativeMultiblockBlock` and `DecorativeMultiblockItem` implementation; no second multiblock framework or block entity was introduced.
+- The authoritative lower-center root is part 1. Nine ordinary block states occupy local cells `x=-1..1`, `y=0..2`, `z=0`, rotating together for north/east/south/west. Placement preflights every cell and every lower support, then commits transactionally with rollback on failure.
+- Breaking any root or child resolves the root, removes all nine cells, and drops one matching color item. Empty loot tables prevent vanilla duplicate drops.
+- One canonical geometry model is inherited by four texture-substitution child models. Multipart blockstates render only part 1, rotated by facing. `MarketStallNormalizedModel` applies the measured ground/depth correction after model baking.
+- Per-cell directional collision follows the rear curtain, side posts, counter rails, upper valance, and canopy. The lower-center customer area stays open, and overhead fabric does not fill the walkable volume. Occupancy, selection, collision, and teardown use the same facing transform.
+- All four items are exposed together in the creative tab in Red, Blue, Green, Purple order, use wood properties/sound, cutout rendering, axe mineability, and established color-prefix localization.
+
+### Validation status
+
+- Deterministic importer and scoped resource validator: PASS; zero errors and zero warnings for `market_stall`.
+- Java compilation and focused `MarketStallContractTest`: PASS. Contracts cover registry/resources, shared geometry, exact red extraction, selective recoloring, alpha/non-fabric preservation, footprint, directional routing, normalization, collision source, creative order, loot, and localization.
+- Dedicated-server GameTests: PASS for both market-stall tests. All four colors placed through the ordinary item path in all four facings, occupied and resolved all nine cells, and tore down from root, left/right side, middle, and top children with exactly one matching item and no orphans. Blocked lower side, center/root, upper space, and uneven support rejected cleanly without item consumption or partial cells.
+- Full dedicated-server suite: PARTIAL overall; 357 of 358 required tests passed on the final rerun. The sole failure was the unrelated existing training-dummy test `validhitsareperplayerratelimitedanddonotconsumedurability` (`Adventure-mode supported strike was rejected`).
+- Development-client startup/resource bake: PASS through sound-engine startup and full block-atlas creation. All market-stall block/item variants were baked through `MarketStallNormalizedModel`, with no market-stall model, blockstate, texture, or missing-resource warning/error. Save/reload, two-client multiplayer, in-world visual inspection, and hands-on walking collision checks were not run. State uses ordinary synchronized/persisted block properties with no block entity, but those manual scenarios remain owner acceptance items.
+
+### Commit status
+
+- Not committed; awaiting owner authorization.

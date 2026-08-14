@@ -25,6 +25,7 @@ class NewAssetsCrossSystemAuditTest {
             "pewter_mug", "kettle", "plates_and_silverware",
             "merchant_cart_red", "merchant_cart_purple", "merchant_cart_blue",
             "merchant_cart_green", "merchant_cart_yellow", "merchant_cart_white",
+            "market_stall_red", "market_stall_blue", "market_stall_green", "market_stall_purple",
             "fountain", "scarecrow", "dress_form", "loom", "spinning_wheel",
             "display_case", "small_crate", "medium_crate", "large_crate",
             "water_well", "ladder", "training_dummy", "moongate_block",
@@ -36,6 +37,7 @@ class NewAssetsCrossSystemAuditTest {
     private static final Set<String> AXE_BLOCKS = Set.of(
             "globe", "merchant_cart_red", "merchant_cart_purple", "merchant_cart_blue",
             "merchant_cart_green", "merchant_cart_yellow", "merchant_cart_white",
+            "market_stall_red", "market_stall_blue", "market_stall_green", "market_stall_purple",
             "scarecrow", "dress_form", "loom", "spinning_wheel", "display_case",
             "small_crate", "medium_crate", "large_crate", "ladder", "training_dummy");
 
