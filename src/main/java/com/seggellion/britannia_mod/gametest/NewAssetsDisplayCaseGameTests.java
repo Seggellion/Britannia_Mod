@@ -17,6 +17,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -40,6 +41,15 @@ public final class NewAssetsDisplayCaseGameTests {
         place(helper, block, west);
         check(form(helper, block, west) == ConnectionForm.INDEPENDENT,
                 "a lone display case was not independent");
+        var independentLowerBounds = helper.getLevel().getBlockState(west)
+                .getCollisionShape(helper.getLevel(), west).bounds();
+        var independentUpperBounds = helper.getLevel().getBlockState(west.above())
+                .getCollisionShape(helper.getLevel(), west.above()).bounds();
+        check(independentLowerBounds.minX == 1.0D / 16.0D
+                        && independentLowerBounds.maxX == 15.0D / 16.0D,
+                "independent collision did not follow the inset owner base");
+        check(independentUpperBounds.maxY == 6.0D / 16.0D,
+                "upper collision did not stop at the requested 22-voxel global model height");
         place(helper, block, middle);
         check(form(helper, block, west) == ConnectionForm.END
                         && form(helper, block, middle) == ConnectionForm.END,
@@ -52,6 +62,9 @@ public final class NewAssetsDisplayCaseGameTests {
         check(helper.getLevel().getBlockState(middle).getValue(DisplayCaseBlock.WEST)
                         && helper.getLevel().getBlockState(middle).getValue(DisplayCaseBlock.EAST),
                 "middle display case did not open both shared faces");
+        check(helper.getLevel().getBlockState(middle.above()).getValue(DisplayCaseBlock.WEST)
+                        && helper.getLevel().getBlockState(middle.above()).getValue(DisplayCaseBlock.EAST),
+                "upper rendering cell did not mirror the root's open shared faces");
 
         BlockPos corner = helper.absolutePos(new BlockPos(7, 3, 5));
         BlockPos cornerEast = corner.east();
@@ -91,11 +104,96 @@ public final class NewAssetsDisplayCaseGameTests {
                 .mapToInt(ItemStack::getCount)
                 .sum();
         check(drops == 1, "display-case teardown did not drop exactly one item");
+
+        place(helper, block, middle);
+        check(form(helper, block, west) == ConnectionForm.END
+                        && form(helper, block, middle) == ConnectionForm.MIDDLE
+                        && form(helper, block, east) == ConnectionForm.END,
+                "restoring the middle did not reconnect the straight run");
+        BlockPos turn = east.south();
+        place(helper, block, turn);
+        check(form(helper, block, east) == ConnectionForm.CORNER,
+                "extending the restored run by 90 degrees did not produce a corner");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void displayCaseGridsRemoveInteriorPartitions(GameTestHelper helper) {
+        DisplayCaseBlock block = BlockRegistry.DISPLAY_CASE.get();
+        BlockPos origin = helper.absolutePos(new BlockPos(2, 3, 2));
+
+        for (int z = 0; z < 2; z++) {
+            for (int x = 0; x < 3; x++) {
+                place(helper, block, origin.offset(x, 0, z));
+            }
+        }
+
+        BlockPos sixCaseInteriorEdge = origin.offset(1, 0, 0);
+        check(form(helper, block, sixCaseInteriorEdge) == ConnectionForm.JUNCTION,
+                "six-case grid edge did not classify as an open tee");
+        var teeShape = helper.getLevel().getBlockState(sixCaseInteriorEdge.above())
+                .getCollisionShape(helper.getLevel(), sixCaseInteriorEdge.above());
+        check(!teeShape.isEmpty() && teeShape.bounds().maxZ == 1.0D / 16.0D,
+                "six-case grid retained an interior partition instead of only its outside wall: "
+                        + (teeShape.isEmpty() ? "empty" : teeShape.bounds()));
+
+        for (int x = 0; x < 3; x++) {
+            place(helper, block, origin.offset(x, 0, 2));
+        }
+
+        BlockPos nineCaseCenter = origin.offset(1, 0, 1);
+        check(form(helper, block, nineCaseCenter) == ConnectionForm.JUNCTION,
+                "nine-case center did not classify as a four-way interior");
+        BlockState centerRoot = helper.getLevel().getBlockState(nineCaseCenter);
+        BlockState centerUpper = helper.getLevel().getBlockState(nineCaseCenter.above());
+        check(centerUpper.getValue(DisplayCaseBlock.NORTH) == centerRoot.getValue(DisplayCaseBlock.NORTH)
+                        && centerUpper.getValue(DisplayCaseBlock.EAST) == centerRoot.getValue(DisplayCaseBlock.EAST)
+                        && centerUpper.getValue(DisplayCaseBlock.SOUTH) == centerRoot.getValue(DisplayCaseBlock.SOUTH)
+                        && centerUpper.getValue(DisplayCaseBlock.WEST) == centerRoot.getValue(DisplayCaseBlock.WEST),
+                "nine-case upper renderer did not mirror all four root connections");
+        check(helper.getLevel().getBlockState(nineCaseCenter.above())
+                        .getCollisionShape(helper.getLevel(), nineCaseCenter.above()).isEmpty(),
+                "nine-case center retained invisible upper partition collision");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void displayCaseCornersCoverAllRotationsWithoutChangingFacing(GameTestHelper helper) {
+        DisplayCaseBlock block = BlockRegistry.DISPLAY_CASE.get();
+        BlockPos[] centers = {
+            helper.absolutePos(new BlockPos(2, 3, 2)),
+            helper.absolutePos(new BlockPos(6, 3, 2)),
+            helper.absolutePos(new BlockPos(2, 3, 6)),
+            helper.absolutePos(new BlockPos(6, 3, 6))
+        };
+        Direction[][] neighbours = {
+            {Direction.SOUTH, Direction.WEST},
+            {Direction.NORTH, Direction.WEST},
+            {Direction.NORTH, Direction.EAST},
+            {Direction.EAST, Direction.SOUTH}
+        };
+        Direction[] facings = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+
+        for (int index = 0; index < centers.length; index++) {
+            BlockPos center = centers[index];
+            place(helper, block, center, facings[index]);
+            place(helper, block, center.relative(neighbours[index][0]), facings[index]);
+            place(helper, block, center.relative(neighbours[index][1]), facings[index]);
+            BlockState state = helper.getLevel().getBlockState(center);
+            check(block.connectionForm(state) == ConnectionForm.CORNER,
+                    "corner rotation " + index + " did not classify as a corner");
+            check(state.getValue(DecorativeMultiblockBlock.FACING) == facings[index],
+                    "corner connection changed the player's selected facing");
+        }
         helper.succeed();
     }
 
     private static void place(GameTestHelper helper, DisplayCaseBlock block, BlockPos anchor) {
-        Direction facing = Direction.NORTH;
+        place(helper, block, anchor, Direction.NORTH);
+    }
+
+    private static void place(
+            GameTestHelper helper, DisplayCaseBlock block, BlockPos anchor, Direction facing) {
         block.duringMutation(() -> {
             int flags = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
             for (DecorativeMultiblockBlock.Cell cell : block.cells()) {

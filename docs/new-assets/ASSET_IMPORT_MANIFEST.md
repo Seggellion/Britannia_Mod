@@ -56,10 +56,10 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Requested asset | Proposed/existing registry ID | Status | Placeholder proposal |
 |---|---|---|---|
 | Ibis, white/scarlet | `ibis` with persistent variant | `PLACEHOLDER` | White source imported unchanged; UV-safe scarlet recolor and all runtime behavior implemented in Milestone 6 |
-| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID uses one logical block; static floor plus camera-facing vertical layers preserve the re-authored 32-voxel visual |
-| Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented and client-rendered at 1.2 scale; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
+| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID uses one logical block; static floor plus camera-facing vertical layers are uniformly enlarged 20% |
+| Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs client-render at 1.2 scale with a `-0.4`-block grounding correction; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
 | Training dummy | `training_dummy` | `PLACEHOLDER` | Implemented in Milestone 7; purchased punching-bag art re-authored to exact 32×48 visible bounds and must be replaced later |
-| Fountain | `fountain` | `PLACEHOLDER` | Temporary source art normalized to the requested 2x2x3 structure |
+| Fountain | `fountain` | `PLACEHOLDER` | Temporary source art renders 30% larger from a centered 3x3x3 structure with matching basin/pillar collision |
 | Hedge Bush | `hedge_bush` | `PLACEHOLDER` | Breaking owner-authorized rename with bottom/middle/top models derived from temporary purchased bush art; no old-ID alias |
 | Flamingo | `flamingo` with persistent Pink/Rose/White variant | `PLACEHOLDER` | Supplied animated entity rig and three color textures; supplied ambient sound converted to OGG |
 | Sandstone family | existing IDs | `VALIDATED` | Existing connected family reused; no duplicate IDs |
@@ -69,17 +69,17 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Large crate | `large_crate` | `PLACEHOLDER` | Temporary purchased art normalized to an authoritative 2x2x2 structure; 54-slot container implemented in Milestone 4 |
 | Water well | `water_well` | `PLACEHOLDER` | Temporary purchased art normalized to a functional 1x2x2 well and client-rendered at 1.2 scale |
 | Ladder | `ladder` | `PLACEHOLDER` | Temporary purchased art re-authored to a 3-block/48-voxel structure in Milestone 5 |
-| Scarecrow | `scarecrow` | `PLACEHOLDER` | Temporary purchased art implemented as a two-block-high structure |
+| Scarecrow | `scarecrow` | `PLACEHOLDER` | Temporary two-block art with duplicate inverted cubes removed and baked AO/directional shading disabled consistently across the model |
 | Fern | `fern` | `PLACEHOLDER` | Temporary purchased small-flora art imported in Milestone 2 |
 | Dress form | `dress_form` | `PLACEHOLDER` | Temporary purchased mannequin art implemented under the final ID |
 | Folded cloth | `folded_cloth` | `PLACEHOLDER` | Temporary purchased fabric-stack art imported in Milestone 2 |
 | Loom | `loom` | `PLACEHOLDER` | Temporary purchased model re-authored to the requested 32x48x16-voxel envelope |
 | Bolt of cloth | `bolt_of_cloth` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
-| Spinning wheel | `spinning_wheel` | `PLACEHOLDER` | Functional one-cell magenta/black replacement-art block implemented in Milestone 8 |
+| Spinning wheel | `spinning_wheel` | `PLACEHOLDER` | Functional one-cell replacement-art block with a server-backed 20-tick active model and four-frame animated wheel texture |
 | Ball of yarn | `ball_of_yarn` | `PLACEHOLDER` | Final processing ID with unmistakable vanilla-texture placeholder item model |
 | Spool of thread | `spool_of_thread` | `PLACEHOLDER` | Final processing ID with unmistakable vanilla-texture placeholder item model |
 | Silk textile input | `silk` | `MISSING` | Deferred textile item/art; must not alias spiders' silk |
-| Display case family | `display_case` | `PLACEHOLDER` | One functional two-block ID with compositional independent/end/middle/corner placeholder visuals implemented in Milestone 9 |
+| Display case family | `display_case` | `IMPORTED` | Owner redo geometry/texture with independent, connected straight/end/middle, and genuine rotated corner visuals |
 | Pewter mug | `pewter_mug` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Kettle | `kettle` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Plates and silverware | `plates_and_silverware` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
@@ -113,7 +113,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Required behavior: preserve existing destination/configuration, mount/escort, and cooldown behavior while moving to one logical block.
 - Dimensions/animation: raw bounds x `-16..16`, y `-1.5..41.5`, z `-16..16`; `idle` 3s and `spawn` 1.5s. Owner target is 32 voxels high.
 - Collision: portal interaction volume must be deliberate and must not use the raw 32×32×43 bounds unchanged.
-- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The post-closure pass split the fixed floor from vertical translucent layers so the portal continuously follows camera yaw. The one-cell block is pass-through; its 32-voxel model intentionally renders above that cell. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
+- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The post-closure pass split the fixed floor from vertical translucent layers so the portal continuously follows camera yaw. The corrective pass applies the requested uniform 1.2 render scale to both the static base and block-entity billboard while preserving the split-render architecture and teleport logic. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
 
 ### 3. Merchant carts — six colors
 
@@ -126,7 +126,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Required behavior: decoration only; share placement/teardown code and geometry where art allows.
 - Dimensions/animation: red/purple source JSON bounds approximately `35.90477×37.78982×47.24264`; baked 1.2 scale produces approximately `43.085724×45.347784×56.691168`. No animation metadata.
 - Collision: authored cart body/wheel shapes, not full cubes.
-- Notes/blockers: each cart occupies an authoritative centered 3x3x3 structure, places atomically, tears down as a whole, and drops once. Scaling occurs on baked quads because direct target coordinates exceed vanilla JSON's `-16..32` element limit. Future replacement art should be authored for the target visual size, using custom geometry where necessary. All six models remain replacement-art candidates; interactive visual/collision review is still required.
+- Notes/blockers: each cart occupies an authoritative centered 3x3x3 structure, places atomically, tears down as a whole, and drops once. Scaling occurs on baked quads because direct target coordinates exceed vanilla JSON's `-16..32` element limit. The corrective pass adds a `-0.4`-block Y translation after scaling, moving the source model's `-8`-voxel minimum to the structure's `-16`-voxel ground plane. Future replacement art should target the enlarged, grounded visual envelope. Interactive visual/collision review is still required.
 
 ### 4. Training dummy
 
@@ -153,9 +153,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Import status: `PLACEHOLDER` — normalized and implemented as temporary art in Milestone 3.
 - Final targets: `DecorativeMultiblockBlock`, `DecorativeMultiblockItem`, and `assets/britannia_mod/{blockstates,models/block,models/item,textures/block}` fountain resources; registries/localization/empty loot/client translucent layer.
 - Required behavior: decorative, atomic place/teardown, one drop.
-- Dimensions/animation: angel model bounds x/z `-8..24` (exact 32×32 footprint) and y `-16..30` (46 voxels, compatible with a 3-block envelope); animated water texture.
+- Dimensions/animation: imported model bounds x/z `-8..24` and y `-16..18`; a centered 1.3 baked-quad scale produces a 41.6×44.2×41.6-voxel visual; animated water texture.
 - Collision: basin/pillar shapes matching visible footprint as closely as practical.
-- Notes/blockers: the model was translated to x/z `0..32` and retains y `-16..30`, rendered from the middle-layer root across an authoritative 2x2x3 structure. Interactive water-animation, translucency, and collision review remains open.
+- Notes/blockers: the corrective pass replaces the positive-axis 2x2x3 placement with a centered 3x3x3 authoritative structure and changes the root part to 13. The nine bottom cells use basin-edge collision and the center column uses basin/pillar collision through all three layers. Existing placed fountains should be replaced so their saved part layout matches the new footprint. Interactive water-animation, translucency, and collision review remains open.
 
 ### 6. Hedge Bush (`hedge_bush` ID)
 
@@ -289,7 +289,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Required behavior: decoration only; no crop-protection mechanic. Adventure players may place it when every minimum structure cell is supported by a community farm block.
 - Dimensions/animation: preferred bounds about 25×31.7×16 voxels; Shizu alternate about 30×31.5×25; no animation.
 - Collision: narrow post/body shape and coherent two-block placement.
-- Notes/blockers: the Medieval Market candidate was selected and translated to x `0..25`, y `0..31.71682`, z `0..16`; it occupies a 2x1x2 authoritative structure. The Adventure exception is narrowly scoped to this item and community-farm support. Art is temporary and interactive review remains open.
+- Notes/blockers: the Medieval Market candidate was selected and translated to x `0..25`, y `0..31.71682`, z `0..16`; it occupies a 2x1x2 authoritative structure. Four inverted arm/leg cubes were exactly coincident with ordinary cubes, so the corrective pass removes those duplicates. Owner screenshot follow-up showed a second source defect: the head, hat, body, and one side used normal baked shading while the opposite limbs explicitly used `shade: false`, producing near-black asymmetric faces. The final model disables ambient occlusion and element shading consistently. Both corrections are preserved by the deterministic importer without altering the texture atlas. The Adventure exception is narrowly scoped to this item and community-farm support. Art is temporary and interactive review remains open.
 
 ### 13. Fern
 
@@ -365,8 +365,8 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Import status: `PLACEHOLDER` — functional one-cell block implemented in Milestone 8 with unmistakable magenta/black code-authored replacement art.
 - Final targets: immediate processing block, standard resources/registries/localization/loot. No hidden inventory or block entity is required by the approved interaction contract.
 - Required behavior: wool → `ball_of_yarn`; cotton/flax/future silk → `spool_of_thread`; server-authoritative and duplication-safe.
-- Dimensions/animation/collision: deferred to placeholder/final art; animation not required by current contract.
-- Notes/blockers: the one-cell footprint is explicitly temporary because no source art exists; final art may justify a later footprint migration.
+- Dimensions/animation/collision: one-cell placeholder footprint. A successful server-side conversion sets `active=true` for 20 ticks, selects the active model with its named bobbin geometry, and plays the four 128x128 frames in the 128x512 wheel strip at two ticks per frame.
+- Notes/blockers: rejected inputs do not trigger the active state. The one-cell footprint is explicitly temporary because no source art exists; final art may justify a later footprint migration.
 
 #### Ball of yarn
 
@@ -403,14 +403,14 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 
 - Requested asset: decorative 1×2 case segments with single/end/middle/corner neighbor visuals.
 - Proposed registry ID/category: `britannia_mod:display_case`; neighbor-aware two-block decorative family.
-- Source model/texture: none. No `display`, `case`, or `showcase` candidate appears in the raw tree, outer archives, or nested archives.
-- Source format/checksum: none.
-- Import status: `PLACEHOLDER` — final ID, atomic two-cell structure, and neighbor-aware placeholder visuals implemented in Milestone 9.
-- Final targets: `DisplayCaseBlock`, shared transactional multiblock placement, four root connection flags, multipart side models, standard registries/resources/localization/empty loot, axe mineability, and client cutout rendering.
+- Source model/texture: owner-created `raw fiels\display_case\display_case_redo.json`, `display_case_independant_redo.json`, and `display_case_corner_redo.bbmodel`; all reference the same embedded 128×128 `display_case.png` texture.
+- Source format/checksum: Minecraft Java model JSON SHA-256 `27e2228a638bd97b1096d53576824b9c77e0d16f2e4f4352c5e18380b5b7fa17`; independent JSON SHA-256 `51b355e8746be02c6f3f7ad268ac38e06b8140bc24ea428243ca77033066264d`; Blockbench corner SHA-256 `ad27c60d2c88ce95ac42ffc2c3660cc1c152bd50a904b89711d4a2bbe7440556`.
+- Import status: `IMPORTED` — the corrective rebuild replaces the Milestone 9 placeholder art under the existing final ID while retaining its atomic two-cell lifecycle and server-authored connection flags.
+- Final targets: `DisplayCaseBlock`, shared transactional multiblock placement, four root connection flags, topology-selected owner models, standard registries/resources/localization/empty loot, axe mineability, and client cutout rendering.
 - Required behavior: visual connection only; no storage and no displayed-item inventory.
-- Dimensions/animation: one block per segment, two blocks high; no animation.
-- Collision: fitted glass/frame case shape, recomputed with neighbors where needed.
-- Notes/blockers: code-authored magenta/black/glass art is deliberately conspicuous replacement art. Each absent neighbor supplies a side pane, so independent/end/middle/corner—and deterministic T/cross layouts—need no duplicate registry IDs. Live visual review remains required.
+- Dimensions/animation: one block per segment, two occupied cells high; the visible owner cage is reduced 50% from 12 to 6 voxels, for a final 22-voxel model height; no animation.
+- Collision: lower-cell collision follows the owner's inset independent base or full connected base; dynamic upper-cell collision matches the half-height exterior rails/posts, including open tee and empty four-way interior shapes in rectangular grids.
+- Notes/blockers: the owner files contain no separate glass cuboids or transparent pixels; their upper bays are intentionally preserved as open frame geometry rather than supplemented with invented panes. Runtime export removes one exact-coincident opaque post from the connected and corner sources to prevent coplanar z-fighting while retaining the first-authored UV mapping. The connected source is decomposed into exact base/end/straight/tee components, while the Blockbench corner remains authoritative. Ambient occlusion and directional element shading are disabled, and cage geometry renders from the actual upper cell so its light is sampled at the geometry rather than at the lower cabinet edge. The separate lower base rotates by persisted placement facing so plank UVs remain aligned independently of topology rotations. Six- and nine-case client grids were visually accepted with perimeter-only partitions, half-height cages, and no black outer-edge artifact.
 
 ### 20. Pewter mug
 
@@ -472,14 +472,15 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 
 | Requested asset | Source model | Measured source bounds | Required envelope | Re-authoring required |
 |---|---|---|---|---|
-| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block with a 32-voxel-high visual | Completed in Milestone 10: scaled/re-originated to x/z `0..16` and y `0..32`; retained the legacy top registry IDs as invisible self-cleaning compatibility aliases without changing teleport behavior |
+| Moongate | `moongate\portal.bbmodel` | 32×43×32 voxels (x/y/z) | One logical block, uniformly enlarged 20% | Milestone 10 normalized the source; the corrective pass applies exact 1.2 scaling to the static base and camera-facing billboard without changing teleport behavior |
 | Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Completed in Milestone 7: transformed to exact 32×48×14 bounds, retimed to a one-second one-shot hit, and paired with separate atomic 2×3 occupancy/collision |
 | Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Completed in Milestone 5: extended/rebuilt to x `0..16`, y `-16..32`, z `0..16`, rendered from the middle structure cell, with independent double-sided traversal collision |
 | Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Completed in Milestone 3: re-authored to exact 32×48×16 bounds across the authoritative 2×1×3 structure |
-| Merchant carts | `Medieval Market Furniture Set.zip::.../medieval_market_wagon_*.json` | approximately 35.90477×37.78982×47.24264 voxels | 20% larger: approximately 43.085724×45.347784×56.691168 | Post-closure pass applies exact 1.2 baked-quad scaling because direct coordinates exceed vanilla element limits; replacement art must target the enlarged visual envelope |
+| Merchant carts | `Medieval Market Furniture Set.zip::.../medieval_market_wagon_*.json` | approximately 35.90477×37.78982×47.24264 voxels | 20% larger: approximately 43.085724×45.347784×56.691168 | Exact 1.2 baked-quad scaling plus `-0.4`-block Y correction grounds the model; replacement art must target the enlarged visual envelope |
 | Water well | `shizuart_farmer_props.zip::.../farmer_well.json` after normalization | 16×32×32 voxels | 20% larger: 19.2×38.4×38.4 | Post-closure pass applies exact 1.2 baked-quad scaling around the well center; replacement art must target the enlarged visual envelope |
+| Fountain | `fountain\models\item\tiered_fountain_angel.json` after import | 32×34×32 voxels | 30% larger: 41.6×44.2×41.6 | Corrective pass applies exact 1.3 baked-quad scaling around the center/ground pivot and expands occupancy/collision to a centered 3x3x3 structure |
 
-The fountain needs origin normalization but already fits its requested 2×2×3 envelope. The water well, scarecrow, and dress form fit their approximate two-block-height contracts. Large-crate art crosses cell bounds and therefore needs multiblock placement/collision authoring, but no owner-specified voxel envelope requires visual re-scaling.
+The water well, scarecrow, and dress form fit their approximate two-block-height contracts. The fountain now deliberately exceeds its former 2×2 footprint and uses a centered 3×3 occupancy/collision envelope. Large-crate art crosses cell bounds and therefore needs multiblock placement/collision authoring.
 
 ## Placeholder proposal for later milestones
 

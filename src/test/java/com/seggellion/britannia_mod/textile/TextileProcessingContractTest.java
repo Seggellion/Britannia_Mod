@@ -32,10 +32,12 @@ class TextileProcessingContractTest {
     }
 
     @Test
-    void everyNewResourceParsesAndPlaceholderModelStaysInsideOneBlock() throws Exception {
+    void everyNewResourceParsesAndWheelModelsStayInsideVanillaExtendedBounds() throws Exception {
         for (String relative : new String[] {
                 "assets/britannia_mod/blockstates/spinning_wheel.json",
                 "assets/britannia_mod/models/block/new_assets/spinning_wheel.json",
+                "assets/britannia_mod/models/block/new_assets/spinning_wheel_active.json",
+                "assets/britannia_mod/textures/block/new_assets/spinning_wheel_animated.png.mcmeta",
                 "assets/britannia_mod/models/item/spinning_wheel.json",
                 "assets/britannia_mod/models/item/ball_of_yarn.json",
                 "assets/britannia_mod/models/item/spool_of_thread.json",
@@ -44,18 +46,20 @@ class TextileProcessingContractTest {
             JsonParser.parseString(Files.readString(path));
         }
 
-        var model = JsonParser.parseString(Files.readString(PROJECT.resolve(
-                "src/main/resources/assets/britannia_mod/models/block/new_assets/spinning_wheel.json")))
-                .getAsJsonObject();
-        model.getAsJsonArray("elements").forEach(value -> {
-            var element = value.getAsJsonObject();
-            for (String bound : new String[] {"from", "to"}) {
-                element.getAsJsonArray(bound).forEach(coordinate -> {
-                    double number = coordinate.getAsDouble();
-                    assertTrue(number >= 0.0D && number <= 16.0D,
-                            "placeholder spinning-wheel coordinate escaped its one-block envelope");
-                });
-            }
-        });
+        for (String modelName : new String[] {"spinning_wheel.json", "spinning_wheel_active.json"}) {
+            var model = JsonParser.parseString(Files.readString(PROJECT.resolve(
+                    "src/main/resources/assets/britannia_mod/models/block/new_assets/" + modelName)))
+                    .getAsJsonObject();
+            model.getAsJsonArray("elements").forEach(value -> {
+                var element = value.getAsJsonObject();
+                for (String bound : new String[] {"from", "to"}) {
+                    element.getAsJsonArray(bound).forEach(coordinate -> {
+                        double number = coordinate.getAsDouble();
+                        assertTrue(number >= -16.0D && number <= 32.0D,
+                                modelName + " coordinate escaped vanilla's extended model bounds");
+                    });
+                }
+            });
+        }
     }
 }

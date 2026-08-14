@@ -19,6 +19,7 @@ import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
 import com.seggellion.britannia_mod.block.WoodSupportFloorBlock;
 import com.seggellion.britannia_mod.block.BannisterBlock;
+import com.seggellion.britannia_mod.block.WoodenFenceBlock;
 import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
 import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.block.VillaLampPostBlock;
@@ -158,6 +159,7 @@ import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -2196,6 +2198,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_BATTLEMENT = BLOCKS.register("sandstone_battlement", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_COLUMN = BLOCKS.register("sandstone_column", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, BannisterBlock> BANNISTER = BLOCKS.register("bannister", () -> new BannisterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+    public static final DeferredHolder<Block, WoodenFenceBlock> WOODEN_FENCE = BLOCKS.register("wooden_fence", () -> new WoodenFenceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
 
     /** 3x3 timber post, 32 voxels tall, in one corner of the block. */
     public static final DeferredHolder<Block, PlasterWoodPostBlock> PLASTER_WOOD_POST = BLOCKS.register("plaster_wood_post", () -> new PlasterWoodPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
@@ -2273,10 +2276,24 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             new DecorativeMultiblockBlock(
                     BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0F)
                             .sound(SoundType.STONE).noOcclusion().pushReaction(PushReaction.BLOCK),
-                    0, 1, -1, 1, 0, 1,
+                    -1, 1, -1, 1, -1, 1,
                     (x, y, z) -> y == -1
-                            ? Block.box(1, 0, 1, 15, 10, 15)
-                            : x == 0 && z == 0 ? Block.box(5, 0, 5, 11, 16, 11) : Shapes.empty()));
+                            ? fountainBaseShape(x, z)
+                            : x == 0 && z == 0
+                                    ? (y == 0
+                                            ? Shapes.or(
+                                                    Block.box(0, 0, 0, 16, 14, 16),
+                                                    Block.box(5, 0, 5, 11, 16, 11))
+                                            : Block.box(5, 0, 5, 11, 13, 11))
+                                    : Shapes.empty()));
+
+    private static VoxelShape fountainBaseShape(int x, int z) {
+        double minX = x == -1 ? 3.0D : 0.0D;
+        double maxX = x == 1 ? 13.0D : 16.0D;
+        double minZ = z == -1 ? 3.0D : 0.0D;
+        double maxZ = z == 1 ? 13.0D : 16.0D;
+        return Block.box(minX, 0, minZ, maxX, 13, maxZ);
+    }
 
     public static final DeferredHolder<Block, DecorativeMultiblockBlock> SCARECROW = BLOCKS.register("scarecrow", () ->
             new DecorativeMultiblockBlock(
@@ -2318,7 +2335,8 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DisplayCaseBlock> DISPLAY_CASE = BLOCKS.register(
             "display_case", () -> new DisplayCaseBlock(
                     BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(1.5F)
-                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK)));
+                            .sound(SoundType.WOOD).noOcclusion().dynamicShape()
+                            .pushReaction(PushReaction.BLOCK)));
 
     public static final DeferredHolder<Block, CrateBlock> SMALL_CRATE = BLOCKS.register("small_crate", () ->
             new CrateBlock(

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.gametest;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.LoomBlock;
+import com.seggellion.britannia_mod.block.SpinningWheelBlock;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import net.minecraft.core.BlockPos;
@@ -47,8 +48,14 @@ public final class NewAssetsTextileGameTests {
                 ItemRegistry.SPOOL_OF_THREAD.get(), 0, 1);
         process(helper, player, wheelPos, new ItemStack(ItemRegistry.FLAX.get()),
                 ItemRegistry.SPOOL_OF_THREAD.get(), 0, 1);
+        check(helper.getLevel().getBlockState(wheelPos).getValue(SpinningWheelBlock.ACTIVE),
+                "successful spinning did not activate the synchronized visual state");
 
         player.getInventory().clearContent();
+        helper.getLevel().setBlock(
+                wheelPos,
+                helper.getLevel().getBlockState(wheelPos).setValue(SpinningWheelBlock.ACTIVE, false),
+                Block.UPDATE_ALL);
         ItemStack spidersSilk = new ItemStack(ItemRegistry.SPIDERS_SILK.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, spidersSilk);
         ItemInteractionResult silkResult = interact(helper, player, wheelPos, spidersSilk);
@@ -56,6 +63,8 @@ public final class NewAssetsTextileGameTests {
         check(spidersSilk.getCount() == 1, "rejected spiders' silk was consumed");
         check(count(player, ItemRegistry.SPOOL_OF_THREAD.get()) == 0,
                 "rejected spiders' silk produced thread");
+        check(!helper.getLevel().getBlockState(wheelPos).getValue(SpinningWheelBlock.ACTIVE),
+                "rejected input activated the spinning-wheel visual state");
 
         LoomBlock loom = BlockRegistry.LOOM.get();
         BlockPos loomAnchor = helper.absolutePos(new BlockPos(5, 3, 5));
@@ -92,6 +101,8 @@ public final class NewAssetsTextileGameTests {
                 .mapToInt(entity -> entity.getItem().getCount())
                 .sum();
         check(droppedYarn == 1, "full-inventory exchange did not drop exactly one output");
+        check(helper.getLevel().getBlockState(wheelPos).getValue(SpinningWheelBlock.ACTIVE),
+                "successful full-inventory spinning did not activate the visual state");
 
         ServerPlayer second = helper.makeMockServerPlayerInLevel();
         second.setGameMode(GameType.SURVIVAL);
@@ -107,7 +118,11 @@ public final class NewAssetsTextileGameTests {
         check(count(player, ItemRegistry.FOLDED_CLOTH_ITEM.get()) == 1
                         && count(second, ItemRegistry.FOLDED_CLOTH_ITEM.get()) == 1,
                 "two-player loom use lost or duplicated an output");
-        helper.succeed();
+        helper.runAfterDelay(SpinningWheelBlock.ACTIVE_TICKS + 1, () -> {
+            check(!helper.getLevel().getBlockState(wheelPos).getValue(SpinningWheelBlock.ACTIVE),
+                    "spinning-wheel visual state did not return to idle after processing");
+            helper.succeed();
+        });
     }
 
     private static void process(

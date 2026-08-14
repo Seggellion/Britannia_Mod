@@ -125,6 +125,18 @@ foreach ($color in @('blue', 'green', 'yellow', 'white')) {
 
 $scarecrow = (Read-ZipText $marketZip "$marketBase/models/medieval_market_scarecrow.json") | ConvertFrom-Json
 Transform-Model $scarecrow { param($x, $y, $z) @(($x + 4.5); ($y + 0.21682); $z) }
+# The source contains four negative-size "inverted" cubes exactly coincident with ordinary
+# arm/leg cubes. Minecraft bakes both surfaces, causing dark z-fighting artifacts in-world.
+$scarecrow.elements = @($scarecrow.elements | Where-Object { $_.name -notlike '* inverted' })
+if ($scarecrow.groups -and $scarecrow.groups.Count -gt 0) {
+    $scarecrow.groups[0].children = @(0..($scarecrow.elements.Count - 1))
+}
+# The source also mixes ordinary shaded cubes with shade-disabled mirrored limbs. Vanilla's
+# directional lighting makes the head, hat, body, and one side nearly black in-world.
+$scarecrow | Add-Member -NotePropertyName ambientocclusion -NotePropertyValue $false -Force
+foreach ($element in $scarecrow.elements) {
+    $element | Add-Member -NotePropertyName shade -NotePropertyValue $false -Force
+}
 Set-Texture $scarecrow '0' 'britannia_mod:block/new_assets/scarecrow'
 Set-Texture $scarecrow 'particle' 'britannia_mod:block/new_assets/scarecrow'
 Write-Json (Join-Path $modelRoot 'scarecrow.json') $scarecrow
@@ -170,7 +182,7 @@ foreach ($id in @(
     'merchant_cart_green', 'merchant_cart_yellow', 'merchant_cart_white')) {
     Write-BlockResources $id 13
 }
-Write-BlockResources 'fountain' 4
+Write-BlockResources 'fountain' 13
 Write-BlockResources 'scarecrow' 0
 Write-BlockResources 'dress_form' 0
 Write-BlockResources 'loom' 2

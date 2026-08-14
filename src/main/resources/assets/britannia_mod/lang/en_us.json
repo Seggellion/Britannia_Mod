@@ -1398,6 +1398,7 @@
   "block.britannia_mod.brick_foundation_dark_sandstone": "Brick Foundation(Dark Sandstone)",
   "itemGroup.britannia_villa_tab": "Britannia Villa & Architecture",
   "block.britannia_mod.bannister": "Bannister",
+  "block.britannia_mod.wooden_fence": "Wooden Fence",
   "block.britannia_mod.wood_support_floor": "Wood Support Floor",
   "block.britannia_mod.plaster_ornate_wall_upper": "Plaster Ornate Wall (Upper)",
   "block.britannia_mod.plaster_ornate_wall_1": "Plaster Ornate Wall 1",
@@ -1465,5 +1466,5 @@
   "block.britannia_mod.spinning_wheel": "Spinning Wheel (Placeholder)",
   "item.britannia_mod.ball_of_yarn": "Ball of Yarn (Placeholder)",
   "item.britannia_mod.spool_of_thread": "Spool of Thread (Placeholder)",
-  "block.britannia_mod.display_case": "Display Case (Placeholder)"
+  "block.britannia_mod.display_case": "Display Case"
 }

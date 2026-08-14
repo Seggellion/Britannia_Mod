@@ -1,5 +1,5 @@
 {
     "variants": {
-      "": { "model": "britannia_mod:block/moongate_block" }
+      "": { "model": "britannia_mod:block/moongate_base" }
     }
   }

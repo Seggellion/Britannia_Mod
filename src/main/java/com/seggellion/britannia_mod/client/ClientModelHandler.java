@@ -32,8 +32,26 @@ public class ClientModelHandler {
                     && (SCALED_CARTS.contains(path) || path.equals("water_well"))
                     && !(model instanceof DecorativeScaledModel)) {
                 float pivotZ = path.equals("water_well") ? 1.0F : 0.5F;
+                float offsetY = SCALED_CARTS.contains(path) ? -0.4F : 0.0F;
+                event.getModels().replace(mrl, new DecorativeScaledModel(
+                        model, 1.2F, 0.5F, 0.0F, pivotZ, 0.0F, offsetY, 0.0F));
+                LOGGER.info("DecorativeScaledModel applied to {}", mrl);
+                return;
+            }
+            if (id.getNamespace().equals(BritanniaMod.MODID)
+                    && path.equals("fountain")
+                    && !(model instanceof DecorativeScaledModel)) {
                 event.getModels().replace(mrl,
-                        new DecorativeScaledModel(model, 1.2F, 0.5F, 0.0F, pivotZ));
+                        new DecorativeScaledModel(model, 1.3F, 0.5F, -1.0F, 0.5F));
+                LOGGER.info("DecorativeScaledModel applied to {}", mrl);
+                return;
+            }
+            if (id.getNamespace().equals(BritanniaMod.MODID)
+                    && path.equals("moongate_block")
+                    && !mrl.variant().equals("inventory")
+                    && !(model instanceof DecorativeScaledModel)) {
+                event.getModels().replace(mrl,
+                        new DecorativeScaledModel(model, 1.2F, 0.5F, 0.0F, 0.5F));
                 LOGGER.info("DecorativeScaledModel applied to {}", mrl);
                 return;
             }

@@ -175,6 +175,38 @@ public final class NewAssetsUtilityGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE)
+    public static void fountainUsesCenteredThreeByThreeCollisionFootprint(GameTestHelper helper) {
+        DecorativeMultiblockBlock fountain = BlockRegistry.FOUNTAIN.get();
+        check(fountain.cells().size() == 27, "scaled fountain does not occupy a 3x3x3 envelope");
+        BlockPos anchor = helper.absolutePos(new BlockPos(5, 3, 5));
+        fountain.duringMutation(() -> {
+            for (DecorativeMultiblockBlock.Cell cell : fountain.cells()) {
+                helper.getLevel().setBlock(
+                        fountain.worldPosition(anchor, net.minecraft.core.Direction.NORTH, cell),
+                        fountain.stateFor(net.minecraft.core.Direction.NORTH, cell),
+                        Block.UPDATE_ALL);
+            }
+            return null;
+        });
+
+        int lowerCollisionCells = 0;
+        for (DecorativeMultiblockBlock.Cell cell : fountain.cells()) {
+            BlockPos pos = fountain.worldPosition(anchor, net.minecraft.core.Direction.NORTH, cell);
+            var state = helper.getLevel().getBlockState(pos);
+            check(state.is(fountain), "fountain placement left a missing occupied cell");
+            if (cell.y() == -1 && !state.getCollisionShape(helper.getLevel(), pos).isEmpty()) {
+                lowerCollisionCells++;
+            }
+        }
+        check(lowerCollisionCells == 9,
+                "scaled fountain base collision does not cover all nine lower footprint cells");
+        check(!helper.getLevel().getBlockState(anchor.above())
+                        .getCollisionShape(helper.getLevel(), anchor.above()).isEmpty(),
+                "scaled fountain upper pillar has no collision");
+        helper.succeed();
+    }
+
     private static void check(boolean condition, String message) {
         if (!condition) {
             throw new GameTestAssertException(message);

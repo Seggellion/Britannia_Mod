@@ -3,7 +3,7 @@
                       {
                           "when":  {
                                        "facing":  "north",
-                                       "part":  "4"
+                                       "part":  "13"
                                    },
                           "apply":  {
                                         "model":  "britannia_mod:block/new_assets/fountain"
@@ -12,7 +12,7 @@
                       {
                           "when":  {
                                        "facing":  "east",
-                                       "part":  "4"
+                                       "part":  "13"
                                    },
                           "apply":  {
                                         "model":  "britannia_mod:block/new_assets/fountain",
@@ -22,7 +22,7 @@
                       {
                           "when":  {
                                        "facing":  "south",
-                                       "part":  "4"
+                                       "part":  "13"
                                    },
                           "apply":  {
                                         "model":  "britannia_mod:block/new_assets/fountain",
@@ -32,7 +32,7 @@
                       {
                           "when":  {
                                        "facing":  "west",
-                                       "part":  "4"
+                                       "part":  "13"
                                    },
                           "apply":  {
                                         "model":  "britannia_mod:block/new_assets/fountain",

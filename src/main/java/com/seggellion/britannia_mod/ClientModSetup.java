@@ -690,6 +690,7 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SCARECROW.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.DRESS_FORM.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LOOM.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SPINNING_WHEEL.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SMALL_CRATE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MEDIUM_CRATE.get(), RenderType.cutout());

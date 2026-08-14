@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 
 /** Regression contracts for the owner-reported post-closure asset defects. */
@@ -41,7 +43,8 @@ class PostClosureAssetDefectContractTest {
         String scaledModel = javaSource("client/model/DecorativeScaledModel.java");
         String handler = javaSource("client/ClientModelHandler.java");
         assertTrue(scaledModel.contains("px + (x - px) * scale"));
-        assertTrue(handler.contains("new DecorativeScaledModel(model, 1.2F"));
+        assertTrue(handler.contains("model, 1.2F, 0.5F, 0.0F, pivotZ"));
+        assertTrue(handler.contains("offsetY = SCALED_CARTS.contains(path) ? -0.4F"));
         for (String color : new String[] {"red", "purple", "blue", "green", "yellow", "white"}) {
             Bounds bounds = bounds(json(ASSETS.resolve(
                     "models/block/new_assets/merchant_cart_" + color + ".json")));
@@ -70,6 +73,83 @@ class PostClosureAssetDefectContractTest {
         String renderer = javaSource("client/renderer/MoongateBlockEntityRenderer.java");
         assertTrue(renderer.contains("getMainCamera().getYRot()"));
         assertTrue(renderer.contains("Axis.YP.rotationDegrees"));
+        assertTrue(renderer.contains("poseStack.scale(1.2F, 1.2F, 1.2F)"));
+        assertTrue(javaSource("client/ClientModelHandler.java")
+                .contains("new DecorativeScaledModel(model, 1.2F, 0.5F, 0.0F, 0.5F)"));
+    }
+
+    @Test
+    void spinningWheelHasSynchronizedIdleAndAnimatedActivePresentations() throws Exception {
+        JsonObject variants = json(ASSETS.resolve("blockstates/spinning_wheel.json"))
+                .getAsJsonObject("variants");
+        assertEquals(8, variants.size());
+        for (String facing : new String[] {"north", "east", "south", "west"}) {
+            assertTrue(variants.getAsJsonObject("active=false,facing=" + facing)
+                    .get("model").getAsString().endsWith("spinning_wheel"));
+            assertTrue(variants.getAsJsonObject("active=true,facing=" + facing)
+                    .get("model").getAsString().endsWith("spinning_wheel_active"));
+        }
+
+        JsonObject active = json(ASSETS.resolve("models/block/new_assets/spinning_wheel_active.json"));
+        assertEquals("britannia_mod:block/new_assets/spinning_wheel_animated",
+                active.getAsJsonObject("textures").get("2").getAsString());
+        assertTrue(active.getAsJsonArray("elements").asList().stream()
+                .map(value -> value.getAsJsonObject())
+                .anyMatch(element -> element.has("name")
+                        && element.get("name").getAsString().equals("bobbin")));
+
+        Path strip = ASSETS.resolve("textures/block/new_assets/spinning_wheel_animated.png");
+        BufferedImage image = ImageIO.read(strip.toFile());
+        assertEquals(128, image.getWidth());
+        assertEquals(512, image.getHeight());
+        assertEquals(4, image.getHeight() / image.getWidth());
+        JsonObject animation = json(Path.of(strip + ".mcmeta")).getAsJsonObject("animation");
+        assertEquals(2, animation.get("frametime").getAsInt());
+
+        String wheel = javaSource("block/SpinningWheelBlock.java");
+        assertTrue(wheel.contains("BooleanProperty.create(\"active\")"));
+        assertTrue(wheel.contains("level.scheduleTick(pos, this, ACTIVE_TICKS)"));
+        assertTrue(wheel.contains("state.setValue(ACTIVE, false)"));
+    }
+
+    @Test
+    void scarecrowHasNoCoincidentCubesOrMixedBakedShading() throws Exception {
+        JsonObject model = json(ASSETS.resolve("models/block/new_assets/scarecrow.json"));
+        assertFalse(model.get("ambientocclusion").getAsBoolean());
+        JsonArray elements = model.getAsJsonArray("elements");
+        assertEquals(12, elements.size());
+        for (var value : elements) {
+            JsonObject element = value.getAsJsonObject();
+            assertTrue(element.has("shade"));
+            assertFalse(element.get("shade").getAsBoolean());
+            assertFalse(element.has("name")
+                    && element.get("name").getAsString().endsWith(" inverted"));
+            JsonArray from = element.getAsJsonArray("from");
+            JsonArray to = element.getAsJsonArray("to");
+            for (int axis = 0; axis < 3; axis++) {
+                assertTrue(from.get(axis).getAsDouble() <= to.get(axis).getAsDouble(),
+                        "negative-size scarecrow cube remained on axis " + axis);
+            }
+        }
+    }
+
+    @Test
+    void fountainScaleAndCenteredThreeByThreeFootprintStayCoupled() throws Exception {
+        Bounds fountain = bounds(json(ASSETS.resolve("models/block/new_assets/fountain.json")));
+        assertEquals(41.6D, fountain.width() * 1.3D, 0.00001D);
+        assertEquals(44.2D, fountain.height() * 1.3D, 0.00001D);
+        assertEquals(41.6D, fountain.depth() * 1.3D, 0.00001D);
+
+        JsonObject state = json(ASSETS.resolve("blockstates/fountain.json"));
+        for (var part : state.getAsJsonArray("multipart")) {
+            assertEquals("13", part.getAsJsonObject().getAsJsonObject("when")
+                    .get("part").getAsString());
+        }
+        String registry = javaSource("registry/BlockRegistry.java");
+        assertTrue(registry.contains("-1, 1, -1, 1, -1, 1"));
+        assertTrue(registry.contains("fountainBaseShape(x, z)"));
+        assertTrue(javaSource("client/ClientModelHandler.java")
+                .contains("new DecorativeScaledModel(model, 1.3F, 0.5F, -1.0F, 0.5F)"));
     }
 
     @Test

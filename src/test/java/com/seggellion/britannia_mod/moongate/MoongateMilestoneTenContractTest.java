@@ -18,22 +18,28 @@ class MoongateMilestoneTenContractTest {
 
     @Test
     void oneLogicalBlockRendersTheReauthoredThirtyTwoVoxelModel() throws Exception {
-        JsonObject model = JsonParser.parseString(Files.readString(
-                ASSETS.resolve("models/block/moongate_block.json"))).getAsJsonObject();
-        assertEquals("minecraft:translucent", model.get("render_type").getAsString());
-        assertEquals(7, model.getAsJsonArray("elements").size());
+        JsonObject base = JsonParser.parseString(Files.readString(
+                ASSETS.resolve("models/block/moongate_base.json"))).getAsJsonObject();
+        JsonObject billboard = JsonParser.parseString(Files.readString(
+                ASSETS.resolve("models/block/moongate_billboard.json"))).getAsJsonObject();
+        assertEquals("minecraft:translucent", base.get("render_type").getAsString());
+        assertEquals("minecraft:translucent", billboard.get("render_type").getAsString());
+        assertEquals(7,
+                base.getAsJsonArray("elements").size() + billboard.getAsJsonArray("elements").size());
 
         double maximumY = Double.NEGATIVE_INFINITY;
-        for (var value : model.getAsJsonArray("elements")) {
-            JsonObject element = value.getAsJsonObject();
-            for (String bound : new String[] {"from", "to"}) {
-                var coordinates = element.getAsJsonArray(bound);
-                double[] maximum = {16.0D, 32.0D, 16.0D};
-                for (int axis = 0; axis < coordinates.size(); axis++) {
-                    double coordinate = coordinates.get(axis).getAsDouble();
-                    assertTrue(coordinate >= 0.0D && coordinate <= maximum[axis],
-                            "moongate model escaped its 16x32x16 re-authored envelope");
-                    if (axis == 1) maximumY = Math.max(maximumY, coordinate);
+        for (JsonObject model : new JsonObject[] {base, billboard}) {
+            for (var value : model.getAsJsonArray("elements")) {
+                JsonObject element = value.getAsJsonObject();
+                for (String bound : new String[] {"from", "to"}) {
+                    var coordinates = element.getAsJsonArray(bound);
+                    double[] maximum = {16.0D, 32.0D, 16.0D};
+                    for (int axis = 0; axis < coordinates.size(); axis++) {
+                        double coordinate = coordinates.get(axis).getAsDouble();
+                        assertTrue(coordinate >= 0.0D && coordinate <= maximum[axis],
+                                "moongate model escaped its 16x32x16 re-authored envelope");
+                        if (axis == 1) maximumY = Math.max(maximumY, coordinate);
+                    }
                 }
             }
         }

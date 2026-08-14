@@ -663,3 +663,86 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 ### Commit status
 
 - Changes remain uncommitted; no commit was requested for this follow-up pass.
+
+## Targeted Corrective Asset Milestone
+
+### Scope implemented
+
+- Starting HEAD: `ffd2660e4cbb474717678cb84f18f2b6b18f879f` on branch `new-assets`.
+- Spinning wheel: added a synchronized `active` blockstate that is set only after a successful server-side textile conversion and resets after 20 ticks. Active variants select the existing active model, including its named bobbin geometry, and a new `.mcmeta` plays all four frames of the 128x512 wheel strip. Rejected inputs remain idle.
+- Scarecrow: removed four inverted arm/leg cubes that exactly overlapped ordinary cubes. An owner screenshot then exposed a separate remaining defect in the source export: the head, hat, body, and one side used ordinary baked shading while the opposite limbs explicitly disabled shading, producing near-black asymmetric faces. The final model disables ambient occlusion and per-element shading consistently, and the deterministic Milestone 3 importer preserves both corrections. The source texture atlas was not recolored or replaced.
+- Merchant carts: retained the approved 1.2 baked-quad scale and added a `-0.4`-block Y correction. This moves the scaled source minimum from `-9.6` voxels to the authoritative structure's `-16`-voxel ground plane.
+- Moongate: restored the intended `moongate_base` blockstate plus camera-facing `moongate_billboard` renderer split, then applied a uniform 1.2 scale to both layers. Teleport behavior and the existing registry ID are unchanged.
+- Fountain: applied a centered 1.3 baked-quad scale, expanded placement to a centered 3x3x3 authoritative structure with root part 13, and authored matching nine-cell basin / three-layer central pillar collision. Existing placed fountains should be replaced because their saved part layout uses the former footprint.
+- Added focused contracts and GameTests for active/idle wheel transitions, active texture metadata/model routing, scarecrow duplicate removal, cart/moongate/fountain transforms, and the fountain's 27-cell placement and collision.
+- Updated `ASSET_IMPORT_MANIFEST.md` with the corrected dimensions, grounding, geometry diagnosis, animation behavior, and fountain footprint migration note.
+
+### Files changed
+
+- Runtime/client: `ClientModSetup.java`, `SpinningWheelBlock.java`, `ClientModelHandler.java`, `DecorativeScaledModel.java`, `MoongateBlockEntityRenderer.java`, and `BlockRegistry.java`.
+- Assets: `blockstates/fountain.json`, `blockstates/moongate_block.json`, `blockstates/spinning_wheel.json`, `models/block/new_assets/scarecrow.json`, and `textures/block/new_assets/spinning_wheel_animated.png.mcmeta`.
+- Deterministic import: `tools/new-assets/import_milestone3.ps1`.
+- Tests: `NewAssetsTextileGameTests.java`, `NewAssetsUtilityGameTests.java`, `PostClosureAssetDefectContractTest.java`, `MoongateMilestoneTenContractTest.java`, and `TextileProcessingContractTest.java`.
+- Documentation: `ASSET_IMPORT_MANIFEST.md` and this implementation log.
+
+### Validation status
+
+- Java compilation and final Gradle `assemble`: PASS; the corrected mod JAR packages successfully.
+- Focused spinning-wheel and corrective-asset contract tests: PASS. The final milestone run covered 15 tests across `PostClosureAssetDefectContractTest`, `TextileProcessingContractTest`, and `MoongateMilestoneTenContractTest`, with zero failures or errors. After the owner screenshot follow-up, all nine `PostClosureAssetDefectContractTest` cases passed again, including explicit assertions that every retained scarecrow element is unshaded and model ambient occlusion is disabled.
+- Full Gradle build diagnostic: reached 1,729 tests. It initially reported 17 failures: one stale moongate assertion was corrected in this milestone, while the other 16 are unrelated pre-existing banner texture/hash mismatches present at the starting HEAD. The broad build therefore remains non-green for reasons outside this corrective scope.
+- Dedicated-server GameTests: PARTIAL on two unchanged runs; 351 of 352 required tests passed each time. The repeated failure was the unrelated existing training-dummy test `validhitsareperplayerratelimitedanddonotconsumedurability`. The new spinning-wheel and fountain GameTests passed.
+- Development client: PASS through resource reload, model bake, atlas creation, and existing-world load. A second launch after the owner screenshot follow-up accepted the consistently unshaded scarecrow model without any scarecrow model/texture warning or error. Logs also confirm the cart, fountain, and moongate baked transforms were applied. The existing non-fatal 44x44 dungeon-moongate mip warning remains.
+- Static checks: changed JSON and animation metadata were accepted by the contract suite and development-client resource loader; `git diff --check` passes apart from line-ending notices.
+
+### Remaining owner review
+
+- In-world visual acceptance is still required for the active spinning-wheel motion, scarecrow shading from representative angles, cart ground contact in all facings, moongate apparent size, and fountain scale/collision feel.
+- Existing placed fountains should be broken and replaced to migrate from the former footprint to the new centered 3x3x3 part layout.
+- The unrelated banner hash failures and intermittent training-dummy GameTest remain outside this asset-correction milestone.
+
+### Commit status
+
+- Changes remain uncommitted; awaiting explicit owner authorization.
+
+## Corrective Feature — Display Case Rebuild
+
+### Source and architecture analysis
+
+- Starting HEAD: `ffd2660e4cbb474717678cb84f18f2b6b18f879f` on branch `new-assets` in `C:\projects\britannia\new-assets`; the pre-existing dirty worktree was preserved.
+- Authoritative inputs: `display_case_redo.json` (connected source, 14 source elements, `0..16 × 0..28 × 0..16`), `display_case_independant_redo.json` (13 elements, inset `1..15 × 0..28 × 1..15`), and `display_case_corner_redo.bbmodel` (nine source elements, genuine west/south-open L frame, no groups/pivots/non-zero rotations).
+- The existing `display_case` registry, decorative-only contract, transactional two-cell root/upper placement, single-drop teardown, four persisted root connection flags, server neighbor updates, item/creative registration, empty loot, axe tag, and cutout render registration remain sound and were preserved.
+- The superseded visual layer was the Milestone 9 magenta/black base plus four conditional vanilla-glass side planes. Those assets could not express owner proportions or a true corner and were removed.
+
+### Authoritative runtime assets
+
+- `display_case_independent.json` is regenerated from the exact owner independent JSON.
+- The connected source is deterministically decomposed into `display_case_base_connected.json` plus exact end, straight, and tee frames. A four-way interior renders the connected base without any upper frame, allowing six- and nine-case furniture grids to remain open inside.
+- `display_case_frame_corner.json` is exported from the Blockbench element/outliner data as the canonical south/west-open corner frame; blockstate rotations `90`, `180`, and `270` cover the other corner directions without duplicated files.
+- The owner independent source remains the complete item model and is also split into independent base/frame layers for block rendering. Base rotation is selected separately from topology by persisted player facing, preventing a corner rotation from turning its plank UVs against adjacent cases.
+- The two connected owner sources each contain one exact-coincident opaque post. Runtime generation retains the first owner's geometry/UV entry and removes only its coplanar duplicate to prevent z-fighting.
+- All three sources use the same 128×128 fully opaque `display_case.png`; the runtime texture is extracted from the corner `.bbmodel`. The owner files contain no glass cuboids or transparent texture pixels, so no non-authoritative panes were invented. Runtime models disable ambient occlusion and per-element directional shading so enclosed faces retain the authored texture instead of blackening.
+- The inventory model now uses the owner independent case with explicit GUI/ground/fixed/hand transforms and the same requested 22-voxel final height.
+
+### Logic, collision, and tests
+
+- The root still recomputes connections server-side on neighbor changes. Independent, end, opposite-straight, true corner, three-neighbour tee, and four-neighbour interior states now each select the appropriate owner-derived frame. Player-selected `facing` remains persisted and unchanged by connection updates. Root connection flags are mirrored to the upper cell so that cell can render the cage with the correct topology and local light sample.
+- The upper cage is scaled exactly 50% around global `y=16`: original bands `16..19`, `19..27`, and `27..28` become `16..17.5`, `17.5..21.5`, and `21.5..22`. Its generated block models use upper-local `y=0..6`, while the full inventory model remains global `y=0..22`.
+- Collision now follows the same topology and half-height geometry dynamically: inset/full lower bases, perimeter-only upper rails/posts ending at global `y=22`, one exterior wall for a tee, and no upper collision for a four-way interior. `dynamicShape()` prevents upper cells from caching the independent shape instead of querying their live root.
+- `DisplayCaseContractTest` validates topology routing, all four corner rotations, owner-derived component counts/texture, facing-driven bases, disabled shading, two-block limits, absence of coplanar duplicate bounds, and the scaled inventory transform.
+- `NewAssetsDisplayCaseGameTests` additionally covers six-case tee openings, a nine-case partition-free center, topology-matched collision, straight removal/reconnection, 90-degree extension, all four corner directions, and facing preservation.
+- `tools/new-assets/import_display_case_redo.ps1` records the exact misspelled owner filename and reproducibly generates the layered base/frame models plus embedded owner texture without changing raw inputs.
+
+### Validation status
+
+- Final Gradle `assemble`, Java compilation, and the focused `DisplayCaseContractTest`: PASS. The contract verifies the imported element counts and extents, exact texture contract, topology selectors, all four corner rotations, collision limits, duplicate removal, and inventory transform.
+- Full Gradle unit-suite diagnostic: PARTIAL; 1,735 tests completed with 17 failures and 17 skipped. All display-case tests passed. The 17 failures are the same unrelated pre-existing banner hash/scaffold-preservation failures already present in this worktree.
+- Dedicated-server GameTests: PARTIAL overall; 355 of 356 required tests passed. All three display-case GameTests passed, including independent/pair/run/corner transitions, a partition-free six-case tee and nine-case center, live topology collision, middle removal and restoration, 90-degree extension, all four corner directions, teardown, one-drop behavior, and facing preservation. The sole failure was the unrelated existing training-dummy test `validhitsareperplayerratelimitedanddonotconsumedurability` (`Adventure-mode supported strike was rejected`).
+- Development client: PASS. The final resource reload logged zero `display_case` blockstate/model/texture errors or warnings. Nine cases placed through the ordinary creative item workflow with one shared facing rendered as a continuous 3×3 cabinet: perimeter-only half-height posts/rails, completely open internal cells, aligned floor planks, and no blackened interior or outer-edge frame faces. Earlier independent, pair, straight-run, and genuine L-corner reviews remain valid.
+- Save/reload: PASS. The independently placed case, pair, straight run, and genuine L corner all remained correctly connected after the client and saved world were reopened; the corner itself was confirmed again in a third clean client session.
+- Static resource checks: PASS; all display-case resource JSON parses, full models stay within global `y=0..22`, topology frames stay within upper-local `y=0..6`, owner-derived counts are base `1`, end `10`, straight `8`, corner `7`, and tee `4`, every rendered element has ambient/directional shading disabled, the owner texture remains 128×128 and fully opaque, and no superseded full connected/corner runtime model is referenced.
+- Multiplayer: NOT RUN with two clients. Connection changes are still computed on the logical server and sent with ordinary block updates; the dedicated-server tests cover the same authoritative state transitions.
+- Owner-source caveat: none of the three redo sources contains a glass cuboid or a transparent texture pixel. The runtime therefore faithfully presents the owner's open framed bays and does not reintroduce the obsolete vanilla-glass planes.
+
+### Commit status
+
+- Not committed; awaiting owner authorization.

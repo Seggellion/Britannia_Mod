@@ -39,6 +39,7 @@ public final class MoongateBlockEntityRenderer implements BlockEntityRenderer<Mo
 
         poseStack.pushPose();
         poseStack.translate(0.5D, 0.0D, 0.5D);
+        poseStack.scale(1.2F, 1.2F, 1.2F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-minecraft.gameRenderer.getMainCamera().getYRot()));
         poseStack.translate(-0.5D, 0.0D, -0.5D);
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.translucent());

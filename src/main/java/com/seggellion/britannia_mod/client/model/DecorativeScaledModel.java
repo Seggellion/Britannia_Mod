@@ -24,14 +24,32 @@ public final class DecorativeScaledModel implements BakedModel {
     private final float pivotX;
     private final float pivotY;
     private final float pivotZ;
+    private final float offsetX;
+    private final float offsetY;
+    private final float offsetZ;
 
     public DecorativeScaledModel(
             BakedModel original, float scale, float pivotX, float pivotY, float pivotZ) {
+        this(original, scale, pivotX, pivotY, pivotZ, 0.0F, 0.0F, 0.0F);
+    }
+
+    public DecorativeScaledModel(
+            BakedModel original,
+            float scale,
+            float pivotX,
+            float pivotY,
+            float pivotZ,
+            float offsetX,
+            float offsetY,
+            float offsetZ) {
         this.original = original;
         this.scale = scale;
         this.pivotX = pivotX;
         this.pivotY = pivotY;
         this.pivotZ = pivotZ;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.offsetZ = offsetZ;
     }
 
     @Override
@@ -82,9 +100,9 @@ public final class DecorativeScaledModel implements BakedModel {
             float x = Float.intBitsToFloat(vertices[offset]);
             float y = Float.intBitsToFloat(vertices[offset + 1]);
             float z = Float.intBitsToFloat(vertices[offset + 2]);
-            vertices[offset] = Float.floatToRawIntBits(px + (x - px) * scale);
-            vertices[offset + 1] = Float.floatToRawIntBits(py + (y - py) * scale);
-            vertices[offset + 2] = Float.floatToRawIntBits(pz + (z - pz) * scale);
+            vertices[offset] = Float.floatToRawIntBits(px + (x - px) * scale + offsetX);
+            vertices[offset + 1] = Float.floatToRawIntBits(py + (y - py) * scale + offsetY);
+            vertices[offset + 2] = Float.floatToRawIntBits(pz + (z - pz) * scale + offsetZ);
         }
         return new BakedQuad(vertices, quad.getTintIndex(), quad.getDirection(),
                 quad.getSprite(), quad.isShade());

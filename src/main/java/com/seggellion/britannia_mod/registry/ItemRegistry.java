@@ -1919,6 +1919,7 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> PLASTER_ARCHWAY_ITEM = ITEMS.register("plaster_archway", () -> new BlockItem(BlockRegistry.PLASTER_ARCHWAY.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> PLASTER_AND_STONE_WINDOW_ITEM = ITEMS.register("plaster_and_stone_window", () -> new BlockItem(BlockRegistry.PLASTER_AND_STONE_WINDOW.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> BANNISTER_ITEM = ITEMS.register("bannister", () -> new BlockItem(BlockRegistry.BANNISTER.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> WOODEN_FENCE_ITEM = ITEMS.register("wooden_fence", () -> new BlockItem(BlockRegistry.WOODEN_FENCE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> PLASTER_WOOD_POST_ITEM = ITEMS.register("plaster_wood_post", () -> new BlockItem(BlockRegistry.PLASTER_WOOD_POST.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> PLASTER_WALL_BLANK_HALF_ITEM = ITEMS.register("plaster_wall_blank_half", () -> new BlockItem(BlockRegistry.PLASTER_WALL_BLANK_HALF.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> PLASTER_WALL_AND_SUPPORT_BLANK_HALF_ITEM = ITEMS.register("plaster_wall_and_support_blank_half", () -> new BlockItem(BlockRegistry.PLASTER_WALL_AND_SUPPORT_BLANK_HALF.get(), new Item.Properties()));

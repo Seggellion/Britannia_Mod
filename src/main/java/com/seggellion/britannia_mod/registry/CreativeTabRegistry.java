@@ -512,6 +512,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PLASTER_ARCHWAY_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_AND_STONE_WINDOW_ITEM.get());
                 safeAccept(output, ItemRegistry.BANNISTER_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_FENCE_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_POST_ITEM.get());
                 safeAccept(output, ItemRegistry.VILLA_LAMP_POST_ITEM.get());
                 safeAccept(output, ItemRegistry.HOUSE_FARM_PLOT_ITEM.get());
