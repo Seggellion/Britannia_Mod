@@ -8,7 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -20,7 +22,7 @@ public final class TrainingDummyEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         // Creative must retain completely vanilla block-breaking semantics.
-        if (event.getEntity().isCreative()) {
+        if (isCreative(event.getEntity())) {
             return;
         }
         BlockState state = event.getLevel().getBlockState(event.getPos());
@@ -48,7 +50,7 @@ public final class TrainingDummyEventHandler {
 
     /** Shared server-side strike boundary for vanilla clicks and the Adventure-mode C2S fallback. */
     public static boolean attemptStrike(ServerPlayer player, ServerLevel level, net.minecraft.core.BlockPos pos) {
-        if (player == null || player.isCreative()) {
+        if (player == null || isCreative(player)) {
             return false;
         }
         BlockState state = level.getBlockState(pos);
@@ -63,5 +65,21 @@ public final class TrainingDummyEventHandler {
         level.playSound(
                 null, pos, ModSounds.TRAINING_DUMMY_HIT.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         return true;
+    }
+
+    /**
+     * The server-side game mode is the authority for the creative bypass, matching
+     * {@code StructureProtectionHandler}'s and {@code MiningBreakGate}'s convention. Deliberately
+     * NOT {@link Player#isCreative()} on the server: that is an overridable derived view —
+     * GameTestHelper's mock players hard-code it to {@code true} whatever their real game mode —
+     * while {@code gameMode.getGameModeForPlayer()} is the same state the vanilla break pipeline
+     * itself consults. The abilities-derived view is only used on the logical client, where
+     * {@code LeftClickBlock} also fires and no server game mode exists.
+     */
+    private static boolean isCreative(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            return serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
+        }
+        return player.isCreative();
     }
 }
