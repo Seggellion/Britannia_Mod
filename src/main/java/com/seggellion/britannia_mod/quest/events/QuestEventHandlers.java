@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import com.seggellion.britannia_mod.quest.QuestManager;
 import com.seggellion.britannia_mod.quest.network.QuestClient;
 import com.seggellion.britannia_mod.quest.network.QuestModels;
+import com.seggellion.britannia_mod.quest.QuestItemMatcher;
+import com.seggellion.britannia_mod.quest.QuestObjectiveWatcher;
 import com.seggellion.britannia_mod.quest.QuestRewardService;
 import com.seggellion.britannia_mod.quest.network.QuestServerAPI;
 import com.seggellion.britannia_mod.network.payload.QuestTriggerResultS2CPayload;
@@ -57,65 +59,35 @@ public class QuestEventHandlers {
             long returnAtGameTime
     ) {}
 
+    /**
+     * Milestone 6: location objectives are detected on the SERVER, over the server's journal.
+     *
+     * <p>The client branch that used to live here read one static holding a single quest, which
+     * nothing restores at login -- so environmental progress was dead after every relog and only
+     * ever applied to the most recently touched quest (finding Q-02). It also re-sent the trigger
+     * every twenty ticks for as long as the player stood in the zone (Q-06).
+     */
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        Player player = event.getEntity();
+        if (event.getEntity().level().isClientSide()) return;
+        if (!(event.getEntity() instanceof ServerPlayer serverPlayer)) return;
 
-        if (!player.level().isClientSide() && player instanceof ServerPlayer serverPlayer && player.tickCount % 20 == 0) {
+        if (serverPlayer.tickCount % 20 == 0) {
             processPendingQuestItemReturns(serverPlayer);
         }
-        
-        if (player.level().isClientSide() && player.tickCount % 20 == 0) {
-            QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
-            
-            if (state != null && state.currentNode != null && state.currentNode.metadata != null) {
-                if (state.currentNode.metadata.has("location_trigger")) {
-                    JsonObject locData = state.currentNode.metadata.getAsJsonObject("location_trigger");
-                    String triggerKey = locData.has("trigger_key") ? locData.get("trigger_key").getAsString() : "";
-                    
-                    if (!triggerKey.isEmpty()) {
-                        BlockPos min = new BlockPos(getSafeInt(locData, "min_x"), getSafeInt(locData, "min_y"), getSafeInt(locData, "min_z"));
-                        BlockPos max = new BlockPos(getSafeInt(locData, "max_x"), getSafeInt(locData, "max_y"), getSafeInt(locData, "max_z"));
-                        
-                        if (isInsideZone(player.blockPosition(), min, max)) {
-                            QuestClient.sendTrigger(state.quest_id, triggerKey, response -> {
-                                if (response.success && FMLLoader.getDist().isClient()) {
-                                    ClientNetworkHandler.openQuestDecisionScreen(response, "The Guardian", null);
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        }
+        QuestObjectiveWatcher.onPlayerTick(serverPlayer);
     }
 
+    /**
+     * Milestone 6: pickup objectives are detected on the SERVER, from the stack the server
+     * actually moved into the player's inventory -- not from a client that says it happened.
+     */
     @SubscribeEvent
     public static void onItemPickup(ItemEntityPickupEvent.Post event) {
-        Player player = event.getPlayer();
-        if (!player.level().isClientSide()) return; 
+        if (event.getPlayer().level().isClientSide()) return;
+        if (!(event.getPlayer() instanceof ServerPlayer serverPlayer)) return;
 
-        QuestModels.QuestResponse state = QuestManager.getInstance().getCurrentQuestState();
-        if (state == null || state.currentNode == null || state.currentNode.metadata == null) return;
-
-        if (state.currentNode.metadata.has("pickup_trigger")) {
-            JsonObject pickupData = state.currentNode.metadata.getAsJsonObject("pickup_trigger");
-            String targetTag = pickupData.has("item_tag") ? pickupData.get("item_tag").getAsString() : "";
-            String triggerKey = pickupData.has("trigger_key") ? pickupData.get("trigger_key").getAsString() : "";
-
-            if (!targetTag.isEmpty() && !triggerKey.isEmpty()) {
-                ItemStack stack = event.getOriginalStack();
-                
-                // Use our new smarter matcher!
-                if (isQuestItemMatch(stack, targetTag)) {
-                    QuestClient.sendTrigger(state.quest_id, triggerKey, response -> {
-                        if (response.success) {
-                            player.displayClientMessage(uoMessage("A heavy burden placed upon your soul..."), true);
-                        }
-                    });
-                }
-            }
-        }
+        QuestObjectiveWatcher.onItemPickedUp(serverPlayer, event.getOriginalStack());
     }
 
     @SubscribeEvent
@@ -199,10 +171,10 @@ public class QuestEventHandlers {
         }
 
         if (!hasServerContext) {
-            PacketDistributor.sendToPlayer(
-                    serverPlayer,
-                    new ItemBurnedS2CPayload(stack.copy(), itemEntity.blockPosition())
-            );
+            // The stack carries no stamped quest context. Before Milestone 6 the server asked the
+            // CLIENT whether this mattered; now it asks its own journal, which knows the destroy
+            // objectives of every quest this player holds.
+            QuestObjectiveWatcher.onQuestItemDestroyed(serverPlayer, stack.copy(), itemEntity.blockPosition());
             itemEntity.discard();
             return;
         }
@@ -249,33 +221,9 @@ public class QuestEventHandlers {
 
     // --- Helpers ---
 
-    /**
-     * Intelligently checks if an ItemStack matches the target tag required by the quest.
-     */
+    /** Delegates to the shared matcher; see {@link QuestItemMatcher}. */
     public static boolean isQuestItemMatch(ItemStack stack, String targetTag) {
-        if (stack.isEmpty()) return false;
-
-        // 1. Check Custom Data (Robust NBT matching)
-        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-        if (customData.contains("quest_item") && customData.copyTag().getString("quest_item").equals(targetTag)) {
-            return true;
-        }
-
-        // 2. Check Custom Name Component (Matches "a magic gold ring")
-        if (stack.has(DataComponents.CUSTOM_NAME)) {
-            String itemName = stack.get(DataComponents.CUSTOM_NAME).getString();
-            if (itemName.equalsIgnoreCase(targetTag)) {
-                return true;
-            }
-        }
-
-        // 3. Check raw Item ID (Matches "minecraft:gold_nugget")
-        String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-        if (itemId.equalsIgnoreCase(targetTag)) {
-            return true;
-        }
-
-        return false;
+        return QuestItemMatcher.matches(stack, targetTag);
     }
 
     public static boolean isInsideZone(BlockPos playerPos, BlockPos min, BlockPos max) {

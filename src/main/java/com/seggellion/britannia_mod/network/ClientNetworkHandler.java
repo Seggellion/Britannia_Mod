@@ -209,15 +209,14 @@ public class ClientNetworkHandler {
         });
     }
 
+/**
+ * Milestone 6: nothing sends this payload, and what it did -- ask the client to assert a trigger
+ * the server had already decided -- is exactly the round trip finding Q-05 is about. It is kept
+ * registered so an older client cannot desync on an unknown type, and it no longer acts.
+ */
 public static void handleTriggerQuest(com.seggellion.britannia_mod.network.payload.TriggerQuestS2CPayload payload, IPayloadContext ctx) {
-    ctx.enqueueWork(() -> {
-        com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
-            if (response != null && response.success) {
-                // Open the screen
-                openQuestDecisionScreen(response, "The Guardian", null);
-            }
-        });
-    });
+    ctx.enqueueWork(() -> LOGGER.debug("Ignoring legacy trigger-quest payload quest_id={} trigger_key={}; "
+            + "objectives are decided server-side", payload.questId(), payload.triggerKey()));
 }
 
 public static void handleQuestTriggerResult(QuestTriggerResultS2CPayload payload, IPayloadContext ctx) {
@@ -257,7 +256,15 @@ public static void handleQuestTriggerResult(QuestTriggerResultS2CPayload payload
         handleQuestClientActions(response, payload.questId(), payload.triggerKey());
 
         if (response.currentNode != null) {
-            openQuestDecisionScreen(response, "The Guardian", null);
+            // If a presentation payload told us who fired this trigger, use their name.
+            TriggerPresentation presentation = PENDING_TRIGGER_PRESENTATION;
+            if (presentation != null && presentation.matches(payload.questId(), payload.triggerKey())) {
+                PENDING_TRIGGER_PRESENTATION = null;
+                openQuestDecisionScreen(response, presentation.npcName(), presentation.npcGender(),
+                        presentation.npcUuid());
+            } else {
+                openQuestDecisionScreen(response, "The Guardian", null);
+            }
         } else {
             LOGGER.warn("Quest trigger response missing node quest_id={} trigger_key={}", payload.questId(), payload.triggerKey());
         }
@@ -353,22 +360,29 @@ private static MutableComponent uoMessage(String text) {
         });
     }
 
+    /**
+     * An escort reached its destination.
+     *
+     * <p>Milestone 6: the SERVER detects the arrival and fires the trigger; this payload is
+     * presentation only. It records who arrived so the trigger result that follows can open the
+     * decision screen with their name and gender rather than a generic narrator, and it asserts
+     * nothing -- the client no longer tells the server that an objective was met.
+     */
     public static void handleEscortArrived(EscortArrivedS2CPayload payload, IPayloadContext ctx) {
-        ctx.enqueueWork(() -> {
-            com.seggellion.britannia_mod.quest.network.QuestClient.sendTrigger(payload.questId(), payload.triggerKey(), response -> {
-                if (response != null && response.success) {
-                    Minecraft.getInstance().setScreen(
-                        new QuestDecisionScreen(
-                            response, 
-                            payload.npcName(), 
-                            payload.npcGender(),
-                            payload.npcUuid()
-                        )
-                    );
-                }
-            });
-        });
+        ctx.enqueueWork(() -> PENDING_TRIGGER_PRESENTATION = new TriggerPresentation(
+            payload.questId(), payload.triggerKey(), payload.npcName(),
+            payload.npcGender(), payload.npcUuid()));
     }
+
+    /** Who a pending server-fired trigger belongs to, for presentation only. */
+    private record TriggerPresentation(long questId, String triggerKey, String npcName,
+                                       String npcGender, java.util.UUID npcUuid) {
+        boolean matches(long otherQuestId, String otherTriggerKey) {
+            return questId == otherQuestId && triggerKey != null && triggerKey.equals(otherTriggerKey);
+        }
+    }
+
+    private static TriggerPresentation PENDING_TRIGGER_PRESENTATION;
 
     /**
      * A {@code bank.open} result, or the refresh push that follows every confirmed mutation --

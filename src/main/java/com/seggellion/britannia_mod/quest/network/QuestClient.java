@@ -33,10 +33,6 @@ public final class QuestClient {
         send(QuestActionC2SPayload.Action.START, questId, "", -1, zeroUuid(), "", true, callback);
     }
 
-    public static void sendTrigger(long questId, String triggerKey, Consumer<QuestModels.QuestResponse> callback) {
-        send(QuestActionC2SPayload.Action.TRIGGER, questId, triggerKey, -1, zeroUuid(), "", true, callback);
-    }
-
     public static void sendTransition(long questId, String choiceId, JsonObject context,
                                       Consumer<QuestModels.QuestResponse> callback) {
         send(QuestActionC2SPayload.Action.CHOOSE, questId, choiceId, -1, questGiverUuidFromContext(context),
@@ -53,7 +49,14 @@ public final class QuestClient {
 
     public static void handleProxyResult(QuestActionResultS2CPayload payload) {
         PendingRequest pending = PENDING.remove(payload.requestId());
-        if (pending == null) return;
+        if (pending == null) {
+            // Finding S-9: a response whose pending entry is gone used to vanish without trace.
+            LOGGER.warn("event=quest_response_unmatched request_id={} status={}",
+                payload.requestId(), payload.statusCode());
+            return;
+        }
+        LOGGER.debug("event=quest_response_received request_uuid={} status={}",
+            pending.requestUuid(), payload.statusCode());
         Minecraft.getInstance().execute(() -> processResponse(payload.statusCode(), payload.responseJson(), pending));
     }
 
@@ -66,10 +69,15 @@ public final class QuestClient {
             return;
         }
         long requestId = REQUEST_SEQUENCE.updateAndGet(current -> current == Long.MAX_VALUE ? 1L : current + 1L);
-        PENDING.put(requestId, new PendingRequest(callback, questGiverName, allowAcceptedQuestSync));
+        // requestId matches the response back to this callback; requestUuid is the cross-system
+        // correlation id that also appears in the server log and in the Rails request.
+        String requestUuid = UUID.randomUUID().toString();
+        PENDING.put(requestId, new PendingRequest(callback, questGiverName, allowAcceptedQuestSync, requestUuid));
+        LOGGER.debug("event=quest_action_sent request_uuid={} action={} quest_id={}",
+            requestUuid, action, questId);
         NetworkHandler.sendToServer(new QuestActionC2SPayload(
             requestId, action, questId, safe(argument), questGiverEntityId,
-            questGiverUuid == null ? zeroUuid() : questGiverUuid));
+            questGiverUuid == null ? zeroUuid() : questGiverUuid, requestUuid));
     }
 
     private static void processResponse(int status, String rawResponse, PendingRequest pending) {
@@ -79,7 +87,8 @@ public final class QuestClient {
             rawJson = JsonParser.parseString(rawResponse).getAsJsonObject();
             response = GSON.fromJson(rawJson, QuestModels.QuestResponse.class);
         } catch (RuntimeException invalid) {
-            LOGGER.warn("Quest proxy returned invalid JSON with status {}", status);
+            LOGGER.warn("event=quest_response_invalid_json request_uuid={} status={}",
+                pending.requestUuid(), status);
             response = failure("The quest service returned an invalid response.");
         }
         if (response == null) response = failure("The quest service returned an empty response.");
@@ -142,5 +151,5 @@ public final class QuestClient {
     private static UUID zeroUuid() { return new UUID(0L, 0L); }
 
     private record PendingRequest(Consumer<QuestModels.QuestResponse> callback, String questGiverName,
-                                  boolean allowAcceptedQuestSync) {}
+                                  boolean allowAcceptedQuestSync, String requestUuid) {}
 }

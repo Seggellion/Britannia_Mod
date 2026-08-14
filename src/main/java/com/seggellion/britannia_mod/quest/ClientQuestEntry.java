@@ -8,8 +8,29 @@ public record ClientQuestEntry(
         String name,
         String briefDescription,
         String acceptedAt,
-        String status
+        String status,
+        /**
+         * The environmental objectives pending on this quest's current node (Milestone 6).
+         *
+         * <p>Server-side only. {@code QuestEntryCodecs} writes an explicit field list that does
+         * not include this, so quest solutions never reach a client -- and the client no longer
+         * needs them, because it no longer decides when an objective is met.
+         */
+        QuestObjectiveTriggers triggers
 ) {
+    /** Journal entry without objectives: the client's view, and any caller that has none. */
+    public ClientQuestEntry(String questStateId, String questId, String questKey,
+                            String questGiverName, String name, String briefDescription,
+                            String acceptedAt, String status) {
+        this(questStateId, questId, questKey, questGiverName, name, briefDescription,
+             acceptedAt, status, QuestObjectiveTriggers.NONE);
+    }
+
+    public ClientQuestEntry withTriggers(QuestObjectiveTriggers updated) {
+        return new ClientQuestEntry(questStateId, questId, questKey, questGiverName, name,
+            briefDescription, acceptedAt, status, updated == null ? QuestObjectiveTriggers.NONE : updated);
+    }
+
     public ClientQuestEntry {
         questStateId = clean(questStateId);
         questId = clean(questId);
@@ -22,6 +43,9 @@ public record ClientQuestEntry(
 
         if (questKey.isBlank()) {
             questKey = questId;
+        }
+        if (triggers == null) {
+            triggers = QuestObjectiveTriggers.NONE;
         }
         if (name.isBlank()) {
             name = questKey.isBlank() ? "Quest" : "Quest " + questKey;

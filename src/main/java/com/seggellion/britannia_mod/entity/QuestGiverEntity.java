@@ -15,9 +15,79 @@ import net.minecraft.resources.ResourceLocation;
 // FATAL CLIENT IMPORTS HAVE BEEN REMOVED
 
 public class QuestGiverEntity extends CitizenEntity {
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
+
+    /**
+     * The identity Rails joins on: {@code quests.origin_npc}.
+     *
+     * <p>Before Milestone 7 this was <b>a substring of the display name</b> -- everything after
+     * the first colon in {@code personalName} -- so any code path that rewrote that name for
+     * presentation silently repointed the NPC at a different quest, or at none (finding Q-08).
+     * A quest giver's identity is not presentation, so it now has its own synched, saved field.
+     *
+     * <p>Empty on entities spawned before this milestone, which is why
+     * {@link #resolveQuestGiverApiId()} still understands the old encoding.
+     */
+    private static final net.minecraft.network.syncher.EntityDataAccessor<String> DATA_QUEST_GIVER_API_ID =
+        net.minecraft.network.syncher.SynchedEntityData.defineId(
+            QuestGiverEntity.class, net.minecraft.network.syncher.EntityDataSerializers.STRING);
+
+    private boolean reportedLegacyIdentity;
 
     public QuestGiverEntity(EntityType<? extends QuestGiverEntity> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_QUEST_GIVER_API_ID, "");
+    }
+
+    @Override
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putString("questGiverApiId", getQuestGiverApiId());
+    }
+
+    @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains("questGiverApiId")) {
+            setQuestGiverApiId(tag.getString("questGiverApiId"));
+        }
+    }
+
+    public void setQuestGiverApiId(String apiId) {
+        this.entityData.set(DATA_QUEST_GIVER_API_ID, apiId == null ? "" : apiId.trim());
+    }
+
+    public String getQuestGiverApiId() {
+        return this.entityData.get(DATA_QUEST_GIVER_API_ID);
+    }
+
+    /**
+     * The identity to send to Rails: the field when it is set, and the legacy display-name
+     * encoding when it is not.
+     *
+     * <p>The fallback exists for every quest giver already standing in the world, and it says so
+     * once per entity so an operator can see how many are still legacy without being flooded.
+     */
+    public String resolveQuestGiverApiId() {
+        String stored = getQuestGiverApiId();
+        if (stored != null && !stored.isBlank()) return stored.trim();
+
+        String rawName = getPersonalName();
+        String legacy = rawName == null || rawName.isBlank()
+            ? ""
+            : (rawName.contains(":") ? rawName.split(":", 2)[1].trim() : rawName.trim());
+
+        if (!legacy.isBlank() && !reportedLegacyIdentity) {
+            reportedLegacyIdentity = true;
+            LOGGER.debug("event=quest_giver_legacy_identity entity={} api_id={} source=personal_name",
+                getStringUUID(), legacy);
+        }
+        return legacy;
     }
 
 private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");

@@ -11,10 +11,12 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class QuestProxySecurityTest {
+    private static final String REQUEST_UUID = "8d1f2c3a-4b5e-4f60-9a71-2c3d4e5f6a7b";
+
     @Test
     void boundedQuestIntentRoundTripsWithoutCredentialsOrAuthoritativeState() {
         QuestActionC2SPayload payload = new QuestActionC2SPayload(
-            17L, QuestActionC2SPayload.Action.CHOOSE, 42L, "accept", -1, UUID.randomUUID());
+            17L, QuestActionC2SPayload.Action.CHOOSE, 42L, "accept", -1, UUID.randomUUID(), REQUEST_UUID);
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         QuestActionC2SPayload.STREAM_CODEC.encode(buffer, payload);
         assertEquals(payload, QuestActionC2SPayload.STREAM_CODEC.decode(buffer));
@@ -28,13 +30,84 @@ class QuestProxySecurityTest {
     void rejectsMalformedAndUnboundedQuestIntents() {
         UUID npc = UUID.randomUUID();
         assertTrue(QuestProxyService.isValidShape(new QuestActionC2SPayload(
-            1L, QuestActionC2SPayload.Action.INTERACT, 0L, "", 10, npc)));
+            1L, QuestActionC2SPayload.Action.INTERACT, 0L, "", 10, npc, REQUEST_UUID)));
         assertFalse(QuestProxyService.isValidShape(new QuestActionC2SPayload(
-            1L, QuestActionC2SPayload.Action.INTERACT, 0L, "client_npc_name", 10, npc)));
+            1L, QuestActionC2SPayload.Action.INTERACT, 0L, "client_npc_name", 10, npc, REQUEST_UUID)));
         assertFalse(QuestProxyService.isValidShape(new QuestActionC2SPayload(
-            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "x".repeat(129), -1, npc)));
+            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "x".repeat(129), -1, npc, REQUEST_UUID)));
         assertFalse(QuestProxyService.isValidShape(new QuestActionC2SPayload(
-            1L, QuestActionC2SPayload.Action.ABANDON, 2L, "unexpected", -1, new UUID(0L, 0L))));
+            1L, QuestActionC2SPayload.Action.ABANDON, 2L, "unexpected", -1, new UUID(0L, 0L), REQUEST_UUID)));
+    }
+
+    /**
+     * Milestone 2: the correlation id is logged and forwarded to Rails, so an unbounded or
+     * control-laden value would be a log-injection vector rather than a trace token.
+     */
+    @Test
+    void rejectsMalformedCorrelationIds() {
+        assertTrue(QuestProxyService.validRequestUuid(REQUEST_UUID));
+        assertFalse(QuestProxyService.validRequestUuid(null));
+        assertFalse(QuestProxyService.validRequestUuid(""));
+        assertFalse(QuestProxyService.validRequestUuid("not-a-uuid"));
+        assertFalse(QuestProxyService.validRequestUuid(REQUEST_UUID.replace('-', ' ')));
+        assertFalse(QuestProxyService.validRequestUuid(REQUEST_UUID + "extra"));
+        assertFalse(QuestProxyService.validRequestUuid("8d1f2c3a4b5e4f609a712c3d4e5f6a7b"));
+        // A newline in a value that is written straight into a log line is log injection.
+        assertFalse(QuestProxyService.validRequestUuid(
+            REQUEST_UUID.substring(0, 30) + "\n" + REQUEST_UUID.substring(31)));
+
+        assertFalse(QuestProxyService.isValidShape(new QuestActionC2SPayload(
+            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "accept", -1, UUID.randomUUID(), "not-a-uuid")));
+    }
+
+    @Test
+    void correlationIdSurvivesTheWireUnchanged() {
+        QuestActionC2SPayload payload = new QuestActionC2SPayload(
+            3L, QuestActionC2SPayload.Action.TRIGGER, 9L, "arrived", -1, new UUID(0L, 0L), REQUEST_UUID);
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        QuestActionC2SPayload.STREAM_CODEC.encode(buffer, payload);
+        assertEquals(REQUEST_UUID, QuestActionC2SPayload.STREAM_CODEC.decode(buffer).requestUuid());
+    }
+
+    /**
+     * Milestone 4: the retry that makes a lost turn-in recoverable must stay a single, bounded
+     * second chance for the one action whose loss costs a player their reward. Retrying a 4xx
+     * would be retrying Rails' deliberate answer; retrying anything but a turn-in would be a
+     * guess; retrying twice would be a loop.
+     */
+    @Test
+    void onlyATurnInIsRetried_onceAndOnlyWhenTheServiceWasUnreachable() {
+        QuestActionC2SPayload turnIn = new QuestActionC2SPayload(
+            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "accept", -1, new UUID(0L, 0L), REQUEST_UUID);
+
+        assertTrue(QuestProxyService.shouldRetry(turnIn, 1, null, new RuntimeException("timeout")));
+        assertTrue(QuestProxyService.shouldRetry(turnIn, 1, null, null));
+        assertTrue(QuestProxyService.shouldRetry(turnIn, 1,
+            new QuestProxyService.Result(503, "{}"), null));
+
+        assertFalse(QuestProxyService.shouldRetry(turnIn, 1,
+            new QuestProxyService.Result(200, "{}"), null));
+        assertFalse(QuestProxyService.shouldRetry(turnIn, 1,
+            new QuestProxyService.Result(403, "{}"), null),
+            "a deliberate refusal must never be retried");
+        assertFalse(QuestProxyService.shouldRetry(turnIn, QuestProxyService.MAX_TURN_IN_ATTEMPTS,
+            new QuestProxyService.Result(503, "{}"), null),
+            "the retry is bounded at one");
+
+        for (QuestActionC2SPayload.Action action : QuestActionC2SPayload.Action.values()) {
+            if (action == QuestActionC2SPayload.Action.CHOOSE) continue;
+            QuestActionC2SPayload other = new QuestActionC2SPayload(
+                1L, action, 2L, "x", -1, new UUID(0L, 0L), REQUEST_UUID);
+            assertFalse(QuestProxyService.shouldRetry(other, 1,
+                new QuestProxyService.Result(503, "{}"), null),
+                action + " must not be retried");
+        }
+
+        QuestActionC2SPayload uncorrelated = new QuestActionC2SPayload(
+            1L, QuestActionC2SPayload.Action.CHOOSE, 2L, "accept", -1, new UUID(0L, 0L), "");
+        assertFalse(QuestProxyService.shouldRetry(uncorrelated, 1,
+            new QuestProxyService.Result(503, "{}"), null),
+            "without a correlation id a retry could double-complete, so it is refused");
     }
 
     @Test
