@@ -1,5 +1,5 @@
 {
-    "credit":  "Made with Blockbench",
+    "credit":  "Seggellion from Ultimacraft",
     "texture_size":  [
                          64,
                          64
@@ -1419,6 +1419,5 @@
                                         15
                                     ]
                    }
-               ],
-    "mcmodels":  "f84dad68156abc1e87b44e2c0d339f64"
+               ]
 }

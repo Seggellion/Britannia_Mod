@@ -1,5 +1,5 @@
 {
-  "credit": "Shared Road Guard-style planar geometry for the authoritative 128 x 128 extra-small canvas",
+  "credit": "Seggellion from Ultimacraft",
   "parent": "minecraft:block/block",
   "render_type": "minecraft:translucent",
   "textures": {

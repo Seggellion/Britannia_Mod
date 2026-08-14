@@ -1,221 +1,59 @@
 {
-    "parent":  "minecraft:block/block",
-    "ambientocclusion":  false,
-    "render_type":  "minecraft:translucent",
-    "textures":  {
-                     "particle":  "britannia_mod:block/new_assets/moongate/portal_texture2",
-                     "portal":  "britannia_mod:block/new_assets/moongate/portal_texture",
-                     "core":  "britannia_mod:block/new_assets/moongate/portal_texture2",
-                     "outline":  "britannia_mod:block/new_assets/moongate/portal_texture3",
-                     "outer":  "britannia_mod:block/new_assets/moongate/portal_texture4",
-                     "floor":  "britannia_mod:block/new_assets/moongate/portal_texture5",
-                     "floor_glow":  "britannia_mod:block/new_assets/moongate/portal_texture6"
-                 },
-    "elements":  [
-                     {
-                         "from":  [
-                                      3.5,
-                                      3.34884,
-                                      7.5
-                                  ],
-                         "to":  [
-                                    12.5,
-                                    28.65116,
-                                    8.5
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "north":  {
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                2.25,
-                                                                4.25
-                                                            ],
-                                                     "texture":  "#portal",
-                                                     "tintindex":  0
-                                                 },
-                                       "south":  {
-                                                     "uv":  [
-                                                                2.25,
-                                                                0,
-                                                                0,
-                                                                4.25
-                                                            ],
-                                                     "texture":  "#portal",
-                                                     "tintindex":  0
-                                                 }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      3.25,
-                                      2.97674,
-                                      7.99
-                                  ],
-                         "to":  [
-                                    12.75,
-                                    29.02326,
-                                    8.01
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "north":  {
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                16,
-                                                                16
-                                                            ],
-                                                     "texture":  "#core",
-                                                     "tintindex":  0
-                                                 },
-                                       "south":  {
-                                                     "uv":  [
-                                                                16,
-                                                                0,
-                                                                0,
-                                                                16
-                                                            ],
-                                                     "texture":  "#core",
-                                                     "tintindex":  0
-                                                 }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      3.5,
-                                      3.34884,
-                                      6.99
-                                  ],
-                         "to":  [
-                                    12.5,
-                                    28.65116,
-                                    7.01
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "north":  {
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                2.25,
-                                                                4.25
-                                                            ],
-                                                     "texture":  "#outline",
-                                                     "tintindex":  0
-                                                 }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      3.5,
-                                      3.34884,
-                                      8.99
-                                  ],
-                         "to":  [
-                                    12.5,
-                                    28.65116,
-                                    9.01
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "south":  {
-                                                     "uv":  [
-                                                                2.25,
-                                                                0,
-                                                                0,
-                                                                4.25
-                                                            ],
-                                                     "texture":  "#outline",
-                                                     "tintindex":  0
-                                                 }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      1.25,
-                                      0,
-                                      7.98
-                                  ],
-                         "to":  [
-                                    14.75,
-                                    32,
-                                    8.02
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "north":  {
-                                                     "uv":  [
-                                                                0,
-                                                                0,
-                                                                6.75,
-                                                                10.75
-                                                            ],
-                                                     "texture":  "#outer",
-                                                     "tintindex":  0
-                                                 },
-                                       "south":  {
-                                                     "uv":  [
-                                                                6.75,
-                                                                0,
-                                                                0,
-                                                                10.75
-                                                            ],
-                                                     "texture":  "#outer",
-                                                     "tintindex":  0
-                                                 }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      0,
-                                      1.11628,
-                                      0
-                                  ],
-                         "to":  [
-                                    16,
-                                    1.12628,
-                                    16
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "up":  {
-                                                  "uv":  [
-                                                             16,
-                                                             16,
-                                                             0,
-                                                             0
-                                                         ],
-                                                  "texture":  "#floor",
-                                                  "tintindex":  0
-                                              }
-                                   }
-                     },
-                     {
-                         "from":  [
-                                      0,
-                                      1.48837,
-                                      0
-                                  ],
-                         "to":  [
-                                    16,
-                                    1.49837,
-                                    16
-                                ],
-                         "shade":  false,
-                         "faces":  {
-                                       "up":  {
-                                                  "uv":  [
-                                                             16,
-                                                             16,
-                                                             0,
-                                                             0
-                                                         ],
-                                                  "texture":  "#floor_glow",
-                                                  "tintindex":  0
-                                              }
-                                   }
-                     }
-                 ]
+	"format_version": "1.21.11",
+	"credit": "Seggellion from Ultimacraft",
+	"parent": "minecraft:block/block",
+	"ambientocclusion": false,
+	"render_type": "minecraft:translucent",
+	"textures": {
+		"portal": "britannia_mod:block/new_assets/moongate/portal_texture",
+		"particle": "britannia_mod:block/new_assets/moongate/portal_texture2",
+		"core": "britannia_mod:block/new_assets/moongate/portal_texture2",
+		"outline": "britannia_mod:block/new_assets/moongate/portal_texture3",
+		"outer": "britannia_mod:block/new_assets/moongate/portal_texture4"
+	},
+	"elements": [
+		{
+			"from": [3.5, 3.34884, 7.5],
+			"to": [12.5, 28.65116, 8.5],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [0, 0, 2.25, 4.25], "texture": "#portal", "tintindex": 0},
+				"south": {"uv": [2.25, 0, 0, 4.25], "texture": "#portal", "tintindex": 0}
+			}
+		},
+		{
+			"from": [3.25, 2.97674, 7.99],
+			"to": [12.75, 29.02326, 8.01],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#core", "tintindex": 0},
+				"south": {"uv": [16, 0, 0, 16], "texture": "#core", "tintindex": 0}
+			}
+		},
+		{
+			"from": [3.5, 3.34884, 6.99],
+			"to": [12.5, 28.65116, 7.01],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [0, 0, 2.25, 4.25], "texture": "#outline", "tintindex": 0}
+			}
+		},
+		{
+			"from": [3.5, 3.34884, 8.99],
+			"to": [12.5, 28.65116, 9.01],
+			"shade": false,
+			"faces": {
+				"south": {"uv": [2.25, 0, 0, 4.25], "texture": "#outline", "tintindex": 0}
+			}
+		},
+		{
+			"from": [1.25, 0, 7.98],
+			"to": [14.75, 32, 8.02],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [0, 0, 6.75, 10.75], "texture": "#outer", "tintindex": 0},
+				"south": {"uv": [6.75, 0, 0, 10.75], "texture": "#outer", "tintindex": 0}
+			}
+		}
+	]
 }

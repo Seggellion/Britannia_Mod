@@ -1,0 +1,214 @@
+{
+    "credit":  "Seggellion from Ultimacraft",
+    "texture_size":  [
+                         128,
+                         128
+                     ],
+    "textures":  {
+                     "3":  "britannia_mod:block/new_assets/pool_of_blood/variant_2",
+                     "particle":  "britannia_mod:block/new_assets/pool_of_blood/variant_2",
+                     "0":  "britannia_mod:block/new_assets/pool_of_blood/variant_2"
+                 },
+    "elements":  [
+                     {
+                         "from":  [
+                                      -16,
+                                      0.4,
+                                      -16
+                                  ],
+                         "to":  [
+                                    32,
+                                    0.4,
+                                    32
+                                ],
+                         "rotation":  {
+                                          "angle":  0,
+                                          "axis":  "y",
+                                          "origin":  [
+                                                         0,
+                                                         -0.6,
+                                                         0
+                                                     ]
+                                      },
+                         "faces":  {
+                                       "north":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                6,
+                                                                0
+                                                            ],
+                                                     "texture":  "#3"
+                                                 },
+                                       "east":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               6,
+                                                               0
+                                                           ],
+                                                    "texture":  "#3"
+                                                },
+                                       "south":  {
+                                                     "uv":  [
+                                                                0,
+                                                                0,
+                                                                6,
+                                                                0
+                                                            ],
+                                                     "texture":  "#3"
+                                                 },
+                                       "west":  {
+                                                    "uv":  [
+                                                               0,
+                                                               0,
+                                                               6,
+                                                               0
+                                                           ],
+                                                    "texture":  "#3"
+                                                },
+                                       "up":  {
+                                                  "uv":  [
+                                                             6,
+                                                             16,
+                                                             0,
+                                                             10
+                                                         ],
+                                                  "texture":  "#3"
+                                              },
+                                       "down":  {
+                                                    "uv":  [
+                                                               6,
+                                                               10,
+                                                               0,
+                                                               16
+                                                           ],
+                                                    "texture":  "#3"
+                                                }
+                                   }
+                     }
+                 ],
+    "display":  {
+                    "thirdperson_righthand":  {
+                                                  "rotation":  [
+                                                                   74,
+                                                                   51,
+                                                                   0
+                                                               ],
+                                                  "translation":  [
+                                                                      0,
+                                                                      3,
+                                                                      2
+                                                                  ],
+                                                  "scale":  [
+                                                                0.5,
+                                                                0.5,
+                                                                0.5
+                                                            ]
+                                              },
+                    "thirdperson_lefthand":  {
+                                                 "rotation":  [
+                                                                  74,
+                                                                  51,
+                                                                  0
+                                                              ],
+                                                 "translation":  [
+                                                                     0,
+                                                                     3,
+                                                                     2
+                                                                 ],
+                                                 "scale":  [
+                                                               0.5,
+                                                               0.5,
+                                                               0.5
+                                                           ]
+                                             },
+                    "firstperson_righthand":  {
+                                                  "translation":  [
+                                                                      3,
+                                                                      6,
+                                                                      0
+                                                                  ],
+                                                  "scale":  [
+                                                                0.5,
+                                                                0.5,
+                                                                0.5
+                                                            ]
+                                              },
+                    "firstperson_lefthand":  {
+                                                 "translation":  [
+                                                                     3,
+                                                                     6,
+                                                                     0
+                                                                 ],
+                                                 "scale":  [
+                                                               0.5,
+                                                               0.5,
+                                                               0.5
+                                                           ]
+                                             },
+                    "ground":  {
+                                   "translation":  [
+                                                       0,
+                                                       2.5,
+                                                       0
+                                                   ],
+                                   "scale":  [
+                                                 0.5,
+                                                 0.5,
+                                                 0.5
+                                             ]
+                               },
+                    "gui":  {
+                                "rotation":  [
+                                                 62,
+                                                 43,
+                                                 -8
+                                             ],
+                                "translation":  [
+                                                    0.5,
+                                                    -0.25,
+                                                    0
+                                                ],
+                                "scale":  [
+                                              0.45,
+                                              0.45,
+                                              0.45
+                                          ]
+                            },
+                    "head":  {
+                                 "rotation":  [
+                                                  0,
+                                                  -9,
+                                                  0
+                                              ],
+                                 "translation":  [
+                                                     0,
+                                                     10,
+                                                     0
+                                                 ],
+                                 "scale":  [
+                                               0.4,
+                                               0.4,
+                                               0.4
+                                           ]
+                             },
+                    "fixed":  {
+                                  "rotation":  [
+                                                   -90,
+                                                   28,
+                                                   0
+                                               ],
+                                  "translation":  [
+                                                      -1,
+                                                      0.5,
+                                                      -3.25
+                                                  ],
+                                  "scale":  [
+                                                0.5,
+                                                0.5,
+                                                0.5
+                                            ]
+                              }
+                }
+}

@@ -255,7 +255,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TABLE_SETTING_ITEM.get());
                 safeAccept(output, ItemRegistry.GLOBE_ITEM.get());
                 safeAccept(output, ItemRegistry.FERN_ITEM.get());
-                safeAccept(output, ItemRegistry.MOONGLOW_BUSH_ITEM.get());
+                safeAccept(output, ItemRegistry.HEDGE_BUSH_ITEM.get());
+                safeAccept(output, ItemRegistry.POOL_OF_BLOOD_ITEM.get());
                 safeAccept(output, ItemRegistry.FOLDED_CLOTH_ITEM.get());
                 safeAccept(output, ItemRegistry.BOLT_OF_CLOTH_ITEM.get());
                 safeAccept(output, ItemRegistry.BALL_OF_YARN.get());
@@ -434,6 +435,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.WISP_SPAWN_EGG.get());
                 safeAccept(output, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
                 safeAccept(output, ItemRegistry.IBIS_SPAWN_EGG.get());
+                safeAccept(output, ItemRegistry.FLAMINGO_SPAWN_EGG.get());
 
                 // NPC spawn blocks
                 safeAccept(output, ItemRegistry.BRITANNIA_SPAWN_BLOCK_ITEM.get());   

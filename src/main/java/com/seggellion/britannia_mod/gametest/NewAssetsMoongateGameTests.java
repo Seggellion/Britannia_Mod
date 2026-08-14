@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.gametest;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
@@ -29,8 +30,8 @@ public final class NewAssetsMoongateGameTests {
         check(helper.getLevel().getBlockState(anchor).is(gate), "city moongate root was not placed");
         check(helper.getLevel().getBlockState(anchor.above()).isAir(),
                 "city moongate placed a second logical cell");
-        check(helper.getLevel().getBlockEntity(anchor) == null,
-                "random-city moongate unexpectedly created a block entity");
+        check(helper.getLevel().getBlockEntity(anchor) instanceof MoongateBlockEntity,
+                "random-city moongate lacks its client billboard render anchor");
         check(helper.getLevel().getBlockState(anchor).getCollisionShape(helper.getLevel(), anchor).isEmpty(),
                 "city moongate stopped being pass-through");
 

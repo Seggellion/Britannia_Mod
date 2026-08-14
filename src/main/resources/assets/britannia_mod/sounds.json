@@ -697,6 +697,18 @@
       { "name" :"britannia_mod:feet15d"}
     ]
   },
+  "flamingo_ambient": {
+    "sounds": [
+      { "name": "britannia_mod:flamingo_idle" }
+    ]
+  },
+  "training_dummy_hit": {
+    "sounds": [
+      { "name": "britannia_mod:hit06" },
+      { "name": "britannia_mod:hit07" },
+      { "name": "britannia_mod:hit08" }
+    ]
+  },
    "anvil": {
     "sounds": [
       { "name" :"britannia_mod:anvil"}

@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.11",
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft",
 	"parent": "item/generated",
 	"textures": {
 		"layer0": "britannia_mod:item/jewelry/one_ring"

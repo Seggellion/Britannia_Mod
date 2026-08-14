@@ -3,6 +3,8 @@ package com.seggellion.britannia_mod.gametest;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.item.AdventureLadderItem;
+import com.seggellion.britannia_mod.item.AdventureScarecrowItem;
+import com.seggellion.britannia_mod.block.HedgeBushBlock;
 import com.seggellion.britannia_mod.item.PitcherItem;
 import com.seggellion.britannia_mod.item.WateringCanItem;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
@@ -20,6 +22,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -96,6 +99,9 @@ public final class NewAssetsUtilityGameTests {
 
         BlockPos top = anchor.above(2);
         var topState = helper.getLevel().getBlockState(top);
+        check(topState.getCollisionShape(helper.getLevel(), top).toAabbs().stream()
+                        .anyMatch(box -> box.maxY == 1.0D && box.getXsize() >= 0.75D),
+                "ladder top does not provide a standing platform at the third-block height");
         ladder.onDestroyedByPlayer(
                 topState, helper.getLevel(), top, player, true, topState.getFluidState());
         for (int y = 0; y < 3; y++) {
@@ -111,6 +117,61 @@ public final class NewAssetsUtilityGameTests {
             }
         }
         check(ladderDrops == 1, "ladder did not drop exactly one item after whole teardown");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void hedgeStacksAndAdventureScarecrowUsesCommunityFarm(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+
+        BlockPos hedgeSoil = helper.absolutePos(new BlockPos(2, 2, 2));
+        helper.getLevel().setBlock(hedgeSoil, Blocks.DIRT.defaultBlockState(), Block.UPDATE_ALL);
+        ItemStack hedgeStack = new ItemStack(ItemRegistry.HEDGE_BUSH_ITEM.get(), 3);
+        player.setItemInHand(InteractionHand.MAIN_HAND, hedgeStack);
+        BlockPos clicked = hedgeSoil;
+        for (int index = 0; index < 3; index++) {
+            BlockHitResult hit = new BlockHitResult(
+                    Vec3.atCenterOf(clicked).add(0.0D, 0.5D, 0.0D),
+                    net.minecraft.core.Direction.UP, clicked, false);
+            InteractionResult result = ((BlockItem) hedgeStack.getItem()).useOn(
+                    new UseOnContext(player, InteractionHand.MAIN_HAND, hit));
+            check(result.consumesAction(), "hedge segment " + index + " failed to stack");
+            clicked = clicked.above();
+        }
+        BlockPos hedgeBottom = hedgeSoil.above();
+        check(helper.getLevel().getBlockState(hedgeBottom).getValue(HedgeBushBlock.SEGMENT)
+                        == HedgeBushBlock.BOTTOM,
+                "hedge bottom segment did not resolve");
+        check(helper.getLevel().getBlockState(hedgeBottom.above()).getValue(HedgeBushBlock.SEGMENT)
+                        == HedgeBushBlock.MIDDLE,
+                "hedge middle segment did not resolve");
+        check(helper.getLevel().getBlockState(hedgeBottom.above(2)).getValue(HedgeBushBlock.SEGMENT)
+                        == HedgeBushBlock.TOP,
+                "hedge top segment did not resolve");
+
+        player.setGameMode(GameType.ADVENTURE);
+        BlockPos community = helper.absolutePos(new BlockPos(5, 2, 5));
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                helper.getLevel().setBlock(community.offset(x, 0, z),
+                        BlockRegistry.COMMUNITY_FARM_BLOCK.get().defaultBlockState(), Block.UPDATE_ALL);
+            }
+        }
+        ItemStack scarecrow = new ItemStack(ItemRegistry.SCARECROW_ITEM.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, scarecrow);
+        BlockHitResult farmHit = new BlockHitResult(
+                Vec3.atCenterOf(community).add(0.0D, 0.5D, 0.0D),
+                net.minecraft.core.Direction.UP, community, false);
+        InteractionResult scarecrowResult = ((AdventureScarecrowItem) scarecrow.getItem()).useOn(
+                new UseOnContext(player, InteractionHand.MAIN_HAND, farmHit));
+        check(scarecrowResult.consumesAction(),
+                "Adventure scarecrow was rejected on community farm blocks");
+        long scarecrowCells = BlockPos.betweenClosedStream(
+                        community.offset(-1, 1, -1), community.offset(1, 2, 1))
+                .filter(pos -> helper.getLevel().getBlockState(pos).is(BlockRegistry.SCARECROW.get()))
+                .count();
+        check(scarecrowCells == 4, "Adventure scarecrow did not place all four structure cells");
         helper.succeed();
     }
 

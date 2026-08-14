@@ -5,7 +5,9 @@ import com.seggellion.britannia_mod.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -19,12 +21,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
+import org.jetbrains.annotations.Nullable;
+import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class MoongateBlock extends Block {
+public class MoongateBlock extends Block implements EntityBlock {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Set<UUID> playersOnMoongate = new HashSet<>();
 
@@ -41,8 +45,14 @@ public class MoongateBlock extends Block {
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        // Use custom model rendering
+        // The floor layers remain a normal block model; the vertical portal is camera-facing.
         return RenderShape.MODEL;
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new MoongateBlockEntity(pos, state);
     }
 
     @Override

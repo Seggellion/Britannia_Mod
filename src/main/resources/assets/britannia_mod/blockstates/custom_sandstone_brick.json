@@ -1,67 +1,131 @@
 {
   "variants": {
-    "facing=north,texture_variant=0": {
+    "facing=north,texture_variant=0,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
       "y": 0
     },
-    "facing=east,texture_variant=0": {
+    "facing=east,texture_variant=0,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
       "y": 90
     },
-    "facing=south,texture_variant=0": {
+    "facing=south,texture_variant=0,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
       "y": 180
     },
-    "facing=west,texture_variant=0": {
+    "facing=west,texture_variant=0,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
       "y": 270
     },
-    "facing=north,texture_variant=1": {
+    "facing=north,texture_variant=1,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_1",
       "y": 0
     },
-    "facing=east,texture_variant=1": {
+    "facing=east,texture_variant=1,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_1",
       "y": 90
     },
-    "facing=south,texture_variant=1": {
+    "facing=south,texture_variant=1,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_1",
       "y": 180
     },
-    "facing=west,texture_variant=1": {
+    "facing=west,texture_variant=1,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_1",
       "y": 270
     },
-    "facing=north,texture_variant=2": {
+    "facing=north,texture_variant=2,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_2",
       "y": 0
     },
-    "facing=east,texture_variant=2": {
+    "facing=east,texture_variant=2,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_2",
       "y": 90
     },
-    "facing=south,texture_variant=2": {
+    "facing=south,texture_variant=2,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_2",
       "y": 180
     },
-    "facing=west,texture_variant=2": {
+    "facing=west,texture_variant=2,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_2",
       "y": 270
     },
-    "facing=north,texture_variant=3": {
+    "facing=north,texture_variant=3,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_3",
       "y": 0
     },
-    "facing=east,texture_variant=3": {
+    "facing=east,texture_variant=3,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_3",
       "y": 90
     },
-    "facing=south,texture_variant=3": {
+    "facing=south,texture_variant=3,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_3",
       "y": 180
     },
-    "facing=west,texture_variant=3": {
+    "facing=west,texture_variant=3,top_row=false": {
       "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_3",
+      "y": 270
+    },
+    "facing=north,texture_variant=0,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_0",
+      "y": 0
+    },
+    "facing=east,texture_variant=0,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_0",
+      "y": 90
+    },
+    "facing=south,texture_variant=0,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_0",
+      "y": 180
+    },
+    "facing=west,texture_variant=0,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_0",
+      "y": 270
+    },
+    "facing=north,texture_variant=1,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_1",
+      "y": 0
+    },
+    "facing=east,texture_variant=1,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_1",
+      "y": 90
+    },
+    "facing=south,texture_variant=1,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_1",
+      "y": 180
+    },
+    "facing=west,texture_variant=1,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_1",
+      "y": 270
+    },
+    "facing=north,texture_variant=2,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_2",
+      "y": 0
+    },
+    "facing=east,texture_variant=2,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_2",
+      "y": 90
+    },
+    "facing=south,texture_variant=2,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_2",
+      "y": 180
+    },
+    "facing=west,texture_variant=2,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_2",
+      "y": 270
+    },
+    "facing=north,texture_variant=3,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_3",
+      "y": 0
+    },
+    "facing=east,texture_variant=3,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_3",
+      "y": 90
+    },
+    "facing=south,texture_variant=3,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_3",
+      "y": 180
+    },
+    "facing=west,texture_variant=3,top_row=true": {
+      "model": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_3",
       "y": 270
     }
   }

@@ -1,5 +1,5 @@
 {
-    "credit":  "Temporary purchased loom art re-authored to 32x48x16 voxels",
+    "credit":  "Seggellion from Ultimacraft",
     "texture_size":  [
                          128,
                          128
@@ -1809,6 +1809,5 @@
                                         24
                                     ]
                    }
-               ],
-    "mcmodels":  "44d26991f3bb715e0d9807075b84ca93"
+               ]
 }

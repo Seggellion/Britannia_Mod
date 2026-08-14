@@ -100,6 +100,11 @@ $marketBase = 'Medieval Market Furniture Set/Medieval Market Furniture Set/Raw F
 $redModel = (Read-ZipText $marketZip "$marketBase/models/medieval_market_wagon_red.json") | ConvertFrom-Json
 $purpleModel = (Read-ZipText $marketZip "$marketBase/models/medieval_market_wagon_purple.json") | ConvertFrom-Json
 
+# The client applies the owner-requested 1.2 visual scale after baking. Keeping the purchased
+# coordinates here preserves the vanilla JSON parser's -16..32 element boundary.
+$redModel.credit = 'Temporary purchased red cart art; client-rendered at 1.2 scale'
+$purpleModel.credit = 'Temporary purchased purple cart art; client-rendered at 1.2 scale'
+
 Set-Texture $redModel '1' 'britannia_mod:block/new_assets/merchant_cart_red'
 Set-Texture $redModel 'particle' 'britannia_mod:block/new_assets/merchant_cart_red'
 Set-Texture $purpleModel '1' 'britannia_mod:block/new_assets/merchant_cart_purple'
@@ -130,6 +135,12 @@ $tailoringModelBase = 'Nexo/pack/external_packs/WorkshopSix/assets/minecraft/mod
 $tailoringTextureBase = 'Nexo/pack/external_packs/WorkshopSix/assets/minecraft/textures/workshop_six/tailoring_station'
 
 $dressForm = (Read-ZipText $tailoringZip "$tailoringModelBase/mannequin.json") | ConvertFrom-Json
+$dressForm | Add-Member -NotePropertyName ambientocclusion -NotePropertyValue $false -Force
+$head = @($dressForm.elements) | Where-Object { [double]$_.from[1] -eq 24.0 -and [double]$_.to[1] -eq 32.0 } | Select-Object -First 1
+if ($null -eq $head) { throw 'Could not locate dress-form head cube for top-face repair' }
+$head | Add-Member -NotePropertyName shade -NotePropertyValue $false -Force
+# The original top UV spans a baked dark-to-light gradient. Sample one neutral atlas pixel instead.
+$head.faces.up.uv = @(5.0, 5.0, 5.25, 5.25)
 Set-Texture $dressForm '0' 'britannia_mod:block/new_assets/dress_form'
 Set-Texture $dressForm 'particle' 'britannia_mod:block/new_assets/dress_form'
 Write-Json (Join-Path $modelRoot 'dress_form.json') $dressForm

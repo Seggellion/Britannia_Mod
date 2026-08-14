@@ -1,5 +1,5 @@
 {
-    "credit":  "Temporary purchased well art normalized to a 16x32x32-voxel structure",
+    "credit":  "Seggellion from Ultimacraft",
     "texture_size":  [
                          256,
                          256
@@ -2546,6 +2546,5 @@
                                         }
                                     ]
                    }
-               ],
-    "mcmodels":  "6af3c6cd5756c19e61c88db213874422"
+               ]
 }

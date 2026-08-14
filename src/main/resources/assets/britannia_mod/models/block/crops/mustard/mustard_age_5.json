@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.11",
-	"credit": "Made by Nog's Menagerie",
+	"credit": "Seggellion from Ultimacraft",
 	"texture_size": [32, 32],
 	"textures": {
 		"1": "britannia_mod:block/crops/mustard/mustard_age_5"
@@ -296,6 +296,5 @@
 			"color": 0,
 			"children": [17, 18, 19, 20]
 		}
-	],
-	"mcmodels": "2b525d9f54820d698077a69726b8edf5"
+	]
 }

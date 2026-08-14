@@ -109,7 +109,7 @@ Transform-Model $well {
     @( (($x + 5.0) * 16.0 / 19.0); (($y - 4.0) * 32.0 / 27.5); (($z + 1.5) * 32.0 / 27.0) )
 }
 Set-Texture $well 'water_well'
-$well.credit = 'Temporary purchased well art normalized to a 16x32x32-voxel structure'
+$well.credit = 'Temporary purchased well art normalized to 16x32x32; client-rendered at 1.2 scale'
 Write-Json (Join-Path $modelRoot 'water_well.json') $well
 
 $ladder = (Read-ZipText $sourceZip "$modelBase/farmer_stepladder.json") | ConvertFrom-Json

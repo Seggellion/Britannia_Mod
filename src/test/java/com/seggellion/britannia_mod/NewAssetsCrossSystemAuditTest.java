@@ -21,7 +21,7 @@ class NewAssetsCrossSystemAuditTest {
     private static final Path DATA = RESOURCES.resolve("data/britannia_mod");
 
     private static final List<String> BLOCK_IDS = List.of(
-            "globe", "fern", "moonglow_bush", "folded_cloth", "bolt_of_cloth",
+            "globe", "fern", "hedge_bush", "pool_of_blood", "folded_cloth", "bolt_of_cloth",
             "pewter_mug", "kettle", "plates_and_silverware",
             "merchant_cart_red", "merchant_cart_purple", "merchant_cart_blue",
             "merchant_cart_green", "merchant_cart_yellow", "merchant_cart_white",
@@ -111,7 +111,7 @@ class NewAssetsCrossSystemAuditTest {
 
         String client = javaSource("ClientModSetup.java");
         for (String holder : List.of(
-                "GLOBE", "FERN", "MOONGLOW_BUSH", "FOLDED_CLOTH",
+                "GLOBE", "FERN", "HEDGE_BUSH", "POOL_OF_BLOOD", "FOLDED_CLOTH",
                 "MERCHANT_CART_RED", "MERCHANT_CART_PURPLE", "MERCHANT_CART_BLUE",
                 "MERCHANT_CART_GREEN", "MERCHANT_CART_YELLOW", "MERCHANT_CART_WHITE",
                 "SCARECROW", "DRESS_FORM", "LOOM", "SMALL_CRATE", "MEDIUM_CRATE",

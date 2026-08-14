@@ -171,8 +171,53 @@ tasks.register('generateServiceNpcSpawnGameTestStructure') {
     }
 }
 
+tasks.register('validateTrainingDummyGeo') {
+    group = 'verification'
+    description = 'Fail early when a Blockbench export is incompatible with GeckoLib 4.6.6.'
+    def geometryFile = layout.projectDirectory.file(
+            'src/main/resources/assets/britannia_mod/geo/training_dummy.geo.json')
+    inputs.file geometryFile
+    doLast {
+        def root = new groovy.json.JsonSlurper().parse(geometryFile.asFile)
+        if (root.format_version != '1.12.0') {
+            throw new GradleException(
+                    "training_dummy.geo.json uses format_version '${root.format_version}'. " +
+                    "GeckoLib 4.6.6 requires 1.12.0. Run: " +
+                    "powershell -ExecutionPolicy Bypass -File tools/new-assets/normalize_training_dummy_geo.ps1")
+        }
+        def geometry = root['minecraft:geometry']?.getAt(0)
+        if (geometry?.description?.identifier != 'geometry.training_dummy') {
+            throw new GradleException(
+                    "training_dummy.geo.json must use identifier 'geometry.training_dummy'. Run the normalizer task.")
+        }
+        def cubes = geometry?.bones?.collectMany { bone -> bone.cubes ?: [] } ?: []
+        def minY = cubes.collect { cube -> (cube.origin[1] as BigDecimal) }.min()
+        if (minY == null || minY < 0) {
+            throw new GradleException(
+                    "training_dummy.geo.json extends below Y=0 (minY=${minY}). Run the normalizer task.")
+        }
+        def sack = geometry?.bones?.find { bone -> bone.name == 'sack2' }
+        def arrow = sack?.cubes?.find { cube ->
+            cube.size?.getAt(2) == 0 &&
+                    cube.uv?.north?.uv?.getAt(0) == 64 &&
+                    cube.uv?.north?.uv?.getAt(1) == 0
+        }
+        def sackBody = sack?.cubes?.find { cube -> cube.size == [10, 13, 8] }
+        def arrowFaces = arrow?.uv?.keySet() as Set
+        def decalGap = arrow != null && sackBody != null
+                ? (sackBody.origin[2] as BigDecimal) - (arrow.origin[2] as BigDecimal)
+                : null
+        if (arrowFaces != ['north'] as Set || decalGap == null || decalGap < 0.1) {
+            throw new GradleException(
+                    "training_dummy.geo.json arrow decal can z-fight with the sack " +
+                    "(faces=${arrowFaces}, gap=${decalGap}). Run the Training Dummy GEO normalizer.")
+        }
+    }
+}
+
 tasks.named('processResources') {
     dependsOn tasks.named('generateServiceNpcSpawnGameTestStructure')
+    dependsOn tasks.named('validateTrainingDummyGeo')
 }
 
 tasks.named('jar', Jar) {

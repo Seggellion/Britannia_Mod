@@ -64,7 +64,7 @@ class Milestone14RRemovalAndPreservationTest {
         // New-assets milestone 3 adds ten decorative multiblock items, and
         // milestone 4 adds three crate block items, and milestone 5 adds the
         // water-well and Adventure-ladder block items.
-        assertEquals(764, repositoryItems);
+        assertEquals(766, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

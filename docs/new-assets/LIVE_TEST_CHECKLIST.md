@@ -16,7 +16,7 @@ Build and dedicated-server game tests pass. The checks below require an interact
 
 - [ ] `globe`: place in all four horizontal orientations; verify pedestal alignment, UVs, scale, and fitted collision.
 - [ ] `fern`: verify cutout transparency, no opaque atlas background, dirt/farmland/moss support, replacement behavior, no collision, and break-on-support-removal.
-- [ ] `moonglow_bush`: verify cutout transparency, purple-flower UV selection, substrate rules, no collision, and break-on-support-removal.
+- [ ] `hedge_bush`: verify cutout transparency, purple-flower UV selection, substrate rules, no collision, break-on-support-removal, and bottom/middle/top visuals when stacked.
 - [ ] `folded_cloth`: place in all four orientations; verify stack scale, surface alignment, UVs, and shallow collision.
 - [ ] Confirm all four names explicitly identify the art as temporary.
 
@@ -396,3 +396,48 @@ Run this section as the final acceptance pass. If a spot check fails, use the co
 - Failed checks and disposition: No failures reported; unperformed live evidence remains explicitly documented.
 - Project closure approved: Yes.
 - Final isolated commit authorized: Yes.
+
+## Post-Closure Defect Validation
+
+Automated contracts, the full dedicated GameTest server, and client resource reload cover registration, exact policies, server behavior, model parsing, and texture availability. Perform these presentation/feel checks in an interactive client.
+
+- [ ] Spawn white and scarlet ibis side by side; confirm both visuals are 20% smaller and their unchanged collision remains acceptable.
+- [ ] Observe several ibis for at least five minutes; confirm eating is visibly favored over idle, individuals roam more often, and nearby birds form moving groups without piling into one point.
+- [ ] Compare all six carts and the water well with their prior presentation or neighboring full blocks; confirm each visual is 20% larger and remains anchored correctly in all four facings.
+- [ ] Circle the city moongate through 360 degrees; confirm the vertical portal texture continuously faces the player while the floor layer stays fixed and teleport behavior is unchanged.
+- [ ] Stack one, two, and three or more Hedge Bush blocks; confirm single/bottom, middle, and top transitions update immediately when adding or removing any segment.
+- [ ] In Adventure mode, place the ladder from the ground, climb through all three cells from both sides, stand on the top landing, and remove it with the authorized axe interaction.
+- [ ] In Adventure mode, place a scarecrow on community farm blocks; confirm placement is rejected on unrelated non-authorized supports where Adventure rules forbid it.
+- [ ] Inspect the dress form under bright, dim, and directional lighting; confirm the black top gradient is gone without a conspicuous UV seam.
+- [ ] Place/cycle `pool_of_blood` until all eight variants are visible; confirm each lies above the supporting surface, rotates correctly, and has no collision.
+- [ ] Save/reload the test area and confirm Hedge states, blood variants/facings, moongates, ladders, and scarecrows persist.
+
+### Post-closure acceptance record
+
+- Tester/date:
+- Ibis scale/behavior result:
+- Cart/well scale result:
+- Moongate billboard result:
+- Hedge/ladder/scarecrow result:
+- Dress-form/blood result:
+- Screenshots or log path:
+- Accepted replacement-art notes:
+
+## Follow-up Ibis, Hedge, and Flamingo Validation
+
+- [ ] Load one or more Jhelom chunks and observe server-spawned Ibis replenishing toward, but never exceeding, 15 total across all three Jhelom areas. Confirm unloaded candidate chunks are not force-loaded and no equivalent population appears at those coordinates outside the Overworld.
+- [ ] Compare both Ibis variants with the previous pass; confirm the new `0.64` visual scale is another 20% reduction from `0.8` and the unchanged hitbox still feels acceptable.
+- [ ] Observe a sufficiently large sample of naturally initialized Ibis and confirm Scarlet is visibly less common (35% Scarlet / 65% White).
+- [ ] Confirm only `hedge_bush` appears in commands, creative inventory, drops, and localization; old `moonglow_bush` data is intentionally not migrated.
+- [ ] Use the Britannia spawner selector repeatedly in both Peaceful and non-Peaceful worlds; confirm a saved Flamingo selection begins spawning promptly and randomly uses Pink, Rose, and White with no color changing after save/reload.
+- [ ] Confirm the supplied rig plays `idle`, `walk`, and `death` correctly without missing bones, snapping, texture bleed, variant-specific UV differences, or black flicker on either foot.
+- [ ] Confirm the supplied converted ambient sound plays and the temporary Parrot hurt/death plus Chicken step sounds remain acceptable.
+
+### Follow-up acceptance record
+
+- Tester/date:
+- Jhelom population result:
+- Ibis scale/rarity result:
+- Breaking hedge rename result:
+- Flamingo spawner/mob result:
+- Flamingo variant/animation/audio result:

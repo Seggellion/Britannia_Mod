@@ -54,8 +54,7 @@ public class DecorativeMultiblockItem extends BlockItem {
             }
             if (cell.y() == block.minimumY()) {
                 BlockPos supportPosition = position.below();
-                if (!level.getBlockState(supportPosition)
-                        .isFaceSturdy(level, supportPosition, Direction.UP)) {
+                if (!mayUseSupport(context, player, supportPosition, stack)) {
                     return InteractionResult.FAIL;
                 }
             }
@@ -91,6 +90,14 @@ public class DecorativeMultiblockItem extends BlockItem {
     protected boolean mayPlaceCell(
             UseOnContext context, Player player, BlockPos position, ItemStack stack) {
         return player.mayUseItemAt(position, Direction.UP, stack);
+    }
+
+    /** Allows a narrowly scoped item subclass to authorize a non-full-height support block. */
+    protected boolean mayUseSupport(
+            UseOnContext context, Player player, BlockPos supportPosition, ItemStack stack) {
+        Level level = context.getLevel();
+        return level.getBlockState(supportPosition)
+                .isFaceSturdy(level, supportPosition, Direction.UP);
     }
 
     private static boolean placeOrRollback(ServerLevel level, List<PlacementCell> placement) {

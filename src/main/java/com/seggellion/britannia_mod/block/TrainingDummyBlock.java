@@ -1,14 +1,24 @@
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
+import com.seggellion.britannia_mod.event.TrainingDummyEventHandler;
+import com.seggellion.britannia_mod.training.TrainingWeaponClassifier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -27,6 +37,49 @@ public final class TrainingDummyBlock extends DecorativeMultiblockBlock implemen
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return isRoot(state) ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.INVISIBLE;
+    }
+
+    /** Native held-item right-click route. Creative deliberately falls through unchanged. */
+    @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit) {
+        if (player.isCreative()
+                || hand != InteractionHand.MAIN_HAND
+                || player.isShiftKeyDown()
+                || TrainingWeaponClassifier.classify(stack).isEmpty()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (!level.isClientSide
+                && level instanceof ServerLevel serverLevel
+                && player instanceof ServerPlayer serverPlayer) {
+            TrainingDummyEventHandler.attemptStrike(serverPlayer, serverLevel, pos);
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /** Empty-hand right-click route. Creative deliberately falls through unchanged. */
+    @Override
+    protected InteractionResult useWithoutItem(
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.isCreative()
+                || player.isShiftKeyDown()
+                || TrainingWeaponClassifier.classify(player.getMainHandItem()).isEmpty()) {
+            return InteractionResult.PASS;
+        }
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+        if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
+            TrainingDummyEventHandler.attemptStrike(serverPlayer, serverLevel, pos);
+            return InteractionResult.CONSUME;
+        }
+        return InteractionResult.PASS;
     }
 
     public boolean triggerHit(ServerLevel level, BlockPos struckPosition, BlockState struckState) {

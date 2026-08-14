@@ -1,5 +1,5 @@
 {
-  "credit": "Shared small-family wall_perpendicular physical wall-mount geometry; runtime material texture remains independently selected",
+  "credit": "Seggellion from Ultimacraft",
   "parent": "minecraft:block/block",
   "textures": {
     "mount": "britannia_mod:banner/mount/brass",

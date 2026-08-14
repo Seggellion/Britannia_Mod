@@ -37,11 +37,14 @@ public final class JhelomIbisPopulation {
     }
 
     public static boolean canJoin(Level level, IbisEntity joining) {
-        return isInJhelom(joining.position()) && getIbisInJhelom(level).size() < MAX_POPULATION;
+        return Level.OVERWORLD.equals(level.dimension())
+                && isInJhelom(joining.position())
+                && getIbisInJhelom(level).size() < MAX_POPULATION;
     }
 
     public static void tick(Level level) {
         if (!(level instanceof ServerLevel serverLevel)
+                || !Level.OVERWORLD.equals(level.dimension())
                 || level.getGameTime() % CitySpawnRules.TICK_INTERVAL != 0) {
             return;
         }

@@ -34,7 +34,7 @@ class TrainingWeaponClassifierTest {
     }
 
     @Test
-    void mapsVanillaWeaponTypesAndRejectsUnsupportedOrUnarmedHits() {
+    void mapsVanillaWeaponTypesAndBareHandsWhileRejectingUnsupportedItems() {
         assertEquals(Optional.of(TrainingWeaponSkill.SWORDSMANSHIP),
                 TrainingWeaponClassifier.classify(new ItemStack(Items.IRON_AXE)));
         assertEquals(Optional.of(TrainingWeaponSkill.SWORDSMANSHIP),
@@ -44,6 +44,7 @@ class TrainingWeaponClassifierTest {
         assertEquals(Optional.of(TrainingWeaponSkill.FENCING),
                 TrainingWeaponClassifier.classify(new ItemStack(Items.TRIDENT)));
         assertTrue(TrainingWeaponClassifier.classify(new ItemStack(Items.BOW)).isEmpty());
-        assertTrue(TrainingWeaponClassifier.classify(ItemStack.EMPTY).isEmpty());
+        assertEquals(Optional.of(TrainingWeaponSkill.WRESTLING),
+                TrainingWeaponClassifier.classify(ItemStack.EMPTY));
     }
 }

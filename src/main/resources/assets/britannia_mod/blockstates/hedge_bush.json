@@ -1,0 +1,49 @@
+{
+    "variants":  {
+                     "facing=north,segment=0":  {
+                                                    "model":  "britannia_mod:block/new_assets/hedge_bush_bottom"
+                                                },
+                     "facing=east,segment=0":  {
+                                                   "model":  "britannia_mod:block/new_assets/hedge_bush_bottom",
+                                                   "y":  90
+                                               },
+                     "facing=south,segment=0":  {
+                                                    "model":  "britannia_mod:block/new_assets/hedge_bush_bottom",
+                                                    "y":  180
+                                                },
+                     "facing=west,segment=0":  {
+                                                   "model":  "britannia_mod:block/new_assets/hedge_bush_bottom",
+                                                   "y":  270
+                                               },
+                     "facing=north,segment=1":  {
+                                                    "model":  "britannia_mod:block/new_assets/hedge_bush_middle"
+                                                },
+                     "facing=east,segment=1":  {
+                                                   "model":  "britannia_mod:block/new_assets/hedge_bush_middle",
+                                                   "y":  90
+                                               },
+                     "facing=south,segment=1":  {
+                                                    "model":  "britannia_mod:block/new_assets/hedge_bush_middle",
+                                                    "y":  180
+                                                },
+                     "facing=west,segment=1":  {
+                                                   "model":  "britannia_mod:block/new_assets/hedge_bush_middle",
+                                                   "y":  270
+                                               },
+                     "facing=north,segment=2":  {
+                                                    "model":  "britannia_mod:block/new_assets/hedge_bush_top"
+                                                },
+                     "facing=east,segment=2":  {
+                                                   "model":  "britannia_mod:block/new_assets/hedge_bush_top",
+                                                   "y":  90
+                                               },
+                     "facing=south,segment=2":  {
+                                                    "model":  "britannia_mod:block/new_assets/hedge_bush_top",
+                                                    "y":  180
+                                                },
+                     "facing=west,segment=2":  {
+                                                   "model":  "britannia_mod:block/new_assets/hedge_bush_top",
+                                                   "y":  270
+                                               }
+                 }
+}

@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.TrainingDummyBlock;
 import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
+import com.seggellion.britannia_mod.event.TrainingDummyEventHandler;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.training.TrainingDummyService;
 import net.minecraft.core.BlockPos;
@@ -14,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -45,17 +47,26 @@ public final class NewAssetsTrainingDummyGameTests {
 
         ServerPlayer first = helper.makeMockServerPlayerInLevel();
         ServerPlayer second = helper.makeMockServerPlayerInLevel();
-        first.setGameMode(GameType.SURVIVAL);
+        ServerPlayer creative = helper.makeMockServerPlayerInLevel();
+        first.setGameMode(GameType.ADVENTURE);
         second.setGameMode(GameType.SURVIVAL);
+        creative.setGameMode(GameType.CREATIVE);
         ItemStack firstSword = new ItemStack(Items.IRON_SWORD);
         ItemStack secondAxe = new ItemStack(Items.IRON_AXE);
         int swordDamage = firstSword.getDamageValue();
         int axeDamage = secondAxe.getDamageValue();
 
-        TrainingDummyService.AttemptResult firstHit = TrainingDummyService.attempt(first, firstSword);
-        check(firstHit.accepted(), "first supported strike was rejected");
-        block.triggerHit(helper.getLevel(), anchor, helper.getLevel().getBlockState(anchor));
-        check(entity.acceptedHitCount() == 1, "accepted strike did not trigger the server animation owner");
+        creative.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
+        check(!TrainingDummyEventHandler.attemptStrike(creative, helper.getLevel(), anchor),
+                "Creative mode incorrectly entered the training interaction");
+        check(entity.acceptedHitCount() == 0,
+                "Creative mode triggered the training animation owner");
+
+        first.setItemInHand(InteractionHand.MAIN_HAND, firstSword);
+        check(TrainingDummyEventHandler.attemptStrike(first, helper.getLevel(), anchor),
+                "Adventure-mode supported strike was rejected");
+        check(entity.acceptedHitCount() == 1,
+                "Adventure-mode strike did not trigger the server animation owner");
 
         TrainingDummyService.AttemptResult spam = TrainingDummyService.attempt(first, firstSword);
         check(!spam.accepted() && spam.rejection() == TrainingDummyService.Rejection.COOLDOWN,
@@ -66,8 +77,12 @@ public final class NewAssetsTrainingDummyGameTests {
         check(otherPlayer.accepted(), "one player's cooldown incorrectly blocked another player");
         check(firstSword.getDamageValue() == swordDamage && secondAxe.getDamageValue() == axeDamage,
                 "training changed weapon durability");
-        check(!TrainingDummyService.attempt(first, ItemStack.EMPTY).accepted(),
-                "unarmed strike was accepted");
+        ServerPlayer unarmed = helper.makeMockServerPlayerInLevel();
+        unarmed.setGameMode(GameType.ADVENTURE);
+        check(TrainingDummyEventHandler.attemptStrike(unarmed, helper.getLevel(), anchor),
+                "unarmed Adventure strike was rejected");
+        check(entity.acceptedHitCount() == 2,
+                "unarmed Adventure strike did not trigger the animation owner");
         check(!TrainingDummyService.attempt(first, new ItemStack(Items.BOW)).accepted(),
                 "unsupported weapon was accepted");
         helper.succeed();

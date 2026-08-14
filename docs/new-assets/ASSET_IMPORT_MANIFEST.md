@@ -56,17 +56,18 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Requested asset | Proposed/existing registry ID | Status | Placeholder proposal |
 |---|---|---|---|
 | Ibis, white/scarlet | `ibis` with persistent variant | `PLACEHOLDER` | White source imported unchanged; UV-safe scarlet recolor and all runtime behavior implemented in Milestone 6 |
-| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID now uses one logical block and a re-authored 32-voxel model; purchased art remains temporary |
-| Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
+| Moongate visual replacement | existing `moongate_block` | `PLACEHOLDER` | Existing ID uses one logical block; static floor plus camera-facing vertical layers preserve the re-authored 32-voxel visual |
+| Merchant carts, six colors | `merchant_cart_<color>` | `PLACEHOLDER` | Six final IDs implemented and client-rendered at 1.2 scale; red/purple use temporary purchased art and four variants use vanilla-color placeholders |
 | Training dummy | `training_dummy` | `PLACEHOLDER` | Implemented in Milestone 7; purchased punching-bag art re-authored to exact 32×48 visible bounds and must be replaced later |
 | Fountain | `fountain` | `PLACEHOLDER` | Temporary source art normalized to the requested 2x2x3 structure |
-| Moonglow bush | `moonglow_bush` | `PLACEHOLDER` | Temporary purchased purple-flower bush imported in Milestone 2 |
+| Hedge Bush | `hedge_bush` | `PLACEHOLDER` | Breaking owner-authorized rename with bottom/middle/top models derived from temporary purchased bush art; no old-ID alias |
+| Flamingo | `flamingo` with persistent Pink/Rose/White variant | `PLACEHOLDER` | Supplied animated entity rig and three color textures; supplied ambient sound converted to OGG |
 | Sandstone family | existing IDs | `VALIDATED` | Existing connected family reused; no duplicate IDs |
 | Globe | `globe` | `PLACEHOLDER` | Temporary purchased large-globe art imported in Milestone 2 |
 | Small crate | `small_crate` | `PLACEHOLDER` | Temporary purchased art; 9-slot container implemented in Milestone 4 |
 | Medium crate | `medium_crate` | `PLACEHOLDER` | Unmistakable code-authored placeholder; 27-slot container implemented in Milestone 4 |
 | Large crate | `large_crate` | `PLACEHOLDER` | Temporary purchased art normalized to an authoritative 2x2x2 structure; 54-slot container implemented in Milestone 4 |
-| Water well | `water_well` | `PLACEHOLDER` | Temporary purchased art normalized to a functional 1x2x2 well in Milestone 5 |
+| Water well | `water_well` | `PLACEHOLDER` | Temporary purchased art normalized to a functional 1x2x2 well and client-rendered at 1.2 scale |
 | Ladder | `ladder` | `PLACEHOLDER` | Temporary purchased art re-authored to a 3-block/48-voxel structure in Milestone 5 |
 | Scarecrow | `scarecrow` | `PLACEHOLDER` | Temporary purchased art implemented as a two-block-high structure |
 | Fern | `fern` | `PLACEHOLDER` | Temporary purchased small-flora art imported in Milestone 2 |
@@ -82,6 +83,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Pewter mug | `pewter_mug` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Kettle | `kettle` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
 | Plates and silverware | `plates_and_silverware` | `PLACEHOLDER` | Unmistakable code-authored temporary model added in Milestone 2 |
+| Pool of blood, eight visuals | `pool_of_blood` | `PLACEHOLDER` | All eight placeable visuals from `blood.zip` imported in the post-closure defect pass |
 
 ## Detailed entries
 
@@ -107,11 +109,11 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Source textures: `moongate\portal_texture.png` through `portal_texture6.png`.
 - Format/checksum: Blockbench `.bbmodel` `a22ccc954d3f7b8a36670c017da4f506d0bb18b326700f416b1e8931d0dd48a7`; texture checksums are recorded in the inventory evidence. Textures are ARGB and range from 32×32 to animated strips of 128×1536.
 - Import status: `PLACEHOLDER` — implemented in Milestone 10 under the existing final ID with temporary purchased art.
-- Final targets: existing `MoongateBlock` and `moongate_block` registration; re-authored `models/block/moongate_block.json`; six temporary source textures under `textures/block/new_assets/moongate`; existing teleport handler/tick handler unchanged. The legacy top block/item IDs remain registered only for old-save compatibility.
+- Final targets: existing `MoongateBlock` and `moongate_block` registration; static `moongate_base` model; camera-facing `moongate_billboard` rendered by `MoongateBlockEntityRenderer`; six temporary source textures under `textures/block/new_assets/moongate`; existing teleport handler/tick handler unchanged. The legacy top block/item IDs remain registered only for old-save compatibility.
 - Required behavior: preserve existing destination/configuration, mount/escort, and cooldown behavior while moving to one logical block.
 - Dimensions/animation: raw bounds x `-16..16`, y `-1.5..41.5`, z `-16..16`; `idle` 3s and `spawn` 1.5s. Owner target is 32 voxels high.
 - Collision: portal interaction volume must be deliberate and must not use the raw 32×32×43 bounds unchanged.
-- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The one-cell block is pass-through; its 32-voxel model intentionally renders above that cell. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
+- Notes/blockers: Milestone 10 scaled x/z by one half and translated/scaled y from `-1.5..41.5` to `0..32`, preserving the layered planes and animated atlases. The post-closure pass split the fixed floor from vertical translucent layers so the portal continuously follows camera yaw. The one-cell block is pass-through; its 32-voxel model intentionally renders above that cell. `moongate_top` is invisible and self-removing but remains registered for migration safety. The paired-dungeon system was deliberately left unchanged.
 
 ### 3. Merchant carts — six colors
 
@@ -122,9 +124,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Import status: `PLACEHOLDER` — all six final IDs are implemented in Milestone 3. Red/purple use temporary purchased wagon art; blue/green/yellow/white reuse that temporary geometry with conspicuous vanilla wool color placeholders.
 - Final targets: `DecorativeMultiblockBlock`, `DecorativeMultiblockItem`, per-color blockstate/model/item resources, registries, localization, empty block loot tables, creative tab, and axe-mineability tags.
 - Required behavior: decoration only; share placement/teardown code and geometry where art allows.
-- Dimensions/animation: base bounds about 25×24×35 voxels; red/purple about 36×38×47 voxels. No animation metadata.
+- Dimensions/animation: red/purple source JSON bounds approximately `35.90477×37.78982×47.24264`; baked 1.2 scale produces approximately `43.085724×45.347784×56.691168`. No animation metadata.
 - Collision: authored cart body/wheel shapes, not full cubes.
-- Notes/blockers: each cart occupies an authoritative centered 3x3x3 structure, places atomically, tears down as a whole, and drops once. All six models remain replacement-art candidates; interactive visual/collision review is still required.
+- Notes/blockers: each cart occupies an authoritative centered 3x3x3 structure, places atomically, tears down as a whole, and drops once. Scaling occurs on baked quads because direct target coordinates exceed vanilla JSON's `-16..32` element limit. Future replacement art should be authored for the target visual size, using custom geometry where necessary. All six models remain replacement-art candidates; interactive visual/collision review is still required.
 
 ### 4. Training dummy
 
@@ -155,19 +157,30 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Collision: basin/pillar shapes matching visible footprint as closely as practical.
 - Notes/blockers: the model was translated to x/z `0..32` and retains y `-16..30`, rendered from the middle-layer root across an authoritative 2x2x3 structure. Interactive water-animation, translucency, and collision review remains open.
 
-### 6. Moonglow bush
+### 6. Hedge Bush (`hedge_bush` ID)
 
-- Requested asset: Moonglow bush decoration.
-- Proposed registry ID/category: `britannia_mod:moonglow_bush`; transparent decorative plant.
+- Requested asset: originally Moonglow bush decoration; owner-corrected player-facing identity is Hedge Bush.
+- Registry ID/category: `britannia_mod:hedge_bush`; transparent decorative plant. The former ID was deliberately removed without migration compatibility at owner direction.
 - Candidate model: `ShizuArt_Plants_Bundle.zip::ItemsAdder/contents/shizuart_furnitures/models/bush_props/bush_purple_flowers.json`.
 - Candidate texture: shared `.../textures/bush_props/bush.png`.
 - Format/checksum: JSON `4fc256e399e835be0e378b71fe8a6d415a49f777b2b0187fef10e69ee82a77c6`; PNG `69635ac6e3d341a5093b2a0efd6acbbb55c68d4dfe33868a212a00ebd7bfd6af`.
 - Import status: `PLACEHOLDER` — the generic purchased purple-flower bush was normalized as temporary art in Milestone 2; it is not final Moonglow art.
-- Final targets: `BlockRegistry.MOONGLOW_BUSH`, `ItemRegistry.MOONGLOW_BUSH`, `DecorativePlantBlock`, and `assets/britannia_mod/{blockstates/moonglow_bush.json,models/block/new_assets/moonglow_bush.json,models/item/moonglow_bush.json,textures/block/new_assets/moonglow_bush.png}` plus localization, loot, creative-tab, and cutout registration.
-- Required behavior: decoration only; no world generation.
+- Final targets: `BlockRegistry.HEDGE_BUSH`/item holders using `HedgeBushBlock`; `blockstates/hedge_bush.json`; bottom/middle/top block models; item model; renamed texture; localization, loot, creative-tab, and cutout registration.
+- Required behavior: stackable decoration with bottom/middle/top neighbor-derived visuals; no world generation.
 - Dimensions/animation: normalized candidate is non-animated; replacement art and scale remain an art-review item.
 - Collision: low/non-full foliage collision.
-- Notes/blockers: registered under the final ID with player-facing temporary-art labeling. Replace the model/texture without changing the ID.
+- Notes/blockers: registered under the breaking `hedge_bush` ID with player-facing `Hedge Bush (Temporary Art)` labeling. Replace the model/texture without changing the new ID or three-segment state contract.
+
+### Follow-up: Flamingo bird
+
+- Registry ID/category: `britannia_mod:flamingo`; `MobCategory.CREATURE`, so the Britannia spawn block discovers it through the existing category-based allowlist.
+- Source geometry: `flamingo_pink.geo.json`, `flamingo_rose.geo.json`, and `flamingo_white.geo.json`. They share geometry identifier `geometry.9b009ed196aacf0f0ae46a80942d637a`; Pink differs only in harmless bone ordering and is the canonical imported rig.
+- Source animations: three byte-identical animation files containing `idle`, `walk`, `death`, and `pose`; Pink is the canonical imported animation resource.
+- Source textures: `nm_flamingo_texture.png` (Pink), `nm_flamingo_rose_texture.png` (Rose), and `nm_flamingo_white_texture.png` (White), each 64×64.
+- Source checksums: canonical geometry `e7f25e8b5e15a73285ff7ad0031d24f57c89d3d9ed8eb7e9d0558cf9723d8e2d`; animation `d207193568576b6edd78351a2beec9d57a0705f57f872b5a0c890f0be3af8bec`; Pink texture `c84131f1b102e300519b7489f1015574aec3bd63bb726d45d93e3c3de1f1cd87`; Rose `5175b1031937958880dd9de793faab8ccd521902f8e0461c7358dbceef39c6c7`; White `1324af1268678ab5edd37c1c1ff6bb474e5e212849eb78b2c0c0c879c7663332`; ambient MP3 `5a6303f397c6353e91fd719ea7ead92f3da1241e5ef476ba68b14eef0d20914d`.
+- Import status: `PLACEHOLDER` under the project's purchased-art policy. `import_flamingo.ps1` verifies every supplied entity input, imports the shared GeckoLib rig/animation and three entity textures, converts the MP3 to OGG with FFmpeg, and removes the superseded plushie block-model assets.
+- Runtime behavior: one entity type with synchronized and NBT-persisted Pink/Rose/White variants; `finalizeSpawn` selects uniformly from the three colors, including the Britannia spawn block's `SPAWNER` path. Mobile passive goals, registered attributes, spawn egg, supplied ambient audio, and temporary Parrot hurt/death plus Chicken step sounds are retained.
+- Re-authoring requirement: art may still be replaced later under the stable `flamingo` entity ID and three-color variant contract.
 
 ### 7. Sandstone family — existing tracked assets
 
@@ -247,9 +260,9 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Import status: `PLACEHOLDER` — temporary purchased art and the final functional ID were implemented in Milestone 5.
 - Final targets: `WaterWellBlock`, shared transactional multiblock placement, `WaterSourceInteraction`, `BlockRegistry`/`ItemRegistry`, blockstate/model/item/texture resources, localization, empty loot, creative tab, and cutout registration.
 - Required behavior: server-authoritatively fill watering cans, vanilla buckets, and pitchers without duplication; correct empty-pitcher registration for water behavior only.
-- Dimensions/animation: normalized bounds x `0..16`, y `0..32`, z `0..32`; authoritative 1x2x2 occupancy (four cells). No animation.
+- Dimensions/animation: parser-safe normalized bounds x `0..16`, y `0..32`, z `0..32`; authoritative 1x2x2 occupancy (four cells). The post-closure baked 1.2 scale produces a `19.2×38.4×38.4` visual. No animation.
 - Collision: deliberate per-cell stone/masonry collision with interaction available from every valid part.
-- Notes/blockers: `pitcher_empty` now uses the existing water-only `PitcherItem` while remaining a placeable pitcher block item. Interactive footprint, UV, and reach review remains open; the art remains temporary.
+- Notes/blockers: `pitcher_empty` now uses the existing water-only `PitcherItem` while remaining a placeable pitcher block item. Direct target coordinates exceed vanilla JSON element limits, so enlargement occurs after baking; future replacement art should target the enlarged envelope. Interactive footprint, UV, and reach review remains open; the art remains temporary.
 
 ### 11. Double-sided ladder
 
@@ -262,8 +275,8 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Final targets: `LadderMultiblockBlock`, `AdventureLadderItem`, shared transactional multiblock placement, narrowly scoped Adventure place/break predicates, climbable/axe tags, blockstate/model/item/texture resources, localization, empty loot, creative tab, and cutout registration.
 - Required behavior: atomic ground placement, climbable from both faces, whole-structure teardown, narrow Adventure placement, axe destruction.
 - Dimensions/animation: re-authored to a full 48-voxel visual with model bounds x `0..16`, y `-16..32`, z `0..16`, rendered from the middle cell of an authoritative 1x1x3 structure. No animation.
-- Collision: narrow stair/rung traversal shapes, not a flat vanilla ladder or full cubes.
-- Notes/blockers: the first 0..48 root model exceeded Minecraft's extended-element parser limit, so the unchanged 48-voxel visual was translated to -16..32 and rendered from the middle cell. Interactive double-sided climbing, traversal feel, and all-or-nothing placement still require live review; the art remains temporary.
+- Collision: narrow stair/rung traversal shapes plus a half-depth two-voxel top landing, not a flat vanilla ladder or full cubes. Horizontal contact supplies upward motion from either side.
+- Notes/blockers: the first 0..48 root model exceeded Minecraft's extended-element parser limit, so the unchanged 48-voxel visual was translated to -16..32 and rendered from the middle cell. The post-closure pass added active climbing and a third-height standing surface. Interactive traversal feel still requires live review; the art remains temporary.
 
 ### 12. Scarecrow
 
@@ -272,11 +285,11 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Preferred source: `Medieval Market Furniture Set.zip` raw `medieval_market_scarecrow.json`/`.bbmodel` and matching PNG. A ShizuArt farmer scarecrow is a viable alternate.
 - Format/checksum: preferred JSON `7983b8f2e8aac3d47b60b26fb4616b2bd77699d4f424da0915733c285dabd5ec`; PNG `256f992e8daeb3240d58d4dc9e184f26d631334824d8066a1bcd148688068992`.
 - Import status: `PLACEHOLDER` — preferred purchased art was normalized and implemented in Milestone 3.
-- Final targets: shared multiblock block/item implementation, block/item registry, blockstate/model/item/texture, localization, empty loot, creative tab, cutout layer, and axe-mineability tag.
-- Required behavior: decoration only; no crop-protection mechanic.
+- Final targets: shared multiblock block, `AdventureScarecrowItem`, block/item registry, blockstate/model/item/texture, localization, empty loot, creative tab, cutout layer, and axe-mineability tag.
+- Required behavior: decoration only; no crop-protection mechanic. Adventure players may place it when every minimum structure cell is supported by a community farm block.
 - Dimensions/animation: preferred bounds about 25×31.7×16 voxels; Shizu alternate about 30×31.5×25; no animation.
 - Collision: narrow post/body shape and coherent two-block placement.
-- Notes/blockers: the Medieval Market candidate was selected and translated to x `0..25`, y `0..31.71682`, z `0..16`; it occupies a 2x1x2 authoritative structure. Art is temporary and interactive review remains open.
+- Notes/blockers: the Medieval Market candidate was selected and translated to x `0..25`, y `0..31.71682`, z `0..16`; it occupies a 2x1x2 authoritative structure. The Adventure exception is narrowly scoped to this item and community-farm support. Art is temporary and interactive review remains open.
 
 ### 13. Fern
 
@@ -302,7 +315,7 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Required behavior: decoration only; must not become an armor stand.
 - Dimensions/animation: exact 14×32×8-voxel envelope; no animation.
 - Collision: narrow base/post/torso approximation.
-- Notes/blockers: source vendor calls it mannequin; final player-facing name remains Dress Form (Temporary Art). It occupies a 1x1x2 authoritative structure and must not behave as an armor stand.
+- Notes/blockers: source vendor calls it mannequin; final player-facing name remains Dress Form (Temporary Art). It occupies a 1x1x2 authoritative structure and must not behave as an armor stand. The post-closure pass removed the reported black top gradient by disabling model ambient occlusion, disabling head-element shading, and mapping the top face to a neutral atlas sample; the source PNG was not modified.
 
 ### 15. Folded cloth
 
@@ -429,6 +442,17 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 - Dimensions/animation/collision: shallow tabletop prop, no animation, very low fitted collision.
 - Notes/blockers: replacement art is still required; keep one combined final ID unless the owner later authorizes separate pieces.
 
+### 23. Pool of blood — eight visual variants
+
+- Proposed registry ID/category: `britannia_mod:pool_of_blood`; shallow decorative block with persistent visual variant and horizontal facing.
+- Source models/textures: `blood.zip` Nexo resource-pack entries `big-blood-1`, `big-blood-2`, `small-blood-1`, `small-blood-2`, `roof-small-blood-1`, `roof-small-blood-2`, `roof-big-blood-1`, and `blood-footstep`.
+- Source container/checksum: `blood.zip` SHA-256 `163669328cb2eb8f90610012f19372e119e26c603897351121e10cd1e839da60`.
+- Import status: `PLACEHOLDER` — all eight placeable purchased visuals were imported in the post-closure defect pass. The source's falling blood-drop item is not a placeable pool variant and remains unassigned.
+- Final targets: `PoolOfBloodBlock`, block/item/creative registrations, 32 facing/variant blockstates, eight Britannia-owned model and texture paths, item model, loot, localization, and cutout rendering.
+- Required behavior: choose one of eight variants on placement, persist it in block state, allow decorator-tool cycling, require a supporting surface, and provide no collision.
+- Dimensions/animation/collision: shallow planes; roof-authored source visuals are translated above the floor rather than discarded; no animation and no collision.
+- Notes/blockers: purchased art remains temporary. Client resource reload confirms all inherited source texture slots were remapped to `britannia_mod` and no variant is missing.
+
 ## Special-check conclusions
 
 - White ibis model/texture: found; animated Blockbench source is usable.
@@ -452,6 +476,8 @@ Purchased-pack readmes/install instructions were present, but no explicit redist
 | Training dummy | `training_dummy.zip::.../fv_punching_bag_gray.bbmodel` | 20×44×14 voxels | 32×48-voxel visible structure occupying 2×3 blocks | Completed in Milestone 7: transformed to exact 32×48×14 bounds, retimed to a one-second one-shot hit, and paired with separate atomic 2×3 occupancy/collision |
 | Ladder | `shizuart_farmer_props.zip::.../farmer_stepladder.json` | about 18×36×32 voxels | 3 blocks/48 voxels high, double-sided and climbable | Completed in Milestone 5: extended/rebuilt to x `0..16`, y `-16..32`, z `0..16`, rendered from the middle structure cell, with independent double-sided traversal collision |
 | Loom | `Nexo Assets - Tailoring Station.zip::.../loom.json` | about 32×32×36 voxels | 2 blocks wide × 3 blocks/48 voxels high | Completed in Milestone 3: re-authored to exact 32×48×16 bounds across the authoritative 2×1×3 structure |
+| Merchant carts | `Medieval Market Furniture Set.zip::.../medieval_market_wagon_*.json` | approximately 35.90477×37.78982×47.24264 voxels | 20% larger: approximately 43.085724×45.347784×56.691168 | Post-closure pass applies exact 1.2 baked-quad scaling because direct coordinates exceed vanilla element limits; replacement art must target the enlarged visual envelope |
+| Water well | `shizuart_farmer_props.zip::.../farmer_well.json` after normalization | 16×32×32 voxels | 20% larger: 19.2×38.4×38.4 | Post-closure pass applies exact 1.2 baked-quad scaling around the well center; replacement art must target the enlarged visual envelope |
 
 The fountain needs origin normalization but already fits its requested 2×2×3 envelope. The water well, scarecrow, and dress form fit their approximate two-block-height contracts. Large-crate art crosses cell bounds and therefore needs multiblock placement/collision authoring, but no owner-specified voxel envelope requires visual re-scaling.
 
@@ -475,7 +501,7 @@ No placeholders were created in Milestone 1. Proposed placeholder work:
 
 ## Unassigned source packs
 
-- `blood` folder/ZIP: no requested Milestone 1 asset match.
+- `blood` folder/ZIP: assigned in the post-closure defect pass to the eight-variant `pool_of_blood` block; the falling blood-drop item remains intentionally unassigned.
 - `elitecreatures-medieval_market_decoration_v2.zip`: contains alternate crates/market props, but no clean small/medium/large size family and no other requested exact match.
 - Garden Essentials and ShizuArt plant packs contain many generic plants/bushes; only candidate mappings above are assigned.
 - Extra barrels, mixed crate stacks, market furniture, farmer props, plants, and alternate training-dummy colors remain unassigned and must not be imported opportunistically.

@@ -4,6 +4,7 @@ package com.seggellion.britannia_mod.registry;
 import com.seggellion.britannia_mod.item.RaisedBlockItem;
 import com.seggellion.britannia_mod.item.DecorativeMultiblockItem;
 import com.seggellion.britannia_mod.item.AdventureLadderItem;
+import com.seggellion.britannia_mod.item.AdventureScarecrowItem;
 import com.seggellion.britannia_mod.item.PitcherItem;
 
 import com.seggellion.britannia_mod.registry.EntityRegistry;
@@ -1520,6 +1521,16 @@ public static final DeferredHolder<Item, BlockItem> CURTAIN_FOUNDATION_ITEM =
             )
     );
 
+    public static final DeferredHolder<Item, DeferredSpawnEggItem> FLAMINGO_SPAWN_EGG = ITEMS.register(
+            "flamingo_spawn_egg",
+            () -> new DeferredSpawnEggItem(
+                    EntityRegistry.FLAMINGO_ENTITY,
+                    0xF19AAA,
+                    0x2A2428,
+                    new Item.Properties()
+            )
+    );
+
         public static final DeferredHolder<Item, DeferredSpawnEggItem> WRAITH_SPAWN_EGG = ITEMS.register(
             "wraith_spawn_egg",
             () -> new DeferredSpawnEggItem(
@@ -1935,7 +1946,8 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
 
     public static final DeferredHolder<Item, Item> GLOBE_ITEM = ITEMS.register("globe", () -> new BlockItem(BlockRegistry.GLOBE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> FERN_ITEM = ITEMS.register("fern", () -> new BlockItem(BlockRegistry.FERN.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> MOONGLOW_BUSH_ITEM = ITEMS.register("moonglow_bush", () -> new BlockItem(BlockRegistry.MOONGLOW_BUSH.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> HEDGE_BUSH_ITEM = ITEMS.register("hedge_bush", () -> new BlockItem(BlockRegistry.HEDGE_BUSH.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> POOL_OF_BLOOD_ITEM = ITEMS.register("pool_of_blood", () -> new BlockItem(BlockRegistry.POOL_OF_BLOOD.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> FOLDED_CLOTH_ITEM = ITEMS.register("folded_cloth", () -> new BlockItem(BlockRegistry.FOLDED_CLOTH.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> BOLT_OF_CLOTH_ITEM = ITEMS.register("bolt_of_cloth", () -> new BlockItem(BlockRegistry.BOLT_OF_CLOTH.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> BALL_OF_YARN = ITEMS.register("ball_of_yarn", () -> new Item(new Item.Properties()));
@@ -1951,7 +1963,7 @@ public static final DeferredHolder<Item, BlockItem> DECORATIVE_SHIELD_2BW_ITEM =
     public static final DeferredHolder<Item, Item> MERCHANT_CART_YELLOW_ITEM = ITEMS.register("merchant_cart_yellow", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_YELLOW.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> MERCHANT_CART_WHITE_ITEM = ITEMS.register("merchant_cart_white", () -> new DecorativeMultiblockItem(BlockRegistry.MERCHANT_CART_WHITE.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> FOUNTAIN_ITEM = ITEMS.register("fountain", () -> new DecorativeMultiblockItem(BlockRegistry.FOUNTAIN.get(), new Item.Properties()));
-    public static final DeferredHolder<Item, Item> SCARECROW_ITEM = ITEMS.register("scarecrow", () -> new DecorativeMultiblockItem(BlockRegistry.SCARECROW.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, Item> SCARECROW_ITEM = ITEMS.register("scarecrow", () -> new AdventureScarecrowItem(BlockRegistry.SCARECROW.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> DRESS_FORM_ITEM = ITEMS.register("dress_form", () -> new DecorativeMultiblockItem(BlockRegistry.DRESS_FORM.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> LOOM_ITEM = ITEMS.register("loom", () -> new DecorativeMultiblockItem(BlockRegistry.LOOM.get(), new Item.Properties()));
     public static final DeferredHolder<Item, Item> SPINNING_WHEEL_ITEM = ITEMS.register("spinning_wheel", () -> new BlockItem(BlockRegistry.SPINNING_WHEEL.get(), new Item.Properties()));

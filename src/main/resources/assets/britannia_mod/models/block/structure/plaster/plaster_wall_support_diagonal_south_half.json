@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.11",
-	"credit": "Made with Blockbench",
+	"credit": "Seggellion from Ultimacraft",
 	"parent": "minecraft:block/block",
 	"textures": {
 		"1": "britannia_mod:block/structure/plaster/dirty_plaster",

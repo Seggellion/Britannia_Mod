@@ -69,6 +69,7 @@ class MoongateMilestoneTenContractTest {
         String creative = readJava("registry/CreativeTabRegistry.java");
         String gate = readJava("block/MoongateBlock.java");
         String top = readJava("block/MoongateTopBlock.java");
+        String renderer = readJava("client/renderer/MoongateBlockEntityRenderer.java");
         String teleport = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/MoongateTeleportationHandler.java"));
 
@@ -79,10 +80,15 @@ class MoongateMilestoneTenContractTest {
         assertTrue(creative.contains("ItemRegistry.MOONGATE_BLOCK_ITEM.get()"));
         assertFalse(creative.contains("ItemRegistry.MOONGATE_TOP_ITEM.get()"));
         assertTrue(gate.contains("MoongateTeleportationHandler.teleportPlayer(finalPlayer)"));
+        assertTrue(gate.contains("implements EntityBlock"));
+        assertTrue(renderer.contains("getMainCamera().getYRot()"));
+        assertTrue(renderer.contains("BILLBOARD_MODEL"));
         assertFalse(gate.contains("MOONGATE_TOP"), "city gate must not place a second logical cell");
         assertTrue(top.contains("RenderShape.INVISIBLE"));
         assertTrue(top.contains(".randomTicks()"));
         assertTrue(top.contains("removeLegacyCell"));
+        assertTrue(Files.isRegularFile(ASSETS.resolve("models/block/moongate_base.json")));
+        assertTrue(Files.isRegularFile(ASSETS.resolve("models/block/moongate_billboard.json")));
 
         for (String city : new String[] {
                 "Britain", "Moonglow", "Yew", "Minoc", "Trinsic", "Skara Brae", "Jhelom", "Magincia"

@@ -1,5 +1,5 @@
 {
-  "credit": "Definition-specific Small Curtain planar geometry for its wider flat-bottomed 128 x 128 silhouette",
+  "credit": "Seggellion from Ultimacraft",
   "parent": "minecraft:block/block",
   "render_type": "minecraft:translucent",
   "textures": {

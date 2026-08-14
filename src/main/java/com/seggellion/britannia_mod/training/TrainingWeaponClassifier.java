@@ -26,8 +26,11 @@ public final class TrainingWeaponClassifier {
     }
 
     public static Optional<TrainingWeaponSkill> classify(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) {
+        if (stack == null) {
             return Optional.empty();
+        }
+        if (stack.isEmpty()) {
+            return Optional.of(TrainingWeaponSkill.WRESTLING);
         }
         Item item = stack.getItem();
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);

@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
 import com.seggellion.britannia_mod.block.DecorativePlantBlock;
+import com.seggellion.britannia_mod.block.HedgeBushBlock;
+import com.seggellion.britannia_mod.block.PoolOfBloodBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.CrateBlock;
 import com.seggellion.britannia_mod.block.WaterWellBlock;
@@ -11,6 +13,7 @@ import com.seggellion.britannia_mod.block.SpinningWheelBlock;
 import com.seggellion.britannia_mod.block.DisplayCaseBlock;
 import com.seggellion.britannia_mod.block.TrainingDummyBlock;
 import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
@@ -1059,6 +1062,10 @@ public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_TOP = BLOCKS.r
 
 public static final DeferredHolder<Block, Block> MOONGATE_BLOCK = BLOCKS.register(
             "moongate_block", MoongateBlock::new);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MoongateBlockEntity>> MOONGATE_BLOCK_ENTITY_TYPE =
+        BLOCK_ENTITY_TYPES.register("moongate_block_entity",
+                () -> BlockEntityType.Builder.of(MoongateBlockEntity::new, MOONGATE_BLOCK.get()).build(null));
 
     public static final DeferredHolder<Block, Block> MOONGATE_TOP = BLOCKS.register(
             "moongate_top", MoongateTopBlock::new);
@@ -2221,8 +2228,13 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
             new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion(), Block.box(1, 0, 1, 15, 16, 15), true));
     public static final DeferredHolder<Block, DecorativePlantBlock> FERN = BLOCKS.register("fern", () ->
             new DecorativePlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak().sound(SoundType.GRASS).noCollission().noOcclusion().replaceable(), Block.box(3, 0, 3, 13, 10, 13)));
-    public static final DeferredHolder<Block, DecorativePlantBlock> MOONGLOW_BUSH = BLOCKS.register("moonglow_bush", () ->
-            new DecorativePlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak().sound(SoundType.GRASS).noCollission().noOcclusion().replaceable(), Block.box(2, 0, 2, 14, 13, 14)));
+    public static final DeferredHolder<Block, HedgeBushBlock> HEDGE_BUSH = BLOCKS.register("hedge_bush", () ->
+            new HedgeBushBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak()
+                    .sound(SoundType.GRASS).noCollission().noOcclusion(),
+                    Block.box(2, 0, 2, 14, 16, 14)));
+    public static final DeferredHolder<Block, PoolOfBloodBlock> POOL_OF_BLOOD = BLOCKS.register("pool_of_blood", () ->
+            new PoolOfBloodBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instabreak()
+                    .sound(SoundType.MUD).noCollission().noOcclusion()));
     public static final DeferredHolder<Block, DecorativePropBlock> FOLDED_CLOTH = BLOCKS.register("folded_cloth", () ->
             new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(0.3f).sound(SoundType.WOOL).noOcclusion(), Block.box(1, 0, 2, 15, 12, 14), true));
     public static final DeferredHolder<Block, DecorativePropBlock> BOLT_OF_CLOTH = BLOCKS.register("bolt_of_cloth", () ->
@@ -2362,7 +2374,8 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
                             Block.box(1, 0, 2, 3, 16, 14),
                             Block.box(13, 0, 2, 15, 16, 14),
                             Block.box(1, 4, 2, 15, 6, 14),
-                            Block.box(1, 12, 2, 15, 14, 14))));
+                            Block.box(1, 12, 2, 15, 14, 14),
+                            y == 2 ? Block.box(0, 14, 8, 16, 16, 16) : Shapes.empty())));
 
     public static final DeferredHolder<Block, TrainingDummyBlock> TRAINING_DUMMY = BLOCKS.register(
             "training_dummy", () -> new TrainingDummyBlock(

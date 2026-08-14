@@ -1,105 +1,72 @@
 {
-  "textures": {
-    "cloth": "minecraft:block/magenta_wool",
-    "band": "minecraft:block/black_wool",
-    "particle": "minecraft:block/magenta_wool"
-  },
-  "elements": [
-    {
-      "from": [
-        2,
-        1,
-        5
-      ],
-      "to": [
-        14,
-        6,
-        11
-      ],
-      "faces": {
-        "north": {
-          "texture": "#cloth"
-        },
-        "east": {
-          "texture": "#cloth"
-        },
-        "south": {
-          "texture": "#cloth"
-        },
-        "west": {
-          "texture": "#cloth"
-        },
-        "up": {
-          "texture": "#cloth"
-        },
-        "down": {
-          "texture": "#cloth"
-        }
-      }
-    },
-    {
-      "from": [
-        1.5,
-        0.5,
-        4.5
-      ],
-      "to": [
-        3,
-        6.5,
-        11.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#band"
-        },
-        "east": {
-          "texture": "#band"
-        },
-        "south": {
-          "texture": "#band"
-        },
-        "west": {
-          "texture": "#band"
-        },
-        "up": {
-          "texture": "#band"
-        },
-        "down": {
-          "texture": "#band"
-        }
-      }
-    },
-    {
-      "from": [
-        13,
-        0.5,
-        4.5
-      ],
-      "to": [
-        14.5,
-        6.5,
-        11.5
-      ],
-      "faces": {
-        "north": {
-          "texture": "#band"
-        },
-        "east": {
-          "texture": "#band"
-        },
-        "south": {
-          "texture": "#band"
-        },
-        "west": {
-          "texture": "#band"
-        },
-        "up": {
-          "texture": "#band"
-        },
-        "down": {
-          "texture": "#band"
-        }
-      }
-    }
-  ]
+	"format_version": "1.21.11",
+	"credit": "Seggellion from Ultimacraft",
+	"textures": {
+		"particle": "block/magenta_wool",
+		"cloth": "block/magenta_wool",
+		"band": "block/black_wool"
+	},
+	"elements": [
+		{
+			"from": [5.4, 2.4, 7.9],
+			"to": [10.4, 18.4, 13.9],
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [7.95, 10.25, 10.85]},
+			"faces": {
+				"north": {"uv": [5.6, 0, 10.6, 16], "texture": "#cloth"},
+				"east": {"uv": [2.1, 0, 8.1, 16], "texture": "#cloth"},
+				"south": {"uv": [5.4, 0, 10.4, 16], "texture": "#cloth"},
+				"west": {"uv": [7.9, 0, 13.9, 16], "texture": "#cloth"},
+				"up": {"uv": [5.4, 7.9, 10.4, 13.9], "texture": "#cloth"},
+				"down": {"uv": [5.4, 2.1, 10.4, 8.1], "texture": "#cloth"}
+			}
+		},
+		{
+			"from": [7, 16.5, 9.8],
+			"to": [9, 22, 11.8],
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [7.95, 10.25, 10.85]},
+			"faces": {
+				"north": {"uv": [7, 0, 9, 5.5], "texture": "#band"},
+				"east": {"uv": [4.2, 0, 6.2, 5.5], "texture": "#band"},
+				"south": {"uv": [7, 0, 9, 5.5], "texture": "#band"},
+				"west": {"uv": [9.8, 0, 11.8, 5.5], "texture": "#band"},
+				"up": {"uv": [7, 9.8, 9, 11.8], "texture": "#band"},
+				"down": {"uv": [7, 4.2, 9, 6.2], "texture": "#band"}
+			}
+		},
+		{
+			"from": [7, 1.6, 9.8],
+			"to": [9, 3.3, 11.8],
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [7.95, 10.25, 10.85]},
+			"faces": {
+				"north": {"uv": [7, 12.7, 9, 14.4], "texture": "#band"},
+				"east": {"uv": [4.2, 12.7, 6.2, 14.4], "texture": "#band"},
+				"south": {"uv": [7, 12.7, 9, 14.4], "texture": "#band"},
+				"west": {"uv": [9.8, 12.7, 11.8, 14.4], "texture": "#band"},
+				"up": {"uv": [7, 9.8, 9, 11.8], "texture": "#band"},
+				"down": {"uv": [7, 4.2, 9, 6.2], "texture": "#band"}
+			}
+		},
+		{
+			"from": [5, 0.5, 7.4],
+			"to": [11, 2, 14.4],
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [7.95, 10.25, 10.85]},
+			"faces": {
+				"north": {"uv": [5, 14, 11, 15.5], "texture": "#band"},
+				"east": {"uv": [1.6, 14, 8.6, 15.5], "texture": "#band"},
+				"south": {"uv": [5, 14, 11, 15.5], "texture": "#band"},
+				"west": {"uv": [7.4, 14, 14.4, 15.5], "texture": "#band"},
+				"up": {"uv": [5, 7.4, 11, 14.4], "texture": "#band"},
+				"down": {"uv": [5, 1.6, 11, 8.6], "texture": "#band"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "group",
+			"origin": [3.4, 0, 0],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1, 2, 3]
+		}
+	]
 }

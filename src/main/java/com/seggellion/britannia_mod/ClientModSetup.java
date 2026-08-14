@@ -32,6 +32,7 @@ import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerVisualModels;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
+import com.seggellion.britannia_mod.client.renderer.MoongateBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.shrine.ShrineRenderer;
 import com.seggellion.britannia_mod.client.banner.BannerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.screen.BritanniaSpawnScreen;
@@ -57,6 +58,7 @@ import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.client.renderer.entity.BaseBritanniaRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.IbisRenderer;
+import com.seggellion.britannia_mod.client.renderer.entity.FlamingoRenderer;
 import net.minecraft.client.renderer.entity.CatRenderer;
 import com.seggellion.britannia_mod.client.renderer.entity.CustomVillagerRenderer;
 import com.seggellion.britannia_mod.client.renderer.ThreeHeightLightRenderer;
@@ -245,6 +247,7 @@ public class ClientModSetup {
 
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+        event.register(MoongateBlockEntityRenderer.BILLBOARD_MODEL);
         event.register(ModelResourceLocation.standalone(
             ResourceLocation.parse("britannia_mod:block/structure/thin_wall_stair_fill")
         ));
@@ -480,6 +483,7 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockEntityRegistry.ADAPTIVE_ROOF.get(), AdaptiveRoofRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.ARMOIRE_BLOCK_ENTITY_TYPE.get(), ArmoireRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.TRAINING_DUMMY_BLOCK_ENTITY_TYPE.get(), TrainingDummyRenderer::new);
+        event.registerBlockEntityRenderer(BlockRegistry.MOONGATE_BLOCK_ENTITY_TYPE.get(), MoongateBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.THREE_HEIGHT_LIGHT_BLOCK_ENTITY_TYPE.get(), ThreeHeightLightRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.LARGE_FORGE_BLOCK_ENTITY_TYPE.get(), LargeForgeRenderer::new);
         event.registerBlockEntityRenderer(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), SmallForgeRenderer::new);
@@ -563,6 +567,7 @@ public class ClientModSetup {
         event.registerEntityRenderer(EntityRegistry.BEAR_GRIZZLY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.3F, 1.3F));
         event.registerEntityRenderer(EntityRegistry.TURKEY_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.8F, 0.6F));
         event.registerEntityRenderer(EntityRegistry.IBIS_ENTITY.get(), IbisRenderer::new);
+        event.registerEntityRenderer(EntityRegistry.FLAMINGO_ENTITY.get(), FlamingoRenderer::new);
         event.registerEntityRenderer(EntityRegistry.GORILLA_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 0.5F, 0.6F));
 
         event.registerEntityRenderer(EntityRegistry.DAEMON_ENTITY.get(), context -> new BaseBritanniaRenderer<>(context, 1.1F, 0.6F));
@@ -673,7 +678,8 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.BRAZIER_SMALL.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.GLOBE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.FERN.get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MOONGLOW_BUSH.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.HEDGE_BUSH.get(), RenderType.cutout());
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.POOL_OF_BLOOD.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.FOLDED_CLOTH.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_RED.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MERCHANT_CART_PURPLE.get(), RenderType.cutout());

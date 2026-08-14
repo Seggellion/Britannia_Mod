@@ -105,6 +105,15 @@ public static void register(final RegisterPayloadHandlersEvent event) {
     /* ---------- packets that exist on BOTH sides or are SERVER-bound ---------- */
 
     registrar.playToServer(
+        com.seggellion.britannia_mod.network.payload.TrainingDummyHitC2SPayload.TYPE,
+        com.seggellion.britannia_mod.network.payload.TrainingDummyHitC2SPayload.STREAM_CODEC,
+        (payload, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer player) {
+                com.seggellion.britannia_mod.network.payload.TrainingDummyHitC2SPayload.handle(payload, player);
+            }
+        }));
+
+    registrar.playToServer(
         com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnConfigureC2SPayload.TYPE,
         com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnConfigureC2SPayload.STREAM_CODEC,
         com.seggellion.britannia_mod.network.payload.ServiceNpcSpawnPayloadHandler::handleConfigure

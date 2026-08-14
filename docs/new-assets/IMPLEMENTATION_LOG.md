@@ -561,7 +561,7 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 - Focused resource, registry, teleport-preservation, legacy migration, and model/atlas contract tests: PASS.
 - Gradle 8.9 `build --no-configuration-cache`: PASS; 1,708 tests completed, 17 skipped, zero failures or errors.
-- Dedicated-server GameTests: PASS; all 347 required tests passed. The Milestone 10 test proves the final city gate occupies one pass-through cell, creates no block entity, and removes a placed legacy top without disturbing the final gate.
+- Dedicated-server GameTests: PASS; all 347 required tests passed. At Milestone 10 the test proved the final city gate occupied one pass-through cell without a block entity and removed a placed legacy top without disturbing the final gate. The post-closure camera-facing visual subsequently added a render-only block entity while preserving the one-cell teleport contract; the test now covers that superseding contract.
 - Development-client startup completed resource reload and block-atlas creation with no `moongate_block`, Milestone 10 model, or imported portal-texture warnings/errors. The existing 44×44 `dungeon_moongate_block` mip warning and other unrelated pre-existing resource warnings remain outside this milestone.
 
 ### Commit status
@@ -619,3 +619,47 @@ Archives: `blood.zip`, `elitecreatures-medieval_market_decoration_v2.zip`, `Gard
 
 - Owner approval and explicit final commit authorization were received.
 - This closure record is included in the final isolated Milestone 12 commit.
+
+## Post-Closure Asset Defect Pass
+
+### Scope implemented
+
+- Starting HEAD: `ec82f6b2` (`Close new assets project`).
+- Addressed all ten owner-reported defects: shared 0.8 ibis scale (subsequently reduced to 0.64); exact 8:5 eating/idle weighting; faster wandering and local flock following; 1.2 baked-model scaling for six carts and the water well; camera-facing city-moongate portal layers; Hedge Bush bottom/middle/top stacking; active three-cell ladder climbing and landing; narrowly scoped Adventure scarecrow placement on community farm blocks; dress-form top UV/shading repair; and a new eight-variant `pool_of_blood` block from the formerly unassigned pack.
+- Added deterministic `import_defect_assets.ps1` and updated the Milestone 3/5 importers so regeneration preserves every defect correction.
+- Kept purchased art temporary, retained `moongate_block` registry compatibility, and left city-moongate teleport behavior intact. The later owner-authorized breaking rename deliberately replaced `moonglow_bush` with `hedge_bush`.
+- Recorded root-cause analysis and the dimensional/re-authoring implications in `POST_CLOSURE_DEFECT_REPORT.md`.
+
+### Validation status
+
+- Focused defect, cross-system, and moongate tests: PASS.
+- Dedicated-server GameTests: PASS; all 348 required tests passed.
+- Development-client resource reload: PASS for the affected assets after correcting direct oversized JSON coordinates and remapping two inherited blood texture slots. The existing 44×44 moongate mip-level warning remains non-fatal and contains no missing texture.
+- Final Gradle build: PASS; 1,718 tests completed with zero failures or errors and 17 skipped.
+
+### Commit status
+
+- Changes remain uncommitted for owner review.
+
+## Follow-up Ibis, Hedge, and Flamingo Adjustments
+
+### Scope implemented
+
+- Confirmed and regression-guarded automatic Jhelom Ibis replenishment: Overworld only, three-area shared cap of 15, loaded candidate chunks only, bounded attempts, independent from the generic city-animal cap.
+- Reduced both Ibis variants by another multiplicative 20%, from render scale `0.8` to `0.64`, and changed natural variant selection to 65% White / 35% Scarlet.
+- Per explicit data-loss authorization, removed the `moonglow_bush` block/item/resource ID and registered only `hedge_bush`; no missing-mapping alias or migration shim was added.
+- Added a mobile `flamingo` creature, spawn egg, creative exposure, empty loot table, and Britannia-spawner participation. After the missing entity assets were supplied, replaced the initial plushie fallback with the animated GeckoLib rig, synchronized/persistent Pink/Rose/White variants, uniform spawn-time color selection, and the supplied ambient audio converted from MP3 to OGG.
+- Added `import_flamingo.ps1` with checksum coverage for all supplied geometry, animation, texture, and audio files; the importer removes the superseded baked plushie resources. Updated `import_defect_assets.ps1` so the breaking hedge resource paths regenerate deterministically.
+- Corrected two owner-reported replacement defects. The supplied zero-height feet had coincident top/bottom faces; the importer now removes only the hidden undersides to eliminate z-fighting without changing any color texture. Britannia spawn-block saves now reset the prior selection's cooldown, passive `CREATURE` selections remain eligible in Peaceful, and spawned UUIDs are recorded only after `addFreshEntity` succeeds.
+
+### Validation status
+
+- Deterministic Flamingo importer: PASS against all ten supplied source checksums; generated geometry/animation JSON parses, all three imported textures are 64x64, the converted OGG is accepted by the client sound engine, and the superseded static block model/texture are absent.
+- Focused replacement-Flamingo, post-closure defect, and cross-system contracts: PASS.
+- Gradle 8.9 clean build: PASS; 1,723 tests completed with zero failures or errors and 17 skipped.
+- Dedicated-server GameTests: PASS on the confirmation run; all 351 required tests passed. Coverage now includes a real configured Britannia spawn block adding and tracking exactly one selected Flamingo, in addition to allowlist, color synchronization, and persistence checks. The first run exposed the known intermittent, unrelated textile dropped-item proximity assertion; an unchanged immediate rerun passed all 351.
+- Development-client resource reload: PASS for Flamingo through sound-engine startup and complete atlas creation. No Flamingo model, animation, texture, or sound warning/error was logged; unrelated pre-existing project resource warnings remain outside this follow-up.
+
+### Commit status
+
+- Changes remain uncommitted; no commit was requested for this follow-up pass.
