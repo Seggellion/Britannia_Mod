@@ -235,6 +235,10 @@ public class CreativeTabRegistry {
                     Item item = Item.BY_BLOCK.get(holder.get());
                     if (item != null) safeAccept(output, item);
                 });
+                BlockRegistry.STALACTITES.values().forEach(holder -> {
+                    Item item = Item.BY_BLOCK.get(holder.get());
+                    if (item != null) safeAccept(output, item);
+                });
                 safeAccept(output, ItemRegistry.FLOWSTONE_1_ITEM.get());
                 safeAccept(output, ItemRegistry.FLOWSTONE_2_ITEM.get());
                 safeAccept(output, ItemRegistry.FLOWSTONE_3_ITEM.get());

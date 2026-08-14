@@ -1456,6 +1456,18 @@ public static final DeferredHolder<Item, BlockItem> FLOWSTONE_4_ITEM =
         }
     }
 
+  public static final Map<Integer, DeferredHolder<Item, BlockItem>> STALACTITE_ITEMS = new HashMap<>();
+
+    static {
+        for (int i = 1; i <= 7; i++) {
+            int index = i;
+            STALACTITE_ITEMS.put(index,
+                ITEMS.register("stalactite_" + index, () ->
+                    new BlockItem(BlockRegistry.STALACTITES.get(index).get(), new Item.Properties()))
+            );
+        }
+    }
+
 public static final DeferredHolder<Item, BlockItem> HANGING_LANTERN_ITEM =
     ITEMS.register("hanging_lantern",
         () -> new BlockItem(BlockRegistry.HANGING_LANTERN.get(), new Item.Properties()));

@@ -69,7 +69,8 @@ class Milestone14RRemovalAndPreservationTest {
         // was never bumped for the four market stalls in its final commit.
         // This total spans eight registries, so it is taken from an actual run rather
         // than from per-branch arithmetic.
-        assertEquals(894, repositoryItems);
+        // The stalactite feature adds seven registered block items in exact stalagmite parity.
+        assertEquals(901, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));
