@@ -57,6 +57,14 @@ public final class MerchantEconomyService {
         if (!(player.level() instanceof ServerLevel level)) return;
 
         Entity entity = level.getEntity(payload.entityId());
+        // Vendor/Trader Milestone 14: stamped economic projections settle
+        // through the Rails-authoritative retail transaction; the legacy
+        // MerchantRecipes/copper path below is for non-economic merchants only.
+        if (entity instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
+                && EconomicVendorPurchaseService.isEconomicVendor(citizen)) {
+            EconomicVendorPurchaseService.buyRequestedItems(player, citizen, payload);
+            return;
+        }
         if (!(entity instanceof AbstractEconomyMerchantEntity merchant) || !merchant.isAlive()) {
             fail(player, "Merchant not found.");
             return;
@@ -109,7 +117,7 @@ public final class MerchantEconomyService {
                                     return;
                                 }
 
-                                grantProducts(player, prepared.entries());
+                                grantProducts(player, prepared.entries(), merchant);
                                 player.sendSystemMessage(Component.literal("Purchase complete: " + prepared.totalCopper() + " copper."));
                                 TransactionSuccessS2CPayload.send(player);
                             }));
@@ -279,7 +287,8 @@ public final class MerchantEconomyService {
         }
     }
 
-    private static void grantProducts(ServerPlayer player, List<PurchasedEntry> entries) {
+    private static void grantProducts(ServerPlayer player, List<PurchasedEntry> entries,
+                                      AbstractEconomyMerchantEntity merchant) {
         for (PurchasedEntry entry : entries) {
             Product product = entry.entry().product();
             ItemStack template = product.stack();
@@ -295,6 +304,9 @@ public final class MerchantEconomyService {
                 if (!WeightedCommodityItem.hasWeight(stack)) {
                     WeightedCommodityItem.setWeight(stack, generatedOutputWeight(player, entry.entry()));
                 }
+                // Vendor/Trader Milestone 9: server-side origin-city provenance
+                // from the reconciler-stamped authoritative assignment city.
+                com.seggellion.britannia_mod.item.CityProvenanceItemData.applyFromVendor(stack, merchant);
                 if (!player.getInventory().add(stack)) {
                     player.drop(stack, false);
                 }

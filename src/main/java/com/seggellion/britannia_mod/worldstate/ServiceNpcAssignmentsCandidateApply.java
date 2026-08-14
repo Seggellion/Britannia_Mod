@@ -156,6 +156,7 @@ public final class ServiceNpcAssignmentsCandidateApply {
                         requiredUuid(payload, "minecraft_server_public_id"),
                         optionalUuid(payload, "city_public_id"),
                         optionalString(payload, "service_npc_type_key"),
+                        optionalString(payload, "economic_npc_type_key"),
                         requiredString(payload, "world_name"),
                         requiredString(payload, "dimension_key"),
                         requiredInt(payload, "x"),

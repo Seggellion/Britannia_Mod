@@ -120,12 +120,28 @@ public record ServiceNpcSpawnStateS2CPayload(
         }
 
         var typeSnapshot = ServiceNpcRegistryCache.snapshot();
-        List<ServiceTypeOption> types = typeSnapshot.serviceNpcTypes().values().stream()
+        List<ServiceTypeOption> serviceOptions = typeSnapshot.serviceNpcTypes().values().stream()
                 .filter(ServiceNpcTypeDefinition::active)
                 .filter(ServiceNpcTypeDefinition::spawnable)
                 .sorted(Comparator.comparing(ServiceNpcTypeDefinition::displayName)
                         .thenComparing(ServiceNpcTypeDefinition::key))
                 .map(type -> new ServiceTypeOption(type.key(), type.displayName()))
+                .toList();
+        // Vendor/Trader Milestone 5: economic types are offered through the same
+        // screen; the handler resolves which registry a submitted key belongs to.
+        List<ServiceTypeOption> economicOptions =
+                com.seggellion.britannia_mod.service.EconomicNpcRegistryCache.snapshot()
+                        .economicNpcTypes().values().stream()
+                        .filter(com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition::active)
+                        .filter(com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition::spawnable)
+                        .sorted(Comparator.comparing(
+                                com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition::displayName)
+                                .thenComparing(
+                                        com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition::key))
+                        .map(type -> new ServiceTypeOption(type.key(), type.displayName()))
+                        .toList();
+        List<ServiceTypeOption> types = java.util.stream.Stream
+                .concat(serviceOptions.stream(), economicOptions.stream())
                 .toList();
         boolean typeAvailable = !types.isEmpty();
         if (types.size() > ServiceNpcSpawnPayloadCodec.MAX_TYPE_OPTIONS

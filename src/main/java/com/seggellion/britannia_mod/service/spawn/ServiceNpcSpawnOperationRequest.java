@@ -62,7 +62,7 @@ public record ServiceNpcSpawnOperationRequest(
         }
         if (serviceNpcTypeKey != null
             && (serviceNpcTypeKey.isEmpty() || serviceNpcTypeKey.getBytes(StandardCharsets.UTF_8).length > 255
-                || !serviceNpcTypeKey.matches("[a-z][a-z0-9]*(?:_[a-z0-9]+)*"))) {
+                || !serviceNpcTypeKey.matches("(?:economic:)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*"))) {
             throw new IllegalArgumentException("invalid_service_npc_type");
         }
     }

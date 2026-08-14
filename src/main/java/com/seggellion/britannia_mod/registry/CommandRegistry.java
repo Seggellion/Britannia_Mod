@@ -34,6 +34,8 @@ public class CommandRegistry {
         LeaderboardCommands.register(event.getDispatcher());
         BlockCommands.register(event.getDispatcher());
         BootstrapCommands.register(event.getDispatcher());
+        // Vendor/Trader Milestone 18: read-only operator diagnostics.
+        com.seggellion.britannia_mod.commands.EconomyDiagnosticsCommands.register(event.getDispatcher());
         PopulateOresCommand.register(event.getDispatcher());
         RandomizeWallsCommand.register(event.getDispatcher());
         VerifyCommand.register(event.getDispatcher());

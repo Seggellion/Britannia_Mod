@@ -2,8 +2,17 @@ package com.seggellion.britannia_mod.service.spawn;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
+import com.seggellion.britannia_mod.city.BootstrapCityDefinition;
+import com.seggellion.britannia_mod.city.BootstrapCityRegistryCache;
+import com.seggellion.britannia_mod.entity.CitizenEntity;
 import com.seggellion.britannia_mod.entity.ServiceNpcEntity;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistryCache;
+import com.seggellion.britannia_mod.service.EconomicNpcTypeDefinition;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import com.seggellion.britannia_mod.service.ServiceNpcAssignmentDefinition;
 import com.seggellion.britannia_mod.service.ServiceNpcAssignmentSpawnPointDefinition;
 import com.seggellion.britannia_mod.service.ServiceNpcAssignmentWorldNpcDefinition;
@@ -75,6 +84,18 @@ public final class ServiceNpcAssignmentReconciler {
             if (!nearby.isEmpty()) {
                 nearby.forEach(ServiceNpcEntity::discard);
             }
+            UUID staleWorldNpcId = blockEntity.getAssignedNpcPublicId();
+            if (staleWorldNpcId != null) {
+                // Vendor/Trader Milestone 5: economic projections carry no
+                // assignment fields of their own; the block's last reconciled
+                // World NPC id identifies exactly the entity this post owns.
+                level.getEntitiesOfClass(
+                        CitizenEntity.class,
+                        new AABB(blockEntity.getBlockPos()).inflate(SEARCH_RADIUS),
+                        candidate -> !(candidate instanceof ServiceNpcEntity)
+                                && staleWorldNpcId.equals(candidate.getWorldNpcPublicId())
+                ).forEach(CitizenEntity::discard);
+            }
             if (blockEntity.getAssignedNpcPublicId() != null || blockEntity.getAssignmentRevision() != 0L) {
                 blockEntity.applyAssignmentReconciliation(null, null, 0L);
             }
@@ -92,6 +113,11 @@ public final class ServiceNpcAssignmentReconciler {
                             + "spawn_point={} assignment={}",
                     spawnPointId, activeAssignment.publicId()
             );
+            return;
+        }
+
+        if (spawnPoint.economicNpcTypeKey() != null) {
+            reconcileEconomic(level, blockEntity, activeAssignment, worldNpc, spawnPoint);
             return;
         }
 
@@ -137,6 +163,97 @@ public final class ServiceNpcAssignmentReconciler {
             if (best == null || assignment.revision() > best.revision()) best = assignment;
         }
         return best;
+    }
+
+    /**
+     * Vendor/Trader Milestone 5: materializes an economic (Vendor/Trader)
+     * assignment as the CONFIGURED entity type from the Rails-owned Economic
+     * NPC registry -- never a hardcoded class. Identity invariants match the
+     * service path: post UUID != WorldNpc public id != entity UUID; exactly one
+     * projection per assignment, deduplicated deterministically by lowest
+     * entity UUID; cache truth overwrites whatever the entity carried. Fails
+     * closed (no entity) when the registry lacks the type or its entity key --
+     * never a fallback entity.
+     */
+    private static void reconcileEconomic(
+            ServerLevel level,
+            ServiceNpcSpawnBlockEntity blockEntity,
+            ServiceNpcAssignmentDefinition assignment,
+            ServiceNpcAssignmentWorldNpcDefinition worldNpc,
+            ServiceNpcAssignmentSpawnPointDefinition spawnPoint
+    ) {
+        EconomicNpcTypeDefinition definition = EconomicNpcRegistryCache.snapshot()
+                .economicNpcTypes().get(spawnPoint.economicNpcTypeKey());
+        if (definition == null || definition.minecraftEntityTypeKey() == null) {
+            LOGGER.warn(
+                    "Economic assignment not materialized: registry has no entity for type {} spawn_point={}",
+                    spawnPoint.economicNpcTypeKey(), spawnPoint.publicId());
+            return;
+        }
+        ResourceLocation entityKey = ResourceLocation.tryParse(definition.minecraftEntityTypeKey());
+        EntityType<?> entityType = entityKey == null
+                ? null
+                : BuiltInRegistries.ENTITY_TYPE.getOptional(entityKey).orElse(null);
+        if (entityType == null) {
+            LOGGER.warn(
+                    "Economic assignment not materialized: unknown entity type {} for {}",
+                    definition.minecraftEntityTypeKey(), spawnPoint.economicNpcTypeKey());
+            return;
+        }
+
+        List<CitizenEntity> matching = level.getEntitiesOfClass(
+                CitizenEntity.class,
+                new AABB(blockEntity.getBlockPos()).inflate(SEARCH_RADIUS),
+                candidate -> candidate.isAlive()
+                        && !(candidate instanceof ServiceNpcEntity)
+                        && worldNpc.publicId().equals(candidate.getWorldNpcPublicId())
+        );
+        CitizenEntity canonical = null;
+        for (CitizenEntity candidate : matching) {
+            if (candidate.getType() != entityType) {
+                candidate.discard();
+                continue;
+            }
+            if (canonical == null || candidate.getUUID().compareTo(canonical.getUUID()) < 0) {
+                canonical = candidate;
+            }
+        }
+        for (CitizenEntity duplicate : matching) {
+            if (duplicate != canonical && duplicate.getType() == entityType) {
+                duplicate.discard();
+            }
+        }
+
+        BlockPos pos = new BlockPos(spawnPoint.x(), spawnPoint.y(), spawnPoint.z());
+        if (canonical == null) {
+            if (!(entityType.create(level) instanceof CitizenEntity created)) {
+                LOGGER.warn(
+                        "Economic assignment not materialized: {} is not a CitizenEntity",
+                        definition.minecraftEntityTypeKey());
+                return;
+            }
+            created.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, 0.0F, 0.0F);
+            level.addFreshEntity(created);
+            canonical = created;
+        }
+
+        canonical.setWorldNpcPublicId(worldNpc.publicId());
+        canonical.setEconomicNpcTypeKey(spawnPoint.economicNpcTypeKey());
+        canonical.setEconomicCityPublicId(spawnPoint.cityPublicId());
+        canonical.setPersonalName(worldNpc.name());
+        canonical.setGender(worldNpc.genderKey());
+        BootstrapCityDefinition city = spawnPoint.cityPublicId() == null
+                ? null
+                : BootstrapCityRegistryCache.snapshot().find(spawnPoint.cityPublicId());
+        if (city != null) {
+            canonical.setCityName(city.displayName());
+        }
+        if (canonical instanceof Mob mob) {
+            mob.setPersistenceRequired();
+            mob.restrictTo(pos, 2);
+        }
+        blockEntity.applyAssignmentReconciliation(
+                worldNpc.publicId(), worldNpc.name(), assignment.revision());
     }
 
     /**

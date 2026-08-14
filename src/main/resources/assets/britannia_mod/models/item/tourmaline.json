@@ -1,1 +1,1 @@
-﻿{"parent":"minecraft:item/generated","textures":{"layer0":"britannia_mod:screens/sign_icons/placeholder"}}
+{"parent": "minecraft:item/generated", "textures": {"layer0": "britannia_mod:item/tourmaline"}}

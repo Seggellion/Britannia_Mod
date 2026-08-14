@@ -69,6 +69,7 @@ import com.seggellion.britannia_mod.entity.ShadowOreElementalEntity;
 import com.seggellion.britannia_mod.entity.DaemonEntity;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.entity.BakerEntity;
+import com.seggellion.britannia_mod.entity.GenericVendorEntity;
 import com.seggellion.britannia_mod.entity.CostermongerEntity;
 import com.seggellion.britannia_mod.entity.FishTraderEntity;
 import com.seggellion.britannia_mod.entity.FurLeatherTraderEntity;
@@ -175,6 +176,14 @@ public static final DeferredHolder<EntityType<?>, EntityType<BakerEntity>> BAKER
             () -> EntityType.Builder.of(BakerEntity::new, MobCategory.MISC)
                     .sized(0.6F, 1.95F)
                     .build("britannia_mod:baker"));
+
+// Vendor/Trader Milestone 17: the shared presentation for every Rails-defined
+// Vendor profession without a dedicated entity class (see GenericVendorEntity).
+public static final DeferredHolder<EntityType<?>, EntityType<GenericVendorEntity>> VENDOR =
+        ENTITIES.register("vendor",
+            () -> EntityType.Builder.of(GenericVendorEntity::new, MobCategory.MISC)
+                    .sized(0.6F, 1.95F)
+                    .build("britannia_mod:vendor"));
 
 public static final DeferredHolder<EntityType<?>, EntityType<TavernkeeperEntity>> TAVERNKEEPER =
         ENTITIES.register("tavernkeeper",
@@ -703,6 +712,7 @@ event.put(BEAR_BROWN_ENTITY.get(), BearBrownEntity.createAttributes().build());
         event.put(PRODUCE_TRADER.get(), ProduceTraderEntity.createAttributes().build());
         event.put(FUR_LEATHER_TRADER.get(), FurLeatherTraderEntity.createAttributes().build());
         event.put(BAKER.get(), BakerEntity.createAttributes().build());
+        event.put(VENDOR.get(), GenericVendorEntity.createAttributes().build());
         event.put(TAVERNKEEPER.get(), TavernkeeperEntity.createAttributes().build());
         event.put(COSTERMONGER.get(), CostermongerEntity.createAttributes().build());
         event.put(ALCOHOL_TRADER.get(), AlcoholTraderEntity.createAttributes().build());

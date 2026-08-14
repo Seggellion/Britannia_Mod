@@ -251,6 +251,12 @@ public final class WorldBootstrapAPI {
                     serviceNpcRegistry.error());
         }
 
+        // Vendor/Trader Milestone 5: the economic registry cache is fed at the
+        // same place its section is parsed. Accept-or-empty wholesale; a bad
+        // economic section never rejects unrelated bootstrap data.
+        com.seggellion.britannia_mod.service.EconomicNpcRegistryCache.replace(
+                com.seggellion.britannia_mod.service.EconomicNpcRegistryParser.parseBootstrapRoot(root));
+
         ServiceNpcAssignmentsParser.ParseResult serviceNpcAssignments =
                 ServiceNpcAssignmentsParser.parseBootstrapRoot(root);
         if (serviceNpcAssignments.status() == ServiceNpcAssignmentsParser.ParseStatus.REJECTED) {

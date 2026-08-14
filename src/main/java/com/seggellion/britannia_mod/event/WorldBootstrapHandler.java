@@ -77,6 +77,7 @@ public final class WorldBootstrapHandler {
         ServerHttpExecutor.shutdown(server);
         BootstrapCityRegistryCache.clear();
         ServiceNpcRegistryCache.clear();
+        com.seggellion.britannia_mod.service.EconomicNpcRegistryCache.clear();
         FishCatalog.clear();
     }
 

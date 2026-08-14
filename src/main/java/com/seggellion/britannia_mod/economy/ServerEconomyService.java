@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.seggellion.britannia_mod.city.City;
 import com.seggellion.britannia_mod.city.CityManager;
+import com.seggellion.britannia_mod.bank.item.BankItemCodec;
+import com.seggellion.britannia_mod.bank.transfer.BankTransferPlayerDurability;
 import com.seggellion.britannia_mod.config.ModConfig;
 import com.seggellion.britannia_mod.inventory.CityInventory;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
@@ -138,16 +140,23 @@ public final class ServerEconomyService {
     private static void reserveAndSubmitSale(ServerPlayer player, ServerLevel level, String cityName, String role,
                                              Entity trader, List<SaleStack> selected) {
 
-        Reservation reservation = reserveItems(player, selected);
+        // Vendor/Trader Milestone 19.5: the sale's identity is computed BEFORE
+        // anything leaves the inventory, because the durable reservation receipt
+        // is keyed by it -- see reserveItemsDurably.
+        UUID transactionUuid = UUID.randomUUID();
+        Reservation planned = planReservation(player, selected);
+        if (planned.isEmpty()) {
+            fail(player, "No matching items were found to sell.");
+            return;
+        }
+        String idempotencyKey = "sale:" + player.getUUID() + ":" + trader.getUUID() + ":" +
+                level.getGameTime() + ":" + planned.itemSignature() + ":" + transactionUuid;
+
+        Reservation reservation = reserveItemsDurably(level, player, planned, idempotencyKey);
         if (reservation.isEmpty()) {
             fail(player, "No matching items were found to sell.");
             return;
         }
-
-        UUID transactionUuid = UUID.randomUUID();
-        String itemSignature = reservation.itemSignature();
-        String idempotencyKey = "sale:" + player.getUUID() + ":" + trader.getUUID() + ":" +
-                level.getGameTime() + ":" + itemSignature + ":" + transactionUuid;
 
         JsonObject payload = buildSalePayload(player, level, cityName, role, trader, reservation, idempotencyKey, transactionUuid);
         MinecraftServer server = level.getServer();
@@ -155,12 +164,18 @@ public final class ServerEconomyService {
         LOGGER.info("Wood/trader sale start key={} player={} city={} role={} trader={} items={}",
                 idempotencyKey, player.getStringUUID(), cityName, role, trader.getUUID(), reservation.items().size());
 
+        // The outcome of the call below is unknown to this process until it
+        // answers; the receipt records that so a crash mid-flight is recoverable.
+        TraderSaleReservationStore.get(level)
+                .advance(idempotencyKey, TraderSaleReservationReceipt.Status.DISPATCHED);
+
         ServerHttpExecutor
                 .submit(server, () -> postSale(level, payload, idempotencyKey))
                 .whenComplete((result, error) -> server.execute(() -> {
                     if (error != null) {
                         LOGGER.warn("Wood sale failure key={} error={}", idempotencyKey, error.toString());
                         reservation.refund(player);
+                        resolveReservation(level, idempotencyKey);
                         fail(player, "Sale failed: economy server unavailable.");
                         return;
                     }
@@ -169,6 +184,7 @@ public final class ServerEconomyService {
                         LOGGER.warn("Wood sale failure key={} status={} body={}",
                                 idempotencyKey, result.statusCode(), result.body());
                         reservation.refund(player);
+                        resolveReservation(level, idempotencyKey);
                         fail(player, result.message());
                         return;
                     }
@@ -177,6 +193,7 @@ public final class ServerEconomyService {
                         LOGGER.warn("Rails idempotent replay detected key={} receipt={}",
                                 idempotencyKey, result.receiptId());
                         reservation.refund(player);
+                        resolveReservation(level, idempotencyKey);
                         fail(player, "That sale was already processed.");
                         return;
                     }
@@ -184,6 +201,8 @@ public final class ServerEconomyService {
                     applyRailsCommodityResponse(level, cityName, result.responseJson(), reservation);
                     grantCurrency(player, result.gold(), result.silver(), result.copper());
 
+                    // The items are now genuinely sold: the reservation's risk is over.
+                    resolveReservation(level, idempotencyKey);
                     EconomySyncData.get(level).markApplied(idempotencyKey);
                     if (!result.receiptId().isBlank()) {
                         EconomySyncData.get(level).markApplied("rails_receipt:" + result.receiptId());
@@ -320,21 +339,87 @@ public final class ServerEconomyService {
         return true;
     }
 
-    private static Reservation reserveItems(ServerPlayer player, List<SaleStack> selected) {
-        List<SaleStack> reserved = new ArrayList<>();
-
+    /**
+     * Milestone 19.5: decides WHAT would be reserved without touching the
+     * inventory, so the sale's idempotency key (and therefore its durable
+     * receipt) can exist before any item moves.
+     */
+    private static Reservation planReservation(ServerPlayer player, List<SaleStack> selected) {
+        List<SaleStack> planned = new ArrayList<>();
         for (SaleStack item : selected) {
             ItemStack live = player.getInventory().getItem(item.slot());
             if (live.isEmpty() || live.getCount() < item.quantity()) continue;
+            planned.add(new SaleStack(item.slot(), live.copyWithCount(item.quantity()), item.quantity()));
+        }
+        return new Reservation(planned);
+    }
 
+    /**
+     * Milestone 19.5: removes the planned items behind a durable receipt, so a
+     * crash can no longer destroy them.
+     *
+     * <p>Ordering is the whole guarantee, and it is deliberate:
+     * <ol>
+     *   <li>write the receipt as {@code RESERVED} and flush it to disk — a
+     *       later crash can never leave items missing with no record;</li>
+     *   <li>remove the items and force-save the player, so their inventory
+     *       without those items is itself on disk;</li>
+     *   <li>advance the receipt to {@code ITEMS_REMOVED} and flush again —
+     *       only now is the removal provably durable, and only receipts in
+     *       that state (or {@code DISPATCHED}) are ever refunded on recovery.</li>
+     * </ol>
+     * A crash before step 3 leaves a {@code RESERVED} receipt, which recovery
+     * resolves WITHOUT refunding: the player's saved inventory still holds the
+     * items, so refunding would duplicate them. See
+     * {@link TraderSaleReservationRecovery} for why that asymmetry is the right
+     * way to be wrong.
+     */
+    private static Reservation reserveItemsDurably(ServerLevel level, ServerPlayer player,
+                                                   Reservation planned, String idempotencyKey) {
+        List<byte[]> payloads = new ArrayList<>();
+        for (SaleStack item : planned.items()) {
+            payloads.add(BankItemCodec.serialize(item.stack(), level.registryAccess()));
+        }
+
+        TraderSaleReservationStore store = TraderSaleReservationStore.get(level);
+        boolean recorded = store.record(new TraderSaleReservationReceipt(
+                idempotencyKey, player.getUUID(), payloads,
+                TraderSaleReservationReceipt.Status.RESERVED, System.currentTimeMillis()));
+        if (!recorded) {
+            LOGGER.warn("Refusing a trader sale whose reservation key is already tracked key={}", idempotencyKey);
+            return new Reservation(List.of());
+        }
+        store.flush(level);
+
+        List<SaleStack> reserved = new ArrayList<>();
+        for (SaleStack item : planned.items()) {
+            ItemStack live = player.getInventory().getItem(item.slot());
+            if (live.isEmpty() || live.getCount() < item.quantity()) continue;
             ItemStack removed = live.copyWithCount(item.quantity());
             live.shrink(item.quantity());
             reserved.add(new SaleStack(item.slot(), removed, item.quantity()));
         }
-
         player.inventoryMenu.broadcastChanges();
         player.inventoryMenu.broadcastFullState();
+
+        if (reserved.isEmpty()) {
+            // Nothing actually moved (the inventory changed under us): drop the
+            // receipt rather than leaving a phantom reservation behind.
+            store.resolve(idempotencyKey);
+            store.flush(level);
+            return new Reservation(reserved);
+        }
+
+        BankTransferPlayerDurability.forceSave(player);
+        store.advance(idempotencyKey, TraderSaleReservationReceipt.Status.ITEMS_REMOVED);
+        store.flush(level);
         return new Reservation(reserved);
+    }
+
+    private static void resolveReservation(ServerLevel level, String idempotencyKey) {
+        TraderSaleReservationStore store = TraderSaleReservationStore.get(level);
+        store.resolve(idempotencyKey);
+        store.flush(level);
     }
 
     private static JsonObject buildSalePayload(ServerPlayer player, ServerLevel level, String cityName, String role,
@@ -350,6 +435,15 @@ public final class ServerEconomyService {
         payload.addProperty("city_name", cityName);
         payload.addProperty("role", role);
         payload.addProperty("npc_id", trader.getUUID().toString());
+        // Vendor/Trader Milestone 10: economic projections identify themselves by
+        // their persistent World NPC id so Rails resolves city/identity from the
+        // assignment (never the client payload) and routes to the denomination-
+        // aware, treasury-debiting EconomicTraderSale.
+        if (trader instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
+                && citizen.getWorldNpcPublicId() != null
+                && citizen.getEconomicNpcTypeKey() != null) {
+            payload.addProperty("world_npc_public_id", citizen.getWorldNpcPublicId().toString());
+        }
         payload.addProperty("trader_uuid", trader.getUUID().toString());
         payload.addProperty("entity_id", trader.getId());
         payload.addProperty("shard", ModConfig.SHARD_NAME);

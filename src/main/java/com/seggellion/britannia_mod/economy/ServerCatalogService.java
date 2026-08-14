@@ -47,8 +47,24 @@ public final class ServerCatalogService {
             return;
         }
         MinecraftServer server = player.server;
+        // Vendor/Trader Milestone 7: economic projections (stamped by the
+        // assignment reconciler) route to the Rails-authoritative Product
+        // catalog. Resolved here, on-thread, before the off-thread fetch.
+        final String economicTypeKey;
+        final java.util.UUID economicCityId;
+        if (player.serverLevel().getEntity(entityId)
+                instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
+                && citizen.getEconomicNpcTypeKey() != null
+                && citizen.getEconomicCityPublicId() != null) {
+            economicTypeKey = citizen.getEconomicNpcTypeKey();
+            economicCityId = citizen.getEconomicCityPublicId();
+        } else {
+            economicTypeKey = null;
+            economicCityId = null;
+        }
         try {
-            ServerHttpExecutor.submit(server, () -> fetch(player, type, role, city))
+            ServerHttpExecutor.submit(server,
+                    () -> fetch(player, type, role, city, economicTypeKey, economicCityId))
                 .whenComplete((products, failure) -> server.execute(() -> {
                     if (failure != null || products == null) {
                         LOGGER.warn("NPC catalog fetch failed for role={} city={}", role, city);
@@ -62,8 +78,12 @@ public final class ServerCatalogService {
         }
     }
 
-    private static List<Product> fetch(ServerPlayer player, NpcType type, String role, String city) {
+    private static List<Product> fetch(ServerPlayer player, NpcType type, String role, String city,
+                                       String economicTypeKey, java.util.UUID economicCityId) {
         try {
+            if (economicTypeKey != null && economicCityId != null) {
+                return fetchEconomicCatalog(player, economicTypeKey, economicCityId);
+            }
             if (type == NpcType.MERCHANT && isEconomyMerchant(role)) {
                 return MerchantCatalogBuilder.build(
                     CityCommodityApi.fetchServer(player.serverLevel(), city), MerchantRecipes.forRole(role)
@@ -75,6 +95,65 @@ public final class ServerCatalogService {
             LOGGER.warn("Server catalog proxy failed: {}", error.toString());
             return List.of();
         }
+    }
+
+    /**
+     * Vendor/Trader Milestone 7: the Rails Product catalog is the authority for
+     * economic Vendors -- prices, denominations, and availability are computed
+     * in Rails; unavailable rows are simply not offered (fail closed, no
+     * fallback catalog). Purchases settle through {@link
+     * EconomicVendorPurchaseService} (Milestone 14), which re-quotes from this
+     * same endpoint server-side at buy time.
+     */
+    private static List<Product> fetchEconomicCatalog(
+            ServerPlayer player, String economicTypeKey, java.util.UUID cityPublicId
+    ) throws Exception {
+        Map<String, String> query = Map.of(
+            "economic_npc_type_key", economicTypeKey,
+            "city_public_id", cityPublicId.toString()
+        );
+        String body = request(player, "GET", Endpoint.ECONOMIC_CATALOG, query, null);
+        JsonObject root = JsonParser.parseString(body).getAsJsonObject();
+        if (!root.has("rows") || !root.get("rows").isJsonArray()) return List.of();
+
+        String catalogRevision = root.has("catalog_revision")
+                ? root.get("catalog_revision").getAsString() : "";
+        List<Product> products = new java.util.ArrayList<>();
+        for (JsonElement element : root.getAsJsonArray("rows")) {
+            if (!element.isJsonObject()) continue;
+            JsonObject row = element.getAsJsonObject();
+            if (!row.has("available") || !row.get("available").getAsBoolean()) continue;
+            String itemId = row.get("item_id").getAsString();
+            var item = net.minecraft.core.registries.BuiltInRegistries.ITEM
+                    .get(net.minecraft.resources.ResourceLocation.parse(itemId));
+            if (item == net.minecraft.world.item.Items.AIR) continue;
+
+            int price = (int) Math.ceil(row.get("unit_price").getAsDouble());
+            String denomination = row.has("denomination")
+                    ? row.get("denomination").getAsString() : "copper";
+            int availableUnits = row.has("available_units") && !row.get("available_units").isJsonNull()
+                    ? row.get("available_units").getAsInt() : 0;
+
+            net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
+            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            tag.putInt("max_quantity", availableUnits);
+            tag.putString("economic_catalog_revision", catalogRevision);
+            // Vendor/Trader Milestone 13: material/quality metadata for
+            // recipe-valued goods; Milestone 17 item construction consumes it.
+            if (row.has("selected_material") && !row.get("selected_material").isJsonNull()) {
+                tag.putString("economic_material", row.get("selected_material").getAsString());
+            }
+            if (row.has("quality") && !row.get("quality").isJsonNull()) {
+                tag.putString("economic_quality", row.get("quality").getAsString());
+            }
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                    net.minecraft.world.item.component.CustomData.of(tag));
+
+            String name = row.has("display_name") ? row.get("display_name").getAsString() : itemId;
+            products.add(new Product(itemId, name, price, denomination, stack));
+            if (products.size() >= ClientboundOpenNpcScreenPayload.MAX_PRODUCTS) break;
+        }
+        return products;
     }
 
     private static List<Product> fetchMerchantCatalog(ServerPlayer player, String role, String city) throws Exception {

@@ -91,9 +91,45 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         }
         checkCooldown = CHECK_INTERVAL_TICKS;
 
+        // Vendor/Trader Milestone 16: converge onto the authoritative post
+        // architecture. Until a conversion SUCCEEDS (city resolved from the
+        // bootstrap registry, type mapped), everything below keeps running
+        // unchanged -- a world without its backend keeps its traders.
+        if (com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrator
+                .migrateTraderBlock(sl, this)) {
+            return;
+        }
+
         maintainTrader(sl);
         maintainTownspeople(sl);
         heartbeatIfDue(sl);
+    }
+
+    /**
+     * Milestone 16 migration despawn: removes ONLY the legacy-managed trader
+     * NPC (the authoritative assignment pipeline staffs the migrated post, so
+     * leaving it would duplicate). TownPersons and their tracked ids are
+     * deliberately untouched -- owner decision #12 preserves them until the
+     * regional population system reaches parity.
+     */
+    public void despawnManagedNpcForMigration(ServerLevel sl) {
+        TraderDefinition definition = definitionFor(traderType);
+        Entity traderEntity = findOwnedTraderAnyType(sl);
+        UUID npcId = traderEntity != null ? traderEntity.getUUID() : traderNpcId;
+
+        if (npcId != null) {
+            boolean syncOk = CityDataSync.markLiveNpcInactive(
+                    sl, npcId, definition.npcType(), cityName, sourceId.toString(),
+                    worldPosition.toShortString(), "despawned", "migrated_to_authoritative_post"
+            );
+            LOGGER.info("Legacy trader despawned for migration source={} npc={} type={} city={} railsSync={}",
+                    sourceId, npcId, definition.npcType(), cityName, syncOk);
+            if (traderEntity != null) {
+                traderEntity.remove(RemovalReason.DISCARDED);
+            }
+        }
+        traderNpcId = null;
+        savedTraderData = null;
     }
 
     private void maintainTrader(ServerLevel sl) {

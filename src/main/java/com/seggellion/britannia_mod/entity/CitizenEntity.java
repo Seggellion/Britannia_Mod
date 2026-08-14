@@ -70,6 +70,13 @@ public abstract class CitizenEntity extends PathfinderMob implements GeoAnimatab
     private String gender = "unknown";
     @Nullable
     private UUID worldNpcPublicId;
+    /** Vendor/Trader Milestone 7: set by the assignment reconciler on economic
+     * projections so catalog requests can name the authoritative type and city
+     * (by stable public id, never by display name). */
+    @Nullable
+    private String economicNpcTypeKey;
+    @Nullable
+    private UUID economicCityPublicId;
     private boolean stepToggle = false;
 
 private static final ResourceLocation FONT_UO_CLASSIC = ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
@@ -294,6 +301,24 @@ public void setGender(String gender) {
         this.worldNpcPublicId = worldNpcPublicId;
     }
 
+    @Nullable
+    public String getEconomicNpcTypeKey() {
+        return economicNpcTypeKey;
+    }
+
+    public void setEconomicNpcTypeKey(@Nullable String economicNpcTypeKey) {
+        this.economicNpcTypeKey = economicNpcTypeKey;
+    }
+
+    @Nullable
+    public UUID getEconomicCityPublicId() {
+        return economicCityPublicId;
+    }
+
+    public void setEconomicCityPublicId(@Nullable UUID economicCityPublicId) {
+        this.economicCityPublicId = economicCityPublicId;
+    }
+
 protected void updateDisplayName() {
         // Fetch the name from the SynchedEntityData via our getter
         Component styledName = Component.literal(this.getPersonalName()).withStyle(UO_STYLE);
@@ -347,6 +372,8 @@ protected void updateDisplayName() {
         tag.putString("gender", this.getGender());
         tag.putString("personalName", this.getPersonalName());
         WorldNpcPublicIdNbt.write(tag, this.worldNpcPublicId);
+        if (economicNpcTypeKey != null) tag.putString("economicNpcTypeKey", economicNpcTypeKey);
+        if (economicCityPublicId != null) tag.putUUID("economicCityPublicId", economicCityPublicId);
 
     tag.putInt("hairIndex", this.entityData.get(DATA_HAIR));
     tag.putInt("facialHairIndex", this.entityData.get(DATA_FACIAL_HAIR));
@@ -369,6 +396,10 @@ protected void updateDisplayName() {
         // This setter automatically calls updateDisplayName() for us!
         this.setPersonalName(tag.getString("personalName")); 
         this.worldNpcPublicId = WorldNpcPublicIdNbt.read(tag);
+        this.economicNpcTypeKey = tag.contains("economicNpcTypeKey")
+                ? tag.getString("economicNpcTypeKey") : null;
+        this.economicCityPublicId = tag.hasUUID("economicCityPublicId")
+                ? tag.getUUID("economicCityPublicId") : null;
 
         if (tag.contains("hairIndex")) {
         this.entityData.set(DATA_HAIR, tag.getInt("hairIndex"));

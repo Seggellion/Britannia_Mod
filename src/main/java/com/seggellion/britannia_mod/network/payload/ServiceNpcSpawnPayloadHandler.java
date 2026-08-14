@@ -31,14 +31,16 @@ public final class ServiceNpcSpawnPayloadHandler {
                     payload.expectedConfigurationRevision()
             );
             ServiceNpcSpawnValidationError error = session.error();
+            TypeSelection selection = null;
             if (error == ServiceNpcSpawnValidationError.NONE) {
-                error = validateRegistrySelection(payload.cityPublicId(), payload.serviceNpcTypeKey());
+                selection = resolveTypeSelection(payload.cityPublicId(), payload.serviceNpcTypeKey());
+                error = selection.error();
             }
             if (error == ServiceNpcSpawnValidationError.NONE && session.blockEntity() != null) {
                 error = session.blockEntity().applyConfiguration(
                         player.serverLevel(),
                         payload.cityPublicId(),
-                        payload.serviceNpcTypeKey(),
+                        selection.storedKey(),
                         payload.enabled(),
                         payload.expectedConfigurationRevision()
                 );
@@ -114,6 +116,63 @@ public final class ServiceNpcSpawnPayloadHandler {
                 ServiceNpcRegistryCache.snapshot(),
                 cityPublicId,
                 typeKey
+        );
+    }
+
+    /**
+     * Vendor/Trader Milestone 5: a submitted type key may name either
+     * specialization. The Service registry wins for plain keys; on
+     * TYPE_UNAVAILABLE/REGISTRY_UNAVAILABLE the Economic registry is consulted,
+     * and an accepted economic key is stored in its prefixed pipeline form
+     * (see {@link com.seggellion.britannia_mod.service.EconomicNpcTypeKeys}).
+     */
+    record TypeSelection(ServiceNpcSpawnValidationError error, String storedKey) {}
+
+    static TypeSelection resolveTypeSelection(UUID cityPublicId, String submittedKey) {
+        boolean forcedEconomic =
+                com.seggellion.britannia_mod.service.EconomicNpcTypeKeys.isEconomic(submittedKey);
+        String candidate =
+                com.seggellion.britannia_mod.service.EconomicNpcTypeKeys.strip(submittedKey);
+
+        if (!forcedEconomic) {
+            ServiceNpcSpawnValidationError serviceError =
+                    validateRegistrySelection(cityPublicId, candidate);
+            if (serviceError == ServiceNpcSpawnValidationError.NONE) {
+                return new TypeSelection(ServiceNpcSpawnValidationError.NONE, candidate);
+            }
+            if (serviceError != ServiceNpcSpawnValidationError.TYPE_UNAVAILABLE
+                    && serviceError != ServiceNpcSpawnValidationError.REGISTRY_UNAVAILABLE) {
+                return new TypeSelection(serviceError, null);
+            }
+        }
+
+        if (candidate == null
+                || candidate.getBytes(java.nio.charset.StandardCharsets.UTF_8).length
+                        > ServiceNpcSpawnConfigurationValidator.MAX_TYPE_KEY_BYTES
+                || !candidate.matches("[a-z][a-z0-9]*(?:_[a-z0-9]+)*")) {
+            return new TypeSelection(ServiceNpcSpawnValidationError.OVERSIZED_FIELD, null);
+        }
+        var cities = BootstrapCityRegistryCache.snapshot();
+        if (!cities.available() || cities.cities().isEmpty()) {
+            return new TypeSelection(ServiceNpcSpawnValidationError.REGISTRY_UNAVAILABLE, null);
+        }
+        if (cities.find(cityPublicId) == null) {
+            return new TypeSelection(ServiceNpcSpawnValidationError.CITY_UNAVAILABLE, null);
+        }
+        var definition = com.seggellion.britannia_mod.service.EconomicNpcRegistryCache
+                .snapshot().economicNpcTypes().get(candidate);
+        if (definition == null) {
+            return new TypeSelection(ServiceNpcSpawnValidationError.TYPE_UNAVAILABLE, null);
+        }
+        if (!definition.active()) {
+            return new TypeSelection(ServiceNpcSpawnValidationError.TYPE_INACTIVE, null);
+        }
+        if (!definition.spawnable()) {
+            return new TypeSelection(ServiceNpcSpawnValidationError.TYPE_NOT_SPAWNABLE, null);
+        }
+        return new TypeSelection(
+                ServiceNpcSpawnValidationError.NONE,
+                com.seggellion.britannia_mod.service.EconomicNpcTypeKeys.prefixed(candidate)
         );
     }
 

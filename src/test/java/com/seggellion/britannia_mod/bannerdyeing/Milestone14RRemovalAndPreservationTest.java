@@ -61,7 +61,12 @@ class Milestone14RRemovalAndPreservationTest {
         // Villa integration adds its construction item set on top of the previous
         // integrated total of 693.
         // Wild Reagents adds the Black Pearl item; ash and Blood Moss reuse existing items.
-        assertEquals(736, repositoryItems);
+        // Vendor/Trader economy adds the three profession hammers (Milestone 17) and 122
+        // retail items (Milestone 21) on top of 735. The Black Pearl is one of those 122,
+        // so the two branches overlap on it rather than adding a 736th id.
+        // (Amethyst and tourmaline are NOT added there: BlacksmithItemRegistry already
+        // registers every craftables ingredient key as an item.)
+        assertEquals(860, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));
