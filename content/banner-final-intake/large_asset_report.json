@@ -121,7 +121,7 @@
       "existing_geometry_reuse_reason": "No completed smaller-family model has the same square Large proportions, outer silhouette, attachment edge, and UV bounds.",
       "shape_evidence": "The normalized authored alpha silhouette is distinct from every other Large candidate at the 0.95 IoU sharing threshold.",
       "source_file": "content/banner-final-intake/submissions/tournament_curtain/source/geometry.json",
-      "sha256": "352c75ef2f17c5c93d8adfc2820c9d8d700aead4b4a753010ba6d294b49fd7cd",
+      "sha256": "9f0429b6c15d4123e17a4b02f93c991118e8719ef7c084856a418322aa64d544",
       "alpha_bounds": [
         15,
         13,
@@ -140,7 +140,7 @@
       "existing_geometry_reuse_reason": "No completed smaller-family model has the same square Large proportions, outer silhouette, attachment edge, and UV bounds.",
       "shape_evidence": "The normalized authored alpha silhouette is distinct from every other Large candidate at the 0.95 IoU sharing threshold.",
       "source_file": "content/banner-final-intake/submissions/threefold_chain_standard/source/geometry.json",
-      "sha256": "dab9491a133d437de31b8d5ee80615f957d126a4eeaf6683c66f3994b1a73d5e",
+      "sha256": "8b20d3040fa3777860810aece75ed23ed09c80ec543c081e4531c239c7113075",
       "alpha_bounds": [
         6,
         5,
@@ -159,7 +159,7 @@
       "existing_geometry_reuse_reason": "No completed smaller-family model has the same square Large proportions, outer silhouette, attachment edge, and UV bounds.",
       "shape_evidence": "The normalized authored alpha silhouette is distinct from every other Large candidate at the 0.95 IoU sharing threshold.",
       "source_file": "content/banner-final-intake/submissions/iron_serpent_standard/source/geometry.json",
-      "sha256": "2e8ee13a5bc04a87807be3eff7fe7ac986dd3dd54c43dfa9dfe711f4c096cc74",
+      "sha256": "4e1f608d58aa2708a39a35b85cfefc3075c758fcbf6f44fd4f934c8f5901107e",
       "alpha_bounds": [
         11,
         4,
@@ -178,7 +178,7 @@
       "existing_geometry_reuse_reason": "No completed smaller-family model has the same square Large proportions, outer silhouette, attachment edge, and UV bounds.",
       "shape_evidence": "The normalized authored alpha silhouette is distinct from every other Large candidate at the 0.95 IoU sharing threshold.",
       "source_file": "content/banner-final-intake/submissions/silver_fleur_curtain/source/geometry.json",
-      "sha256": "98fe2fe4bdd5ab177e1863a628a703cf1af5f9391c2194509e8ff50617b2da1e",
+      "sha256": "a05a5e368c889228a4be56405270d2b58c5c88562a7d6f7f3dc9cdcff818971e",
       "alpha_bounds": [
         7,
         11,
@@ -197,7 +197,7 @@
       "existing_geometry_reuse_reason": "No completed smaller-family model has the same square Large proportions, outer silhouette, attachment edge, and UV bounds.",
       "shape_evidence": "The normalized authored alpha silhouette is distinct from every other Large candidate at the 0.95 IoU sharing threshold.",
       "source_file": "content/banner-final-intake/submissions/gilded_trellis_curtain/source/geometry.json",
-      "sha256": "1e639167bf940cdbc68197138ab44e17fe7d6b9f452ebf5b5bd5d0e7ae9e8c4b",
+      "sha256": "e0c6295bfac7372e29ca6130286d77a75e43ad26a989ce88c1a7f064f8fa9938",
       "alpha_bounds": [
         12,
         13,
@@ -216,7 +216,7 @@
       "existing_geometry_reuse_reason": "No completed smaller-family model has the same square Large proportions, outer silhouette, attachment edge, and UV bounds.",
       "shape_evidence": "The normalized authored alpha silhouette is distinct from every other Large candidate at the 0.95 IoU sharing threshold.",
       "source_file": "content/banner-final-intake/submissions/gilded_chevron_curtain/source/geometry.json",
-      "sha256": "c56f059361c2cda2db5fbc64b021a14f3f3f4fb288b609e2100a796e5b215df3",
+      "sha256": "73b1a5ae96df94c9c6ebcf4e4d84b19bf7aa81e5659b84f5b82182097187ea6f",
       "alpha_bounds": [
         6,
         5,

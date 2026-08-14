@@ -36,7 +36,7 @@
       "classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
       "shape_evidence": "Matching harlequin fields with the same rectangular body, three-point lower edge, top attachment treatment, and full-canvas layout.",
       "source_file": "content/banner-final-intake/submissions/tournament_medium/source/geometry.json",
-      "sha256": "64805551200e9e7b35b526148580e04a8309bd93701c79236ad80c8992cab4a4",
+      "sha256": "41ebe99ea5c7f89a3c26f080a7860c6178cff6c84eb82fc1a3211b0be88a65fa",
       "alpha_bounds": [
         26,
         13,
@@ -53,7 +53,7 @@
       "classification": "CUSTOM_GEOMETRY_REQUIRED",
       "shape_evidence": "Wide single-point field with a distinct top crossbar and proportions.",
       "source_file": "content/banner-final-intake/submissions/iron_quarter/source/geometry.json",
-      "sha256": "cc161d24ebdadcce5a4732da5919c2c59a9aed3e30b727d21f670a9b322fdc3c",
+      "sha256": "a3de5778f8aead44bd9ea12994dc82370f66d363611d3688faeee7980e1ab21b",
       "alpha_bounds": [
         15,
         6,
@@ -71,7 +71,7 @@
       "classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
       "shape_evidence": "Matching pentagonal cloth silhouettes with one top attachment edge and a centered lower point; heraldry alone differs.",
       "source_file": "content/banner-final-intake/submissions/outer_ward/source/geometry.json",
-      "sha256": "c7791bbbab3c29615554b7e86024e18dfbd7eb93954a8b93166fb60c864157d3",
+      "sha256": "239cfc4f5b32d6e626cc4fbdfad9b9211609923c0c12c8c4b6f9d2dd78555b30",
       "alpha_bounds": [
         24,
         6,
@@ -89,7 +89,7 @@
       "classification": "REUSE_SHARED_MEDIUM_GEOMETRY",
       "shape_evidence": "Matching rectangular fields with rounded lower corners; heraldry alone differs.",
       "source_file": "content/banner-final-intake/submissions/serpent_guard/source/geometry.json",
-      "sha256": "b681f00212b1556b976207596a2db79e7589afaf4531fb7c9fa8fe9d133484f9",
+      "sha256": "b11b02cceeadd1864ffb137ccd7260082f6bad512f34ab76dab5ebbc35316a52",
       "alpha_bounds": [
         23,
         4,
@@ -106,7 +106,7 @@
       "classification": "CUSTOM_GEOMETRY_REQUIRED",
       "shape_evidence": "Narrow U-ended shield field with a distinct top crossbar and proportions.",
       "source_file": "content/banner-final-intake/submissions/argent_shield/source/geometry.json",
-      "sha256": "bb2f93b944944e956f4c2943043336efeb94184208f9fe226a4355a5ffe98f28",
+      "sha256": "459ab6bc51f2572f7a79d5a161f683eb7cd276853452f7d45a8ad65ef51242f2",
       "alpha_bounds": [
         24,
         2,

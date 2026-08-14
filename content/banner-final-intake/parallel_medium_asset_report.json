@@ -45,7 +45,7 @@
       "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
       "shape_evidence": "Matching crenellated attachment edge, straight sides, centred lower point, width-to-height relationship, and full-canvas layout; colour and heraldry differ.",
       "source_file": "content/banner-final-intake/submissions/verdant_grape_pennon/source/geometry.json",
-      "sha256": "818d4e606f8f03a4f3fb9aef8e3e7f90f90272673b5a802778b1ffb8e6c0ef97",
+      "sha256": "a0af4487a7867f638536bc61a8ef71e90d8231caefd94e9adbfbd1a5442706a6",
       "alpha_bounds": [
         25,
         6,
@@ -64,7 +64,7 @@
       "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
       "shape_evidence": "Distinct wide rounded lower edge, top suspension opening, and split field.",
       "source_file": "content/banner-final-intake/submissions/four_seals_pennon/source/geometry.json",
-      "sha256": "b90fc59cf20d0716732c3dd1fcf43ea04de0cf29f8a9eae6a5697463be0becd5",
+      "sha256": "e9dfc5109a4ec197a08cfba695740b1040b1f1e20d0880a020d49279bde2ec1f",
       "alpha_bounds": [
         22,
         6,
@@ -83,7 +83,7 @@
       "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
       "shape_evidence": "Distinct offset top attachment pixels, diagonal checked field, straight sides, and shallow pointed lower edge.",
       "source_file": "content/banner-final-intake/submissions/twin_spades_pennon/source/geometry.json",
-      "sha256": "f75af06ef4e0068b6b258cdf9ae06c40fad1d46567cd97e66788f971e6a5fe64",
+      "sha256": "dcf5e75ead5864950e346be70c6fc939438988bb5f5d62437827ce932eded156",
       "alpha_bounds": [
         25,
         4,
@@ -102,7 +102,7 @@
       "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
       "shape_evidence": "Distinct narrow U-ended silhouette, curved upper opening, and attachment row.",
       "source_file": "content/banner-final-intake/submissions/ankh_pennon/source/geometry.json",
-      "sha256": "1754d8d9c69ed36d1610b79834c7a930f32a1a656b6e82c20cfacc4eddd4a5b3",
+      "sha256": "0067ec4d843d0419ef6b10ca539f90959138e5a1afcfff94472e5dfe32683d3b",
       "alpha_bounds": [
         30,
         5,
@@ -121,7 +121,7 @@
       "existing_medium_geometry_reuse_reason": "No completed perpendicular Medium model has the same silhouette, proportions, attachment edge, and UV bounds.",
       "shape_evidence": "Distinct two-point swallowtail silhouette and quartered field.",
       "source_file": "content/banner-final-intake/submissions/joined_wards/source/geometry.json",
-      "sha256": "d151fdab70a3cb21c5366dda0cba7e4e089d12c2349a990a926176c9e226a505",
+      "sha256": "8507edf9d91c54a46cef3fc8fd99062972783a62e9b16c96ac552b4995e60ce0",
       "alpha_bounds": [
         25,
         7,
