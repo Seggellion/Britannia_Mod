@@ -3,10 +3,9 @@
   "id": "britannia_mod:brass",
   "display_name_key": "mount.britannia_mod.brass",
   "geometry": "britannia_mod:banner/mount/brass",
-  "texture": "britannia_mod:banner/mount/brass",
+  "texture": "britannia_mod:banner/mount/brass_metal",
   "tags": [
     "metal",
-    "placeholder",
-    "development_scaffold"
+    "material_sheet"
   ]
 }

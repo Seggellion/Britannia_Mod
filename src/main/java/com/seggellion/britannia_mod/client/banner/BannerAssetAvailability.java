@@ -22,10 +22,12 @@ public record BannerAssetAvailability(
     public static final ResourceLocation IRON_MOUNT_TEXTURE = id("banner/mount/iron");
     public static final Set<ResourceLocation> GEOMETRY_MODELS = BannerClientAssetIndex.geometryModels();
     public static final Set<ResourceLocation> EXPECTED_MODELS = union(
-            GEOMETRY_MODELS, Set.of(MISSING_MODEL, BRASS_MOUNT_MODEL, IRON_MOUNT_MODEL));
+            union(GEOMETRY_MODELS, Set.of(MISSING_MODEL, BRASS_MOUNT_MODEL, IRON_MOUNT_MODEL)),
+            BannerAssemblyAssets.MODELS);
     public static final Set<ResourceLocation> EXPECTED_TEXTURES = union(
-            BannerClientAssetIndex.textures(),
-            Set.of(MISSING_TEXTURE, BRASS_MOUNT_TEXTURE, IRON_MOUNT_TEXTURE));
+            union(BannerClientAssetIndex.textures(),
+                    Set.of(MISSING_TEXTURE, BRASS_MOUNT_TEXTURE, IRON_MOUNT_TEXTURE)),
+            BannerAssemblyAssets.TEXTURES);
 
     public BannerAssetAvailability {
         models = Set.copyOf(Objects.requireNonNull(models, "models"));

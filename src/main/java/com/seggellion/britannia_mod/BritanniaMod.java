@@ -174,6 +174,7 @@ CraftableRegistry.init();
         CommandRegistry.register();
         BannerDataReloadRegistration.register(NeoForge.EVENT_BUS);
         BannerRenderDataSync.register(NeoForge.EVENT_BUS);
+        com.seggellion.britannia_mod.bannerdyeing.registry.BannerRegistrySync.register(NeoForge.EVENT_BUS);
         DyePreviewLifecycle.register(NeoForge.EVENT_BUS);
 
         // Register event handlers

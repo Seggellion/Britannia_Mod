@@ -329,6 +329,9 @@ public class CreativeTabRegistry {
                 SignItemRegistry.STORE_SIGN_ITEMS.forEach((signType, holder) -> {
                     safeAccept(output, holder.get());
                 });
+
+                // Banners (banners-dyetub): one authored definition each, undyed defaults
+                addBanners(output);
             }).build());
 
     // Tab 3: Items, Tools, and Entities
@@ -520,6 +523,35 @@ public class CreativeTabRegistry {
             output.accept(item.getDefaultInstance());
         } else {
             System.err.println("Warning: Attempted to add a null item to the creative tab.");
+        }
+    }
+
+    /**
+     * One stack per active authored banner definition, in each definition's own undyed default:
+     * its authored default material at that material's natural (never-dyed) colour, and its
+     * authored default mount -- exactly what {@code BannerItemFactory.craftedMaterialBanner}
+     * produces when no colour or mount is selected. Follows {@link #addGrapeVarietySeeds}'s
+     * pattern for data-driven display stacks, including degrading to nothing rather than
+     * emitting broken stacks: banner definitions arrive through the server datapack reload
+     * ({@code BannerDataReloadRegistration} listens on {@code AddReloadListenerEvent}), so on a
+     * remote client of a dedicated server the registry snapshot is never published and there is
+     * no valid state a display stack could carry. A factory failure for an individual
+     * definition (disabled material, missing palette entry) likewise skips that one definition
+     * -- the factory's own "never substitutes missing content" contract.
+     */
+    private static void addBanners(CreativeModeTab.Output output) {
+        if (!com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries.isAvailable()) {
+            return;
+        }
+        var snapshot = com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries.current();
+        com.seggellion.britannia_mod.banner.item.BannerItem item = BannerItemRegistry.BANNER.get();
+        var factory = new com.seggellion.britannia_mod.banner.item.BannerItemFactory(item, item.stateAccess());
+        for (com.seggellion.britannia_mod.banner.data.BannerDefinition definition
+                : snapshot.banners().activeDefinitions()) {
+            factory.craftedMaterialBanner(
+                    definition.id(), definition.defaultMaterial(), java.util.Optional.empty(), snapshot, true)
+                .stack()
+                .ifPresent(output::accept);
         }
     }
 
