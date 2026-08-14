@@ -35,6 +35,19 @@ public final class BannerModelRepository {
         return CURRENT.get().availability;
     }
 
+    /**
+     * Baked assembly model, or empty when it did not bake. Used by the placed-banner renderer,
+     * which draws real geometry for the pole and bracket rather than the flat quads the cloth
+     * uses; a missing model simply omits that part instead of failing the whole banner.
+     */
+    public static Optional<BakedModel> model(ResourceLocation id) {
+        return Optional.ofNullable(CURRENT.get().models.get(id));
+    }
+
+    public static Optional<TextureAtlasSprite> texture(ResourceLocation id) {
+        return Optional.ofNullable(CURRENT.get().textures.get(id));
+    }
+
     static BakedModel compose(BannerItemRenderState state) {
         Models models = CURRENT.get();
         if (state.fallback()) {

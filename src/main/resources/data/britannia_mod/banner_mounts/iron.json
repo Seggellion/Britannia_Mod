@@ -3,10 +3,9 @@
   "id": "britannia_mod:iron",
   "display_name_key": "mount.britannia_mod.iron",
   "geometry": "britannia_mod:banner/mount/iron",
-  "texture": "britannia_mod:banner/mount/iron",
+  "texture": "britannia_mod:banner/mount/iron_metal",
   "tags": [
     "metal",
-    "placeholder",
-    "development_scaffold"
+    "material_sheet"
   ]
 }

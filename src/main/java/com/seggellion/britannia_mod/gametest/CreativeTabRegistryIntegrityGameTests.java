@@ -105,6 +105,104 @@ public final class CreativeTabRegistryIntegrityGameTests {
         helper.succeed();
     }
 
+    /**
+     * Every active authored banner definition appears in the decor tab exactly once, in its
+     * undyed default: the definition's own default material at that material's natural colour
+     * (no source pigment) on the definition's default mount. Built with real
+     * {@code ItemDisplayParameters} on the gametest server, whose datapack reload has already
+     * published {@code BannerDataRegistries} -- the same conditions a singleplayer client's tab
+     * build sees. Guards the banners-dyetub integration gap where no banner reached any tab.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void decorTabListsEveryActiveBannerDefinitionUndyed(GameTestHelper helper) {
+        if (!com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries.isAvailable()) {
+            throw new GameTestAssertException("banner data registries were never published on this server");
+        }
+        var snapshot = com.seggellion.britannia_mod.bannerdyeing.registry.BannerDataRegistries.current();
+        var bannerItem = com.seggellion.britannia_mod.registry.BannerItemRegistry.BANNER.get();
+
+        net.minecraft.world.item.CreativeModeTab tab =
+                com.seggellion.britannia_mod.registry.CreativeTabRegistry.CREATIVE_DECOR_TAB.get();
+        tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(
+                helper.getLevel().enabledFeatures(), false, helper.getLevel().registryAccess()));
+
+        Map<com.seggellion.britannia_mod.banner.api.BannerDefinitionId,
+                com.seggellion.britannia_mod.banner.state.BannerInstanceState> displayed = new HashMap<>();
+        for (net.minecraft.world.item.ItemStack stack : tab.getDisplayItems()) {
+            if (!stack.is(bannerItem)) {
+                continue;
+            }
+            var state = bannerItem.stateAccess().read(stack).orElseThrow(
+                    () -> new GameTestAssertException("decor tab holds a banner stack with unreadable state"));
+            var previous = displayed.put(state.bannerDefinitionId(), state);
+            if (previous != null) {
+                throw new GameTestAssertException(
+                        "banner definition listed twice: " + state.bannerDefinitionId());
+            }
+        }
+
+        List<String> problems = new ArrayList<>();
+        // Sentinel: an item accepted shortly before addBanners in the same lambda. If this is
+        // absent the generator never ran to that point (or the wrong tab was built -- exactly
+        // the mistake that produced this test's first failure); if present but banners are
+        // missing, the fault is inside addBanners or the factory.
+        boolean sentinelPresent = tab.getDisplayItems().stream().anyMatch(stack -> stack.is(
+                com.seggellion.britannia_mod.registry.ItemRegistry.HANGING_LANTERN_ITEM.get()));
+        if (!sentinelPresent) {
+            problems.add("sentinel item (hanging lantern) absent -- decor displayItems generator did not run");
+        }
+        var probeFactory = new com.seggellion.britannia_mod.banner.item.BannerItemFactory(
+                bannerItem, bannerItem.stateAccess());
+        for (var definition : snapshot.banners().activeDefinitions()) {
+            var state = displayed.remove(definition.id());
+            if (state == null) {
+                // Re-run the exact factory call addBanners makes, so the failure names itself.
+                var probe = probeFactory.craftedMaterialBanner(definition.id(),
+                        definition.defaultMaterial(), java.util.Optional.empty(), snapshot, true);
+                problems.add(definition.id() + " missing from the decor tab (factory probe: "
+                        + probe.failure().map(issue -> issue.kind() + "/" + issue.stableId())
+                                .orElse("factory succeeds; tab pipeline dropped the stack")
+                        + ")");
+                continue;
+            }
+            var material = snapshot.fabricMaterials().find(state.materialId()).orElse(null);
+            if (!definition.defaultMaterial().equals(state.materialId())) {
+                problems.add(definition.id() + " uses material " + state.materialId()
+                        + " instead of its default " + definition.defaultMaterial());
+            } else if (material == null || !material.naturalColourId().equals(state.resolvedColourId())) {
+                problems.add(definition.id() + " is not in its material's natural colour: "
+                        + state.resolvedColourId());
+            }
+            if (state.sourcePigmentId().isPresent()) {
+                problems.add(definition.id() + " carries dye pigment " + state.sourcePigmentId().get());
+            }
+            if (!definition.defaultMount().equals(state.mountId())) {
+                problems.add(definition.id() + " uses mount " + state.mountId()
+                        + " instead of its default " + definition.defaultMount());
+            }
+        }
+        displayed.keySet().forEach(id -> problems.add(id + " displayed but not an active definition"));
+
+        if (!problems.isEmpty()) {
+            // Ground-truth context for the failure: how many stacks the build produced at all,
+            // and whether vanilla's per-item feature-flag filter is what emptied it (rebuilt
+            // with every registry flag enabled for comparison).
+            int builtSize = tab.getDisplayItems().size();
+            tab.buildContents(new net.minecraft.world.item.CreativeModeTab.ItemDisplayParameters(
+                    net.minecraft.world.flag.FeatureFlags.REGISTRY.allFlags(), false,
+                    helper.getLevel().registryAccess()));
+            int allFlagsSize = tab.getDisplayItems().size();
+            throw new GameTestAssertException("decor tab banner listing is wrong ("
+                    + problems.size() + "; built=" + builtSize
+                    + " with level flags, built=" + allFlagsSize + " with all flags; level flags empty="
+                    + helper.getLevel().enabledFeatures().isEmpty() + "): " + problems);
+        }
+        if (snapshot.banners().activeDefinitions().isEmpty()) {
+            throw new GameTestAssertException("no active banner definitions loaded -- nothing was actually verified");
+        }
+        helper.succeed();
+    }
+
     /** The same integrity requirement for blocks, whose items feed the same tab scan. */
     @GameTest(template = TEMPLATE)
     public static void blockRegistryIterationIsSafe(GameTestHelper helper) {

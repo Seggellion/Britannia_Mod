@@ -489,6 +489,25 @@ private static MutableComponent uoMessage(String text) {
                 .replace(payload.snapshot()));
     }
 
+    public static void handleBannerRegistrySync(
+            com.seggellion.britannia_mod.network.payload.banner.S2CBannerRegistrySyncPayload payload,
+            IPayloadContext context) {
+        context.enqueueWork(() -> {
+            // The integrated server shares the JVM-wide BannerDataRegistries with its client:
+            // the datapack publication already present is authoritative and must not be
+            // replaced by a wire round-trip of itself (which would also discard the validation
+            // diagnostics keyed to that exact publication instance). Only a remote client,
+            // which has no publication of its own, adopts the synced snapshot.
+            if (Minecraft.getInstance().hasSingleplayerServer()) {
+                return;
+            }
+            if (payload.published()) {
+                com.seggellion.britannia_mod.bannerdyeing.registry.BannerRegistryClientSync
+                        .publishFromServerSync(payload.snapshot());
+            }
+        });
+    }
+
     public static void handleBannerPlacementOrientation(
             S2CBannerPlacementOrientationPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> com.seggellion.britannia_mod.client.banner.ClientBannerPlacementState

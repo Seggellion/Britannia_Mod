@@ -19,7 +19,14 @@ public record BannerPlacedGeometryPlan(
         Vec3 mountTopRight,
         Direction frontNormal,
         Optional<ResourceLocation> mountGeometry) {
-    private static final double WALL_OFFSET = 0.498;
+    /**
+     * How far a parallel banner's cloth sits from the block centre, i.e. flush with the wall
+     * less the pole's standoff. Derived from {@link BannerPlacedAssembly#POLE_STANDOFF} rather
+     * than chosen independently: the cloth hangs FROM the pole, so it has to share the pole's
+     * plane. It was previously 0.498 -- pinned flat against the wall -- which left no room for
+     * a bracket to hold anything and put the pole behind the cloth it was supposed to carry.
+     */
+    private static final double WALL_OFFSET = 0.5 - BannerPlacedAssembly.POLE_STANDOFF;
     private static final double MOUNT_OVERHANG = 0.125;
 
     public BannerPlacedGeometryPlan {
@@ -70,9 +77,19 @@ public record BannerPlacedGeometryPlan(
         }
         Vec3 spanVector = new Vec3(span.getStepX(), 0, span.getStepZ());
         Vec3 clothStart = center.add(spanVector.scale(-0.5 + horizontalInset));
+        // The cloth quad is always square, because every banner texture is square (128x128)
+        // and BannerBlockEntityRenderer maps the WHOLE sprite (getU0..getU1, getV0..getV1)
+        // onto this quad -- so the rendered artwork's aspect is its aspect within the texture
+        // multiplied by clothWidth/clothHeight, and any non-square quad distorts every banner
+        // in the family. verticalInset therefore positions the cloth's TOP edge (keeping it
+        // against the mount) and no longer also determines its height; deriving the height
+        // from the width is what enforces the invariant structurally rather than leaving it
+        // to each family constant to get right independently.
+        double clothWidth = width - 2.0 * horizontalInset;
+        double clothHeight = clothWidth;
         Vec3 topLeft = clothStart.add(0, 0.5 - verticalInset, 0);
-        Vec3 bottomLeft = clothStart.add(0, 0.5 - height + verticalInset, 0);
-        Vec3 horizontalLength = spanVector.scale(width - 2.0 * horizontalInset);
+        Vec3 bottomLeft = topLeft.add(0, -clothHeight, 0);
+        Vec3 horizontalLength = spanVector.scale(clothWidth);
         Vec3 topRight = topLeft.add(horizontalLength);
         Vec3 bottomRight = bottomLeft.add(horizontalLength);
 

@@ -9,7 +9,16 @@ import net.minecraft.resources.ResourceLocation;
 public enum BannerPlacedGeometryFamily {
     LARGE(BannerAssetAvailability.id("banner/placeholder/large"), 2, 2, 0.03125, 0.0625),
     MEDIUM_WALL(BannerAssetAvailability.id("banner/placeholder/medium_wall"), 2, 2, 0.125, 0.125),
-    MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2, 0.25, 0.03125),
+    // The only family whose footprint is not square (1x2), and so the only one whose cloth
+    // width could not simply be inset from its footprint: a square cloth (see
+    // BannerPlacedGeometryPlan) sized to the authored artwork has to be WIDER than the one
+    // block it is anchored in, which a positive inset cannot express. 1.375 blocks is the mean
+    // of the 14 medium definitions' own authored quads (their geometry.json element bounds
+    // divided by their UV fraction, range 1.301-1.495), so every one of them renders within
+    // ~6% of its Blockbench size. The overhang is transparent margin -- the visible artwork is
+    // 62-77% of the texture width, i.e. 0.85-1.05 blocks, so it still reads as a one-block
+    // banner. The previous 0.25 inset gave a 0.5 x 1.9375 cloth: a 74% horizontal squeeze.
+    MEDIUM(BannerAssetAvailability.id("banner/placeholder/medium"), 1, 2, -0.1875, 0.03125),
     SMALL(BannerAssetAvailability.id("banner/placeholder/small"), 1, 1, 0.1875, 0.1875),
     X_SMALL(BannerAssetAvailability.id("banner/placeholder/x_small"), 1, 1, 0.3125, 0.3125),
     ROAD_GUARD(BannerAssetAvailability.id("banner/road_guard/geometry"), 1, 1, 0.3125, 0.3125),
