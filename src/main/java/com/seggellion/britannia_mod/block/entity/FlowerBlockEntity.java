@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.block.FlowerBlock;
+import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.farming.FlowerColor;
 import com.seggellion.britannia_mod.farming.FlowerDefinition;
 import com.seggellion.britannia_mod.farming.FlowerGrowthEvaluation;
@@ -22,7 +23,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ import org.slf4j.Logger;
 import java.util.Optional;
 
 /** Persistent, synchronized identity for the generic FlowerBlock. */
-public final class FlowerBlockEntity extends BlockEntity {
+public class FlowerBlockEntity extends FarmingBlockEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final String STATE_KEY = "FlowerState";
 
@@ -40,7 +41,11 @@ public final class FlowerBlockEntity extends BlockEntity {
             new FlowerInteractionTransactionGate();
 
     public FlowerBlockEntity(BlockPos pos, BlockState blockState) {
-        super(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), pos, blockState);
+        this(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), pos, blockState);
+    }
+
+    protected FlowerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
+        super(type, pos, blockState);
     }
 
     public boolean initialize(FlowerPersistentState proposedState) {
@@ -54,6 +59,16 @@ public final class FlowerBlockEntity extends BlockEntity {
 
     public boolean isInitialized() {
         return flowerState != null;
+    }
+
+    /** Clears only the flower presentation; house plots restore their shared soil separately. */
+    public boolean clearFlowerState() {
+        if (flowerState == null) {
+            return false;
+        }
+        flowerState = null;
+        setChangedAndSync();
+        return true;
     }
 
     public Optional<FlowerPersistentState> flowerState() {
@@ -165,7 +180,7 @@ public final class FlowerBlockEntity extends BlockEntity {
         }
         flowerState = updated;
         BlockState state = getBlockState();
-        if (state.getBlock() instanceof FlowerBlock) {
+        if (state.hasProperty(FlowerBlock.HYDRATION) && state.hasProperty(FlowerBlock.FERTILIZER)) {
             level.setBlock(worldPosition, state
                     .setValue(FlowerBlock.HYDRATION, soil.hydration())
                     .setValue(FlowerBlock.FERTILIZER, soil.fertilizerLevel()), 3);
@@ -213,7 +228,7 @@ public final class FlowerBlockEntity extends BlockEntity {
             return false;
         }
         BlockState blockState = getBlockState();
-        return blockState.getBlock() instanceof FlowerBlock
+        return (blockState.getBlock() instanceof FlowerBlock || blockState.getBlock() instanceof HouseFarmPlotBlock)
                 && blockState.getValue(FlowerBlock.HYDRATION) == state.soil().hydration()
                 && blockState.getValue(FlowerBlock.FERTILIZER) == state.soil().fertilizerLevel();
     }

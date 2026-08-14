@@ -25,6 +25,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +55,11 @@ public class FarmingBlockEntity extends BlockEntity {
     private long seedableUntilGameTime = 0L;
 
     public FarmingBlockEntity(BlockPos pos, BlockState blockState) {
-        super(BlockEntityRegistry.FARMING_BLOCK_BE.get(), pos, blockState);
+        this(BlockEntityRegistry.FARMING_BLOCK_BE.get(), pos, blockState);
+    }
+
+    protected FarmingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
+        super(type, pos, blockState);
     }
 
     public void setStoredSeed(String variety) {

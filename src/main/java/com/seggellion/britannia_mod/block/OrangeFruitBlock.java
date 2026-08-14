@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.block;
 
 import com.seggellion.britannia_mod.block.entity.OrangeTreeRootBlockEntity;
+import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
 import com.seggellion.britannia_mod.farming.CropDefinition;
 import com.seggellion.britannia_mod.farming.CropRegistry;
 import com.seggellion.britannia_mod.farming.FarmingActionType;
@@ -63,6 +64,12 @@ public class OrangeFruitBlock extends Block {
             OrangeTreeRootBlockEntity root = OrangeTreeUtils.findRoot(level, pos).orElse(null);
             if (root == null) {
                 player.displayClientMessage(Component.literal("This " + fruitName + " fruit is no longer connected to a tree root.").withStyle(ChatFormatting.YELLOW), true);
+                return ItemInteractionResult.SUCCESS;
+            }
+            if (root.getSoilBlockEntity(level).orElse(null) instanceof HouseFarmPlotBlockEntity housePlot
+                    && level instanceof net.minecraft.server.level.ServerLevel serverLevel
+                    && !HouseFarmPlotBlock.mayManagePlot(serverLevel, housePlot.getBlockPos(), player)) {
+                player.displayClientMessage(Component.literal("You may only harvest a house farm plot you own.").withStyle(ChatFormatting.RED), true);
                 return ItemInteractionResult.SUCCESS;
             }
 

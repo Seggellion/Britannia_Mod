@@ -30,6 +30,18 @@ public class FarmingBlockEntityRenderer implements BlockEntityRenderer<FarmingBl
     @Override
     public void render(FarmingBlockEntity entity, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        renderCrop(entity, poseStack, bufferSource, packedLight, packedOverlay, CROP_RENDER_Y_OFFSET);
+    }
+
+    /** Reuses the canonical crop model at a surface-specific non-tall planting anchor. */
+    public static void renderCrop(
+            FarmingBlockEntity entity,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int packedLight,
+            int packedOverlay,
+            double nonTallRenderYOffset
+    ) {
         if (!entity.hasCrop()) {
             return;
         }
@@ -45,7 +57,7 @@ public class FarmingBlockEntityRenderer implements BlockEntityRenderer<FarmingBl
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.cutout());
 
         poseStack.pushPose();
-        poseStack.translate(0.5D, renderYOffset(crop), 0.5D);
+        poseStack.translate(0.5D, renderYOffset(crop, nonTallRenderYOffset), 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(CropVisualRotation.yawFor(entity.getBlockPos(), crop)));
         poseStack.translate(-0.5D, 0.0D, -0.5D);
         minecraft.getBlockRenderer().getModelRenderer().renderModel(
@@ -83,8 +95,8 @@ public class FarmingBlockEntityRenderer implements BlockEntityRenderer<FarmingBl
         return FarmingBlockEntityRenderer.class.getResource(path) != null;
     }
 
-    private static double renderYOffset(CropDefinition crop) {
-        return crop != null && crop.tallCrop() ? TALL_CROP_BASE_RENDER_Y_OFFSET : CROP_RENDER_Y_OFFSET;
+    private static double renderYOffset(CropDefinition crop, double nonTallRenderYOffset) {
+        return crop != null && crop.tallCrop() ? TALL_CROP_BASE_RENDER_Y_OFFSET : nonTallRenderYOffset;
     }
 
     @Override
