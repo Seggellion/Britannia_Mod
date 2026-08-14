@@ -60,7 +60,8 @@ class Milestone14RRemovalAndPreservationTest {
         // to the branch-local 550).
         // Villa integration adds its construction item set on top of the previous
         // integrated total of 693.
-        assertEquals(735, repositoryItems);
+        // Wild Reagents adds the Black Pearl item; ash and Blood Moss reuse existing items.
+        assertEquals(736, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

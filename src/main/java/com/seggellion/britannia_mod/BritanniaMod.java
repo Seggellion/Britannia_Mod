@@ -20,6 +20,7 @@ import com.seggellion.britannia_mod.event.WoodChopEventHandler;
 import com.seggellion.britannia_mod.event.PlayerEventHandler;
 import com.seggellion.britannia_mod.event.FlowerInteractionHandler;
 import com.seggellion.britannia_mod.event.HouseFarmPlotInteractionHandler;
+import com.seggellion.britannia_mod.event.ManagedVegetationInteractionHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
@@ -61,6 +62,11 @@ import com.seggellion.britannia_mod.banner.renderdata.BannerRenderDataSync;
 import com.seggellion.britannia_mod.banner.structure.BannerStructureIntegrityHandler;
 import com.seggellion.britannia_mod.banner.placement.BannerOrientationPreferenceLifecycle;
 import com.seggellion.britannia_mod.dye.preview.DyePreviewLifecycle;
+import com.seggellion.britannia_mod.vegetation.ManagedVegetationConfig;
+import com.seggellion.britannia_mod.vegetation.ManagedVegetationManager;
+import com.seggellion.britannia_mod.wildresource.WildResourceManager;
+import com.seggellion.britannia_mod.wildresource.WildResourceEntries;
+import com.seggellion.britannia_mod.wildresource.WildResourceInteractionHandler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -114,6 +120,11 @@ public class BritanniaMod {
 
     public BritanniaMod(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Initializing BritanniaMod");
+        modContainer.registerConfig(
+                ModConfig.Type.SERVER,
+                ManagedVegetationConfig.SPEC,
+                "britannia-managed-vegetation.toml"
+        );
         OreVeinLoader.loadOreVeins();
           BlessedItemSyncHandler.init();
         WorldBootstrapHandler.init();
@@ -130,6 +141,10 @@ CraftableRegistry.init();
         ItemRegistry.register(modEventBus);
         LargeStructureRegistry.register(modEventBus);
         ShrineIntegrityHandler.register();
+        ManagedVegetationManager.register();
+        WildResourceEntries.bootstrap();
+        WildResourceManager.register();
+        WildResourceInteractionHandler.register();
 
         BlacksmithItemRegistry.register(modEventBus);
         DyeItemRegistry.register(modEventBus);
@@ -167,6 +182,7 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new PlayerEventHandler());
         NeoForge.EVENT_BUS.register(new FlowerInteractionHandler());
         NeoForge.EVENT_BUS.register(new HouseFarmPlotInteractionHandler());
+        NeoForge.EVENT_BUS.register(new ManagedVegetationInteractionHandler());
         NeoForge.EVENT_BUS.register(new RestrictedEquipmentControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new BlockRestoreHandler());

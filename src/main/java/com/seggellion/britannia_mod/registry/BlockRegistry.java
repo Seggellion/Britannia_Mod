@@ -121,6 +121,11 @@ import com.seggellion.britannia_mod.block.CommunityFarmBlock;
 import com.seggellion.britannia_mod.block.CommunityHoedFarmBlock;
 import com.seggellion.britannia_mod.block.FarmingBlock;
 import com.seggellion.britannia_mod.block.FlowerBlock;
+import com.seggellion.britannia_mod.block.ManagedVegetationControllerBlock;
+import com.seggellion.britannia_mod.block.ManagedFlowerBlock;
+import com.seggellion.britannia_mod.block.SulphurousAshBlock;
+import com.seggellion.britannia_mod.block.BlackLippedOysterBlock;
+import com.seggellion.britannia_mod.block.BloodMossBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
@@ -244,6 +249,63 @@ public static final DeferredHolder<Block, FlowerBlock> FLOWER_BLOCK = BLOCKS.reg
                     .isViewBlocking((state, level, pos) -> true)
                     .isSuffocating((state, level, pos) -> true))
     );
+
+public static final DeferredHolder<Block, ManagedVegetationControllerBlock> MANAGED_VEGETATION_CONTROLLER = BLOCKS.register(
+            "managed_vegetation_controller",
+            () -> new ManagedVegetationControllerBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.NONE)
+                    .noCollission()
+                    .noOcclusion()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .isViewBlocking((state, level, pos) -> false)
+                    .isSuffocating((state, level, pos) -> false))
+    );
+
+public static final DeferredHolder<Block, ManagedFlowerBlock> MANAGED_FLOWER = BLOCKS.register(
+        "managed_flower",
+        () -> new ManagedFlowerBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.PLANT)
+                .noCollission()
+                .noOcclusion()
+                .instabreak()
+                .sound(SoundType.GRASS)
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, SulphurousAshBlock> SULPHUROUS_ASH_PATCH = BLOCKS.register(
+        "sulphurous_ash_patch",
+        () -> new SulphurousAshBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_YELLOW)
+                .strength(0.1F)
+                .sound(SoundType.SAND)
+                .noCollission()
+                .noOcclusion()
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, BlackLippedOysterBlock> BLACK_LIPPED_OYSTER = BLOCKS.register(
+        "black_lipped_oyster",
+        () -> new BlackLippedOysterBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_PURPLE)
+                .strength(0.4F)
+                .sound(SoundType.CALCITE)
+                .noCollission()
+                .noOcclusion()
+                .pushReaction(PushReaction.DESTROY))
+);
+
+public static final DeferredHolder<Block, BloodMossBlock> BLOOD_MOSS = BLOCKS.register(
+        "blood_moss",
+        () -> new BloodMossBlock(BlockBehaviour.Properties.of()
+                .mapColor(MapColor.COLOR_RED)
+                .replaceable()
+                .noCollission()
+                .instabreak()
+                .sound(SoundType.MOSS_CARPET)
+                .noOcclusion()
+                .pushReaction(PushReaction.DESTROY))
+);
 
 public static final DeferredHolder<Block, CornStalkBlock> CORN_STALK_BLOCK = BLOCKS.register(
             "corn_stalk_block",

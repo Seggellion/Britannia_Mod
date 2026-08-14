@@ -15,6 +15,7 @@ import com.seggellion.britannia_mod.client.gui.screen.ArchitectScreen;
 import com.seggellion.britannia_mod.client.BritainMusicHandler;
 import com.seggellion.britannia_mod.client.ModModelLayers;
 import com.seggellion.britannia_mod.client.ShameDungeonMusicHandler;
+import com.seggellion.britannia_mod.client.SwampEnvironmentEffects;
 import com.seggellion.britannia_mod.client.ThinWallClient;
 import com.seggellion.britannia_mod.client.house.GhostStructurePreviewRenderer;
 import com.seggellion.britannia_mod.client.model.ThinWallModels;
@@ -32,6 +33,7 @@ import com.seggellion.britannia_mod.client.renderer.FarmingBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.HouseFarmPlotBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.FlowerVisualModels;
+import com.seggellion.britannia_mod.client.renderer.ManagedFlowerBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.WineBottleBlockEntityRenderer;
 import com.seggellion.britannia_mod.client.renderer.shrine.ShrineRenderer;
 import com.seggellion.britannia_mod.client.banner.BannerBlockEntityRenderer;
@@ -487,6 +489,9 @@ public class ClientModSetup {
         event.registerBlockEntityRenderer(BlockEntityRegistry.FARMING_BLOCK_BE.get(), FarmingBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.FLOWER_BLOCK_BE.get(), FlowerBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(BlockEntityRegistry.HOUSE_FARM_PLOT_BE.get(), HouseFarmPlotBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(
+                BlockEntityRegistry.MANAGED_FLOWER_BE.get(), ManagedFlowerBlockEntityRenderer::new
+        );
         event.registerBlockEntityRenderer(LargeStructureRegistry.LARGE_STRUCTURE.get(), ShrineRenderer::new);
         event.registerBlockEntityRenderer(
                 BannerBlockRegistry.BANNER_BLOCK_ENTITY.get(), BannerBlockEntityRenderer::new);
@@ -615,6 +620,7 @@ public class ClientModSetup {
             NeoForge.EVENT_BUS.register(ShameDungeonMusicHandler.class);
             NeoForge.EVENT_BUS.register(BritainMusicHandler.class);
             NeoForge.EVENT_BUS.register(GhostStructurePreviewRenderer.class);
+            NeoForge.EVENT_BUS.register(SwampEnvironmentEffects.class);
             clientGameHandlersRegistered = true;
         }
 

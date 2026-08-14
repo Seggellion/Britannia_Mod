@@ -225,6 +225,8 @@ public static final DeferredHolder<Item, Item> BLACKSMITH_HAMMER = ITEMS.registe
             () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> BLOOD_MOSS = ITEMS.register("blood_moss",
             () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> BLACK_PEARL = ITEMS.register("black_pearl",
+            () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> GARLIC = ITEMS.register("garlic",
             () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> GINSENG = ITEMS.register("ginseng",

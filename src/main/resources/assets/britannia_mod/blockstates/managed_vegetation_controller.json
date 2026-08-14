@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "britannia_mod:block/managed_vegetation_controller" }
+  }
+}

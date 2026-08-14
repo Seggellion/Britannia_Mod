@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "britannia_mod.refmap.json",
   "mixins": [
+    "GrassBlockNaturalGrowthMixin",
     "LivingEntityBedMixin",
     "PlayerSleepMixin",
     "PlayerListInvokerMixin",
@@ -14,7 +15,8 @@
     "LoadingScreenPanoramaMixin",
     "TitleScreenBackgroundMixin",
     "client.CreativeModeInventoryScreenAccessor",
-    "client.ItemStackFarmingPresentationMixin"
+    "client.ItemStackFarmingPresentationMixin",
+    "client.ManagedVegetationAdventureModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
