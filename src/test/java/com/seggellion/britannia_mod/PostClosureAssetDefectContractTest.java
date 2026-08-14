@@ -155,7 +155,7 @@ class PostClosureAssetDefectContractTest {
     @Test
     void hedgeBushHasBottomMiddleAndTopStackModelsUnderTheBreakingNewId() throws Exception {
         JsonObject language = json(ASSETS.resolve("lang/en_us.json"));
-        assertEquals("Hedge Bush (Temporary Art)",
+        assertEquals("Hedge Bush",
                 language.get("block.britannia_mod.hedge_bush").getAsString());
         assertFalse(language.has("block.britannia_mod.moonglow_bush"));
         JsonObject variants = json(ASSETS.resolve("blockstates/hedge_bush.json"))

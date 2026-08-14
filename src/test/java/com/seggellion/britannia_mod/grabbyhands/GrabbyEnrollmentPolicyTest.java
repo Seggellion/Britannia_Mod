@@ -240,6 +240,16 @@ class GrabbyEnrollmentPolicyTest {
         while (blocks.find()) {
             blockIds.add(blocks.group(1));
         }
+        // An id that is explicitly registered as a plain Item stays pure even when a block of the
+        // same name exists. The concern this guard exists for is a BlockItem being routed through
+        // the generic host, which would swap a real block for a stand-in; blockItems already
+        // catches that. Since the wild-reagent work landed, blood_moss is both a reagent Item and
+        // a BloodMossBlock the vegetation manager places itself, and stripping every id that
+        // shares a name with a block would wrongly disqualify the reagent.
+        Set<String> explicitPlainItems = new LinkedHashSet<>(items);
+        explicitPlainItems.removeAll(blockItems);
+        blockIds.removeAll(explicitPlainItems);
+
         items.removeAll(blockItems);
         items.removeAll(blockIds);
         return items;

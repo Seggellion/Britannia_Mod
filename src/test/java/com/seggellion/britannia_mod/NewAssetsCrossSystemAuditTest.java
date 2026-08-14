@@ -94,10 +94,16 @@ class NewAssetsCrossSystemAuditTest {
         assertJson("data/britannia_mod/loot_table/entities/ibis.json");
         assertTrue(Files.isRegularFile(ASSETS.resolve("textures/entity/ibis_white.png")));
         assertTrue(Files.isRegularFile(ASSETS.resolve("textures/entity/ibis_scarlet.png")));
-        assertTrue(language.get("item.britannia_mod.ibis_spawn_egg").getAsString().contains("Temporary Art"));
-        assertTrue(language.get("block.britannia_mod.moongate_block").getAsString().contains("Temporary Art"));
-        assertTrue(language.get("item.britannia_mod.ball_of_yarn").getAsString().contains("Placeholder"));
-        assertTrue(language.get("item.britannia_mod.spool_of_thread").getAsString().contains("Placeholder"));
+        // The art these ids were waiting on is finished, so the interim "(Temporary Art)" and
+        // "(Placeholder)" suffixes were removed from every block/item display name during the
+        // patch-18 consolidation. This now guards the opposite property: no shipped display
+        // name still advertises itself as provisional.
+        for (String id : List.of("item.britannia_mod.ibis_spawn_egg", "block.britannia_mod.moongate_block",
+                "item.britannia_mod.ball_of_yarn", "item.britannia_mod.spool_of_thread")) {
+            String label = language.get(id).getAsString();
+            assertFalse(label.contains("Temporary Art"), id + " still labelled temporary: " + label);
+            assertFalse(label.contains("(Placeholder)"), id + " still labelled placeholder: " + label);
+        }
     }
 
     @Test
