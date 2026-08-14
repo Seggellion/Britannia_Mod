@@ -2,8 +2,17 @@ package com.seggellion.britannia_mod.block.entity;
 
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyInstanceState;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyPortableState;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyProvenanceHolder;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyTransportRefusal;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -25,8 +34,10 @@ import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The sole persistent inventory for any small, medium, or large crate structure. */
-public final class CrateBlockEntity extends BlockEntity implements MenuProvider, Container {
+public final class CrateBlockEntity extends BlockEntity
+        implements MenuProvider, Container, GrabbyProvenanceHolder, GrabbyPortableState {
     private NonNullList<ItemStack> items;
+    private GrabbyInstanceState grabbyState = GrabbyInstanceState.worldPlaced();
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         @Override
@@ -70,6 +81,7 @@ public final class CrateBlockEntity extends BlockEntity implements MenuProvider,
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
+        grabbyState.write(tag);
     }
 
     @Override
@@ -77,6 +89,86 @@ public final class CrateBlockEntity extends BlockEntity implements MenuProvider,
         super.loadAdditional(tag, registries);
         items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, items, registries);
+        grabbyState = GrabbyInstanceState.read(tag);
+    }
+
+    @Override
+    public GrabbyInstanceState grabbyState() {
+        return grabbyState;
+    }
+
+    @Override
+    public void setGrabbyState(GrabbyInstanceState state) {
+        this.grabbyState = Objects.requireNonNull(state, "state");
+        setChanged();
+    }
+
+    @Override
+    public int occupiedSlotCount() {
+        int occupied = 0;
+        for (ItemStack stack : items) {
+            if (!stack.isEmpty()) {
+                occupied++;
+            }
+        }
+        return occupied;
+    }
+
+    /**
+     * Saves wholesale rather than field by field, so a field added to this block entity later travels
+     * without anyone having to remember this method.
+     */
+    @Override
+    public void writePortableState(ItemStack portable, HolderLookup.Provider registries) {
+        CompoundTag data = new CompoundTag();
+        saveAdditional(data, registries);
+        // Provenance is stamped fresh by the placement transaction; carrying the old placer would be
+        // both pointless and misleading.
+        data.remove(GrabbyInstanceState.TAG_KEY);
+        BlockItem.setBlockEntityData(portable, getType(), data);
+    }
+
+    /**
+     * Undoes a detach, and nothing more. Detaching only cleared the contents, so only the contents
+     * come back; reloading the whole tag would also reset provenance the transaction has decided.
+     */
+    @Override
+    public void restorePortableState(ItemStack portable, HolderLookup.Provider registries) {
+        CompoundTag data = portable
+                .getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY)
+                .copyTag();
+        items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(data, items, registries);
+        setChanged();
+    }
+
+    @Override
+    public boolean detachForTransport() {
+        if (isEmpty()) {
+            return false;
+        }
+        // The contents are already captured in the portable item. Clearing them here is what stops
+        // the dismantle cascade spilling a second copy onto the floor during pickup.
+        clearContent();
+        return true;
+    }
+
+    @Override
+    public Optional<GrabbyTransportRefusal> transportRefusal() {
+        if (openersCounter.getOpenerCount() > 0) {
+            return Optional.of(GrabbyTransportRefusal.IN_USE);
+        }
+        for (ItemStack stack : items) {
+            if (holdsContents(stack)) {
+                return Optional.of(GrabbyTransportRefusal.NESTED_CONTAINER);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /** Whether a stack is itself a container carrying something. */
+    private static boolean holdsContents(ItemStack stack) {
+        return !stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).isEmpty();
     }
 
     @Override

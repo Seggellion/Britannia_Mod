@@ -45,15 +45,25 @@ class GrabbyEnrollmentPreconditionTest {
      */
     private static final List<String> PROVENANCE_CAPABLE_BE_FIELDS = List.of(
             "CHAIR", "ROTATABLE_FURNITURE", "CANDELABRA", "WINE_BOTTLE_BE",
-            "BRITANNIA_CHEST_BLOCK_ENTITY_TYPE", "ARMOIRE_BLOCK_ENTITY_TYPE");
+            "BRITANNIA_CHEST_BLOCK_ENTITY_TYPE", "ARMOIRE_BLOCK_ENTITY_TYPE",
+            // The crate family is multi-cell, but only its anchor carries the block entity, so
+            // provenance has exactly one home per crate just as it does for the single-cell families.
+            "CRATE_BLOCK_ENTITY_TYPE");
 
     /** Block-entity builders live in two registries; both have to be searched. */
     private static final List<String> REGISTRY_FILES =
             List.of("BlockEntityRegistry.java", "BlockRegistry.java");
 
-    /** Item classes whose placement lands where {@code BlockPlaceContext} says it will. */
+    /**
+     * Item classes Grabby Hands can place without landing the object somewhere unintended.
+     *
+     * <p>Two ways to qualify. Most items land exactly where {@code BlockPlaceContext} says they will.
+     * {@code DecorativeMultiblockItem} does not — it builds a cell structure around an anchor — but it
+     * implements {@code GrabbyStructurePlacementItem}, so Grabby runs the item's own placement path
+     * and asks it where the anchor went instead of assuming the clicked position.
+     */
     private static final Set<String> NON_REPOSITIONING_ITEM_CLASSES =
-            Set.of("BlockItem", "WineBottleBlockItem");
+            Set.of("BlockItem", "WineBottleBlockItem", "DecorativeMultiblockItem");
 
     @Test
     void everyEnrolledBlockIsBackedByAProvenanceCapableBlockEntity() throws IOException {

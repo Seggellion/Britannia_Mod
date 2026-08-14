@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.item;
 
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
 import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock.Cell;
+import com.seggellion.britannia_mod.grabbyhands.GrabbyStructurePlacementItem;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -20,9 +21,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 /** Transactional placement item for {@link DecorativeMultiblockBlock}. */
-public class DecorativeMultiblockItem extends BlockItem {
+public class DecorativeMultiblockItem extends BlockItem implements GrabbyStructurePlacementItem {
     public DecorativeMultiblockItem(DecorativeMultiblockBlock block, Properties properties) {
         super(block, properties);
+    }
+
+    /**
+     * Where the structure's anchor lands for this context.
+     *
+     * <p>Shared with {@link #useOn} so Grabby Hands and ordinary placement can never disagree about
+     * which cell owns the object.
+     */
+    @Override
+    public BlockPos grabbyPlacementRoot(BlockPlaceContext context) {
+        DecorativeMultiblockBlock block = (DecorativeMultiblockBlock) getBlock();
+        Direction facing = context.getHorizontalDirection().getOpposite();
+        return block.anchorForMinimumPosition(context.getClickedPos(), facing);
     }
 
     @Override
@@ -36,8 +50,7 @@ public class DecorativeMultiblockItem extends BlockItem {
         BlockPlaceContext placeContext = new BlockPlaceContext(context);
         DecorativeMultiblockBlock block = (DecorativeMultiblockBlock) getBlock();
         Direction facing = placeContext.getHorizontalDirection().getOpposite();
-        BlockPos minimumPosition = placeContext.getClickedPos();
-        BlockPos anchor = block.anchorForMinimumPosition(minimumPosition, facing);
+        BlockPos anchor = grabbyPlacementRoot(placeContext);
 
         List<PlacementCell> placement = new ArrayList<>(block.cells().size());
         for (Cell cell : block.cells()) {

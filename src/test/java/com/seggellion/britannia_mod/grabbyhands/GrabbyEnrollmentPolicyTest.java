@@ -142,15 +142,7 @@ class GrabbyEnrollmentPolicyTest {
         Set<String> otherExclusions = Set.of(
                 "britannia_mod:lord_british_throne",   // a landmark, not furniture
                 "britannia_mod:candelabra_tall",       // RaisedBlockItem repositions placement
-                "britannia_mod:villa_lamp_post",       // RaisedBlockItem repositions placement
-                // The crate family arrived with new-assets after this policy was written. All three
-                // place through DecorativeMultiblockItem, which repositions placement, so enrolling
-                // them would violate the precondition in GrabbyEnrollmentPreconditionTest: the block
-                // would land somewhere other than where the policy check ran. Excluded for the same
-                // reason as candelabra_tall and villa_lamp_post rather than left unreviewed.
-                "britannia_mod:small_crate",
-                "britannia_mod:medium_crate",
-                "britannia_mod:large_crate");
+                "britannia_mod:villa_lamp_post");      // RaisedBlockItem repositions placement
 
         Set<String> candidates = provenanceCapableBlockIds();
         // Guards the guard: an empty candidate set would make the loop below pass trivially.

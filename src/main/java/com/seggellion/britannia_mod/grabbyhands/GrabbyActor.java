@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.Objects;
@@ -209,7 +210,10 @@ public interface GrabbyActor {
         @Override
         public Optional<BlockPos> resolvePlacementTarget(BlockHitResult hit) {
             BlockPlaceContext context = placementContext(hit);
-            return context.canPlace() ? Optional.of(context.getClickedPos().immutable()) : Optional.empty();
+            if (!context.canPlace()) {
+                return Optional.empty();
+            }
+            return Optional.of(placementRoot(context).immutable());
         }
 
         @Override
@@ -219,9 +223,21 @@ public interface GrabbyActor {
                 return Optional.empty();
             }
             BlockPlaceContext context = placementContext(hit);
-            BlockPos target = context.getClickedPos().immutable();
-            InteractionResult result = blockItem.place(context);
+            BlockPos target = placementRoot(context).immutable();
+
+            // An item that owns its placement runs its own path. Calling BlockItem.place on a crate
+            // would drop a single cell where the structure's anchor was supposed to go.
+            InteractionResult result = blockItem instanceof GrabbyStructurePlacementItem
+                    ? blockItem.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit))
+                    : blockItem.place(context);
             return result.consumesAction() ? Optional.of(target) : Optional.empty();
+        }
+
+        /** Where the held item's object will actually be rooted, which is not always the clicked cell. */
+        private BlockPos placementRoot(BlockPlaceContext context) {
+            return player.getMainHandItem().getItem() instanceof GrabbyStructurePlacementItem structure
+                    ? structure.grabbyPlacementRoot(context)
+                    : context.getClickedPos();
         }
 
         @Override
