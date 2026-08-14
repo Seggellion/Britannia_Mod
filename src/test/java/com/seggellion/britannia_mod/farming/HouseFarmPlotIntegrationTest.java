@@ -62,6 +62,18 @@ class HouseFarmPlotIntegrationTest {
         }
     }
 
+    @Test
+    void rendererLightsPlantsFromTheExposedSurfaceInsteadOfInsideTheOpaquePlot() throws IOException {
+        String renderer = source("client/renderer/HouseFarmPlotBlockEntityRenderer.java");
+
+        assertTrue(renderer.contains("sampleSurfaceLight(entity, packedLight)"));
+        assertTrue(renderer.contains("entity.getBlockPos().above()"));
+        assertTrue(renderer.contains("LevelRenderer.getLightColor(level, surfacePos)"));
+        assertTrue(renderer.contains("LightTexture.pack("));
+        assertTrue(renderer.contains("surfaceLight, packedOverlay, SOIL_SURFACE_Y"));
+        assertTrue(renderer.contains("surfaceLight, packedOverlay, NON_TALL_CROP_RENDER_Y"));
+    }
+
     private static String source(String relative) throws IOException {
         return Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/" + relative

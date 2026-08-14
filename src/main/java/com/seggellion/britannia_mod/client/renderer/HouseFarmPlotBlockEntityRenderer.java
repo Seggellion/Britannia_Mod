@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.seggellion.britannia_mod.block.entity.HouseFarmPlotBlockEntity;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -24,14 +26,34 @@ public final class HouseFarmPlotBlockEntityRenderer implements BlockEntityRender
             int packedLight,
             int packedOverlay
     ) {
+        int surfaceLight = sampleSurfaceLight(entity, packedLight);
         if (entity.flowerState().isPresent()) {
             FlowerBlockEntityRenderer.renderFlower(
-                    entity, poseStack, bufferSource, packedLight, packedOverlay, SOIL_SURFACE_Y
+                    entity, poseStack, bufferSource, surfaceLight, packedOverlay, SOIL_SURFACE_Y
             );
             return;
         }
         FarmingBlockEntityRenderer.renderCrop(
-                entity, poseStack, bufferSource, packedLight, packedOverlay, NON_TALL_CROP_RENDER_Y
+                entity, poseStack, bufferSource, surfaceLight, packedOverlay, NON_TALL_CROP_RENDER_Y
+        );
+    }
+
+    /**
+     * The plot block encloses its block entity, so the dispatcher-supplied light is sampled inside
+     * opaque geometry and can be zero. Plants are rendered above the soil and must use the exposed
+     * light at that position. Preserve either channel when the fallback is brighter (for example,
+     * nearby block light at night).
+     */
+    private static int sampleSurfaceLight(HouseFarmPlotBlockEntity entity, int fallbackLight) {
+        var level = entity.getLevel();
+        var surfacePos = entity.getBlockPos().above();
+        if (level == null || !level.hasChunkAt(surfacePos)) {
+            return fallbackLight;
+        }
+        int sampledLight = LevelRenderer.getLightColor(level, surfacePos);
+        return LightTexture.pack(
+                Math.max(LightTexture.block(fallbackLight), LightTexture.block(sampledLight)),
+                Math.max(LightTexture.sky(fallbackLight), LightTexture.sky(sampledLight))
         );
     }
 
