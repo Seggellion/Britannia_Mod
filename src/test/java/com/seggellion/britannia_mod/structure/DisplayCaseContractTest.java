@@ -19,7 +19,8 @@ class DisplayCaseContractTest {
     @Test
     void oneFinalDecorativeIdHasNoStorageImplementation() throws Exception {
         String blockRegistry = Files.readString(PROJECT.resolve(
-                "src/main/java/com/seggellion/britannia_mod/registry/BlockRegistry.java"));
+                "src/main/java/com/seggellion/britannia_mod/registry/BlockRegistry.java"))
+                .replace("\r\n", "\n");
         assertTrue(blockRegistry.contains("BLOCKS.register(\n            \"display_case\""));
         assertFalse(blockRegistry.contains("display_case_end"));
         assertFalse(blockRegistry.contains("display_case_middle"));

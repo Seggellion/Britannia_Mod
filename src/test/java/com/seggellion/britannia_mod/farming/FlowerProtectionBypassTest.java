@@ -75,6 +75,7 @@ class FlowerProtectionBypassTest {
 
     private static String source(String relative) throws IOException {
         return Files.readString(PROJECT.resolve("src/main/java/com/seggellion/britannia_mod").resolve(relative),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
     }
 }

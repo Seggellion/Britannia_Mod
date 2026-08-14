@@ -32,7 +32,8 @@ class GrabbyEnrollmentTagTest {
 
     @Test
     void everyEnrolledIdIsActuallyRegisteredAsABlock() throws IOException {
-        String registry = Files.readString(BLOCK_REGISTRY, StandardCharsets.UTF_8);
+        String registry = Files.readString(BLOCK_REGISTRY, StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
         for (String id : allEnrolledIds()) {
             String path = id.substring(id.indexOf(':') + 1);
             assertTrue(registry.contains("BLOCKS.register(\"" + path + "\"")
