@@ -17,11 +17,15 @@ public class DataComponentRegistry {
         DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, BritanniaMod.MODID);
 
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<WineData>> WINE_DATA =
-        DATA_COMPONENT_TYPES.register("wine_data", () ->
-            DataComponentType.<WineData>builder()
+        DATA_COMPONENT_TYPES.register("wine_data", DataComponentRegistry::createWineDataType);
+
+    /** Split out so tests can register the same component without a live mod event bus. */
+    public static DataComponentType<WineData> createWineDataType() {
+        return DataComponentType.<WineData>builder()
                 .persistent(WineData.CODEC)
                 .networkSynchronized(WineData.STREAM_CODEC)
-                .build());
+                .build();
+    }
 
     // Milestone 11 NeoForge Slice 1: the physical bank cheque item's display-only data --
     // see BankChequeData's own docs for why this is never authoritative.

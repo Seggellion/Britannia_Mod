@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:double_bed",
+    "britannia_mod:wooden_chandelier",
+    "britannia_mod:large_wooden_chandelier",
+    "britannia_mod:small_wooden_chandelier",
+    "britannia_mod:large_iron_chandelier",
+    "britannia_mod:small_iron_chandelier"
+  ]
+}

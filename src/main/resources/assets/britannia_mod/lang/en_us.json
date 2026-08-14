@@ -1437,5 +1437,10 @@
   "screen.britannia_mod.guild.offer.at_cap": "%s %s - taught in full",
   "screen.britannia_mod.guild.offer.no_gold": "%s %s - not enough gold",
   "screen.britannia_mod.guild.offer.buy": "%s %s -> %s for %s gold",
-  "screen.britannia_mod.guild.close": "Close"
+  "screen.britannia_mod.guild.close": "Close",
+  "screen.britannia_mod.grabby.destroy.title": "Destroy Object",
+  "screen.britannia_mod.grabby.destroy.body": "Destroy the %s? This cannot be undone.",
+  "screen.britannia_mod.grabby.destroy.body_with_contents": "Destroy the %s? Its contents (%s occupied slots) will spill onto the ground. This cannot be undone.",
+  "screen.britannia_mod.grabby.destroy.yes": "Yes, destroy it",
+  "screen.britannia_mod.grabby.destroy.no": "No, leave it"
 }

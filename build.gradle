@@ -82,7 +82,6 @@ runs {
 
     gameTestServer {
         workingDirectory = file("run/gametest")
-        modSource sourceSets.main
         systemProperty "neoforge.enabledGameTestNamespaces", mod_id
         dependencies {
             runtime 'org.nanohttpd:nanohttpd:2.2.0'
