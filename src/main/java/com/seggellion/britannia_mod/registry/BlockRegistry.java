@@ -1,10 +1,25 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.DecorativePlantBlock;
+import com.seggellion.britannia_mod.block.HedgeBushBlock;
+import com.seggellion.britannia_mod.block.PoolOfBloodBlock;
+import com.seggellion.britannia_mod.block.DecorativeMultiblockBlock;
+import com.seggellion.britannia_mod.block.CrateBlock;
+import com.seggellion.britannia_mod.block.WaterWellBlock;
+import com.seggellion.britannia_mod.block.LadderMultiblockBlock;
+import com.seggellion.britannia_mod.block.LoomBlock;
+import com.seggellion.britannia_mod.block.SpinningWheelBlock;
+import com.seggellion.britannia_mod.block.DisplayCaseBlock;
+import com.seggellion.britannia_mod.block.TrainingDummyBlock;
+import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
+import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
+import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
 import com.seggellion.britannia_mod.block.WoodSupportFloorBlock;
 import com.seggellion.britannia_mod.block.BannisterBlock;
+import com.seggellion.britannia_mod.block.WoodenFenceBlock;
 import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
 import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.block.VillaLampPostBlock;
@@ -87,6 +102,7 @@ import com.seggellion.britannia_mod.block.entity.HorseSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.AdaptiveRoofBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BlacksmithSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.BritanniaChestBlockEntity;
+import com.seggellion.britannia_mod.block.entity.CrateBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ArmoireBlockEntity;
 import com.seggellion.britannia_mod.block.BritanniaSpawnBlock;
 import com.seggellion.britannia_mod.block.ChessBoardBlock;
@@ -147,6 +163,8 @@ import net.minecraft.world.level.block.ChainBlock;
 import com.seggellion.britannia_mod.block.ArchitectSpawnBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -1108,6 +1126,10 @@ public static final DeferredHolder<Block, Block> DUNGEON_MOONGATE_TOP = BLOCKS.r
 
 public static final DeferredHolder<Block, Block> MOONGATE_BLOCK = BLOCKS.register(
             "moongate_block", MoongateBlock::new);
+
+public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MoongateBlockEntity>> MOONGATE_BLOCK_ENTITY_TYPE =
+        BLOCK_ENTITY_TYPES.register("moongate_block_entity",
+                () -> BlockEntityType.Builder.of(MoongateBlockEntity::new, MOONGATE_BLOCK.get()).build(null));
 
     public static final DeferredHolder<Block, Block> MOONGATE_TOP = BLOCKS.register(
             "moongate_top", MoongateTopBlock::new);
@@ -2258,6 +2280,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_BATTLEMENT = BLOCKS.register("sandstone_battlement", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_COLUMN = BLOCKS.register("sandstone_column", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, BannisterBlock> BANNISTER = BLOCKS.register("bannister", () -> new BannisterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
+    public static final DeferredHolder<Block, WoodenFenceBlock> WOODEN_FENCE = BLOCKS.register("wooden_fence", () -> new WoodenFenceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
 
     /** 3x3 timber post, 32 voxels tall, in one corner of the block. */
     public static final DeferredHolder<Block, PlasterWoodPostBlock> PLASTER_WOOD_POST = BLOCKS.register("plaster_wood_post", () -> new PlasterWoodPostBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
@@ -2284,6 +2307,226 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> MEDIUM_SANDSTONE_BRICK_ROAD = BLOCKS.register("medium_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
 
     public static final DeferredHolder<Block, SandstoneBrickRoadBlock> DARK_SANDSTONE_BRICK_ROAD = BLOCKS.register("dark_sandstone_brick_road", () -> new SandstoneBrickRoadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE)));
+
+    // New-assets Milestone 2. Purchased-pack geometry is temporary placeholder art.
+    public static final DeferredHolder<Block, DecorativePropBlock> GLOBE = BLOCKS.register("globe", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0f).sound(SoundType.WOOD).noOcclusion(), Block.box(1, 0, 1, 15, 16, 15), true));
+    public static final DeferredHolder<Block, DecorativePlantBlock> FERN = BLOCKS.register("fern", () ->
+            new DecorativePlantBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak().sound(SoundType.GRASS).noCollission().noOcclusion().replaceable(), Block.box(3, 0, 3, 13, 10, 13)));
+    public static final DeferredHolder<Block, HedgeBushBlock> HEDGE_BUSH = BLOCKS.register("hedge_bush", () ->
+            new HedgeBushBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).instabreak()
+                    .sound(SoundType.GRASS).noCollission().noOcclusion(),
+                    Block.box(2, 0, 2, 14, 16, 14)));
+    public static final DeferredHolder<Block, PoolOfBloodBlock> POOL_OF_BLOOD = BLOCKS.register("pool_of_blood", () ->
+            new PoolOfBloodBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instabreak()
+                    .sound(SoundType.MUD).noCollission().noOcclusion()));
+    public static final DeferredHolder<Block, DecorativePropBlock> FOLDED_CLOTH = BLOCKS.register("folded_cloth", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(0.3f).sound(SoundType.WOOL).noOcclusion(), Block.box(1, 0, 2, 15, 12, 14), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> BOLT_OF_CLOTH = BLOCKS.register("bolt_of_cloth", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(0.3f).sound(SoundType.WOOL).noOcclusion(), Block.box(2, 0, 4, 14, 7, 12), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> PEWTER_MUG = BLOCKS.register("pewter_mug", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.8f).sound(SoundType.METAL).noOcclusion(), Block.box(5, 0, 5, 11, 8, 11), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> KETTLE = BLOCKS.register("kettle", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.8f).sound(SoundType.METAL).noOcclusion(), Block.box(3, 0, 3, 13, 11, 13), true));
+    public static final DeferredHolder<Block, DecorativePropBlock> PLATES_AND_SILVERWARE = BLOCKS.register("plates_and_silverware", () ->
+            new DecorativePropBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(0.4f).sound(SoundType.METAL).noOcclusion(), Block.box(2, 0, 2, 14, 2, 14), true));
+
+    private static DecorativeMultiblockBlock merchantCart() {
+        return new DecorativeMultiblockBlock(
+                BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                        .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                -1, 1, -1, 1, -1, 1,
+                (x, y, z) -> y < 1
+                        ? Block.box(1, 0, 1, 15, 16, 15)
+                        : Block.box(1, 0, 1, 15, 8, 15));
+    }
+
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_RED =
+            BLOCKS.register("merchant_cart_red", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_PURPLE =
+            BLOCKS.register("merchant_cart_purple", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_BLUE =
+            BLOCKS.register("merchant_cart_blue", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_GREEN =
+            BLOCKS.register("merchant_cart_green", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_YELLOW =
+            BLOCKS.register("merchant_cart_yellow", BlockRegistry::merchantCart);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MERCHANT_CART_WHITE =
+            BLOCKS.register("merchant_cart_white", BlockRegistry::merchantCart);
+
+    private static DecorativeMultiblockBlock marketStall() {
+        return new DecorativeMultiblockBlock(
+                BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                        .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                -1, 1, 0, 2, 0, 0,
+                BlockRegistry::marketStallCellShape);
+    }
+
+    /** Collision follows the two side frames, rear cloth/counter, and high canopy. */
+    private static VoxelShape marketStallCellShape(int x, int y, int z) {
+        VoxelShape shape = Shapes.empty();
+        if (x != 0) {
+            double minX = x < 0 ? 0.0D : 12.0D;
+            double maxX = x < 0 ? 4.0D : 16.0D;
+            shape = Shapes.or(shape,
+                    Block.box(minX, 0, 0, maxX, 16, 4),
+                    Block.box(minX, 0, 14, maxX, 16, 16));
+        }
+
+        double curtainMinY = y == 0 ? 1.0D : 0.0D;
+        double curtainMaxY = y == 2 ? 12.0D : 16.0D;
+        shape = Shapes.or(shape, Block.box(0, curtainMinY, 15.5D, 16, curtainMaxY, 16));
+        if (y == 1) {
+            shape = Shapes.or(shape, Block.box(0, 8, 14, 16, 11, 16));
+        } else if (y == 2) {
+            shape = Shapes.or(shape,
+                    Block.box(0, 6, 0, 16, 12, 2),
+                    Block.box(0, 11.5D, 0, 16, 12, 16));
+        }
+        return shape;
+    }
+
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_RED =
+            BLOCKS.register("market_stall_red", BlockRegistry::marketStall);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_BLUE =
+            BLOCKS.register("market_stall_blue", BlockRegistry::marketStall);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_GREEN =
+            BLOCKS.register("market_stall_green", BlockRegistry::marketStall);
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> MARKET_STALL_PURPLE =
+            BLOCKS.register("market_stall_purple", BlockRegistry::marketStall);
+
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> FOUNTAIN = BLOCKS.register("fountain", () ->
+            new DecorativeMultiblockBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0F)
+                            .sound(SoundType.STONE).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    -1, 1, -1, 1, -1, 1,
+                    (x, y, z) -> y == -1
+                            ? fountainBaseShape(x, z)
+                            : x == 0 && z == 0
+                                    ? (y == 0
+                                            ? Shapes.or(
+                                                    Block.box(0, 0, 0, 16, 14, 16),
+                                                    Block.box(5, 0, 5, 11, 16, 11))
+                                            : Block.box(5, 0, 5, 11, 13, 11))
+                                    : Shapes.empty()));
+
+    private static VoxelShape fountainBaseShape(int x, int z) {
+        double minX = x == -1 ? 3.0D : 0.0D;
+        double maxX = x == 1 ? 13.0D : 16.0D;
+        double minZ = z == -1 ? 3.0D : 0.0D;
+        double maxZ = z == 1 ? 13.0D : 16.0D;
+        return Block.box(minX, 0, minZ, maxX, 13, maxZ);
+    }
+
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> SCARECROW = BLOCKS.register("scarecrow", () ->
+            new DecorativeMultiblockBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 1, 0, 1, 0, 0,
+                    (x, y, z) -> y == 0
+                            ? (x == 0 ? Block.box(7, 0, 6, 10, 16, 10) : Shapes.empty())
+                            : Block.box(0, 0, 6, 16, 9, 10)));
+
+    public static final DeferredHolder<Block, DecorativeMultiblockBlock> DRESS_FORM = BLOCKS.register("dress_form", () ->
+            new DecorativeMultiblockBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 0, 0, 1, 0, 0,
+                    (x, y, z) -> y == 0
+                            ? Block.box(3, 0, 3, 13, 16, 13)
+                            : Block.box(4, 0, 5, 12, 16, 11)));
+
+    public static final DeferredHolder<Block, LoomBlock> LOOM = BLOCKS.register("loom", () ->
+            new LoomBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 1, -1, 1, 0, 0,
+                    (x, y, z) -> y == 1
+                            ? Block.box(1, 0, 4, 15, 8, 12)
+                            : Block.box(2, 0, 4, 14, 16, 12)));
+
+    public static final DeferredHolder<Block, SpinningWheelBlock> SPINNING_WHEEL = BLOCKS.register(
+            "spinning_wheel", () -> new SpinningWheelBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(1.5F)
+                            .sound(SoundType.WOOD).noOcclusion(),
+                    Shapes.or(
+                            Block.box(1, 0, 5, 15, 3, 11),
+                            Block.box(3, 3, 6, 5, 16, 10),
+                            Block.box(11, 3, 6, 13, 16, 10),
+                            Block.box(5, 5, 6, 11, 15, 10))));
+
+    public static final DeferredHolder<Block, DisplayCaseBlock> DISPLAY_CASE = BLOCKS.register(
+            "display_case", () -> new DisplayCaseBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(1.5F)
+                            .sound(SoundType.WOOD).noOcclusion().dynamicShape()
+                            .pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredHolder<Block, CrateBlock> SMALL_CRATE = BLOCKS.register("small_crate", () ->
+            new CrateBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    9, "container.britannia_mod.small_crate",
+                    0, 0, 0, 0, 0, 0,
+                    (x, y, z) -> Block.box(2, 0, 2, 14, 11, 14)));
+
+    public static final DeferredHolder<Block, CrateBlock> MEDIUM_CRATE = BLOCKS.register("medium_crate", () ->
+            new CrateBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_MAGENTA).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    27, "container.britannia_mod.medium_crate",
+                    0, 0, 0, 0, 0, 0,
+                    (x, y, z) -> Block.box(1, 0, 1, 15, 14, 15)));
+
+    public static final DeferredHolder<Block, CrateBlock> LARGE_CRATE = BLOCKS.register("large_crate", () ->
+            new CrateBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.5F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    54, "container.britannia_mod.large_crate",
+                    0, 1, 0, 1, 0, 1,
+                    (x, y, z) -> {
+                        double maxX = x == 0 ? 16.0D : 12.0D;
+                        double maxZ = z == 0 ? 16.0D : 6.0D;
+                        return Block.box(0, 0, 0, maxX, y == 0 ? 16.0D : 3.0D, maxZ);
+                    }));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrateBlockEntity>> CRATE_BLOCK_ENTITY_TYPE =
+            BLOCK_ENTITY_TYPES.register("crate", () -> BlockEntityType.Builder.of(
+                    CrateBlockEntity::new,
+                    SMALL_CRATE.get(), MEDIUM_CRATE.get(), LARGE_CRATE.get()).build(null));
+
+    public static final DeferredHolder<Block, WaterWellBlock> WATER_WELL = BLOCKS.register("water_well", () ->
+            new WaterWellBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.5F)
+                            .sound(SoundType.STONE).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 0, 0, 1, 0, 1,
+                    (x, y, z) -> y == 0
+                            ? Block.box(1, 0, 1, 15, 12, 15)
+                            : Shapes.or(
+                                    Block.box(1, 0, 1, 3, 16, 15),
+                                    Block.box(13, 0, 1, 15, 16, 15),
+                                    Block.box(0, 13, 0, 16, 16, 16))));
+
+    public static final DeferredHolder<Block, LadderMultiblockBlock> LADDER = BLOCKS.register("ladder", () ->
+            new LadderMultiblockBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(1.5F)
+                            .sound(SoundType.LADDER).noOcclusion().pushReaction(PushReaction.BLOCK),
+                    0, 0, 0, 2, 0, 0,
+                    (x, y, z) -> Shapes.or(
+                            Block.box(1, 0, 2, 3, 16, 14),
+                            Block.box(13, 0, 2, 15, 16, 14),
+                            Block.box(1, 4, 2, 15, 6, 14),
+                            Block.box(1, 12, 2, 15, 14, 14),
+                            y == 2 ? Block.box(0, 14, 8, 16, 16, 16) : Shapes.empty())));
+
+    public static final DeferredHolder<Block, TrainingDummyBlock> TRAINING_DUMMY = BLOCKS.register(
+            "training_dummy", () -> new TrainingDummyBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).strength(2.0F)
+                            .sound(SoundType.WOOD).noOcclusion().pushReaction(PushReaction.BLOCK)));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TrainingDummyBlockEntity>>
+            TRAINING_DUMMY_BLOCK_ENTITY_TYPE = BLOCK_ENTITY_TYPES.register(
+                    "training_dummy", () -> BlockEntityType.Builder.of(
+                            TrainingDummyBlockEntity::new, TRAINING_DUMMY.get()).build(null));
 
     public static void register(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

@@ -3,6 +3,9 @@ package com.seggellion.britannia_mod.client;
 import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.client.model.DecorativeOffsetModel;
+import com.seggellion.britannia_mod.client.model.DecorativeScaledModel;
+import com.seggellion.britannia_mod.client.model.MarketStallNormalizedModel;
+import java.util.Set;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +18,11 @@ import org.slf4j.Logger;
 @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD, modid = BritanniaMod.MODID)
 public class ClientModelHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Set<String> SCALED_CARTS = Set.of(
+            "merchant_cart_red", "merchant_cart_purple", "merchant_cart_blue",
+            "merchant_cart_green", "merchant_cart_yellow", "merchant_cart_white");
+    private static final Set<String> MARKET_STALLS = Set.of(
+            "market_stall_red", "market_stall_blue", "market_stall_green", "market_stall_purple");
 
     @SubscribeEvent
     public static void onModelModify(ModelEvent.ModifyBakingResult event) {
@@ -22,7 +30,42 @@ public class ClientModelHandler {
 
         event.getModels().forEach((mrl, model) -> {
             ResourceLocation id = mrl.id();
-                if (mrl.variant().equals("inventory")) return;
+            String path = id.getPath();
+            if (id.getNamespace().equals(BritanniaMod.MODID)
+                    && MARKET_STALLS.contains(path)
+                    && !(model instanceof MarketStallNormalizedModel)) {
+                event.getModels().replace(mrl, new MarketStallNormalizedModel(model));
+                LOGGER.info("MarketStallNormalizedModel applied to {}", mrl);
+                return;
+            }
+            if (id.getNamespace().equals(BritanniaMod.MODID)
+                    && (SCALED_CARTS.contains(path) || path.equals("water_well"))
+                    && !(model instanceof DecorativeScaledModel)) {
+                float pivotZ = path.equals("water_well") ? 1.0F : 0.5F;
+                float offsetY = SCALED_CARTS.contains(path) ? -0.4F : 0.0F;
+                event.getModels().replace(mrl, new DecorativeScaledModel(
+                        model, 1.2F, 0.5F, 0.0F, pivotZ, 0.0F, offsetY, 0.0F));
+                LOGGER.info("DecorativeScaledModel applied to {}", mrl);
+                return;
+            }
+            if (id.getNamespace().equals(BritanniaMod.MODID)
+                    && path.equals("fountain")
+                    && !(model instanceof DecorativeScaledModel)) {
+                event.getModels().replace(mrl,
+                        new DecorativeScaledModel(model, 1.3F, 0.5F, -1.0F, 0.5F));
+                LOGGER.info("DecorativeScaledModel applied to {}", mrl);
+                return;
+            }
+            if (id.getNamespace().equals(BritanniaMod.MODID)
+                    && path.equals("moongate_block")
+                    && !mrl.variant().equals("inventory")
+                    && !(model instanceof DecorativeScaledModel)) {
+                event.getModels().replace(mrl,
+                        new DecorativeScaledModel(model, 1.2F, 0.5F, 0.0F, 0.5F));
+                LOGGER.info("DecorativeScaledModel applied to {}", mrl);
+                return;
+            }
+            if (mrl.variant().equals("inventory")) return;
             if (id.getNamespace().equals(BritanniaMod.MODID)
                     && id.getPath().contains(targetPath)) {
 

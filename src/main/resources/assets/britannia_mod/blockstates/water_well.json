@@ -1,0 +1,43 @@
+{
+    "multipart":  [
+                      {
+                          "when":  {
+                                       "facing":  "north",
+                                       "part":  "0"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/water_well"
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "facing":  "east",
+                                       "part":  "0"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/water_well",
+                                        "y":  90
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "facing":  "south",
+                                       "part":  "0"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/water_well",
+                                        "y":  180
+                                    }
+                      },
+                      {
+                          "when":  {
+                                       "facing":  "west",
+                                       "part":  "0"
+                                   },
+                          "apply":  {
+                                        "model":  "britannia_mod:block/new_assets/water_well",
+                                        "y":  270
+                                    }
+                      }
+                  ]
+}

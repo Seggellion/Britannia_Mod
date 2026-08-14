@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:globe",
+    "britannia_mod:merchant_cart_red",
+    "britannia_mod:merchant_cart_purple",
+    "britannia_mod:merchant_cart_blue",
+    "britannia_mod:merchant_cart_green",
+    "britannia_mod:merchant_cart_yellow",
+    "britannia_mod:merchant_cart_white",
+    "britannia_mod:market_stall_red",
+    "britannia_mod:market_stall_blue",
+    "britannia_mod:market_stall_green",
+    "britannia_mod:market_stall_purple",
+    "britannia_mod:scarecrow",
+    "britannia_mod:dress_form",
+    "britannia_mod:loom",
+    "britannia_mod:small_crate",
+    "britannia_mod:medium_crate",
+    "britannia_mod:large_crate",
+    "britannia_mod:ladder",
+    "britannia_mod:spinning_wheel",
+    "britannia_mod:display_case",
+    "britannia_mod:training_dummy",
+    "britannia_mod:wooden_fence"
+  ]
+}

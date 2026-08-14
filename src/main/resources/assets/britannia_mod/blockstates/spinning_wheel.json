@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "active=false,facing=north": { "model": "britannia_mod:block/new_assets/spinning_wheel" },
+    "active=false,facing=east": { "model": "britannia_mod:block/new_assets/spinning_wheel", "y": 90 },
+    "active=false,facing=south": { "model": "britannia_mod:block/new_assets/spinning_wheel", "y": 180 },
+    "active=false,facing=west": { "model": "britannia_mod:block/new_assets/spinning_wheel", "y": 270 },
+    "active=true,facing=north": { "model": "britannia_mod:block/new_assets/spinning_wheel_active" },
+    "active=true,facing=east": { "model": "britannia_mod:block/new_assets/spinning_wheel_active", "y": 90 },
+    "active=true,facing=south": { "model": "britannia_mod:block/new_assets/spinning_wheel_active", "y": 180 },
+    "active=true,facing=west": { "model": "britannia_mod:block/new_assets/spinning_wheel_active", "y": 270 }
+  }
+}

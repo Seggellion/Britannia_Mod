@@ -1,0 +1,119 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_empty" }
+    },
+    {
+      "when": { "part": "0", "facing": "north", "north": "false", "east": "false", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_independent" }
+    },
+    {
+      "when": { "part": "0", "facing": "east", "north": "false", "east": "false", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_independent", "y": 90 }
+    },
+    {
+      "when": { "part": "0", "facing": "south", "north": "false", "east": "false", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_independent", "y": 180 }
+    },
+    {
+      "when": { "part": "0", "facing": "west", "north": "false", "east": "false", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_independent", "y": 270 }
+    },
+    {
+      "when": { "OR": [
+        { "part": "0", "facing": "north", "north": "true" },
+        { "part": "0", "facing": "north", "east": "true" },
+        { "part": "0", "facing": "north", "south": "true" },
+        { "part": "0", "facing": "north", "west": "true" }
+      ] },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_connected" }
+    },
+    {
+      "when": { "OR": [
+        { "part": "0", "facing": "east", "north": "true" },
+        { "part": "0", "facing": "east", "east": "true" },
+        { "part": "0", "facing": "east", "south": "true" },
+        { "part": "0", "facing": "east", "west": "true" }
+      ] },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_connected", "y": 90 }
+    },
+    {
+      "when": { "OR": [
+        { "part": "0", "facing": "south", "north": "true" },
+        { "part": "0", "facing": "south", "east": "true" },
+        { "part": "0", "facing": "south", "south": "true" },
+        { "part": "0", "facing": "south", "west": "true" }
+      ] },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_connected", "y": 180 }
+    },
+    {
+      "when": { "OR": [
+        { "part": "0", "facing": "west", "north": "true" },
+        { "part": "0", "facing": "west", "east": "true" },
+        { "part": "0", "facing": "west", "south": "true" },
+        { "part": "0", "facing": "west", "west": "true" }
+      ] },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_base_connected", "y": 270 }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "false", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_independent" }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "false", "south": "true", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_corner" }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "false", "south": "false", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_corner", "y": 90 }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "true", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_corner", "y": 180 }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "true", "south": "true", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_corner", "y": 270 }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "false", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_end", "y": 180 }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "true", "south": "false", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_end", "y": 270 }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "false", "south": "true", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_end" }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "false", "south": "false", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_end", "y": 90 }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "false", "south": "true", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_straight" }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "true", "south": "false", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_straight", "y": 90 }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "true", "south": "true", "west": "false" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_tee" }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "true", "south": "false", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_tee", "y": 270 }
+    },
+    {
+      "when": { "part": "1", "north": "true", "east": "false", "south": "true", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_tee", "y": 180 }
+    },
+    {
+      "when": { "part": "1", "north": "false", "east": "true", "south": "true", "west": "true" },
+      "apply": { "model": "britannia_mod:block/new_assets/display_case_frame_tee", "y": 90 }
+    }
+  ]
+}

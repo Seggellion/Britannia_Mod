@@ -61,6 +61,12 @@ public class ModSounds {
     public static final EntitySoundGroup GORILLA = registerEntitySounds("gorilla");
     public static final EntitySoundGroup TURKEY = registerEntitySounds("turkey");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> FLAMINGO_AMBIENT = SOUND_EVENTS.register(
+            "flamingo_ambient",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "flamingo_ambient"))
+    );
+
 
     public static final EntitySoundGroup GIANT_RAT = registerEntitySounds("giant_rat");
     public static final EntitySoundGroup ALLIGATOR = registerEntitySounds("alligator");
@@ -208,6 +214,12 @@ public static final EntitySoundGroup GARGOYLE_STONE = registerEntitySounds("garg
     public static final DeferredHolder<SoundEvent, SoundEvent> BANK_WITHDRAW = SOUND_EVENTS.register(
             "bank_withdraw",
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.tryParse(BritanniaMod.MODID + ":bank_withdraw"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> TRAINING_DUMMY_HIT = SOUND_EVENTS.register(
+            "training_dummy_hit",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "training_dummy_hit"))
     );
 
     public static final DeferredHolder<SoundEvent, SoundEvent> METAL_DOOR_OPEN = SOUND_EVENTS.register(

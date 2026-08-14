@@ -65,7 +65,9 @@ public class CitySpawnRules {
     );
 
     public static boolean isAllowed(Entity entity) {
-        return isExplicitlyAllowed(entity) || isAllowedVanillaAnimal(entity);
+        return isExplicitlyAllowed(entity)
+            || entity instanceof IbisEntity
+            || isAllowedVanillaAnimal(entity);
     }
 
     public static boolean isCritical(Entity entity) {

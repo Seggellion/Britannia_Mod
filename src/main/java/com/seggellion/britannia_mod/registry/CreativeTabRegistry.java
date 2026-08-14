@@ -253,6 +253,39 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.TORCH_STANDING_ITEM.get());
                 safeAccept(output, ItemRegistry.BRAZIER_SMALL_ITEM.get());
                 safeAccept(output, ItemRegistry.TABLE_SETTING_ITEM.get());
+                safeAccept(output, ItemRegistry.GLOBE_ITEM.get());
+                safeAccept(output, ItemRegistry.FERN_ITEM.get());
+                safeAccept(output, ItemRegistry.HEDGE_BUSH_ITEM.get());
+                safeAccept(output, ItemRegistry.POOL_OF_BLOOD_ITEM.get());
+                safeAccept(output, ItemRegistry.FOLDED_CLOTH_ITEM.get());
+                safeAccept(output, ItemRegistry.BOLT_OF_CLOTH_ITEM.get());
+                safeAccept(output, ItemRegistry.BALL_OF_YARN.get());
+                safeAccept(output, ItemRegistry.SPOOL_OF_THREAD.get());
+                safeAccept(output, ItemRegistry.PEWTER_MUG_ITEM.get());
+                safeAccept(output, ItemRegistry.KETTLE_ITEM.get());
+                safeAccept(output, ItemRegistry.PLATES_AND_SILVERWARE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_RED_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_PURPLE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_BLUE_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_GREEN_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_YELLOW_ITEM.get());
+                safeAccept(output, ItemRegistry.MERCHANT_CART_WHITE_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_RED_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_BLUE_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_GREEN_ITEM.get());
+                safeAccept(output, ItemRegistry.MARKET_STALL_PURPLE_ITEM.get());
+                safeAccept(output, ItemRegistry.FOUNTAIN_ITEM.get());
+                safeAccept(output, ItemRegistry.SCARECROW_ITEM.get());
+                safeAccept(output, ItemRegistry.DRESS_FORM_ITEM.get());
+                safeAccept(output, ItemRegistry.LOOM_ITEM.get());
+                safeAccept(output, ItemRegistry.SPINNING_WHEEL_ITEM.get());
+                safeAccept(output, ItemRegistry.DISPLAY_CASE_ITEM.get());
+                safeAccept(output, ItemRegistry.SMALL_CRATE_ITEM.get());
+                safeAccept(output, ItemRegistry.MEDIUM_CRATE_ITEM.get());
+                safeAccept(output, ItemRegistry.LARGE_CRATE_ITEM.get());
+                safeAccept(output, ItemRegistry.WATER_WELL_ITEM.get());
+                safeAccept(output, ItemRegistry.LADDER_ITEM.get());
+                safeAccept(output, ItemRegistry.TRAINING_DUMMY_ITEM.get());
                 safeAccept(output, ItemRegistry.SPITTOON_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_WEAPONS_1_ITEM.get());
                 safeAccept(output, ItemRegistry.DECORATIVE_SHIELD_1_ITEM.get());
@@ -361,7 +394,6 @@ public class CreativeTabRegistry {
 
                 safeAccept(output, ItemRegistry.CARPET_TELEPORTER_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_BLOCK_ITEM.get());
-                safeAccept(output, ItemRegistry.MOONGATE_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.DUNGEON_MOONGATE_BLOCK_ITEM.get());
                 safeAccept(output, ItemRegistry.DUNGEON_MOONGATE_TOP_ITEM.get());
                 safeAccept(output, ItemRegistry.MOONGATE_LINKING_WAND.get());
@@ -410,6 +442,8 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.SHADE_SPAWN_EGG.get());
                 safeAccept(output, ItemRegistry.WISP_SPAWN_EGG.get());
                 safeAccept(output, ItemRegistry.EARTH_ELEMENTAL_SPAWN_EGG.get());
+                safeAccept(output, ItemRegistry.IBIS_SPAWN_EGG.get());
+                safeAccept(output, ItemRegistry.FLAMINGO_SPAWN_EGG.get());
 
                 // NPC spawn blocks
                 safeAccept(output, ItemRegistry.BRITANNIA_SPAWN_BLOCK_ITEM.get());   
@@ -486,6 +520,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.PLASTER_ARCHWAY_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_AND_STONE_WINDOW_ITEM.get());
                 safeAccept(output, ItemRegistry.BANNISTER_ITEM.get());
+                safeAccept(output, ItemRegistry.WOODEN_FENCE_ITEM.get());
                 safeAccept(output, ItemRegistry.PLASTER_WOOD_POST_ITEM.get());
                 safeAccept(output, ItemRegistry.VILLA_LAMP_POST_ITEM.get());
                 safeAccept(output, ItemRegistry.HOUSE_FARM_PLOT_ITEM.get());

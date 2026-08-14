@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.magic.Spell;
 import com.seggellion.britannia_mod.magic.SpellRegistry;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.ModSounds;
 import com.seggellion.britannia_mod.teleport.BritanniaTeleportService;
 import com.seggellion.britannia_mod.teleport.TeleportDestination;
@@ -164,6 +165,12 @@ public void onItemPickup(ItemEntityPickupEvent.Pre event) { // Changed to Pre
                 ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
 
                 if (heldItem.getItem() == ItemRegistry.TWO_HANDED_AXE.get()) {
+                    if (state.is(BlockRegistry.LADDER.get())) {
+                        state.getBlock().onDestroyedByPlayer(
+                                state, level, pos, player, true, state.getFluidState());
+                        event.setCanceled(true);
+                        return;
+                    }
                     boolean allowed = AxeHarvestRules.isAllowedAxeHarvestBlock(state);
                     LOGGER.debug("TwoHandedAxe Adventure attack: player={} block={} pos={} vanillaLog={} vanillaLeaves={} fruitTree={} allowed={}",
                             player.getGameProfile().getName(),

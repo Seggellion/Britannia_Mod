@@ -64,7 +64,15 @@ public record SkillSnapshot(SkillDataState state, float value) {
      * @param success     did the action succeed? (needed for skills that gain on success / fail)
      */
   public static void trySkillGain(ServerPlayer player, String skillName, boolean success) {
-    if (player == null) return;
+    trySkillGainCapped(player, skillName, success, Float.POSITIVE_INFINITY);
+  }
+
+  /** Attempts the normal gain roll while enforcing an additional activity-specific cap. */
+  public static float trySkillGainCapped(
+      ServerPlayer player, String skillName, boolean success, float activityCap) {
+    if (player == null || skillName == null || activityCap <= 0.0f || Float.isNaN(activityCap)) {
+      return 0.0f;
+    }
 
     // Normalize key
     final String key = skillName.toLowerCase(Locale.ROOT);
@@ -86,15 +94,17 @@ public record SkillSnapshot(SkillDataState state, float value) {
     );
 
     // Respect success/failure flags
-    if ((success && !def.gainOnSuccess) || (!success && !def.gainOnFailure)) return;
+    if ((success && !def.gainOnSuccess) || (!success && !def.gainOnFailure)) return 0.0f;
 
     float current = p.get(key);
-    if (current >= def.max) return;
+    float effectiveMax = Math.min(def.max, activityCap);
+    if (current >= effectiveMax) return 0.0f;
 
     double gainChance = ((100.0 - current) / 100.0) * def.difficultyModifier;
-    if (RNG.nextDouble() > gainChance) return;
+    if (RNG.nextDouble() > gainChance) return 0.0f;
 
-    float newValue = Math.min(current + 0.1f, def.max);
+    float newValue = nextCappedGainValue(current, def.max, activityCap);
+    if (newValue <= current) return 0.0f;
     p.set(key, newValue);
 
     LOGGER.info("🎉 {} gained {} → {}", player.getScoreboardName(), key, newValue);
@@ -112,6 +122,11 @@ public record SkillSnapshot(SkillDataState state, float value) {
 
     // Async persist
     postGain(player, key, newValue);
+    return newValue - current;
+}
+
+static float nextCappedGainValue(float current, float definitionMax, float activityCap) {
+    return Math.min(current + 0.1f, Math.min(definitionMax, activityCap));
 }
 
 public static float awardSkillGain(ServerPlayer player, String skillName, float amount) {

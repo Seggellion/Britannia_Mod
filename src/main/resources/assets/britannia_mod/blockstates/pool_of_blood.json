@@ -1,0 +1,124 @@
+{
+    "variants":  {
+                     "facing=north,variant=0":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_0"
+                                                },
+                     "facing=east,variant=0":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_0",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=0":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_0",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=0":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_0",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=1":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_1"
+                                                },
+                     "facing=east,variant=1":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_1",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=1":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_1",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=1":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_1",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=2":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_2"
+                                                },
+                     "facing=east,variant=2":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_2",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=2":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_2",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=2":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_2",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=3":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_3"
+                                                },
+                     "facing=east,variant=3":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_3",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=3":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_3",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=3":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_3",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=4":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_4"
+                                                },
+                     "facing=east,variant=4":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_4",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=4":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_4",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=4":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_4",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=5":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_5"
+                                                },
+                     "facing=east,variant=5":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_5",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=5":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_5",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=5":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_5",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=6":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_6"
+                                                },
+                     "facing=east,variant=6":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_6",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=6":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_6",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=6":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_6",
+                                                   "y":  270
+                                               },
+                     "facing=north,variant=7":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_7"
+                                                },
+                     "facing=east,variant=7":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_7",
+                                                   "y":  90
+                                               },
+                     "facing=south,variant=7":  {
+                                                    "model":  "britannia_mod:block/new_assets/pool_of_blood_7",
+                                                    "y":  180
+                                                },
+                     "facing=west,variant=7":  {
+                                                   "model":  "britannia_mod:block/new_assets/pool_of_blood_7",
+                                                   "y":  270
+                                               }
+                 }
+}

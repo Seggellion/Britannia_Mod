@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.spawner;
 
 import com.seggellion.britannia_mod.registry.CityRegistry;
 import com.seggellion.britannia_mod.registry.CitySpawnRules;
+import com.seggellion.britannia_mod.entity.IbisEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +32,17 @@ public class CitySpawner {
 
         Entity entity = event.getEntity();
 
+        if (entity instanceof IbisEntity ibis) {
+            if (!JhelomIbisPopulation.canJoin(level, ibis)) {
+                LOGGER.info("Jhelom ibis policy rejecting uuid={} pos={} reason=outside_region_or_cap population={} max={}",
+                        ibis.getUUID(), ibis.blockPosition(),
+                        JhelomIbisPopulation.getIbisInJhelom(level).size(),
+                        JhelomIbisPopulation.MAX_POPULATION);
+                event.setCanceled(true);
+            }
+            return;
+        }
+
         if (!CitySpawnRules.isDisallowed(entity)) {
             return;
         }
@@ -59,6 +71,8 @@ public class CitySpawner {
         if (level.getGameTime() % CitySpawnRules.TICK_INTERVAL != 0) {
             return;
         }
+
+        JhelomIbisPopulation.tick(level);
 
         for (AABB area : CityRegistry.getAllCityAreas()) {
             enforceEntityLimit(level, area);

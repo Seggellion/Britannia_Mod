@@ -62,11 +62,14 @@ class Milestone14RRemovalAndPreservationTest {
         // integrated total of 693.
         // Wild Reagents adds the Black Pearl item; ash and Blood Moss reuse existing items.
         // Vendor/Trader economy adds the three profession hammers (Milestone 17) and 122
-        // retail items (Milestone 21) on top of 735. The Black Pearl is one of those 122,
-        // so the two branches overlap on it rather than adding a 736th id.
-        // (Amethyst and tourmaline are NOT added there: BlacksmithItemRegistry already
-        // registers every craftables ingredient key as an item.)
-        assertEquals(860, repositoryItems);
+        // retail items (Milestone 21) on top of 735; the Black Pearl is one of those 122,
+        // so those two branches overlap on it rather than adding a 736th id.
+        // New-assets adds its decorative block, multiblock, crate, well, ladder and
+        // market-stall items on top of that; its own branch-local expectation of 766
+        // was never bumped for the four market stalls in its final commit.
+        // This total spans eight registries, so it is taken from an actual run rather
+        // than from per-branch arithmetic.
+        assertEquals(894, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

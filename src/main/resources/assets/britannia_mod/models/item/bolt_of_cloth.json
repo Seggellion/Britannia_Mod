@@ -1,6 +1,3 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "britannia_mod:item/bolt_of_cloth"
-  }
+  "parent": "britannia_mod:block/new_assets/bolt_of_cloth"
 }

@@ -1,5 +1,5 @@
 {
-    "credit": "Seggellion from Ultimacraft.com",
+    "credit": "Seggellion from Ultimacraft",
     "textures": { "1": "britannia_mod:block/decoration/graveyard/grave_flowers" },
     "render_type": "minecraft:cutout",
     "elements": [

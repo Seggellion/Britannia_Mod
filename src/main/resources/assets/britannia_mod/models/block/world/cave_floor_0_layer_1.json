@@ -1,6 +1,6 @@
 {
 	"format_version": "1.21.6",
-	"credit": "Seggellion from Ultimacraft.com",
+	"credit": "Seggellion from Ultimacraft",
 	"parent": "block/block",
 	"textures": {
 		"all": "britannia_mod:block/world/cave_floor_0"

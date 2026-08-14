@@ -1,0 +1,308 @@
+{
+  "variants": {
+    "facing=north,north=false,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "uvlock": true
+    },
+    "facing=north,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=north,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=north,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=north,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "uvlock": true
+    },
+    "facing=north,north=false,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "uvlock": true
+    },
+    "facing=north,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "uvlock": true
+    },
+    "facing=north,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "uvlock": true
+    },
+    "facing=north,north=true,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,north=true,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=north,north=true,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "uvlock": true
+    },
+    "facing=north,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=north,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,north=true,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=north,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=north,north=true,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "uvlock": true
+    },
+    "facing=east,north=false,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=east,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "uvlock": true
+    },
+    "facing=east,north=false,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "uvlock": true
+    },
+    "facing=east,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "uvlock": true
+    },
+    "facing=east,north=true,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=east,north=true,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,north=false,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "uvlock": true
+    },
+    "facing=south,north=false,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "uvlock": true
+    },
+    "facing=south,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "uvlock": true
+    },
+    "facing=south,north=true,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=south,north=true,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,north=false,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/isolated",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,north=false,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,north=false,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=west,north=false,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=west,north=false,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end_mirrored",
+      "uvlock": true
+    },
+    "facing=west,north=false,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,north=false,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "uvlock": true
+    },
+    "facing=west,north=false,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "uvlock": true
+    },
+    "facing=west,north=true,east=false,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/end",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=false,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=false,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/straight",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=false,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 90,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=true,south=false,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/corner",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=true,south=false,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 180,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=true,south=true,west=false": {
+      "model": "britannia_mod:block/structure/wooden_fence/t_junction",
+      "y": 270,
+      "uvlock": true
+    },
+    "facing=west,north=true,east=true,south=true,west=true": {
+      "model": "britannia_mod:block/structure/wooden_fence/cross",
+      "y": 270,
+      "uvlock": true
+    }
+  }
+}

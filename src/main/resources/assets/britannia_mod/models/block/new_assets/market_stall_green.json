@@ -1,0 +1,6 @@
+{
+  "parent": "britannia_mod:block/new_assets/market_stall",
+  "textures": {
+    "texture": "britannia_mod:block/new_assets/market_stall_green"
+  }
+}

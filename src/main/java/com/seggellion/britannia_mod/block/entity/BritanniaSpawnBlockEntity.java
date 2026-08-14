@@ -14,6 +14,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -68,7 +69,6 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         pruneSpawned(sl);
         enforceMaxEntities(sl);
 
-        if (sl.getDifficulty().getId() == 0) { cooldown = 200; return; } // Peaceful
         if (nightOnly && sl.isDay()) { cooldown = 20; enforceBoundary(sl); return; }
 
         if (cooldown > 0) { cooldown--; enforceBoundary(sl); return; }
@@ -83,6 +83,13 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         if (maybeType.isEmpty()) { cooldown = 100; enforceBoundary(sl); return; }
         
         EntityType<?> type = maybeType.get();
+
+        // Peaceful suppresses hostile spawns, not passive CREATURE selections such as Flamingos.
+        if (sl.getDifficulty().getId() == 0 && type.getCategory() == MobCategory.MONSTER) {
+            cooldown = 200;
+            enforceBoundary(sl);
+            return;
+        }
         
         // Create the entity FIRST to check its properties
         Entity entity = type.create(sl);
@@ -117,9 +124,12 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
             }
             
             mob.finalizeSpawn(sl, sl.getCurrentDifficultyAt(spawnAt), MobSpawnType.SPAWNER, null);
-            sl.addFreshEntity(mob);
-            spawned.add(mob.getUUID());
-            this.setChanged();
+            if (sl.addFreshEntity(mob)) {
+                spawned.add(mob.getUUID());
+                this.setChanged();
+            } else {
+                mob.discard();
+            }
         } else {
             // No valid spot found, discard the unused entity to prevent memory leaks
             mob.discard();
@@ -387,6 +397,9 @@ public class BritanniaSpawnBlockEntity extends BlockEntity {
         this.randomMaxTicks = Math.max(this.randomMinTicks, maxTicks);
         this.nightOnly = nightOnly;
         this.maxEntities = Math.max(0, maxEntities);
+        // Apply a saved configuration on the next server tick instead of retaining the
+        // previous selection's potentially long randomized delay.
+        this.cooldown = 0;
 
         if (typeChanged && level instanceof ServerLevel sl) {
             // wipe existing mobs

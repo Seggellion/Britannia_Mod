@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "britannia_mod:block/new_assets/folded_cloth"
+    },
+    "facing=east": {
+      "model": "britannia_mod:block/new_assets/folded_cloth",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "britannia_mod:block/new_assets/folded_cloth",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "britannia_mod:block/new_assets/folded_cloth",
+      "y": 270
+    }
+  }
+}
