@@ -80,7 +80,7 @@ class ClientBrandingBackgroundPolicyTest {
                 "70c9d1eae4c95f42dc08e8029002fb890b782452e2517e263a3e2378c517ad62",
                 sha256("src/main/java/com/seggellion/britannia_mod/mixin/TitleScreenBackgroundMixin.java"));
         assertEquals(
-                "585e7f65ad1543f8b81f83ffd15702d54bb2042e25c5f994a2fa593e1b3098a6",
+                "4c00ef6650fd7860c04a2898d3016a77524b514a4ec83cfb4132f92f38a1d729",
                 sha256("src/main/resources/britannia_mod.mixins.json"));
     }
 
