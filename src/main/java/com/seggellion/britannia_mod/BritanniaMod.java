@@ -132,6 +132,9 @@ public class BritanniaMod {
         com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.init();
         GrapeVarietyManager.init();
 CraftableRegistry.init();
+        // Mining milestone 2: load + validate the Mining progression catalogue fail-fast.
+        // Definitions only — no break-flow behavior is wired until milestone 3.
+        com.seggellion.britannia_mod.mining.Mineables.init();
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
@@ -207,6 +210,9 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(WoodChopEventHandler.class);
         NeoForge.EVENT_BUS.register(new ToolInteractionHandler());
         NeoForge.EVENT_BUS.register(new CityGameModeHandler());
+        // Mining milestone 3: HIGH-priority skill gate; must precede CustomBlockBreakHandler,
+        // which mutates the world inside its NORMAL-priority listener.
+        NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningGateHandler());
        NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
         NeoForge.EVENT_BUS.register(new ChestHandler());
         NeoForge.EVENT_BUS.register(new LockpickingEventHandler());
@@ -331,6 +337,9 @@ public void onServerStarting(ServerStartingEvent event) {
     MinecraftServer minecraftServer = event.getServer();
     boolean dedicatedServer = minecraftServer instanceof net.minecraft.server.dedicated.DedicatedServer;
     ServerAuthRegistry.initialize(minecraftServer, Path.of("."), dedicatedServer);
+    // Mining milestone 2: block registration is complete by now, so every catalogued block id
+    // must resolve against the live registry (the catalogue's unresolved-reference check).
+    com.seggellion.britannia_mod.mining.Mineables.validateBlockIdsResolve();
     NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
 
     try {
