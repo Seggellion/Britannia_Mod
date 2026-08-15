@@ -12,6 +12,23 @@ import java.util.Set;
 public final class CommodityMappings {
     private static final Map<String, CommodityMapping> BY_ITEM_ID = new LinkedHashMap<>();
     private static final Map<String, CommodityMapping> BY_PATH = new LinkedHashMap<>();
+    /**
+     * Raw-ore commodities Rails actually seeds under {@code ore/raw} (CommoditySeeder). Mining
+     * milestone 5: mined ore used to be posted under its display name ("Silver ore"), which no
+     * seeded row carries, so an exact ore lookup could never resolve.
+     */
+    private static final Set<String> SUPPORTED_ORE_COMMODITIES = Set.of(
+            "tin",
+            "copper",
+            "iron",
+            "silver",
+            "gold",
+            "shadow_iron",
+            "agapite",
+            "verite",
+            "valorite"
+    );
+
     private static final Set<String> SUPPORTED_STONE_COMMODITIES = Set.of(
             "cobblestone",
             "stone",
@@ -127,6 +144,27 @@ public final class CommodityMappings {
             case "king_fish" -> "kingfish";
             default -> normalized;
         };
+    }
+
+    /**
+     * The Rails {@code ore/raw} commodity a mined ore resolves to, from the display name
+     * {@code PurityOreItem} carries ("Silver ore", "Shadow Iron ore").
+     *
+     * <p>High-Purity Silver deliberately resolves to plain {@code silver}: the design forbids a
+     * second Silver economic identity, and the premium is already expressed by the {@code purity}
+     * value posted alongside the sale rather than by a separate commodity.
+     */
+    public static Optional<String> oreCommodityKey(String oreType) {
+        String normalized = CityCommodity.normalize(oreType);
+        if (normalized.isBlank()) return Optional.empty();
+
+        String canonical = normalized.endsWith("_ore")
+                ? normalized.substring(0, normalized.length() - "_ore".length())
+                : normalized;
+        if ("high_purity_silver".equals(canonical)) {
+            canonical = "silver";
+        }
+        return SUPPORTED_ORE_COMMODITIES.contains(canonical) ? Optional.of(canonical) : Optional.empty();
     }
 
     public static Optional<String> stoneCommodityKey(String stoneType) {

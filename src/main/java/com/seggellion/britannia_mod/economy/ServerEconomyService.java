@@ -318,6 +318,19 @@ public final class ServerEconomyService {
                 return false;
             }
         }
+        if (stack.getItem() instanceof PurityOreItem oreItem) {
+            // Every mined ore shares one item id, so without this the metal was never checked and a
+            // request for Silver could reserve a Valorite stack sitting in the same inventory.
+            String oreKey = CommodityMappings.oreCommodityKey(oreItem.getOreType(stack)).orElse("");
+            if (oreKey.isBlank()) return false;
+            if (requestedName.isBlank()) return true;
+
+            String requestedKey = CommodityMappings.oreCommodityKey(requestedName)
+                    .orElse(CityCommodity.normalize(requestedName));
+            if (!oreKey.equals(requestedKey)) {
+                return false;
+            }
+        }
         if (stack.getItem() instanceof GradeStoneItem stoneItem) {
             String stoneKey = CommodityMappings.stoneCommodityKey(stoneItem.getStoneType(stack)).orElse("");
             if (stoneKey.isBlank()) return false;
@@ -484,8 +497,14 @@ public final class ServerEconomyService {
             item.addProperty("subcategory", "raw");
             item.addProperty("weight", weight);
         } else if (itemObj instanceof PurityOreItem oreItem) {
-            item.addProperty("item_name", oreItem.getOreType(stack));
-            item.addProperty("commodity_key", oreItem.getOreType(stack));
+            // Mining milestone 5: post the seeded ore/raw identity ("silver"), not the item's
+            // display name ("Silver ore"). Because category+subcategory are sent, Rails performs an
+            // exact lookup with no legacy fallback, so the display name could never resolve.
+            String rawOreType = oreItem.getOreType(stack);
+            String oreKey = CommodityMappings.oreCommodityKey(rawOreType)
+                    .orElse(CityCommodity.normalize(rawOreType));
+            item.addProperty("item_name", oreKey);
+            item.addProperty("commodity_key", oreKey);
             item.addProperty("purity", oreItem.getPurity(stack));
             item.addProperty("category", "ore");
             item.addProperty("subcategory", "raw");

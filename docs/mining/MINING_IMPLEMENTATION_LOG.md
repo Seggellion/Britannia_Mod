@@ -432,3 +432,109 @@ alternative if the owner ever wants a flatter late game.
 ### Milestone 4 result
 
 - Status: **PASS** — see closeout in the milestone report.
+
+---
+
+## Milestone 5 — Silver vertical slice (2026-08-14)
+
+Goal: make Silver a real, findable Mining resource connected to its **existing** economy identity,
+adding only what discovery proved missing.
+
+### What already existed (re-verified, not re-created)
+
+Block, BlockItem, blockstate/model/texture, block lang, the 55.0 catalogue tier and gate, the
+managed break → `PurityOreItem("Silver ore")` drop, `SmallForge`/`LargeForge` refining, the
+`silver_ingot` item, `UOMetalToolMaterial.SILVER`, blacksmithing consumption, restoration
+eligibility, the `VerticalLayeredVein` generator already routed for `silver` in
+`/populateores`, and the Rails `ore/raw/silver` + `metal/ingots/silver` commodities. **None of
+this was duplicated.**
+
+### Gap 1 — Silver existed nowhere in the world (worldgen data)
+
+`/populateores silver` had nothing to place: the Rails vein catalogue seeds only tin (47), iron
+(133) and copper (1). Added **24 Silver veins** — 18 Britain, 6 Minoc — at radius 30–40 as
+vertical sheets (`ZW`, some `XZ`), every coordinate inside the established mining belts and within
+~150 blocks of a proven iron/tin vein, `y` following the existing 60/100 convention. Rarer and
+narrower than iron (133 @ r60) and tin (47), which is exactly the design's "rarer than common
+Iron, more available than the endgame metals". No generator or framework was added.
+
+Delivered as a **separate additive seed**, `db/seeds/silver_ore_veins.rb` + a `db:seed:silver_ore_veins`
+task, following the `uo_skills.rb` precedent, because `db/seeds/ore_veins.rb` uses `OreVein.create!`
+— appending Silver there would have made re-seeding duplicate all 181 existing veins. The new seed
+is idempotent (`find_or_initialize_by` on shard + ore type + position).
+
+### Gap 2 — mined ore could not resolve to its commodity (economy)
+
+The sale payload posted the *display* name (`"Silver ore"`), but Rails seeds `ore/raw` under
+`silver`, and because the payload carries category+subcategory Rails performs an **exact** lookup
+with no legacy fallback — so mined Silver could never resolve. Added
+`CommodityMappings.oreCommodityKey`, mirroring the existing `stoneCommodityKey`, mapping all nine
+approved metals to their seeded identities. High-Purity Silver deliberately resolves to plain
+`silver`: design §16 forbids a second Silver identity, and the premium already travels as the
+`purity` field.
+
+Wiring it also exposed a **real second defect**: `matchesRequest` had no ore branch, so every mined
+ore shared one item id and a sale request for Silver could reserve a Valorite stack from the same
+inventory. Added the ore branch mirroring the stone one.
+
+### Gap 3 — localization
+
+`item.britannia_mod.silver_ingot` and `item.britannia_mod.purity_ore_item` (the item Silver mining
+actually produces) were missing, so both rendered as raw translation keys. Added. The six other
+custom ingots and `grade_stone_item` have the same gap and are left to M6 (their own resources).
+
+### Files added
+
+```text
+[Rails] db/seeds/silver_ore_veins.rb              (24 idempotent Silver veins)
+[Rails] lib/tasks/seed_silver_ore_veins.rake      (db:seed:silver_ore_veins)
+src/main/java/com/seggellion/britannia_mod/gametest/SilverMiningGameTests.java   (5 GameTests)
+src/test/java/com/seggellion/britannia_mod/mining/SilverVerticalSliceTest.java   (8 tests)
+```
+
+### Files modified
+
+```text
+src/main/java/com/seggellion/britannia_mod/economy/CommodityMappings.java
+  (+SUPPORTED_ORE_COMMODITIES, +oreCommodityKey)
+src/main/java/com/seggellion/britannia_mod/economy/ServerEconomyService.java
+  (ore sale payload posts the seeded identity; sale matching now discriminates by metal)
+src/main/resources/assets/britannia_mod/lang/en_us.json  (+2 keys)
+docs/mining/MINING_PROGRESSION_GAP_ANALYSIS.md           (Silver → COMPLETE; ore identity → RESOLVED vs seeds)
+```
+
+### Tests/commands run
+
+```text
+gradlew compileJava compileTestJava                            → SUCCESS
+gradlew test --tests "com.seggellion.britannia_mod.mining.*"   → 48/48 passed
+gradlew runGameTestServer (fresh)                              → see closeout
+ruby -c on both new Rails files                                → Syntax OK, zero CR bytes (clean LF)
+```
+
+Coverage against the playbook's M5 list: generation/placement (vein generator GameTest), 54.9
+denial, 55.0 success, correct drop identity + purity range, correct refining (GameTest, where
+registries are live), correct material identity, restoration + save/load round trip, economy
+mapping (unit).
+
+One test-placement correction was needed mid-milestone: `UOMetalToolMaterial` cannot initialize
+without the registry bootstrap, so the refining-chain assertions moved from the unit test into
+`SilverMiningGameTests` rather than being weakened.
+
+### Not done / deferred (explicit)
+
+- **Silver ingot art** — still the vanilla `minecraft:item/iron_ingot` reference shared by all seven
+  custom ingots. Authoring original art is an owner/asset task; copying or recolouring Mojang's
+  texture into an All-Rights-Reserved mod is not appropriate. Pinned by a test so it cannot be
+  mistaken for finished.
+- **High-Purity Silver** — still asset-less, unrefinable and ungenerated; owner decision (premium
+  tier vs retire) unchanged. Its economy identity now at least reuses `silver` rather than dangling.
+- **Loot tables for custom ore blocks** — a vanilla-tool break of Silver still destroys it with no
+  drop; cross-cutting for all nine ores (M6/M7).
+- **Rails commit** — the two Rails files are written but **uncommitted**; that repository also holds
+  unrelated in-progress work, and its dev database was unreachable, so Rails tests could not run and
+  live vein/commodity state could not be verified.
+
+### Milestone 5 result
+
+- Status: **PASS** — see closeout in the milestone report.

@@ -988,6 +988,8 @@
   "message.britannia_mod.farming.cultivation.skill_unavailable": "Farming skill data is unavailable; planting is blocked.",
   "message.britannia_mod.farming.cultivation.automation_blocked": "Automated planting requires a trusted player skill identity.",
   "message.britannia_mod.farming.cultivation.unresolved": "This planting material cannot be verified; planting is blocked.",
+  "item.britannia_mod.silver_ingot": "Silver Ingot",
+  "item.britannia_mod.purity_ore_item": "Ore",
   "message.britannia_mod.mining.insufficient": "You need %2$s Mining to mine %3$s. Current Mining: %1$s.",
   "message.britannia_mod.mining.skill_unavailable": "Mining skill data is unavailable; mining is blocked.",
   "message.britannia_mod.mining.automation_blocked": "Automated mining requires a trusted player skill identity.",
