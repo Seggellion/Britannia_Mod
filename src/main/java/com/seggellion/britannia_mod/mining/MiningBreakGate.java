@@ -170,11 +170,47 @@ public final class MiningBreakGate {
         return player.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
     }
 
+    /**
+     * How long an identical denial stays quiet. A held left-click re-completes the dig every few
+     * ticks, so without this the same action-bar line is rewritten continuously (milestone 9).
+     */
+    static final long DENIAL_FEEDBACK_COOLDOWN_TICKS = 40L;
+
+    private static final String DENIAL_TICK_TAG = "britannia_mod:mining_denial_tick";
+    private static final String DENIAL_KEY_TAG = "britannia_mod:mining_denial_key";
+
+    /**
+     * Whether a denial should be shown now. A <em>different</em> message is always shown
+     * immediately — looking at a tougher ore must say so at once — while an identical repeat waits
+     * out the cooldown. Pure, so the policy is unit-testable without a player.
+     */
+    static boolean shouldSendDenial(String previousKey, long previousTick, String key, long now) {
+        if (!key.equals(previousKey)) {
+            return true;
+        }
+        // A rewound clock (world swap, restored backup) must not mute feedback forever.
+        return now < previousTick || now - previousTick >= DENIAL_FEEDBACK_COOLDOWN_TICKS;
+    }
+
     public static void sendDenialFeedback(@Nullable Player actor, Evaluation evaluation) {
         Objects.requireNonNull(evaluation, "Mining evaluation is required");
         if (!(actor instanceof ServerPlayer serverPlayer) || evaluation.permitsBreak()) {
             return;
         }
+        // Throttle state rides on the player's own persistent data, the same place
+        // TrainingDummyService keeps its cooldown, so it cannot leak once they log out.
+        net.minecraft.nbt.CompoundTag data = serverPlayer.getPersistentData();
+        String key = evaluation.type().name() + '|'
+                + evaluation.definition().map(MineableDefinition::id).orElse("-") + '|'
+                + formatSkill(evaluation.currentMining()) + '|'
+                + formatSkill(evaluation.requiredMining());
+        long now = serverPlayer.serverLevel().getGameTime();
+        if (!shouldSendDenial(data.getString(DENIAL_KEY_TAG), data.getLong(DENIAL_TICK_TAG), key, now)) {
+            return;
+        }
+        data.putString(DENIAL_KEY_TAG, key);
+        data.putLong(DENIAL_TICK_TAG, now);
+
         Component message = evaluation.type() == ResultType.INSUFFICIENT_SKILL
                 ? Component.translatable(
                         evaluation.feedbackTranslationKey(),

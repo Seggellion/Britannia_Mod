@@ -41,7 +41,8 @@ import java.util.UUID;
 public class BlockRestoreHandler {
 
     private static final int RESTORE_HOURS = 6;
-    private static final long RESTORE_DELAY = RESTORE_HOURS * 60L * 60L * 1000L;
+    /** Public so admin tooling reports the real delay instead of duplicating the constant. */
+    public static final long RESTORE_DELAY = RESTORE_HOURS * 60L * 60L * 1000L;
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent.Pre event) {

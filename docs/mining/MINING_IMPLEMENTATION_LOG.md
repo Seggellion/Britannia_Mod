@@ -865,6 +865,81 @@ docs/mining/MINING_PROGRESSION_GAP_ANALYSIS.md
 
 ---
 
+## Milestone 9 — Feedback, UI synchronization and administration (2026-08-14)
+
+Goal: make Mining understandable without moving any authority to the client.
+
+### 9.1 Held-click denial no longer repeats itself
+
+A denied dig re-completes every few ticks while the button is held, so the same action-bar line was
+being rewritten continuously. Denials are now throttled per player: an identical message waits out
+a 40-tick (2 s) cooldown, while a **different** message — a tougher ore, a changed requirement —
+appears immediately, because that is new information rather than noise. A rewound clock cannot mute
+feedback permanently.
+
+The throttle state rides on the player's own persistent data, the same place
+`TrainingDummyService` keeps its cooldown, so it cannot leak when players log out. The decision
+itself is a pure function (`shouldSendDenial`) and is unit-tested without a player or a world.
+
+Feedback remains on the **action bar** and never in chat — asserted, so it cannot regress into spam.
+
+### 9.2 Operator diagnostics: `/mining` (read-only)
+
+`/mining debug` answers, for the block being looked at, exactly the questions an operator has when
+someone reports "I can't mine this":
+
+```text
+block=…, player_placed=…                     (is this construction rather than a deposit?)
+resource=…, category=…, required_mining=…    (what is it, and what does it demand?)
+drop="…", economy_commodity=…, restorable=…  (what does it yield, and can it be sold?)
+gate=… (would break / would be denied), your_mining=…, required=…
+restoration: owes=…, broken_by=…, due_in=…, cell_free=…
+```
+
+Plus `/mining skill [player]` (value **and** data state, so "denied because Rails has not answered
+yet" is visible) and `/mining restorations` (pending, due-now, and how many are waiting on an
+occupied cell, per dimension, plus the provenance count).
+
+It is operator-gated at permission 2 and **mutates nothing** — no skill write, no restoration
+trigger, no provenance write — so running it can never change the situation it describes. A test
+enumerates the mutators it must never call. Skill changes remain `/setskill`'s job.
+
+### 9.3 Verified, not assumed
+
+- **Threshold crossing is immediate.** A GameTest denies at 54.9, raises the skill mid-session, and
+  the very next attempt succeeds — no reconnect, no relog. The gate re-reads the authoritative
+  snapshot on every attempt, so there is nothing to invalidate.
+- **No eligibility on ItemStacks.** Asserted across the Mining sources: nothing writes
+  `DataComponents`/`CustomData`. Caching eligibility onto a stack would both leak a skill oracle to
+  the client and delay threshold crossings until the stack changed.
+- **Client sync is the existing one.** Mining adds no payload; gains reach the client through
+  `SkillManager`'s existing `SkillSyncPayload`, which already fires on every gain.
+- **Creative/operator behaviour** is unchanged from M3 and still covered by its GameTests.
+- **Messages carry the numbers.** The insufficient-skill string is asserted to interpolate current,
+  required and material, per design §2.4.
+
+### Files added
+
+```text
+src/main/java/com/seggellion/britannia_mod/commands/MiningDebugCommand.java
+src/test/java/com/seggellion/britannia_mod/mining/MiningFeedbackPolicyTest.java   (8 tests)
+```
+
+### Files modified
+
+```text
+mining/MiningBreakGate.java                  (denial throttle + pure shouldSendDenial)
+block/blockrestore/BlockRestoreHandler.java  (RESTORE_DELAY exposed so tooling reports the real value)
+registry/CommandRegistry.java                (+1 command registration)
+gametest/MiningGateGameTests.java            (+1 immediate-threshold GameTest)
+```
+
+### Milestone 9 result
+
+- Status: **PASS** — see closeout in the milestone report.
+
+---
+
 ## Owner decisions — 2026-08-14 (answers to the open M10 questions)
 
 Both questions that had been carried as "open for M10 sign-off" are now answered by the owner.

@@ -72,7 +72,7 @@ public final class MiningGateGameTests {
         ServerPlayer lowMiner = survivalMiner(helper, 54.9f);
         boolean broke = lowMiner.gameMode.destroyBlock(absolute);
 
-        check(!broke, "destroyBlock must report failure for a denied break");
+        check(!broke, "a denied break reports failure");
         helper.assertBlockPresent(BlockRegistry.SILVER_ORE.get(), relative);
         check(dropsNear(helper, absolute).isEmpty(), "a denied break must produce zero drops");
         check(!hasRestoreRecord(level, absolute), "a denied break must schedule zero restorations");
@@ -116,6 +116,39 @@ public final class MiningGateGameTests {
                 "an authorized break must award at most one 0.1 activation, got " + highSkill);
         check(SkillManager.getSkill(lowMiner, MiningBreakGate.SKILL_ID) == 54.9f,
                 "denial must not move the low miner's skill");
+        helper.succeed();
+    }
+
+    /**
+     * Milestone 9: crossing a threshold takes effect on the very next attempt — same session, same
+     * player, no reconnect and no relog. The gate reads authoritative server state every time, so
+     * there is nothing to invalidate.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void crossingTheThresholdTakesEffectImmediately(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos firstRelative = new BlockPos(1, 1, 1);
+        BlockPos secondRelative = new BlockPos(3, 1, 1);
+        BlockPos first = helper.absolutePos(firstRelative);
+        BlockPos second = helper.absolutePos(secondRelative);
+        helper.setBlock(firstRelative, BlockRegistry.SILVER_ORE.get());
+        helper.setBlock(secondRelative, BlockRegistry.SILVER_ORE.get());
+
+        ServerPlayer miner = survivalMiner(helper, 54.9f);
+        check(!miner.gameMode.destroyBlock(first), "precondition: 54.9 is denied");
+        helper.assertBlockPresent(BlockRegistry.SILVER_ORE.get(), firstRelative);
+
+        // The skill rises mid-session, exactly as a gain or a Guildmaster purchase would deliver it.
+        SkillManager.applyConfirmedValue(miner, MiningBreakGate.SKILL_ID, 55.0f);
+        miner.gameMode.destroyBlock(second);
+
+        // Success is judged by the world, not by destroyBlock's return value: the managed flow
+        // cancels the event and removes the block itself, so an authorized managed break reports
+        // false exactly like a denial does.
+        helper.assertBlockNotPresent(BlockRegistry.SILVER_ORE.get(), secondRelative);
+        check(hasRestoreRecord(level, second),
+                "the very next attempt must mine -- no reconnect may be required");
+        helper.assertBlockPresent(BlockRegistry.SILVER_ORE.get(), firstRelative);
         helper.succeed();
     }
 

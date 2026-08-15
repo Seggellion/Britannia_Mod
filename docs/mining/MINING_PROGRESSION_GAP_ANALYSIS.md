@@ -1,4 +1,4 @@
-# Mining Progression Gap Analysis (Milestones 1-8)
+# Mining Progression Gap Analysis (Milestones 1-9)
 
 Date: 2026-08-14 · Branch `patch-18`
 Original discovery at HEAD `40fa27d2`; rows updated as each milestone closed.
@@ -70,8 +70,8 @@ scored on their own remaining gaps; cross-cutting systems are scored once in §3
 | Stone economy identity | **RESOLVED where a commodity exists (M8)** | E2 fixed: stone sales now post the **seeded family** (rubble/common/igneous/volcanic/sedimentary/mineral) instead of the literal `blocks`, which no commodity row has ever carried — every stone sale previously failed Rails' exact lookup. Fixed in all three sites (sale payload, trader listing, commodity table). E4 partly closed: Blackstone's `Blackrock` drop now maps to the seeded `blackstone` commodity. Remaining: Deepslate, Cobbled Deepslate, Dripstone and the 4 custom rocks have **no commodity in Rails at all** — adding one means inventing a price, so it is an owner decision, not a silent edit. E3 (mined Stone yields cobblestone) unchanged and now an explicit owner question |
 | Refining | COMPLETE (generic) | Forge purity system; no skill participation (documented as future UO parity hook per design §17); high-purity silver unrefinable (see §1) |
 | Blacksmithing consumption | COMPLETE | `UOMetalToolMaterial` covers all 9 approved metals incl. Silver |
-| Localization for mining messages | **PARTIAL (M2)** | Generic requirement-denial keys added to `en_us.json` (`message.britannia_mod.mining.insufficient/skill_unavailable/automation_blocked/unresolved`), mirroring Farming's key shape; not wired (M3/M9). Success-path break messages remain hard-coded literals. |
-| Denial feedback / thresholds UX | **PARTIAL (M3)** | Localized action-bar denial wired (`mining.insufficient` with material/current/required, `skill_unavailable`, `automation_blocked`), Farming's formatting conventions. Held-click spam tuning, admin inspection tooling → M9 |
+| Localization for mining messages | PARTIAL | Denial keys added and wired (M2/M3), asserted to interpolate current/required/material. Success-path break messages ("You mined X stone. Grade: Y") remain hard-coded literals — pre-existing, cosmetic, and untouched by this project |
+| Denial feedback / thresholds UX | **COMPLETE (M9)** | Localized action-bar denial (material/current/required), now throttled per player so a held click cannot rewrite the same line every dig while a *different* message still appears immediately. Never written to chat (asserted) |
 | Tool durability on mining | MISSING (currently none consumed) | Baseline invariant to preserve in denial tests; whether successful mining *should* consume durability is UNKNOWN intent — flag for owner in M3 only if tests require a definition |
 | Tests (mining/restore/economy) | MISSING | None exist; JUnit + GameTest infrastructure ready |
 | Assets: ores/rocks | PARTIAL | Complete except custom `gold_ore` and `high_purity_silver_ore` (nothing) |

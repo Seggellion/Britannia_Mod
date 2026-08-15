@@ -40,6 +40,9 @@ public class CommandRegistry {
         RandomizeWallsCommand.register(event.getDispatcher());
         VerifyCommand.register(event.getDispatcher());
         FarmingDebugCommand.register(event.getDispatcher());
+        // Mining milestone 9: read-only operator diagnostics (skill, requirement, resolved
+        // resource, restoration status). Mutates nothing.
+        com.seggellion.britannia_mod.commands.MiningDebugCommand.register(event.getDispatcher());
         BannerDyeAdminCommands.register(event.getDispatcher());
         ManagedVegetationCommands.register(event.getDispatcher());
 
