@@ -29,12 +29,30 @@ public class MiningGateHandler {
             return;
         }
         Player player = event.getPlayer();
-        MiningBreakGate.Evaluation evaluation = MiningBreakGate.evaluate(player, event.getState());
+        MiningBreakGate.Evaluation evaluation =
+                MiningBreakGate.evaluate(player, event.getState(), serverLevel, event.getPos());
         if (evaluation.permitsBreak()) {
             return;
         }
         event.setCanceled(true);
         MiningBreakGate.sendDenialFeedback(player, evaluation);
         MiningBreakGate.synchronizeDeniedBreak(player, serverLevel, event.getPos());
+    }
+
+    /**
+     * Clears the player-placed marker once a break has actually been allowed to happen, so the
+     * provenance set tracks standing construction instead of growing forever.
+     *
+     * <p>Deliberately {@link EventPriority#LOWEST} and a separate listener: every reader — the gate
+     * above, the managed flow, and the skill award — must still see the marker while they decide.
+     * Forgetting it in the HIGH-priority gate would erase the evidence before the managed flow
+     * consulted it, which would hand the place-break loop straight back. Cancelled events do not
+     * reach this listener, so a denied break leaves the marker untouched.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onBlockBroken(BlockEvent.BreakEvent event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel) {
+            MiningProvenance.forget(serverLevel, event.getPos());
+        }
     }
 }

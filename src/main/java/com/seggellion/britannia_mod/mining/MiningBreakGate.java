@@ -5,6 +5,7 @@ import com.seggellion.britannia_mod.skill.SkillManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -99,6 +100,22 @@ public final class MiningBreakGate {
 
     /** Full server-side evaluation of one break attempt against the live catalogue. */
     public static Evaluation evaluate(@Nullable Player actor, BlockState state) {
+        return evaluate(actor, state, null, null);
+    }
+
+    /**
+     * Position-aware evaluation. A mineable a player placed themselves is construction, not a
+     * deposit (milestone 7): it resolves NOT_APPLICABLE, so the gate never stops someone dismantling
+     * their own granite wall and the place-break loop awards nothing.
+     */
+    public static Evaluation evaluate(
+            @Nullable Player actor,
+            BlockState state,
+            @Nullable ServerLevel level,
+            @Nullable BlockPos pos) {
+        if (MiningProvenance.isPlayerPlaced(level, pos)) {
+            return new Evaluation(ResultType.NOT_APPLICABLE, Optional.empty(), Float.NaN, Float.NaN);
+        }
         return evaluateResolved(Mineables.resolve(state), subject(actor));
     }
 

@@ -28,9 +28,13 @@ class SilverVerticalSliceTest {
         assertEquals(Optional.of("silver"), CommodityMappings.oreCommodityKey("silver_ore"));
     }
 
-    /** The design forbids a second Silver identity; purity carries the premium instead. */
+    /**
+     * High-Purity Silver was retired by owner decision (there is exactly one Silver metal/ore), but
+     * players may still hold mined stacks from before. They keep selling as ordinary Silver rather
+     * than becoming unsellable, which is also what "one Silver identity" means economically.
+     */
     @Test
-    void highPuritySilverReusesTheSilverIdentityRatherThanDuplicatingIt() {
+    void legacyHighPuritySilverStacksStillSellAsOrdinarySilver() {
         assertEquals(Optional.of("silver"),
                 CommodityMappings.oreCommodityKey("High-Purity Silver ore"));
     }
@@ -68,9 +72,6 @@ class SilverVerticalSliceTest {
     @Test
     void minedSilverStripsToTheMetalNameTheForgeLooksUp() {
         assertEquals("silver", "Silver ore".toLowerCase(Locale.ROOT).replace(" ore", ""));
-        assertEquals("high-purity silver",
-                "High-Purity Silver ore".toLowerCase(Locale.ROOT).replace(" ore", ""),
-                "the premium node strips to a name no metal is registered under -- known gap");
     }
 
     @Test
@@ -88,6 +89,39 @@ class SilverVerticalSliceTest {
         assertTrue(silver.restorable());
         assertEquals(Optional.of("silver"), CommodityMappings.oreCommodityKey(silver.dropName()),
                 "the catalogue drop name and the economy mapping must agree");
+    }
+
+    /** Milestone 6: every registered ore/rock block must render — no missing-model blocks. */
+    @Test
+    void everyCatalogueBlockOwnedByThisModShipsItsAssets() throws Exception {
+        MineableCatalog catalog = MineableCatalog.parse(Files.newBufferedReader(
+                PROJECT.resolve("src/main/resources/data/britannia_mod/mining/mineables.json")));
+        for (MineableDefinition definition : catalog.all()) {
+            for (String blockId : definition.blockIds()) {
+                if (!blockId.startsWith("britannia_mod:")) continue;
+                String name = blockId.substring("britannia_mod:".length());
+                for (String asset : List.of(
+                        "blockstates/" + name + ".json",
+                        "models/block/" + name + ".json",
+                        "models/item/" + name + ".json")) {
+                    assertTrue(Files.exists(ASSETS.resolve(asset)),
+                            definition.id() + " is registered but missing " + asset);
+                }
+            }
+        }
+    }
+
+    /** Milestone 6: the refined metals a miner produces all need display names. */
+    @Test
+    void everyCustomIngotIsLocalized() throws Exception {
+        String lang = Files.readString(ASSETS.resolve("lang/en_us.json"));
+        for (String metal : List.of("silver", "tin", "copper", "shadow_iron",
+                "agapite", "verite", "valorite")) {
+            assertTrue(lang.contains("\"item.britannia_mod." + metal + "_ingot\""),
+                    "missing lang for " + metal + " ingot");
+        }
+        assertTrue(lang.contains("\"item.britannia_mod.grade_stone_item\""),
+                "the mined stone item needs a display name too");
     }
 
     @Test

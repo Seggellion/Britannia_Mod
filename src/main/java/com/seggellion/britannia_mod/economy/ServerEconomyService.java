@@ -515,7 +515,10 @@ public final class ServerEconomyService {
             item.addProperty("item_name", stoneType);
             item.addProperty("commodity_key", CommodityMappings.stoneCommodityIdentityKey(stoneType));
             item.addProperty("category", "stone");
-            item.addProperty("subcategory", "blocks");
+            // Milestone 8: the seeded family (rubble/common/igneous/volcanic/sedimentary/mineral),
+            // not the literal "blocks" no commodity row has ever carried.
+            item.addProperty("subcategory",
+                    CommodityMappings.stoneCommoditySubcategory(stoneType).orElse(""));
             item.addProperty("weight", weight);
             LOGGER.info("StoneTrader sale GradeStoneItem item_id={} rawStoneType={} commodity_key={} weight={}",
                     itemId, rawStoneType, CommodityMappings.stoneCommodityIdentityKey(stoneType), weight);

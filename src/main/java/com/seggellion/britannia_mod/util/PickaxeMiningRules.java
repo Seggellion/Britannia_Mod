@@ -1,48 +1,38 @@
 package com.seggellion.britannia_mod.util;
 
-import com.seggellion.britannia_mod.registry.BlockRegistry;
-import net.minecraft.world.level.block.Blocks;
+import com.seggellion.britannia_mod.mining.MineableDefinition;
+import com.seggellion.britannia_mod.mining.Mineables;
 import net.minecraft.world.level.block.state.BlockState;
 
+/**
+ * Which blocks the Britannia pickaxe may work, answered from the Mining catalogue.
+ *
+ * <p>Mining milestone 6. These used to be hard-coded {@code state.is(...)} chains, which meant the
+ * managed break flow and the skill gate each carried their own idea of what counts as a mineable —
+ * two sources of truth that could drift, and three Java edits to add one rock. Both now read the
+ * single catalogue, so a new resource is a data change (design §19).
+ *
+ * <p>Coverage is unchanged by this delegation: {@code MineableCatalogContractTest} pins the
+ * catalogue's ACTIVE block set to exactly the set these chains used to list.
+ */
 public final class PickaxeMiningRules {
     private PickaxeMiningRules() {}
 
     public static boolean isAllowedMineableBlock(BlockState state) {
-        return isAllowedStoneBlock(state) || isAllowedOreBlock(state);
+        return Mineables.resolve(state).isPresent();
     }
 
     public static boolean isAllowedStoneBlock(BlockState state) {
-        return state.is(Blocks.STONE)
-                || state.is(Blocks.COBBLESTONE)
-                || state.is(Blocks.ANDESITE)
-                || state.is(Blocks.DIORITE)
-                || state.is(Blocks.GRANITE)
-                || state.is(Blocks.TUFF)
-                || state.is(Blocks.BASALT)
-                || state.is(Blocks.SMOOTH_BASALT)
-                || state.is(Blocks.BLACKSTONE)
-                || state.is(Blocks.DEEPSLATE)
-                || state.is(Blocks.COBBLED_DEEPSLATE)
-                || state.is(Blocks.CALCITE)
-                || state.is(BlockRegistry.IGNEOUS_ROCK.get())
-                || state.is(BlockRegistry.METAMORPHIC_ROCK.get())
-                || state.is(BlockRegistry.VOLCANIC_ROCK.get())
-                || state.is(BlockRegistry.GLACIAL_ROCK.get());
+        return isCategory(state, MineableDefinition.Category.STONE);
     }
 
     public static boolean isAllowedOreBlock(BlockState state) {
-        return state.is(Blocks.IRON_ORE)
-                || state.is(Blocks.DEEPSLATE_IRON_ORE)
-                || state.is(Blocks.GOLD_ORE)
-                || state.is(Blocks.DEEPSLATE_GOLD_ORE)
-                || state.is(BlockRegistry.COPPER_ORE.get())
-                || state.is(BlockRegistry.TIN_ORE.get())
-                || state.is(BlockRegistry.SILVER_ORE.get())
-                || state.is(BlockRegistry.GOLD_ORE.get())
-                || state.is(BlockRegistry.SHADOW_IRON_ORE.get())
-                || state.is(BlockRegistry.AGAPITE_ORE.get())
-                || state.is(BlockRegistry.VERITE_ORE.get())
-                || state.is(BlockRegistry.VALORITE_ORE.get())
-                || state.is(BlockRegistry.HIGH_PURITY_SILVER_ORE.get());
+        return isCategory(state, MineableDefinition.Category.ORE);
+    }
+
+    private static boolean isCategory(BlockState state, MineableDefinition.Category category) {
+        return Mineables.resolve(state)
+                .map(definition -> definition.category() == category)
+                .orElse(false);
     }
 }

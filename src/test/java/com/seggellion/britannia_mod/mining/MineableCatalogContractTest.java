@@ -43,7 +43,10 @@ class MineableCatalogContractTest {
             "britannia_mod:copper_ore", "britannia_mod:tin_ore", "britannia_mod:silver_ore",
             "britannia_mod:gold_ore", "britannia_mod:shadow_iron_ore", "britannia_mod:agapite_ore",
             "britannia_mod:verite_ore", "britannia_mod:valorite_ore",
-            "britannia_mod:high_purity_silver_ore");
+            // Milestone 6, deliberate: Dripstone activated at its approved 35.0 tier as a pure
+            // data change. High-Purity Silver was retired from the managed set by owner decision
+            // (one Silver metal/ore), so the discovered set is 29 blocks minus it, plus Dripstone.
+            "minecraft:dripstone_block");
 
     private static MineableCatalog catalog;
 
@@ -102,20 +105,34 @@ class MineableCatalogContractTest {
         });
     }
 
+    /**
+     * Owner decisions, 2026-08-14: there is exactly one Silver metal/ore, and Obsidian is not a
+     * Mining resource because it is not an Ultima Online material. Both are gone from the
+     * catalogue entirely, so neither can be gated, mined, awarded, or restored.
+     */
     @Test
-    void deferredBaselineEntriesDoNotResolveForGameplay() {
-        for (String id : List.of("dripstone", "obsidian")) {
-            MineableDefinition definition = catalog.byId(id).orElseThrow();
-            assertEquals(MineableDefinition.Status.DEFERRED, definition.status(), id);
-            for (String blockId : definition.blockIds()) {
-                assertTrue(catalog.resolveBlock(blockId).isEmpty(),
-                        blockId + " is deferred and must not resolve as ACTIVE");
-                assertTrue(catalog.definitionForBlock(blockId).isPresent(),
-                        blockId + " must still be catalogued");
-            }
+    void retiredResourcesAreAbsentFromTheCatalogue() {
+        assertTrue(catalog.byId("high_purity_silver").isEmpty(),
+                "only one Silver metal/ore may exist");
+        assertTrue(catalog.byId("obsidian").isEmpty(),
+                "Obsidian is not an Ultima Online material and is not a Mining resource");
+        for (String blockId : List.of("britannia_mod:high_purity_silver_ore", "minecraft:obsidian")) {
+            assertTrue(catalog.resolveBlock(blockId).isEmpty(), blockId + " must not resolve");
+            assertTrue(catalog.definitionForBlock(blockId).isEmpty(), blockId + " must not be catalogued");
         }
-        assertEquals(35.0f, catalog.byId("dripstone").orElseThrow().requiredMining(), 0.0f);
-        assertEquals(60.0f, catalog.byId("obsidian").orElseThrow().requiredMining(), 0.0f);
+        assertEquals(1L, catalog.all().stream()
+                        .filter(definition -> definition.id().contains("silver")).count(),
+                "exactly one Silver definition");
+    }
+
+    /** Dripstone proves an approved rock can be activated as a data edit, with no Java change. */
+    @Test
+    void dripstoneIsActiveAtItsApprovedTier() {
+        MineableDefinition dripstone = catalog.byId("dripstone").orElseThrow();
+        assertEquals(MineableDefinition.Status.ACTIVE, dripstone.status());
+        assertEquals(35.0f, dripstone.requiredMining(), 0.0f);
+        assertEquals(MineableDefinition.Category.STONE, dripstone.category());
+        assertTrue(catalog.resolveBlock("minecraft:dripstone_block").isPresent());
     }
 
     @Test
@@ -138,6 +155,50 @@ class MineableCatalogContractTest {
                     () -> new AssertionError(blockId + " does not resolve"));
             assertEquals(owners.get(blockId), resolved.id());
         }
+    }
+
+    /**
+     * Milestone 6 replaced {@code BlockBreakUtils}' hard-coded name chains with the catalogue's
+     * {@code drop} field. These are the exact strings that chain produced; they are the identity
+     * the refining chain and the economy mapping both key on, so a typo here would silently break
+     * smelting or make a resource unsellable.
+     */
+    @Test
+    void dropNamesMatchTheHistoricalBlockBreakUtilsChain() {
+        Map<String, String> expected = new HashMap<>();
+        expected.put("minecraft:stone", "Cobblestone");
+        expected.put("minecraft:cobblestone", "Cobblestone");
+        expected.put("minecraft:diorite", "Diorite");
+        expected.put("minecraft:andesite", "Andesite");
+        expected.put("minecraft:calcite", "Limestone");
+        expected.put("minecraft:granite", "Granite");
+        expected.put("minecraft:tuff", "Tuff");
+        expected.put("minecraft:basalt", "Basalt");
+        expected.put("minecraft:smooth_basalt", "Basalt");
+        expected.put("minecraft:blackstone", "Blackrock");
+        expected.put("minecraft:deepslate", "Deepslate");
+        expected.put("minecraft:cobbled_deepslate", "Cobbled Deepslate");
+        expected.put("britannia_mod:igneous_rock", "Igneous Rock");
+        expected.put("britannia_mod:metamorphic_rock", "Metamorphic Rock");
+        expected.put("britannia_mod:volcanic_rock", "Volcanic Rock");
+        expected.put("britannia_mod:glacial_rock", "Glacial Rock");
+        expected.put("minecraft:iron_ore", "Iron ore");
+        expected.put("minecraft:deepslate_iron_ore", "Iron ore");
+        expected.put("minecraft:gold_ore", "Gold ore");
+        expected.put("minecraft:deepslate_gold_ore", "Gold ore");
+        expected.put("britannia_mod:gold_ore", "Gold ore");
+        expected.put("britannia_mod:copper_ore", "Copper ore");
+        expected.put("britannia_mod:tin_ore", "Tin ore");
+        expected.put("britannia_mod:silver_ore", "Silver ore");
+        expected.put("britannia_mod:shadow_iron_ore", "Shadow Iron ore");
+        expected.put("britannia_mod:agapite_ore", "Agapite ore");
+        expected.put("britannia_mod:verite_ore", "Verite ore");
+        expected.put("britannia_mod:valorite_ore", "Valorite ore");
+
+        expected.forEach((blockId, dropName) -> assertEquals(dropName,
+                catalog.resolveBlock(blockId).orElseThrow(
+                        () -> new AssertionError(blockId + " no longer resolves")).dropName(),
+                "drop name changed for " + blockId));
     }
 
     @Test

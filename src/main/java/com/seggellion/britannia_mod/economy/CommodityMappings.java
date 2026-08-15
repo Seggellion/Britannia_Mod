@@ -29,18 +29,28 @@ public final class CommodityMappings {
             "valorite"
     );
 
-    private static final Set<String> SUPPORTED_STONE_COMMODITIES = Set.of(
-            "cobblestone",
-            "stone",
-            "andesite",
-            "diorite",
-            "granite",
-            "tuff",
-            "basalt",
-            "blackstone",
-            "limestone",
-            "quartz"
+    /**
+     * Each stone commodity and the subcategory Rails actually seeds it under (CommoditySeeder
+     * groups stone by material family, not by Minecraft block form). Mining milestone 8: the mod
+     * used to post the literal subcategory {@code "blocks"}, which no seeded row carries, so the
+     * exact lookup Rails performs when a category and subcategory are present could never resolve
+     * and every stone sale failed. This map is the single source of truth for both the supported
+     * set and the family each stone belongs to.
+     */
+    private static final Map<String, String> STONE_COMMODITY_FAMILIES = Map.ofEntries(
+            Map.entry("cobblestone", "rubble"),
+            Map.entry("stone", "common"),
+            Map.entry("andesite", "igneous"),
+            Map.entry("diorite", "igneous"),
+            Map.entry("granite", "igneous"),
+            Map.entry("tuff", "volcanic"),
+            Map.entry("basalt", "volcanic"),
+            Map.entry("blackstone", "volcanic"),
+            Map.entry("limestone", "sedimentary"),
+            Map.entry("quartz", "mineral")
     );
+
+    private static final Set<String> SUPPORTED_STONE_COMMODITIES = STONE_COMMODITY_FAMILIES.keySet();
 
     static {
         map("minecraft:wheat", "grain", "whole", "wheat", "Wheat", CommodityUnit.QUANTITY);
@@ -172,7 +182,9 @@ public final class CommodityMappings {
         if (normalized.isBlank()) return Optional.empty();
 
         String canonical = switch (normalized) {
-            case "black_stone" -> "blackstone";
+            // The managed break flow names Blackstone's drop "Blackrock", so without this the one
+            // stone Rails does seed under `volcanic/blackstone` arrived as an unknown commodity.
+            case "black_stone", "blackrock", "black_rock" -> "blackstone";
             case "smooth_stone", "regular_stone" -> "stone";
             case "nether_quartz", "quartz_block" -> "quartz";
             default -> normalized;
@@ -191,8 +203,14 @@ public final class CommodityMappings {
         return Optional.empty();
     }
 
+    /** The Rails subcategory a stone commodity is seeded under, e.g. {@code basalt -> volcanic}. */
+    public static Optional<String> stoneCommoditySubcategory(String stoneCommodityKey) {
+        return Optional.ofNullable(STONE_COMMODITY_FAMILIES.get(CityCommodity.normalize(stoneCommodityKey)));
+    }
+
+    /** {@code category|subcategory|item_name}, matching the identity Rails parses and looks up. */
     public static String stoneCommodityIdentityKey(String stoneType) {
-        return "stone|blocks|" + stoneType;
+        return "stone|" + stoneCommoditySubcategory(stoneType).orElse("") + "|" + stoneType;
     }
 
     private static void mapProduce(String itemName, String subcategory, String displayName) {
@@ -204,7 +222,8 @@ public final class CommodityMappings {
     }
 
     private static void mapStone(String itemId, String itemName, String displayName) {
-        map(itemId, "stone", "blocks", itemName, displayName, CommodityUnit.QUANTITY);
+        map(itemId, "stone", STONE_COMMODITY_FAMILIES.get(itemName), itemName, displayName,
+                CommodityUnit.QUANTITY);
     }
 
     private static void map(String itemIdOrPath, String category, String subcategory, String itemName,

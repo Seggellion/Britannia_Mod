@@ -490,7 +490,9 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.AGAPITE_ORE_ITEM.get());
                 safeAccept(output, ItemRegistry.VERITE_ORE_ITEM.get());
                 safeAccept(output, ItemRegistry.VALORITE_ORE_ITEM.get());
-                safeAccept(output, ItemRegistry.HIGH_PURITY_SILVER_ORE_ITEM.get());
+                // High-Purity Silver retired by owner decision 2026-08-14: there is exactly one
+                // Silver metal/ore. The block stays registered so existing saves keep loading, but
+                // it is no longer offered, mineable, or placeable by the ore command.
                 safeAccept(output, ItemRegistry.IGNEOUS_ROCK_ITEM.get());
                 safeAccept(output, ItemRegistry.METAMORPHIC_ROCK_ITEM.get());
                 safeAccept(output, ItemRegistry.VOLCANIC_ROCK_ITEM.get());

@@ -85,11 +85,20 @@ class MiningBreakGateTest {
     }
 
     @Test
-    void deferredCatalogueEntriesNeverReachTheGate() {
-        for (String blockId : List.of("minecraft:dripstone_block", "minecraft:obsidian")) {
+    void retiredResourcesNeverReachTheGate() {
+        // Owner decisions 2026-08-14: one Silver metal/ore, and Obsidian is not a UO material.
+        for (String blockId : List.of("minecraft:obsidian", "britannia_mod:high_purity_silver_ore")) {
             assertTrue(catalog.resolveBlock(blockId).isEmpty(),
-                    blockId + " is DEFERRED and must resolve NOT_APPLICABLE for gameplay");
+                    blockId + " is retired and must resolve NOT_APPLICABLE");
         }
+        assertTrue(catalog.resolveBlock("minecraft:dripstone_block").isPresent(),
+                "Dripstone is active and must be gated at its approved tier");
+        assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                MiningBreakGate.evaluateResolved(definition("dripstone"),
+                        MiningBreakGate.Subject.loadedPlayer(34.9f)).type());
+        assertEquals(MiningBreakGate.ResultType.ELIGIBLE,
+                MiningBreakGate.evaluateResolved(definition("dripstone"),
+                        MiningBreakGate.Subject.loadedPlayer(35.0f)).type());
     }
 
     @Test

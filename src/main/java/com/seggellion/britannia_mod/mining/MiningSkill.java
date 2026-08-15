@@ -89,7 +89,8 @@ public final class MiningSkill {
         if (!(actor instanceof ServerPlayer player)) {
             return 0.0f;
         }
-        MiningBreakGate.Evaluation evaluation = MiningBreakGate.evaluate(player, state);
+        MiningBreakGate.Evaluation evaluation =
+                MiningBreakGate.evaluate(player, state, player.serverLevel(), pos);
         if (evaluation.type() != MiningBreakGate.ResultType.ELIGIBLE) {
             return 0.0f;
         }

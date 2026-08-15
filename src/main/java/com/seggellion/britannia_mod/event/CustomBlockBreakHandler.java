@@ -35,6 +35,13 @@ public class CustomBlockBreakHandler {
         BlockState state = event.getState();
         ItemStack heldItem = player.getMainHandItem();
 
+        // Mining milestone 7: a mineable the player placed themselves is construction, not a
+        // deposit. It breaks with ordinary vanilla behaviour -- no graded/purity drop, no
+        // restoration, no Mining award -- which is what closes the place-break loop.
+        if (com.seggellion.britannia_mod.mining.MiningProvenance.isPlayerPlaced(serverLevel, pos)) {
+            return;
+        }
+
         boolean isStone = PickaxeMiningRules.isAllowedStoneBlock(state);
         boolean isOre = PickaxeMiningRules.isAllowedOreBlock(state);
 

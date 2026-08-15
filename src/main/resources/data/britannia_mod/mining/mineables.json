@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "_comment": "Mining milestone 2 progression catalogue. required_mining is the inclusive hard access gate (design MINING_SKILL_DESIGN.md section 7/8); challenge is the separate skill-gain difficulty input, seeded equal to the requirement until milestone 4 calibrates real gain math. status=deferred rows carry an approved value for blocks the break flow does not manage yet (activated deliberately in milestone 6, never by accident). economy_commodity records the Rails commodity slug the resource CURRENTLY resolves to (null = unsellable today; conflicts E1-E5 in docs/mining/MINING_SKILL_DISCOVERY_REPORT.md section 6.3).",
+  "_comment": "Mining progression catalogue - the single source of truth for what Mining governs: the break gate, the managed break flow (PickaxeMiningRules), the drop identity (BlockBreakUtils) and the skill award all read it. required_mining is the inclusive hard access gate (design MINING_SKILL_DESIGN.md section 7/8); challenge is the separate skill-gain difficulty input, currently equal to the requirement. status=deferred is supported for a value approved but not yet managed; nothing is deferred today. economy_commodity records the Rails commodity slug the resource resolves to (null = unsellable today; conflicts E3-E5 in docs/mining/MINING_SKILL_DISCOVERY_REPORT.md section 6.3). Owner decision 2026-08-14: exactly one Silver metal/ore exists, and Obsidian is not a Mining resource (not an Ultima Online material) - see docs/mining/MINING_IMPLEMENTATION_LOG.md.",
   "mineables": [
     {
       "id": "iron",
@@ -25,20 +25,6 @@
       "drop": "Silver ore",
       "economy_commodity": "silver",
       "restorable": true
-    },
-    {
-      "id": "high_purity_silver",
-      "display_name": "High-Purity Silver",
-      "category": "ore",
-      "status": "active",
-      "required_mining": 55.0,
-      "challenge": 55.0,
-      "blocks": ["britannia_mod:high_purity_silver_ore"],
-      "drop": "High-Purity Silver ore",
-      "economy_commodity": null,
-      "restorable": true,
-      "owner_review": true,
-      "notes": "Registered and managed by the break flow today, but asset-less, unrefinable (name matches no UOMetalToolMaterial) and generated nowhere. Held at Silver's 55.0 tier so encoding it does not invent a new balance point; owner must decide premium-tier vs retire (gap analysis section 1)."
     },
     {
       "id": "tin",
@@ -89,7 +75,7 @@
       "economy_commodity": "gold",
       "restorable": true,
       "owner_review": true,
-      "notes": "britannia_mod:gold_ore duplicates vanilla gold ore, has no assets and no placement path; kept in the gold definition so it cannot drift to a different tier while the owner decides retire-vs-complete (gap analysis section 1)."
+      "notes": "britannia_mod:gold_ore duplicates vanilla gold ore and has no placement path (the command places the vanilla block); it ships assets as of milestone 6 and is kept inside this one gold definition so the duplicate can never drift to a different tier or drop identity."
     },
     {
       "id": "agapite",
@@ -262,10 +248,9 @@
       "challenge": 45.0,
       "blocks": ["minecraft:blackstone"],
       "drop": "Blackrock",
-      "economy_commodity": null,
+      "economy_commodity": "blackstone",
       "restorable": true,
-      "owner_review": true,
-      "notes": "Drops as 'Blackrock', which maps to no stone commodity (conflict E4) - currently unsellable. Rename-vs-map is a milestone-8 decision."
+      "notes": "Keeps the established 'Blackrock' drop name; milestone 8 mapped that name onto the seeded stone/volcanic/blackstone commodity rather than renaming the drop, so existing mined stacks stay valid."
     },
     {
       "id": "igneous_rock",
@@ -327,7 +312,7 @@
       "id": "dripstone",
       "display_name": "Dripstone",
       "category": "stone",
-      "status": "deferred",
+      "status": "active",
       "required_mining": 35.0,
       "challenge": 35.0,
       "blocks": ["minecraft:dripstone_block"],
@@ -335,21 +320,7 @@
       "economy_commodity": null,
       "restorable": true,
       "owner_review": true,
-      "notes": "Approved rock-baseline entry (35.0) but NOT managed by the break flow today; activation is milestone-6 scope so the managed set does not widen silently."
-    },
-    {
-      "id": "obsidian",
-      "display_name": "Obsidian",
-      "category": "stone",
-      "status": "deferred",
-      "required_mining": 60.0,
-      "challenge": 60.0,
-      "blocks": ["minecraft:obsidian"],
-      "drop": "Obsidian",
-      "economy_commodity": null,
-      "restorable": true,
-      "owner_review": true,
-      "notes": "Approved rock-baseline entry (60.0) but NOT managed today; vanilla tool rules must remain untouched when milestone 6 considers activation (design section 8)."
+      "notes": "Activated in milestone 6 at the approved 35.0 tier - a pure data change now that the managed set reads this catalogue. Vanilla Dripstone needs only a wooden-tier pickaxe, so the Britannia pickaxe (iron tier) harvesting it bypasses no vanilla tool rule. Still has no stone commodity mapping, so it is unsellable like Deepslate (conflict E4, milestone 8)."
     }
   ]
 }

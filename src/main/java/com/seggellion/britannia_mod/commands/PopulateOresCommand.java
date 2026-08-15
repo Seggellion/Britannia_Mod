@@ -46,7 +46,8 @@ public class PopulateOresCommand {
         ORE_TYPES.put("agapite", BlockRegistry.AGAPITE_ORE.get());
         ORE_TYPES.put("verite", BlockRegistry.VERITE_ORE.get());
         ORE_TYPES.put("valorite", BlockRegistry.VALORITE_ORE.get());
-        ORE_TYPES.put("high_purity_silver", BlockRegistry.HIGH_PURITY_SILVER_ORE.get());
+        // No high_purity_silver: retired by owner decision 2026-08-14 (one Silver metal/ore).
+        // It never had a generateOreVein case either, so the command could only ever place zero.
         ORE_TYPES.put("diamond", Blocks.DIAMOND_ORE);
         ORE_TYPES.put("deepslate_diamond", Blocks.DEEPSLATE_DIAMOND_ORE);
         ORE_TYPES.put("redstone", Blocks.REDSTONE_ORE);

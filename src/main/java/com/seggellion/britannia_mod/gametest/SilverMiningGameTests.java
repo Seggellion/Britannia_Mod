@@ -146,10 +146,11 @@ public final class SilverMiningGameTests {
         check(material.getIngotSupplier().get() == ItemRegistry.SILVER_INGOT.get(),
                 "refining must yield the existing silver ingot, not a second identity");
 
-        // Known gap pinned: the premium node resolves to no metal, so it cannot be refined.
-        check(UOMetalToolMaterial.getMaterialByName(
-                        "High-Purity Silver ore".toLowerCase(java.util.Locale.ROOT).replace(" ore", "")) == null,
-                "if High-Purity Silver started refining, the owner-decision gap entry must be updated");
+        // Owner decision 2026-08-14: exactly one Silver metal exists. A second one appearing here
+        // would mean the retired High-Purity variant had been revived as a separate material.
+        check(java.util.Arrays.stream(UOMetalToolMaterial.values())
+                        .filter(metal -> metal.getMetalName().contains("silver")).count() == 1,
+                "there must be exactly one Silver metal");
         helper.succeed();
     }
 

@@ -213,6 +213,9 @@ CraftableRegistry.init();
         // Mining milestone 3: HIGH-priority skill gate; must precede CustomBlockBreakHandler,
         // which mutates the world inside its NORMAL-priority listener.
         NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningGateHandler());
+        // Mining milestone 7: records player-placed mineables so the place-break loop is not a
+        // Mining exploit and players can always dismantle their own construction.
+        NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningProvenanceHandler());
        NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
         NeoForge.EVENT_BUS.register(new ChestHandler());
         NeoForge.EVENT_BUS.register(new LockpickingEventHandler());

@@ -538,3 +538,374 @@ without the registry bootstrap, so the refining-chain assertions moved from the 
 ### Milestone 5 result
 
 - Status: **PASS** — see closeout in the milestone report.
+
+---
+
+## Milestone 6 — Ore and rock gap completion (2026-08-14)
+
+Goal: fill the content gaps discovery found, and finish the data-driven mandate so a future rock
+is data rather than code.
+
+### 6.1 One source of truth for "what is mineable" (the architectural gap)
+
+The catalogue drove the **gate**, but the **managed flow** still had its own hard-coded idea of
+the managed set (`PickaxeMiningRules`) and of what each block yields (`BlockBreakUtils`). Two
+sources of truth that could drift, and three Java edits to add one rock — exactly what design §19
+forbids. Both now delegate to the catalogue:
+
+- `PickaxeMiningRules.isAllowedMineableBlock/Stone/Ore` → `Mineables.resolve` + category.
+- `BlockBreakUtils.deduceOreType/deduceStoneType` → the definition's `drop` field.
+- Removed the dead `ORE_TYPES` map, which was unreferenced and carried a misleading
+  `dull_copper` entry contradicting an owner decision.
+
+Behaviour is unchanged: the contract test already pinned the catalogue's ACTIVE block set to
+exactly the list those chains carried, and a new test pins all 29 drop names byte-identical to the
+chain they replaced (they are the identity refining and the economy both key on).
+
+`Mineables.resolve` now uses an identity-keyed `Map<Block, MineableDefinition>` built once after
+registration — the `FarmingSkillRequirementResolver` pattern — because it moved onto the mining hot
+path (`getDestroySpeed`/`isCorrectToolForDrops` run every tick while digging) where per-call
+registry-key string allocation would have been a real regression.
+
+### 6.2 Dripstone activated — as data only
+
+With one source of truth, activating an approved rock is a JSON edit. Dripstone is now ACTIVE at
+its approved **35.0**, with no Java change anywhere; the contract test's expected managed set was
+updated deliberately (it is the only intentional widening so far).
+
+### 6.3 Obsidian deliberately still deferred
+
+Obsidian is the one baseline rock requiring a **diamond-tier** pickaxe in vanilla, and the managed
+flow removes the block itself without consulting tool tier — so activating it would let the
+iron-tier Britannia pickaxe harvest Obsidian, bypassing a vanilla tool rule design §11 explicitly
+protects. Activation needs a tool-tier check in the managed flow first: a gameplay change, not a
+data edit. Recorded in the catalogue entry and pinned by test.
+
+### 6.4 Vein data for the rest of the ladder
+
+Five approved metals still had **zero** veins, so the entire upper ladder was unreachable in a real
+world; Copper had exactly one. Added `db/seeds/colored_metal_ore_veins.rb` (+ rake task), idempotent
+like the Silver seed, with scarcity falling as the requirement rises:
+
+| Metal | Req | Veins added | Radius |
+|---|---:|---:|---|
+| Shadow Iron | 70.0 | 12 | 30–35 |
+| Copper | 75.0 | 14 (+1 existing) | 30–40 |
+| Gold | 85.0 | 10 | 25–30 |
+| Agapite | 90.0 | 7 | 20–25 |
+| Verite | 95.0 | 5 | 18–22 |
+| Valorite | 99.0 | 3 | 15–18 |
+
+51 veins total, against Iron 133 / Tin 47 / Silver 24. Every type routes to the generator
+`PopulateOresCommand` already assigns it; none were added or changed.
+
+### 6.5 Asset and localization gaps
+
+- `britannia_mod:gold_ore` and `high_purity_silver_ore` were registered, reachable from the creative
+  tab, and had **no blockstate/model** — they would render as missing-model blocks. Both now ship
+  assets. Gold references the vanilla gold-ore texture (a reference, the same approach the existing
+  ingot models already take — Mojang art is not copied into this All-Rights-Reserved mod);
+  High-Purity Silver reuses the mod's own silver ore texture.
+- Added the six remaining custom ingot lang keys plus `grade_stone_item`, which all rendered as raw
+  translation keys. Every mineable-derived item a player can hold now has a display name.
+
+### Files added
+
+```text
+[Rails] db/seeds/colored_metal_ore_veins.rb        (51 idempotent veins)
+[Rails] lib/tasks/seed_colored_metal_ore_veins.rake
+assets/britannia_mod/blockstates/{gold_ore,high_purity_silver_ore}.json
+assets/britannia_mod/models/block/{gold_ore,high_purity_silver_ore}.json
+assets/britannia_mod/models/item/{gold_ore,high_purity_silver_ore}.json
+```
+
+### Files modified
+
+```text
+util/PickaxeMiningRules.java   (delegates to the catalogue)
+util/BlockBreakUtils.java      (drop names from the catalogue; dead ORE_TYPES removed)
+mining/Mineables.java          (identity-keyed lookup for the hot path)
+data/britannia_mod/mining/mineables.json  (Dripstone → active; Obsidian deferral rationale)
+assets/britannia_mod/lang/en_us.json      (+7 keys)
+test .../MineableCatalogContractTest.java (drop-name pinning, Dripstone activation)
+test .../MiningBreakGateTest.java         (Dripstone gating at 34.9/35.0)
+test .../SilverVerticalSliceTest.java     (asset + ingot localization coverage for every ore)
+```
+
+### Tests/commands run
+
+```text
+gradlew test --tests "com.seggellion.britannia_mod.mining.*"   → 52/52 passed
+gradlew runGameTestServer (fresh)                              → All 475 required tests passed
+gradlew test (full suite, fresh)                               → 2273 tests, 0 failures, 0 errors
+ruby -c on both new Rails files                                → Syntax OK, 0 CR bytes
+```
+
+#### An unrelated flake investigated and cleared
+
+Two GameTest runs during this milestone failed on `spinningAndWeavingAreExactAndRejectSpidersSilk`
+(textiles). It was chased to a conclusion rather than assumed unrelated:
+
+| Run | Tree | Result |
+|---|---|---|
+| 1–2 | full M6 set | FAIL |
+| 3 | clean HEAD (M6 stashed) | PASS |
+| 4 | data/assets only, Java reverted | PASS |
+| 5 | + delegation trio restored | PASS |
+| 6 | **full M6 set again (identical to runs 1–2)** | **PASS** |
+
+Run 6 is byte-identical to the runs that failed, so the test is **nondeterministic**, not broken by
+Mining. Root cause found: the test counts every `BALL_OF_YARN` item entity within 2 blocks of its
+mock player, but `makeMockServerPlayerInLevel()` spawns mock players at the **world spawn** shared
+by every concurrent test, and `run/gametest/world` **persists between runs** — so the yarn that
+`TextileProcessing` drops when the inventory is full accumulates across runs until the sum exceeds
+one, then ages out again. Filed as a separate task with the evidence; no Mining code was changed to
+accommodate it, and no test was weakened.
+
+### Not done / deferred (explicit)
+
+- **Obsidian** — see §6.3; needs a tool-tier gate in the managed flow.
+- **Custom-ore loot tables** — a vanilla-tool break of a custom ore still destroys it with no drop.
+  Unchanged and still cross-cutting; belongs with the restoration/provenance work in M7.
+- **Unsellable rocks (E4)** — Deepslate, Cobbled Deepslate, Blackrock, Dripstone and the four custom
+  rocks still have no stone commodity. Economy identity work is M8.
+- **Custom rock worldgen** — igneous/metamorphic/volcanic/glacial still have no placement path;
+  they remain creative/structure-only. Not required by the approved progression.
+- **Silver ingot art** — unchanged owner/asset task.
+
+### Milestone 6 result
+
+- Status: **PASS** — see closeout in the milestone report.
+
+---
+
+## Milestone 7 — Renewable restoration integration (2026-08-14)
+
+Goal: prove every skill-managed node cooperates with the existing restoration system, and close the
+place-break loop — which milestone 4 had turned from an item exploit into a *skill* exploit.
+
+### 7.1 Provenance — the smallest model that works
+
+Design §13 requires the place-break loop not to be farmable and warns against inventing "a large new
+global block-provenance database". `GrabbyProvenance` was examined first, as the design instructs,
+but it rides on a **block entity** and mineables are plain blocks, so it could not be reused
+directly. Its principle was kept and inverted:
+
+| | Grabby | Mining |
+|---|---|---|
+| Default when nothing is stored | `WORLD` (protected) | **natural** (mineable) |
+| Why | scenery must not be movable | natural blocks are the overwhelming majority and must cost nothing |
+
+`MiningProvenance` is a per-level `SavedData` holding player-placed positions as a packed
+`long[]`. Consequences that fall out of "absence = natural": **existing saves need no migration**,
+world generation and structures are natural for free, and the set only ever holds *standing player
+construction* because entries are removed the moment such a block is broken.
+
+`MiningProvenanceHandler` marks on `BlockEvent.EntityPlaceEvent` — only for real players (fake
+players excluded, as everywhere else in this project) and only for catalogued mineables, so placing
+dirt or a chest costs nothing. Placement is judged by *who placed it*, not game mode: a
+Creative-built granite wall is construction, not a deposit.
+
+A player-placed mineable resolves **NOT_APPLICABLE**, which yields the whole behaviour in one
+stroke: no gate, no managed drop, no restoration, no award — and, importantly, **a player can always
+dismantle their own construction** regardless of skill. That last point was a real latent problem
+introduced in M3: the gate is block-type based, so before this a 0-skill player could place granite
+(20.0) or deepslate (30.0) and then be unable to break it.
+
+**Ordering is load-bearing.** The marker is cleared in a separate `EventPriority.LOWEST` listener,
+never in the HIGH-priority gate: every reader — gate, managed flow, award — must still see it while
+deciding. Clearing it early would hand the exploit straight back. This was caught during
+implementation and is now pinned by a source contract as well as by GameTests.
+
+### 7.2 Restoration corrections
+
+Two ways the existing scheduler did not yet cooperate, both fixed inside the **one existing timer**
+(no second scheduler, no force-loading — both pinned by test):
+
+- **Every dimension.** Records are stored per level, but the loop read only `Level.OVERWORLD`, so a
+  node mined anywhere else was scheduled and never restored. Harmless before Mining; load-bearing
+  once Basalt and Blackstone — Nether-native blocks — became managed resources.
+- **Never overwrite what is standing there.** Restoration wrote the block back unconditionally,
+  which could delete a player's construction or materialise stone inside a player or their animals.
+  It now restores only into a genuinely free, unoccupied cell and otherwise waits — the "wait when
+  the target is occupied" policy design §12.2 asks for. Unloaded cells are still retried later
+  rather than force-loaded.
+
+### Files added
+
+```text
+src/main/java/com/seggellion/britannia_mod/mining/MiningProvenance.java
+src/main/java/com/seggellion/britannia_mod/mining/MiningProvenanceHandler.java
+src/main/java/com/seggellion/britannia_mod/gametest/MiningRestorationGameTests.java   (9 GameTests)
+src/test/java/com/seggellion/britannia_mod/mining/MiningRestorationPolicyTest.java    (7 tests)
+```
+
+### Files modified
+
+```text
+block/blockrestore/BlockRestoreHandler.java  (all dimensions; occupancy guard; per-level dirty flag)
+mining/MiningBreakGate.java                  (position-aware evaluate)
+mining/MiningGateHandler.java                (position-aware gate + LOWEST-priority marker clearing)
+mining/MiningSkill.java                      (award uses the position-aware gate)
+event/CustomBlockBreakHandler.java           (player-placed blocks fall through to vanilla behaviour)
+BritanniaMod.java                            (+1 handler registration)
+docs/mining/MINING_PROGRESSION_GAP_ANALYSIS.md
+```
+
+### Tests/commands run (fresh)
+
+```text
+gradlew compileJava                                            → SUCCESS
+gradlew test --tests "com.seggellion.britannia_mod.mining.*"   → 59/59 passed
+gradlew runGameTestServer                                      → All 484 required tests passed
+gradlew test (full suite)                                      → see closeout
+```
+
+Playbook §M7 coverage: insufficient-skill denial schedules nothing ✓; one restore per successful
+break ✓; original state returns correctly ✓; save/restart ✓; chunk unload (retry, no force-load) ✓;
+occupied target ✓; target replaced with another block ✓; duplicate schedule ✓; neighbouring
+simultaneous mines ✓; two players ✓; old-save compatibility ✓ (absence = natural, no migration);
+Stone/rock restoration scope ✓; place-break exploit ✓ (through the real placement path).
+
+### Known limitations
+
+- A cell a player builds on permanently keeps its pending record waiting forever. Deliberate: the
+  alternative is discarding the node, and waiting is the non-destructive choice. Worth an eventual
+  expiry policy if ledgers grow.
+- Provenance entries for blocks destroyed by explosions or other non-`BreakEvent` routes are not
+  cleared, so a stale marker can linger. It only ever errs toward "treat as construction", i.e.
+  denying a gain, never granting one.
+
+### Milestone 7 result
+
+- Status: **PASS** — see closeout in the milestone report.
+
+---
+
+## Milestone 8 — Economy, refining and crafting compatibility (2026-08-14)
+
+Goal: make Mining's outputs actually land in the existing economy, without duplicating commodities
+or inventing prices.
+
+### 8.1 Every stone sale was failing (E2)
+
+Rails performs an **exact** lookup on `category + subcategory + item_name` whenever a payload
+carries a category and a subcategory — with no legacy fallback. The mod posted the literal
+subcategory `"blocks"`, and `CommoditySeeder` seeds stone by **material family**:
+
+```text
+rubble/cobblestone · common/stone · igneous/{andesite,diorite,granite}
+volcanic/{tuff,basalt,blackstone} · sedimentary/limestone · mineral/quartz
+```
+
+No seeded row has ever used `blocks` (verified against the seeder: zero occurrences), so every
+stone sale raised `MissingCommodity`. Fixed at all three sites that posted it — the sale payload,
+the trader listing, and the commodity table `forStack`/city-inventory path both read — from one new
+`STONE_COMMODITY_FAMILIES` map that is now also the source of the supported-stone set, so the two
+cannot drift apart again. The identity key changed from `stone|blocks|basalt` to
+`stone|volcanic|basalt`, which is what Rails parses and looks up.
+
+### 8.2 Blackrock reached no commodity (E4, partly)
+
+Blackstone's managed drop is named `"Blackrock"`, which matched no commodity even though Rails
+seeds `volcanic/blackstone`. Mapped the name rather than renaming the drop, so stacks players
+already mined stay valid. The catalogue's `blackstone` entry now declares its commodity — a change
+the new contract test forced, having caught the data saying "no commodity" while the code resolved
+one.
+
+### 8.3 The rest of the loop, verified
+
+`MiningEconomyGameTests` proves the full chain for **all nine** approved metals, not just Silver:
+each mined drop name refines through the forge's exact resolution into its **own** ingot (no two
+metals share one), and each of those ingots is resolved back by the blacksmith's own
+`getMaterialByIngot`, so mine → refine → craft closes. The metal roster is pinned at nine, and the
+retired High-Purity variant is asserted to resolve to no metal of its own.
+
+### Deliberately not done
+
+- **No new commodities, no invented prices.** Deepslate, Cobbled Deepslate, Dripstone and the four
+  custom rocks have no commodity in Rails at all. Creating one means choosing a price, which design
+  §16 reserves for the owner; the convention-derived proposal is recorded below rather than applied.
+- **Stone still yields cobblestone (E3).** Mining Stone produces rubble, so the seeded `stone`
+  commodity receives no mined supply. That is long-standing behaviour, not a bug introduced here,
+  and changing the drop name would change refining and economy identity together — an owner call.
+- **Live Rails DB still unverified.** Its credentials remained unavailable all session, so these
+  fixes are proven against the seeded identities, which are the version-controlled truth.
+
+### Owner decisions available (proposals, not applied)
+
+| Question | Convention-derived proposal |
+|---|---|
+| Should Deepslate / Cobbled Deepslate sell? | `stone/volcanic/deepslate`, base 2.0–2.5 (beside tuff 2.0 and basalt 2.5) |
+| Should Dripstone sell? | `stone/sedimentary/dripstone`, base ~3.0 |
+| Should the four custom rocks sell? | one `stone/*` row each; they also still have no worldgen path, so they may be scenery rather than resources |
+| Should mining Stone yield Stone rather than Cobblestone? | would give the seeded `stone` commodity (2.0) a supply source; changes drop identity |
+
+### Files added
+
+```text
+src/main/java/com/seggellion/britannia_mod/gametest/MiningEconomyGameTests.java  (3 GameTests)
+src/test/java/com/seggellion/britannia_mod/mining/MiningEconomyIdentityTest.java (8 tests)
+```
+
+### Files modified
+
+```text
+economy/CommodityMappings.java     (stone families as one source of truth; Blackrock alias;
+                                    identity key carries the real subcategory)
+economy/ServerEconomyService.java  (stone sale posts the seeded family)
+npc/TraderRoleHandler.java         (trader listing posts the seeded family)
+data/britannia_mod/mining/mineables.json  (blackstone declares its commodity)
+docs/mining/MINING_PROGRESSION_GAP_ANALYSIS.md
+```
+
+### Milestone 8 result
+
+- Status: **PASS** — see closeout in the milestone report.
+
+---
+
+## Owner decisions — 2026-08-14 (answers to the open M10 questions)
+
+Both questions that had been carried as "open for M10 sign-off" are now answered by the owner.
+They are recorded here as project decisions and were applied the same day.
+
+### Decision 1 — High-Purity Silver is retired: there is exactly one Silver metal/ore
+
+> *"I'm not certain about high-purity silver, that could be removed — there should only be one
+> silver metal/ore."*
+
+The principle is settled (one Silver metal/ore); the removal itself was hedged, so it was applied
+as a **soft retirement** rather than a registration deletion:
+
+| Change | Rationale |
+|---|---|
+| Removed from the Mining catalogue | It can no longer be gated, mined, awarded, or restored — it is not a Mining resource |
+| Removed from the Ores creative tab | Not offered to players, so no new ones enter a world |
+| Removed from `/populateores` | It never had a generator case, so the command could only ever place zero anyway |
+| **Block/item registration kept** | Deleting a registration breaks worlds that already contain the block. Retirement is fully reversible |
+| **Assets kept** | The block still exists, so it must still render rather than become a missing-model block |
+| **Economy mapping kept** (`High-Purity Silver ore` → `silver`) | Players may hold mined stacks from before; they keep selling as ordinary Silver instead of becoming unsellable — which is also what "one Silver identity" means economically |
+
+Hard removal of the registration remains available on request; it is the only step not taken.
+
+### Decision 2 — Obsidian is not a Mining resource
+
+> *"There is also no use for Obsidian tools. (not a part of Ultima Online)."*
+
+Obsidian was carried as a DEFERRED 60.0 entry from the design's proposed rock baseline. It is not
+an Ultima Online material and yields no tool material, so it has been **removed from the catalogue
+entirely**. This also retires the blocker recorded in M6 §6.3: no tool-tier check needs to be built
+in the managed flow for Obsidian's sake, and vanilla Obsidian behaviour is left completely
+untouched.
+
+### Effect on the catalogue
+
+25 definitions, **all ACTIVE** — nothing is deferred and nothing is pending an owner decision. The
+`deferred` status remains supported by the schema for future use. Both retirements are pinned by
+tests (`retiredResourcesAreAbsentFromTheCatalogue`, `retiredResourcesNeverReachTheGate`, and a
+GameTest asserting exactly one Silver metal exists), so neither can silently return.
+
+Files touched: `mineables.json`, `CreativeTabRegistry`, `PopulateOresCommand`,
+`MineableCatalogContractTest`, `MiningBreakGateTest`, `SilverVerticalSliceTest`,
+`SilverMiningGameTests`, plus the gap analysis.

@@ -1,71 +1,37 @@
 package com.seggellion.britannia_mod.util;
 
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.mining.MineableDefinition;
+import com.seggellion.britannia_mod.mining.Mineables;
 import net.minecraft.util.RandomSource;
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraft.world.level.block.state.BlockState;
 
+/**
+ * Resource identity and quality rolls for a completed Mining break.
+ *
+ * <p>Mining milestone 6: the resource names come from the Mining catalogue's {@code drop} field
+ * instead of a second hard-coded block chain, so the name a block yields, the tier that gates it
+ * and the commodity it sells as are all declared in one place. Every name is byte-identical to the
+ * chain this replaced — {@code MineableCatalogContractTest} pins them.
+ */
 public final class BlockBreakUtils {
-    // Example min–max purity values for custom ore types
-    private static final Map<String, Double[]> ORE_TYPES = new HashMap<>();
-    static {
-        ORE_TYPES.put("shadow_iron", new Double[]{1.0, 3.0});
-        ORE_TYPES.put("verite", new Double[]{4.0, 6.0});
-        ORE_TYPES.put("silver", new Double[]{4.0, 6.0});
-        ORE_TYPES.put("valorite", new Double[]{6.0, 8.0});
-        ORE_TYPES.put("dull_copper", new Double[]{0.5, 2.0});
-        ORE_TYPES.put("copper", new Double[]{1.0, 3.0});
-        ORE_TYPES.put("tin", new Double[]{2.0, 4.0});
-        ORE_TYPES.put("gold", new Double[]{5.0, 7.0});
-    }
 
     private BlockBreakUtils() {}
 
-    /**
-     * Deduce the "type" of ore from its BlockState.
-     */
+    /** Display name of the ore a block yields, or {@code "unknown"} when Mining does not manage it. */
     public static String deduceOreType(BlockState state) {
-        if (state.is(Blocks.IRON_ORE)) return "Iron ore";
-        if (state.is(Blocks.DEEPSLATE_IRON_ORE)) return "Iron ore";
-        if (state.is(Blocks.GOLD_ORE)) return "Gold ore";
-        if (state.is(Blocks.DEEPSLATE_GOLD_ORE)) return "Gold ore";
-        if (state.is(BlockRegistry.COPPER_ORE.get())) return "Copper ore";
-        if (state.is(BlockRegistry.TIN_ORE.get())) return "Tin ore";
-        if (state.is(BlockRegistry.SILVER_ORE.get())) return "Silver ore";
-        if (state.is(BlockRegistry.GOLD_ORE.get())) return "Gold ore";
-        if (state.is(BlockRegistry.SHADOW_IRON_ORE.get())) return "Shadow Iron ore";
-        if (state.is(BlockRegistry.AGAPITE_ORE.get())) return "Agapite ore";
-        if (state.is(BlockRegistry.VERITE_ORE.get())) return "Verite ore";
-        if (state.is(BlockRegistry.VALORITE_ORE.get())) return "Valorite ore";
-        if (state.is(BlockRegistry.HIGH_PURITY_SILVER_ORE.get())) return "High-Purity Silver ore";
-
-        // Add more logic or custom blocks as needed
-        return "unknown";
+        return dropNameFor(state, MineableDefinition.Category.ORE, "unknown");
     }
 
-    /**
-     * Deduce the "type" of stone from its BlockState.
-     */
+    /** Display name of the stone a block yields, or {@code "Unknown"} when Mining does not manage it. */
     public static String deduceStoneType(BlockState state) {
-        if (state.is(Blocks.STONE))       return "Cobblestone";
-        if (state.is(Blocks.COBBLESTONE)) return "Cobblestone";
-        if (state.is(Blocks.DIORITE))     return "Diorite";
-        if (state.is(Blocks.ANDESITE))    return "Andesite";
-        if (state.is(Blocks.CALCITE))     return "Limestone";
-        if (state.is(Blocks.GRANITE))     return "Granite";
-        if (state.is(Blocks.TUFF))        return "Tuff";
-        if (state.is(Blocks.BASALT))      return "Basalt";
-        if (state.is(Blocks.SMOOTH_BASALT)) return "Basalt";
-        if (state.is(Blocks.BLACKSTONE))  return "Blackrock";
-        if (state.is(Blocks.DEEPSLATE))   return "Deepslate";
-        if (state.is(Blocks.COBBLED_DEEPSLATE)) return "Cobbled Deepslate";
-        if (state.is(BlockRegistry.IGNEOUS_ROCK.get())) return "Igneous Rock";
-        if (state.is(BlockRegistry.METAMORPHIC_ROCK.get())) return "Metamorphic Rock";
-        if (state.is(BlockRegistry.VOLCANIC_ROCK.get())) return "Volcanic Rock";
-        if (state.is(BlockRegistry.GLACIAL_ROCK.get())) return "Glacial Rock";
-        return "Unknown";
+        return dropNameFor(state, MineableDefinition.Category.STONE, "Unknown");
+    }
+
+    private static String dropNameFor(BlockState state, MineableDefinition.Category category, String fallback) {
+        return Mineables.resolve(state)
+                .filter(definition -> definition.category() == category)
+                .map(MineableDefinition::dropName)
+                .orElse(fallback);
     }
 
     public static int generateStoneGrade() {

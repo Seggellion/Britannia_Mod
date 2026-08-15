@@ -35,7 +35,7 @@ public class TraderRoleHandler extends AbstractSellTraderRoleHandler {
         } else if (normalizedRole.contains("ore") || normalizedRole.contains("metal") || normalizedRole.contains("miner")) {
             return collectOreFromInventory(player);
         } else if (normalizedRole.contains("stone")) {
-            return collectSimpleCommodities(player, "stone", "blocks");
+            return collectSimpleCommodities(player, "stone", "");
         } else if (normalizedRole.contains("grain")) {
             return collectSimpleCommodities(player, "grain", "");
         } else if (normalizedRole.contains("produce") || normalizedRole.contains("costermonger")) {
@@ -146,7 +146,8 @@ public class TraderRoleHandler extends AbstractSellTraderRoleHandler {
         j.addProperty("item_name", stoneType);
         j.addProperty("commodity_key", CommodityMappings.stoneCommodityIdentityKey(stoneType));
         j.addProperty("category", "stone");
-        j.addProperty("subcategory", "blocks");
+        j.addProperty("subcategory",
+                CommodityMappings.stoneCommoditySubcategory(stoneType).orElse(""));
         j.addProperty("quantity", stack.getCount());
         j.addProperty("weight", stack.getCount());
         arr.add(j);
