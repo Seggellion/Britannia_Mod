@@ -22,6 +22,7 @@ import com.seggellion.britannia_mod.event.FlowerInteractionHandler;
 import com.seggellion.britannia_mod.event.HouseFarmPlotInteractionHandler;
 import com.seggellion.britannia_mod.event.ManagedVegetationInteractionHandler;
 import com.seggellion.britannia_mod.event.TrainingDummyEventHandler;
+import com.seggellion.britannia_mod.event.ParrotProtectionHandler;
 import com.seggellion.britannia_mod.event.FishingEventHandler;
 import com.seggellion.britannia_mod.event.TreeKarmaHandler;
 import com.seggellion.britannia_mod.event.KarmaReductionHandler;
@@ -190,6 +191,8 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new HouseFarmPlotInteractionHandler());
         NeoForge.EVENT_BUS.register(new ManagedVegetationInteractionHandler());
         NeoForge.EVENT_BUS.register(new TrainingDummyEventHandler());
+        // UltimaCraft parrots are protected from all player-caused damage; see the handler.
+        NeoForge.EVENT_BUS.register(new ParrotProtectionHandler());
         NeoForge.EVENT_BUS.register(new RestrictedEquipmentControl());
         NeoForge.EVENT_BUS.register(new MobSpawnControl());
         NeoForge.EVENT_BUS.register(new BlockRestoreHandler());
