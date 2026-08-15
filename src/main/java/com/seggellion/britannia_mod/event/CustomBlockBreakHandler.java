@@ -18,6 +18,7 @@ import com.seggellion.britannia_mod.item.GradeStoneItem;
 
 import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
 import com.seggellion.britannia_mod.item.QualityToolItem;
+import com.seggellion.britannia_mod.mining.MiningSkill;
 import com.seggellion.britannia_mod.util.BlockBreakUtils;
 import com.seggellion.britannia_mod.util.PickaxeMiningRules;
 
@@ -49,6 +50,12 @@ public class CustomBlockBreakHandler {
             }
 
          BrokenBlockTracker.recordBrokenBlock(serverLevel, pos, state, player.getUUID());
+
+            // Mining milestone 4: the success boundary of the managed Mining flow -- the resource
+            // was extracted and its restoration scheduled -- so this is exactly one qualifying
+            // activation. Invalid-tool breaks never reach here (design 9.1 excludes them), and the
+            // award itself re-checks the break gate, so bypasses and automation award nothing.
+            MiningSkill.awardForBreak(player, state, pos);
         }
     }
 

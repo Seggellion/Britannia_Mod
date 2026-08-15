@@ -109,9 +109,11 @@ public final class MiningGateGameTests {
                 "the managed flow must drop a PurityOreItem");
         check(hasRestoreRecord(level, highAbsolute),
                 "an authorized managed break must schedule exactly its one restoration");
-        // Exact-threshold inclusivity plus milestone-3 scope: the gate awards nothing.
-        check(SkillManager.getSkill(highMiner, MiningBreakGate.SKILL_ID) == 55.0f,
-                "milestone 3 must not award Mining on success");
+        // Exact-threshold inclusivity. Since milestone 4 an authorized break also rolls one
+        // activation, so the successful miner sits at the threshold or exactly one 0.1 above it.
+        float highSkill = SkillManager.getSkill(highMiner, MiningBreakGate.SKILL_ID);
+        check(highSkill == 55.0f || Math.abs(highSkill - 55.1f) < 1.0e-4f,
+                "an authorized break must award at most one 0.1 activation, got " + highSkill);
         check(SkillManager.getSkill(lowMiner, MiningBreakGate.SKILL_ID) == 54.9f,
                 "denial must not move the low miner's skill");
         helper.succeed();

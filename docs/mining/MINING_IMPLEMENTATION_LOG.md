@@ -331,3 +331,104 @@ owner as a separate task with the root cause and the fix precedent.
 ### Milestone 3 result
 
 - Status: **PASS** — see closeout in the milestone report.
+
+---
+
+## Milestone 4 — Mining awards and 18,000-activation calibration (2026-08-14)
+
+Goal: connect an authorized Mining action to the existing skill engine exactly once, feed
+per-material difficulty, and calibrate field progression to ~18,000 activations for 0.0 → 100.0.
+
+### Award path
+
+`CustomBlockBreakHandler` calls `MiningSkill.awardForBreak(player, state, pos)` at the managed
+flow's success boundary — after the resource was extracted and its restoration scheduled, which is
+the only point where a real Mining action has demonstrably completed. The award re-evaluates the
+break gate and proceeds only on `ELIGIBLE`, so Creative/operator bypass, automation, unavailable
+skill data and unmanaged blocks are excluded **by policy rather than by call-site placement**.
+Invalid-tool breaks never reach the managed flow at all (design §9.1 excludes them). A
+`(player, position, tick)` guard makes duplicate callbacks award nothing.
+
+Award itself is `SkillManager.awardSkillGain(player, "mining", 0.1f)` — the same canonical API
+`FarmingSkill` uses, so persistence to Rails, client sync, the cap and the increase message are
+all the existing engine's. Nothing accrues between activations, so there is no second Mining
+progression ledger.
+
+### Gain model and calibration
+
+The roll lives in `MiningSkill` rather than `SkillManager.trySkillGain` because that path exposes
+only a per-skill Rails modifier and has **no per-material input**, while the project requires
+RunUO's separation of access requirement from progression difficulty (design §4). Keeping it
+mod-side also meant calibration changed no Rails data and no other skill.
+
+```text
+chance = BASE_CHANCE × (100 − current)/100 × materialFactor(current, challenge)
+materialFactor = 1.0 if challenge ≥ current, else max(0.25, 1 − (current − challenge)/100)
+BASE_CHANCE = 0.4252
+```
+
+Because `BASE_CHANCE` is a pure multiplier, expected activations scale exactly as
+`1/BASE_CHANCE`; the target was hit in one algebraic step from a single measured run
+(0.4155 → 18,420 measured → 0.4252 → **18,000**), not by search.
+
+Results (deterministic expected values from the production formula):
+
+| Route | Expected activations 0 → 100 |
+|---|---:|
+| Recommended (best available tier) | **18,000** (target 17,100–18,900, deviation −0.00 %) |
+| Stone only | 64,429 (3.6× worse, but never impossible) |
+
+Full band table and the Guildmaster-training analysis:
+[MINING_SKILL_CALIBRATION_REPORT.md](MINING_SKILL_CALIBRATION_REPORT.md).
+
+### Files added
+
+```text
+src/main/java/com/seggellion/britannia_mod/mining/MiningSkill.java
+src/main/java/com/seggellion/britannia_mod/gametest/MiningSkillGameTests.java      (7 GameTests)
+src/test/java/com/seggellion/britannia_mod/mining/MiningProgressionCalculator.java (test-side tool)
+src/test/java/com/seggellion/britannia_mod/mining/MiningCalibrationTest.java       (5 tests)
+src/test/java/com/seggellion/britannia_mod/mining/MiningSkillTest.java             (3 tests)
+docs/mining/MINING_SKILL_CALIBRATION_REPORT.md
+```
+
+### Files modified
+
+```text
+src/main/java/com/seggellion/britannia_mod/event/CustomBlockBreakHandler.java (+1 award call, +import)
+src/main/java/com/seggellion/britannia_mod/gametest/MiningGateGameTests.java
+  (one M3 assertion, "milestone 3 must not award Mining on success", deliberately superseded:
+   an authorized break may now sit at the threshold or exactly one 0.1 above it)
+docs/mining/MINING_PROGRESSION_GAP_ANALYSIS.md (award → COMPLETE; Guildmaster row quantified)
+```
+
+The calculator lives in test sources on purpose: it consumes the production `gainChance`, so the
+published numbers cannot drift from shipped behaviour, while no unused balance tool ships in the jar.
+
+### Tests/commands run (fresh)
+
+```text
+gradlew test --tests "com.seggellion.britannia_mod.mining.*"   → 40/40 passed
+  (catalogue 11, validation 12, gate policy 9, calibration 5, activation guard 3)
+gradlew runGameTestServer                                      → 470 GameTests
+```
+
+Calibration assertions are real acceptance gates: the build fails if the recommended route leaves
+the 17,100–18,900 window, if Stone ever stops granting Mining, or if stone-only stops being the
+worse path.
+
+### Balance observation surfaced (not a defect)
+
+90 → 100 costs 12,385 of the 18,000 activations (69 %), the last point alone 6,934. That follows
+from the `(100 − current)/100` ramp the existing engine already applies to every skill, and matches
+UO's punishing final point. Reshaping was not requested; the report documents the one-line
+alternative if the owner ever wants a flatter late game.
+
+### Explicitly NOT done
+
+- No global skill-gain change; no Rails data change; no change to what an *allowed* break does
+  besides the award; success-path break messages still the existing literals (milestone 9).
+
+### Milestone 4 result
+
+- Status: **PASS** — see closeout in the milestone report.
