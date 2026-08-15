@@ -107,6 +107,21 @@ class SilverVerticalSliceTest {
                     assertTrue(Files.exists(ASSETS.resolve(asset)),
                             definition.id() + " is registered but missing " + asset);
                 }
+                // Milestone 10: a model that names a texture nobody shipped renders as the
+                // missing-texture checkerboard, which no asset-existence check alone would catch.
+                String model = Files.readString(ASSETS.resolve("models/block/" + name + ".json"));
+                java.util.regex.Matcher textures = java.util.regex.Pattern
+                        .compile("\"(?:all|texture|side|end|up|down|north|south|east|west)\"\\s*:\\s*\"([^\"]+)\"")
+                        .matcher(model);
+                while (textures.find()) {
+                    String reference = textures.group(1);
+                    if (!reference.startsWith("britannia_mod:")) {
+                        continue; // vanilla textures ship with the game
+                    }
+                    String texture = reference.substring("britannia_mod:".length());
+                    assertTrue(Files.exists(ASSETS.resolve("textures/" + texture + ".png")),
+                            definition.id() + "'s model references missing texture " + reference);
+                }
             }
         }
     }

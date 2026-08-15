@@ -940,6 +940,63 @@ gametest/MiningGateGameTests.java            (+1 immediate-threshold GameTest)
 
 ---
 
+## Milestone 10 — Automated regression, runtime QA and closeout (2026-08-15)
+
+Goal: prove the feature as an integrated system.
+
+### 10.1 Calibration re-verified against final production values
+
+The catalogue changed after milestone 4 (Dripstone activated, High-Purity Silver retired), so the
+progression target was recomputed from the shipped data rather than assumed to still hold:
+
+```text
+TOTAL 0-100   recommended 18,000   stone-only 64,429
+target window 17,100 - 18,900; deviation -0.00%
+```
+
+Unchanged, because the recommended route follows the hardest available tier and neither change
+moved the ladder's maxima. `MiningCalibrationTest` fails the build outside the window, so this
+cannot drift silently.
+
+### 10.2 Integration coverage added
+
+- `MiningLadderGameTests.everyTierDeniesJustBelowAndMinesAtItsRequirement` — the entire approved
+  ladder in a running world: for each of Stone, Iron, Silver, Tin, Shadow Iron, Copper, Gold,
+  Agapite, Verite and Valorite, one tenth below the requirement is denied and inert, and the
+  requirement exactly mines and schedules its restoration. The unit suite already pinned the
+  policy; this proves the same thing end to end through a real break.
+- `stoneRemainsTrainableAtEverySkillLevel` — Stone works at 0.0, 50.0 and 99.9.
+- `playerPlacedProvenanceIsPersisted` — the provenance marker is written to disk, so the
+  place-break loop cannot reopen on the next boot.
+- Asset integrity now also resolves the **textures** each block model names, not just the model
+  files, so a model pointing at art nobody shipped fails the build instead of rendering as the
+  missing-texture checkerboard in game.
+
+### 10.3 Documentation completed
+
+Added [MINING_SKILL_IMPLEMENTATION_STATUS.md](MINING_SKILL_IMPLEMENTATION_STATUS.md) (closeout
+summary, acceptance criteria, carried risks, and the owner-run live acceptance runbook) and
+[MINING_SKILL_TEST_MATRIX.md](MINING_SKILL_TEST_MATRIX.md) (every requirement mapped to the test
+that enforces it, including what is deliberately owner-run).
+
+### 10.4 The one failure seen, and what it was
+
+A full GameTest run reported `spinningAndWeavingAreExactAndRejectSpidersSilk` failing — the
+textile flake root-caused during milestone 6 and filed as a separate task. It is unrelated to
+Mining: the test counts every yarn item entity near its mock player, mock players spawn at the
+**shared world spawn**, and `run/gametest/world` persists between runs, so dropped yarn accumulates
+until the count exceeds one. Resetting that disposable world clears it -- confirmed: the same suite that
+reported the failure passed **491/491** immediately after `run/gametest/world` was deleted, which
+is the accumulation hypothesis verified rather than assumed. No Mining code was changed
+on its account and no assertion was weakened.
+
+### Milestone 10 result
+
+- Status: **PASS** for everything automatable here. Live two-client acceptance and live Rails
+  verification remain owner-run and are documented rather than claimed.
+
+---
+
 ## Owner decisions — 2026-08-14 (answers to the open M10 questions)
 
 Both questions that had been carried as "open for M10 sign-off" are now answered by the owner.
