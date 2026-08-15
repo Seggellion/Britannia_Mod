@@ -1,4 +1,4 @@
-# Mining Progression Gap Analysis (Milestones 1-9)
+# Mining Progression Gap Analysis (Milestones 1-10 + owner decisions)
 
 Date: 2026-08-14 · Branch `patch-18`
 Original discovery at HEAD `40fa27d2`; rows updated as each milestone closed.
@@ -23,7 +23,7 @@ scored on their own remaining gaps; cross-cutting systems are scored once in §3
 | Tin (replaces Dull Copper) | 65.0 | **COMPLETE** | Full vertical slice: block+item+assets+lang, ingot, `TIN` material, `LayeredVein`, 47 seeded veins, Rails ore+ingot rows; gated at 65.0; economy identity resolved (M5); ingot lang added (M6) | Ingot art still the shared placeholder (owner/asset task) |
 | Shadow Iron | 70.0 | **COMPLETE (M6)** | Block+item+assets+lang, ingot, material identity, generator wired, Rails `ore/raw` row; economy identity resolved (M5); **12 veins seeded (M6)** | Ingot art still the shared placeholder (owner/asset task) |
 | Copper | 75.0 | **COMPLETE (M6)** | Block+item+assets+lang, ingot, material identity, generator wired, Rails `ore/raw` row; economy identity resolved (M5); **14 (+1 existing) veins seeded (M6)** | Ingot art still the shared placeholder (owner/asset task) |
-| Bronze | (80.0 cond.) | OWNER/ARCHITECTURE DECISION REQUIRED — **as a mineable: NOT APPLICABLE** | Rails `metal/ingots/bronze` commodity only; cosmetic `bronze_shield` name | Repository model is **refined-metal-only, no ore** (no bronze ore commodity, no block, no ingot item, no alloy recipe). Per design §6.3: do **not** create Bronze ore. Open owner question (outside Mining scope): should a Copper+Tin alloy route ever produce bronze ingots to back the existing commodity? Mining M2–M6 proceed without Bronze. |
+| Bronze | — (alloyed) | **COMPLETE — owner decision 2026-08-15** | Owner: *"created when tin and copper are both smelted together in the forge at the same time"*. `ForgeSmelting` settles the alloy before single-metal payouts: three Tin plus three Copper become two Bronze ingots, the same six-purity-to-two-ingots rate as any metal. Bronze ingot item, own art, lang, `UOMetalToolMaterial.BRONZE` between Copper and Iron, and the pre-existing Rails `metal/ingots/bronze` price now has a production path | Still **no Bronze ore**, exactly as design §6.3 requires — the two routes must never coexist |
 | Gold | 85.0 | **COMPLETE (M6)** | Vanilla + deepslate + the custom block all resolve to one `gold` definition at 85.0 with one drop identity, so the duplicate cannot diverge. **10 veins seeded** (M6). The custom block now ships assets (referencing the vanilla texture) instead of rendering as a missing model | Retiring the redundant custom block outright is still an option, deliberately not taken: removing a registration risks existing saves that contain it |
 | Agapite | 90.0 | **COMPLETE (M6)** | Block+item+assets+lang, ingot, material identity, generator wired, Rails `ore/raw` row; economy identity resolved (M5); **7 veins seeded (M6)** | Ingot art still the shared placeholder (owner/asset task) |
 | Verite | 95.0 | **COMPLETE (M6)** | Block+item+assets+lang, ingot, material identity, generator wired, Rails `ore/raw` row; economy identity resolved (M5); **5 veins seeded (M6)** | Ingot art still the shared placeholder (owner/asset task) |
@@ -36,7 +36,7 @@ scored on their own remaining gaps; cross-cutting systems are scored once in §3
 
 | Rock | Proposed req | Classification | Notes |
 |---|---:|---|---|
-| Stone | 0.0 | PARTIAL | Managed; sells as **cobblestone** (E3) — `stone` commodity never supplied by mining |
+| Stone | 0.0 | **COMPLETE — owner decision 2026-08-15** | Owner: mining Stone yields Cobblestone, sold for the lowest amount. Cobblestone is the floor of the price ladder at 1.0; the separate `stone` commodity is simply not a mined product |
 | Natural Cobblestone | 0.0 | **COMPLETE (M7)** | Managed; player-placed cobblestone is now distinguished from natural and yields no Mining, no managed drop and no restoration |
 | Limestone | 5.0 | PARTIAL (via alias) | No limestone block; **Calcite is the limestone source** (`deduceStoneType` alias). Keep alias; do not add a block unless owner wants one |
 | Calcite | 5.0 | PARTIAL | Managed; sells as limestone (intended alias E5) |
@@ -44,14 +44,14 @@ scored on their own remaining gaps; cross-cutting systems are scored once in §3
 | Andesite | 15.0 | PARTIAL | Managed + sellable |
 | Granite | 20.0 | PARTIAL | Managed + sellable (ordinary rock — distinct from UO High Quality Granite, design §8.1) |
 | Tuff | 25.0 | PARTIAL | Managed + sellable |
-| Deepslate | 30.0 | PARTIAL — OWNER DECISION | Managed and gated; **Rails seeds no deepslate commodity**, so it is unsellable. Adding one requires a price (convention would put it near tuff 2.0 / basalt 2.5); not invented here |
-| Cobbled Deepslate | 30.0? | PARTIAL + UNKNOWN | Managed today; unsellable; whether it belongs in the progression is an M2 catalog decision |
+| Deepslate | 30.0 | **COMPLETE** | Managed, gated, and now seeded as `stone/metamorphic/deepslate` at 4.0, its step on the progressive ladder |
+| Cobbled Deepslate | 30.0 | **COMPLETE** (one open question) | Seeded as `stone/rubble/cobbled_deepslate` at 4.0 | Predominantly player-made, so whether it belongs in the *natural* progression at all is still worth an owner view |
 | Dripstone Block | 35.0 | **COMPLETE (M6)** | Activated at the approved 35.0 as a pure data change (no Java touched) — the proof that the definition layer is genuinely extensible. Still no stone commodity (E4, M8) |
 | Basalt / Smooth Basalt | 40.0 | PARTIAL | Both managed; both sell as `basalt` |
 | Blackstone | 45.0 | **COMPLETE (M8)** | Managed; the established `"Blackrock"` drop name is now mapped onto the seeded `stone/volcanic/blackstone` commodity rather than renaming the drop, so previously-mined stacks stay valid |
 | Quartz-bearing rock | 50.0 | NOT APPLICABLE (currently) | No Overworld quartz block; `quartz` commodity exists; owner may add a source later |
 | Obsidian | — | **NOT APPLICABLE — owner decision 2026-08-14** | Removed from the catalogue entirely. Owner: *"no use for Obsidian tools (not a part of Ultima Online)"*. Vanilla Obsidian behaviour is untouched, and the tool-tier check M6 had identified as its prerequisite is no longer needed |
-| Igneous/Metamorphic/Volcanic/Glacial Rock | data-driven | PARTIAL + CONFLICT | Managed with full assets; **no commodity mapping → unsellable** (E4); no placement path found (UNKNOWN how they enter the world) |
+| Igneous/Metamorphic/Volcanic/Glacial Rock | data-driven | **COMPLETE for economy**; worldgen still open | All four now seeded and priced on the ladder (metamorphic 4.0, glacial 5.0, igneous 6.0, volcanic 7.0) | Still no discovered placement path, so they reach players only via creative or structures |
 
 ## 3. Systems
 
@@ -75,7 +75,7 @@ scored on their own remaining gaps; cross-cutting systems are scored once in §3
 | Tool durability on mining | MISSING (currently none consumed) | Baseline invariant to preserve in denial tests; whether successful mining *should* consume durability is UNKNOWN intent — flag for owner in M3 only if tests require a definition |
 | Tests (mining/restore/economy) | MISSING | None exist; JUnit + GameTest infrastructure ready |
 | Assets: ores/rocks | PARTIAL | Complete except custom `gold_ore` and `high_purity_silver_ore` (nothing) |
-| Assets: ingots | PARTIAL | **All 7 ingot lang keys added (M6)**; art is still the shared iron-ingot reference (owner/asset task — Mojang art must not be copied into this All-Rights-Reserved mod) |
+| Assets: ingots | **COMPLETE** | All 8 metals (7 mined + Bronze) now have their own generated 16×16 art and lang keys. Drawn from an original template in `tools/generate_metal_ingot_textures.py`, deterministic and reproducible (`--check`), create-only so owner replacement art is never clobbered. No Mojang texture is copied |
 | Assets: mined items | PARTIAL | purity/grade models+textures exist (shared across metals); no lang keys |
 | Raw asset reuse | NOT APPLICABLE (silver) / PARTIAL (rocks) | `raw fiels` has no silver/ore art; stone texture packs exist for future rocks (license: UNKNOWN — verify before use) |
 

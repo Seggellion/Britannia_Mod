@@ -82,13 +82,45 @@ public final class MiningEconomyGameTests {
         helper.succeed();
     }
 
-    /** One Silver metal, and no metal left behind by the retirement. */
+    /**
+     * The roster is the nine mined metals plus Bronze, which is alloyed in the forge from Tin and
+     * Copper and mined nowhere. Any other metal appearing here means an ore was added without a
+     * catalogue tier, or the retired High-Purity Silver came back as a material of its own.
+     */
     @GameTest(template = TEMPLATE)
-    public static void theMetalRosterMatchesTheApprovedLadder(GameTestHelper helper) {
-        check(UOMetalToolMaterial.values().length == MINED_METAL_DROPS.size(),
-                "the metal roster and the mined-metal ladder must stay the same size");
+    public static void theMetalRosterIsTheMinedLadderPlusBronze(GameTestHelper helper) {
+        check(UOMetalToolMaterial.values().length == MINED_METAL_DROPS.size() + 1,
+                "expected the mined ladder plus Bronze, found "
+                        + UOMetalToolMaterial.values().length + " metals");
+        check(UOMetalToolMaterial.getMaterialByName("bronze") != null, "Bronze must be a real metal");
+
+        // "Bronze is never mined" is a fact about the catalogue, not about name-stripping: the
+        // forge would smelt a hypothetical "Bronze ore" quite happily, so what actually guarantees
+        // the alloy is the only source is that no mineable yields it.
+        check(com.seggellion.britannia_mod.mining.MineableCatalog.instance().all().stream()
+                        .noneMatch(definition -> "bronze".equalsIgnoreCase(
+                                com.seggellion.britannia_mod.block.ForgeSmelting.metalName(
+                                        definition.dropName()))),
+                "no mineable may yield Bronze -- it is alloyed in the forge, never dug up");
+        check(com.seggellion.britannia_mod.mining.MineableCatalog.instance().all().stream()
+                        .noneMatch(definition -> definition.economyCommodity()
+                                .filter("bronze"::equals).isPresent()),
+                "no mineable may claim the bronze commodity");
+
         check(refine("High-Purity Silver ore") == null,
                 "the retired premium node must not resolve to a metal of its own");
+        helper.succeed();
+    }
+
+    /** The alloy must reach the blacksmith like any other metal, or it is only worth selling. */
+    @GameTest(template = TEMPLATE)
+    public static void bronzeIsAcceptedByTheBlacksmith(GameTestHelper helper) {
+        UOMetalToolMaterial bronze = UOMetalToolMaterial.getMaterialByName("bronze");
+        Item ingot = bronze.getIngotSupplier().get();
+        check(ingot == com.seggellion.britannia_mod.registry.ItemRegistry.BRONZE_INGOT.get(),
+                "Bronze must resolve to the bronze ingot");
+        check(UOMetalToolMaterial.getMaterialByIngot(ingot) == bronze,
+                "the blacksmith must resolve a bronze ingot back to Bronze");
         helper.succeed();
     }
 }

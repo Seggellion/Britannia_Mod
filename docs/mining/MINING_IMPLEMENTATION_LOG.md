@@ -997,6 +997,85 @@ on its account and no assertion was weakened.
 
 ---
 
+## Owner decisions — 2026-08-15 (Bronze, rock prices, art)
+
+Four further decisions, applied the same day. All three of the previously open economy questions
+are now closed, and the last cosmetic gap is filled.
+
+### Decision 3 — Bronze is alloyed in the forge
+
+> *"Bronze alloy is something that's created when tin and copper are both smelted together in the
+> forge at the same time. Claude needs to analyze our current forge system, and enhance it to allow
+> for the alloy."*
+
+The forge already accumulated purity per ore type and paid out two ingots per six purity. The alloy
+slots into that rule rather than beside it: `ForgeSmelting.settle` consumes **three Tin plus three
+Copper** and pays **two Bronze**, settled *before* the single-metal payout, so mixing is what makes
+Bronze while working one metal alone still yields that metal.
+
+Throughput is deliberately identical on both paths — six purity is always two ingots — so alloying
+is neither a tax nor a duplication glitch. Leftover purity stays in the forge, and a bystander metal
+sharing the vessel is never consumed.
+
+The rule was extracted into one Minecraft-free class because the small and large forge each carried
+their own copy of the payout logic; writing the alloy twice would have been the same drift this
+project has been removing. The large forge's separate ore→ingot table went with it: which ores are
+smeltable, and into what, is `UOMetalToolMaterial`'s job. The player is told when the alloy forms,
+since Bronze is the one outcome that is not simply the metal they put in.
+
+Bronze gained an ingot item, its own art, a lang entry, and a place in `UOMetalToolMaterial` between
+Copper and Iron — which is exactly where Rails already priced it — so the blacksmith accepts it like
+any other metal. There is still **no Bronze ore**, as design §6.3 requires.
+
+### Decision 4 — Mining Stone yields Cobblestone, the cheapest rock
+
+> *"Mining stone should generate cobblestone which can be sold for the lowest amount."*
+
+This confirms the long-standing behaviour rather than changing it, and settles conflict E3 as
+intended design. Cobblestone is the floor of the new price ladder at 1.0.
+
+### Decision 5 — Rock prices are a progression
+
+> *"Create the rock prices for me, make them into something that's a progressive gameplay for mining
+> and selling."*
+
+A rock is now worth what it costs in Mining skill to reach it:
+
+| Requirement | 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| Price | 1.0 | 1.5 | 2.0 | 2.5 | 3.0 | 3.5 | 4.0 | 5.0 | 6.0 | 7.0 |
+
+Half-steps to Deepslate, then whole steps, so the deep rock is worth the climb. Seven commodities
+that did not exist were added — deepslate, cobbled deepslate, dripstone, and the four custom rocks —
+each under a geological family, which needed one new subcategory (`metamorphic`). **Every mined
+resource now sells**; the "unsellable" contract inverted from a documented gap into a defect check.
+
+**One existing price fell:** limestone 4.0 → 1.5. It is reached at Mining 5, and pricing the
+second-easiest rock above every deep one is precisely what made the old table unprogressive. Several
+rose (tuff 2.0→3.5, basalt 2.5→6.0, blackstone 3.0→7.0). This re-prices live commodities on the next
+seed run — worth knowing before deploying.
+
+Fixing this also surfaced a defect of the same family as the stone-subcategory bug: ingot sales
+posted `subcategory: "ingot"` while Rails seeds `metal/ingots`, and only copper, silver and gold were
+recognised at all. **No ingot of any metal has ever been sellable.** Both are fixed, so Bronze — and
+every other metal — can actually be sold.
+
+### Decision 6 — Missing art generated
+
+> *"Generate any missing art automatically."*
+
+`tools/generate_metal_ingot_textures.py` draws all eight metal ingots (seven mined plus Bronze) from
+one original 16×16 template, in palettes chosen here: grey for the humble metals, the Ultima Online
+colours for the fantasy ones, and Bronze visibly between Copper and Gold. It follows the existing
+`generate_flower_placeholders.py` conventions — stdlib only, deterministic, `--check` for a
+byte-for-byte audit, and create-only so owner replacement art is never clobbered.
+
+Referencing Mojang's iron ingot texture was legal; copying or recolouring it into this All Rights
+Reserved mod would not have been, which is why the sprites are drawn rather than derived. The M6
+trip-wire test that asserted the placeholder fired exactly as designed and now asserts the opposite.
+
+---
+
 ## Owner decisions — 2026-08-14 (answers to the open M10 questions)
 
 Both questions that had been carried as "open for M10 sign-off" are now answered by the owner.

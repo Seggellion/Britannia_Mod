@@ -29,15 +29,27 @@ class MiningEconomyIdentityTest {
     /** category|subcategory|item_name exactly as Rails CommoditySeeder seeds them. */
     private static final Map<String, String> SEEDED_STONE = Map.ofEntries(
             Map.entry("cobblestone", "rubble"),
+            Map.entry("cobbled_deepslate", "rubble"),
             Map.entry("stone", "common"),
             Map.entry("andesite", "igneous"),
             Map.entry("diorite", "igneous"),
             Map.entry("granite", "igneous"),
+            Map.entry("igneous_rock", "igneous"),
             Map.entry("tuff", "volcanic"),
             Map.entry("basalt", "volcanic"),
             Map.entry("blackstone", "volcanic"),
+            Map.entry("volcanic_rock", "volcanic"),
             Map.entry("limestone", "sedimentary"),
+            Map.entry("dripstone", "sedimentary"),
+            Map.entry("glacial_rock", "sedimentary"),
+            Map.entry("deepslate", "metamorphic"),
+            Map.entry("metamorphic_rock", "metamorphic"),
             Map.entry("quartz", "mineral"));
+
+    /** Rock price by Mining requirement, as seeded in Rails CommoditySeeder. */
+    private static final Map<Float, Double> ROCK_PRICE_BY_REQUIREMENT = Map.of(
+            0.0f, 1.0, 5.0f, 1.5, 10.0f, 2.0, 15.0f, 2.5, 20.0f, 3.0,
+            25.0f, 3.5, 30.0f, 4.0, 35.0f, 5.0, 40.0f, 6.0, 45.0f, 7.0);
 
     private static final List<String> SEEDED_ORES = List.of(
             "tin", "copper", "iron", "silver", "gold", "shadow_iron", "agapite", "verite", "valorite");
@@ -108,27 +120,46 @@ class MiningEconomyIdentityTest {
         }
     }
 
-    /** Resources with no commodity are a recorded gap, not an accident: they must be explicit. */
+    /**
+     * Owner decision 2026-08-15: every mined resource sells. A resource that reaches a player's
+     * inventory with nowhere to sell it is now a defect, not a documented gap.
+     */
     @Test
-    void resourcesWithoutACommodityAreDocumented() {
+    void everyMinedResourceHasSomewhereToSell() {
         List<String> unsellable = new ArrayList<>();
         for (MineableDefinition definition : catalog.active()) {
             if (definition.economyCommodity().isEmpty()) {
                 unsellable.add(definition.id());
             }
-            if (definition.category() == MineableDefinition.Category.STONE
-                    && definition.economyCommodity().isEmpty()) {
-                assertTrue(CommodityMappings.stoneCommodityKey(definition.dropName()).isEmpty(),
-                        definition.id() + " resolves to a commodity but the catalogue says it has none");
-            }
         }
-        assertEquals(List.of("deepslate", "cobbled_deepslate", "igneous_rock", "metamorphic_rock",
-                        "volcanic_rock", "glacial_rock", "dripstone"),
-                unsellable.stream().sorted(
-                        java.util.Comparator.comparingInt(List.of("deepslate", "cobbled_deepslate",
-                                "igneous_rock", "metamorphic_rock", "volcanic_rock", "glacial_rock",
-                                "dripstone")::indexOf)).toList(),
-                "the unsellable set must change only by deliberate owner decision");
+        assertEquals(List.of(), unsellable, "these resources can be mined but not sold");
+    }
+
+    /**
+     * The price ladder is the point of the rock economy: a rock is worth what it costs in Mining
+     * skill to reach it, and Cobblestone is the floor because mining Stone yields rubble.
+     */
+    @Test
+    void rockPricesRiseWithTheMiningRequirement() {
+        for (MineableDefinition definition : catalog.active()) {
+            if (definition.category() != MineableDefinition.Category.STONE) continue;
+            String commodity = definition.economyCommodity().orElseThrow();
+            if ("stone".equals(commodity) || "quartz".equals(commodity)) {
+                continue; // neither is produced by mining a rock of that name
+            }
+            Double expected = ROCK_PRICE_BY_REQUIREMENT.get(definition.requiredMining());
+            assertTrue(expected != null,
+                    definition.id() + " sits at " + definition.requiredMining()
+                            + ", which has no price step in the ladder");
+        }
+        assertEquals(1.0, ROCK_PRICE_BY_REQUIREMENT.get(0.0f),
+                "Cobblestone, at requirement 0, must remain the cheapest rock");
+        double previous = 0.0;
+        for (float requirement : new float[] {0, 5, 10, 15, 20, 25, 30, 35, 40, 45}) {
+            double price = ROCK_PRICE_BY_REQUIREMENT.get(requirement);
+            assertTrue(price >= previous, "the ladder must never pay less for a harder rock");
+            previous = price;
+        }
     }
 
     /** Ore payloads keep the seeded ore/raw shape established in milestone 5. */

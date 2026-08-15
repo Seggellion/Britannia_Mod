@@ -1,9 +1,6 @@
 {
-    "parent": "item/generated",
-    "textures": {
-      "layer0": "minecraft:item/iron_ingot"
-    },
-    "overrides": [],
-    "gui_light": "front"
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "britannia_mod:item/verite_ingot"
   }
-  
+}

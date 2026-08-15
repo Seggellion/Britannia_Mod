@@ -32,17 +32,8 @@ public class LargeForgeBlock extends Block implements EntityBlock {
 
 
     private static final Logger LOGGER = LogUtils.getLogger();
-private static final Map<String, Supplier<Item>> ORE_TYPE_TO_INGOT = Map.of(
-    "iron ore", () -> Items.IRON_INGOT,
-    "gold ore", () -> Items.GOLD_INGOT,
-    "silver ore", () -> ItemRegistry.SILVER_INGOT.get(),
-    "shadow iron ore", () -> ItemRegistry.SHADOW_IRON_INGOT.get(),
-    "valorite ore", () -> ItemRegistry.VALORITE_INGOT.get(),
-    "verite ore", () -> ItemRegistry.VERITE_INGOT.get(),
-    "agapite ore", () -> ItemRegistry.AGAPITE_INGOT.get(),
-    "copper ore", () -> ItemRegistry.COPPER_INGOT.get(),
-    "tin ore", () -> ItemRegistry.TIN_INGOT.get()
-);
+// Which ores are smeltable, and into what, is UOMetalToolMaterial's job -- a second table here
+// could only drift from it. Bronze is absent from both on purpose: it is alloyed, never mined.
 
 
     public LargeForgeBlock() {
@@ -86,16 +77,15 @@ protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Lev
     LOGGER.info("Ore Type: {}", oreType);
     LOGGER.info("Purity: {}", purity);
 
-    // ✅ Look up the ingot type
-    Supplier<Item> ingotSupplier = ORE_TYPE_TO_INGOT.get(oreType);
-    if (ingotSupplier == null) {
+    // One metal registry decides what is smeltable, rather than a second table here.
+    if (com.seggellion.britannia_mod.item.UOMetalToolMaterial.getMaterialByName(
+            com.seggellion.britannia_mod.block.ForgeSmelting.metalName(oreType)) == null) {
         LOGGER.warn("Unknown ore type: {}", oreType);
         return ItemInteractionResult.FAIL;
     }
-    LOGGER.info("ingotSupplier: {}", ingotSupplier);
     // ✅ Add the purity to the forge
     if (!level.isClientSide) {
-        forgeEntity.addPurity(oreType, purity, ingotSupplier);
+        SmallForgeBlock.announceAlloy(player, forgeEntity.addPurity(oreType, purity));
         stack.shrink(1);
 
         if (stack.isEmpty()) {

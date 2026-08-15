@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "_comment": "Mining progression catalogue - the single source of truth for what Mining governs: the break gate, the managed break flow (PickaxeMiningRules), the drop identity (BlockBreakUtils) and the skill award all read it. required_mining is the inclusive hard access gate (design MINING_SKILL_DESIGN.md section 7/8); challenge is the separate skill-gain difficulty input, currently equal to the requirement. status=deferred is supported for a value approved but not yet managed; nothing is deferred today. economy_commodity records the Rails commodity slug the resource resolves to (null = unsellable today; conflicts E3-E5 in docs/mining/MINING_SKILL_DISCOVERY_REPORT.md section 6.3). Owner decision 2026-08-14: exactly one Silver metal/ore exists, and Obsidian is not a Mining resource (not an Ultima Online material) - see docs/mining/MINING_IMPLEMENTATION_LOG.md.",
+  "_comment": "Mining progression catalogue - the single source of truth for what Mining governs: the break gate, the managed break flow (PickaxeMiningRules), the drop identity (BlockBreakUtils) and the skill award all read it. required_mining is the inclusive hard access gate (design MINING_SKILL_DESIGN.md section 7/8); challenge is the separate skill-gain difficulty input, currently equal to the requirement. status=deferred is supported for a value approved but not yet managed; nothing is deferred today. economy_commodity records the Rails commodity slug the resource resolves to; every active resource now has one, priced as a progression in Rails CommoditySeeder so a rock is worth what it costs in Mining skill to reach it. Owner decision 2026-08-14: exactly one Silver metal/ore exists, and Obsidian is not a Mining resource (not an Ultima Online material) - see docs/mining/MINING_IMPLEMENTATION_LOG.md.",
   "mineables": [
     {
       "id": "iron",
@@ -124,7 +124,7 @@
       "drop": "Cobblestone",
       "economy_commodity": "cobblestone",
       "restorable": true,
-      "notes": "Primary universal Mining training material (design section 8). Drop/economy funnel to cobblestone is current live behavior (conflict E3); changing it is a milestone-8 economy decision, not a data edit here."
+      "notes": "Primary universal Mining training material (design section 8). Owner decision 2026-08-15: mining Stone yields Cobblestone, and Cobblestone is deliberately the cheapest thing a stone trader buys - the floor of the price progression."
     },
     {
       "id": "cobblestone",
@@ -209,9 +209,9 @@
       "challenge": 30.0,
       "blocks": ["minecraft:deepslate"],
       "drop": "Deepslate",
-      "economy_commodity": null,
+      "economy_commodity": "deepslate",
       "restorable": true,
-      "notes": "No stone commodity mapping exists for deepslate (conflict E4) - mined deepslate is currently unsellable."
+      "notes": "Priced at 4.0 under the metamorphic family, matching its 30.0 requirement."
     },
     {
       "id": "cobbled_deepslate",
@@ -222,10 +222,10 @@
       "challenge": 30.0,
       "blocks": ["minecraft:cobbled_deepslate"],
       "drop": "Cobbled Deepslate",
-      "economy_commodity": null,
+      "economy_commodity": "cobbled_deepslate",
       "restorable": true,
       "owner_review": true,
-      "notes": "In the managed set today, but it is predominantly a player-made block; whether it belongs in the natural progression is an open catalog question. Held at Deepslate's 30.0."
+      "notes": "Priced with Deepslate at 4.0 under the rubble family, since it is that rock in rubble form. It is predominantly player-made, so whether it belongs in the natural progression at all remains an open catalogue question."
     },
     {
       "id": "basalt",
@@ -261,10 +261,10 @@
       "challenge": 40.0,
       "blocks": ["britannia_mod:igneous_rock"],
       "drop": "Igneous Rock",
-      "economy_commodity": null,
+      "economy_commodity": "igneous_rock",
       "restorable": true,
       "owner_review": true,
-      "notes": "Custom rock with full assets but no discovered placement path and no economy identity. Provisional tier mirrors the basalt family; owner must confirm before milestone 3 makes it bite."
+      "notes": "Priced at 6.0 under the igneous family, in step with its Mining requirement. Still has no discovered worldgen placement path, so it reaches players only through creative or structures."
     },
     {
       "id": "metamorphic_rock",
@@ -275,10 +275,10 @@
       "challenge": 30.0,
       "blocks": ["britannia_mod:metamorphic_rock"],
       "drop": "Metamorphic Rock",
-      "economy_commodity": null,
+      "economy_commodity": "metamorphic_rock",
       "restorable": true,
       "owner_review": true,
-      "notes": "Provisional tier mirrors deepslate. Same open questions as igneous_rock."
+      "notes": "Priced at 4.0 under the metamorphic family, in step with its Mining requirement. Still has no discovered worldgen placement path, so it reaches players only through creative or structures."
     },
     {
       "id": "volcanic_rock",
@@ -289,10 +289,10 @@
       "challenge": 45.0,
       "blocks": ["britannia_mod:volcanic_rock"],
       "drop": "Volcanic Rock",
-      "economy_commodity": null,
+      "economy_commodity": "volcanic_rock",
       "restorable": true,
       "owner_review": true,
-      "notes": "Provisional tier mirrors blackstone. Same open questions as igneous_rock."
+      "notes": "Priced at 7.0 under the volcanic family, in step with its Mining requirement. Still has no discovered worldgen placement path, so it reaches players only through creative or structures."
     },
     {
       "id": "glacial_rock",
@@ -303,10 +303,10 @@
       "challenge": 35.0,
       "blocks": ["britannia_mod:glacial_rock"],
       "drop": "Glacial Rock",
-      "economy_commodity": null,
+      "economy_commodity": "glacial_rock",
       "restorable": true,
       "owner_review": true,
-      "notes": "Provisional mid tier between deepslate and basalt. Same open questions as igneous_rock."
+      "notes": "Priced at 5.0 under the sedimentary family, in step with its Mining requirement. Still has no discovered worldgen placement path, so it reaches players only through creative or structures."
     },
     {
       "id": "dripstone",
@@ -317,10 +317,10 @@
       "challenge": 35.0,
       "blocks": ["minecraft:dripstone_block"],
       "drop": "Dripstone",
-      "economy_commodity": null,
+      "economy_commodity": "dripstone",
       "restorable": true,
       "owner_review": true,
-      "notes": "Activated in milestone 6 at the approved 35.0 tier - a pure data change now that the managed set reads this catalogue. Vanilla Dripstone needs only a wooden-tier pickaxe, so the Britannia pickaxe (iron tier) harvesting it bypasses no vanilla tool rule. Still has no stone commodity mapping, so it is unsellable like Deepslate (conflict E4, milestone 8)."
+      "notes": "Activated in milestone 6 at the approved 35.0 tier - a pure data change now that the managed set reads this catalogue. Vanilla Dripstone needs only a wooden-tier pickaxe, so the Britannia pickaxe (iron tier) harvesting it bypasses no vanilla tool rule. Priced at 5.0 under the sedimentary family."
     }
   ]
 }

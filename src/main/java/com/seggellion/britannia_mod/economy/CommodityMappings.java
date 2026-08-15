@@ -47,6 +47,13 @@ public final class CommodityMappings {
             Map.entry("basalt", "volcanic"),
             Map.entry("blackstone", "volcanic"),
             Map.entry("limestone", "sedimentary"),
+            Map.entry("dripstone", "sedimentary"),
+            Map.entry("glacial_rock", "sedimentary"),
+            Map.entry("deepslate", "metamorphic"),
+            Map.entry("metamorphic_rock", "metamorphic"),
+            Map.entry("cobbled_deepslate", "rubble"),
+            Map.entry("igneous_rock", "igneous"),
+            Map.entry("volcanic_rock", "volcanic"),
             Map.entry("quartz", "mineral")
     );
 

@@ -65,13 +65,14 @@ Nothing below is a defect; each was a decision to *not* act unilaterally.
 
 | Item | Position |
 |---|---|
-| Bronze | Refined-metal commodity only. No ore, per design §6.3. Whether a Copper+Tin alloy route should ever back it is outside Mining |
-| Unsellable rocks (Deepslate, Cobbled Deepslate, Dripstone, 4 custom rocks) | Rails seeds no commodity for them; adding one means choosing a price, which design §16 reserves for the owner. Convention-derived proposals are in the log |
-| Mined Stone yields Cobblestone | Long-standing behaviour; the seeded `stone` commodity therefore has no mined supply. Changing it moves drop identity and refining together |
-| Custom rock worldgen | Igneous/metamorphic/volcanic/glacial have no placement path; they may be scenery rather than resources |
-| Ingot art | All seven custom ingots share the vanilla iron-ingot reference. Original art is an owner/asset task; Mojang art must not be embedded |
+| ~~Bronze~~ | **Decided 2026-08-15**: alloyed from Tin and Copper worked together in the forge. Implemented; still no Bronze ore |
+| ~~Unsellable rocks~~ | **Decided 2026-08-15**: all seven now seeded and priced on the Mining-requirement ladder. Every mined resource sells |
+| ~~Mined Stone yields Cobblestone~~ | **Decided 2026-08-15**: confirmed intended, and Cobblestone is the price floor at 1.0 |
+| ~~Ingot art~~ | **Decided 2026-08-15**: all eight metals have generated original art (`tools/generate_metal_ingot_textures.py`) |
+| Custom rock worldgen | Still open: igneous/metamorphic/volcanic/glacial have no placement path, so they reach players only via creative or structures. They are priced, but nothing generates them |
+| Cobbled Deepslate membership | Still open: priced at 4.0, but it is predominantly a player-made block, so whether it belongs in the *natural* progression is worth a view |
 | High-Purity Silver registration | Soft-retired. Hard removal of the registration is available on request |
-| Success-path break messages | Still hard-coded English literals (pre-existing); denial messages are localized |
+| Success-path break messages | Still hard-coded English literals (pre-existing); denial and alloy messages are localized |
 | GM Mining (100.0) | Cap exists; no mastery hook, as design §7.1 intends for later |
 
 ## 5. Live acceptance runbook (owner-run)
@@ -113,6 +114,9 @@ Useful throughout: `/mining debug` (looked-at block), `/mining skill <player>`,
 1. **Live Rails data is unverified.** All economy work is proven against the seeded identities,
    which are the version-controlled truth. If production holds legacy commodity rows, verify before
    deploying — this is the single highest-value pre-deploy check.
+1b. **The stone re-pricing changes live values on the next seed run.** Limestone falls 4.0 → 1.5;
+   tuff, basalt and blackstone rise. `CommoditySeeder.run` updates existing rows by default, so
+   review the ladder before seeding a shard with a live economy.
 2. **Vein data is inert until seeded and placed.** The seeds add rows; an operator must still run
    `/populateores` per metal.
 3. **A permanently built-over restoration cell waits indefinitely.** Non-destructive by choice; an

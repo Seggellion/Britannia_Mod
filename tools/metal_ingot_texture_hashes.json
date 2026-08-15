@@ -1,0 +1,20 @@
+{
+  "files": {
+    "src/main/resources/assets/britannia_mod/models/item/agapite_ingot.json": "407f2eb3e87e2f3ec8e4a23eb826f74033b7989391a42d7e13434ee4cdd25906",
+    "src/main/resources/assets/britannia_mod/models/item/bronze_ingot.json": "061e500f08f6699b44f5c4393f18b96b5c3bdc3db67f56c702d2ec2eeae0a6e7",
+    "src/main/resources/assets/britannia_mod/models/item/copper_ingot.json": "d5cbe01f83d93e8f2fd6005a2c0513cca19ccfa901382bce0584fab0b670210a",
+    "src/main/resources/assets/britannia_mod/models/item/shadow_iron_ingot.json": "e6b4fa07c928049a59c4a6403c7b44633891953665a9c730677c2081f589af5b",
+    "src/main/resources/assets/britannia_mod/models/item/silver_ingot.json": "cea562677d0adbbebe309672671c711de6f1ff193b967cae2bc2bdcaf2473a93",
+    "src/main/resources/assets/britannia_mod/models/item/tin_ingot.json": "5a34a2ead0e9d935473a057f023b530215714d483cb8762906c5e6b79bbc4034",
+    "src/main/resources/assets/britannia_mod/models/item/valorite_ingot.json": "37789e8070e72079b337b7de20cd7219329ab68154c3e64ab7064426dec0fb48",
+    "src/main/resources/assets/britannia_mod/models/item/verite_ingot.json": "2d93209e6882a4408ce7574d872464798765af65e264535a1d2eb531c9fd2e8d",
+    "src/main/resources/assets/britannia_mod/textures/item/agapite_ingot.png": "814a9a24cc98a15879f36e282cb2d1a6b8f1fbcbae3f68e4c936488dff55befe",
+    "src/main/resources/assets/britannia_mod/textures/item/bronze_ingot.png": "5640e05c93ce74d444a6e6320eff0f953f2b9a6dca7ad7657d315c674569011c",
+    "src/main/resources/assets/britannia_mod/textures/item/copper_ingot.png": "b94c7023adc99789ca22f978aaad3b544801fa3aba5b2d810b2afb3272fa4a02",
+    "src/main/resources/assets/britannia_mod/textures/item/shadow_iron_ingot.png": "7ba46c4194b7b791ead9f0026033a57d18cd8e1702b418ffb6222470137643a2",
+    "src/main/resources/assets/britannia_mod/textures/item/silver_ingot.png": "61cc37ee5cfa6046030f4d2c594ca790f96e985ead1987619b361821fa091f67",
+    "src/main/resources/assets/britannia_mod/textures/item/tin_ingot.png": "35110e6f4f1ab1f73b9ebdb4af452f39768058ba6e9c317d94d6bfc6f8c4e6fc",
+    "src/main/resources/assets/britannia_mod/textures/item/valorite_ingot.png": "300ea9ff20716b9f01c1ef978dfecadb97c2166a557ad8d056bef4835c77d353",
+    "src/main/resources/assets/britannia_mod/textures/item/verite_ingot.png": "612d42ce1ae9178f5f75a25b192784b405e2c4d9914a0ae0990e6e48a4870a50"
+  }
+}

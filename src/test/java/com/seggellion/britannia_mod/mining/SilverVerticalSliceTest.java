@@ -157,13 +157,18 @@ class SilverVerticalSliceTest {
                 "the mined-ore item Silver drops needs a display name");
     }
 
-    /** Documented placeholder: the ingot art is still the vanilla iron texture (M6 asset work). */
+    /** Every custom metal now has its own art rather than borrowing Mojang's iron ingot. */
     @Test
-    void silverIngotStillUsesThePlaceholderTextureSharedByEveryCustomIngot() throws Exception {
-        String model = Files.readString(ASSETS.resolve("models/item/silver_ingot.json"));
-        assertTrue(model.contains("minecraft:item/iron_ingot"),
-                "if this fails, dedicated Silver ingot art landed and the gap analysis must be updated");
-        assertFalse(Files.exists(ASSETS.resolve("textures/item/silver_ingot.png")),
-                "no dedicated Silver ingot texture is expected yet");
+    void everyCustomIngotHasItsOwnTexture() throws Exception {
+        for (String metal : List.of("silver", "tin", "copper", "bronze", "shadow_iron",
+                "agapite", "verite", "valorite")) {
+            String model = Files.readString(ASSETS.resolve("models/item/" + metal + "_ingot.json"));
+            assertTrue(model.contains("britannia_mod:item/" + metal + "_ingot"),
+                    metal + " ingot must use its own texture");
+            assertFalse(model.contains("minecraft:item/iron_ingot"),
+                    metal + " ingot must no longer borrow the vanilla iron texture");
+            assertTrue(Files.exists(ASSETS.resolve("textures/item/" + metal + "_ingot.png")),
+                    metal + " ingot texture is missing");
+        }
     }
 }

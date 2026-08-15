@@ -62,6 +62,11 @@ public final class ServerEconomyService {
     private static final String TRADER_SOURCE_TAG_PREFIX = "trader_source_";
     private static final Set<String> SYNCED_NPCS = ConcurrentHashMap.newKeySet();
 
+    /** Metals Rails seeds under metal/ingots, and therefore the only ingots that can be sold. */
+    private static final Set<String> SELLABLE_INGOT_METALS = Set.of(
+            "tin", "copper", "bronze", "iron", "silver", "gold",
+            "shadow_iron", "agapite", "verite", "valorite");
+
     private ServerEconomyService() {}
 
     public static void sellAllWood(ServerPlayer player, Entity trader, String cityName, String role) {
@@ -558,7 +563,7 @@ public final class ServerEconomyService {
                 item.addProperty("material", ingotMaterial);
                 item.addProperty("quality", 0);
                 item.addProperty("category", "metal");
-                item.addProperty("subcategory", "ingot");
+                item.addProperty("subcategory", "ingots");
             }
         }
 
@@ -807,14 +812,17 @@ public final class ServerEconomyService {
         return idx >= 0 ? id.substring(idx + 1) : id;
     }
 
+    /**
+     * The metal a stack of ingots represents, matching the item_name Rails seeds under
+     * metal/ingots. Every metal the forge can produce is listed, Bronze included: it is alloyed
+     * rather than mined, but it is still a metal a player can sell.
+     */
     private static String materialFromIngotPath(String path) {
         if (path == null) return null;
-        return switch (path) {
-            case "copper_ingot", "copper_ingots" -> "copper";
-            case "silver_ingot", "silver_ingots" -> "silver";
-            case "gold_ingot", "gold_ingots" -> "gold";
-            default -> null;
-        };
+        String metal = path.endsWith("_ingots")
+                ? path.substring(0, path.length() - "_ingots".length())
+                : path.endsWith("_ingot") ? path.substring(0, path.length() - "_ingot".length()) : null;
+        return metal != null && SELLABLE_INGOT_METALS.contains(metal) ? metal : null;
     }
 
     private static void classifyMappedCommodity(JsonObject item, ItemStack stack) {

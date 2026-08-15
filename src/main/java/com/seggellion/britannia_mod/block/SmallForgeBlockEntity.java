@@ -38,29 +38,38 @@ public class SmallForgeBlockEntity extends BlockEntity implements GeoBlockEntity
         super(BlockRegistry.SMALL_FORGE_BLOCK_ENTITY_TYPE.get(), pos, state);
     }
 
-        public void addPurity(String oreType, int purityToAdd, Supplier<Item> ingotSupplier) {
-            int currentPurity = storedPurityMap.getOrDefault(oreType, 0);
-            currentPurity += purityToAdd;
-
-            if (currentPurity >= 6) {
-                int ingotsToDrop = (currentPurity / 6) * 2;
-                currentPurity %= 6;
-
-                if (level != null && !level.isClientSide) {
-                    ItemStack ingotStack = new ItemStack(ingotSupplier.get(), ingotsToDrop);
-                    ItemEntity ingotEntity = new ItemEntity(
-                        level,
-                        worldPosition.getX() + 0.5,
-                        worldPosition.getY() + 1.0,
-                        worldPosition.getZ() + 0.5,
-                        ingotStack
-                    );
-                    level.addFreshEntity(ingotEntity);
-                }
+        /**
+         * Adds mined purity and settles whatever the forge now owes, returning the payouts so the
+         * caller can tell the player what came out. Tin and Copper held together alloy into Bronze;
+         * see {@link ForgeSmelting}.
+         */
+        public java.util.List<ForgeSmelting.Payout> addPurity(String oreType, int purityToAdd) {
+            storedPurityMap.merge(oreType, purityToAdd, Integer::sum);
+            java.util.List<ForgeSmelting.Payout> payouts = ForgeSmelting.settle(storedPurityMap);
+            for (ForgeSmelting.Payout payout : payouts) {
+                eject(payout);
             }
-
-            storedPurityMap.put(oreType, currentPurity);
             setChanged();
+            return payouts;
+        }
+
+        /** Resolves the metal by name so every payout, alloy included, uses one ingot registry. */
+        private void eject(ForgeSmelting.Payout payout) {
+            if (level == null || level.isClientSide) {
+                return;
+            }
+            com.seggellion.britannia_mod.item.UOMetalToolMaterial metal =
+                    com.seggellion.britannia_mod.item.UOMetalToolMaterial.getMaterialByName(payout.metal());
+            if (metal == null) {
+                return;
+            }
+            ItemStack ingotStack = new ItemStack(metal.getIngotSupplier().get(), payout.ingots());
+            level.addFreshEntity(new ItemEntity(
+                    level,
+                    worldPosition.getX() + 0.5,
+                    worldPosition.getY() + 1.0,
+                    worldPosition.getZ() + 0.5,
+                    ingotStack));
         }
 
 @Override

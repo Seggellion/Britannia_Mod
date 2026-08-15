@@ -33,6 +33,14 @@ public enum UOMetalToolMaterial {
         BlockTags.MINEABLE_WITH_PICKAXE, 150, 4.5F, 1.0F, 8, 
         () -> Ingredient.of(ItemRegistry.TIN_INGOT.get())
     )),
+    /**
+     * Alloyed from Tin and Copper in the forge, never mined. Its tier sits between the two
+     * metals it is made from and the Iron above it, which is also where its economy price sits.
+     */
+    BRONZE("bronze", ItemRegistry.BRONZE_INGOT, new SimpleTier(
+        BlockTags.MINEABLE_WITH_PICKAXE, 200, 5.5F, 1.75F, 12,
+        () -> Ingredient.of(ItemRegistry.BRONZE_INGOT.get())
+    )),
     SILVER("silver", ItemRegistry.SILVER_INGOT, new SimpleTier(
         BlockTags.MINEABLE_WITH_PICKAXE, 100, 8.0F, 1.5F, 20, 
         () -> Ingredient.of(ItemRegistry.SILVER_INGOT.get())

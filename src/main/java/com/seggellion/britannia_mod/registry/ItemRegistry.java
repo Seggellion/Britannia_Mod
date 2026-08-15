@@ -1866,6 +1866,13 @@ public static final DeferredHolder<Item, BlockItem> CURTAIN_FOUNDATION_ITEM =
         public static final DeferredHolder<Item, Item> TIN_INGOT = ITEMS.register("tin_ingot", () ->
         new Item(new Item.Properties())
         );
+        /**
+         * Bronze is the one metal that is alloyed rather than mined: the forge produces it when
+         * Tin and Copper are worked together. There is deliberately no Bronze ore.
+         */
+        public static final DeferredHolder<Item, Item> BRONZE_INGOT = ITEMS.register("bronze_ingot", () ->
+        new Item(new Item.Properties())
+        );
 
 
         public static final DeferredHolder<Item, DeferredSpawnEggItem> DAEMON_SPAWN_EGG = ITEMS.register(

@@ -989,6 +989,8 @@
   "message.britannia_mod.farming.cultivation.automation_blocked": "Automated planting requires a trusted player skill identity.",
   "message.britannia_mod.farming.cultivation.unresolved": "This planting material cannot be verified; planting is blocked.",
   "item.britannia_mod.silver_ingot": "Silver Ingot",
+  "item.britannia_mod.bronze_ingot": "Bronze Ingot",
+  "message.britannia_mod.forge.bronze_alloyed": "The tin and copper alloy into %s bronze ingots.",
   "item.britannia_mod.tin_ingot": "Tin Ingot",
   "item.britannia_mod.copper_ingot": "Copper Ingot",
   "item.britannia_mod.shadow_iron_ingot": "Shadow Iron Ingot",

@@ -69,7 +69,10 @@ class Milestone14RRemovalAndPreservationTest {
         // was never bumped for the four market stalls in its final commit.
         // This total spans eight registries, so it is taken from an actual run rather
         // than from per-branch arithmetic.
-        assertEquals(894, repositoryItems);
+        // 895 as of 2026-08-15: the Bronze ingot, the alloy the forge produces from Tin and
+        // Copper. Bump this deliberately when the item roster genuinely changes -- that is the
+        // whole point of counting.
+        assertEquals(895, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

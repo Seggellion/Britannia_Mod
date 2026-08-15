@@ -76,8 +76,7 @@ public class SmallForgeBlock extends Block implements EntityBlock {
         }
 
         if (!level.isClientSide) {
-            // Pass the ingot supplier safely through
-            forgeEntity.addPurity(fullOreType, purity, metal.getIngotSupplier());
+            announceAlloy(player, forgeEntity.addPurity(fullOreType, purity));
             stack.shrink(1);
             if (stack.isEmpty()) {
                 player.setItemInHand(hand, ItemStack.EMPTY);
@@ -85,5 +84,22 @@ public class SmallForgeBlock extends Block implements EntityBlock {
         }
 
         return ItemInteractionResult.SUCCESS;
+    }
+
+    /**
+     * Tells the player when the forge alloyed Bronze. Worth saying out loud because it is the one
+     * outcome that is not simply the metal they put in: Tin and Copper worked together become
+     * Bronze rather than yielding their own ingots.
+     */
+    static void announceAlloy(Player player, java.util.List<ForgeSmelting.Payout> payouts) {
+        if (player == null) {
+            return;
+        }
+        for (ForgeSmelting.Payout payout : payouts) {
+            if (ForgeSmelting.BRONZE.equals(payout.metal())) {
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                        "message.britannia_mod.forge.bronze_alloyed", payout.ingots()), true);
+            }
+        }
     }
 }
