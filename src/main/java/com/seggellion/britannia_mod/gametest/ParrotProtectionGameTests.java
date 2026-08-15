@@ -15,6 +15,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
@@ -22,12 +24,12 @@ import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * The in-world contract for {@code ParrotProtectionHandler}: a player must never be able to damage
- * or kill a parrot, by any route, whoever owns it.
+ * The in-world contract: nothing kills a parrot.
  *
  * <p>These run on a dedicated game-test server with the real event bus, real players, real
  * projectiles and the real vanilla {@code DamageSource} factories — which is the only place the
@@ -83,8 +85,17 @@ public final class ParrotProtectionGameTests {
         parrot.invulnerableTime = 0;
     }
 
+    /** Asserts one damage source is refused outright and takes nothing off the parrot. */
+    private static void checkRefused(Parrot parrot, DamageSource source, String what) {
+        allowAnotherHit(parrot);
+        check(!parrot.hurt(source, LETHAL), what + ": LivingEntity#hurt reported that it landed");
+        checkUnharmed(parrot, what);
+    }
+
+    private record Case(String name, DamageSource source) {}
+
     // ------------------------------------------------------------------
-    // 1-2. Melee, bare-handed and armed
+    // Melee, bare-handed and armed
     // ------------------------------------------------------------------
 
     @GameTest(template = TEMPLATE)
@@ -118,40 +129,49 @@ public final class ParrotProtectionGameTests {
     @GameTest(template = TEMPLATE)
     public static void thePlayerAttackDamageSourceItselfIsRefused(GameTestHelper helper) {
         // Straight at the damage layer, bypassing AttackEntityEvent entirely: this is the listener
-        // that carries the guarantee, so it has to hold on its own.
+        // that carries the guarantee, so it has to hold on its own. Sweep attacks take exactly this
+        // route and never touch AttackEntityEvent.
         Parrot parrot = parrot(helper);
         ServerPlayer player = player(helper);
 
-        boolean hurt = parrot.hurt(helper.getLevel().damageSources().playerAttack(player), LETHAL);
-
-        check(!hurt, "LivingEntity#hurt reported that a player attack landed on a parrot");
-        checkUnharmed(parrot, "playerAttack damage source");
+        checkRefused(parrot, helper.getLevel().damageSources().playerAttack(player),
+                "playerAttack damage source");
         helper.succeed();
     }
 
     // ------------------------------------------------------------------
-    // 3-4. Ranged: the paths where the player is the causing, not the direct, entity
+    // Ranged: the paths where the player is the causing, not the direct, entity
     // ------------------------------------------------------------------
 
     @GameTest(template = TEMPLATE)
-    public static void playerFiredArrowDoesNothing(GameTestHelper helper) {
+    public static void everyPlayerOwnedProjectileDoesNothing(GameTestHelper helper) {
         Parrot parrot = parrot(helper);
         ServerPlayer player = player(helper);
         ServerLevel level = helper.getLevel();
         Arrow arrow = new Arrow(level, player, new ItemStack(Items.ARROW), null);
+        Arrow bolt = new Arrow(level, player, new ItemStack(Items.ARROW),
+                new ItemStack(Items.CROSSBOW));
+        ThrownTrident trident = new ThrownTrident(level, player, new ItemStack(Items.TRIDENT));
+        FireworkRocketEntity rocket =
+                new FireworkRocketEntity(level, new ItemStack(Items.FIREWORK_ROCKET), player);
 
-        boolean hurt = parrot.hurt(level.damageSources().arrow(arrow, player), LETHAL);
-
-        check(!hurt, "a player-fired arrow landed on a parrot");
-        checkUnharmed(parrot, "player-fired arrow");
+        for (Case attack : new Case[] {
+                new Case("arrow", level.damageSources().arrow(arrow, player)),
+                new Case("crossbow bolt", level.damageSources().arrow(bolt, player)),
+                new Case("trident", level.damageSources().trident(trident, player)),
+                new Case("firework", level.damageSources().fireworks(rocket, player)),
+                new Case("wind charge", level.damageSources().windCharge(rocket, player)),
+                new Case("thrown object", level.damageSources().thrown(rocket, player)),
+                new Case("splash potion", level.damageSources().indirectMagic(rocket, player)),
+                new Case("player-lit explosion", level.damageSources().explosion(rocket, player)),
+                new Case("magic", level.damageSources().source(DamageTypes.MAGIC, rocket, player))}) {
+            checkRefused(parrot, attack.source(), "a player-owned " + attack.name());
+        }
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void playerFiredArrowIsRefusedEvenWithNoCausingEntity(GameTestHelper helper) {
-        // The bypass the brief warns about: a source that names only the projectile. The arrow
-        // still knows its owner, so the ownership walk has to find the player from the direct
-        // entity alone.
+    public static void aProjectileWithNoCausingEntityIsStillRefused(GameTestHelper helper) {
         Parrot parrot = parrot(helper);
         ServerPlayer player = player(helper);
         ServerLevel level = helper.getLevel();
@@ -159,56 +179,12 @@ public final class ParrotProtectionGameTests {
         DamageSource directOnly = level.damageSources().source(DamageTypes.ARROW, arrow, null);
 
         check(directOnly.getEntity() == null, "the fixture was supposed to have no causing entity");
-        boolean hurt = parrot.hurt(directOnly, LETHAL);
-
-        check(!hurt, "an arrow with no causing entity got through");
-        checkUnharmed(parrot, "arrow with no causing entity");
-        helper.succeed();
-    }
-
-    @GameTest(template = TEMPLATE)
-    public static void playerThrownTridentDoesNothing(GameTestHelper helper) {
-        Parrot parrot = parrot(helper);
-        ServerPlayer player = player(helper);
-        ServerLevel level = helper.getLevel();
-        ThrownTrident trident = new ThrownTrident(level, player, new ItemStack(Items.TRIDENT));
-
-        boolean hurt = parrot.hurt(level.damageSources().trident(trident, player), LETHAL);
-
-        check(!hurt, "a player-thrown trident landed on a parrot");
-        checkUnharmed(parrot, "player-thrown trident");
-        helper.succeed();
-    }
-
-    @GameTest(template = TEMPLATE)
-    public static void playerLaunchedFireworkAndCrossbowAndPotionDoNothing(GameTestHelper helper) {
-        Parrot parrot = parrot(helper);
-        ServerPlayer player = player(helper);
-        ServerLevel level = helper.getLevel();
-        FireworkRocketEntity rocket =
-                new FireworkRocketEntity(level, new ItemStack(Items.FIREWORK_ROCKET), player);
-        Arrow bolt = new Arrow(level, player, new ItemStack(Items.ARROW),
-                new ItemStack(Items.CROSSBOW));
-
-        record Case(String name, DamageSource source) {}
-        for (Case attack : new Case[] {
-                new Case("firework", level.damageSources().fireworks(rocket, player)),
-                new Case("crossbow bolt", level.damageSources().arrow(bolt, player)),
-                new Case("wind charge", level.damageSources().windCharge(rocket, player)),
-                new Case("thrown object", level.damageSources().thrown(rocket, player)),
-                new Case("splash potion", level.damageSources().indirectMagic(rocket, player)),
-                new Case("player-lit explosion", level.damageSources().explosion(rocket, player)),
-                new Case("magic", level.damageSources().source(DamageTypes.MAGIC, rocket, player))}) {
-            allowAnotherHit(parrot);
-            boolean hurt = parrot.hurt(attack.source(), LETHAL);
-            check(!hurt, "a player-owned " + attack.name() + " landed on a parrot");
-            checkUnharmed(parrot, "player-owned " + attack.name());
-        }
+        checkRefused(parrot, directOnly, "an arrow with no causing entity");
         helper.succeed();
     }
 
     // ------------------------------------------------------------------
-    // 5. Ownership is irrelevant
+    // Ownership is irrelevant
     // ------------------------------------------------------------------
 
     @GameTest(template = TEMPLATE)
@@ -228,16 +204,13 @@ public final class ParrotProtectionGameTests {
 
         stranger.attack(parrot);
         checkUnharmed(parrot, "a stranger's melee on somebody else's parrot");
-        allowAnotherHit(parrot);
 
         Arrow ownersArrow = new Arrow(level, owner, new ItemStack(Items.ARROW), null);
-        parrot.hurt(level.damageSources().arrow(ownersArrow, owner), LETHAL);
-        checkUnharmed(parrot, "the owner's own arrow");
-        allowAnotherHit(parrot);
+        checkRefused(parrot, level.damageSources().arrow(ownersArrow, owner), "the owner's own arrow");
 
         Arrow strangersArrow = new Arrow(level, stranger, new ItemStack(Items.ARROW), null);
-        parrot.hurt(level.damageSources().arrow(strangersArrow, stranger), LETHAL);
-        checkUnharmed(parrot, "a stranger's arrow");
+        checkRefused(parrot, level.damageSources().arrow(strangersArrow, stranger),
+                "a stranger's arrow");
         helper.succeed();
     }
 
@@ -247,18 +220,16 @@ public final class ParrotProtectionGameTests {
         ServerPlayer player = player(helper);
 
         check(!wild.isTame(), "the fixture parrot was unexpectedly tame");
-        wild.hurt(helper.getLevel().damageSources().playerAttack(player), LETHAL);
-
-        checkUnharmed(wild, "a wild parrot");
+        checkRefused(wild, helper.getLevel().damageSources().playerAttack(player), "a wild parrot");
         helper.succeed();
     }
 
     // ------------------------------------------------------------------
-    // 6. Attrition
+    // Attrition
     // ------------------------------------------------------------------
 
     @GameTest(template = TEMPLATE)
-    public static void twoHundredAttacksStillLeaveTheParrotAtFullHealth(GameTestHelper helper) {
+    public static void sixHundredAttacksStillLeaveTheParrotAtFullHealth(GameTestHelper helper) {
         Parrot parrot = parrot(helper);
         ServerPlayer first = player(helper);
         ServerPlayer second = player(helper);
@@ -275,12 +246,12 @@ public final class ParrotProtectionGameTests {
             parrot.hurt(level.damageSources().arrow(arrow, second), LETHAL);
         }
 
-        checkUnharmed(parrot, "600 player attacks");
+        checkUnharmed(parrot, "600 attacks");
         helper.succeed();
     }
 
     // ------------------------------------------------------------------
-    // 7. The rule is behavioural, so a reloaded parrot is born protected
+    // The rule is behavioural, so a reloaded parrot is born protected
     // ------------------------------------------------------------------
 
     @GameTest(template = TEMPLATE)
@@ -289,8 +260,8 @@ public final class ParrotProtectionGameTests {
         ServerPlayer owner = player(helper);
         Parrot original = parrot(helper);
         original.tame(owner);
-        original.hurt(level.damageSources().playerAttack(owner), LETHAL);
-        checkUnharmed(original, "the parrot before the save/reload round trip");
+        checkRefused(original, level.damageSources().playerAttack(owner),
+                "the parrot before the save/reload round trip");
 
         CompoundTag saved = original.saveWithoutId(new CompoundTag());
         original.discard();
@@ -304,8 +275,8 @@ public final class ParrotProtectionGameTests {
         check(owner.getUUID().equals(reloaded.getOwnerUUID()),
                 "ownership did not survive the NBT round trip");
 
-        reloaded.hurt(level.damageSources().playerAttack(owner), LETHAL);
-        checkUnharmed(reloaded, "a parrot restored from saved data");
+        checkRefused(reloaded, level.damageSources().playerAttack(owner),
+                "a parrot restored from saved data");
         allowAnotherHit(reloaded);
         owner.attack(reloaded);
         checkUnharmed(reloaded, "melee against a parrot restored from saved data");
@@ -313,104 +284,175 @@ public final class ParrotProtectionGameTests {
     }
 
     // ------------------------------------------------------------------
-    // 8-9. The blast radius: everything that is not a player-hit parrot is untouched
+    // The edge cases: everything that used to get through
     // ------------------------------------------------------------------
 
     @GameTest(template = TEMPLATE)
-    public static void otherAnimalsAreStillKillableByPlayers(GameTestHelper helper) {
+    public static void fallingBlocksAndOwnerlessExplosivesDoNothing(GameTestHelper helper) {
+        // The paths Minecraft exposes no player for: a dropped anvil, a creeper somebody lit, a TNT
+        // minecart, a shot end crystal. Under player-only protection every one of these worked.
+        Parrot parrot = parrot(helper);
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(2, 3, 2));
+        FallingBlockEntity anvil =
+                FallingBlockEntity.fall(level, pos, Blocks.ANVIL.defaultBlockState());
+        Creeper creeper = helper.spawnWithNoFreeWill(EntityType.CREEPER, new BlockPos(3, 1, 1));
+
+        for (Case attack : new Case[] {
+                new Case("falling anvil", level.damageSources().anvil(anvil)),
+                new Case("falling block", level.damageSources().fallingBlock(anvil)),
+                new Case("falling stalactite", level.damageSources().fallingStalactite(anvil)),
+                new Case("creeper explosion", level.damageSources().explosion(creeper, creeper)),
+                new Case("ownerless explosion", level.damageSources().explosion(null, null)),
+                new Case("lightning", level.damageSources().lightningBolt()),
+                new Case("sonic boom", level.damageSources().sonicBoom(creeper))}) {
+            checkRefused(parrot, attack.source(), "a " + attack.name());
+        }
+        anvil.discard();
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void everyEnvironmentalHazardDoesNothing(GameTestHelper helper) {
+        Parrot parrot = parrot(helper);
+        ServerLevel level = helper.getLevel();
+
+        for (Case hazard : new Case[] {
+                new Case("cactus", level.damageSources().cactus()),
+                new Case("lava", level.damageSources().lava()),
+                new Case("fire", level.damageSources().inFire()),
+                new Case("burning", level.damageSources().onFire()),
+                new Case("hot floor", level.damageSources().hotFloor()),
+                new Case("suffocation", level.damageSources().inWall()),
+                new Case("cramming", level.damageSources().cramming()),
+                new Case("drowning", level.damageSources().drown()),
+                new Case("starvation", level.damageSources().starve()),
+                new Case("sweet berry bush", level.damageSources().sweetBerryBush()),
+                new Case("freezing", level.damageSources().freeze()),
+                new Case("stalagmite", level.damageSources().stalagmite()),
+                new Case("wither", level.damageSources().wither()),
+                new Case("dragon breath", level.damageSources().dragonBreath()),
+                new Case("magic", level.damageSources().magic()),
+                new Case("drying out", level.damageSources().dryOut()),
+                new Case("flying into a wall", level.damageSources().flyIntoWall()),
+                new Case("the world border", level.damageSources().outOfBorder()),
+                new Case("falling out of the world", level.damageSources().fellOutOfWorld()),
+                new Case("generic", level.damageSources().generic())}) {
+            checkRefused(parrot, hazard.source(), hazard.name());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void noMobTamedOrWildCanHarmAParrot(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer owner = player(helper);
+        Parrot parrot = parrot(helper);
+        Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(2, 1, 1));
+        Wolf pet = helper.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(3, 1, 1));
+        Wolf stray = helper.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(4, 1, 1));
+        pet.tame(owner);
+        check(pet.isTame(), "the fixture wolf did not tame to the player");
+
+        for (Case attack : new Case[] {
+                new Case("wild zombie's bite", level.damageSources().mobAttack(zombie)),
+                new Case("untamed wolf's bite", level.damageSources().mobAttack(stray)),
+                new Case("player's tamed wolf", level.damageSources().mobAttack(pet)),
+                new Case("mob's projectile", level.damageSources().mobProjectile(zombie, zombie)),
+                new Case("bee sting", level.damageSources().sting(zombie)),
+                new Case("thorns", level.damageSources().thorns(zombie))}) {
+            checkRefused(parrot, attack.source(), "a " + attack.name());
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void aParrotAtZeroHealthIsBackToFullBeforeItCanDie(GameTestHelper helper) {
+        // tickDeath removes an entity at zero health without ever calling die(), so nothing writing
+        // health directly would fire a single event. The tick guard is the floor under that.
+        Parrot parrot = parrot(helper);
+        parrot.setHealth(0.0F);
+
+        helper.runAfterDelay(3, () -> {
+            checkUnharmed(parrot, "a parrot whose health was zeroed outside the damage pipeline");
+            check(parrot.deathTime == 0, "the parrot was left mid-death-animation");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void aParrotBelowTheWorldIsLiftedBackOut(GameTestHelper helper) {
+        // fellOutOfWorld is damage and damage is blocked, so without the rescue the parrot would
+        // simply fall for ever — not killed, but gone, which is the same thing to the owner.
+        ServerLevel level = helper.getLevel();
+        Parrot parrot = parrot(helper);
+        double belowTheWorld = level.getMinBuildHeight() - 100.0;
+        parrot.teleportTo(parrot.getX(), belowTheWorld, parrot.getZ());
+
+        helper.runAfterDelay(3, () -> {
+            check(parrot.isAlive(), "a parrot dropped below the world did not survive");
+            check(parrot.getY() > level.getMinBuildHeight(),
+                    "a parrot dropped below the world was not lifted back out (y="
+                            + parrot.getY() + ")");
+            checkUnharmed(parrot, "a parrot rescued from the void");
+            parrot.discard();
+            helper.succeed();
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // The blast radius: everything that is not a parrot is untouched
+    // ------------------------------------------------------------------
+
+    @GameTest(template = TEMPLATE)
+    public static void otherAnimalsAreStillKillable(GameTestHelper helper) {
         Chicken chicken = helper.spawnWithNoFreeWill(EntityType.CHICKEN, new BlockPos(2, 1, 1));
         ServerPlayer player = player(helper);
         ServerLevel level = helper.getLevel();
 
-        boolean melee = chicken.hurt(level.damageSources().playerAttack(player), 1.0F);
-        check(melee, "a player melee attack on a chicken was refused");
+        check(chicken.hurt(level.damageSources().playerAttack(player), 1.0F),
+                "a player melee attack on a chicken was refused");
         check(chicken.getHealth() < chicken.getMaxHealth(), "the chicken took no damage");
 
         Chicken second = helper.spawnWithNoFreeWill(EntityType.CHICKEN, new BlockPos(4, 1, 1));
-        Arrow arrow = new Arrow(level, player, new ItemStack(Items.ARROW), null);
-        check(second.hurt(level.damageSources().arrow(arrow, player), LETHAL),
-                "a player-fired arrow at a chicken was refused");
-        check(!second.isAlive(), "a lethal player arrow did not kill a chicken");
-        helper.succeed();
+        check(second.hurt(level.damageSources().cactus(), LETHAL),
+                "environmental damage to a chicken was refused");
+        check(!second.isAlive(), "lethal environmental damage did not kill a chicken");
+
+        Chicken third = helper.spawnWithNoFreeWill(EntityType.CHICKEN, new BlockPos(5, 1, 1));
+        third.setHealth(0.0F);
+        helper.runAfterDelay(3, () -> {
+            check(third.getHealth() == 0.0F,
+                    "the parrot health floor was applied to a chicken as well");
+            helper.succeed();
+        });
     }
 
     @GameTest(template = TEMPLATE)
-    public static void environmentalDamageStillHurtsParrots(GameTestHelper helper) {
-        // The brief's explicit boundary: this is player protection, not immortality.
+    public static void operatorsCanStillRemoveAParrot(GameTestHelper helper) {
+        // /kill reaches LivingEntity#kill, which is hurt(genericKill, MAX_VALUE) — the one
+        // deliberate exception, so an unkillable parrot is not also an unremovable one.
+        Parrot parrot = parrot(helper);
+
+        parrot.kill();
+
+        helper.runAfterDelay(3, () -> {
+            check(!parrot.isAlive(), "an operator could not remove a parrot with /kill");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void theOperatorExceptionIsNarrow(GameTestHelper helper) {
+        // genericKill is exempt; the damage types that merely share its BYPASSES_INVULNERABILITY
+        // tag are ordinary world hazards and must not be.
         Parrot parrot = parrot(helper);
         ServerLevel level = helper.getLevel();
 
-        record Case(String name, DamageSource source) {}
-        for (Case hazard : new Case[] {
-                new Case("cactus", level.damageSources().cactus()),
-                new Case("lava", level.damageSources().lava()),
-                new Case("sweet berry bush", level.damageSources().sweetBerryBush()),
-                new Case("freezing", level.damageSources().freeze()),
-                new Case("drowning", level.damageSources().drown()),
-                new Case("starvation", level.damageSources().starve())}) {
-            Parrot subject = parrot(helper);
-            check(subject.hurt(hazard.source(), 1.0F),
-                    hazard.name() + " damage was refused on a parrot");
-            check(subject.getHealth() < subject.getMaxHealth(),
-                    hazard.name() + " damage did not reduce a parrot's health");
-        }
-
-        // Fall damage is deliberately absent from that list: parrots are in vanilla's
-        // FALL_DAMAGE_IMMUNE entity-type tag and Entity#isInvulnerableTo short-circuits before any
-        // event is posted. Asserting it here keeps the exclusion honest — if that ever stops being
-        // vanilla's doing, this fails rather than quietly looking like Britannia's doing.
-        Parrot dropped = parrot(helper);
-        check(!dropped.hurt(level.damageSources().fall(), 1.0F),
-                "a parrot took fall damage; vanilla's FALL_DAMAGE_IMMUNE tag no longer covers it and"
-                        + " the environmental exclusion above needs revisiting");
-
+        checkRefused(parrot, level.damageSources().fellOutOfWorld(), "falling out of the world");
+        checkRefused(parrot, level.damageSources().outOfBorder(), "the world border");
         check(parrot.hurt(level.damageSources().genericKill(), LETHAL),
                 "an operator kill was refused on a parrot");
-        check(!parrot.isAlive(), "an operator kill did not kill a parrot");
-        helper.succeed();
-    }
-
-    @GameTest(template = TEMPLATE)
-    public static void wildMobsAndOwnerlessProjectilesStillHurtParrots(GameTestHelper helper) {
-        ServerLevel level = helper.getLevel();
-        Zombie zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(2, 1, 1));
-
-        Parrot bitten = parrot(helper);
-        check(bitten.hurt(level.damageSources().mobAttack(zombie), 1.0F),
-                "a wild mob's attack on a parrot was refused");
-        check(bitten.getHealth() < bitten.getMaxHealth(), "a wild mob's attack did no damage");
-
-        // A dispenser-fired arrow has no owner and so is nobody's doing.
-        Parrot shot = parrot(helper);
-        Arrow ownerless = new Arrow(level, 0.0, 0.0, 0.0, new ItemStack(Items.ARROW), null);
-        check(ownerless.getOwner() == null, "the fixture arrow unexpectedly had an owner");
-        check(shot.hurt(level.damageSources().arrow(ownerless, null), 1.0F),
-                "an ownerless arrow was refused on a parrot");
-        check(shot.getHealth() < shot.getMaxHealth(), "an ownerless arrow did no damage");
-        helper.succeed();
-    }
-
-    @GameTest(template = TEMPLATE)
-    public static void aPlayersTamedWolfCannotBeUsedToKillAParrot(GameTestHelper helper) {
-        // Deliberate: a pet is its owner's doing. NeoForge's own LivingEntity#hurt patch assigns
-        // kill credit to a tamed animal's owner, so "set your wolf on it" is a player-controlled
-        // damage path and is closed like any other.
-        ServerLevel level = helper.getLevel();
-        ServerPlayer owner = player(helper);
-        Wolf pet = helper.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(2, 1, 1));
-        pet.tame(owner);
-        check(pet.isTame() && pet.getOwner() == owner, "the fixture wolf did not tame to the player");
-
-        Parrot parrot = parrot(helper);
-        check(!parrot.hurt(level.damageSources().mobAttack(pet), LETHAL),
-                "a player's tamed wolf landed a hit on a parrot");
-        checkUnharmed(parrot, "a player's tamed wolf");
-
-        Wolf stray = helper.spawnWithNoFreeWill(EntityType.WOLF, new BlockPos(3, 1, 1));
-        Parrot bitten = parrot(helper);
-        check(bitten.hurt(level.damageSources().mobAttack(stray), 1.0F),
-                "an untamed wolf's attack on a parrot was refused");
-        check(bitten.getHealth() < bitten.getMaxHealth(), "an untamed wolf's attack did no damage");
         helper.succeed();
     }
 
@@ -446,7 +488,7 @@ public final class ParrotProtectionGameTests {
     @GameTest(template = TEMPLATE)
     public static void aBlockedHitLeavesASittingParrotSitting(GameTestHelper helper) {
         // Parrot#hurt clears the sit order before LivingEntity#hurt is ever entered, so without the
-        // handler putting it back an arrow would be a free "stand up" button on somebody's pet.
+        // handler putting it back a passing zombie would be a free "stand up" button on a pet.
         Parrot parrot = parrot(helper);
         ServerPlayer owner = player(helper);
         ServerLevel level = helper.getLevel();
@@ -459,19 +501,6 @@ public final class ParrotProtectionGameTests {
 
         checkUnharmed(parrot, "an arrow at a sitting parrot");
         check(parrot.isOrderedToSit(), "a blocked hit still knocked the parrot out of its sit order");
-        helper.succeed();
-    }
-
-    @GameTest(template = TEMPLATE)
-    public static void operatorsCanStillRemoveAParrot(GameTestHelper helper) {
-        // /kill goes through Entity#kill, which removes the entity outright and never touches the
-        // damage pipeline. Administration must not be collateral damage of the gameplay rule.
-        Parrot parrot = parrot(helper);
-        player(helper);
-
-        parrot.kill();
-
-        check(!parrot.isAlive(), "an operator could not remove a parrot with /kill semantics");
         helper.succeed();
     }
 }
