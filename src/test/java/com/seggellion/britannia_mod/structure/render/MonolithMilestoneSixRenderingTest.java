@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import net.minecraft.core.BlockPos;
@@ -30,7 +31,7 @@ class MonolithMilestoneSixRenderingTest {
     private static final Path TEXTURE = ASSETS.resolve("textures/block/monolith/diagnostic_stone.png");
 
     @Test
-    void existingEnabledProvisionalVariantStillResolvesItsUnchangedResources() throws Exception {
+    void existingEnabledVariantResolvesImportedMonolithOneResources() throws Exception {
         var family = ShrineMonolithDefinitions.catalogue()
                 .family(ShrineMonolithDefinitions.MONOLITH).orElseThrow();
         assertEquals(3, family.variants().size());
@@ -59,18 +60,19 @@ class MonolithMilestoneSixRenderingTest {
     }
 
     @Test
-    void geometryHasExactAuthoredBoundsPivotForwardMarkerAndNoShrineIdentity() throws Exception {
+    void geometryMatchesImportedMonolithOneAndHasNoShrineIdentity() throws Exception {
         JsonObject root = JsonParser.parseString(Files.readString(MODEL)).getAsJsonObject();
         JsonObject geometry = root.getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();
         JsonObject description = geometry.getAsJsonObject("description");
         assertEquals("geometry.britannia_mod.monolith_diagnostic",
                 description.get("identifier").getAsString());
         assertEquals(32, description.get("texture_width").getAsInt());
-        assertEquals(32, description.get("texture_height").getAsInt());
+        assertEquals(16, description.get("texture_height").getAsInt());
         JsonObject bone = geometry.getAsJsonArray("bones").get(0).getAsJsonObject();
+        assertEquals("monolith", bone.get("name").getAsString());
         assertEquals("[0,-16,0]", compact(bone.getAsJsonArray("pivot")));
         JsonArray cubes = bone.getAsJsonArray("cubes");
-        assertEquals(4, cubes.size());
+        assertEquals(5, cubes.size());
         double[] min = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
         double[] max = {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
         for (var element : cubes) {
@@ -89,9 +91,6 @@ class MonolithMilestoneSixRenderingTest {
         assertEquals(32.0, max[1]);
         assertEquals(-8.0, min[2]);
         assertEquals(24.0, max[2]);
-        JsonObject frontMarker = cubes.get(3).getAsJsonObject();
-        assertEquals("[12,-4,-6]", compact(frontMarker.getAsJsonArray("origin")));
-        assertEquals("[8,24,2]", compact(frontMarker.getAsJsonArray("size")));
         String source = Files.readString(MODEL).toLowerCase();
         assertFalse(source.contains("shrine"));
         assertFalse(source.contains("ankh"));
@@ -99,19 +98,22 @@ class MonolithMilestoneSixRenderingTest {
     }
 
     @Test
-    void textureIsOneOpaqueThirtyTwoPixelDiagnosticAssetWithPinnedHash() throws Exception {
+    void textureIsOpaqueTwoMaterialAtlasWithPinnedHash() throws Exception {
         BufferedImage image = ImageIO.read(TEXTURE.toFile());
-        assertEquals(32, image.getWidth());
-        assertEquals(32, image.getHeight());
+        assertEquals(256, image.getWidth());
+        assertEquals(128, image.getHeight());
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 assertEquals(255, (image.getRGB(x, y) >>> 24) & 0xFF);
             }
         }
-        assertEquals("FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4",
+        assertEquals("11988200CE334883AADC39B1BE48AB337B21D62690222538F5A1946D48B5766B",
                 sha256(TEXTURE));
-        try (var paths = Files.list(TEXTURE.getParent())) {
-            assertEquals(3, paths.filter(Files::isRegularFile).count());
+        for (String source : List.of(
+                "sarsen_stone_1.png", "sarsen_stone_2.png", "sarsen_stone_3.png",
+                "sarsen_stone_4.png", "sarsen_stone_5.png", "sarsen_stone_6.png",
+                "sarsen_stone_7.png")) {
+            assertTrue(Files.isRegularFile(TEXTURE.getParent().resolve(source)));
         }
     }
 

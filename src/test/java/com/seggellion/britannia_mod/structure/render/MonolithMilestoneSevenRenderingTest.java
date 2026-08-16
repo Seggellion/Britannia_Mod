@@ -26,6 +26,7 @@ import java.util.Optional;
 import javax.imageio.ImageIO;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
 import org.junit.jupiter.api.Test;
 
 class MonolithMilestoneSevenRenderingTest {
@@ -129,15 +130,12 @@ class MonolithMilestoneSevenRenderingTest {
         assertEquals("geometry.britannia_mod.monolith_diagnostic_alternate",
                 description.get("identifier").getAsString());
         assertEquals(32, description.get("texture_width").getAsInt());
-        assertEquals(32, description.get("texture_height").getAsInt());
+        assertEquals(16, description.get("texture_height").getAsInt());
         JsonObject bone = geometry.getAsJsonArray("bones").get(0).getAsJsonObject();
+        assertEquals("monolith", bone.get("name").getAsString());
         assertEquals("[0,-16,0]", compact(bone.getAsJsonArray("pivot")));
         JsonArray cubes = bone.getAsJsonArray("cubes");
-        assertEquals(5, cubes.size());
-        assertEquals("[10,-6,-6]",
-                compact(cubes.get(4).getAsJsonObject().getAsJsonArray("origin")));
-        assertEquals("[12,28,4]",
-                compact(cubes.get(4).getAsJsonObject().getAsJsonArray("size")));
+        assertEquals(6, cubes.size());
         assertEquals(List.of(-8.0, -16.0, -8.0, 40.0, 32.0, 24.0), extents(cubes));
         assertNotEquals(Files.readString(EXISTING_MODEL), Files.readString(ALTERNATE_MODEL));
         String source = Files.readString(ALTERNATE_MODEL).toLowerCase();
@@ -147,26 +145,27 @@ class MonolithMilestoneSevenRenderingTest {
     }
 
     @Test
-    void alternateTextureIsOpaqueDistinctThirtyTwoPixelsWithPinnedHash() throws Exception {
+    void alternateTextureIsOpaqueDistinctTwoMaterialAtlasWithPinnedHash() throws Exception {
         BufferedImage alternate = ImageIO.read(ALTERNATE_TEXTURE.toFile());
         BufferedImage existing = ImageIO.read(EXISTING_TEXTURE.toFile());
-        assertEquals(32, alternate.getWidth());
-        assertEquals(32, alternate.getHeight());
+        assertEquals(256, alternate.getWidth());
+        assertEquals(128, alternate.getHeight());
         for (int y = 0; y < alternate.getHeight(); y++) {
             for (int x = 0; x < alternate.getWidth(); x++) {
                 assertEquals(255, (alternate.getRGB(x, y) >>> 24) & 0xFF);
             }
         }
-        assertEquals("E320B72F2D0B9429D07DD4E62D264535760797AE6D1F9DD047C082B6736A2C4A",
+        assertEquals("37206E78E694552627786A5EC750124C15792C1346023D52755392FCFEB65CEF",
                 sha256(ALTERNATE_TEXTURE));
-        assertEquals("B2FCBE6841C53313A754A9722E5633957A9AB0334FB96FF05FBCFC42BA7512DC",
+        assertEquals("A7CBF5A25B1AC8FC82245C1140363B6EF83FAEE66F8EF54F2AD2F01A9F03E9D7",
                 sha256(ALTERNATE_MODEL));
-        assertEquals("FE07CE0672EE51D76F2833D1044264C7B65B2ADEB076873D1B07C953509944F4",
+        assertEquals("11988200CE334883AADC39B1BE48AB337B21D62690222538F5A1946D48B5766B",
                 sha256(EXISTING_TEXTURE));
-        assertEquals("0D58B1ED73A8811E10B276DB7E55B29F7248DD047074C0FE786882DF0757E53C",
+        assertEquals("E52C59EE4B6977E4BBE3C9996CF0B8AF247F2BEB71AEA54076A3CCEFB73F7AB9",
                 sha256(EXISTING_MODEL));
         assertNotEquals(sha256(EXISTING_TEXTURE), sha256(ALTERNATE_TEXTURE));
-        assertNotEquals(existing.getRGB(16, 16), alternate.getRGB(16, 16));
+        // The first atlas half is intentionally shared sarsen_stone_1; the accent halves differ.
+        assertNotEquals(existing.getRGB(192, 64), alternate.getRGB(192, 64));
     }
 
     @Test
@@ -177,15 +176,12 @@ class MonolithMilestoneSevenRenderingTest {
         assertEquals("geometry.britannia_mod.monolith_diagnostic_crystalline",
                 description.get("identifier").getAsString());
         assertEquals(32, description.get("texture_width").getAsInt());
-        assertEquals(32, description.get("texture_height").getAsInt());
+        assertEquals(16, description.get("texture_height").getAsInt());
         JsonObject bone = geometry.getAsJsonArray("bones").get(0).getAsJsonObject();
+        assertEquals("monolith", bone.get("name").getAsString());
         assertEquals("[0,-16,0]", compact(bone.getAsJsonArray("pivot")));
         JsonArray cubes = bone.getAsJsonArray("cubes");
         assertEquals(7, cubes.size());
-        assertEquals("[12,-4,-8]",
-                compact(cubes.get(6).getAsJsonObject().getAsJsonArray("origin")));
-        assertEquals("[8,28,6]",
-                compact(cubes.get(6).getAsJsonObject().getAsJsonArray("size")));
         assertEquals(List.of(-8.0, -16.0, -8.0, 40.0, 32.0, 24.0), extents(cubes));
         assertNotEquals(Files.readString(EXISTING_MODEL), Files.readString(CRYSTALLINE_MODEL));
         assertNotEquals(Files.readString(ALTERNATE_MODEL), Files.readString(CRYSTALLINE_MODEL));
@@ -196,39 +192,42 @@ class MonolithMilestoneSevenRenderingTest {
     }
 
     @Test
-    void crystallineTextureIsOpaqueDistinctThirtyTwoPixelsWithPinnedHash() throws Exception {
+    void crystallineTextureIsOpaqueDistinctTwoMaterialAtlasWithPinnedHash() throws Exception {
         BufferedImage crystalline = ImageIO.read(CRYSTALLINE_TEXTURE.toFile());
-        assertEquals(32, crystalline.getWidth());
-        assertEquals(32, crystalline.getHeight());
+        assertEquals(256, crystalline.getWidth());
+        assertEquals(128, crystalline.getHeight());
         for (int y = 0; y < crystalline.getHeight(); y++) {
             for (int x = 0; x < crystalline.getWidth(); x++) {
                 assertEquals(255, (crystalline.getRGB(x, y) >>> 24) & 0xFF);
             }
         }
-        assertEquals("E20F4D15EC0511AFDB132E13D047FB830309896538C2C33A1224EF8420A9BAC7",
+        assertEquals("77FEDD7BFF29F867B47B63B337BAD7443CF1595FE972A0D7B0A1B68DD1E9D724",
                 sha256(CRYSTALLINE_TEXTURE));
-        assertEquals("A4EAD03C5C1ECA1FEF6F7FA6DE22C64E1ADAE964763A5EAF0715E7C72AA74955",
+        assertEquals("5C8F6DB37C81C213831FABCEB963A35FF53E9CAE8B8F47E9E62D648CA1CDC601",
                 sha256(CRYSTALLINE_MODEL));
         assertNotEquals(sha256(EXISTING_TEXTURE), sha256(CRYSTALLINE_TEXTURE));
         assertNotEquals(sha256(ALTERNATE_TEXTURE), sha256(CRYSTALLINE_TEXTURE));
     }
 
     @Test
-    void finiteFamilyBoundsContainAllThreeSameExtentsModelsForEveryFacingAndOffsetRemainsOnce() {
+    void everyImportedModelEnvelopeExactlyMatchesCollisionForEveryFacing() throws Exception {
         var footprint = ShrineMonolithDefinitions.catalogue()
                 .family(ShrineMonolithDefinitions.MONOLITH).orElseThrow().footprint();
-        for (String variant : List.of(
-                "diagnostic_missing_content", "diagnostic_alternate", "diagnostic_crystalline")) {
+        for (Path model : List.of(EXISTING_MODEL, ALTERNATE_MODEL, CRYSTALLINE_MODEL)) {
+            AABB modelBounds = modelBounds(model);
             for (Direction facing : Direction.Plane.HORIZONTAL) {
+                AABB occupied = ShrineRenderTransform.occupiedMonolithFootprintEnvelope(
+                        BlockPos.ZERO, facing);
+                AABB rendered = ShrineRenderTransform.renderedStructureEnvelope(
+                        BlockPos.ZERO, facing, modelBounds, ShrineMonolithDefinitions.MONOLITH);
+                assertAabbEquals(occupied, rendered);
+
                 var state = new PlacedStructureState(ShrineMonolithDefinitions.MONOLITH,
-                        new VariantId(variant), facing, footprint);
+                        new VariantId("diagnostic_missing_content"), facing, footprint);
                 var bounds = ShrineRenderTransform.worldBounds(BlockPos.ZERO, Optional.of(state));
-                assertTrue(Double.isFinite(bounds.minX) && Double.isFinite(bounds.maxY));
-                assertEquals(-2.0 - ShrineRenderTransform.TOLERANCE, bounds.minX);
-                assertEquals(-2.0 - ShrineRenderTransform.TOLERANCE, bounds.minZ);
-                assertEquals(3.0 + ShrineRenderTransform.TOLERANCE, bounds.maxX);
-                assertEquals(3.0 + ShrineRenderTransform.TOLERANCE, bounds.maxY);
-                assertEquals(3.0 + ShrineRenderTransform.TOLERANCE, bounds.maxZ);
+                assertTrue(bounds.minX <= rendered.minX && bounds.minY <= rendered.minY
+                        && bounds.minZ <= rendered.minZ && bounds.maxX >= rendered.maxX
+                        && bounds.maxY >= rendered.maxY && bounds.maxZ >= rendered.maxZ);
             }
         }
         assertEquals(1.0, ShrineRenderTransform.renderOffsetBlocks(ShrineMonolithDefinitions.MONOLITH));
@@ -249,6 +248,24 @@ class MonolithMilestoneSevenRenderingTest {
             }
         }
         return List.of(min[0], min[1], min[2], max[0], max[1], max[2]);
+    }
+
+    private static AABB modelBounds(Path model) throws Exception {
+        JsonObject root = JsonParser.parseString(Files.readString(model)).getAsJsonObject();
+        JsonArray cubes = root.getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject()
+                .getAsJsonArray("bones").get(0).getAsJsonObject().getAsJsonArray("cubes");
+        List<Double> bounds = extents(cubes);
+        return new AABB(bounds.get(0), bounds.get(1), bounds.get(2),
+                bounds.get(3), bounds.get(4), bounds.get(5));
+    }
+
+    private static void assertAabbEquals(AABB expected, AABB actual) {
+        assertEquals(expected.minX, actual.minX, 1.0E-8);
+        assertEquals(expected.minY, actual.minY, 1.0E-8);
+        assertEquals(expected.minZ, actual.minZ, 1.0E-8);
+        assertEquals(expected.maxX, actual.maxX, 1.0E-8);
+        assertEquals(expected.maxY, actual.maxY, 1.0E-8);
+        assertEquals(expected.maxZ, actual.maxZ, 1.0E-8);
     }
 
     private static String compact(JsonArray array) {

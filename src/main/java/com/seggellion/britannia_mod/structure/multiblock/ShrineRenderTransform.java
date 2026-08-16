@@ -107,8 +107,28 @@ public final class ShrineRenderTransform {
                 maxZ + anchor.getZ() + 0.5);
     }
 
+    /** Rendered envelope including the family-specific vertical model offset. */
+    public static AABB renderedStructureEnvelope(
+            BlockPos anchor,
+            Direction facing,
+            AABB bedrockModelVoxelBounds,
+            FamilyId familyId) {
+        return renderedShrineEnvelope(anchor, facing, bedrockModelVoxelBounds)
+                .move(0.0, renderOffsetBlocks(familyId), 0.0);
+    }
+
     /** Exact world-cell union for the four-cell shrine footprint at one facing. */
     public static AABB occupiedShrineFootprintEnvelope(BlockPos anchor, Direction facing) {
+        return occupiedFootprintEnvelope(anchor, facing, ShrineMonolithDefinitions.SHRINE);
+    }
+
+    /** Exact world-cell union for the eighteen-cell monolith footprint at one facing. */
+    public static AABB occupiedMonolithFootprintEnvelope(BlockPos anchor, Direction facing) {
+        return occupiedFootprintEnvelope(anchor, facing, ShrineMonolithDefinitions.MONOLITH);
+    }
+
+    private static AABB occupiedFootprintEnvelope(
+            BlockPos anchor, Direction facing, FamilyId familyId) {
         double minX = Double.POSITIVE_INFINITY;
         double minY = Double.POSITIVE_INFINITY;
         double minZ = Double.POSITIVE_INFINITY;
@@ -116,7 +136,7 @@ public final class ShrineRenderTransform {
         double maxY = Double.NEGATIVE_INFINITY;
         double maxZ = Double.NEGATIVE_INFINITY;
         for (LocalOffset offset : ShrineMonolithDefinitions.catalogue()
-                .family(ShrineMonolithDefinitions.SHRINE).orElseThrow().footprint()) {
+                .family(familyId).orElseThrow().footprint()) {
             WorldPosition cell = StructureTransform.worldPosition(
                     new WorldPosition(anchor.getX(), anchor.getY(), anchor.getZ()),
                     LargeStructurePartBlock.horizontalFacing(facing), offset);
