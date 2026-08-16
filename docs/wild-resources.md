@@ -129,14 +129,12 @@ The three missing visuals were created with the built-in image generator, then l
 downscaled without external artwork:
 
 - Ash prompt: pale yellow/yellow-gray low sulfur ash/crystal pile, low-profile, crisp 16-bit game
-  sprite on a magenta key background. Source:
-  `C:/Users/dusti/.codex/generated_images/019ff411-ba1b-7720-9289-bb5da44073fd/exec-f9367ba4-ffaf-4495-b9ae-b62a35704948.png`
+  sprite on a magenta key background. Source: local image-generator output.
 - Oyster prompt: dark black-purple Black-lipped Oyster shell cluster with a lighter lip,
-  low-profile on pale stone, crisp 16-bit game sprite on a green key background. Source:
-  `C:/Users/dusti/.codex/generated_images/019ff411-ba1b-7720-9289-bb5da44073fd/exec-8712ca84-8bff-443b-be20-78c2278a8591.png`
+  low-profile on pale stone, crisp 16-bit game sprite on a green key background. Source: local
+  image-generator output.
 - Pearl prompt: single dark Black Pearl with a small bright highlight, crisp 16-bit inventory
-  icon on a green key/transparent background. Source:
-  `C:/Users/dusti/.codex/generated_images/019ff411-ba1b-7720-9289-bb5da44073fd/exec-99fc2bdb-9287-4bad-a5cc-cebaa1e0c307.png`
+  icon on a green key/transparent background. Source: local image-generator output.
 
 Models, blockstates, loot tables, localization, creative entries, dimensions, alpha, and texture
 references are protected by `WildResourceAssetContractTest`.

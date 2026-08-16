@@ -63,8 +63,6 @@ public class PortraitDownloader {
                 }
             } catch (Exception e) {
                     LOGGER.info("Failed to download portrait? {}",  npcName);
-
-                System.out.println("Failed to download portrait for: " + npcName + " from GCS. Using fallback.");
             }
         });
 

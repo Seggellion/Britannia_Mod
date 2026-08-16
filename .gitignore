@@ -5,6 +5,7 @@ bin
 .metadata
 .classpath
 .project
+eclipse
 
 # idea
 out
@@ -13,26 +14,44 @@ out
 *.iml
 .idea
 
+# vscode (workspace-shared settings in .vscode/settings.json stay tracked)
+
 # gradle
 build
 .gradle
 
-# other
-eclipse
+# local maven publish target (publishing.repositories in build.gradle)
+/repo/
+
+# minecraft dev runs and local worlds
 run
 runs
 run-data
-/logs/
-gradlew
-gradlew.bat
+crash-reports/
+/src/main/resources/worlds/custom_world.zip
 
-repo
-
-/.git
-
+# logs and dumps
 logs/
 *.log
 *.log.gz
+*.hprof
+hs_err_pid*
 
-/src/main/resources/worlds/custom_world.zip
-/build/libs/britannia_mod-0.0.1.jar
+# python tooling byproducts
+__pycache__/
+*.pyc
+
+# local scratch
+/tmp/
+.claude/
+
+# editor/OS litter
+*.bak
+*.tmp
+*.orig
+*.rej
+*~
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

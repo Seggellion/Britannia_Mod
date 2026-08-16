@@ -29,7 +29,6 @@ public class GrapeVarietyManager {
         if (!VARIETIES.containsKey(FALLBACK_VARIETY.id())) {
             register(FALLBACK_VARIETY);
         }
-        // System.out.println("Loaded " + VARIETIES.size() + " grape varieties from Rails.");
     }
 
     private static void register(GrapeVariety variety) {

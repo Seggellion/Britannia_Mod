@@ -4,7 +4,7 @@
  "source": {
   "repository": "runuo/runuo",
   "pinned_commit": "71b2794f12eb6f948b1c5598ae8b350401a22d4d",
-  "local_path": "C:\\projects\\runuo-reference",
+  "local_path": "runuo-reference",
   "git_checkout_present": true
  },
  "owner_rules": {

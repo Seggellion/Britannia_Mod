@@ -48,9 +48,6 @@ for (int i = 0; i < nameNodes.getLength(); i++) {
                 }
             }
 
-            System.out.println("Loaded " + maleNames.size() + " male names.");
-            System.out.println("Loaded " + femaleNames.size() + " female names.");
-
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -8,7 +8,6 @@ version = mod_version
 group = mod_group_id
 
 repositories {
-    mavenLocal()
     maven {
         name = 'GeckoLib'
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
@@ -122,6 +121,8 @@ sourceSets {
             srcDirs = ['src/main/resources', 'src/generated/resources', 'build/generated/gametest']
             // Owner working backup only; never package retired shrine textures.
             exclude 'assets/britannia_mod/textures/block/shrine/old/**'
+            // Blockbench editor sources; never loaded at runtime, keep them out of the jar.
+            exclude '**/*.bbmodel'
         }
     }
     scaffold {

@@ -3,7 +3,7 @@
 ## Milestone 1 inventory baseline
 
 - Inventory date: 2026-08-09 (America/Vancouver).
-- Raw root: `C:\projects\britannia\raw fiels\models to import`.
+- Raw root: local raw-assets folder `models to import` (developer workstation, not part of this repository).
 - Scan mode: recursive, read-only. No source file or archive was modified.
 - Files directly present under the raw root: 74 files, 4,705,838 bytes.
 - Direct extension counts: 33 `.png`, 24 `.json`, 10 `.zip`, 3 `.mcmeta`, 2 `.yml`, 2 `.bbmodel`.
@@ -510,7 +510,7 @@ No placeholders were created in Milestone 1. Proposed placeholder work:
 ### 24. Market stall - four color variants
 
 - Registry IDs/category: `britannia_mod:market_stall_red`, `market_stall_blue`, `market_stall_green`, and `market_stall_purple`; large wooden decorative multiblocks.
-- Authoritative source: `C:\projects\britannia\raw fiels\models to import\medieval market\medieval_market_marketstall_red.bbmodel`, SHA-256 `F0CD41734254E5DE24FF5BB753F8FE1273D7B8D87DE11E60A9C0DC94FAF3B82E`.
+- Authoritative source: `medieval market\medieval_market_marketstall_red.bbmodel` under the local raw root, SHA-256 `F0CD41734254E5DE24FF5BB753F8FE1273D7B8D87DE11E60A9C0DC94FAF3B82E`.
 - Source structure: Blockbench `java_block`, 12 ungrouped root cubes, box UVs, source X rotations `22.5` and `-45` degrees with preserved pivots, and one embedded 256x256 PNG. Raw element bounds are `48 x 44 x 27.5` voxels (`x=-16..32`, `y=-12..32`, `z=-11.5..16`); rotation-aware bounds are `48 x 44.815764 x 27.531494`.
 - Import status: `IMPORTED` by deterministic `tools/new-assets/import_market_stall.py`. The importer validates the exact source SHA-256 and emits one canonical geometry model, four texture-inheriting block models, four item models, four multipart blockstates, four textures, and four empty loot tables.
 - Color derivation: red is the embedded source PNG unchanged. Blue, green, and purple recolor only red-dominant pixels within the three authored canopy/curtain UV regions; every non-fabric pixel and the full alpha channel remain identical, preserving wood, supports, hardware/rope details, folds, and highlights.
