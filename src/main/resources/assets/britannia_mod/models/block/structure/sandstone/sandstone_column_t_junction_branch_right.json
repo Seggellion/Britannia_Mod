@@ -1,33 +1,390 @@
 {
-	"parent": "minecraft:block/block",
-	"ambientocclusion": false,
-	"textures": {
-		"particle": "britannia_mod:block/structure/sandstone/sandstone_column",
-		"wall": "britannia_mod:block/structure/sandstone/sandstone_column"
-	},
-	"elements": [
-		{
-			"from": [0, 0, 5.5],
-			"to": [16, 32, 10.5],
-			"faces": {
-				"north": {"texture": "#wall", "uv": [0, 0, 16, 16]},
-				"east": {"texture": "#wall", "uv": [0, 0, 5, 16]},
-				"south": {"texture": "#wall", "uv": [0, 0, 16, 16]},
-				"west": {"texture": "#wall", "uv": [0, 0, 5, 16]},
-				"up": {"texture": "#wall", "uv": [0, 0, 16, 5]},
-				"down": {"texture": "#wall", "uv": [0, 0, 16, 5]}
-			}
-		},
-		{
-			"from": [5.5, 0, 10.5],
-			"to": [10.5, 32, 16],
-			"faces": {
-				"east": {"texture": "#wall", "uv": [0, 0, 5.5, 16]},
-				"south": {"texture": "#wall", "uv": [0, 0, 5, 16]},
-				"west": {"texture": "#wall", "uv": [10.5, 0, 16, 16]},
-				"up": {"texture": "#wall", "uv": [0, 0, 16, 5], "rotation": 90},
-				"down": {"texture": "#wall", "uv": [0, 0, 16, 5], "rotation": 270}
-			}
-		}
-	]
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
+    "side": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
+    "top": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_0",
+    "bottom": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0"
+  },
+  "elements": [
+    {
+      "name": "north_run_lower",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ],
+          "texture": "#bottom"
+        }
+      }
+    },
+    {
+      "name": "north_run_upper",
+      "from": [
+        0,
+        16,
+        0
+      ],
+      "to": [
+        16,
+        32,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            7
+          ],
+          "texture": "#top"
+        }
+      }
+    },
+    {
+      "name": "east_branch_lower",
+      "from": [
+        9,
+        0,
+        7
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            9,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            9,
+            16
+          ],
+          "texture": "#side"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            7,
+            9
+          ],
+          "texture": "#bottom"
+        }
+      }
+    },
+    {
+      "name": "east_branch_upper",
+      "from": [
+        9,
+        16,
+        7
+      ],
+      "to": [
+        16,
+        32,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            7,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            9,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            9,
+            16
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            7,
+            9
+          ],
+          "texture": "#top"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -2.5,
+        0
+      ],
+      "scale": [
+        0.3125,
+        0.3125,
+        0.3125
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  }
 }

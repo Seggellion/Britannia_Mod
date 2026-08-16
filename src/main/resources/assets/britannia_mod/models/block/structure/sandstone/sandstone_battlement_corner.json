@@ -1,32 +1,152 @@
 {
-	"parent": "minecraft:block/block",
-	"ambientocclusion": false,
-	"textures": {
-		"particle": "britannia_mod:block/structure/sandstone/sandstone_battlement",
-		"wall": "britannia_mod:block/structure/sandstone/sandstone_battlement"
-	},
-	"elements": [
-		{
-			"from": [10.5, 0, 5.5],
-			"to": [16, 32, 10.5],
-			"faces": {
-				"north": {"texture": "#wall", "uv": [0, 0, 5.5, 16]},
-				"east": {"texture": "#wall", "uv": [0, 0, 5, 16]},
-				"south": {"texture": "#wall", "uv": [10.5, 0, 16, 16]},
-				"up": {"texture": "#wall", "uv": [10.5, 0, 16, 5]},
-				"down": {"texture": "#wall", "uv": [10.5, 0, 16, 5]}
-			}
-		},
-		{
-			"from": [5.5, 0, 10.5],
-			"to": [10.5, 32, 16],
-			"faces": {
-				"west": {"texture": "#wall", "uv": [10.5, 0, 16, 16]},
-				"east": {"texture": "#wall", "uv": [0, 0, 5.5, 16]},
-				"south": {"texture": "#wall", "uv": [0, 0, 5, 16]},
-				"up": {"texture": "#wall", "uv": [0, 0, 16, 5], "rotation": 270},
-				"down": {"texture": "#wall", "uv": [0, 0, 16, 5], "rotation": 90}
-			}
-		}
-	]
+  "loader": "neoforge:obj",
+  "model": "britannia_mod:models/block/structure/sandstone/geometry/sandstone_battlement_corner.obj",
+  "automatic_culling": false,
+  "shade_quads": true,
+  "flip_v": true,
+  "emissive_ambient": false,
+  "textures": {
+    "particle": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
+    "side": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0",
+    "top": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_top_0",
+    "bottom": "britannia_mod:block/structure/sandstone/custom_sandstone_brick_0"
+  },
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -2.5,
+        0
+      ],
+      "scale": [
+        0.3125,
+        0.3125,
+        0.3125
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  }
 }

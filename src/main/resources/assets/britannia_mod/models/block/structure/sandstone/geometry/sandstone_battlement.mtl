@@ -1,0 +1,18 @@
+# UltimaCraft sandstone materials
+newmtl side
+Ka 1 1 1
+Kd 1 1 1
+illum 1
+map_Kd #side
+
+newmtl top
+Ka 1 1 1
+Kd 1 1 1
+illum 1
+map_Kd #top
+
+newmtl bottom
+Ka 1 1 1
+Kd 1 1 1
+illum 1
+map_Kd #bottom
