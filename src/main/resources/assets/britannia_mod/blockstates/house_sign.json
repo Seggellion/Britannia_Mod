@@ -5041,6 +5041,96 @@
     "facing=west,holder_type=metal_4,sign_type=guild_weapons": {
       "model": "britannia_mod:block/structure/sign/house_sign_metal_4_guild_weapons",
       "y": 270
+    },
+    "facing=north,holder_type=wood_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger"
+    },
+    "facing=east,holder_type=wood_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger",
+      "y": 270
+    },
+    "facing=north,holder_type=wood_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger"
+    },
+    "facing=east,holder_type=wood_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger",
+      "y": 90
+    },
+    "facing=south,holder_type=wood_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger",
+      "y": 180
+    },
+    "facing=west,holder_type=wood_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger"
+    },
+    "facing=east,holder_type=metal_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_1,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger"
+    },
+    "facing=east,holder_type=metal_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_2,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_3,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger"
+    },
+    "facing=east,holder_type=metal_3,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_3,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_3,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger",
+      "y": 270
+    },
+    "facing=north,holder_type=metal_4,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger"
+    },
+    "facing=east,holder_type=metal_4,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger",
+      "y": 90
+    },
+    "facing=south,holder_type=metal_4,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger",
+      "y": 180
+    },
+    "facing=west,holder_type=metal_4,sign_type=hobanger": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger",
+      "y": 270
     }
   
 }

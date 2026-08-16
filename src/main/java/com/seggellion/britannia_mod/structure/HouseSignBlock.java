@@ -139,7 +139,8 @@ GUILD_THIEVES("guild_thieves", SignShape.RECTANGLE),
 GUILD_TINKERS("guild_tinkers", SignShape.RECTANGLE),
 GUILD_TRADERS("guild_traders", SignShape.RECTANGLE),
 GUILD_WARRIORS("guild_warriors", SignShape.RECTANGLE),
-GUILD_WEAPONS("guild_weapons", SignShape.RECTANGLE);
+GUILD_WEAPONS("guild_weapons", SignShape.RECTANGLE),
+HOBANGER("hobanger", SignShape.OVAL);
 
         private final String name;
         private final SignShape shape;

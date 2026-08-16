@@ -47,7 +47,7 @@ public class SignBlockRegistry {
                  GUILD_MAGES, GUILD_MINERS, GUILD_PROVISIONERS, GUILD_ROGUES,
                  GUILD_SAILORS, GUILD_SEAMENS, GUILD_SHIPWRIGHT, GUILD_SORCERERS,
                  GUILD_TAILORS, GUILD_THIEVES, GUILD_TINKERS, GUILD_TRADERS,
-                 GUILD_WARRIORS, GUILD_WEAPONS, DEFAULT -> true;
+                 GUILD_WARRIORS, GUILD_WEAPONS, HOBANGER, DEFAULT -> true;
             default -> false;
         };
     }

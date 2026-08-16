@@ -1,0 +1,99 @@
+{
+  "variants": {
+    "facing=north,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger"
+    },
+    "facing=south,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_1_hobanger",
+      "y": 180
+    },
+
+    "facing=north,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger",
+      "y": 270
+    },
+    "facing=east,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger"
+    },
+    "facing=south,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger",
+      "y": 90
+    },
+    "facing=west,holder_type=wood_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_wood_2_hobanger",
+      "y": 180
+    },
+
+    "facing=north,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger"
+    },
+    "facing=south,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_1": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_1_hobanger",
+      "y": 180
+    },
+
+    "facing=north,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger"
+    },
+    "facing=south,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_2": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_2_hobanger",
+      "y": 180
+    },
+
+    "facing=north,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger"
+    },
+    "facing=south,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_3": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_3_hobanger",
+      "y": 180
+    },
+
+    "facing=north,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger",
+      "y": 270
+    },
+    "facing=east,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger"
+    },
+    "facing=south,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger",
+      "y": 90
+    },
+    "facing=west,holder_type=metal_4": {
+      "model": "britannia_mod:block/structure/sign/house_sign_metal_4_hobanger",
+      "y": 180
+    }
+  }
+}
