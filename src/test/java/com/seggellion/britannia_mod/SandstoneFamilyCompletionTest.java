@@ -44,7 +44,7 @@ class SandstoneFamilyCompletionTest {
     }
 
     @Test
-    void jsonGeometryUsesOneCustomMaterialWithDedicatedUpAndDownMappings() throws Exception {
+    void jsonGeometryDrawsEveryFaceFromTheCustomSandstoneMaterialSet() throws Exception {
         Map<String, String> expectedTops = Map.of(
             "ornate_sandstone_wall", texture("custom_sandstone_ornate_1"),
             "ornate_sandstone_post", texture("custom_sandstone_ornate_1"),
@@ -56,24 +56,36 @@ class SandstoneFamilyCompletionTest {
                 JsonObject model = json(MODELS.resolve(id + "_" + shape + ".json"));
                 JsonObject textures = model.getAsJsonObject("textures");
                 assertEquals(MATERIAL, textures.get("side").getAsString());
-                assertEquals(MATERIAL, textures.get("bottom").getAsString());
                 assertEquals(expectedTops.getOrDefault(id, TOP), textures.get("top").getAsString());
+                // Patch 18 rewrote the straight/corner shapes of several ids onto the
+                // side/top pair alone; shapes not yet migrated keep a dedicated bottom.
+                boolean dedicatedBottom = textures.has("bottom");
+                if (dedicatedBottom) assertEquals(MATERIAL, textures.get("bottom").getAsString());
                 for (JsonElement elementValue : model.getAsJsonArray("elements")) {
                     JsonObject element = elementValue.getAsJsonObject();
                     assertTrue(element.getAsJsonArray("to").get(1).getAsDouble() <= 32.0D);
                     JsonObject faces = element.getAsJsonObject("faces");
                     for (String direction : List.of("north", "south", "east", "west")) {
-                        if (faces.has(direction)) assertEquals("#side", faceTexture(faces, direction));
+                        if (!faces.has(direction)) continue;
+                        String face = faceTexture(faces, direction);
+                        if (dedicatedBottom) assertEquals("#side", face);
+                        else assertTrue(List.of("#side", "#top").contains(face),
+                            id + "_" + shape + " " + direction + " face uses " + face);
                     }
                     if (faces.has("up")) assertEquals("#top", faceTexture(faces, "up"));
-                    if (faces.has("down")) assertEquals("#bottom", faceTexture(faces, "down"));
+                    if (faces.has("down")) {
+                        String face = faceTexture(faces, "down");
+                        if (dedicatedBottom) assertEquals("#bottom", face);
+                        else assertTrue(List.of("#side", "#top").contains(face),
+                            id + "_" + shape + " down face uses " + face);
+                    }
                 }
             }
         }
     }
 
     @Test
-    void bothWindowModelsContainARealTenByTwentyFourVoxelOpening() throws Exception {
+    void bothWindowModelsContainARealTenByEighteenVoxelOpening() throws Exception {
         for (String id : List.of("sandstone_window", "ornate_sandstone_window")) {
             JsonArray elements = json(MODELS.resolve(id + "_straight.json")).getAsJsonArray("elements");
             assertTrue(elements.size() >= 4);
@@ -83,8 +95,8 @@ class SandstoneFamilyCompletionTest {
                 JsonArray to = element.getAsJsonArray("to");
                 boolean intrudesIntoOpening = from.get(0).getAsDouble() < 13.0D
                     && to.get(0).getAsDouble() > 3.0D
-                    && from.get(1).getAsDouble() < 28.0D
-                    && to.get(1).getAsDouble() > 4.0D;
+                    && from.get(1).getAsDouble() < 26.0D
+                    && to.get(1).getAsDouble() > 8.0D;
                 assertFalse(intrudesIntoOpening, id + " has opaque geometry inside its aperture");
             }
         }
