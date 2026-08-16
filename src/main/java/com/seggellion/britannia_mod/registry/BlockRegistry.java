@@ -32,6 +32,7 @@ import com.seggellion.britannia_mod.block.IronFenceBlock;
 import com.seggellion.britannia_mod.block.TallThinBlock;
 import com.seggellion.britannia_mod.block.TallDecorativeBlock;
 import com.seggellion.britannia_mod.block.TallDecorative3Block;
+import com.seggellion.britannia_mod.block.StalactiteBlock;
 import com.seggellion.britannia_mod.block.HorizontalTallBlock;
 import com.seggellion.britannia_mod.block.RotatingStoneWallBlock;
 import com.seggellion.britannia_mod.block.GravestoneBlock;
@@ -972,6 +973,24 @@ public static final DeferredHolder<Block, TallDecorativeBlock> FLOWSTONE_3 =
             STALAGMITES.put(index,
                 BLOCKS.register("stalagmite_" + index, () ->
                     new TallDecorativeBlock(
+                        BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
+                            .noOcclusion()
+                            .strength(1.5f)
+                            .isViewBlocking((s, r, p) -> false)
+                    )
+                )
+            );
+        }
+    }
+
+    public static final Map<Integer, DeferredHolder<Block, StalactiteBlock>> STALACTITES = new HashMap<>();
+
+    static {
+        for (int i = 1; i <= 7; i++) {
+            int index = i;
+            STALACTITES.put(index,
+                BLOCKS.register("stalactite_" + index, () ->
+                    new StalactiteBlock(
                         BlockBehaviour.Properties.ofFullCopy(Blocks.STONE)
                             .noOcclusion()
                             .strength(1.5f)
