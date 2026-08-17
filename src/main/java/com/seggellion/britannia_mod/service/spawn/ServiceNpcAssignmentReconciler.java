@@ -326,7 +326,17 @@ public final class ServiceNpcAssignmentReconciler {
         BlockPos pos = new BlockPos(spawnPoint.x(), spawnPoint.y(), spawnPoint.z());
         entity.moveTo(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D, 0.0F, 0.0F);
         applyAssignmentData(entity, spawnPointId, assignment, worldNpc, spawnPoint);
-        level.addFreshEntity(entity);
+        // Checked rather than discarded, matching MerchantSpawnBlockEntity/TraderSpawnBlockEntity.
+        // addFreshEntity returns false when a mod cancels EntityJoinLevelEvent -- CitySpawner does
+        // exactly that for any entity its rules disallow inside a city area. Ignoring the result
+        // reported a successful spawn for an entity that never entered the world, which is
+        // indistinguishable in-game from Rails never having published the assignment at all.
+        if (!level.addFreshEntity(entity)) {
+            LOGGER.warn(
+                    "Service NPC spawn failed: addFreshEntity rejected npc={} spawnPoint={} pos={}",
+                    entity.getUUID(), spawnPointId, pos);
+            return null;
+        }
         return entity;
     }
 }
