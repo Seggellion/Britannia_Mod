@@ -127,7 +127,9 @@ class NewAssetsCrossSystemAuditTest {
             assertTrue(client.contains("setRenderLayer(BlockRegistry." + holder + ".get(), RenderType.cutout())"),
                     holder + " lacks cutout rendering");
         }
-        assertTrue(client.contains("setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.translucent())"));
+        // The fountain moved off the translucent layer: shader packs draw that layer with
+        // gbuffers_water and discarded its water outright. See FountainWaterGeometryTest.
+        assertTrue(client.contains("setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.cutout())"));
         assertTrue(client.contains("setRenderLayer(BlockRegistry.MOONGATE_BLOCK.get(), RenderType.translucent())"));
     }
 

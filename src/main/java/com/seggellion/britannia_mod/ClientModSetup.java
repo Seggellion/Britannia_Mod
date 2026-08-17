@@ -706,7 +706,13 @@ public class ClientModSetup {
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.DRESS_FORM.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LOOM.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SPINNING_WHEEL.get(), RenderType.cutout());
-            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.translucent());
+            // Cutout rather than translucent: the translucent chunk layer is drawn by a shader
+            // pack's gbuffers_water program, and packs discard geometry there that they do not
+            // recognise as water, which left the fountain's water invisible in world under Iris
+            // while the same model drew correctly in hand through gbuffers_entities. Cutout routes
+            // it through gbuffers_terrain instead. The water is 79-96% opaque on every visible
+            // pixel, so the alpha test costs little; see FountainWaterGeometryTest.
+            ItemBlockRenderTypes.setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.SMALL_CRATE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.MEDIUM_CRATE.get(), RenderType.cutout());
             ItemBlockRenderTypes.setRenderLayer(BlockRegistry.LARGE_CRATE.get(), RenderType.cutout());

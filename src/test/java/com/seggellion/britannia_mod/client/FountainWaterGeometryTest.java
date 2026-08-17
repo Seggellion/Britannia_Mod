@@ -125,12 +125,20 @@ class FountainWaterGeometryTest {
     }
 
     @Test
-    void theFountainStillRendersOnTheTranslucentLayer() throws Exception {
+    void theFountainStaysOffTheTranslucentChunkLayer() throws Exception {
+        // Iris routes the translucent chunk layer through a shader pack's gbuffers_water program,
+        // and packs discard geometry there that they do not recognise as water. That left the
+        // placed fountain's water invisible under shaders while the identical model drew correctly
+        // in hand, which goes through gbuffers_entities. Cutout puts it in gbuffers_terrain, which
+        // packs draw as ordinary terrain.
         String client = Files.readString(PROJECT.resolve(
                 "src/main/java/com/seggellion/britannia_mod/ClientModSetup.java"));
         assertTrue(client.contains(
+                        "setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.cutout())"),
+                "the fountain must not sit on the translucent layer, which shader packs treat as water");
+        assertFalse(client.contains(
                         "setRenderLayer(BlockRegistry.FOUNTAIN.get(), RenderType.translucent())"),
-                "the water is partially transparent on every pixel, so it needs the translucent layer");
+                "the translucent layer is what made the water vanish under Iris");
     }
 
     private static boolean usesWater(JsonObject element) {
