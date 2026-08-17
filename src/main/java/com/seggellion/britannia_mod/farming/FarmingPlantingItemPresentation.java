@@ -1,8 +1,10 @@
 package com.seggellion.britannia_mod.farming;
 
+import com.mojang.logging.LogUtils;
 import com.seggellion.britannia_mod.skill.SkillManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +14,8 @@ import java.util.Objects;
  * authoritative definitions and never writes to the supplied stack.
  */
 public final class FarmingPlantingItemPresentation {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private FarmingPlantingItemPresentation() {
     }
 
@@ -87,6 +91,13 @@ public final class FarmingPlantingItemPresentation {
         try {
             resolved = FarmingSkillRequirementResolver.resolve(stack.getItem()).orElse(null);
         } catch (RuntimeException unresolvedAmbiguity) {
+            // Failing closed is right for a name lookup, but this used to swallow the cause
+            // outright. Species resolution touches the crop and flower registries, so a genuine
+            // registry failure arrived here as silence and only surfaced later, somewhere else,
+            // as a definition-count mismatch.
+            LOGGER.error("Could not resolve the farming species for {} while rendering its {};"
+                            + " falling back to an unidentified name",
+                    stack.getItem(), surface, unresolvedAmbiguity);
             Component generic = Component.translatable(
                     FarmingPlantingMaterialCategory.PLANTING_MATERIAL.unidentifiedNameKey()
             );

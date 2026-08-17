@@ -21,7 +21,8 @@ public final class CropRegistry {
     private static final float DEFAULT_HYDRATION_TOLERANCE = 0.30f;
     private static final List<CropDefinition> CROPS = new ArrayList<>();
     private static final Map<String, CropDefinition> BY_ID = new HashMap<>();
-    private static boolean bootstrapped = false;
+    private static volatile boolean bootstrapped = false;
+    private static boolean bootstrapping = false; // guarded by the class lock
 
     private CropRegistry() {
     }
@@ -46,12 +47,54 @@ public final class CropRegistry {
         return Collections.unmodifiableList(CROPS);
     }
 
+    /**
+     * Builds the crop table on first use, atomically.
+     *
+     * <p>This used to set {@code bootstrapped} before defining anything, which meant a caller that
+     * arrived too early - before deferred item registration had settled - could abort partway and
+     * leave the flag set over an empty table. Every later call then took the fast path and saw no
+     * crops at all, for the rest of the JVM's life. On a client that reached the mod through
+     * {@code ItemStack#getHoverName}, which any mod may call during startup, so the corruption was
+     * triggered by load order rather than by anything the player did, and surfaced much later as a
+     * definition-count mismatch that named neither the real cause nor the real moment.
+     *
+     * <p>The flag is now set only on success and partial state is discarded on failure, so an early
+     * call fails and is retried rather than latching a broken registry. It is {@code volatile} so
+     * the fast path cannot observe the flag ahead of the table it publishes.
+     */
     private static void bootstrap() {
         if (bootstrapped) {
             return;
         }
-        bootstrapped = true;
+        synchronized (CropRegistry.class) {
+            if (bootstrapped) {
+                return;
+            }
+            if (bootstrapping) {
+                // Re-entered through a crop definition. Recursing would duplicate every crop, and
+                // returning would hand back a half-built table as though it were complete.
+                throw new IllegalStateException(
+                        "CropRegistry.bootstrap() was re-entered before it finished; "
+                                + "crop definitions are incomplete");
+            }
+            bootstrapping = true;
+            boolean completed = false;
+            try {
+                defineCrops();
+                completed = true;
+            } finally {
+                bootstrapping = false;
+                if (completed) {
+                    bootstrapped = true;
+                } else {
+                    CROPS.clear();
+                    BY_ID.clear();
+                }
+            }
+        }
+    }
 
+    private static void defineCrops() {
         crop("squash", 10.0f, "Squash", ItemRegistry.SQUASH_SEEDS::get, ItemRegistry.SQUASH::get, 1, 5, VANILLA_STYLE_AGE_COUNT, 0.60f, 0.30f, 0.35f, 0.70f, 0.65f, climate(FarmingClimate.TEMPERATE, FarmingClimate.TROPICAL), weights(1.20f, 0.80f, 0.90f, 1.45f), yields(1, 3), 0.30f, 1.15f, "Heavy one-block annual vine crop; age 0..7 mapped across five visual assets.");
         crop("carrot", 0.0f, "Carrot", ItemRegistry.CARROT_SEEDS::get, ItemRegistry.CARROTS::get, 1, 5, VANILLA_STYLE_AGE_COUNT, 0.50f, 0.25f, 0.25f, 0.45f, 0.55f, climate(FarmingClimate.TEMPERATE, FarmingClimate.ICE), weights(1.10f, 0.80f, 0.80f, 1.10f), yields(3, 3), 0.25f, 0.85f, "Cool temperate root crop; age 0..7, hand harvest for exactly 3 carrots.");
         crop("corn", 30.0f, "Corn", ItemRegistry.CORN_SEEDS::get, ItemRegistry.CORN::get, 2, 7, VANILLA_STYLE_AGE_COUNT, 0.75f, 0.35f, 0.40f, 0.90f, 0.60f, 0.30f, 0.25f, climate(FarmingClimate.TEMPERATE), weights(1.25f, 0.60f, 0.75f, 1.75f), false, false, true, 4, false, yields(2, 5), 0.25f, 1.15f, "Heavy-feeding tall crop; maxHeight is total visible height: base render plus up to 3 selectable stalk blocks.");
