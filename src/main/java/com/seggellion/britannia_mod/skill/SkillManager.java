@@ -4,7 +4,6 @@ import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
@@ -12,12 +11,9 @@ import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.Style;
 
 import com.seggellion.britannia_mod.network.SkillSyncPayload;
 import com.seggellion.britannia_mod.network.NetworkHandler;
-import net.minecraft.network.chat.Component;
 
 import net.neoforged.neoforge.common.NeoForge;
 import net.minecraft.world.entity.player.Player;
@@ -34,9 +30,6 @@ public class SkillManager {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Random RNG = new Random();
     private static final int MAX_RESPONSE_BYTES = 512 * 1024;
-    private static final ResourceLocation FONT_UO_CLASSIC =
-            ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
-    private static final TextColor TEAL_0093A4 = TextColor.fromRgb(0x0093A4);
 
     /** Skill definitions keyed by skill name (loaded once per server). */
 private static final Map<String, SkillDef> SKILL_DEFS = new java.util.concurrent.ConcurrentHashMap<>();
@@ -109,13 +102,9 @@ public record SkillSnapshot(SkillDataState state, float value) {
 
     LOGGER.info("🎉 {} gained {} → {}", player.getScoreboardName(), key, newValue);
 
-    String message = String.format(
-        "Your skill in %s has increased by %.1f%%. It is now %.1f%%.",
-        capitalize(key), newValue - current, newValue
-    );
-    Style style = Style.EMPTY.withFont(FONT_UO_CLASSIC).withColor(TEAL_0093A4);
-    player.sendSystemMessage(Component.literal(""));
-    player.sendSystemMessage(Component.literal(message).withStyle(style));
+    // Routine incremental gains are deliberately silent: progression is read from the Skills
+    // GUI, which the sync below keeps current. Only semantically distinct feedback (cap
+    // warnings, training purchases, denials, admin output) still speaks to the player.
 
     // Send to client on server thread
     player.server.execute(() -> sendSkillSync(player));
@@ -146,13 +135,9 @@ public static float awardSkillGain(ServerPlayer player, String skillName, float 
     float newValue = Math.min(current + amount, def.max);
     p.set(key, newValue);
 
-    String message = String.format(
-        "Your skill in %s has increased by %.1f%%. It is now %.1f%%.",
-        capitalize(key), newValue - current, newValue
-    );
-    Style style = Style.EMPTY.withFont(FONT_UO_CLASSIC).withColor(TEAL_0093A4);
-    player.sendSystemMessage(Component.literal(""));
-    player.sendSystemMessage(Component.literal(message).withStyle(style));
+    // Routine incremental gains are silent here for the same reason as trySkillGainCapped:
+    // the authoritative value, its persistence and its client sync are unchanged, only the
+    // per-increment chat notification is gone.
 
     player.server.execute(() -> sendSkillSync(player));
     postGain(player, key, newValue);
