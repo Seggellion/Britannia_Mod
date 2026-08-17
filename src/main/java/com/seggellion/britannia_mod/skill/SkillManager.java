@@ -11,6 +11,10 @@ import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
 import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.resources.ResourceLocation;
 
 import com.seggellion.britannia_mod.network.SkillSyncPayload;
 import com.seggellion.britannia_mod.network.NetworkHandler;
@@ -30,12 +34,29 @@ public class SkillManager {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Random RNG = new Random();
     private static final int MAX_RESPONSE_BYTES = 512 * 1024;
+    private static final ResourceLocation FONT_UO_CLASSIC =
+            ResourceLocation.fromNamespaceAndPath("britannia_mod", "uo_classic");
+    private static final TextColor TEAL_0093A4 = TextColor.fromRgb(0x0093A4);
+
+    /**
+     * Smallest total gain that is worth telling the player about. The engine's gain unit is 0.1,
+     * so announcing every step chatted on every successful roll; at 0.2 an ordinary grind speaks
+     * every other step instead.
+     */
+    static final float ANNOUNCE_THRESHOLD = 0.2f;
+
+    /** Absorbs the drift from repeatedly adding 0.1f, so two steps reliably clear the threshold. */
+    private static final float ANNOUNCE_EPSILON = 1.0e-4f;
 
     /** Skill definitions keyed by skill name (loaded once per server). */
 private static final Map<String, SkillDef> SKILL_DEFS = new java.util.concurrent.ConcurrentHashMap<>();
 private static final Map<UUID, PlayerSkills> PLAYER_SKILLS = new java.util.concurrent.ConcurrentHashMap<>();
 private static final Map<UUID, SkillDataState> PLAYER_SKILL_STATES = new java.util.concurrent.ConcurrentHashMap<>();
 private static final Map<UUID, Long> PLAYER_SKILL_REVISIONS = new java.util.concurrent.ConcurrentHashMap<>();
+
+/** Per-player, per-skill value at the last announcement; the baseline unreported gain accrues from. */
+private static final Map<UUID, Map<String, Float>> ANNOUNCED_SKILL_VALUES =
+        new java.util.concurrent.ConcurrentHashMap<>();
 
 public enum SkillDataState {
     NOT_LOADED,
@@ -102,9 +123,7 @@ public record SkillSnapshot(SkillDataState state, float value) {
 
     LOGGER.info("🎉 {} gained {} → {}", player.getScoreboardName(), key, newValue);
 
-    // Routine incremental gains are deliberately silent: progression is read from the Skills
-    // GUI, which the sync below keeps current. Only semantically distinct feedback (cap
-    // warnings, training purchases, denials, admin output) still speaks to the player.
+    announceRoutineGain(player, key, current, newValue);
 
     // Send to client on server thread
     player.server.execute(() -> sendSkillSync(player));
@@ -116,6 +135,56 @@ public record SkillSnapshot(SkillDataState state, float value) {
 
 static float nextCappedGainValue(float current, float definitionMax, float activityCap) {
     return Math.min(current + 0.1f, Math.min(definitionMax, activityCap));
+}
+
+/**
+ * Whether the gain accumulated since the last announcement is worth reporting.
+ *
+ * <p>Pure so the threshold can be tested without a live player: the surrounding bookkeeping needs
+ * a {@code ServerPlayer} and a network channel, this is the actual rule.
+ */
+static boolean shouldAnnounceRoutineGain(float announcedValue, float newValue) {
+    return newValue - announcedValue + ANNOUNCE_EPSILON >= ANNOUNCE_THRESHOLD;
+}
+
+/**
+ * Chats a routine gain only once the unreported total reaches {@link #ANNOUNCE_THRESHOLD},
+ * reporting everything accrued since the last message rather than just this step.
+ *
+ * <p>The remainder is carried, not discarded, so ten 0.1 steps produce five messages summing to
+ * the full 1.0 rather than losing the odd increments. Progression itself is unaffected either
+ * way; the Skills GUI always shows the true value.
+ */
+private static void announceRoutineGain(
+        ServerPlayer player, String key, float previousValue, float newValue) {
+    Map<String, Float> announced = ANNOUNCED_SKILL_VALUES
+            .computeIfAbsent(player.getUUID(), id -> new java.util.concurrent.ConcurrentHashMap<>());
+    Float existing = announced.putIfAbsent(key, previousValue);
+    float baseline = existing != null ? existing : previousValue;
+
+    if (!shouldAnnounceRoutineGain(baseline, newValue)) {
+        return;
+    }
+    announced.put(key, newValue);
+
+    String message = String.format(
+        "Your skill in %s has increased by %.1f%%. It is now %.1f%%.",
+        capitalize(key), newValue - baseline, newValue
+    );
+    Style style = Style.EMPTY.withFont(FONT_UO_CLASSIC).withColor(TEAL_0093A4);
+    player.sendSystemMessage(Component.literal(""));
+    player.sendSystemMessage(Component.literal(message).withStyle(style));
+}
+
+/**
+ * Rebases the announcement baseline after an authoritative write that is not a routine gain.
+ * Without this an admin set or a training purchase would make the next 0.1 step report the whole
+ * jump as though the player had earned it.
+ */
+private static void resetAnnouncedValue(ServerPlayer player, String key, float value) {
+    ANNOUNCED_SKILL_VALUES
+            .computeIfAbsent(player.getUUID(), id -> new java.util.concurrent.ConcurrentHashMap<>())
+            .put(key, value);
 }
 
 public static float awardSkillGain(ServerPlayer player, String skillName, float amount) {
@@ -135,9 +204,7 @@ public static float awardSkillGain(ServerPlayer player, String skillName, float 
     float newValue = Math.min(current + amount, def.max);
     p.set(key, newValue);
 
-    // Routine incremental gains are silent here for the same reason as trySkillGainCapped:
-    // the authoritative value, its persistence and its client sync are unchanged, only the
-    // per-increment chat notification is gone.
+    announceRoutineGain(player, key, current, newValue);
 
     player.server.execute(() -> sendSkillSync(player));
     postGain(player, key, newValue);
@@ -173,6 +240,9 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
     PLAYER_SKILLS.put(sp.getUUID(), new PlayerSkills());
     PLAYER_SKILL_STATES.put(sp.getUUID(), SkillDataState.LOADING);
     PLAYER_SKILL_REVISIONS.put(sp.getUUID(), 0L);
+    // Rebaselined against whatever Rails loads below, so a reconnect cannot report an old
+    // session's pending fraction as a fresh gain.
+    ANNOUNCED_SKILL_VALUES.remove(sp.getUUID());
     sendSkillSync(sp);
 
     ServerHttpExecutor.run(sp.server, () -> {
@@ -212,6 +282,7 @@ private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent e) {
         PLAYER_SKILLS.remove(e.getEntity().getUUID());
         PLAYER_SKILL_STATES.remove(e.getEntity().getUUID());
         PLAYER_SKILL_REVISIONS.remove(e.getEntity().getUUID());
+        ANNOUNCED_SKILL_VALUES.remove(e.getEntity().getUUID());
     }
 
     private static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
@@ -294,6 +365,7 @@ public static void setSkillAdmin(ServerPlayer player, String skillName, float va
         // FIX 1: getUuid() -> getUUID()
         PlayerSkills p = PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills());
         p.set(key, value);
+        resetAnnouncedValue(player, key, value);
         PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
 
         LOGGER.info("🛠️ ADMIN: Set {}'s {} skill to {}", player.getGameProfile().getName(), key, value);
@@ -547,6 +619,7 @@ private static Map<String, String> playerSkillQuery(ServerPlayer player) {
         if (player == null || skillName == null) return;
         String key = skillName.toLowerCase(Locale.ROOT);
         PLAYER_SKILLS.computeIfAbsent(player.getUUID(), id -> new PlayerSkills()).set(key, value);
+        resetAnnouncedValue(player, key, value);
         PLAYER_SKILL_STATES.put(player.getUUID(), SkillDataState.AVAILABLE);
         player.server.execute(() -> sendSkillSync(player));
     }
