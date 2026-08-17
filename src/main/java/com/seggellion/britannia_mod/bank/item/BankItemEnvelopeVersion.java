@@ -26,22 +26,34 @@ import org.slf4j.Logger;
  * a withdrawal is parsed into {@code BankingWithdrawalPrepareResult} and never consulted, because
  * decoding is governed solely by the version inside the payload.
  *
- * <h2>Why the default is still 1</h2>
+ * <h2>Why the default is full capability</h2>
  *
- * Rails rejects unknown envelope keys. A build that emits identity fields against a Rails instance
- * that has not yet deployed Milestone 16 does not degrade -- it breaks <em>every deposit on that
- * shard</em>, because the request is refused outright. Rails-side acceptance always ships first,
- * and this constant is what makes "v1 emission remains possible" true rather than aspirational.
+ * Rails rejects unknown envelope keys, so emitting a key the target Rails has not deployed does
+ * not degrade -- it breaks <em>every deposit on that shard</em>, because the request is refused
+ * outright. That is why the default started at {@link #V1_WITHOUT_IDENTITY}: Rails-side
+ * acceptance always ships first, and until it had, silence was the only safe thing to send.
  *
- * <p>So the compiled-in default is {@link #V1_WITHOUT_IDENTITY}, and moving to v2 is a deliberate,
- * per-deployment act once Milestone 16 is confirmed live on the instance
- * {@code ModConfig.API_BASE_URL} actually points at:
+ * <p>That acceptance has since shipped. Rails accepts all three identity keys
+ * ({@code BankTransferOperations::PayloadValidator::IDENTITY_FIELDS}) and the cheque link
+ * ({@code LINK_FIELDS}), and {@code BankTransferOperations::Create} persists every one of them
+ * verbatim. With nothing left to wait for, a default of 1 stopped protecting anything and
+ * started costing something: an operator who does not know this flag exists silently banks
+ * unnamed, unrenderable items -- and those rows never backfill, because identity is written once
+ * at deposit and Rails never decodes the payload to re-derive it. A safe default that quietly
+ * produces permanently degraded data is not the safer choice.
  *
- * <pre>-Dbritannia.bank.item_envelope_version=2</pre>
+ * <p>So the compiled-in default is now {@link #DEFAULT_CAPABILITY}, and no launch flag is needed
+ * for full functionality. The property remains as an escape hatch in the one direction that
+ * still matters -- pointing a current build at an older Rails, where it must be turned
+ * <em>down</em>:
  *
- * An unset, unparseable, or unsupported value leaves the safe default in place rather than
- * guessing -- there is no version of "I could not read the config" that should result in breaking
- * every deposit.
+ * <pre>-Dbritannia.bank.item_envelope_version=1</pre>
+ *
+ * An unset, unparseable, or unsupported value leaves {@link #DEFAULT_CAPABILITY} in place rather
+ * than guessing. Note this is deliberately no longer fail-safe in the "emit nothing" sense: a
+ * mistyped value now yields full emission, which is correct against a current Rails and wrong
+ * only against one predating Milestone 16. If you run such an instance, set the property
+ * explicitly rather than relying on a typo to protect you.
  */
 public final class BankItemEnvelopeVersion {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -70,6 +82,13 @@ public final class BankItemEnvelopeVersion {
     public static final int V3_WITH_CHEQUE_LINK = 3;
 
     public static final String SYSTEM_PROPERTY = "britannia.bank.item_envelope_version";
+
+    /**
+     * What this build is capable of when nothing says otherwise -- the highest level, so full
+     * functionality needs no launch flag. Kept as a named constant rather than inlined so the
+     * one place that decides "what does unconfigured mean" stays greppable and testable.
+     */
+    public static final int DEFAULT_CAPABILITY = V3_WITH_CHEQUE_LINK;
 
     private static final int CONFIGURED = readConfigured();
 
@@ -147,22 +166,22 @@ public final class BankItemEnvelopeVersion {
     private static int readConfigured() {
         String raw = System.getProperty(SYSTEM_PROPERTY);
         if (raw == null || raw.isBlank()) {
-            LOGGER.info("Bank item {} -- {} is not set in this JVM",
-                    describe(V1_WITHOUT_IDENTITY), SYSTEM_PROPERTY);
-            return V1_WITHOUT_IDENTITY;
+            LOGGER.info("Bank item {} -- {} is not set in this JVM, using the default",
+                    describe(DEFAULT_CAPABILITY), SYSTEM_PROPERTY);
+            return DEFAULT_CAPABILITY;
         }
         int parsed;
         try {
             parsed = Integer.parseInt(raw.trim());
         } catch (NumberFormatException notANumber) {
             LOGGER.warn("Bank item {} -- ignoring unparseable {}={}",
-                    describe(V1_WITHOUT_IDENTITY), SYSTEM_PROPERTY, raw);
-            return V1_WITHOUT_IDENTITY;
+                    describe(DEFAULT_CAPABILITY), SYSTEM_PROPERTY, raw);
+            return DEFAULT_CAPABILITY;
         }
         if (!isSupported(parsed)) {
             LOGGER.warn("Bank item {} -- ignoring unsupported {}={}",
-                    describe(V1_WITHOUT_IDENTITY), SYSTEM_PROPERTY, parsed);
-            return V1_WITHOUT_IDENTITY;
+                    describe(DEFAULT_CAPABILITY), SYSTEM_PROPERTY, parsed);
+            return DEFAULT_CAPABILITY;
         }
         LOGGER.info("Bank item {}", describe(parsed));
         return parsed;

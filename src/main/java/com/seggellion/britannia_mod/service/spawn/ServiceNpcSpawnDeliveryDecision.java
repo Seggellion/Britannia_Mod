@@ -49,11 +49,18 @@ public enum ServiceNpcSpawnDeliveryDecision {
                     && Boolean.TRUE.equals(protocol.response().replacementUuidRequired())
                     ? COLLISION_REPAIR
                     : RETRY_AT_SLOW_INTERVAL;
+            // Every remaining outcome is a domain rejection Rails will make again for an
+            // identical payload, so retrying cannot help; only an operator changing the
+            // configuration behind it can. Deliberately exhaustive with no default: adding an
+            // outcome to ServiceNpcSpawnOutcome must fail compilation here rather than fall
+            // through to a silently wrong classification.
             case UNSUPPORTED_PROTOCOL, UNSUPPORTED_OPERATION, MALFORMED_REQUEST, UNEXPECTED_FIELD,
                  INVALID_OPERATION_ID, INVALID_SPAWN_UUID, INVALID_REVISION, INVALID_LOCATION,
                  INVALID_WORLD_NAME, INVALID_DIMENSION, INVALID_COORDINATES, PAYLOAD_TOO_LARGE,
                  INVALID_CITY, INVALID_SERVICE_NPC_TYPE, SERVICE_NPC_TYPE_INACTIVE,
-                 SERVICE_NPC_TYPE_NOT_SPAWNABLE, STALE_REVISION, REVISION_CONFLICT,
+                 SERVICE_NPC_TYPE_NOT_SPAWNABLE, INVALID_ECONOMIC_NPC_TYPE,
+                 ECONOMIC_NPC_TYPE_INACTIVE, ECONOMIC_NPC_TYPE_NOT_SPAWNABLE, AMBIGUOUS_NPC_TYPE,
+                 STALE_REVISION, REVISION_CONFLICT,
                  LOCATION_OCCUPIED -> PERMANENT_FAILURE;
         };
     }

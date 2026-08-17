@@ -30,6 +30,13 @@ public final class ServiceNpcSpawnFailureCodes {
                 case INVALID_SERVICE_NPC_TYPE -> "invalid_service_npc_type";
                 case SERVICE_NPC_TYPE_INACTIVE -> "service_npc_type_inactive";
                 case SERVICE_NPC_TYPE_NOT_SPAWNABLE -> "service_npc_type_not_spawnable";
+                // Distinct from their service_npc counterparts on purpose: these name the
+                // EconomicNpcType row an operator has to activate, and the durable record is
+                // the only place that reason is ever visible.
+                case INVALID_ECONOMIC_NPC_TYPE -> "invalid_economic_npc_type";
+                case ECONOMIC_NPC_TYPE_INACTIVE -> "economic_npc_type_inactive";
+                case ECONOMIC_NPC_TYPE_NOT_SPAWNABLE -> "economic_npc_type_not_spawnable";
+                case AMBIGUOUS_NPC_TYPE -> "ambiguous_npc_type";
                 case STALE_REVISION -> "stale_revision";
                 case REVISION_CONFLICT -> "revision_conflict";
                 case LOCATION_OCCUPIED -> "location_occupied";

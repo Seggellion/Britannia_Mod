@@ -143,8 +143,15 @@ public final class ServiceNpcSpawnResponseParser {
             case UNAUTHORIZED -> 401;
             case SERVER_NOT_AUTHORIZED -> 403;
             case PAYLOAD_TOO_LARGE -> 413;
+            // Rails answers every NPC-type rejection with :unprocessable_entity, economic
+            // included (ApplyOperation#domain_error and RequestEnvelope's ambiguity guard).
+            // Omitting them here would leave expected=400 against an actual 422 and fail as
+            // inconsistent_protocol_envelope -- the same infinite protocol_incompatible retry
+            // that adding them to ServiceNpcSpawnOutcome was meant to end.
             case INVALID_CITY, INVALID_SERVICE_NPC_TYPE, SERVICE_NPC_TYPE_INACTIVE,
-                 SERVICE_NPC_TYPE_NOT_SPAWNABLE -> 422;
+                 SERVICE_NPC_TYPE_NOT_SPAWNABLE, INVALID_ECONOMIC_NPC_TYPE,
+                 ECONOMIC_NPC_TYPE_INACTIVE, ECONOMIC_NPC_TYPE_NOT_SPAWNABLE,
+                 AMBIGUOUS_NPC_TYPE -> 422;
             case STALE_REVISION, REVISION_CONFLICT, UUID_COLLISION, LOCATION_OCCUPIED -> 409;
             case SERVICE_UNAVAILABLE -> 503;
             default -> 400;

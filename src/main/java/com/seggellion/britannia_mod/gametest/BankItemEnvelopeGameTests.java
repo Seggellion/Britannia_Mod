@@ -205,13 +205,14 @@ public final class BankItemEnvelopeGameTests {
     // ---------- Emission default ----------
 
     @GameTest(template = TEMPLATE)
-    public static void identityEmissionIsOffUnlessDeliberatelyTurnedOn(GameTestHelper helper) {
-        // Rails-side acceptance ships first, always. A build that has not been told the target
-        // Rails instance has the matching Rails milestone must keep emitting the older envelope.
+    public static void emissionFollowsConfigurationAndDefaultsToFullCapability(GameTestHelper helper) {
+        // Rails accepts every key this build can emit, so an unconfigured JVM gets full
+        // functionality rather than silently banking unnamed items. The property survives only
+        // to turn emission DOWN for a Rails that predates those keys.
         String configured = System.getProperty(BankItemEnvelopeVersion.SYSTEM_PROPERTY);
         int expected = BankItemEnvelopeVersion.isSupported(parseOrZero(configured))
                 ? parseOrZero(configured)
-                : BankItemEnvelopeVersion.V1_WITHOUT_IDENTITY;
+                : BankItemEnvelopeVersion.DEFAULT_CAPABILITY;
 
         check(BankItemEnvelopeVersion.capabilityLevel() == expected,
                 "capability level disagrees with the configured one");
@@ -223,9 +224,15 @@ public final class BankItemEnvelopeGameTests {
         check(BankItemEnvelopeVersion.emitted() == Math.min(expected, BankItemEnvelopeVersion.MAX_WIRE_SCHEMA_VERSION),
                 "the wire schema_version must be the capped level");
         check(BankItemEnvelopeVersion.emitsIdentity() == (expected >= BankItemEnvelopeVersion.V2_WITH_IDENTITY),
-                "identity emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY + " and default to off");
+                "identity emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY
+                        + " and default to on");
         check(BankItemEnvelopeVersion.emitsChequeLink() == (expected >= BankItemEnvelopeVersion.V3_WITH_CHEQUE_LINK),
-                "cheque-link emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY + " and default to off");
+                "cheque-link emission must follow " + BankItemEnvelopeVersion.SYSTEM_PROPERTY
+                        + " and default to on");
+        // The point of the change: an unconfigured JVM must need no launch flag to be complete.
+        check(configured != null || (BankItemEnvelopeVersion.emitsIdentity()
+                        && BankItemEnvelopeVersion.emitsChequeLink()),
+                "an unconfigured JVM must emit identity and the cheque link");
         helper.succeed();
     }
 
