@@ -155,7 +155,32 @@ public final class CommodityMappings {
     }
 
     public static String fishCommodityKey(String fishType) {
-        String normalized = CityCommodity.normalize(fishType);
+        return canonicalFishKey(CityCommodity.normalize(fishType));
+    }
+
+    /**
+     * The fish commodity key for a stack, falling back to the item's registry path when the
+     * stack carries no {@code FishType} tag.
+     *
+     * <p>Only fish caught through {@code FishingEventHandler} are stamped with a type; anything
+     * spawned by {@code /give}, taken from creative, or placed and re-broken before the tag
+     * existed reads back {@code "unknown"}, which Rails can only answer with
+     * {@code commodity_not_found}. The registry path IS the canonical key for every one of the
+     * mod's fish, so preferring it over a dead sentinel turns a guaranteed miss into an exact
+     * match — and quote and settlement both take this path, so they cannot disagree.
+     */
+    public static String fishCommodityKey(String fishType, String itemPath) {
+        String tagged = CityCommodity.normalize(fishType);
+        if (!tagged.isBlank() && !tagged.equals("unknown")) return canonicalFishKey(tagged);
+        return canonicalFishKey(CityCommodity.normalize(itemPath));
+    }
+
+    /**
+     * Rails seeds two fish under spellings the mod does not use: {@code mackeral} (one "e") and
+     * {@code kingfish} (unspaced). The lookup is exact with no fallback, so these two must be
+     * translated or they never price.
+     */
+    private static String canonicalFishKey(String normalized) {
         return switch (normalized) {
             case "mackerel" -> "mackeral";
             case "king_fish" -> "kingfish";

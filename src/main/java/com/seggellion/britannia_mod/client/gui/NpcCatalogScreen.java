@@ -18,6 +18,7 @@ import net.minecraft.nbt.Tag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,6 +120,9 @@ public class NpcCatalogScreen extends Screen {
         if (type == NpcType.MERCHANT) {
             return aggregateMerchantCatalog(fetched);
         }
+        if (fetched.stream().anyMatch(Product::isServerPriced)) {
+            return aggregateServerPricedCatalog(fetched);
+        }
 
         Map<String, Product> byId = new HashMap<>();
 
@@ -175,6 +179,50 @@ public class NpcCatalogScreen extends Screen {
             }
         }
         return unique;
+    }
+
+    /**
+     * Rows a server already priced, kept one-per-stack.
+     *
+     * <p>The generic path below merges every stack of an item into a single row keyed by
+     * id+name, keeps the FIRST row's price, and recounts the maximum from the whole inventory.
+     * For a weight-valued good that fabricates money: three cod of 0.6, 1.4 and 4.9 stones are
+     * three different prices, and quoting all three at the first one's rate is a number no
+     * authority ever produced. Rows are merged here only when they are economically identical —
+     * same item, same name, same currency, same value per item — in which case summing their
+     * quantities loses nothing.
+     *
+     * <p>The maximum sellable comes from the quote rather than from an inventory recount, so it
+     * can never exceed what was actually priced.
+     */
+    private List<Product> aggregateServerPricedCatalog(List<Product> fetched) {
+        Map<String, Product> byValue = new LinkedHashMap<>();
+        for (Product p : fetched) {
+            if (!p.isServerPriced()) continue;
+            String key = p.itemId() + "::" + p.name() + "::" + p.currency() + "::" + perItemValueKey(p);
+            byValue.merge(key, p, (existing, added) -> new Product(
+                existing.itemId(), existing.name(), existing.price(), existing.currency(),
+                existing.stack(), existing.iconPath(),
+                existing.lineValueCopper() + added.lineValueCopper(),
+                existing.quotedQuantity() + added.quotedQuantity()));
+        }
+
+        List<Product> rows = new ArrayList<>();
+        for (Product p : byValue.values()) {
+            ItemStack templateStack = p.stack();
+            if (templateStack.isEmpty()) continue;
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("max_quantity", p.quotedQuantity());
+            templateStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            rows.add(new Product(p.itemId(), p.name(), p.price(), p.currency(), templateStack,
+                p.iconPath(), p.lineValueCopper(), p.quotedQuantity()));
+        }
+        return rows;
+    }
+
+    /** Value per item, to a tenth of a copper — the grain at which two rows are the same offer. */
+    private static long perItemValueKey(Product product) {
+        return Math.round((double) product.lineValueCopper() * 10 / product.quotedQuantity());
     }
 
     private List<Product> aggregateMerchantCatalog(List<Product> fetched) {
@@ -407,14 +455,32 @@ public class NpcCatalogScreen extends Screen {
     // ... [calculateCartTotalDisplay and formatWalletDisplay methods unchanged] ...
     private String calculateCartTotalDisplay() {
         int gold = 0, silver = 0, copper = 0;
+        // Server-priced rows are summed at full precision and converted to coins ONCE per
+        // denomination, which is exactly what the settling authority does. Rounding each row to
+        // a whole coin first and adding those up is what makes a displayed total disagree with
+        // the payout -- three 4.4-copper fish are 13 copper, not 12.
+        Map<String, Long> exactValue = new HashMap<>();
         for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
             Product p = entry.getKey();
             int qty = entry.getValue();
             String c = p.currency() == null ? "copper" : p.currency().toLowerCase();
+            if (p.isServerPriced()) {
+                exactValue.merge(c, p.valueCopperFor(qty), Long::sum);
+                continue;
+            }
             switch (c) {
                 case "gold" -> gold += p.price() * qty;
                 case "silver" -> silver += p.price() * qty;
                 default -> copper += p.price() * qty;
+            }
+        }
+        for (Map.Entry<String, Long> entry : exactValue.entrySet()) {
+            int coins = com.seggellion.britannia_mod.economy.EconomicBuybackCatalogService
+                    .coinsFor(entry.getValue(), entry.getKey());
+            switch (entry.getKey()) {
+                case "gold" -> gold += coins;
+                case "silver" -> silver += coins;
+                default -> copper += coins;
             }
         }
         List<String> parts = new ArrayList<>();

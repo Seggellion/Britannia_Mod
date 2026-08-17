@@ -50,51 +50,91 @@ public final class ServerCatalogService {
         // Vendor/Trader Milestone 7: economic projections (stamped by the
         // assignment reconciler) route to the Rails-authoritative Product
         // catalog. Resolved here, on-thread, before the off-thread fetch.
+        //
+        // Which catalog depends on the registry's `kind`, NOT on whether the entity happens to
+        // carry a type key. Presence of a key says only "Rails owns this NPC"; `kind` says which
+        // direction it trades. Routing on presence sent every Trader to the retail endpoint,
+        // which holds no listing for any trader key and so answered each one with an empty rows
+        // array -- the whole of the "I am not interested in anything you have" bug.
         final String economicTypeKey;
         final java.util.UUID economicCityId;
+        final EconomicBuybackCatalogService.Prepared buyback;
         if (player.serverLevel().getEntity(entityId)
                 instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
-                && citizen.getEconomicNpcTypeKey() != null
-                && citizen.getEconomicCityPublicId() != null) {
+                && citizen.getEconomicNpcTypeKey() != null) {
             economicTypeKey = citizen.getEconomicNpcTypeKey();
             economicCityId = citizen.getEconomicCityPublicId();
+            buyback = tradesWithPlayers(economicTypeKey, type)
+                    ? EconomicBuybackCatalogService.prepare(player, citizen, role)
+                    : null;
         } else {
             economicTypeKey = null;
             economicCityId = null;
+            buyback = null;
         }
         try {
             ServerHttpExecutor.submit(server,
-                    () -> fetch(player, type, role, city, economicTypeKey, economicCityId))
-                .whenComplete((products, failure) -> server.execute(() -> {
-                    if (failure != null || products == null) {
+                    () -> fetch(player, type, role, city, economicTypeKey, economicCityId, buyback))
+                .whenComplete((quote, failure) -> server.execute(() -> {
+                    if (failure != null || quote == null) {
                         LOGGER.warn("NPC catalog fetch failed for role={} city={}", role, city);
                         return;
                     }
                     if (server.getPlayerList().getPlayer(player.getUUID()) != player || !validInteraction(player, entityId)) return;
-                    ClientboundOpenNpcScreenPayload.sendResolved(player, type, role, city, entityId, products);
+                    ClientboundOpenNpcScreenPayload.sendResolved(
+                        player, type, role, city, entityId, quote.products(), quote.notices());
                 }));
         } catch (RejectedExecutionException rejected) {
             LOGGER.warn("NPC catalog proxy queue is full");
         }
     }
 
-    private static List<Product> fetch(ServerPlayer player, NpcType type, String role, String city,
-                                       String economicTypeKey, java.util.UUID economicCityId) {
+    /**
+     * Whether an economic projection buys FROM players rather than selling TO them.
+     *
+     * <p>The Rails registry is the authority: {@code kind} is constrained to {@code vendor} or
+     * {@code trader} at both model and database level. The entity's own {@link NpcType} is the
+     * fallback for the window before the registry has synced -- Traders spawn as their concrete
+     * {@code AbstractTraderEntity} and Vendors as an {@code AbstractEconomyMerchantEntity}, so
+     * it agrees with {@code kind} in every case the reconciler can produce.
+     */
+    static boolean tradesWithPlayers(String economicTypeKey, NpcType type) {
+        var definition = com.seggellion.britannia_mod.service.EconomicNpcRegistryCache.snapshot()
+                .economicNpcTypes().get(economicTypeKey);
+        if (definition == null) {
+            LOGGER.warn("Economic NPC registry has no entry for {}; routing catalog by entity type {}",
+                    economicTypeKey, type);
+            return type == NpcType.TRADER;
+        }
+        return "trader".equals(definition.kind());
+    }
+
+    private static EconomicBuybackCatalogService.Quote fetch(
+            ServerPlayer player, NpcType type, String role, String city,
+            String economicTypeKey, java.util.UUID economicCityId,
+            EconomicBuybackCatalogService.Prepared buyback) {
         try {
+            if (buyback != null) {
+                return EconomicBuybackCatalogService.fetch(player, buyback);
+            }
             if (economicTypeKey != null && economicCityId != null) {
-                return fetchEconomicCatalog(player, economicTypeKey, economicCityId);
+                return products(fetchEconomicCatalog(player, economicTypeKey, economicCityId));
             }
             if (type == NpcType.MERCHANT && isEconomyMerchant(role)) {
-                return MerchantCatalogBuilder.build(
+                return products(MerchantCatalogBuilder.build(
                     CityCommodityApi.fetchServer(player.serverLevel(), city), MerchantRecipes.forRole(role)
-                ).stream().map(MerchantCatalogEntry::product).limit(ClientboundOpenNpcScreenPayload.MAX_PRODUCTS).toList();
+                ).stream().map(MerchantCatalogEntry::product).limit(ClientboundOpenNpcScreenPayload.MAX_PRODUCTS).toList());
             }
-            if (type == NpcType.MERCHANT) return fetchMerchantCatalog(player, role, city);
-            return fetchTraderCatalog(player, type, role, city);
+            if (type == NpcType.MERCHANT) return products(fetchMerchantCatalog(player, role, city));
+            return products(fetchTraderCatalog(player, type, role, city));
         } catch (Exception error) {
             LOGGER.warn("Server catalog proxy failed: {}", error.toString());
-            return List.of();
+            return products(List.of());
         }
+    }
+
+    private static EconomicBuybackCatalogService.Quote products(List<Product> products) {
+        return new EconomicBuybackCatalogService.Quote(products, List.of());
     }
 
     /**

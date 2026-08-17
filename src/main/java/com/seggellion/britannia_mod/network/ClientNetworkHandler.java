@@ -163,14 +163,23 @@ public class ClientNetworkHandler {
                     product.currency(),
                     product.icon().isBlank() ? null : ResourceLocation.tryParse(product.icon())
             )).toList();
+            // Anything the trader declined is said out loud, whether or not the rest of the
+            // offer stands: a partly-refused sale used to look identical to a wholly refused
+            // one, and a wholly refused one looked identical to a misrouted endpoint.
+            int spoken = 0;
+            for (ClientboundOpenNpcScreenPayload.Notice notice : pkt.notices()) {
+                String line = noticeLine(pkt.role(), notice);
+                if (line == null) continue;
+                say(player, line);
+                spoken++;
+            }
+
             if (products.isEmpty()) {
-                    String msg = pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT
-                            ? pkt.role() + " says: 'I have nothing the city can produce right now.'"
-                            : pkt.role() + " says: 'I am not interested in anything you have.'";
-                    Style style = Style.EMPTY
-                            .withFont(FONT_UO_CLASSIC)
-                            .withColor(GRAY_848484);
-                    player.sendSystemMessage(Component.literal(msg).withStyle(style));
+                    if (spoken == 0) {
+                        say(player, pkt.npcType() == com.seggellion.britannia_mod.npc.NpcType.MERCHANT
+                                ? pkt.role() + " says: 'I have nothing the city can produce right now.'"
+                                : pkt.role() + " says: 'I am not interested in anything you have.'");
+                    }
                     return;
             }
 
@@ -184,6 +193,39 @@ public class ClientNetworkHandler {
                     products
             ));
         });
+    }
+
+    private static void say(Player player, String message) {
+        player.sendSystemMessage(Component.literal(message)
+                .withStyle(Style.EMPTY.withFont(FONT_UO_CLASSIC).withColor(GRAY_848484)));
+    }
+
+    /**
+     * The trader's own words for a Rails refusal code, or {@code null} for a code this client
+     * does not know — an unrecognised code stays silent so the blanket line still covers it,
+     * rather than leaking a protocol identifier into the chat log.
+     */
+    private static String noticeLine(String role, ClientboundOpenNpcScreenPayload.Notice notice) {
+        String subject = notice.subject().isBlank() ? "that" : notice.subject().replace('_', ' ');
+        return switch (notice.code()) {
+            case ClientboundOpenNpcScreenPayload.Notice.TREASURY_INSUFFICIENT ->
+                    role + " says: 'I cannot afford that right now.'";
+            case ClientboundOpenNpcScreenPayload.Notice.TREASURY_DENOMINATION_UNAVAILABLE ->
+                    role + " says: 'I have no " + (notice.subject().isBlank() ? "coin" : subject)
+                            + " left to pay you with.'";
+            case ClientboundOpenNpcScreenPayload.Notice.MIXED_PAYOUT_DENOMINATIONS ->
+                    role + " says: 'I cannot settle that in mixed coin. Sell it to me in smaller lots.'";
+            case ClientboundOpenNpcScreenPayload.Notice.VALUE_BELOW_DENOMINATION_MINIMUM ->
+                    role + " says: 'That is not worth a single coin.'";
+            case ClientboundOpenNpcScreenPayload.Notice.COMMODITY_NOT_BUYABLE ->
+                    role + " says: 'I am not buying " + subject + " at present.'";
+            case ClientboundOpenNpcScreenPayload.Notice.COMMODITY_STOCK_CAP_EXCEEDED ->
+                    role + " says: 'I have all the " + subject + " I can store.'";
+            case ClientboundOpenNpcScreenPayload.Notice.TRADER_NOT_FOUND,
+                 ClientboundOpenNpcScreenPayload.Notice.TRADER_NOT_ASSIGNED ->
+                    role + " says: 'I am not open for business.'";
+            default -> null;
+        };
     }
 
     public static void handleStoreSignScreenOnClient(StoreSignScreenPayload payload, IPayloadContext context) {

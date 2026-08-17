@@ -197,6 +197,19 @@ public final class RailsApiUrlResolver {
         TRADER_CATALOG("trader_catalog"),
         CITY_COMMODITIES("city_commodities", "city"),
         ECONOMIC_CATALOG("economic_catalog", "economic_npc_type_key", "city_public_id"),
+        /**
+         * The economic Trader buyback quote (player sells to the NPC).
+         *
+         * <p>{@link #ECONOMIC_CATALOG} is retail-only: it selects rows by
+         * {@code ProductListing.where(npc_type:)}, and every seeded listing belongs to a
+         * {@code vendor} key — no listing has ever belonged to a {@code trader} key, so it
+         * answers a Trader with an honest empty {@code rows} array. Buyback quotes here
+         * instead, priced by the same authority {@code EconomicTraderSale} settles with, so a
+         * row quoted {@code available} is a row the sale will honour. The NPC is identified by
+         * {@code world_npc_public_id} alone — city, type and kind are resolved server-side from
+         * the active assignment, never from the client.
+         */
+        ECONOMIC_BUYBACK_CATALOG("economic_buyback_catalog"),
         /** Vendor/Trader Milestone 20: desired TownPerson population + city regions. */
         CITY_POPULATIONS("city_populations"),
         /**

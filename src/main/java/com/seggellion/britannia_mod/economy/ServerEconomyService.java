@@ -478,7 +478,13 @@ public final class ServerEconomyService {
         return payload;
     }
 
-    private static JsonObject describeSaleItem(ItemStack stack) {
+    /**
+     * The settlement item shape. Package-private rather than private because
+     * {@link EconomicBuybackCatalogService} quotes with the identical serializer: the buyback
+     * endpoint accepts the same per-item keys the sale posts, so one serializer feeding both is
+     * what keeps a quoted price and a paid price from drifting apart.
+     */
+    static JsonObject describeSaleItem(ItemStack stack) {
         JsonObject item = new JsonObject();
         String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         item.addProperty("item_id", itemId);
@@ -494,7 +500,8 @@ public final class ServerEconomyService {
             item.addProperty("subcategory", "logs");
             item.addProperty("weight", weight);
         } else if (itemObj instanceof WeightedFishItem fishItem) {
-            String fishType = CommodityMappings.fishCommodityKey(fishItem.getFishType(stack));
+            String fishType = CommodityMappings.fishCommodityKey(
+                    fishItem.getFishType(stack), pathOnly(itemId));
             double weight = fishItem.getWeight(stack) * stack.getCount();
             item.addProperty("item_name", fishType);
             item.addProperty("commodity_key", fishType);
