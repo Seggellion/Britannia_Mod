@@ -1183,7 +1183,7 @@ public static final DeferredHolder<Block, Block> WALL_SCONCE = BLOCKS.register(
         .mapColor(MapColor.METAL)
         .strength(0.3f)
         .noOcclusion()
-        .lightLevel(state -> 10))
+        .lightLevel(state -> 11))
 );
 
 public static final DeferredHolder<Block, Block> CANDLE = BLOCKS.register(
