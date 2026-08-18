@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.block.entity;
 //import com.seggellion.britannia_mod.entity.EntityJourneymanBlacksmith;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.network.CityDataSync;
+import com.seggellion.britannia_mod.network.CityFoodSupplyCache;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.util.NameLoader;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
@@ -73,7 +74,13 @@ public void tick() {
     spawnCooldown = MAX_COOLDOWN;
     if (!(level instanceof ServerLevel serverLevel)) return;
 
-    double[] supplies = CityDataSync.fetchFoodAndWoodSupply(serverLevel, cityName);
+    // Was a blocking Rails GET on the thread that runs the world. The reading still gates
+        // spawning exactly as before; it is now served from the last answer Rails gave while the
+        // next one is fetched behind it. Empty means Rails has not answered for this city yet, and
+        // the cycle is skipped rather than acted on -- a missing reading is not a reading of zero.
+        java.util.Optional<double[]> supplyReading = CityFoodSupplyCache.pollFoodAndWood(serverLevel, cityName);
+        if (supplyReading.isEmpty()) return;
+        double[] supplies = supplyReading.get();
     double currentFood = supplies[0]; // Food supply
     double currentWood = supplies[1]; // Wood supply
 
@@ -193,7 +200,7 @@ if (poiList.isEmpty()) {
     );
 
 /*
-    CityDataSync.registerNpc(
+    CityDataSync.registerNpcAsync(
         serverLevel,
         villager.getUUID(),
         npcType,
@@ -250,7 +257,7 @@ public void setRemoved() {
             Entity entity = serverLevel.getEntity(uuid);
             if (entity != null) {
                 entity.remove(RemovalReason.DISCARDED);
-                CityDataSync.removeNpc(serverLevel, uuid);
+                CityDataSync.removeNpcAsync(serverLevel, uuid);
             }
         }
         associatedNpcs.clear();

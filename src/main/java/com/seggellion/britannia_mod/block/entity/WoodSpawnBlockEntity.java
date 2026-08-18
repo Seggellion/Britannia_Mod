@@ -148,7 +148,7 @@ public class WoodSpawnBlockEntity extends BlockEntity implements HasCityName {
             Entity entity = serverLevel.getEntity(uuid);
             if (entity != null) {
                 entity.remove(RemovalReason.DISCARDED);
-                CityDataSync.removeNpc(serverLevel, uuid);
+                CityDataSync.removeNpcAsync(serverLevel, uuid);
             }
         }
         associatedNpcs.clear();

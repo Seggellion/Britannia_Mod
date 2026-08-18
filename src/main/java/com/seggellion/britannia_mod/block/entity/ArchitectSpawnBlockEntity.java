@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.network.CityDataSync;
+import com.seggellion.britannia_mod.network.CityFoodSupplyCache;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.util.NameLoader;
@@ -94,7 +95,13 @@ public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
         spawnCooldown = MAX_COOLDOWN;
         ServerLevel serverLevel = (ServerLevel) level;
 
-        double[] supplies = CityDataSync.fetchFoodAndWoodSupply(serverLevel, cityName);
+        // Was a blocking Rails GET on the thread that runs the world. The reading still gates
+        // spawning exactly as before; it is now served from the last answer Rails gave while the
+        // next one is fetched behind it. Empty means Rails has not answered for this city yet, and
+        // the cycle is skipped rather than acted on -- a missing reading is not a reading of zero.
+        java.util.Optional<double[]> supplyReading = CityFoodSupplyCache.pollFoodAndWood(serverLevel, cityName);
+        if (supplyReading.isEmpty()) return;
+        double[] supplies = supplyReading.get();
         double currentFood = supplies[0];
         double currentWood = supplies[1];
 
@@ -186,7 +193,7 @@ private void spawnArchitect(ServerLevel sl) {
             Entity e = sl.getEntity(id);
             if (e != null) {
                 e.remove(RemovalReason.DISCARDED);
-                CityDataSync.removeNpc(sl, id);
+                CityDataSync.removeNpcAsync(sl, id);
             }
         }
         associatedNpcs.clear();

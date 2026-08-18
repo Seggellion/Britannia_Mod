@@ -6,61 +6,68 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
- * The last food-supply reading Rails gave us for each city, refreshed off the server thread.
+ * The last supply reading Rails gave us for each city, refreshed off the server thread.
  *
  * <h2>Why this exists</h2>
- * {@code HorseSpawnBlockEntity}, {@code WoodSpawnBlockEntity} and {@code StoneSpawnBlockEntity} each
- * called {@link CityDataSync#fetchFoodSupply} directly from {@code tick()}. That request is bounded
- * ({@code BoundedHttp}: 5s connect, 10s read), but a bounded wait is still a wait, and it was being
- * taken on the thread that runs the world. Unlike a heartbeat the value cannot simply be dropped -
- * it decides whether merchants spawn or despawn - so the fix is to keep serving the last reading
- * while a fresh one is fetched behind it, not to stop fetching.
+ * Six spawn block entities called Rails supply endpoints directly from {@code tick()} — three the
+ * food-only endpoint, three the food-and-wood one. Those requests are bounded ({@code BoundedHttp}:
+ * 5s connect, 10s read), but a bounded wait is still a wait, and it was being taken on the thread
+ * that runs the world. Unlike a heartbeat the value cannot simply be dropped — it decides whether
+ * merchants spawn or despawn — so the fix is to keep serving the last reading while a fresh one is
+ * fetched behind it, not to stop fetching.
  *
  * <h2>The state model</h2>
  * Deliberately the smallest one that preserves the existing contract:
  * <ul>
- *   <li><b>no reading yet</b> - {@link #poll} returns empty and the caller skips the cycle. This is
- *       the one new behaviour: previously the tick blocked until an answer existed. It costs one
- *       spawn cycle after load and only that, because the block entities poll every 1000 ticks
- *       (50s) and a fetch is bounded well inside that.</li>
- *   <li><b>reading available</b> - returned immediately, and a refresh starts if none is in flight.
+ *   <li><b>no reading yet</b> — the poll returns empty and the caller skips the cycle. This is the
+ *       one new behaviour: previously the tick blocked until an answer existed. It costs one spawn
+ *       cycle after load and only that, because the block entities poll every 1000 ticks (50s) and
+ *       a fetch is bounded well inside that.</li>
+ *   <li><b>reading available</b> — returned immediately, and a refresh starts if none is in flight.
  *       The value can be up to one cycle old; on a 50-second spawn cadence that is immaterial.</li>
- *   <li><b>in flight</b> - no second request is issued for the same city, so several spawn blocks in
+ *   <li><b>in flight</b> — no second request is issued for the same key, so several spawn blocks in
  *       one city now share a single fetch instead of each making their own.</li>
  * </ul>
  *
  * <h2>What counts as failure</h2>
- * {@link CityDataSync#fetchFoodSupply} already answers {@code 0.0} for any Rails-side failure, and
- * callers already read {@code 0.0} as "starving, despawn". That is existing behaviour and is kept
- * exactly: a failed fetch stores {@code 0.0} as it always did.
+ * The underlying fetches already answer zero for any Rails-side failure, and callers already read
+ * zero as "starving, despawn". That is existing behaviour and is kept exactly: a failed fetch stores
+ * the zero it always did.
  *
  * <p>Executor rejection and the overall-timeout cut-off are treated differently, because they are
- * failure modes this class introduces rather than verdicts Rails returned. Storing {@code 0.0} for a
+ * failure modes this class introduces rather than verdicts Rails returned. Storing a zero for a
  * saturated queue would despawn a city's merchants over a local backlog that says nothing about that
- * city's food. Those outcomes leave the previous reading untouched and simply retry next cycle.
+ * city's supplies. Those outcomes leave the previous reading untouched and simply retry next cycle.
+ *
+ * <h2>One cache, two shapes</h2>
+ * The food-only and food-and-wood readings are the same contract over a different payload, so they
+ * share this state machine and differ only in their key prefix and value type. They are cached
+ * separately because they come from separate endpoints; a city polled through both keeps two
+ * independent readings, exactly as it made two independent requests before.
  */
 public final class CityFoodSupplyCache {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final Map<String, Entry> ENTRIES = new ConcurrentHashMap<>();
+    private static final Map<String, Entry<?>> ENTRIES = new ConcurrentHashMap<>();
 
     private CityFoodSupplyCache() {}
 
-    private static final class Entry {
+    private static final class Entry<T> {
         private boolean pending;
         private boolean hasValue;
-        private double value;
+        private T value;
     }
 
     /**
      * The most recent food reading for {@code cityName}, starting a refresh when none is in flight.
      *
-     * @return the reading, or empty when Rails has never answered for this city - in which case the
+     * @return the reading, or empty when Rails has never answered for this city — in which case the
      *         caller must neither spawn nor despawn, exactly as it would not have acted on a value
      *         it did not have.
      */
@@ -69,49 +76,62 @@ public final class CityFoodSupplyCache {
                 () -> CityDataSync.fetchFoodSupply(serverLevel, cityName)));
     }
 
+    /** As {@link #poll}, for the endpoint that returns food and wood together. */
+    public static Optional<double[]> pollFoodAndWood(ServerLevel serverLevel, String cityName) {
+        return pollValue("food_wood:" + cityName, () -> ServerHttpExecutor.submit(serverLevel.getServer(),
+                () -> CityDataSync.fetchFoodAndWoodSupply(serverLevel, cityName)));
+    }
+
     /**
-     * Seam for tests. Identical logic, but the caller supplies the transport - which is what lets
+     * Seam for tests. Identical logic, but the caller supplies the transport — which is what lets
      * the coalescing and failure rules be exercised without a running server.
      */
     static OptionalDouble poll(String cityName, Supplier<CompletableFuture<Double>> submitter) {
-        Entry entry = ENTRIES.computeIfAbsent(cityName, ignored -> new Entry());
+        Optional<Double> food = pollValue("food:" + cityName, submitter);
+        return food.map(OptionalDouble::of).orElseGet(OptionalDouble::empty);
+    }
+
+    /** The shared state machine, over whatever a given endpoint returns. */
+    @SuppressWarnings("unchecked")
+    static <T> Optional<T> pollValue(String key, Supplier<CompletableFuture<T>> submitter) {
+        Entry<T> entry = (Entry<T>) ENTRIES.computeIfAbsent(key, ignored -> new Entry<T>());
 
         boolean startFetch;
-        OptionalDouble current;
+        Optional<T> current;
         synchronized (entry) {
             startFetch = !entry.pending;
             if (startFetch) entry.pending = true;
-            current = entry.hasValue ? OptionalDouble.of(entry.value) : OptionalDouble.empty();
+            current = entry.hasValue ? Optional.of(entry.value) : Optional.empty();
         }
 
         if (startFetch) {
             try {
-                submitter.get().whenComplete((food, failure) -> {
+                submitter.get().whenComplete((value, failure) -> {
                     synchronized (entry) {
                         entry.pending = false;
-                        if (failure == null && food != null) {
+                        if (failure == null && value != null) {
                             entry.hasValue = true;
-                            entry.value = food;
+                            entry.value = value;
                         }
                     }
                     if (failure != null) {
-                        // Queue saturation or the overall-timeout cut-off - not a Rails verdict on
+                        // Queue saturation or the overall-timeout cut-off — not a Rails verdict on
                         // this city, so the previous reading stands and the next cycle tries again.
                         // There is deliberately no immediate retry.
-                        LOGGER.debug("City food supply refresh did not complete city={} reason={}",
-                                cityName, failure.getClass().getSimpleName());
+                        LOGGER.debug("City supply refresh did not complete key={} reason={}",
+                                key, failure.getClass().getSimpleName());
                     }
                 });
             } catch (RuntimeException submitFailure) {
                 // The submit itself threw, so whenComplete will never run: release the guard here or
-                // this city would never refresh again. Deliberately not rethrown - the caller is a
+                // this key would never refresh again. Deliberately not rethrown — the caller is a
                 // block entity tick, and a rejected executor must not become an exception escaping
                 // into the world loop.
                 synchronized (entry) {
                     entry.pending = false;
                 }
-                LOGGER.debug("City food supply refresh could not be submitted city={} reason={}",
-                        cityName, submitFailure.getClass().getSimpleName());
+                LOGGER.debug("City supply refresh could not be submitted key={} reason={}",
+                        key, submitFailure.getClass().getSimpleName());
             }
         }
 

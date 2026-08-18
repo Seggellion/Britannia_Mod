@@ -143,6 +143,61 @@ public class CityDataSync {
     }
 
 
+    /**
+     * Schedules {@link #registerNpc} without making the calling thread wait for Rails.
+     *
+     * <h2>Why this exists</h2>
+     * The legacy spawn blocks call registerNpc from {@code tick()}, and one of them calls it once
+     * per townsperson inside a spawn loop. Each request is bounded, but a merchant plus a full
+     * townsperson complement is five sequential bounded requests on the thread that runs the world.
+     *
+     * <h2>Why fire-and-forget is faithful</h2>
+     * registerNpc returns void and swallows its own failures, so no caller has ever observed the
+     * outcome; the entity is added to the level regardless. Every argument is an immutable value
+     * captured before the hop, so the worker touches no Minecraft state.
+     *
+     * <p>Ordering against {@link #removeNpcAsync} is safe by construction rather than by luck: a
+     * given NPC is registered when it spawns and removed when it despawns, and those are separated
+     * by at least one maintenance cycle (1000 ticks) — far longer than the executor's 15-second
+     * overall timeout, so the register can never still be queued when the remove is submitted.
+     */
+    public static void registerNpcAsync(ServerLevel serverLevel, UUID npcId, String npcType, String cityName,
+                                        String name, String description, int level, int health, int mana,
+                                        boolean isActive, String spawnLocation, String gender) {
+        ServerHttpExecutor
+                .run(serverLevel.getServer(), () -> registerNpc(serverLevel, npcId, npcType, cityName, name,
+                        description, level, health, mana, isActive, spawnLocation, gender))
+                .whenComplete((ignored, failure) -> {
+                    if (failure != null) {
+                        // Queue saturation or the overall-timeout cut-off. Debug rather than warn:
+                        // the synchronous version was silent on failure too, and the next spawn
+                        // cadence re-registers on its own.
+                        LOGGER.debug("NPC register did not complete npc={} type={} city={} reason={}",
+                                npcId, npcType, cityName, failure.getClass().getSimpleName());
+                    }
+                });
+    }
+
+    /**
+     * Schedules {@link #removeNpc} without making the calling thread wait for Rails.
+     *
+     * <p>Every caller is a {@code despawnAssociatedNpcs} loop running on the server tick, so the
+     * cost was the whole tracked population times one bounded request each — and those loops fire
+     * precisely when a city reads as starving, which is also what a slow or failing Rails looks
+     * like. Like {@link #registerNpcAsync} this returns void, swallows its own failures and takes
+     * only immutable arguments, so moving the transport off-thread changes nothing observable.
+     */
+    public static void removeNpcAsync(ServerLevel serverLevel, UUID npcId) {
+        ServerHttpExecutor
+                .run(serverLevel.getServer(), () -> removeNpc(serverLevel, npcId))
+                .whenComplete((ignored, failure) -> {
+                    if (failure != null) {
+                        LOGGER.debug("NPC remove did not complete npc={} reason={}",
+                                npcId, failure.getClass().getSimpleName());
+                    }
+                });
+    }
+
     public static void removeNpc(ServerLevel serverLevel, UUID npcId) {
         try {
             var requestUri = ServerAuthRegistry.credentials(serverLevel.getServer()).orElseThrow().apiUrls()

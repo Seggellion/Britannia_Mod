@@ -99,7 +99,7 @@ private void spawnHorseMerchant(ServerLevel serverLevel) {
         boolean isActive = true;
         String spawnLocation = String.format("[x=%.1f, y=%.1f, z=%.1f]", (double) spawnPos.getX(), (double) spawnPos.getY(), (double) spawnPos.getZ());
 /*
-        CityDataSync.registerNpc(serverLevel, merchant.getUUID(), "horse_merchant", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
+        CityDataSync.registerNpcAsync(serverLevel, merchant.getUUID(), "horse_merchant", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
  */
     }
 }
@@ -127,7 +127,7 @@ private void spawnHorseMerchant(ServerLevel serverLevel) {
             boolean isActive = true;
             String spawnLocation = String.format("[x=%.1f, y=%.1f, z=%.1f]", (float) spawnPos.getX(), (float) spawnPos.getY(), (float) spawnPos.getZ());
 /*
-            CityDataSync.registerNpc(serverLevel, person.getUUID(), "town_person", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
+            CityDataSync.registerNpcAsync(serverLevel, person.getUUID(), "town_person", cityName, randomName, description, level, health, mana, isActive, spawnLocation);
     */
         }
     }
@@ -146,7 +146,7 @@ public void setRemoved() {
             Entity entity = serverLevel.getEntity(uuid);
             if (entity != null) {
                 entity.remove(RemovalReason.DISCARDED);
-                CityDataSync.removeNpc(serverLevel, uuid);
+                CityDataSync.removeNpcAsync(serverLevel, uuid);
             }
         }
         associatedNpcs.clear();

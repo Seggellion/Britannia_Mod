@@ -152,7 +152,7 @@ public void removeAssociatedNpc(UUID npcUuid) {
             Entity entity = serverLevel.getEntity(uuid);
             if (entity != null) {
                 entity.remove(RemovalReason.DISCARDED);
-                CityDataSync.removeNpc(serverLevel, uuid);
+                CityDataSync.removeNpcAsync(serverLevel, uuid);
             }
         }
         associatedNpcs.clear();

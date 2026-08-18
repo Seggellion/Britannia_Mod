@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
@@ -183,6 +184,42 @@ final class CityFoodSupplyCacheTest {
         CityFoodSupplyCache.poll("Britain", transport::submit);
 
         assertEquals(1, transport.submissions.get(), "the guard must not latch when submit throws");
+    }
+
+    // ---------- the food-and-wood shape, sharing the same state machine ----------
+
+    @Test
+    void theFoodAndWoodReadingFollowsTheSameRules() {
+        CompletableFuture<double[]> pending = new CompletableFuture<>();
+
+        Optional<double[]> first = CityFoodSupplyCache.pollValue("food_wood:Britain", () -> pending);
+        assertTrue(first.isEmpty(), "no reading yet must not read as a value");
+
+        pending.complete(new double[] {250.0, 400.0});
+        Optional<double[]> second =
+                CityFoodSupplyCache.pollValue("food_wood:Britain", CompletableFuture::new);
+
+        assertAll(
+                () -> assertTrue(second.isPresent()),
+                () -> assertEquals(250.0, second.get()[0]),
+                () -> assertEquals(400.0, second.get()[1]));
+    }
+
+    @Test
+    void theTwoEndpointsAreCachedIndependentlyForTheSameCity() {
+        // They come from different endpoints, so a city polled through both keeps two readings --
+        // exactly as it made two independent requests before.
+        ManualTransport food = new ManualTransport();
+        CityFoodSupplyCache.poll("Britain", food::submit);
+        food.answer(250.0);
+
+        Optional<double[]> foodAndWood =
+                CityFoodSupplyCache.pollValue("food_wood:Britain", CompletableFuture::new);
+
+        assertAll(
+                () -> assertEquals(OptionalDouble.of(250.0), CityFoodSupplyCache.poll("Britain", food::submit)),
+                () -> assertTrue(foodAndWood.isEmpty(),
+                        "the food-and-wood reading must not inherit the food-only one"));
     }
 
     @Test

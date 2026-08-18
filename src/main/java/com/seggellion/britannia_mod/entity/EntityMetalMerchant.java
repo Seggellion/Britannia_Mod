@@ -262,7 +262,7 @@ public void readAdditionalSaveData(CompoundTag tag) {
             if (!(this.level() instanceof ServerLevel serverLevel)) {
         return;
     }
-        CityDataSync.removeNpc(serverLevel, this.getUUID());
+        CityDataSync.removeNpcAsync(serverLevel, this.getUUID());
     }
 
 private void removeNpcFromSpawnBlock() {
