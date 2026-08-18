@@ -84,7 +84,7 @@ public final class EconomicBuybackCatalogService {
     }
 
     /** Builds the quote request. Must run on the server thread. */
-    static Prepared prepare(ServerPlayer player, CitizenEntity trader, String role) {
+    static Prepared prepare(ServerPlayer player, CitizenEntity trader) {
         UUID worldNpcId = trader.getWorldNpcPublicId();
         if (worldNpcId == null) {
             // The reconciler stamps the World NPC id alongside the type key, so this is a
@@ -95,14 +95,14 @@ public final class EconomicBuybackCatalogService {
             return new Prepared(null, "", List.of());
         }
 
-        // Which commodities this trader buys is Rails' answer, synced with the type registry.
-        // Resolved once, before the inventory is walked, so the reason an offer came out narrow is
-        // a named state rather than an accident -- and so the legacy category table is reached
-        // only from the one branch that is allowed to reach it.
+        // Which commodities this trader buys is Rails' answer and, since M7, Rails' ONLY answer:
+        // the role title is no longer consulted, because guessing a profession's trade from its
+        // name is what M7 retired. Resolved once, before the inventory is walked, so the reason an
+        // offer came out narrow is a named state rather than an accident.
         TraderCommodityFilter filter = TraderCommodityFilter.resolve(
                 EconomicNpcRegistryCache.snapshot().economicNpcTypes()
                         .get(trader.getEconomicNpcTypeKey()),
-                trader.getEconomicNpcTypeKey(), role);
+                trader.getEconomicNpcTypeKey());
         String refusal = filter.refusalCode();
         if (refusal != null) {
             // Accepts nothing, and says so as a fault. Posting the quote anyway would spend a

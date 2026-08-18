@@ -153,7 +153,7 @@ class TraderPolicyResolutionKeyParityTest {
         return TraderCommodityFilter.resolve(
                 new EconomicNpcTypeDefinition("salvage_trader", "Salvage Trader", "trader", "smith",
                         "britannia_mod:salvage_trader", true, true, 1L, policy),
-                "salvage_trader", "Salvage Trader");
+                "salvage_trader");
     }
 
     private static String string(JsonObject holder, String member) {

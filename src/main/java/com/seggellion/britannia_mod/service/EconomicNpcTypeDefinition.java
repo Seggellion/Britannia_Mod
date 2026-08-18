@@ -12,12 +12,12 @@ import java.util.Objects;
  * @param acceptedCommodities which commodities this type buys, or {@code null} when the registry
  *                            entry carried no {@code accepted_commodities} member at all. That
  *                            absence means ONE thing — a Rails predating Trader Commodity
- *                            Authority M4 — and it is the sole condition under which the legacy
- *                            {@code TraderBuybackCategories} table is consulted. An EMPTY policy
- *                            is not the same case: it is a real, deliberate "accepts nothing",
- *                            emitted for every vendor and for the parked traders, and falling
- *                            back on it would hand a player exactly the categories the policy
- *                            exists to withhold.
+ *                            Authority M4 — and since M7 it fails CLOSED: the trader offers
+ *                            nothing and reports a configuration fault, rather than having its
+ *                            trade guessed from its name. An EMPTY policy is a different case
+ *                            with the same outcome: a real, deliberate "accepts nothing", emitted
+ *                            for every vendor and for the parked traders. The two are kept
+ *                            distinct because they call for different repairs.
  */
 public record EconomicNpcTypeDefinition(
         String key,

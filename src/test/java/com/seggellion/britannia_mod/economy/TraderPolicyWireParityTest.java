@@ -111,8 +111,7 @@ class TraderPolicyWireParityTest {
             EconomicNpcTypeDefinition definition = snapshot.economicNpcTypes().get(traderKey);
             assertNotNull(definition, "Rails published a verdict for " + traderKey
                     + " but the parser produced no definition for it");
-            TraderCommodityFilter filter =
-                    TraderCommodityFilter.resolve(definition, traderKey, definition.displayName());
+            TraderCommodityFilter filter = TraderCommodityFilter.resolve(definition, traderKey);
 
             JsonArray expected = verdicts.getAsJsonArray(traderKey);
             assertEquals(probes.size(), expected.size(),
@@ -150,8 +149,7 @@ class TraderPolicyWireParityTest {
                 "Rails emits the member for every type, so it must parse as PRESENT-and-empty");
         assertTrue(parked.acceptedCommodities().isEmpty());
 
-        TraderCommodityFilter filter =
-                TraderCommodityFilter.resolve(parked, "provision_trader", "Provision Trader");
+        TraderCommodityFilter filter = TraderCommodityFilter.resolve(parked, "provision_trader");
 
         assertEquals(TraderCommodityFilter.Source.EMPTY_POLICY, filter.source());
         for (Probe probe : probes) {

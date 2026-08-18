@@ -16,78 +16,129 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * What a Trader may be offered comes from the SYNCED policy — Trader Commodity Authority, M5.
+ * What a Trader may be offered comes from the SYNCED policy, and since Milestone 7 from nowhere
+ * else — Trader Commodity Authority final state.
  *
- * <p>The load-bearing test in this file is
- * {@link #aSyncedPolicyOverrulesTheLegacyTableInBothDirections}. Every type used here is
- * {@code fish_trader}, whose legacy name-guessed categories are {@code {fish}}, while the policy
- * handed to it says {@code wood}. The two therefore disagree on every item, and which one answered
- * is visible in the answer itself — a filter that quietly consulted the legacy table would offer
- * fish and refuse wood, so the assertions below would fail in both directions rather than in
- * neither.
+ * <p>Four states, three of which fail closed. Before M7 the fourth, ABSENT, reached a table that
+ * guessed a profession's trade from substrings in its name. M6 measured that guess against the
+ * real seeded policies: for five of fifteen professions the table recognised nothing and returned
+ * its ANY sentinel, which would have offered them everything classifiable. Those five are pinned
+ * below, because they are the cases where the retired fallback was not merely imprecise but
+ * inverted.
  */
 class TraderCommodityFilterTest {
 
     private static final String FISH_TRADER = "fish_trader";
-    private static final String ROLE = "Fish Trader";
 
     /**
-     * ACCEPTANCE: with a policy present the legacy table is not consulted, proven by making the
-     * two disagree completely and showing the policy wins every time.
+     * The synced policy decides, and the type's NAME is irrelevant to the decision. A
+     * {@code fish_trader} handed a wood policy offers wood and refuses fish — which is the whole
+     * claim of the project stated as one assertion.
      */
     @Test
-    void aSyncedPolicyOverrulesTheLegacyTableInBothDirections() {
-        // Sanity: the legacy table really would answer differently, or this proves nothing.
-        assertEquals(java.util.Set.of("fish"), TraderBuybackCategories.forTrader(FISH_TRADER, ROLE));
-
+    void aSyncedPolicyDecidesAndTheProfessionNameIsIgnored() {
         TraderCommodityFilter filter = filterFor(policy(new Entry("wood", null, null)));
 
         assertEquals(TraderCommodityFilter.Source.POLICY, filter.source());
+        assertNull(filter.refusalCode());
         assertTrue(filter.accepts(item("wood", "logs", "oak")),
-                "the policy allows wood, so wood is offered even though the legacy table forbids it");
+                "the policy allows wood, so wood is offered though the name says fish");
         assertFalse(filter.accepts(item("fish", "raw", "cod")),
-                "the policy omits fish, so fish is refused even though the legacy table allows it");
+                "the policy omits fish, so fish is refused though the name says fish");
     }
 
-    /** And the other direction: on ABSENCE the legacy table is exactly what answers. */
+    /**
+     * THE M7 BEHAVIOUR CHANGE. A registry entry with no policy member used to reach the legacy
+     * table; it now offers nothing and reports a fault. Rails has emitted the member for every
+     * type since M4, so absence is a shard running an old Rails — a deployment problem, and one
+     * that must be visible rather than papered over with a guess.
+     */
     @Test
-    void anAbsentPolicyMemberIsTheOneConditionThatReachesTheLegacyTable() {
+    void anAbsentPolicyMemberNowFailsClosedInsteadOfGuessing() {
         TraderCommodityFilter filter = filterFor(null);
 
-        assertEquals(TraderCommodityFilter.Source.LEGACY_FALLBACK, filter.source());
-        assertNull(filter.refusalCode(), "an old Rails is not a fault, it is an old Rails");
-        assertTrue(filter.accepts(item("fish", "raw", "cod")));
+        assertEquals(TraderCommodityFilter.Source.ABSENT, filter.source());
+        assertEquals(Notice.TRADER_POLICY_MISSING, filter.refusalCode());
+        assertFalse(filter.accepts(item("fish", "raw", "cod")),
+                "the retired fallback would have offered fish here, from the name alone");
         assertFalse(filter.accepts(item("wood", "logs", "oak")));
     }
 
     /**
-     * The case the fallback must NOT catch. An empty policy is a real, deliberate accepts-nothing;
-     * falling back here would hand a player precisely the categories the policy exists to
-     * withhold, and Rails would refuse the sale at settlement anyway.
+     * An empty policy is a real, deliberate accepts-nothing. It was never allowed to fall back and
+     * still is not; it is kept distinct from ABSENT because the two call for different repairs.
      */
     @Test
-    void anEmptyPolicyAcceptsNothingAndNeverReachesTheLegacyTable() {
+    void anEmptyPolicyAcceptsNothingAndIsItsOwnDistinctState() {
         TraderCommodityFilter filter = filterFor(policy());
 
         assertEquals(TraderCommodityFilter.Source.EMPTY_POLICY, filter.source());
+        assertEquals(Notice.TRADER_POLICY_MISSING, filter.refusalCode());
         assertFalse(filter.accepts(item("fish", "raw", "cod")),
                 "an empty policy must not be read as unrestricted, nor as unconfigured");
-        assertFalse(filter.accepts(item("wood", "logs", "oak")));
-        assertEquals(Notice.TRADER_POLICY_MISSING, filter.refusalCode(),
-                "a trader that can buy nothing is a configuration fault, said out loud");
+    }
+
+    /** Rails drops a type whose stored policy is malformed, so no entry is a fault, not old Rails. */
+    @Test
+    void aTypeMissingFromTheRegistryFailsClosed() {
+        TraderCommodityFilter filter = TraderCommodityFilter.resolve(null, FISH_TRADER);
+
+        assertEquals(TraderCommodityFilter.Source.MISSING, filter.source());
+        assertEquals(Notice.TRADER_POLICY_MISSING, filter.refusalCode());
+        assertFalse(filter.accepts(item("fish", "raw", "cod")));
     }
 
     /**
-     * Rails DROPS a type whose stored policy is malformed rather than publishing it broken, so a
-     * trader with no registry entry is a fault, not an old Rails, and must not reach the fallback.
+     * A profession nothing has ever heard of gets no benefit of the doubt. Under the retired table
+     * an unrecognised name returned ANY; there is no such sentinel left to return.
      */
     @Test
-    void aTypeMissingFromTheRegistryFailsClosedRatherThanFallingBack() {
-        TraderCommodityFilter filter = TraderCommodityFilter.resolve(null, FISH_TRADER, ROLE);
+    void anUnknownProfessionCannotFallBackToAnything() {
+        TraderCommodityFilter named = TraderCommodityFilter.resolve(
+                definition("mysterious_trader", "Mysterious Trader", null), "mysterious_trader");
 
-        assertEquals(TraderCommodityFilter.Source.MISSING, filter.source());
-        assertFalse(filter.accepts(item("fish", "raw", "cod")));
-        assertEquals(Notice.TRADER_POLICY_MISSING, filter.refusalCode());
+        assertEquals(TraderCommodityFilter.Source.ABSENT, named.source());
+        for (JsonObject probe : List.of(item("fish", "raw", "cod"), item("wood", "logs", "oak"),
+                item("metal", "salvage", "broken sword"), item("alcohol", "wine", "red wine"))) {
+            assertFalse(named.accepts(probe), "an unknown profession offered " + probe);
+        }
+    }
+
+    /**
+     * The five professions M6 found the retired table could not recognise. It returned ANY for each
+     * — the OPPOSITE of their real policy, not a conservative approximation of it. With no policy
+     * synced they must now offer nothing at all.
+     */
+    @Test
+    void theFiveProfessionsTheRetiredTableWouldHaveGivenEverythingNowOfferNothing() {
+        for (String key : List.of("reagent_trader", "provision_trader", "textile_trader",
+                "glass_trader", "scribe_trader")) {
+            TraderCommodityFilter filter =
+                    TraderCommodityFilter.resolve(definition(key, key, null), key);
+
+            assertEquals(TraderCommodityFilter.Source.ABSENT, filter.source(), key);
+            assertEquals(Notice.TRADER_POLICY_MISSING, filter.refusalCode(), key);
+            for (JsonObject probe : List.of(item("fish", "raw", "cod"), item("wood", "logs", "oak"),
+                    item("ore", "raw", "silver"), item("meat", "raw", "beef"),
+                    item("alcohol", "wine", "red wine"))) {
+                assertFalse(filter.accepts(probe), key + " offered " + probe + " with no policy");
+            }
+        }
+    }
+
+    /** And with their real seeded policy they take their own category and nothing else. */
+    @Test
+    void thoseSameFiveTakeOnlyTheirOwnCategoryWhenTheirPolicyIsSynced() {
+        for (String category : List.of("reagents", "textile", "glass", "scribe")) {
+            TraderCommodityFilter filter = TraderCommodityFilter.resolve(
+                    definition(category + "_trader", category, policy(new Entry(category, null, null))),
+                    category + "_trader");
+
+            assertEquals(TraderCommodityFilter.Source.POLICY, filter.source());
+            assertTrue(filter.accepts(item(category, "any", "something")));
+            assertFalse(filter.accepts(item("fish", "raw", "cod")), category + " took fish");
+            assertFalse(filter.accepts(item("wood", "logs", "oak")), category + " took wood");
+        }
     }
 
     @Test
@@ -101,16 +152,14 @@ class TraderCommodityFilterTest {
         assertTrue(filter.accepts(item("leather", "cut", "leather")));
         assertTrue(filter.accepts(item("meat", "cured", "salt pork")));
 
-        // The third entry's narrowing scopes ITS entry only -- it must not leak onto the two
-        // unnarrowed ones, nor they onto it.
+        // The third entry's narrowing scopes ITS entry only.
         assertFalse(filter.accepts(item("meat", "raw", "raw pork")));
         assertFalse(filter.accepts(item("fish", "raw", "cod")));
     }
 
     /**
-     * The Salvage shape: two entries differing only by subcategory, one of them carrying the
-     * commodity allow-list. Entry order is contractual precisely so the allow-list stays on the
-     * scope that declared it.
+     * The Salvage shape: two entries differing only by subcategory, one carrying the allow-list.
+     * Entry order is contractual precisely so the allow-list stays on the scope that declared it.
      */
     @Test
     void anAllowListScopesOnlyTheEntryItAppearsIn() {
@@ -118,8 +167,7 @@ class TraderCommodityFilterTest {
                 new Entry("metal", List.of("salvage"), null),
                 new Entry("metal", List.of("ingots"), List.of("copper", "silver", "gold"))));
 
-        assertTrue(filter.accepts(item("metal", "salvage", "broken sword")),
-                "the salvage entry carries no allow-list, so its whole subcategory is in scope");
+        assertTrue(filter.accepts(item("metal", "salvage", "broken sword")));
         assertTrue(filter.accepts(item("metal", "ingots", "copper")));
         assertTrue(filter.accepts(item("metal", "ingots", "COPPER")), "matched case-insensitively");
         assertFalse(filter.accepts(item("metal", "ingots", "tin")),
@@ -152,11 +200,26 @@ class TraderCommodityFilterTest {
         assertTrue(filter.accepts(item("metal", "ingots", "copper")));
     }
 
+    /** Only a working policy quotes; every other state speaks the same configuration fault. */
+    @Test
+    void exactlyOneOfTheFourStatesQuotesAndTheOtherThreeReportAFault() {
+        assertNull(filterFor(policy(new Entry("fish", null, null))).refusalCode());
+        for (TraderCommodityFilter faulted : List.of(filterFor(null), filterFor(policy()),
+                TraderCommodityFilter.resolve(null, FISH_TRADER))) {
+            assertEquals(Notice.TRADER_POLICY_MISSING, faulted.refusalCode(),
+                    faulted.source() + " must report a fault");
+        }
+    }
+
     private static TraderCommodityFilter filterFor(@Nullable AcceptedCommodityPolicy policy) {
         return TraderCommodityFilter.resolve(
-                new EconomicNpcTypeDefinition(FISH_TRADER, ROLE, "trader", "fisher",
-                        "britannia_mod:fish_trader", true, true, 1L, policy),
-                FISH_TRADER, ROLE);
+                definition(FISH_TRADER, "Fish Trader", policy), FISH_TRADER);
+    }
+
+    private static EconomicNpcTypeDefinition definition(String key, String displayName,
+                                                        @Nullable AcceptedCommodityPolicy policy) {
+        return new EconomicNpcTypeDefinition(key, displayName, "trader", "fisher",
+                "britannia_mod:" + key, true, true, 1L, policy);
     }
 
     private static AcceptedCommodityPolicy policy(Entry... entries) {

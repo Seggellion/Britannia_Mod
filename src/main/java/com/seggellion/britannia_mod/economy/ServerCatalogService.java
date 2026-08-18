@@ -65,7 +65,7 @@ public final class ServerCatalogService {
             economicTypeKey = citizen.getEconomicNpcTypeKey();
             economicCityId = citizen.getEconomicCityPublicId();
             buyback = tradesWithPlayers(economicTypeKey, type)
-                    ? EconomicBuybackCatalogService.prepare(player, citizen, role)
+                    ? EconomicBuybackCatalogService.prepare(player, citizen)
                     : null;
         } else {
             economicTypeKey = null;
