@@ -142,7 +142,7 @@ public class RailsApi {
 
                     for (JsonElement e : arr) {
                         JsonObject obj = e.getAsJsonObject();
-                        LOGGER.info("OBJ: {}", obj);
+                        LOGGER.debug("OBJ: {}", obj);
 
                         String itemIdStr = obj.get("item_id").getAsString();
                         
@@ -234,7 +234,7 @@ public static void sellItems(Player player, String city, String role, int entity
                     if (invStack.isEmpty()) continue;
                     
                     String invId = BuiltInRegistries.ITEM.getKey(invStack.getItem()).toString();
-                    LOGGER.info("inventory check data? {}", product.name());
+                    LOGGER.debug("inventory check data? {}", product.name());
                     // Simple ID match check
                     if (invId.equals(product.itemId()) || invId.endsWith(":" + product.name())) {
                         

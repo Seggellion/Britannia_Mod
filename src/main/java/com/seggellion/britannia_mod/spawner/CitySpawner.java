@@ -37,7 +37,7 @@ public class CitySpawner {
 
         for (AABB area : CityRegistry.getAllCityAreas()) {
             if (area.contains(entity.position())) {
-                LOGGER.info("City spawn rules rejecting entity type={} uuid={} pos={} allowed={} critical={} managed={} reason=disallowed_city_entity",
+                LOGGER.debug("City spawn rules rejecting entity type={} uuid={} pos={} allowed={} critical={} managed={} reason=disallowed_city_entity",
                         entityTypeId(entity), entity.getUUID(), entity.blockPosition(),
                         CitySpawnRules.isAllowed(entity),
                         CitySpawnRules.isCritical(entity),
@@ -94,7 +94,7 @@ public class CitySpawner {
             nonCriticalEntities.stream()
                 .limit(excess)
                 .forEach(entity -> {
-                    LOGGER.info("City entity limit removing entity type={} uuid={} pos={} allowed={} critical={} managed={} reason=excess_population total={} max={} excess={}",
+                    LOGGER.debug("City entity limit removing entity type={} uuid={} pos={} allowed={} critical={} managed={} reason=excess_population total={} max={} excess={}",
                             entityTypeId(entity), entity.getUUID(), entity.blockPosition(),
                             CitySpawnRules.isAllowed(entity),
                             CitySpawnRules.isCritical(entity),

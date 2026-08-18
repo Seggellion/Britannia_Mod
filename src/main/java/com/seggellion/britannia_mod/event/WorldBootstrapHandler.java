@@ -21,6 +21,16 @@ import java.util.concurrent.CompletableFuture;
 public final class WorldBootstrapHandler {
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    /**
+     * Fish, regions and city inventories are world state: every player receives the same
+     * payload, so N simultaneous logins would re-apply the entire Rails catalogue N times
+     * on the server thread. Coalesce those re-applies into one per window. Quest state is
+     * per-player and is still synced on every login.
+     */
+    private static final int WORLD_SYNC_MIN_INTERVAL_TICKS = 600; // 30 seconds
+    private static final long NEVER_SYNCED = Long.MIN_VALUE;
+    private static long lastWorldSyncTick = NEVER_SYNCED;
+
     public static void init() {
         NeoForge.EVENT_BUS.addListener(WorldBootstrapHandler::onLogin);
     }
@@ -32,57 +42,75 @@ public final class WorldBootstrapHandler {
         CompletableFuture
             .supplyAsync(() -> WorldBootstrapAPI.fetch(player))
             .thenAcceptAsync(data -> {
-                // 1. Existing Logic
-                FishCatalog.clear();
-                data.fish().forEach(FishCatalog::put);
-                RegionCache.update(data.regions());
-
-                // 2. NEW: City Synchronization
-                if (!data.cities().isEmpty()) {
-                    CityManager manager = CityManager.get(player.serverLevel());
-                    
-                    for (WorldBootstrapAPI.CityBootstrapData c : data.cities()) {
-                        // Get or create the city
-                        var city = manager.getCity(c.name());
-                        if (city == null) continue; // Or create if your logic allows
-
-                        CityInventory inv = city.getInventory();
-                        
-                        // Update basic stats
-                        inv.updateSupplies(c.food(), c.wood(), c.metal(), c.stone(), c.textile(), c.alcohol(), c.tech());
-                        inv.updateTreasury(c.gold(), c.silver(), c.copper());
-
-                        // Full overwrite of market data to ensure sync with Rails
-                        inv.clearAllCommodities(); 
-                        
-                        // Re-populate Commodities (Integers)
-                        // FIX: Use .quantities() to match the Record definition
-                        c.quantities().forEach((cat, subs) -> 
-                            subs.forEach((sub, items) -> 
-                                items.forEach((item, qty) -> inv.addCommodity(cat, sub, item, qty))
-                            )
-                        );
-
-                        // Re-populate Weights (Doubles)
-                        c.weights().forEach((cat, subs) -> 
-                            subs.forEach((sub, items) -> 
-                                items.forEach((item, w) -> inv.addCommodityWeight(cat, sub, item, w))
-                            )
-                        );
-                    }
-                    
-                    // Mark dirty to save to disk immediately
-                    manager.setDirty();
-                    LOGGER.info("Synced {} cities from Rails.", data.cities().size());
+                if (shouldApplyWorldState(player)) {
+                    applyWorldState(player, data);
                 }
-
-                LOGGER.info("🌐 World bootstrap loaded: {} fish, {} regions, {} cities", 
-                    data.fish().size(), data.regions().size(), data.cities().size());
 
                 ServerQuestTable.replaceFromBootstrap(player, data.acceptedQuests());
                 QuestCleanupService.cleanupStaleLocalQuestState(player, data.acceptedQuests());
                 ClientboundSyncQuestsPayload.send(player, ServerQuestTable.snapshot(player));
 
             }, player.server);
+    }
+
+    /**
+     * Runs on the server thread, so a plain field is sufficient here.
+     */
+    private static boolean shouldApplyWorldState(ServerPlayer player) {
+        long now = player.server.getTickCount();
+
+        // An integrated server recreated inside the same JVM restarts its tick count, which
+        // would otherwise leave lastWorldSyncTick stranded in the future and skip forever.
+        boolean tickCountReset = now < lastWorldSyncTick;
+
+        if (lastWorldSyncTick != NEVER_SYNCED
+                && !tickCountReset
+                && now - lastWorldSyncTick < WORLD_SYNC_MIN_INTERVAL_TICKS) {
+            return false;
+        }
+
+        lastWorldSyncTick = now;
+        return true;
+    }
+
+    private static void applyWorldState(ServerPlayer player, WorldBootstrapAPI.WorldBootstrapData data) {
+        FishCatalog.clear();
+        data.fish().forEach(FishCatalog::put);
+        RegionCache.update(data.regions());
+
+        if (!data.cities().isEmpty()) {
+            CityManager manager = CityManager.get(player.serverLevel());
+
+            for (WorldBootstrapAPI.CityBootstrapData c : data.cities()) {
+                var city = manager.getCity(c.name());
+                if (city == null) continue;
+
+                CityInventory inv = city.getInventory();
+
+                inv.updateSupplies(c.food(), c.wood(), c.metal(), c.stone(), c.textile(), c.alcohol(), c.tech());
+                inv.updateTreasury(c.gold(), c.silver(), c.copper());
+
+                // Full overwrite of market data to ensure sync with Rails
+                inv.clearAllCommodities();
+
+                c.quantities().forEach((cat, subs) ->
+                    subs.forEach((sub, items) ->
+                        items.forEach((item, qty) -> inv.addCommodity(cat, sub, item, qty))
+                    )
+                );
+
+                c.weights().forEach((cat, subs) ->
+                    subs.forEach((sub, items) ->
+                        items.forEach((item, w) -> inv.addCommodityWeight(cat, sub, item, w))
+                    )
+                );
+            }
+
+            manager.setDirty();
+            LOGGER.info("Synced {} cities from Rails.", data.cities().size());
+        }
+
+        LOGGER.info("🌐 World bootstrap loaded: {} fish, {} regions, {} cities",
+            data.fish().size(), data.regions().size(), data.cities().size());
     }
 }

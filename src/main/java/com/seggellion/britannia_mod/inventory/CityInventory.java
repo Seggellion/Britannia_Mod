@@ -86,7 +86,7 @@ private final List<UUID> associatedNpcs = new ArrayList<>();
     private void initializeCity() {
         commodities.putIfAbsent("food", new HashMap<>());
         commodityWeights.putIfAbsent("food", new HashMap<>());
-        LOGGER.warn("Initialized city {} with empty inventory.", cityName);
+        LOGGER.debug("Initialized city {} with empty inventory.", cityName);
     }
 
      // Returns a map of subcategories to their total weights within a category
@@ -104,7 +104,7 @@ private final List<UUID> associatedNpcs = new ArrayList<>();
   public void associateNpcWithBlock(BlockPos blockPos, Entity npc) {
         blockNpcAssociations.computeIfAbsent(blockPos, k -> new ArrayList<>()).add(npc);
         associateNpc(npc);
-        LOGGER.info("Associated NPC {} with block {} in city {}. New population: {}", 
+        LOGGER.debug("Associated NPC {} with block {} in city {}. New population: {}", 
                     npc.getUUID(), blockPos, getCityName(), getNpcCount());
     }
 
@@ -122,11 +122,11 @@ public int getCurrencyAmount(String currency) {
   public void removeNpcsForBlock(BlockPos blockPos) {
         List<Entity> npcs = blockNpcAssociations.remove(blockPos);
         if (npcs != null) {
-            LOGGER.info("Removing {} NPCs associated with block {} in city {}", npcs.size(), blockPos, getCityName());
+            LOGGER.debug("Removing {} NPCs associated with block {} in city {}", npcs.size(), blockPos, getCityName());
             for (Entity npc : npcs) {
                 npc.discard(); // Removes the entity from the world
                 removeNpc(npc);
-                LOGGER.info("Discarded NPC {}. New population: {}", npc.getUUID(), getNpcCount());
+                LOGGER.debug("Discarded NPC {}. New population: {}", npc.getUUID(), getNpcCount());
             }
         } else {
             LOGGER.warn("No NPCs found for block {} in city {}", blockPos, getCityName());
@@ -165,7 +165,7 @@ public void removeNpc(Entity npc) {
     if (npc == null) return;
     // if using a list, do associatedNpcs.remove(npc);
     npcCount = Math.max(0, npcCount - 1);
-    LOGGER.warn("Removed NPC {} from city {}. New population: {}", 
+    LOGGER.debug("Removed NPC {} from city {}. New population: {}", 
                 npc.getUUID(), cityName, npcCount);
     setDirty();
 }
@@ -189,7 +189,7 @@ public void associateNpc(Entity npc) {
 
     associatedNpcs.add(npc.getUUID());
     npcCount++;
-    LOGGER.info("Associated NPC {} to city {}. Population: {}", npc.getUUID(), cityName, npcCount);
+    LOGGER.debug("Associated NPC {} to city {}. Population: {}", npc.getUUID(), cityName, npcCount);
 }
 
 
@@ -204,7 +204,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
     public void removeMerchant(FishTraderEntity merchant) {
         if (associatedNpcs.remove(merchant)) {
             npcCount = Math.max(0, npcCount - 1);
-            LOGGER.warn("Merchant {} removed from city {}. New population: {}", merchant.getUUID(), cityName, npcCount);
+            LOGGER.debug("Merchant {} removed from city {}. New population: {}", merchant.getUUID(), cityName, npcCount);
             setDirty(); // Mark data as changed for persistence
         } else {
             LOGGER.warn("Merchant {} not found in associated merchants", merchant.getUUID());
@@ -212,13 +212,13 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
     }
 
     public void consumeFood() {
-        LOGGER.warn("Food is starting to be consumed for city {}, population: {}", cityName, npcCount);
+        LOGGER.debug("Food is starting to be consumed for city {}, population: {}", cityName, npcCount);
         double baseConsumptionRate = 0.1;
         double totalConsumption = npcCount * baseConsumptionRate;
-        LOGGER.warn("Total consumption for city {}: {}", cityName, totalConsumption);
+        LOGGER.debug("Total consumption for city {}: {}", cityName, totalConsumption);
 
         Map<String, Map<String, Double>> foodWeights = commodityWeights.getOrDefault("food", new HashMap<>());
-        LOGGER.warn("Current food weights for city {}: {}", cityName, foodWeights);
+        LOGGER.debug("Current food weights for city {}: {}", cityName, foodWeights);
 
         if (foodWeights.isEmpty()) {
             LOGGER.warn("No food weights available for city {} to consume.", cityName);
@@ -233,7 +233,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
                 String itemName = itemEntry.getKey();
                 double currentWeight = itemEntry.getValue();
 
-                LOGGER.warn("Processing consumption for {} in subcategory '{}': current weight = {}", itemName, subcategory, currentWeight);
+                LOGGER.debug("Processing consumption for {} in subcategory '{}': current weight = {}", itemName, subcategory, currentWeight);
 
                 // Calculate consumption
                 double consumedWeight = Math.min(currentWeight, totalConsumption);
@@ -241,9 +241,9 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
                 newWeight = Math.max(newWeight, 0.0); // Prevent negative weights
                 items.put(itemName, newWeight);
 
-                LOGGER.warn("Consumed {} of {} in category 'food'. New weight: {}", consumedWeight, itemName, newWeight);
+                LOGGER.debug("Consumed {} of {} in category 'food'. New weight: {}", consumedWeight, itemName, newWeight);
                 totalConsumption -= consumedWeight;
-                LOGGER.warn("Remaining consumption after consuming {}: {}", consumedWeight, totalConsumption);
+                LOGGER.debug("Remaining consumption after consuming {}: {}", consumedWeight, totalConsumption);
 
                 // Optionally, update quantities if you want to track them
                 if (commodities.containsKey("food") && commodities.get("food").containsKey("fish") && commodities.get("food").get("fish").containsKey(itemName)) {
@@ -251,7 +251,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
                     int consumedQuantity = (int) Math.ceil(consumedWeight); // Adjust based on your conversion logic
                     int newQuantity = Math.max(currentQuantity - consumedQuantity, 0);
                     commodities.get("food").get("fish").put(itemName, newQuantity);
-                    LOGGER.warn("Updated quantity of {}: {}", itemName, newQuantity);
+                    LOGGER.debug("Updated quantity of {}: {}", itemName, newQuantity);
                 }
 
                 if (totalConsumption <= 0) break;
@@ -274,7 +274,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
             LOGGER.warn("City {} is no longer starving.", cityName);
         }
 
-        LOGGER.warn("Finished consuming food for city {}", cityName);
+        LOGGER.debug("Finished consuming food for city {}", cityName);
     }
 
     // Save data to NBT
@@ -326,7 +326,7 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
         // Save population count
         tag.putInt("Population", npcCount);
 
-        LOGGER.warn("Saved commodities, weights, and population for city {} to NBT.", cityName);
+        LOGGER.debug("Saved commodities, weights, and population for city {} to NBT.", cityName);
         return tag;
     }
 
@@ -379,14 +379,14 @@ public void reAssociateNpcs(ServerLevel serverLevel) {
         if (tag.contains("SilverAmount")) silverAmount = tag.getInt("SilverAmount");
         if (tag.contains("CopperAmount")) copperAmount = tag.getInt("CopperAmount");
 
-        LOGGER.info("Loaded commodities, weights, and population for city {} from NBT.", cityName);
+        LOGGER.debug("Loaded commodities, weights, and population for city {} from NBT.", cityName);
     }
 
 public void updateTreasury(int gold, int silver, int copper) {
     this.goldAmount = gold;
     this.silverAmount = silver;
     this.copperAmount = copper;
-    LOGGER.info("Updated treasury for {}: {}g {}s {}c", cityName, gold, silver, copper);
+    LOGGER.debug("Updated treasury for {}: {}g {}s {}c", cityName, gold, silver, copper);
     setDirty();
 }
 
@@ -398,7 +398,7 @@ public void updateTreasury(int gold, int silver, int copper) {
         // Reset the NPC count directly
         npcCount = 0;
 
-        LOGGER.warn("Population for city {} has been cleared. New population: {}", cityName, npcCount);
+        LOGGER.debug("Population for city {} has been cleared. New population: {}", cityName, npcCount);
 
         // Mark data as changed for persistence
         setDirty();
@@ -410,7 +410,7 @@ public void updateTreasury(int gold, int silver, int copper) {
             .computeIfAbsent(category, k -> new HashMap<>())
             .computeIfAbsent(subcategory, k -> new HashMap<>())
             .merge(itemName, amount, Integer::sum);
-        LOGGER.warn("Added {} of {} in category '{}', subcategory '{}'. New quantity: {}", amount, itemName, category, subcategory, commodities.get(category).get(subcategory).get(itemName));
+        LOGGER.debug("Added {} of {} in category '{}', subcategory '{}'. New quantity: {}", amount, itemName, category, subcategory, commodities.get(category).get(subcategory).get(itemName));
     }
 
     // Method to add commodity weights
@@ -419,7 +419,7 @@ public void updateTreasury(int gold, int silver, int copper) {
             .computeIfAbsent(category, k -> new HashMap<>())
             .computeIfAbsent(subcategory, k -> new HashMap<>())
             .merge(itemName, weight, Double::sum);
-        LOGGER.warn("Added weight {} for {} in category '{}', subcategory '{}'. New weight: {}", weight, itemName, category, subcategory, commodityWeights.get(category).get(subcategory).get(itemName));
+        LOGGER.debug("Added weight {} for {} in category '{}', subcategory '{}'. New weight: {}", weight, itemName, category, subcategory, commodityWeights.get(category).get(subcategory).get(itemName));
         setDirty(); // Mark data as changed if needed
     }
 
@@ -444,7 +444,7 @@ public int getPopulation() {
 }
 
 public void updateSupplies(double food, double wood, double metal, double stone, double textile, double alcohol, double tech) {
-    LOGGER.info("Updating supplies for {}: food={}, wood={}, metal={}, stone={}, textile={}, alcohol={}, tech={}",
+    LOGGER.debug("Updating supplies for {}: food={}, wood={}, metal={}, stone={}, textile={}, alcohol={}, tech={}",
         cityName, food, wood, metal, stone, textile, alcohol, tech);
     this.foodSupply = food;
     this.woodSupply = wood;
@@ -467,7 +467,7 @@ public List<Entity> getAssociatedEntities(ServerLevel serverLevel) {
         } else {
             iterator.remove(); // Remove orphaned UUID
             npcCount = Math.max(0, npcCount - 1);
-            LOGGER.warn("Removed orphaned NPC UUID {}. New population: {}", uuid, npcCount);
+            LOGGER.debug("Removed orphaned NPC UUID {}. New population: {}", uuid, npcCount);
         }
     }
     return entities;
@@ -484,7 +484,7 @@ public void associateMerchant(FishTraderEntity merchant) {
     public void clearAllCommodities() {
         this.commodities.clear();
         this.commodityWeights.clear();
-        LOGGER.warn("Cleared all commodities and weights for city {}.", cityName);
+        LOGGER.debug("Cleared all commodities and weights for city {}.", cityName);
         setDirty(); // Mark data as changed if using persistence
     }
 
