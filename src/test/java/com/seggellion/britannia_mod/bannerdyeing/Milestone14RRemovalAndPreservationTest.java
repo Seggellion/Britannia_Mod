@@ -73,7 +73,9 @@ class Milestone14RRemovalAndPreservationTest {
         // Hobanger store-sign item were added after the previous integrated total. Bump this
         // deliberately when the item roster genuinely changes -- that is the whole point
         // of counting.
-        assertEquals(903, repositoryItems);
+        // 904 as of 2026-08-18: the Flagstone foundation block item. Its three brick-side and
+        // two flagstone-top variants are model-level only, so they add no further ids.
+        assertEquals(904, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

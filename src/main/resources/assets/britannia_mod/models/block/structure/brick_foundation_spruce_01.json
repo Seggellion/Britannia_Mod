@@ -1,0 +1,6 @@
+{
+  "parent": "britannia_mod:block/structure/foundation/brick_side_01",
+  "textures": {
+    "up": "minecraft:block/spruce_planks"
+  }
+}

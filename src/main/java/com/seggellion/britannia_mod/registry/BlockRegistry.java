@@ -1465,6 +1465,13 @@ public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_DARK_SANDSTONE
     () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
 );
 
+// Flagstone tops over the normal brick foundation sides. Same behaviour as its oak/spruce
+// siblings; only the material family in the model parents differs.
+public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_FLAGSTONE = BLOCKS.register(
+    "brick_foundation_flagstone",
+    () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
+);
+
 
 
 public static final DeferredHolder<Block, Block> STONE_FOUNDATION = BLOCKS.register(

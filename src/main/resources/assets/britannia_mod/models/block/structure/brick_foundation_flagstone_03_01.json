@@ -1,0 +1,6 @@
+{
+  "parent": "britannia_mod:block/structure/foundation/brick_side_03",
+  "textures": {
+    "up": "britannia_mod:block/structure/flagstone_01"
+  }
+}

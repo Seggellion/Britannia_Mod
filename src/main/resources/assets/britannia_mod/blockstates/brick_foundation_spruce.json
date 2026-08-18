@@ -1,5 +1,9 @@
 {
   "variants": {
-    "": { "model": "britannia_mod:block/structure/brick_foundation_spruce" }
+    "": [
+      { "model": "britannia_mod:block/structure/brick_foundation_spruce_01" },
+      { "model": "britannia_mod:block/structure/brick_foundation_spruce_02" },
+      { "model": "britannia_mod:block/structure/brick_foundation_spruce_03" }
+    ]
   }
 }

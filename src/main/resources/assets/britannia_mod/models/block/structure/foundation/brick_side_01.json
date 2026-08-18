@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down":     "britannia_mod:block/structure/brick_foundation_01",
+    "north":    "britannia_mod:block/structure/brick_foundation_01",
+    "south":    "britannia_mod:block/structure/brick_foundation_01",
+    "west":     "britannia_mod:block/structure/brick_foundation_01",
+    "east":     "britannia_mod:block/structure/brick_foundation_01",
+    "particle": "britannia_mod:block/structure/brick_foundation_01"
+  }
+}

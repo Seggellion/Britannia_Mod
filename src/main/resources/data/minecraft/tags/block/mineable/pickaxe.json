@@ -15,6 +15,11 @@
     "britannia_mod:kettle",
     "britannia_mod:plates_and_silverware",
     "britannia_mod:fountain",
-    "britannia_mod:water_well"
+    "britannia_mod:water_well",
+    "britannia_mod:brick_foundation_oak",
+    "britannia_mod:brick_foundation_spruce",
+    "britannia_mod:brick_foundation_sandstone",
+    "britannia_mod:brick_foundation_dark_sandstone",
+    "britannia_mod:brick_foundation_flagstone"
   ]
 }

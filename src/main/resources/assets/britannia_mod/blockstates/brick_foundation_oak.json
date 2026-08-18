@@ -1,5 +1,9 @@
 {
   "variants": {
-    "": { "model": "britannia_mod:block/structure/brick_foundation_oak" }
+    "": [
+      { "model": "britannia_mod:block/structure/brick_foundation_oak_01" },
+      { "model": "britannia_mod:block/structure/brick_foundation_oak_02" },
+      { "model": "britannia_mod:block/structure/brick_foundation_oak_03" }
+    ]
   }
 }

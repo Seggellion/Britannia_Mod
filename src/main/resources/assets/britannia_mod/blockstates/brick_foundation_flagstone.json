@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "": [
+      { "model": "britannia_mod:block/structure/brick_foundation_flagstone_01_01" },
+      { "model": "britannia_mod:block/structure/brick_foundation_flagstone_01_02" },
+      { "model": "britannia_mod:block/structure/brick_foundation_flagstone_02_01" },
+      { "model": "britannia_mod:block/structure/brick_foundation_flagstone_02_02" },
+      { "model": "britannia_mod:block/structure/brick_foundation_flagstone_03_01" },
+      { "model": "britannia_mod:block/structure/brick_foundation_flagstone_03_02" }
+    ]
+  }
+}

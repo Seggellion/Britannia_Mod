@@ -76,6 +76,7 @@ public class CreativeTabRegistry {
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_DARK_SANDSTONE_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_OAK_ITEM.get());
                 safeAccept(output, ItemRegistry.BRICK_FOUNDATION_SPRUCE_ITEM.get());
+                safeAccept(output, ItemRegistry.BRICK_FOUNDATION_FLAGSTONE_ITEM.get());
                 safeAccept(output, ItemRegistry.CUSTOM_STONE_STAIRS_ITEM.get());
                 safeAccept(output, ItemRegistry.STONE_FOUNDATION_ITEM.get());
                 safeAccept(output, ItemRegistry.COBBLESTONE_WALL_ITEM.get());

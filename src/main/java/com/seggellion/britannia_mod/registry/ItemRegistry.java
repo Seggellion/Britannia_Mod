@@ -1318,6 +1318,10 @@ public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_SPRUCE_ITEM
         ITEMS.register("brick_foundation_spruce",
             () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_SPRUCE.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> BRICK_FOUNDATION_FLAGSTONE_ITEM =
+        ITEMS.register("brick_foundation_flagstone",
+            () -> new BlockItem(BlockRegistry.BRICK_FOUNDATION_FLAGSTONE.get(), new Item.Properties()));
+
 public static final DeferredHolder<Item, Item> CUSTOM_STONE_STAIRS_ITEM = ITEMS.register(
     "custom_stone_stairs",
     () -> new BlockItem(BlockRegistry.CUSTOM_STONE_STAIRS.get(), new Item.Properties())
