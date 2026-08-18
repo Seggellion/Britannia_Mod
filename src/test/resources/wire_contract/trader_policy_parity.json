@@ -1,0 +1,682 @@
+{
+  "generated_by": "TraderPolicyCrossRepositoryParityTest (Rails, Trader Commodity Authority M6)",
+  "schema_note": "registry is EconomicNpcRegistrySerializer.call output verbatim; verdicts carry Rails' own answer for each trader against each probe, positionally aligned with probes",
+  "registry": {
+    "schema_version": 1,
+    "economic_npc_types": [
+      {
+        "key": "alcohol_trader",
+        "display_name": "Alcohol Trader",
+        "kind": "trader",
+        "profession_key": "vintner",
+        "minecraft_entity_type_key": "britannia_mod:alcohol_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "alcohol"
+          }
+        ]
+      },
+      {
+        "key": "fish_trader",
+        "display_name": "Fish Trader",
+        "kind": "trader",
+        "profession_key": "fisher",
+        "minecraft_entity_type_key": "britannia_mod:fish_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "fish"
+          }
+        ]
+      },
+      {
+        "key": "fur_leather_trader",
+        "display_name": "Fur/Leather Trader",
+        "kind": "trader",
+        "profession_key": "tanner",
+        "minecraft_entity_type_key": "britannia_mod:fur_leather_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "fur"
+          },
+          {
+            "category": "leather"
+          }
+        ]
+      },
+      {
+        "key": "glass_trader",
+        "display_name": "Glass Trader",
+        "kind": "trader",
+        "profession_key": "glassblower",
+        "minecraft_entity_type_key": null,
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "glass"
+          }
+        ]
+      },
+      {
+        "key": "grain_trader",
+        "display_name": "Grain Trader",
+        "kind": "trader",
+        "profession_key": "miller",
+        "minecraft_entity_type_key": "britannia_mod:grain_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "grain"
+          }
+        ]
+      },
+      {
+        "key": "meat_trader",
+        "display_name": "Meat Trader",
+        "kind": "trader",
+        "profession_key": "butcher",
+        "minecraft_entity_type_key": "britannia_mod:meat_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "meat"
+          }
+        ]
+      },
+      {
+        "key": "ore_trader",
+        "display_name": "Ore Trader",
+        "kind": "trader",
+        "profession_key": "miner",
+        "minecraft_entity_type_key": "britannia_mod:ore_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "ore"
+          }
+        ]
+      },
+      {
+        "key": "produce_trader",
+        "display_name": "Produce Trader",
+        "kind": "trader",
+        "profession_key": "farmer",
+        "minecraft_entity_type_key": "britannia_mod:produce_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "produce"
+          }
+        ]
+      },
+      {
+        "key": "provision_trader",
+        "display_name": "Provision Trader",
+        "kind": "trader",
+        "profession_key": "provisioner",
+        "minecraft_entity_type_key": null,
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": []
+      },
+      {
+        "key": "reagent_trader",
+        "display_name": "Reagent Trader",
+        "kind": "trader",
+        "profession_key": "alchemist",
+        "minecraft_entity_type_key": null,
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "reagents"
+          }
+        ]
+      },
+      {
+        "key": "salvage_trader",
+        "display_name": "Salvage Trader",
+        "kind": "trader",
+        "profession_key": "smith",
+        "minecraft_entity_type_key": "britannia_mod:salvage_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "metal",
+            "subcategories": [
+              "salvage"
+            ]
+          },
+          {
+            "category": "metal",
+            "subcategories": [
+              "ingots"
+            ],
+            "commodity_keys": [
+              "copper",
+              "silver",
+              "gold"
+            ]
+          }
+        ]
+      },
+      {
+        "key": "scribe_trader",
+        "display_name": "Scribe Trader",
+        "kind": "trader",
+        "profession_key": "scribe",
+        "minecraft_entity_type_key": null,
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "scribe"
+          }
+        ]
+      },
+      {
+        "key": "stone_trader",
+        "display_name": "Stone Trader",
+        "kind": "trader",
+        "profession_key": "mason",
+        "minecraft_entity_type_key": "britannia_mod:stone_trader",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "stone"
+          }
+        ]
+      },
+      {
+        "key": "textile_trader",
+        "display_name": "Textile Trader",
+        "kind": "trader",
+        "profession_key": "tailor",
+        "minecraft_entity_type_key": null,
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "textile"
+          }
+        ]
+      },
+      {
+        "key": "wood_trader",
+        "display_name": "Wood Trader",
+        "kind": "trader",
+        "profession_key": "lumberjack",
+        "minecraft_entity_type_key": "britannia_mod:wood_merchant",
+        "active": false,
+        "spawnable": false,
+        "definition_revision": 1,
+        "accepted_commodities": [
+          {
+            "category": "wood"
+          }
+        ]
+      }
+    ],
+    "revision": "3e390b2d8ba403c45c260f91c1158961f1cf1e7e3088f2c96c7b2287ea8f13d9"
+  },
+  "probes": [
+    {
+      "category": "fish",
+      "subcategory": "raw",
+      "item_name": "cod"
+    },
+    {
+      "category": "wood",
+      "subcategory": "logs",
+      "item_name": "oak"
+    },
+    {
+      "category": "ore",
+      "subcategory": "raw",
+      "item_name": "silver"
+    },
+    {
+      "category": "stone",
+      "subcategory": "igneous",
+      "item_name": "granite"
+    },
+    {
+      "category": "grain",
+      "subcategory": "raw",
+      "item_name": "wheat"
+    },
+    {
+      "category": "produce",
+      "subcategory": "raw",
+      "item_name": "carrot"
+    },
+    {
+      "category": "meat",
+      "subcategory": "raw",
+      "item_name": "beef"
+    },
+    {
+      "category": "fur",
+      "subcategory": "pelt",
+      "item_name": "wolf pelt"
+    },
+    {
+      "category": "leather",
+      "subcategory": "cut",
+      "item_name": "leather"
+    },
+    {
+      "category": "alcohol",
+      "subcategory": "wine",
+      "item_name": "red wine"
+    },
+    {
+      "category": "metal",
+      "subcategory": "salvage",
+      "item_name": "broken sword"
+    },
+    {
+      "category": "metal",
+      "subcategory": "ingots",
+      "item_name": "copper"
+    },
+    {
+      "category": "metal",
+      "subcategory": "ingots",
+      "item_name": "tin"
+    },
+    {
+      "category": "metal",
+      "subcategory": "wire",
+      "item_name": "copper"
+    },
+    {
+      "category": "reagents",
+      "subcategory": "dried",
+      "item_name": "garlic"
+    },
+    {
+      "category": "textile",
+      "subcategory": "bolt",
+      "item_name": "linen"
+    },
+    {
+      "category": "glass",
+      "subcategory": "blown",
+      "item_name": "flask"
+    },
+    {
+      "category": "scribe",
+      "subcategory": "paper",
+      "item_name": "parchment"
+    },
+    {
+      "category": "FISH",
+      "subcategory": "RAW",
+      "item_name": "COD"
+    },
+    {
+      "category": null,
+      "subcategory": null,
+      "item_name": "mysterious trinket"
+    }
+  ],
+  "verdicts": {
+    "alcohol_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "fish_trader": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ],
+    "fur_leather_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "glass_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ],
+    "grain_trader": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "meat_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "ore_trader": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "produce_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "provision_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "reagent_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "salvage_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "scribe_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    "stone_trader": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "textile_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ],
+    "wood_trader": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  }
+}
