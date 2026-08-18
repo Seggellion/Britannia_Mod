@@ -34,10 +34,16 @@ public class CitySpawner {
 
         if (entity instanceof IbisEntity ibis) {
             if (!JhelomIbisPopulation.canJoin(level, ibis)) {
-                LOGGER.debug("Jhelom ibis policy rejecting uuid={} pos={} reason=outside_region_or_cap population={} max={}",
-                        ibis.getUUID(), ibis.blockPosition(),
-                        JhelomIbisPopulation.getIbisInJhelom(level).size(),
-                        JhelomIbisPopulation.MAX_POPULATION);
+                // getIbisInJhelom scans the region's entities. Log4j defers formatting, not
+                // argument evaluation, so as a bare argument that scan ran on every rejected
+                // ibis spawn even with debug disabled. The guard ties it to the log level.
+                // Note setCanceled stays outside it: the policy decision is not a diagnostic.
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Jhelom ibis policy rejecting uuid={} pos={} reason=outside_region_or_cap population={} max={}",
+                            ibis.getUUID(), ibis.blockPosition(),
+                            JhelomIbisPopulation.getIbisInJhelom(level).size(),
+                            JhelomIbisPopulation.MAX_POPULATION);
+                }
                 event.setCanceled(true);
             }
             return;
