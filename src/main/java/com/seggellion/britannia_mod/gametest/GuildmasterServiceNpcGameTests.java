@@ -29,8 +29,8 @@ import java.util.Map;
  * <p>{@code ServiceNpcDisplayNameTest} already asserts the string composition, and
  * {@code GuildmasterCapabilityTest} the registry lookup — but only a running level can prove the
  * two meet correctly on a real entity: that the title survives the reconciler's set-name-then-set-
- * type ordering, that it survives an NBT round-trip, and above all that a bank teller's nameplate
- * is completely unchanged.
+ * type ordering, that it survives an NBT round-trip, and that a bank teller renders the same
+ * composed personal-name-plus-role form.
  */
 @GameTestHolder(BritanniaMod.MODID)
 @PrefixGameTestTemplate(false)
@@ -55,15 +55,19 @@ public final class GuildmasterServiceNpcGameTests {
     }
 
     @GameTest(batch = "world_state_entity", template = TEMPLATE)
-    public static void aBankTellerNameplateIsUnchanged(GameTestHelper helper) {
+    public static void aBankTellerRendersItsPersonalNameAndRole(GameTestHelper helper) {
         withRegistry(() -> {
             ServiceNpcEntity npc = helper.spawn(EntityRegistry.SERVICE_NPC.get(), new BlockPos(1, 1, 1));
             npc.setPersonalName("Aldric");
             npc.setServiceNpcTypeKey("bank_teller");
 
-            // The whole point of scoping the combined form to Guildmasters: every existing teller
-            // in every existing world keeps reading exactly as it did before this milestone.
-            checkName(npc, "Aldric", "a bank teller");
+            // This once asserted a bare "Aldric", because the combined form was scoped to
+            // Guildmasters so that existing tellers kept reading as they always had. That scoping
+            // was deliberately widened: every Service NPC whose type publishes a display name now
+            // renders the composed form. The assertion is tightened to the new contract rather
+            // than relaxed — "Bank Teller" is this registry's display name for the type, so a
+            // regression that dropped the role, or published the wrong one, still fails here.
+            checkName(npc, "Aldric the Bank Teller", "a bank teller");
             helper.succeed();
         });
     }
@@ -146,7 +150,10 @@ public final class GuildmasterServiceNpcGameTests {
             ServiceNpcEntity teller = helper.spawn(EntityRegistry.SERVICE_NPC.get(), new BlockPos(2, 1, 1));
             teller.setPersonalName("Aldric");
             teller.setServiceNpcTypeKey("bank_teller");
-            checkName(teller, "Aldric", "a bank teller alongside a Guildmaster");
+            // Same widened contract as aBankTellerRendersItsPersonalNameAndRole: the teller is
+            // here to prove the two Service NPCs stay independent, and it renders the composed
+            // form like every other type that publishes a display name.
+            checkName(teller, "Aldric the Bank Teller", "a bank teller alongside a Guildmaster");
 
             check(warrior.isAlive() && teller.isAlive(), "both Service NPCs should coexist");
             helper.succeed();
