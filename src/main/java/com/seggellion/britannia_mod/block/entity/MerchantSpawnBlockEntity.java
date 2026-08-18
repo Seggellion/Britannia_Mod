@@ -10,6 +10,7 @@ import com.seggellion.britannia_mod.merchant.MerchantTypes;
 import com.seggellion.britannia_mod.network.CityDataSync;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
+import com.seggellion.britannia_mod.spawner.PopulationMaintenance;
 import com.seggellion.britannia_mod.trader.TraderAppearance;
 import com.seggellion.britannia_mod.util.NameLoader;
 import net.minecraft.core.BlockPos;
@@ -41,6 +42,19 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
     private static final int LOAD_GRACE_TICKS = 40;
     private static final int SPAWN_SEARCH_ATTEMPTS = 50;
     private static final String TAG_TOWN_NPCS = "TownNPCs";
+
+    /**
+     * Hard ceiling on townsperson spawn attempts in one maintenance cycle.
+     *
+     * <p>Sized against the two things that bound it in practice: the sibling food-gated spawners
+     * treat {@code TOWNSPERSON_COUNT = 4} as a normal town complement, and this maintenance runs
+     * every {@link #CHECK_INTERVAL_TICKS} ticks. Eight therefore fills a typical spawner's entire
+     * cold start in one cycle with headroom to spare, so ordinary recovery is unaffected, while a
+     * spawner that can never place anyone costs eight bounded position searches every ten seconds
+     * instead of looping until the server dies. A larger configured population is not refused, it
+     * just fills across consecutive cycles.
+     */
+    private static final int MAX_TOWNSPERSON_SPAWN_ATTEMPTS_PER_CYCLE = 8;
 
     private UUID sourceId = UUID.randomUUID();
     private UUID merchantNpcId;
@@ -354,22 +368,35 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
             return entity == null || !entity.isAlive();
         });
 
-        while (townNpcIds.size() < townPersonAmount) {
-            spawnTownsperson(serverLevel);
+        // Bounded, because spawnTownsperson can legitimately fail forever: an unbounded
+        // "loop until the shortfall is gone" freezes the server thread outright when no valid
+        // position exists. Whatever is left over is picked up by the next maintenance cycle.
+        int startingPopulation = townNpcIds.size();
+        PopulationMaintenance.Outcome outcome = PopulationMaintenance.fill(
+                startingPopulation, townPersonAmount, MAX_TOWNSPERSON_SPAWN_ATTEMPTS_PER_CYCLE,
+                () -> spawnTownsperson(serverLevel));
+
+        if (outcome.incomplete(startingPopulation, townPersonAmount)) {
+            // One line per cycle rather than one per failed candidate: the old per-attempt warning
+            // fired from inside a loop that never ended, which is how a freeze became a log flood.
+            LOGGER.debug("Merchant townsperson maintenance incomplete source={} city={} spawner={} current={} target={} attempts={} successful={}",
+                    sourceId, cityName, worldPosition, townNpcIds.size(), townPersonAmount,
+                    outcome.attempts(), outcome.successes());
         }
         setChanged();
     }
 
-    private void spawnTownsperson(ServerLevel serverLevel) {
-        BlockPos spawnPos = findAnchoredSpawnPos(serverLevel, "townsperson");
+    /** @return whether a townsperson was actually added, which is what bounds the caller's loop. */
+    private boolean spawnTownsperson(ServerLevel serverLevel) {
+        // Failure is summarised once per maintenance cycle by the caller, so this search does not
+        // log its own: it runs up to the attempt budget per cycle, and used to run without end.
+        BlockPos spawnPos = findAnchoredSpawnPos(serverLevel, "townsperson", false);
         if (spawnPos == null) {
-            LOGGER.warn("Merchant townsperson spawn skipped source={} city={} spawner={} reason=no_valid_position",
-                    sourceId, cityName, worldPosition);
-            return;
+            return false;
         }
 
         TownPersonEntity townPerson = EntityRegistry.TOWNSPERSON.get().create(serverLevel);
-        if (townPerson == null) return;
+        if (townPerson == null) return false;
 
         boolean male = serverLevel.random.nextBoolean();
         townPerson.setGender(male ? "male" : "female");
@@ -392,10 +419,20 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
             );
             LOGGER.info("Merchant townsperson spawn success source={} npc={} city={}",
                     sourceId, townPerson.getUUID(), cityName);
+            return true;
         }
+        return false;
     }
 
     private BlockPos findAnchoredSpawnPos(ServerLevel serverLevel, String purpose) {
+        return findAnchoredSpawnPos(serverLevel, purpose, true);
+    }
+
+    /**
+     * @param warnOnFailure whether an exhausted search logs. Townsperson maintenance passes false:
+     *                      it can attempt several searches per cycle and reports them as one line.
+     */
+    private BlockPos findAnchoredSpawnPos(ServerLevel serverLevel, String purpose, boolean warnOnFailure) {
         SpawnSearchStats stats = new SpawnSearchStats();
         int radius = Math.max(0, spawnRadius);
         int[] yOffsets = {0, -1, 1};
@@ -423,8 +460,10 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
             }
         }
 
-        LOGGER.warn("Merchant spawn position search failed source={} purpose={} city={} type={} spawner={} radius={} {}",
-                sourceId, purpose, cityName, merchantType, worldPosition, radius, stats.summary());
+        if (warnOnFailure) {
+            LOGGER.warn("Merchant spawn position search failed source={} purpose={} city={} type={} spawner={} radius={} {}",
+                    sourceId, purpose, cityName, merchantType, worldPosition, radius, stats.summary());
+        }
         return null;
     }
 
