@@ -27,7 +27,7 @@ public class ShadeEntitySizeHandler {
             event.setNewSize(newSize);
 
             // Log output for debugging purposes
-            LOGGER.info("ShadeEntitySizeHandler called for Entity: {}, Pose: {}, Width: {}, Height: {}, Bottom Offset: {}",
+            LOGGER.debug("ShadeEntitySizeHandler called for Entity: {}, Pose: {}, Width: {}, Height: {}, Bottom Offset: {}",
                 event.getEntity(), currentPose, adjustedWidth, adjustedHeight, bottomOffset);
 
             // Now let's adjust the bounding box to ensure it reflects the proper dimensions and offset
@@ -44,7 +44,7 @@ public class ShadeEntitySizeHandler {
                 entityZ + adjustedWidth / 2.0
             ));
 
-            LOGGER.info("Adjusted Bounding Box for Shade Entity: {}", shadeEntity.getBoundingBox());
+            LOGGER.debug("Adjusted Bounding Box for Shade Entity: {}", shadeEntity.getBoundingBox());
         }
     }
 }

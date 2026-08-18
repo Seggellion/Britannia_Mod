@@ -48,6 +48,16 @@ public final class WorldBootstrapHandler {
 
     private WorldBootstrapHandler() {}
 
+    /**
+     * The city commodity catalogue is world state: every player receives the same payload, so
+     * N simultaneous logins would otherwise clear and rebuild every city's inventory N times
+     * on the server thread. Coalesce those rebuilds into one per window. Everything else in
+     * {@link #apply} is per-player or cheap, and still runs on every login.
+     */
+    private static final int CITY_REBUILD_MIN_INTERVAL_TICKS = 600; // 30 seconds
+    private static final long NEVER_REBUILT = Long.MIN_VALUE;
+    private static long lastCityRebuildTick = NEVER_REBUILT;
+
     public static void init() {
         NeoForge.EVENT_BUS.addListener(WorldBootstrapHandler::onLogin);
         NeoForge.EVENT_BUS.addListener(WorldBootstrapHandler::onLogout);
@@ -111,7 +121,7 @@ public final class WorldBootstrapHandler {
             PlayerDataStore.save(player, playerData);
         }
 
-        if (!data.cities().isEmpty()) {
+        if (!data.cities().isEmpty() && shouldRebuildCityInventories(player)) {
             CityManager manager = CityManager.get(player.serverLevel());
             for (WorldBootstrapAPI.CityBootstrapData cityData : data.cities()) {
                 var city = manager.getCity(cityData.name());
@@ -265,5 +275,25 @@ public final class WorldBootstrapHandler {
             if (data != null && data.failureCode() != null) return data.failureCode();
             return "fetch_failed";
         }
+    }
+
+    /**
+     * Runs on the server thread, so a plain field is sufficient here.
+     */
+    private static boolean shouldRebuildCityInventories(ServerPlayer player) {
+        long now = player.server.getTickCount();
+
+        // An integrated server recreated inside the same JVM restarts its tick count, which
+        // would otherwise leave lastCityRebuildTick stranded in the future and skip forever.
+        boolean tickCountReset = now < lastCityRebuildTick;
+
+        if (lastCityRebuildTick != NEVER_REBUILT
+                && !tickCountReset
+                && now - lastCityRebuildTick < CITY_REBUILD_MIN_INTERVAL_TICKS) {
+            return false;
+        }
+
+        lastCityRebuildTick = now;
+        return true;
     }
 }
