@@ -70,6 +70,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
+import net.neoforged.neoforge.common.util.TriState;
+import com.seggellion.britannia_mod.client.renderer.NpcNameplate;
+import com.seggellion.britannia_mod.entity.CitizenEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 
 
@@ -215,14 +218,23 @@ public static void onClientLogout(ClientPlayerNetworkEvent.LoggingOut event) {
 }
 
 public static void onRenderNameTag(RenderNameTagEvent event) {
-    if (!(event.getEntity() instanceof ItemEntity itemEntity)) {
+    if (event.getEntity() instanceof ItemEntity itemEntity) {
+        var presentation = ClientFarmingPlantingItemPresentation.resolve(
+                itemEntity.getItem(), event.getContent(), FarmingPlantingItemPresentation.Surface.DROPPED_LABEL
+        );
+        if (presentation.applicable() && !presentation.identified()) {
+            event.setContent(presentation.displayName());
+        }
         return;
     }
-    var presentation = ClientFarmingPlantingItemPresentation.resolve(
-            itemEntity.getItem(), event.getContent(), FarmingPlantingItemPresentation.Surface.DROPPED_LABEL
-    );
-    if (presentation.applicable() && !presentation.identified()) {
-        event.setContent(presentation.displayName());
+    // Every NPC family in this mod descends from CitizenEntity, so this one test covers Service
+    // NPCs, townspeople, traders and merchants alike. Players and vanilla mobs are deliberately
+    // untouched and keep their backgrounds.
+    if (event.getEntity() instanceof CitizenEntity) {
+        // Order matters: vanilla is told to stand down, then we draw the same plate without its
+        // background. Denying without drawing would silently delete every NPC nameplate.
+        event.setCanRender(TriState.FALSE);
+        NpcNameplate.renderWithoutBackground(event);
     }
 }
 

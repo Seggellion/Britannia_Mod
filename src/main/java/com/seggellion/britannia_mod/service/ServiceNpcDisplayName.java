@@ -14,13 +14,16 @@ import javax.annotation.Nullable;
  * already build inline in their own {@code updateDisplayName()} overrides. This centralizes it
  * for the Guildmaster rather than adding a fourth copy.
  *
- * <h2>Why Service NPCs do not all get it</h2>
- * {@code ServiceNpcEntity} inherits {@code CitizenEntity.updateDisplayName()}, which renders the
- * personal name alone — a bank teller reads {@code "Aldric"}, never {@code "Aldric the Bank
- * Teller"}. Applying the combined form to every Service NPC would silently change every existing
- * teller's nameplate, which is a visible regression this feature was not asked to make. So
- * {@link #combine} is only reached for a role title that is actually present, and only
- * Guildmasters currently produce one.
+ * <h2>Which Service NPCs get it</h2>
+ * All of them, as of the owner request that widened it. {@code ServiceNpcEntity} once inherited
+ * {@code CitizenEntity.updateDisplayName()} — personal name alone, so a bank teller read
+ * {@code "Aldric"} and only Guildmasters produced a role title. It now renders
+ * {@code "Aldric the Bank Teller"} for any service type that publishes a display name, which
+ * makes Service NPCs consistent with the three families above rather than the exception to them.
+ *
+ * <p>{@link #combine} is still only reached for a role title that is actually present, so a type
+ * that is unknown to the registry, inactive, or nameless falls back to the personal name alone
+ * rather than inventing a label.
  */
 public final class ServiceNpcDisplayName {
     private static final String LINK = " the ";

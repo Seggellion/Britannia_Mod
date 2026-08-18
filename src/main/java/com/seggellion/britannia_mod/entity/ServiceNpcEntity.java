@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.entity;
 
 import com.seggellion.britannia_mod.service.ServiceActionDispatcher;
 import com.seggellion.britannia_mod.service.ServiceNpcDisplayName;
+import com.seggellion.britannia_mod.service.ServiceNpcRegistryCache;
+import com.seggellion.britannia_mod.service.ServiceNpcTypeDefinition;
 import com.seggellion.britannia_mod.service.banking.BankingCapability;
 import com.seggellion.britannia_mod.service.guild.GuildmasterCapability;
 import net.minecraft.core.BlockPos;
@@ -26,6 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.DifficultyInstance;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -69,35 +72,52 @@ public class ServiceNpcEntity extends CitizenEntity {
     }
 
     /**
-     * The published role for this NPC's live service type, falling back to the generic label.
-     * Only Guildmasters currently publish one (see {@link GuildmasterCapability#roleTitle}), so a
-     * bank teller still reports {@code "Service NPC"} exactly as before.
+     * The role title published by this NPC's live service type — {@code "Bank Teller"} for a
+     * {@code bank_teller}, {@code "Warrior Guildmaster"} for a Guildmaster — or empty when the
+     * type is unknown, inactive, or publishes no display name.
      *
-     * <p>Nothing reads this hook for this class today — {@link #updateDisplayName()} deliberately
-     * queries {@link GuildmasterCapability} directly rather than calling it, because it needs to
-     * distinguish "has a published role" from "fell back to the generic label", which a plain
-     * {@code String} return cannot express. Kept in sync anyway so the inherited
-     * {@code CitizenEntity} hook never reports something false about a Guildmaster.
+     * <p>Deliberately broader than {@link GuildmasterCapability#roleTitle}, which additionally
+     * requires the guild-training service key and a non-empty taught-skill list. Those extra
+     * conditions answer "is this a working Guildmaster?", a question the nameplate does not ask;
+     * every active service type has a name worth showing. Guildmasters resolve to the same
+     * string through either path, so their nameplates are unchanged.
      */
+    private Optional<String> publishedRoleTitle() {
+        if (this.serviceNpcTypeKey == null || this.serviceNpcTypeKey.isBlank()) return Optional.empty();
+        ServiceNpcTypeDefinition definition =
+                ServiceNpcRegistryCache.snapshot().serviceNpcTypes().get(this.serviceNpcTypeKey);
+        if (definition == null || !definition.active()) return Optional.empty();
+        String displayName = definition.displayName();
+        return displayName == null || displayName.isBlank() ? Optional.empty() : Optional.of(displayName);
+    }
+
+    /** The published role, falling back to the generic label when the type publishes none. */
     @Override
     protected String getRoleTitle() {
-        return GuildmasterCapability.roleTitle(this.serviceNpcTypeKey).orElse("Service NPC");
+        return publishedRoleTitle().orElse("Service NPC");
     }
 
     /**
-     * Renders {@code "Marcus the Warrior Guildmaster"} for a Guildmaster, and defers to
-     * {@link CitizenEntity#updateDisplayName()} — personal name alone — for every other Service
-     * NPC. Deliberately narrow: applying the combined form to all Service NPCs would rename every
-     * existing bank teller in the world, which this milestone has no mandate to do.
+     * Renders {@code "Drake the Bank Teller"} — personal name, the "the" link, and the role — for
+     * every Service NPC whose type publishes a display name, and defers to
+     * {@link CitizenEntity#updateDisplayName()} for one that does not.
+     *
+     * <p>This was once narrowed to Guildmasters alone, on the grounds that widening it would
+     * rename every existing bank teller in the world. It now applies to all of them by owner
+     * request: the combined form is what {@code TownPersonEntity}, {@code AbstractTraderEntity}
+     * and {@code AbstractEconomyMerchantEntity} have always rendered, so a bare personal name
+     * made Service NPCs the odd family out rather than the consistent one.
      *
      * <p>Both halves come from server-owned state ({@code personalName} from the Rails World NPC
      * record, the role from the server-side registry cache), and the result lands in vanilla's
      * synchronized custom-name field — so the client renders the full title without needing the
-     * registry, and without a new synced field for the service type key.
+     * registry, and without a new synced field for the service type key. A client that has not
+     * yet received the registry is therefore irrelevant here; a <em>server</em> that has not is
+     * why the fallback above still exists.
      */
     @Override
     protected void updateDisplayName() {
-        String roleTitle = GuildmasterCapability.roleTitle(this.serviceNpcTypeKey).orElse(null);
+        String roleTitle = publishedRoleTitle().orElse(null);
         if (roleTitle == null) {
             super.updateDisplayName();
             return;
