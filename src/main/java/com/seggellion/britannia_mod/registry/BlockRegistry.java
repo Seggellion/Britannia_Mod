@@ -41,6 +41,7 @@ import com.seggellion.britannia_mod.block.GravestoneBlock;
 import com.seggellion.britannia_mod.block.DoubleBedBlock;
 import com.seggellion.britannia_mod.block.MoongateBlock;
 import com.seggellion.britannia_mod.block.BrickFoundationBlock;
+import com.seggellion.britannia_mod.block.FlagstoneBlock;
 import com.seggellion.britannia_mod.structure.HouseSignBlock;
 import com.seggellion.britannia_mod.structure.StoreSignBlock;
 import com.seggellion.britannia_mod.block.BlankSignHolder;
@@ -1470,6 +1471,16 @@ public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_DARK_SANDSTONE
 public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_FLAGSTONE = BLOCKS.register(
     "brick_foundation_flagstone",
     () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
+);
+
+// A plain flagstone building block. Random variant on placement, decorator-tool cycling after.
+public static final DeferredHolder<Block, FlagstoneBlock> FLAGSTONE = BLOCKS.register(
+    "flagstone",
+    () -> new FlagstoneBlock(BlockBehaviour.Properties.of()
+        .mapColor(MapColor.STONE)
+        .strength(2.0f)
+        .sound(SoundType.STONE)
+        .requiresCorrectToolForDrops())
 );
 
 

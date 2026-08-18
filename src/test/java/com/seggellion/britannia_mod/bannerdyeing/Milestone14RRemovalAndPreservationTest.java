@@ -75,7 +75,9 @@ class Milestone14RRemovalAndPreservationTest {
         // of counting.
         // 904 as of 2026-08-18: the Flagstone foundation block item. Its three brick-side and
         // two flagstone-top variants are model-level only, so they add no further ids.
-        assertEquals(904, repositoryItems);
+        // 905 as of 2026-08-18: the standalone Flagstone building block item. Its two textures
+        // are a blockstate variation property, not separate ids.
+        assertEquals(905, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

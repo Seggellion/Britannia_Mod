@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,variation=0": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_0"
+    },
+    "facing=east,variation=0": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_0",
+      "y": 90
+    },
+    "facing=south,variation=0": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_0",
+      "y": 180
+    },
+    "facing=west,variation=0": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_0",
+      "y": 270
+    },
+    "facing=north,variation=1": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_1"
+    },
+    "facing=east,variation=1": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_1",
+      "y": 90
+    },
+    "facing=south,variation=1": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_1",
+      "y": 180
+    },
+    "facing=west,variation=1": {
+      "model": "britannia_mod:block/structure/flagstone/flagstone_1",
+      "y": 270
+    }
+  }
+}
