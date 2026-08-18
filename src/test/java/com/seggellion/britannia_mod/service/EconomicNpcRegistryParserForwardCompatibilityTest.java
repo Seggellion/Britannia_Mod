@@ -113,19 +113,25 @@ class EconomicNpcRegistryParserForwardCompatibilityTest {
     private static final String KNOWN_MEMBERS_ONLY = "";
 
     /**
-     * The accepted-commodity policy in the exact shape frozen at M2 — both the
-     * single-entry form and the two-entry Salvage form with the optional
-     * {@code subcategories} and {@code commodity_keys} arrays — plus an
-     * arbitrary nested member, so tolerance is proven against real nesting and
-     * not merely against a flat scalar.
+     * Members this parser has never heard of, in the shapes a registry member
+     * really takes: an array of objects carrying their own optional arrays, an
+     * object with a nested array, and a null scalar. Tolerance is therefore
+     * proven against real nesting rather than only against a flat scalar.
+     *
+     * <p>M5 note: {@code accepted_commodities} used to lead this list, in the
+     * shape frozen at M2. It was removed from here and from NOWHERE else when
+     * M5 taught the parser to READ that member, at which point it stopped being
+     * unknown and a payload carrying it stopped being expected to parse
+     * identically to one without it — that difference is now the whole point of
+     * the member. Every other case below, and the whole-snapshot equality that
+     * closes each one, is untouched. The policy's own parsing is pinned by
+     * {@code EconomicNpcAcceptedCommodityPolicyParserTest}.
      */
     private static final String WITH_FUTURE_MEMBERS = """
             ,
-            "accepted_commodities": [
-              { "category": "metal", "subcategories": ["salvage"] },
-              { "category": "metal",
-                "subcategories": ["ingots"],
-                "commodity_keys": ["copper", "silver", "gold"] }
+            "future_scoped_rules": [
+              { "scope": "metal", "narrowings": ["salvage"] },
+              { "scope": "metal", "narrowings": ["ingots"], "keys": ["copper", "silver", "gold"] }
             ],
             "some_future_member": { "arbitrary": true, "nested": [1, 2, 3] },
             "future_scalar": null

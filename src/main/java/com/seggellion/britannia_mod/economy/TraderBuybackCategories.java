@@ -4,14 +4,29 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * Which commodity categories a Trader will quote a buyback for.
+ * LEGACY FALLBACK — which commodity categories a Trader will quote a buyback for, guessed from
+ * its name.
  *
- * <p>Rails prices a sell row from the city's commodity table, and {@code npc_buy_enabled} is a
- * per-commodity-per-city flag rather than a per-NPC one — so Rails would happily quote a Fish
- * Trader for a stack of logs if the mod offered them. The legacy role handlers have always drawn
- * that line client-of-Rails side (see {@code TraderRoleHandler#collectSellableInventory}), and
- * this mirrors their selection exactly so the economic path offers a Trader the same goods the
- * legacy path always did.
+ * <p>Superseded by the Rails-owned {@code accepted_commodities} policy (Trader Commodity
+ * Authority, Milestone 5). This table is consulted from exactly one place,
+ * {@code TraderCommodityFilter.resolve}, and only when a type's registry entry carries NO
+ * {@code accepted_commodities} member at all — which means one thing: a Rails predating that
+ * project's Milestone 4. A policy that is present but EMPTY is a real "accepts nothing" and must
+ * never reach here.
+ *
+ * <p>REMOVAL CONDITION: delete this class, its test, and the {@code LEGACY_FALLBACK} branch once
+ * no supported Rails predates Trader Commodity Authority M4, at which point the member is always
+ * present and the branch is dead. That deletion is Milestone 7, and nothing else should be left
+ * depending on this by then.
+ *
+ * <p>Why it exists at all: Rails prices a sell row from the city's commodity table, and
+ * {@code npc_buy_enabled} is a per-commodity-per-city flag rather than a per-NPC one — so an
+ * older Rails would happily quote a Fish Trader for a stack of logs if the mod offered them. The
+ * legacy role handlers drew that line client-of-Rails side (see
+ * {@code TraderRoleHandler#collectSellableInventory}), and this mirrors their selection exactly.
+ * Guessing a policy from a name is precisely the arrangement the Authority project replaces:
+ * substring matching cannot express a subcategory or a commodity allow-list, and it cannot be
+ * corrected without a mod release.
  *
  * <p>Matching is by substring, on the Rails type key first ({@code fish_trader}) and the role
  * title second ("Fish Trader"), because those are the two spellings of the same identity and both

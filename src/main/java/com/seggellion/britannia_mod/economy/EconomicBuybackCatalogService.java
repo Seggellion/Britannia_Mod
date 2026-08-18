@@ -12,18 +12,19 @@ import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.service.EconomicNpcRegistryCache;
 import com.seggellion.britannia_mod.shop.Product;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -72,7 +73,11 @@ public final class EconomicBuybackCatalogService {
      * work is handed to {@code ServerHttpExecutor} and the stacks it keeps are copies — an
      * off-thread read of the inventory would race every hopper, pickup and container swap.
      */
-    record Prepared(UUID worldNpcId, String body, List<ItemStack> sources) {
+    record Prepared(UUID worldNpcId, String body, List<ItemStack> sources, @Nullable String refusal) {
+        Prepared(UUID worldNpcId, String body, List<ItemStack> sources) {
+            this(worldNpcId, body, sources, null);
+        }
+
         boolean isEmpty() {
             return sources.isEmpty();
         }
@@ -90,20 +95,35 @@ public final class EconomicBuybackCatalogService {
             return new Prepared(null, "", List.of());
         }
 
-        Set<String> categories =
-                TraderBuybackCategories.forTrader(trader.getEconomicNpcTypeKey(), role);
+        // Which commodities this trader buys is Rails' answer, synced with the type registry.
+        // Resolved once, before the inventory is walked, so the reason an offer came out narrow is
+        // a named state rather than an accident -- and so the legacy category table is reached
+        // only from the one branch that is allowed to reach it.
+        TraderCommodityFilter filter = TraderCommodityFilter.resolve(
+                EconomicNpcRegistryCache.snapshot().economicNpcTypes()
+                        .get(trader.getEconomicNpcTypeKey()),
+                trader.getEconomicNpcTypeKey(), role);
+        String refusal = filter.refusalCode();
+        if (refusal != null) {
+            // Accepts nothing, and says so as a fault. Posting the quote anyway would spend a
+            // request to be told the same thing, and returning silently would present a broken
+            // trader as a merely uninterested one.
+            return new Prepared(worldNpcId, "", List.of(), refusal);
+        }
+
         List<ItemStack> sources = new ArrayList<>();
         JsonArray items = new JsonArray();
         for (ItemStack stack : player.getInventory().items) {
             if (items.size() >= MAX_QUOTE_ITEMS) break;
             if (stack.isEmpty()) continue;
             JsonObject described = ServerEconomyService.describeSaleItem(stack);
-            // A category is the whole test. describeSaleItem leaves it off anything it cannot
-            // classify, and no stricter check belongs here: salvage and ingots are identified by
-            // material rather than commodity_key, so demanding a commodity_key would hand the
-            // Salvage Trader an empty offer -- the very bug being fixed, in a new place.
-            String category = described.has("category") ? described.get("category").getAsString() : null;
-            if (!TraderBuybackCategories.accepts(categories, category)) continue;
+            // The policy decides, on the same fields Rails resolves the row from. Nothing stricter
+            // is invented here: an item carrying no category is dropped because describeSaleItem
+            // leaves it off whatever it could not classify and Rails could not price such a row
+            // either, but a missing commodity_key is NOT a disqualification -- salvage and ingots
+            // are identified by material, so demanding one would hand the Salvage Trader an empty
+            // offer, which is the very bug being fixed, in a new place.
+            if (!filter.accepts(described)) continue;
 
             // describeSaleItem stops short of quantity because the sale supplies it from the
             // reserved stack; here the whole stack is on offer.
@@ -126,6 +146,7 @@ public final class EconomicBuybackCatalogService {
     static Quote fetch(ServerPlayer player, Prepared prepared) throws Exception {
         UUID worldNpcId = prepared.worldNpcId();
         if (worldNpcId == null) return Quote.noticeOnly(Notice.TRADER_NOT_ASSIGNED, "");
+        if (prepared.refusal() != null) return Quote.noticeOnly(prepared.refusal(), "");
         if (prepared.isEmpty()) return new Quote(List.of(), List.of());
 
         Response response = post(player, prepared.body());
@@ -183,10 +204,13 @@ public final class EconomicBuybackCatalogService {
 
         if (!(row.has("available") && row.get("available").getAsBoolean())) {
             for (String reason : reasons(row)) {
-                // "This city does not trade that commodity" is the ordinary case for anything the
-                // trader was never going to want; saying so per item would bury the reasons that
-                // are actually actionable. The blanket line already covers a wholly empty offer.
-                if (Notice.COMMODITY_NOT_FOUND.equals(reason)) continue;
+                // "This city does not trade that commodity" and "this profession never buys it"
+                // are both the ordinary case for anything the trader was never going to want;
+                // saying either per item would bury the reasons that are actually actionable, and
+                // the notice list is capped, so a flood of them would crowd the actionable ones
+                // off the wire entirely. The blanket line already covers a wholly empty offer.
+                if (Notice.COMMODITY_NOT_FOUND.equals(reason)
+                        || Notice.COMMODITY_NOT_TRADED_BY_TYPE.equals(reason)) continue;
                 notices.add(new Notice(reason, displayName));
             }
             return;

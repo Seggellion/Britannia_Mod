@@ -8,6 +8,16 @@ import java.util.Objects;
  * Milestone 5): the Economic specialization of the generalized NPC type
  * foundation. Mirrors {@link ServiceNpcTypeDefinition}'s immutable-definition
  * role without the dialogue/skill members that are Service-specific.
+ *
+ * @param acceptedCommodities which commodities this type buys, or {@code null} when the registry
+ *                            entry carried no {@code accepted_commodities} member at all. That
+ *                            absence means ONE thing — a Rails predating Trader Commodity
+ *                            Authority M4 — and it is the sole condition under which the legacy
+ *                            {@code TraderBuybackCategories} table is consulted. An EMPTY policy
+ *                            is not the same case: it is a real, deliberate "accepts nothing",
+ *                            emitted for every vendor and for the parked traders, and falling
+ *                            back on it would hand a player exactly the categories the policy
+ *                            exists to withhold.
  */
 public record EconomicNpcTypeDefinition(
         String key,
@@ -17,7 +27,8 @@ public record EconomicNpcTypeDefinition(
         @Nullable String minecraftEntityTypeKey,
         boolean active,
         boolean spawnable,
-        long definitionRevision
+        long definitionRevision,
+        @Nullable AcceptedCommodityPolicy acceptedCommodities
 ) {
     public EconomicNpcTypeDefinition {
         Objects.requireNonNull(key, "key");
@@ -30,5 +41,17 @@ public record EconomicNpcTypeDefinition(
         if (definitionRevision < 1L) {
             throw new IllegalArgumentException("definitionRevision must be >= 1");
         }
+    }
+
+    /**
+     * A definition whose accepted-commodity policy is ABSENT — the pre-M4 Rails shape. Kept so
+     * callers that predate the policy, and tests with no interest in it, state that absence
+     * explicitly rather than by passing a bare {@code null} whose meaning is easy to misread.
+     */
+    public EconomicNpcTypeDefinition(String key, String displayName, String kind, String professionKey,
+                                     @Nullable String minecraftEntityTypeKey, boolean active,
+                                     boolean spawnable, long definitionRevision) {
+        this(key, displayName, kind, professionKey, minecraftEntityTypeKey, active, spawnable,
+                definitionRevision, null);
     }
 }

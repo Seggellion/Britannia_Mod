@@ -202,30 +202,11 @@ public class ClientNetworkHandler {
 
     /**
      * The trader's own words for a Rails refusal code, or {@code null} for a code this client
-     * does not know — an unrecognised code stays silent so the blanket line still covers it,
-     * rather than leaking a protocol identifier into the chat log.
+     * keeps quiet about — see {@link com.seggellion.britannia_mod.npc.NpcNoticeVoice}, which owns
+     * the wording and the silences so both can be tested off the client thread.
      */
     private static String noticeLine(String role, ClientboundOpenNpcScreenPayload.Notice notice) {
-        String subject = notice.subject().isBlank() ? "that" : notice.subject().replace('_', ' ');
-        return switch (notice.code()) {
-            case ClientboundOpenNpcScreenPayload.Notice.TREASURY_INSUFFICIENT ->
-                    role + " says: 'I cannot afford that right now.'";
-            case ClientboundOpenNpcScreenPayload.Notice.TREASURY_DENOMINATION_UNAVAILABLE ->
-                    role + " says: 'I have no " + (notice.subject().isBlank() ? "coin" : subject)
-                            + " left to pay you with.'";
-            case ClientboundOpenNpcScreenPayload.Notice.MIXED_PAYOUT_DENOMINATIONS ->
-                    role + " says: 'I cannot settle that in mixed coin. Sell it to me in smaller lots.'";
-            case ClientboundOpenNpcScreenPayload.Notice.VALUE_BELOW_DENOMINATION_MINIMUM ->
-                    role + " says: 'That is not worth a single coin.'";
-            case ClientboundOpenNpcScreenPayload.Notice.COMMODITY_NOT_BUYABLE ->
-                    role + " says: 'I am not buying " + subject + " at present.'";
-            case ClientboundOpenNpcScreenPayload.Notice.COMMODITY_STOCK_CAP_EXCEEDED ->
-                    role + " says: 'I have all the " + subject + " I can store.'";
-            case ClientboundOpenNpcScreenPayload.Notice.TRADER_NOT_FOUND,
-                 ClientboundOpenNpcScreenPayload.Notice.TRADER_NOT_ASSIGNED ->
-                    role + " says: 'I am not open for business.'";
-            default -> null;
-        };
+        return com.seggellion.britannia_mod.npc.NpcNoticeVoice.line(role, notice.code(), notice.subject());
     }
 
     public static void handleStoreSignScreenOnClient(StoreSignScreenPayload payload, IPayloadContext context) {

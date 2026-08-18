@@ -102,6 +102,11 @@ public record ClientboundOpenNpcScreenPayload(
      */
     public record Notice(String code, String subject) {
         public static final String COMMODITY_NOT_FOUND = "commodity_not_found";
+        /**
+         * This profession never buys this commodity. Ordinary disinterest, and therefore SILENT:
+         * it is not a fault and saying it per item would bury the reasons that are actionable.
+         */
+        public static final String COMMODITY_NOT_TRADED_BY_TYPE = "commodity_not_traded_by_type";
         public static final String COMMODITY_NOT_BUYABLE = "commodity_not_buyable";
         public static final String COMMODITY_STOCK_CAP_EXCEEDED = "commodity_stock_cap_exceeded";
         public static final String MIXED_PAYOUT_DENOMINATIONS = "mixed_payout_denominations";
@@ -110,6 +115,13 @@ public record ClientboundOpenNpcScreenPayload(
         public static final String TREASURY_DENOMINATION_UNAVAILABLE = "treasury_denomination_unavailable";
         public static final String TRADER_NOT_FOUND = "trader_not_found";
         public static final String TRADER_NOT_ASSIGNED = "trader_not_assigned";
+        /**
+         * The type's accepted-commodity policy is empty or missing. SPOKEN, and spoken as a
+         * FAULT rather than as disinterest — mistaking a broken configuration for a trader who
+         * simply does not want your goods is the exact failure the Authority project exists to
+         * remove.
+         */
+        public static final String TRADER_POLICY_MISSING = "trader_policy_missing";
 
         public Notice {
             if (code == null || code.isBlank() || code.length() > 64
