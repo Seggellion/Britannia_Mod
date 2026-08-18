@@ -118,12 +118,12 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         UUID npcId = traderEntity != null ? traderEntity.getUUID() : traderNpcId;
 
         if (npcId != null) {
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     sl, npcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "despawned", "migrated_to_authoritative_post"
             );
-            LOGGER.info("Legacy trader despawned for migration source={} npc={} type={} city={} railsSync={}",
-                    sourceId, npcId, definition.npcType(), cityName, syncOk);
+            LOGGER.info("Legacy trader despawned for migration source={} npc={} type={} city={} railsSync=scheduled",
+                    sourceId, npcId, definition.npcType(), cityName);
             if (traderEntity != null) {
                 traderEntity.remove(RemovalReason.DISCARDED);
             }
@@ -144,12 +144,12 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         }
 
         if (traderNpcId != null) {
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     sl, traderNpcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "dead", "missing_or_dead"
             );
-            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type={} city={} status=dead reason=missing_or_dead success={}",
-                    sourceId, traderNpcId, definition.npcType(), cityName, syncOk);
+            LOGGER.info("Rails NPC despawn/delete scheduled source={} npc={} type={} city={} status=dead reason=missing_or_dead railsSync=scheduled",
+                    sourceId, traderNpcId, definition.npcType(), cityName);
         }
 
         spawnTrader(sl, definition);
@@ -188,7 +188,7 @@ public class TraderSpawnBlockEntity extends BlockEntity {
             traderNpcId = trader.getUUID();
             updateSnapshot(trader);
             associateWithCity(sl, trader);
-            CityDataSync.upsertLiveNpc(
+            CityDataSync.upsertLiveNpcAsync(
                     sl, trader, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "active"
             );
@@ -379,7 +379,7 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         if (sl.addFreshEntity(townPerson)) {
             townNpcIds.add(townPerson.getUUID());
             associateWithCity(sl, townPerson);
-            CityDataSync.upsertLiveNpc(
+            CityDataSync.upsertLiveNpcAsync(
                     sl, townPerson, "townsperson", cityName, sourceId.toString(),
                     worldPosition.toShortString(), "active"
             );
@@ -525,12 +525,10 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         if (npcId != null) {
             LOGGER.info("Trader removal requested source={} npc={} type={} city={} status={} reason={} liveEntityFound={}",
                     sourceId, npcId, definition.npcType(), cityName, status, reason, traderEntity != null);
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     sl, npcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), status, reason
             );
-            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type={} city={} status={} reason={} success={}",
-                    sourceId, npcId, definition.npcType(), cityName, status, reason, syncOk);
 
             if (traderEntity != null) {
                 traderEntity.remove(RemovalReason.DISCARDED);
@@ -546,12 +544,10 @@ public class TraderSpawnBlockEntity extends BlockEntity {
             Entity e = sl.getEntity(id);
             LOGGER.info("Townsperson removal requested source={} npc={} city={} status={} reason={} liveEntityFound={}",
                     sourceId, id, cityName, status, reason, e != null);
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     sl, id, "townsperson", cityName, sourceId.toString(),
                     worldPosition.toShortString(), status, reason
             );
-            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type=townsperson city={} status={} reason={} success={}",
-                    sourceId, id, cityName, status, reason, syncOk);
             if (e != null) {
                 e.remove(RemovalReason.DISCARDED);
                 LOGGER.info("Townsperson entity removed source={} npc={} pos={} reason={}",

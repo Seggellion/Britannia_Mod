@@ -133,12 +133,12 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         UUID npcId = merchantEntity != null ? merchantEntity.getUUID() : merchantNpcId;
 
         if (npcId != null) {
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     serverLevel, npcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "despawned", "migrated_to_authoritative_post"
             );
-            LOGGER.info("Legacy merchant despawned for migration source={} npc={} type={} city={} railsSync={}",
-                    sourceId, npcId, definition.npcType(), cityName, syncOk);
+            LOGGER.info("Legacy merchant despawned for migration source={} npc={} type={} city={} railsSync=scheduled",
+                    sourceId, npcId, definition.npcType(), cityName);
             if (merchantEntity != null) {
                 merchantEntity.remove(RemovalReason.DISCARDED);
             }
@@ -159,12 +159,12 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         }
 
         if (merchantNpcId != null) {
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     serverLevel, merchantNpcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "dead", "missing_or_dead"
             );
-            LOGGER.info("Rails merchant despawn/delete sent source={} npc={} type={} city={} status=dead reason=missing_or_dead success={}",
-                    sourceId, merchantNpcId, definition.npcType(), cityName, syncOk);
+            LOGGER.info("Rails merchant despawn/delete scheduled source={} npc={} type={} city={} status=dead reason=missing_or_dead railsSync=scheduled",
+                    sourceId, merchantNpcId, definition.npcType(), cityName);
         }
 
         spawnMerchant(serverLevel, definition);
@@ -199,7 +199,7 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
             merchantNpcId = merchant.getUUID();
             updateSnapshot(merchant);
             associateWithCity(serverLevel, merchant);
-            CityDataSync.upsertLiveNpc(
+            CityDataSync.upsertLiveNpcAsync(
                     serverLevel, merchant, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), "active"
             );
@@ -386,7 +386,7 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         if (serverLevel.addFreshEntity(townPerson)) {
             townNpcIds.add(townPerson.getUUID());
             associateWithCity(serverLevel, townPerson);
-            CityDataSync.upsertLiveNpc(
+            CityDataSync.upsertLiveNpcAsync(
                     serverLevel, townPerson, "townsperson", cityName, sourceId.toString(),
                     worldPosition.toShortString(), "active"
             );
@@ -516,12 +516,12 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         if (npcId != null) {
             LOGGER.info("Merchant removal requested source={} npc={} type={} city={} status={} reason={} liveEntityFound={}",
                     sourceId, npcId, definition.npcType(), cityName, status, reason, merchantEntity != null);
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     serverLevel, npcId, definition.npcType(), cityName, sourceId.toString(),
                     worldPosition.toShortString(), status, reason
             );
-            LOGGER.info("Rails merchant despawn/delete sent source={} npc={} type={} city={} status={} reason={} success={}",
-                    sourceId, npcId, definition.npcType(), cityName, status, reason, syncOk);
+            LOGGER.info("Rails merchant despawn/delete scheduled source={} npc={} type={} city={} status={} reason={} railsSync=scheduled",
+                    sourceId, npcId, definition.npcType(), cityName, status, reason);
 
             if (merchantEntity != null) {
                 merchantEntity.remove(RemovalReason.DISCARDED);
@@ -530,12 +530,10 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
 
         for (UUID id : new ArrayList<>(townNpcIds)) {
             Entity entity = serverLevel.getEntity(id);
-            boolean syncOk = CityDataSync.markLiveNpcInactive(
+            CityDataSync.markLiveNpcInactiveAsync(
                     serverLevel, id, "townsperson", cityName, sourceId.toString(),
                     worldPosition.toShortString(), status, reason
             );
-            LOGGER.info("Rails NPC despawn/delete sent source={} npc={} type=townsperson city={} status={} reason={} success={}",
-                    sourceId, id, cityName, status, reason, syncOk);
             if (entity != null) {
                 entity.remove(RemovalReason.DISCARDED);
             }

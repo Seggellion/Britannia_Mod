@@ -193,8 +193,16 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
         return false;
     }
     JsonObject payload = buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, status);
-    String npcId = npc.getUUID().toString();
+    return sendUpsertPayload(serverLevel, payload, npc.getUUID().toString(), npcType, cityName, sourceId, status);
+}
 
+/**
+ * The transport half of an upsert, over a payload that has already been captured from the world.
+ * Split out so {@link #upsertLiveNpcAsync} can run exactly this on a worker while the payload is
+ * still built on the server thread.
+ */
+private static boolean sendUpsertPayload(ServerLevel serverLevel, JsonObject payload, String npcId,
+                                         String npcType, String cityName, String sourceId, String status) {
     LOGGER.info("NPC upsert request sent npc={} type={} city={} source={} status={} endpoint=npcs/upsert",
             npcId, npcType, cityName, sourceId, status);
     ApiResult upsert = sendJson(serverLevel, "POST", Endpoint.NPC_UPSERT, Map.of(), payload);
@@ -336,6 +344,19 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
         return false;
     }
     String apiStatus = inactiveStatusForApi(status);
+    JsonObject payload = buildInactivePayload(
+            serverLevel, npcId, npcType, cityName, sourceId, spawnLocation, apiStatus, reason);
+    return sendInactivePayload(serverLevel, payload, npcId, npcType, cityName, sourceId, status, apiStatus, reason);
+}
+
+/**
+ * Captures an inactive-lifecycle payload. Unlike {@link #buildLiveNpcPayload} this reads no entity
+ * state — the caller has usually already decided the entity is gone — but {@code getGameTime()} and
+ * the credential lookup are still server-thread reads, so it stays on this side of the boundary.
+ */
+private static JsonObject buildInactivePayload(ServerLevel serverLevel, UUID npcId, String npcType, String cityName,
+                                               String sourceId, String spawnLocation, String apiStatus,
+                                               String reason) {
     JsonObject payload = new JsonObject();
     payload.addProperty("npc_id", npcId.toString());
     payload.addProperty("minecraft_uuid", npcId.toString());
@@ -350,7 +371,17 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
     payload.addProperty("shard", ServerAuthRegistry.credentials(serverLevel.getServer())
             .orElseThrow().shardName());
     payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
+    return payload;
+}
 
+/**
+ * The transport half of an inactive-lifecycle write: the status endpoint, the legacy status
+ * endpoint on failure, and — for a despawn — the delete endpoint after that. Three sequential
+ * bounded requests, which is why {@link #markLiveNpcInactiveAsync} exists.
+ */
+private static boolean sendInactivePayload(ServerLevel serverLevel, JsonObject payload, UUID npcId, String npcType,
+                                           String cityName, String sourceId, String status, String apiStatus,
+                                           String reason) {
     Endpoint endpoint = statusEndpoint(apiStatus);
     Map<String, String> pathParameters = Map.of("npc_id", npcId.toString());
     LOGGER.info("NPC inactive sync request sent npc={} type={} city={} source={} requestedStatus={} apiStatus={} reason={} endpoint={}",
@@ -384,6 +415,152 @@ public static boolean markLiveNpcInactive(ServerLevel serverLevel, UUID npcId, S
     LOGGER.warn("NPC inactive sync failure npc={} statusCode={} fallbackStatus={} body={}",
             npcId, statusSync.statusCode(), legacyStatus.statusCode(), statusSync.body());
     return false;
+}
+
+/**
+ * NPCs whose upsert is currently in flight, keyed by entity UUID. Every add is paired with a
+ * remove in the {@code whenComplete} below, on both the normal and exceptional paths, so a failed
+ * request never permanently suppresses a later one.
+ */
+private static final java.util.Set<UUID> UPSERTS_IN_FLIGHT = ConcurrentHashMap.newKeySet();
+
+/**
+ * NPCs whose inactive-lifecycle write is currently in flight, keyed by entity UUID. Same paired
+ * add/remove discipline as {@link #UPSERTS_IN_FLIGHT}.
+ */
+private static final java.util.Set<UUID> INACTIVE_SYNCS_IN_FLIGHT = ConcurrentHashMap.newKeySet();
+
+/**
+ * Schedules an NPC upsert without making the calling thread wait for Rails.
+ *
+ * <h2>Why this exists</h2>
+ * {@link #upsertLiveNpc} is synchronous, and the spawners call it from {@code serverTick()} on
+ * every spawn. One request is already bounded ({@link BoundedHttp}: 5s connect, 10s read), but the
+ * upsert retries against the legacy endpoint on a 404, so a single call can hold the server thread
+ * for two full request budgets - 30 seconds - with the world frozen behind it.
+ *
+ * <h2>Why fire-and-forget is faithful here</h2>
+ * Every {@code serverTick()} caller already discards the boolean. The entity is added to the level
+ * and recorded locally <em>before</em> the request is made, and no spawn decision, local state or
+ * lifecycle transition reads the result - its only consumer is a log line. Moving the transport
+ * off-thread and logging from the completion callback therefore preserves observable behaviour
+ * exactly. {@code ServerEconomyService} does consume the result, which is why the synchronous
+ * method remains; that caller already runs inside {@link ServerHttpExecutor}.
+ *
+ * <h2>The thread boundary</h2>
+ * {@link #buildLiveNpcPayload} reads live, mutable Minecraft state - UUID, personal name, health,
+ * gender, trader role, outfit, plus the level's game time - so the payload is captured here on the
+ * calling server thread and only the transport crosses over. Nothing hops back afterwards: an
+ * upsert mutates no world state.
+ */
+public static void upsertLiveNpcAsync(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
+                                      String sourceId, String spawnLocation, String status) {
+    if (ServerAuthRegistry.credentials(serverLevel.getServer()).isEmpty()) {
+        LOGGER.warn("{} skipped: no server credentials configured", "NPC upsert sync");
+        return;
+    }
+
+    UUID npcId = npc.getUUID();
+
+    // An upsert is idempotent and re-sent on the next spawn cadence anyway, so if this NPC's
+    // previous one has not come back yet, skipping is strictly better than queueing behind it.
+    if (!UPSERTS_IN_FLIGHT.add(npcId)) {
+        LOGGER.debug("NPC upsert skipped, previous still in flight npc={} city={}", npcId, cityName);
+        return;
+    }
+
+    boolean submitted = false;
+    try {
+        // Captured on the server thread, before anything reaches the executor.
+        JsonObject payload =
+                buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, status);
+
+        ServerHttpExecutor
+                .submit(serverLevel.getServer(),
+                        () -> sendUpsertPayload(serverLevel, payload, npcId.toString(), npcType, cityName,
+                                sourceId, status))
+                .whenComplete((ok, failure) -> {
+                    UPSERTS_IN_FLIGHT.remove(npcId);
+                    if (failure != null) {
+                        // Covers queue saturation (ServerHttpExecutor rejects rather than growing a
+                        // backlog) and the overall-timeout cut-off. The next spawn cadence retries on
+                        // its own; there is deliberately no immediate retry here.
+                        LOGGER.warn("NPC upsert did not complete npc={} type={} city={} source={} reason={}",
+                                npcId, npcType, cityName, sourceId, failure.getClass().getSimpleName());
+                    } else {
+                        LOGGER.info("NPC upsert sync completed npc={} type={} city={} source={} success={}",
+                                npcId, npcType, cityName, sourceId, Boolean.TRUE.equals(ok));
+                    }
+                });
+        submitted = true;
+    } finally {
+        // Only false if payload construction threw before the future existed, in which case
+        // whenComplete never runs and the guard would otherwise latch forever.
+        if (!submitted) UPSERTS_IN_FLIGHT.remove(npcId);
+    }
+}
+
+/**
+ * Schedules an inactive-lifecycle write without making the calling thread wait for Rails.
+ *
+ * <h2>Why this exists</h2>
+ * This is the worst of the lifecycle calls to run synchronously. {@link #markLiveNpcInactive} tries
+ * the status endpoint, then the legacy status endpoint, then - for a despawn - the delete endpoint:
+ * three sequential bounded requests, up to 45 seconds on one call. Its callers make it worse by
+ * looping it over every tracked townsperson, and reach it not only from {@code serverTick()} but
+ * from the spawner-config and resync packet handlers, where a single player interaction could
+ * otherwise stall the whole server well past the vanilla client timeout.
+ *
+ * <h2>Why fire-and-forget is faithful here</h2>
+ * As with {@link #upsertLiveNpcAsync}, every spawner caller uses the boolean solely for a log line.
+ * The entity removal, the id bookkeeping and the {@code setChanged()} that follow are unconditional
+ * - no caller waits for Rails to confirm before mutating Minecraft state. The write is not
+ * discarded: it is still sent, still retried through the same fallback chain, and its outcome is
+ * still logged, just from the completion callback.
+ *
+ * <h2>The thread boundary</h2>
+ * The payload is pure immutable data plus {@code getGameTime()}, all captured here; the caller is
+ * free to remove the entity the instant this returns.
+ */
+public static void markLiveNpcInactiveAsync(ServerLevel serverLevel, UUID npcId, String npcType, String cityName,
+                                            String sourceId, String spawnLocation, String status, String reason) {
+    if (ServerAuthRegistry.credentials(serverLevel.getServer()).isEmpty()) {
+        LOGGER.warn("{} skipped: no server credentials configured", "NPC inactive sync");
+        return;
+    }
+
+    // Unlike a heartbeat, this is a terminal transition rather than a periodic sample, so a
+    // duplicate is wasteful rather than merely redundant - suppress while one is outstanding.
+    if (!INACTIVE_SYNCS_IN_FLIGHT.add(npcId)) {
+        LOGGER.debug("NPC inactive sync skipped, previous still in flight npc={} city={}", npcId, cityName);
+        return;
+    }
+
+    boolean submitted = false;
+    try {
+        String apiStatus = inactiveStatusForApi(status);
+        // Captured on the server thread, before anything reaches the executor.
+        JsonObject payload = buildInactivePayload(
+                serverLevel, npcId, npcType, cityName, sourceId, spawnLocation, apiStatus, reason);
+
+        ServerHttpExecutor
+                .submit(serverLevel.getServer(),
+                        () -> sendInactivePayload(serverLevel, payload, npcId, npcType, cityName, sourceId,
+                                status, apiStatus, reason))
+                .whenComplete((ok, failure) -> {
+                    INACTIVE_SYNCS_IN_FLIGHT.remove(npcId);
+                    if (failure != null) {
+                        LOGGER.warn("NPC inactive sync did not complete npc={} type={} city={} status={} reason={} cause={}",
+                                npcId, npcType, cityName, status, reason, failure.getClass().getSimpleName());
+                    } else {
+                        LOGGER.info("Rails NPC despawn/delete sent npc={} type={} city={} source={} status={} reason={} success={}",
+                                npcId, npcType, cityName, sourceId, status, reason, Boolean.TRUE.equals(ok));
+                    }
+                });
+        submitted = true;
+    } finally {
+        if (!submitted) INACTIVE_SYNCS_IN_FLIGHT.remove(npcId);
+    }
 }
 
 private static String inactiveStatusForApi(String status) {

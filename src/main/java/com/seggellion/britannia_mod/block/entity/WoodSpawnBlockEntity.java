@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.entity.EntityWoodMerchant;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.network.CityDataSync;
+import com.seggellion.britannia_mod.network.CityFoodSupplyCache;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import com.seggellion.britannia_mod.registry.EntityRegistry;
 import com.seggellion.britannia_mod.util.NameLoader;
@@ -58,7 +59,13 @@ public class WoodSpawnBlockEntity extends BlockEntity implements HasCityName {
         spawnCooldown = MAX_COOLDOWN;
         if (!(level instanceof ServerLevel serverLevel)) return;
 
-        double currentFood = CityDataSync.fetchFoodSupply(serverLevel, cityName);
+        // Was a blocking Rails GET on the thread that runs the world. The reading still gates
+        // spawning exactly as before; it is now served from the last answer Rails gave while the
+        // next one is fetched behind it. Empty means Rails has not answered for this city yet, and
+        // the cycle is skipped rather than acted on -- a missing reading is not a reading of zero.
+        java.util.OptionalDouble foodSupply = CityFoodSupplyCache.poll(serverLevel, cityName);
+        if (foodSupply.isEmpty()) return;
+        double currentFood = foodSupply.getAsDouble();
         long woodMerchantCount = associatedNpcs.stream()
                 .map(serverLevel::getEntity)
                 .filter(e -> e instanceof EntityWoodMerchant)
