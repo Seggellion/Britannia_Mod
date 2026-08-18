@@ -16,6 +16,7 @@ import com.seggellion.britannia_mod.server.auth.RailsRequestAuthenticator;
 import com.seggellion.britannia_mod.server.auth.ServerAuthRegistry;
 import com.seggellion.britannia_mod.server.http.BoundedHttp;
 import com.seggellion.britannia_mod.server.http.RailsApiUrlResolver.Endpoint;
+import com.seggellion.britannia_mod.server.http.ServerHttpExecutor;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -216,6 +218,88 @@ public static boolean upsertLiveNpc(ServerLevel serverLevel, Entity npc, String 
 
     LOGGER.warn("NPC upsert failure npc={} status={} body={}", npcId, upsert.statusCode(), upsert.body());
     return false;
+}
+
+/**
+ * NPCs whose heartbeat request is currently in flight, keyed by entity UUID.
+ *
+ * <p>Every add is paired with a remove in the {@code whenComplete} below, on both the normal and
+ * exceptional paths, so this never accumulates entries for despawned NPCs, and a failed request
+ * never permanently suppresses later heartbeats. Its size is bounded by what the executor can
+ * hold at once, not by how many NPCs exist in the world.
+ */
+private static final java.util.Set<UUID> HEARTBEATS_IN_FLIGHT = ConcurrentHashMap.newKeySet();
+
+/**
+ * Schedules a heartbeat without making the calling thread wait for Rails.
+ *
+ * <h2>Why this exists</h2>
+ * {@link #heartbeatLiveNpc} is synchronous and its callers are block-entity {@code serverTick()}
+ * methods. Every request is already bounded ({@link BoundedHttp}: 5s connect, 10s read), but a
+ * bounded wait is still a wait. The spawners share one 600-tick cadence, so a slow Rails turned
+ * N spawners into N sequential multi-second stalls inside a single tick. Bounding the request
+ * capped the damage per call; it did not stop the tick thread paying for it.
+ *
+ * <h2>The thread boundary</h2>
+ * {@link #buildLiveNpcPayload} reads live, mutable Minecraft state — the entity's UUID, personal
+ * name, health, gender, trader role, citizen outfit and appearance, plus the level's game time.
+ * None of that may be touched from a worker, so the payload is built here on the calling server
+ * thread and only the transport crosses over; the worker receives a finished {@link JsonObject}.
+ *
+ * <p>Nothing hops back to the server thread afterwards because a heartbeat mutates no world
+ * state — its result is a diagnostic log and nothing more. A completion callback purely for
+ * symmetry would be inventing work.
+ */
+public static void heartbeatLiveNpcAsync(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
+                                         String sourceId, String spawnLocation) {
+    if (ServerAuthRegistry.credentials(serverLevel.getServer()).isEmpty()) {
+        LOGGER.warn("{} skipped: no server credentials configured", "NPC heartbeat sync");
+        return;
+    }
+
+    UUID npcId = npc.getUUID();
+
+    // A heartbeat is periodic and replaceable: if this NPC's previous one has not come back yet,
+    // skipping the interval is strictly better than queueing a second one behind it.
+    if (!HEARTBEATS_IN_FLIGHT.add(npcId)) {
+        LOGGER.debug("NPC heartbeat skipped, previous still in flight npc={} city={}", npcId, cityName);
+        return;
+    }
+
+    boolean submitted = false;
+    try {
+        // Captured on the server thread, before anything reaches the executor.
+        JsonObject payload =
+                buildLiveNpcPayload(serverLevel, npc, npcType, cityName, sourceId, spawnLocation, "active");
+        payload.addProperty("sync_action", "heartbeat");
+        payload.addProperty("last_seen_game_time", serverLevel.getGameTime());
+        Map<String, String> pathParams = Map.of("npc_id", npcId.toString());
+
+        ServerHttpExecutor
+                .submit(serverLevel.getServer(),
+                        () -> sendJson(serverLevel, "POST", Endpoint.NPC_HEARTBEAT, pathParams, payload))
+                .whenComplete((result, failure) -> {
+                    HEARTBEATS_IN_FLIGHT.remove(npcId);
+                    if (failure != null) {
+                        // Covers queue saturation (ServerHttpExecutor rejects rather than growing a
+                        // backlog) and the overall-timeout cut-off. Debug rather than warn: this is
+                        // expected while Rails is slow, it self-corrects, and the next interval retries
+                        // on its own — no immediate retry here, by design.
+                        LOGGER.debug("NPC heartbeat did not complete npc={} city={} reason={}",
+                                npcId, cityName, failure.getClass().getSimpleName());
+                    } else if (result != null && result.isSuccess()) {
+                        LOGGER.debug("NPC heartbeat success npc={} city={} source={}", npcId, cityName, sourceId);
+                    } else {
+                        LOGGER.debug("NPC heartbeat failure npc={} status={}",
+                                npcId, result == null ? -1 : result.statusCode());
+                    }
+                });
+        submitted = true;
+    } finally {
+        // Only false if payload construction threw before the future existed, in which case
+        // whenComplete never runs and the guard would otherwise latch forever.
+        if (!submitted) HEARTBEATS_IN_FLIGHT.remove(npcId);
+    }
 }
 
 public static boolean heartbeatLiveNpc(ServerLevel serverLevel, Entity npc, String npcType, String cityName,

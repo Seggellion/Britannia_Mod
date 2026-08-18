@@ -470,7 +470,7 @@ public class MerchantSpawnBlockEntity extends BlockEntity {
         MerchantDefinition definition = definitionFor(merchantType);
         Entity live = merchantNpcId == null ? null : serverLevel.getEntity(merchantNpcId);
         if (live != null && live.isAlive()) {
-            CityDataSync.heartbeatLiveNpc(
+            CityDataSync.heartbeatLiveNpcAsync(
                     serverLevel, live, definition.npcType(), cityName, sourceId.toString(), worldPosition.toShortString()
             );
         }

@@ -477,7 +477,7 @@ public class TraderSpawnBlockEntity extends BlockEntity {
         TraderDefinition definition = definitionFor(traderType);
         Entity live = traderNpcId == null ? null : sl.getEntity(traderNpcId);
         if (live != null && live.isAlive()) {
-            CityDataSync.heartbeatLiveNpc(
+            CityDataSync.heartbeatLiveNpcAsync(
                     sl, live, definition.npcType(), cityName, sourceId.toString(), worldPosition.toShortString()
             );
         }
