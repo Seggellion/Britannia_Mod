@@ -1,0 +1,6 @@
+{
+  "parent": "britannia_mod:block/world/cube_all_m90",
+  "textures": {
+    "all": "britannia_mod:block/world/sand1"
+  }
+}
