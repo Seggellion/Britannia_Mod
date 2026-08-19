@@ -95,7 +95,8 @@ import com.seggellion.britannia_mod.block.ThreeQuarterBlock;
 import com.seggellion.britannia_mod.block.HouseLotBlock;
 import com.seggellion.britannia_mod.block.TopOnlySlabBlock;
 import com.seggellion.britannia_mod.block.WindowCollisionBlock;
-import com.seggellion.britannia_mod.block.Window2x3Block;
+import com.seggellion.britannia_mod.block.MultiCellWindowBlock;
+import com.seggellion.britannia_mod.block.WindowFootprint;
 import com.seggellion.britannia_mod.block.StoneFloorBlock;
 import com.seggellion.britannia_mod.block.CustomStoneStairsBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
@@ -1531,53 +1532,58 @@ public static final DeferredHolder<Block, ThinWall> WINDOW_1X1 =
         )
     );
 
-public static final DeferredHolder<Block, ThinWall> WINDOW_1X2 =
+public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_1X2 =
     BLOCKS.register("window_1x2", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(0, 0, 0, 1)
         )
     );
 
-    public static final DeferredHolder<Block, ThinWall> WINDOW_COBBLESTONE_1X2 =
+    public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_COBBLESTONE_1X2 =
     BLOCKS.register("window_cobblestone_1x2", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(0, 0, 0, 1)
         )
     );
 
-public static final DeferredHolder<Block, ThinWall> WINDOW_1X3 =
+public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_1X3 =
     BLOCKS.register("window_1x3", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(0, 0, -1, 1)
         )
     );
 
-public static final DeferredHolder<Block, ThinWall> WINDOW_2X2 =
+public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_2X2 =
     BLOCKS.register("window_2x2", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(-1, 0, 0, 1)
         )
     );
 
-public static final DeferredHolder<Block, Window2x3Block> WINDOW_2X3 =
+public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_2X3 =
     BLOCKS.register("window_2x3", 
-        () -> new Window2x3Block(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(-1, 1, 0, 1)
         )
     );
 
@@ -1594,45 +1600,49 @@ public static final DeferredHolder<Block, Window2x3Block> WINDOW_2X3 =
     );
 
 
-    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_1X2 =
+    public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_CROSS_1X2 =
     BLOCKS.register("window_cross_1x2", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(0, 0, 0, 1)
         )
     );
 
 
-    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_1X3 =
+    public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_CROSS_1X3 =
     BLOCKS.register("window_cross_1x3", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.aligned(0, 0, -1, 1)
         )
     );
     
-    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_2X2 =
+    public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_CROSS_2X2 =
     BLOCKS.register("window_cross_2x2", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.halfDropped(-1, 0)
         )
     );
 
     
-    public static final DeferredHolder<Block, ThinWall> WINDOW_CROSS_2X3 =
+    public static final DeferredHolder<Block, MultiCellWindowBlock> WINDOW_CROSS_2X3 =
     BLOCKS.register("window_cross_2x3", 
-        () -> new ThinWall(BlockBehaviour.Properties.of()
+        () -> new MultiCellWindowBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.WOOD)
             .strength(1.0f)
             .sound(SoundType.WOOD)
-            .noOcclusion()
+            .noOcclusion(),
+            WindowFootprint.halfDropped(-1, 1)
         )
     );
 
@@ -2324,8 +2334,11 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DoubleWallBlock> ORNATE_SANDSTONE_WALL = BLOCKS.register("ornate_sandstone_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> REGULAR_SANDSTONE_WALL = BLOCKS.register("regular_sandstone_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_BLOCK_WALL = BLOCKS.register("sandstone_block_wall", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
-    public static final DeferredHolder<Block, SandstoneWindowBlock> ORNATE_SANDSTONE_WINDOW = BLOCKS.register("ornate_sandstone_window", () -> new SandstoneWindowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
-    public static final DeferredHolder<Block, SandstoneWindowBlock> SANDSTONE_WINDOW = BLOCKS.register("sandstone_window", () -> new SandstoneWindowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, SandstoneWindowBlock> ORNATE_SANDSTONE_WINDOW = BLOCKS.register("ornate_sandstone_window", () -> new SandstoneWindowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion(), SandstoneWindowBlock.JUNCTION_OPENING));
+    public static final DeferredHolder<Block, SandstoneWindowBlock> SANDSTONE_WINDOW = BLOCKS.register("sandstone_window", () -> new SandstoneWindowBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion(),
+        // sandstone_window_corner is the one model in the family with a six pixel sill and
+        // its lintel at 26; everything else in both sandstone windows uses four and 28.
+        new SandstoneWindowBlock.Opening(6.0D, 26.0D)));
     public static final DeferredHolder<Block, DoubleWallBlock> SANDSTONE_POST = BLOCKS.register("sandstone_post", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> ORNATE_SANDSTONE_POST = BLOCKS.register("ornate_sandstone_post", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, SandstoneBattlementBlock> SANDSTONE_BATTLEMENT = BLOCKS.register("sandstone_battlement", () -> new SandstoneBattlementBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));

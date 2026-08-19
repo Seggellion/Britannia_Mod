@@ -1,96 +1,102 @@
 package com.seggellion.britannia_mod.block;
 
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.material.FluidState;
 
+import java.util.EnumMap;
+import java.util.Map;
 
+/**
+ * The invisible half of an oversized window: one cell of frame and glass that a
+ * {@link MultiCellWindowBlock} draws but cannot collide with itself.
+ *
+ * <p>It renders nothing and drops nothing. Its shape is the same edge slab a {@link ThinWall}
+ * window gives its own cell, trimmed to the {@link WindowCollisionSpan} of the cell it stands in,
+ * and rotated with {@link #FACING} through {@link HorizontalShape} - the same rotation helper every
+ * other wall family here uses, so a helper can never drift out of step with the window it backs.
+ *
+ * <p>It is selectable and breakable on purpose. The player sees window art in this cell, so mining
+ * it has to do what mining the window does: {@link #playerWillDestroy} forwards the break to the
+ * owning window, which then clears its remaining helpers. A helper that has lost its owner - to an
+ * explosion, a {@code /setblock}, or a world edit - breaks on its own rather than standing there as
+ * a permanent invisible wall, which is what the previous unbreakable version left behind.
+ */
 public class WindowCollisionBlock extends Block {
 
-    private static final VoxelShape COLLISION_SHAPE = Block.box(0, 0, 0, 16, 16, 5.33);
+    public static final DirectionProperty FACING =
+        DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
+    public static final EnumProperty<WindowCollisionSpan> SPAN =
+        EnumProperty.create("span", WindowCollisionSpan.class);
 
-    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
+    /**
+     * Depth of the slab, matching {@link ThinWall}'s own window cells exactly. The art is 6 deep;
+     * the extra two thirds of a pixel are left off so a window's own cell and its helper cells
+     * present one flat face to walk into instead of a step.
+     */
+    private static final double DEPTH = 5.33D;
 
-    // Define the base shape (north-facing)
-    private static final VoxelShape NORTH_SHAPE = Block.box(0, 0, 0, 16, 16, 5.33);
+    private static final Map<WindowCollisionSpan, VoxelShape> NORTH_SHAPES =
+        new EnumMap<>(WindowCollisionSpan.class);
 
+    static {
+        for (WindowCollisionSpan span : WindowCollisionSpan.values()) {
+            NORTH_SHAPES.put(span, Block.box(0.0D, span.minY(), 0.0D, 16.0D, span.maxY(), DEPTH));
+        }
+    }
 
     public WindowCollisionBlock() {
         super(BlockBehaviour.Properties.of()
             .noOcclusion()
-            .strength(-1.0F, 3600000.0F)
+            .strength(1.0F)
+            .sound(SoundType.WOOD)
             .noLootTable()
         );
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(FACING, Direction.NORTH)
+            .setValue(SPAN, WindowCollisionSpan.FULL));
     }
 
-   @Override
+    /** The helper state a window wants in a given cell. */
+    public static BlockState stateFor(Direction facing, WindowCollisionSpan span) {
+        return BlockRegistry.WINDOW_COLLISION.get()
+            .defaultBlockState()
+            .setValue(FACING, facing)
+            .setValue(SPAN, span);
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
-    }   
+        builder.add(FACING, SPAN);
+    }
+
+    /* ─── shape ──────────────────────────────────────────────── */
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return getCollisionShape(state, level, pos, context);
+        return HorizontalShape.rotateFromNorth(
+            NORTH_SHAPES.get(state.getValue(SPAN)), state.getValue(FACING));
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return switch (state.getValue(FACING)) {
-            case NORTH -> NORTH_SHAPE;
-            case SOUTH -> rotateShape(NORTH_SHAPE, Rotation.CLOCKWISE_180);
-            case WEST  -> rotateShape(NORTH_SHAPE, Rotation.COUNTERCLOCKWISE_90);
-            case EAST  -> rotateShape(NORTH_SHAPE, Rotation.CLOCKWISE_90);
-            default    -> NORTH_SHAPE;
-        };
-    }
-
-
-private static VoxelShape rotateShape(VoxelShape shape, Rotation rotation) {
-    VoxelShape[] buffer = new VoxelShape[]{shape, Shapes.empty()};
-
-    for (AABB box : shape.toAabbs()) {
-        AABB rotated = switch (rotation) {
-            case NONE -> box;
-            case CLOCKWISE_90 -> new AABB(
-                    1 - box.maxZ, box.minY, box.minX,
-                    1 - box.minZ, box.maxY, box.maxX
-            );
-            case CLOCKWISE_180 -> new AABB(
-                    1 - box.maxX, box.minY, 1 - box.maxZ,
-                    1 - box.minX, box.maxY, 1 - box.minZ
-            );
-            case COUNTERCLOCKWISE_90 -> new AABB(
-                    box.minZ, box.minY, 1 - box.maxX,
-                    box.maxZ, box.maxY, 1 - box.minX
-            );
-        };
-
-        buffer[1] = Shapes.or(buffer[1], Shapes.create(rotated));
-    }
-
-    return buffer[1];
-}
-
-
-    @Override
-    public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
+                                        CollisionContext context) {
+        return getShape(state, level, pos, context);
     }
 
     @Override
@@ -99,41 +105,27 @@ private static VoxelShape rotateShape(VoxelShape shape, Rotation rotation) {
     }
 
     @Override
-    public void attack(BlockState state, Level level, BlockPos pos, Player player) {
-        // No-op
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.INVISIBLE;
     }
 
-    @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
-        // Optional: auto-remove if orphaned
-    }
+    /* ─── breaking ───────────────────────────────────────────── */
 
     @Override
-    public boolean canHarvestBlock(BlockState state, BlockGetter level, BlockPos pos, Player player) {
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide) {
+            BlockPos owner = MultiCellWindowBlock.ownerOf(level, pos, null);
+            if (owner != null) {
+                // Break the window itself, which clears this helper and its siblings on the way out.
+                level.destroyBlock(owner, !player.isCreative(), player);
+            }
+        }
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    /** A helper never occupies a cell a player could build into while its window still stands. */
+    @Override
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
         return false;
     }
-
-@Override
-public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-    // Return the current block state unchanged, effectively making it unbreakable
-    return state;
-}
-
-@Override
-public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
-    return false;
-}
-
-@Override
-public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
-    return 0F; // Unbreakable
-}
-
-@Override
-public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-    return false; // Prevents destruction
-}
-
-
-
 }

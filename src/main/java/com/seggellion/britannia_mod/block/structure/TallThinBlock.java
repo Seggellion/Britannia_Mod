@@ -41,10 +41,17 @@ public class TallThinBlock extends Block {
 
     /* ─── voxel shapes ( 16 px per block, stacked ) ──────────── */
 
-    private static final VoxelShape NORTH_SHAPE = Block.box(0, 0, 0, 16, 16, 5.33);
-    private static final VoxelShape SOUTH_SHAPE = Block.box(0, 0, 10.66, 16, 16, 16);
-    private static final VoxelShape WEST_SHAPE  = Block.box(0, 0, 0, 5.33, 16, 16);
-    private static final VoxelShape EAST_SHAPE  = Block.box(10.66, 0, 0, 16, 16, 16);
+    /**
+     * The slab this family's art draws, measured off {@code dark_stone_window_bottom.json} and
+     * {@code _top.json}: a five pixel deep wall panel with a six pixel wide light in the middle.
+     * The light is too narrow for a player to fit through, so collision keeps the panel solid
+     * rather than modelling the opening - a simplification, but the only one here, and it is the
+     * shape the block already presented.
+     */
+    private static final VoxelShape PANEL_NORTH = Block.box(0, 0, 0, 16, 16, 5);
+    private static final VoxelShape PANEL_SOUTH = Block.box(0, 0, 11, 16, 16, 16);
+    private static final VoxelShape PANEL_WEST  = Block.box(0, 0, 0, 5, 16, 16);
+    private static final VoxelShape PANEL_EAST  = Block.box(11, 0, 0, 16, 16, 16);
     private static final VoxelShape FULL_SHAPE  = Block.box(0, 0, 0, 16, 16, 16);
 
     /* ─── constructor & defaults ─────────────────────────────── */
@@ -154,15 +161,38 @@ public class TallThinBlock extends Block {
         return super.skipRendering(state, adjacentState, side);
     }
 
+    /**
+     * Which edge of the block this family's art actually lands on for a given {@link #FACING}.
+     *
+     * <p>It is not the facing edge, and it is not consistently the opposite one either.
+     * {@code dark_stone_window} - the only block built on this class - is authored on the far edge
+     * from its facing (the panel sits at {@code z 11..16} in the unrotated model), and its
+     * blockstate turns east and west the opposite way round from every other wall family here
+     * ({@code facing=east} uses {@code "y": 270}, {@code facing=west} uses {@code "y": 90}). The two
+     * inversions cancel on the X axis and compound on the Z axis, so the art comes out on the far
+     * edge for north and south and on the near edge for east and west.
+     *
+     * <p>Collision used to assume the near edge for all four, which put the panel a whole block
+     * depth away from the art on the north and south facings: the player walked through the window
+     * they could see and stopped against nothing. This mapping is what the resources actually draw,
+     * and {@code WindowCollisionContractTest} re-derives it from the blockstate and model JSON so it
+     * cannot silently drift. Re-authoring the art to the house convention - panel on the near edge,
+     * {@code facing=east} on {@code "y": 90} - would collapse this to the identity, but that moves
+     * the visible wall in every build that already uses the block, so it is left as an art decision.
+     */
+    private static VoxelShape panelFor(Direction facing) {
+        return switch (facing) {
+            case NORTH -> PANEL_SOUTH;
+            case SOUTH -> PANEL_NORTH;
+            case EAST  -> PANEL_EAST;
+            case WEST  -> PANEL_WEST;
+            default    -> PANEL_SOUTH;
+        };
+    }
+
     @Override
     public VoxelShape getShape(BlockState s, BlockGetter w, BlockPos p, CollisionContext c) {
-        return s.getValue(FILLED) ? FULL_SHAPE : switch (s.getValue(FACING)) {
-            case NORTH -> NORTH_SHAPE;
-            case SOUTH -> SOUTH_SHAPE;
-            case WEST  -> WEST_SHAPE;
-            case EAST  -> EAST_SHAPE;
-            default    -> NORTH_SHAPE;
-        };
+        return s.getValue(FILLED) ? FULL_SHAPE : panelFor(s.getValue(FACING));
     }
 
     @Override

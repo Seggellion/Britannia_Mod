@@ -3,7 +3,7 @@
       "facing=north": { "model": "britannia_mod:block/structure/windows/window_cross_1x3" },
       "facing=east":  { "model": "britannia_mod:block/structure/windows/window_cross_1x3", "y": 90 },
       "facing=south": { "model": "britannia_mod:block/structure/windows/window_cross_1x3", "y": 180 },
-      "facing=west":  { "model": "britannia_mod:block/structure/windows/window_cross_1x4", "y": 270 }
+      "facing=west":  { "model": "britannia_mod:block/structure/windows/window_cross_1x3", "y": 270 }
     }
   }
   
