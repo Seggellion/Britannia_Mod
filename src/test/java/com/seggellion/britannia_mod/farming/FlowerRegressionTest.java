@@ -44,8 +44,10 @@ class FlowerRegressionTest {
                         CropSupportRequirement.NONE, CropHarvestTool.ROOT_SHOVEL, 0, false, false, false),
                 "wheat", new ExpectedCrop(CropLifecycle.ANNUAL, CropGrowthHabit.GROUND,
                         CropSupportRequirement.NONE, CropHarvestTool.GRAIN_BLADE, 0, false, false, false),
+                // Grapes are a tall crop: the arbor occupies three blocks and reserves the two above
+                // its plot, even though it renders as a single model from the plot itself.
                 "grapes", new ExpectedCrop(CropLifecycle.PERENNIAL, CropGrowthHabit.GRAPE_VINE,
-                        CropSupportRequirement.NONE, CropHarvestTool.BARE_HAND, 4, true, false, false)
+                        CropSupportRequirement.NONE, CropHarvestTool.SCISSORS, 4, true, true, false)
         );
 
         expected.forEach((id, contract) -> {

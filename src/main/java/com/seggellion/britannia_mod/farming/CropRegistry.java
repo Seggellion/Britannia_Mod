@@ -161,7 +161,7 @@ public final class CropRegistry {
         crop("parsnip", 15.0f, "Parsnip", ItemRegistry.PARSNIP_SEEDS::get, ItemRegistry.PARSNIP::get, 1, 5, VANILLA_STYLE_AGE_COUNT, 0.45f, 0.20f, 0.25f, 0.45f, 0.55f, climate(FarmingClimate.TEMPERATE, FarmingClimate.ICE), weights(1.10f, 0.70f, 0.80f, 1.00f), yields(1, 3), 0.30f, 0.95f, "Cold-tolerant root crop; age 0..7 mapped across five visual assets.");
         crop("yam", 35.0f, "Yam", ItemRegistry.YAM_SEEDS::get, ItemRegistry.YAM::get, 2, 6, VANILLA_STYLE_AGE_COUNT, 0.50f, 0.25f, 0.30f, 0.55f, 0.60f, climate(FarmingClimate.TROPICAL, FarmingClimate.TEMPERATE), weights(1.15f, 0.75f, 0.85f, 1.10f), yields(1, 3), 0.25f, 1.10f, "Warm-weather one-block annual root crop; age 0..7 mapped across five visual assets.");
         crop("rutabaga", 35.0f, "Rutabaga", ItemRegistry.RUTABAGA_SEEDS::get, ItemRegistry.RUTABAGA::get, 1, 6, VANILLA_STYLE_AGE_COUNT, 0.50f, 0.20f, 0.25f, 0.45f, 0.55f, climate(FarmingClimate.TEMPERATE, FarmingClimate.ICE), weights(1.20f, 0.70f, 0.80f, 1.00f), yields(1, 3), 0.30f, 0.90f, "Durable cool-weather root crop; age 0..7 mapped across five visual assets.");
-        crop("grapes", 80.0f, "Grapes", ItemRegistry.GRAPE_SEEDS::get, ItemRegistry.GRAPES::get, 3, 8, VANILLA_STYLE_AGE_COUNT, 0.65f, 0.65f, 0.45f, 0.40f, 0.60f, climate(FarmingClimate.TEMPERATE), weights(1.45f, 1.80f, 1.05f, 0.80f), false, false, false, 1, false, yields(8, 12), 0.20f, 1.50f, "Perennial plant-style grape crop; variety-aware, no longer requires old grape vine/lattice blocks.");
+        crop("grapes", 80.0f, "Grapes", ItemRegistry.GRAPE_SEEDS::get, ItemRegistry.GRAPES::get, 3, 8, VANILLA_STYLE_AGE_COUNT, 0.65f, 0.65f, 0.45f, 0.40f, 0.60f, climate(FarmingClimate.TEMPERATE), weights(1.45f, 1.80f, 1.05f, 0.80f), false, false, true, 4, false, yields(8, 12), 0.20f, 1.50f, "Perennial three-block grape arbor; variety-aware, planted only into Britannia farming plots.");
     }
 
     private static void crop(String id, float minimumFarmingSkill, String name, Supplier<? extends Item> seed, Supplier<? extends Item> harvest, int tier,
@@ -455,7 +455,7 @@ public final class CropRegistry {
             case "corn", "hops", "broccoli", "cauliflower", "lettuce", "rhubarb", "cabbage",
                     "squash", "yellow_onion", "green_onion", "ginseng", "turnips",
                     "celery", "tobacco", "radish", "parsnip", "rutabaga",
-                    "pumpkin", "watermelon", "snow_peas", "cotton", "hemp" -> true;
+                    "pumpkin", "watermelon", "snow_peas", "cotton", "hemp", "grapes" -> true;
             default -> false;
         };
     }
@@ -477,10 +477,12 @@ public final class CropRegistry {
     }
 
     private static boolean bareHandHarvestCrop(String id) {
+        // Grapes are deliberately absent: bunches are cut from the arbor with scissors, as they were
+        // on the vine this crop replaced.
         return switch (id) {
             case "pineapple", "strawberry", "blueberry", "raspberry", "cranberry",
                     "blackberry", "huckleberry", "mulberry", "elderberry",
-                    "grapes", "banana" -> true;
+                    "banana" -> true;
             default -> false;
         };
     }

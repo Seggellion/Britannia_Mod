@@ -58,7 +58,8 @@ public class FarmingBlockEntityRenderer implements BlockEntityRenderer<FarmingBl
 
         poseStack.pushPose();
         poseStack.translate(0.5D, renderYOffset(crop, nonTallRenderYOffset), 0.5D);
-        poseStack.mulPose(Axis.YP.rotationDegrees(CropVisualRotation.yawFor(entity.getBlockPos(), crop)));
+        poseStack.mulPose(Axis.YP.rotationDegrees(
+                CropVisualRotation.yawFor(entity.getBlockPos(), crop) + entity.visualRotationDegrees()));
         poseStack.translate(-0.5D, 0.0D, -0.5D);
         minecraft.getBlockRenderer().getModelRenderer().renderModel(
                 poseStack.last(),
@@ -96,24 +97,38 @@ public class FarmingBlockEntityRenderer implements BlockEntityRenderer<FarmingBl
     }
 
     private static double renderYOffset(CropDefinition crop, double nonTallRenderYOffset) {
-        return crop != null && crop.tallCrop() ? TALL_CROP_BASE_RENDER_Y_OFFSET : nonTallRenderYOffset;
+        double soilAnchor = crop != null && crop.tallCrop() ? TALL_CROP_BASE_RENDER_Y_OFFSET : nonTallRenderYOffset;
+        return soilAnchor + CropVisualModels.modelAnchorYOffset(crop);
     }
 
     @Override
     public AABB getRenderBoundingBox(FarmingBlockEntity entity) {
         CropDefinition crop = CropRegistry.byId(entity.getPlantedCropId()).orElse(null);
         double height = renderBoundsHeight(crop);
-        return new AABB(entity.getBlockPos()).expandTowards(0.0D, height - 1.0D, 0.0D).inflate(0.25D);
+        double horizontalPadding = renderBoundsHorizontalPadding(crop);
+        return new AABB(entity.getBlockPos())
+                .expandTowards(0.0D, height - 1.0D, 0.0D)
+                .inflate(horizontalPadding, 0.25D, horizontalPadding);
+    }
+
+    /** The grape arbor spans a block past its plot on either side and must not cull with it. */
+    private static double renderBoundsHorizontalPadding(CropDefinition crop) {
+        return crop != null && "grapes".equals(crop.id()) ? 1.25D : 0.25D;
     }
 
     private static double renderBoundsHeight(CropDefinition crop) {
         if (crop == null) {
             return 1.0D;
         }
+        if ("grapes".equals(crop.id())) {
+            // Checked before tallCrop: the arbor tops out two blocks above its already-lifted
+            // anchor, which is a block higher than its three-block occupancy footprint.
+            return 4.0D;
+        }
         if (crop.tallCrop()) {
             return Math.max(1, crop.maxHeight());
         }
-        if (crop.supportRequirement().name().contains("TRELLIS") || "grapes".equals(crop.id())) {
+        if (crop.supportRequirement().name().contains("TRELLIS")) {
             return 3.0D;
         }
         return 1.0D;

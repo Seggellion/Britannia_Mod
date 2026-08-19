@@ -72,6 +72,9 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
             if (!(be instanceof FarmingBlockEntity farmBe) || crop == null) {
                 return InteractionResult.FAIL;
             }
+            if (!FarmingBlock.mayPlantHere(level, farmBe, context.getPlayer())) {
+                return InteractionResult.SUCCESS;
+            }
             if (farmBe.hasCrop() || clickedState.getValue(FarmingBlock.HAS_SEEDS)) {
                 if (!level.isClientSide && context.getPlayer() != null) {
                     context.getPlayer().displayClientMessage(Component.literal("A crop is already planted here.").withStyle(ChatFormatting.YELLOW), true);
@@ -95,8 +98,14 @@ public class GrapeSeedsItem extends ItemNameBlockItem {
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
 
-        // Fallback to standard behavior (will likely fail for custom data transfer if we don't handle it above)
-        return super.useOn(context);
+        // Deliberately no super.useOn: that fallback used to place the retired standalone grape vine
+        // on vanilla farmland, which is exactly the second grape system this crop replaced. Grapes
+        // grow in Britannia farming plots and nowhere else, so anywhere else is simply refused.
+        if (!level.isClientSide && context.getPlayer() != null) {
+            context.getPlayer().displayClientMessage(
+                Component.literal("Grapes must be planted in a farming plot.").withStyle(ChatFormatting.YELLOW), true);
+        }
+        return InteractionResult.CONSUME;
     }
 
     @Override

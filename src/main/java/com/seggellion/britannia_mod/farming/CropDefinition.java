@@ -86,6 +86,43 @@ public record CropDefinition(
         return idealClimates.contains(climate);
     }
 
+    /**
+     * Returns this crop with a single grape variety's agronomy substituted for the crop-wide
+     * defaults, so that the hundreds of varieties the shard defines actually differ in the ground
+     * rather than only in name and colour.
+     *
+     * <p>Only the fields a variety genuinely specifies are replaced — its nutrient targets, optimal
+     * hydration, altitude band and climate. Everything else (growth rate, yield, tooling, structure)
+     * stays a property of the crop, because a variety does not redefine what a grape is.
+     *
+     * <p>Kept on the record so it sits beside the component list it has to mirror;
+     * {@code CropDefinitionVarietyTest} fails if a component is added without revisiting this.
+     */
+    public CropDefinition withGrapeVariety(
+            float idealNitrogen,
+            float idealPhosphorus,
+            float idealPotassium,
+            float idealOrganicMatter,
+            float varietyHydrationIdeal,
+            int varietyMinAltitude,
+            int varietyMaxAltitude,
+            Set<FarmingClimate> varietyClimates
+    ) {
+        return new CropDefinition(
+                id, minimumFarmingSkill, displayName, seedItem, harvestItem, cropTier, baseGrowthTicks, growthStages,
+                idealNitrogen, idealPhosphorus, idealPotassium, idealOrganicMatter,
+                nutrientTolerance, boneMealWeight, turquoiseWeight, sulphurousAshWeight, rottenFleshWeight,
+                varietyHydrationIdeal, hydrationTolerance, hydrationUnderTolerance, hydrationOverTolerance,
+                minHydrationToGrow, maxHydrationBeforeSeverePenalty,
+                varietyClimates, varietyClimates, forbiddenClimates,
+                varietyMinAltitude, varietyMaxAltitude,
+                regionToleranceOrModifier, requiresLattice, treeCrop, tallCrop, maxHeight, vanillaMapped,
+                minYield, maxYield, farmingSkillModifier, seedReturnChance, qualitySensitivity,
+                nutrientPreferenceMode, lifecycle, growthHabit, supportRequirement,
+                postHarvestRegrowthAge, rootAgeQualityBonus, rootAgeQualityBonusMaturityDays, maxRootAgeQualityBonus,
+                harvestTool, notes);
+    }
+
     public boolean canGrowInClimate(FarmingClimate climate) {
         FarmingClimate safeClimate = climate == null ? FarmingClimate.TEMPERATE : climate;
         if (forbiddenClimates.contains(safeClimate)) {

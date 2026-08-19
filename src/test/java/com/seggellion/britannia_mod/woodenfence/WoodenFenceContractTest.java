@@ -24,6 +24,15 @@ class WoodenFenceContractTest {
     private static final Path ASSETS = PROJECT.resolve("src/main/resources/assets/britannia_mod");
     private static final Path DATA = PROJECT.resolve("src/main/resources/data");
 
+    /** Minecraft's own limits: exceeding either makes the model fail to load outright. */
+    private static final double MIN_MODEL_COORDINATE = -16.0;
+    private static final double MAX_MODEL_COORDINATE = 32.0;
+    private static final Set<Double> LEGAL_ROTATION_ANGLES = Set.of(-45.0, -22.5, 0.0, 22.5, 45.0);
+    private static final Set<String> LEGAL_ROTATION_AXES = Set.of("x", "y", "z");
+
+    /** Below this an element count means a stand-in shape rather than authored fence geometry. */
+    private static final int MINIMUM_AUTHORED_ELEMENTS = 5;
+
     @Test
     void blockstateCoversEveryFacingAndConnectionCombination() throws IOException {
         JsonObject variants = json(ASSETS.resolve("blockstates/wooden_fence.json"))
@@ -51,6 +60,18 @@ class WoodenFenceContractTest {
         ), topologies);
     }
 
+    /**
+     * The fence arms deliberately reach past their own block so that a run of fences reads as one
+     * continuous rail rather than a row of separate posts, so this no longer requires the geometry
+     * to stay inside 0..16. What it does require is the envelope Minecraft itself enforces:
+     * {@code BlockElement} refuses any coordinate outside -16..32 and any rotation that is not
+     * 0/22.5/45 degrees about a single axis, and a model that trips either one fails to load and
+     * leaves the fence rendering as the missing-model cube.
+     *
+     * <p>The element floor is likewise a placeholder detector rather than a geometry budget: the
+     * authored topologies range from five elements (straight, end) to eleven (cross), and the thing
+     * worth catching is a topology silently reverting to a stand-in.
+     */
     @Test
     void everyTopologyUsesDedicatedUltimaCraftGeometryAndTexture() throws IOException {
         Set<String> models = Set.of(
@@ -60,21 +81,33 @@ class WoodenFenceContractTest {
                 "models/block/structure/wooden_fence/" + name + ".json"));
             assertEquals("britannia_mod:block/structure/wooden_fence",
                 model.getAsJsonObject("textures").get("wood").getAsString());
-            assertTrue(model.getAsJsonArray("elements").size() >= 6, name);
+            assertTrue(model.getAsJsonArray("elements").size() >= MINIMUM_AUTHORED_ELEMENTS, name);
             model.getAsJsonArray("elements").forEach(element -> {
                 JsonObject cuboid = element.getAsJsonObject();
                 assertEquals(6, cuboid.getAsJsonObject("faces").size(), name + " has a missing face");
                 for (JsonElement coordinate : cuboid.getAsJsonArray("from")) {
-                    assertTrue(coordinate.getAsDouble() >= 0, name + " leaves the block horizontally");
+                    assertInModelSpace(coordinate.getAsDouble(), name);
                 }
-                assertTrue(cuboid.getAsJsonArray("to").get(0).getAsDouble() <= 16, name);
-                assertTrue(cuboid.getAsJsonArray("to").get(1).getAsDouble() <= 18, name);
-                assertTrue(cuboid.getAsJsonArray("to").get(2).getAsDouble() <= 16, name);
+                for (JsonElement coordinate : cuboid.getAsJsonArray("to")) {
+                    assertInModelSpace(coordinate.getAsDouble(), name);
+                }
+                JsonObject rotation = cuboid.getAsJsonObject("rotation");
+                if (rotation != null) {
+                    assertTrue(LEGAL_ROTATION_ANGLES.contains(rotation.get("angle").getAsDouble()),
+                        name + " uses a rotation angle Minecraft rejects: " + rotation.get("angle"));
+                    assertTrue(LEGAL_ROTATION_AXES.contains(rotation.get("axis").getAsString()),
+                        name + " uses a rotation axis Minecraft rejects: " + rotation.get("axis"));
+                }
             });
         }
 
         assertEquals("britannia_mod:block/structure/wooden_fence/isolated",
             json(ASSETS.resolve("models/item/wooden_fence.json")).get("parent").getAsString());
+    }
+
+    private static void assertInModelSpace(double coordinate, String name) {
+        assertTrue(coordinate >= MIN_MODEL_COORDINATE && coordinate <= MAX_MODEL_COORDINATE,
+            name + " has a coordinate outside Minecraft's -16..32 model space: " + coordinate);
     }
 
     @Test

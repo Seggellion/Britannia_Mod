@@ -27,6 +27,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import com.seggellion.britannia_mod.farming.FlowerProtectionService;
+import com.seggellion.britannia_mod.farming.GrapeVarietyAgronomy;
+import java.util.UUID;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -34,6 +37,8 @@ import java.util.Objects;
 public class FarmingBlockEntity extends BlockEntity {
     public static final int MAX_HYDRATION = 5;
     public static final long COMMUNITY_SEED_WINDOW_TICKS = 1200L;
+    private static final String OWNER_ID_KEY = "OwnerUUID";
+    private static final String VISUAL_ROTATION_KEY = "VisualRotation";
     private static final int GROWTH_AGE_DATA_VERSION = 3;
 
     // Kept under the first-pass field names for safe world migration.
@@ -53,6 +58,22 @@ public class FarmingBlockEntity extends BlockEntity {
     private boolean growthBlocked = false;
     private boolean communityPlot = false;
     private long seedableUntilGameTime = 0L;
+
+    /**
+     * Whoever tilled this plot, or null for a plot nobody has claimed. Community plots ignore it
+     * entirely. Stored as a UUID rather than a name so that a rename cannot transfer a farm, and
+     * kept server-side only: the client is never told who owns a plot because nothing it renders
+     * depends on that.
+     */
+    @Nullable
+    private UUID ownerId = null;
+
+    /**
+     * Quarter turns clockwise applied to the crop's model, as set with the interior decorator tool.
+     * Only the arbor is large and asymmetric enough for this to read, but it costs nothing to let
+     * any crop carry it. Server-authoritative and synced like the rest of the plot's state.
+     */
+    private int visualRotationQuarters = 0;
 
     public FarmingBlockEntity(BlockPos pos, BlockState blockState) {
         this(BlockEntityRegistry.FARMING_BLOCK_BE.get(), pos, blockState);
@@ -159,6 +180,26 @@ public class FarmingBlockEntity extends BlockEntity {
         setChangedAndSync();
     }
 
+    /**
+     * Seeds a plot from a plant that already existed in another form, preserving how far along it
+     * was. Only migration uses this: ordinary planting always starts at stage zero, and letting
+     * arbitrary callers choose a stage would make the crop's progress ambiguous.
+     */
+    public void plantMigratedCrop(CropDefinition crop, String cropVariant, int migratedGrowthStage) {
+        plant(crop, cropVariant);
+        int stage = Math.max(0, Math.min(crop.maxGrowthAge(), migratedGrowthStage));
+        this.growthStage = stage;
+        this.growthProgress = stage <= 0 ? 0.0f : Math.min(0.99f, stage / (float) crop.visualAgeCount());
+        this.mature = crop.isMatureAge(stage) && stage >= crop.maxGrowthAge();
+        if (this.mature) {
+            this.growthProgress = 1.0f;
+        }
+        if (level != null && !level.isClientSide) {
+            TallCropSupport.update(level, worldPosition, crop, this.growthStage);
+        }
+        setChangedAndSync();
+    }
+
     public void regrowAfterHarvest(CropDefinition crop) {
         this.plantedCropId = crop.id();
         int regrowthAge = crop.clampedPostHarvestRegrowthAge();
@@ -232,8 +273,57 @@ public class FarmingBlockEntity extends BlockEntity {
 
     public void startCommunitySeedWindow(long deadlineGameTime) {
         this.communityPlot = true;
+        this.ownerId = null;
         this.seedableUntilGameTime = deadlineGameTime;
         setChangedAndSync();
+    }
+
+    /** Turns the crop's model a quarter turn clockwise, wrapping back to its original heading. */
+    public void rotateVisualClockwise() {
+        this.visualRotationQuarters = Math.floorMod(visualRotationQuarters + 1, 4);
+        setChangedAndSync();
+    }
+
+    public int getVisualRotationQuarters() {
+        return visualRotationQuarters;
+    }
+
+    /**
+     * The yaw the renderer should add, in the same sense as a blockstate's {@code y} rotation: that
+     * form is negated about the Y axis, so a clockwise quarter turn is -90 degrees here.
+     */
+    public float visualRotationDegrees() {
+        return -90.0f * visualRotationQuarters;
+    }
+
+    /** Records the tiller of a private plot. A community plot never takes an owner. */
+    public void setOwner(@Nullable UUID owner) {
+        this.ownerId = communityPlot ? null : owner;
+        setChanged();
+    }
+
+    @Nullable
+    public UUID getOwner() {
+        return communityPlot ? null : ownerId;
+    }
+
+    public boolean hasOwner() {
+        return getOwner() != null;
+    }
+
+    /**
+     * Community plots are open to everyone, and an unclaimed private plot stays open so that plots
+     * placed before ownership existed do not silently lock their owners out. Administrators are
+     * authorized through the same path every other protected Britannia block uses.
+     */
+    public boolean mayPlant(@Nullable Player player) {
+        if (communityPlot || ownerId == null) {
+            return true;
+        }
+        if (player == null) {
+            return false;
+        }
+        return ownerId.equals(player.getUUID()) || FlowerProtectionService.isAdministrator(player);
     }
 
     public boolean isCommunityPlot() {
@@ -349,6 +439,10 @@ public class FarmingBlockEntity extends BlockEntity {
     }
 
     public CropGrowthContext createGrowthContext(Level level, BlockPos pos, CropDefinition crop, @Nullable Player player, boolean latticeSatisfied) {
+        // A grape plot is judged against the variety growing in it, not against grapes in general.
+        // Resolved once here so every fit below - nutrients, hydration, climate, altitude - agrees on
+        // the same requirements.
+        crop = GrapeVarietyAgronomy.effectiveCrop(crop, this);
         float nutrientFit = nutrientFit(crop);
         float hydrationFit = CropQualityCalculator.hydrationFit(hydration / (float) MAX_HYDRATION, crop);
         FarmingClimate climate = FarmingClimateResolver.resolve(level, pos);
@@ -503,6 +597,10 @@ public class FarmingBlockEntity extends BlockEntity {
         tag.putBoolean("GrowthBlocked", growthBlocked);
         tag.putBoolean("CommunityPlot", communityPlot);
         tag.putLong("SeedableUntilGameTime", seedableUntilGameTime);
+        if (ownerId != null) {
+            tag.putUUID(OWNER_ID_KEY, ownerId);
+        }
+        tag.putInt(VISUAL_ROTATION_KEY, visualRotationQuarters);
     }
 
     @Override
@@ -532,6 +630,8 @@ public class FarmingBlockEntity extends BlockEntity {
         this.growthBlocked = tag.getBoolean("GrowthBlocked");
         this.communityPlot = tag.getBoolean("CommunityPlot");
         this.seedableUntilGameTime = tag.getLong("SeedableUntilGameTime");
+        this.ownerId = tag.hasUUID(OWNER_ID_KEY) ? tag.getUUID(OWNER_ID_KEY) : null;
+        this.visualRotationQuarters = Math.floorMod(tag.getInt(VISUAL_ROTATION_KEY), 4);
         migrateLegacyGrowthStage(tag);
     }
 

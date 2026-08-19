@@ -21,7 +21,8 @@ import java.util.List;
 
 public class GrapesItem extends Item {
     public static final String GRAPE_VARIETY_KEY = "GrapeVariety";
-    public static final String DEFAULT_VARIETY_ID = "wild_grape";
+    /** Matches the built-in fallback in {@code GrapeVarietyManager}. */
+    public static final String DEFAULT_VARIETY_ID = "concord_green";
 
     public GrapesItem(Properties properties) {
         super(properties);
@@ -84,14 +85,12 @@ public class GrapesItem extends Item {
 
     public static String getGrapeItemName(ItemStack stack) {
         String varietyId = getVariety(stack);
-        String displayName = DEFAULT_VARIETY_ID.equals(varietyId) ? "Wild" : getDisplayNameForVariety(varietyId);
-        return displayName + " grapes";
+        return getDisplayNameForVariety(varietyId) + " grapes";
     }
 
     public static String getGrapeSeedItemName(ItemStack stack) {
         String varietyId = getVariety(stack);
-        String displayName = DEFAULT_VARIETY_ID.equals(varietyId) ? "Wild" : getDisplayNameForVariety(varietyId);
-        return displayName + " grape seeds";
+        return getDisplayNameForVariety(varietyId) + " grape seeds";
     }
 
     private static String humanizeVarietyId(String varietyId) {
@@ -133,8 +132,14 @@ public class GrapesItem extends Item {
         }
     }
 
+    /**
+     * Recognises the whole Concord family rather than three hardcoded spellings. The catalogue ships
+     * Concord as coloured slugs - {@code concord_green}, {@code concord_red} - which the old exact
+     * matches missed entirely, so the one grape meant to be edible fresh never was. Anchored on
+     * {@code concord_} so a variety that merely starts with those letters is not swept in.
+     */
     public static boolean isConcordVariety(String varietyId) {
         String safeVarietyId = varietyId == null ? "" : varietyId.trim().toLowerCase(java.util.Locale.ROOT);
-        return "concord".equals(safeVarietyId) || "concord_grape".equals(safeVarietyId) || "concord_grapes".equals(safeVarietyId);
+        return "concord".equals(safeVarietyId) || safeVarietyId.startsWith("concord_");
     }
 }

@@ -147,6 +147,7 @@ import com.seggellion.britannia_mod.block.SulphurousAshBlock;
 import com.seggellion.britannia_mod.block.BlackLippedOysterBlock;
 import com.seggellion.britannia_mod.block.BloodMossBlock;
 import com.seggellion.britannia_mod.block.CornStalkBlock;
+import com.seggellion.britannia_mod.block.GrapeArborBlock;
 import com.seggellion.britannia_mod.block.TrellisBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeRootBlock;
 import com.seggellion.britannia_mod.block.OrangeTreeBranchBlock;
@@ -329,7 +330,17 @@ public static final DeferredHolder<Block, BloodMossBlock> BLOOD_MOSS = BLOCKS.re
                 .pushReaction(PushReaction.DESTROY))
 );
 
-public static final DeferredHolder<Block, CornStalkBlock> CORN_STALK_BLOCK = BLOCKS.register(
+public static final DeferredHolder<Block, GrapeArborBlock> GRAPE_ARBOR_BLOCK = BLOCKS.register(
+            "grape_arbor_block",
+            () -> new GrapeArborBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.PLANT)
+                    .strength(0.2F)
+                    .sound(SoundType.CROP)
+                    .noOcclusion()
+                    .noLootTable())
+    );
+
+    public static final DeferredHolder<Block, CornStalkBlock> CORN_STALK_BLOCK = BLOCKS.register(
             "corn_stalk_block",
             () -> new CornStalkBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.PLANT)

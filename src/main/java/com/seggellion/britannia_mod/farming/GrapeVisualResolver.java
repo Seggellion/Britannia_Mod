@@ -12,13 +12,25 @@ import java.util.List;
 
 public final class GrapeVisualResolver {
     private static final GrapeColor FALLBACK_COLOR = GrapeColor.PURPLE;
+    private static final String MODEL_DIRECTORY = "block/crops/grapes/";
+    private static final String MODEL_PREFIX = "grape_vine_stage_";
+
+    /**
+     * Gameplay age (0..7) to authored vine stage. Ages 0 and 1 share the seedling stage, so the
+     * table stays explicit: stage numbers are not interchangeable with ages.
+     */
+    private static final int[] AGE_TO_VISUAL_STAGE = {1, 1, 2, 3, 4, 5, 6, 7};
+
+    /** Stages at or above this one carry visible fruit and therefore exist once per grape colour. */
+    private static final int FIRST_FRUITING_STAGE = 6;
+    private static final int LAST_VISUAL_STAGE = 7;
 
     private GrapeVisualResolver() {
     }
 
     public static ResourceLocation modelLocation(CropDefinition crop, int growthAge, String varietyId) {
         int visualAge = crop == null ? 0 : Math.max(0, Math.min(crop.maxGrowthAge(), growthAge));
-        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "block/crops/" + modelName(visualAge, resolvedColor(varietyId)));
+        return model(modelName(visualAge, resolvedColor(varietyId)));
     }
 
     public static GrapeVisualInfo resolve(CropDefinition crop, int growthAge, String varietyId) {
@@ -28,21 +40,25 @@ public final class GrapeVisualResolver {
         GrapeColor color = variety.colorType() == null ? FALLBACK_COLOR : variety.colorType();
         boolean fallbackVariety = !safeVarietyId.equals(variety.id());
         boolean fallbackColor = variety.colorType() == null;
-        ResourceLocation model = ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "block/crops/" + modelName(visualAge, color));
+        ResourceLocation model = model(modelName(visualAge, color));
         return new GrapeVisualInfo(safeVarietyId, variety.id(), variety.getFormattedName(), color, visualAge, model, fallbackVariety, fallbackColor);
     }
 
     public static List<ResourceLocation> allModelLocations() {
         List<ResourceLocation> models = new ArrayList<>();
-        for (int stage = 1; stage <= 4; stage++) {
-            models.add(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "block/crops/grape_vine_stage" + stage));
+        for (int stage = 1; stage < FIRST_FRUITING_STAGE; stage++) {
+            models.add(model(MODEL_PREFIX + stage));
         }
-        for (GrapeColor color : GrapeColor.values()) {
-            String colorName = color.getSerializedName();
-            models.add(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "block/crops/grape_" + colorName + "_trellis_5"));
-            models.add(ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "block/crops/grape_" + colorName + "_trellis_6"));
+        for (int stage = FIRST_FRUITING_STAGE; stage <= LAST_VISUAL_STAGE; stage++) {
+            for (GrapeColor color : GrapeColor.values()) {
+                models.add(model(MODEL_PREFIX + stage + "_" + color.getSerializedName()));
+            }
         }
         return models;
+    }
+
+    private static ResourceLocation model(String modelName) {
+        return ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, MODEL_DIRECTORY + modelName);
     }
 
     private static GrapeColor resolvedColor(String varietyId) {
@@ -52,22 +68,12 @@ public final class GrapeVisualResolver {
     }
 
     private static String modelName(int visualAge, GrapeColor color) {
-        if (visualAge <= 1) {
-            return "grape_vine_stage1";
+        int clampedAge = Math.max(0, Math.min(AGE_TO_VISUAL_STAGE.length - 1, visualAge));
+        int stage = AGE_TO_VISUAL_STAGE[clampedAge];
+        if (stage < FIRST_FRUITING_STAGE) {
+            return MODEL_PREFIX + stage;
         }
-        if (visualAge == 2) {
-            return "grape_vine_stage2";
-        }
-        if (visualAge == 3) {
-            return "grape_vine_stage3";
-        }
-        if (visualAge == 4) {
-            return "grape_vine_stage4";
-        }
-
-        String colorName = (color == null ? FALLBACK_COLOR : color).getSerializedName();
-        int fruitStage = visualAge <= 5 ? 5 : 6;
-        return "grape_" + colorName + "_trellis_" + fruitStage;
+        return MODEL_PREFIX + stage + "_" + (color == null ? FALLBACK_COLOR : color).getSerializedName();
     }
 
     public record GrapeVisualInfo(

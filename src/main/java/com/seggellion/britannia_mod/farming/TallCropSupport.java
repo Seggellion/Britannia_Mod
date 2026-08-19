@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.farming;
 
 import com.seggellion.britannia_mod.block.CornStalkBlock;
+import com.seggellion.britannia_mod.block.GrapeArborBlock;
 import com.seggellion.britannia_mod.block.entity.FarmingBlockEntity;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,15 @@ public final class TallCropSupport {
     private static final int CROP_KIND_CORN = 0;
     private static final int CROP_KIND_BANANA = 1;
 
+    /** Matches the reference implementation: the arbor only claims its neighbours once fruiting. */
+    private static final int GRAPE_ARBOR_FIRST_OCCUPYING_AGE = 6;
+    /**
+     * The arbor's geometry runs from just above the soil surface to three blocks over it, so it
+     * passes through the three blocks above its plot. The reference implementation reserves the same
+     * three, and reserving fewer would leave the canopy's top block open to be built through.
+     */
+    private static final int GRAPE_UPPER_SEGMENTS = 3;
+
     private TallCropSupport() {
     }
 
@@ -20,7 +30,7 @@ public final class TallCropSupport {
         if (!crop.tallCrop()) {
             return 1;
         }
-        if (usesSegmentedTallShape(crop)) {
+        if (isGrapeArbor(crop) || usesSegmentedTallShape(crop)) {
             return 1 + upperSegmentCountForStage(crop, stage);
         }
         int maxStage = Math.max(1, crop.growthStages() - 1);
@@ -31,6 +41,9 @@ public final class TallCropSupport {
     public static int upperSegmentCountForStage(CropDefinition crop, int stage) {
         if (crop == null || !crop.tallCrop()) {
             return 0;
+        }
+        if (isGrapeArbor(crop)) {
+            return stage >= GRAPE_ARBOR_FIRST_OCCUPYING_AGE ? GRAPE_UPPER_SEGMENTS : 0;
         }
         if (usesSegmentedTallShape(crop)) {
             if (stage >= 5) return Math.min(CORN_MAX_UPPER_SEGMENTS, Math.max(0, crop.maxHeight() - 1));
@@ -44,6 +57,9 @@ public final class TallCropSupport {
         if (crop == null || !crop.tallCrop()) {
             return 0;
         }
+        if (isGrapeArbor(crop)) {
+            return GRAPE_UPPER_SEGMENTS;
+        }
         if (usesSegmentedTallShape(crop)) {
             return CORN_MAX_UPPER_SEGMENTS;
         }
@@ -51,6 +67,9 @@ public final class TallCropSupport {
     }
 
     public static String maxHeightSemantics(CropDefinition crop) {
+        if (isGrapeArbor(crop)) {
+            return "total_occupied_height_including_base";
+        }
         if (crop != null && usesSegmentedTallShape(crop)) {
             return "total_visible_height_including_base";
         }
@@ -62,13 +81,31 @@ public final class TallCropSupport {
             return true;
         }
         int upperSegments = upperSegmentCountForStage(crop, stage);
+        boolean grapes = isGrapeArbor(crop);
         for (int offset = 1; offset <= upperSegments; offset++) {
             BlockState state = level.getBlockState(basePos.above(offset));
-            if (!(state.canBeReplaced() || isSegmentForCrop(state, crop))) {
+            boolean usable = grapes
+                    ? arborMayClaim(state)
+                    : state.canBeReplaced() || isSegmentForCrop(state, crop);
+            if (!usable) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Whether the arbor may take a block for its own.
+     *
+     * <p>Besides empty space and its own segments, this reclaims a corn stalk. An arbor briefly
+     * borrowed corn's stalk block for occupancy before it had one of its own, so worlds saved in
+     * that window hold grape plots capped by corn stalks: walk-through, unmatched by the arbor's
+     * structure check, and swallowing interactions meant for the plant. Those plots would otherwise
+     * be stuck refusing to be harvested forever. A corn stalk cannot legitimately stand directly
+     * over a grape plot - corn only ever grows from its own plot - so this cannot consume a real one.
+     */
+    private static boolean arborMayClaim(BlockState state) {
+        return state.canBeReplaced() || isGrapeSegment(state) || state.getBlock() instanceof CornStalkBlock;
     }
 
     public static boolean hasRequiredVisuals(Level level, BlockPos basePos, CropDefinition crop, int stage) {
@@ -143,6 +180,10 @@ public final class TallCropSupport {
         }
 
         int upperSegments = upperSegmentCountForStage(crop, stage);
+        if (isGrapeArbor(crop)) {
+            updateGrapeArbor(level, basePos, upperSegments);
+            return;
+        }
         int maxUpperSegments = maxUpperSegmentCount(crop);
         for (int offset = 1; offset <= maxUpperSegments; offset++) {
             BlockPos pos = basePos.above(offset);
@@ -167,6 +208,22 @@ public final class TallCropSupport {
         for (int offset = 1; offset <= maxUpperSegmentCount(crop); offset++) {
             BlockPos pos = basePos.above(offset);
             if (isSegmentForCrop(level.getBlockState(pos), crop)) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
+    }
+
+    /** Arbor occupancy is its own solid, invisible block rather than a corn stalk variant. */
+    private static void updateGrapeArbor(Level level, BlockPos basePos, int upperSegments) {
+        for (int offset = 1; offset <= GRAPE_UPPER_SEGMENTS; offset++) {
+            BlockPos pos = basePos.above(offset);
+            BlockState current = level.getBlockState(pos);
+            if (offset <= upperSegments) {
+                if (arborMayClaim(current)) {
+                    level.setBlock(pos, BlockRegistry.GRAPE_ARBOR_BLOCK.get().defaultBlockState()
+                            .setValue(GrapeArborBlock.SEGMENT, offset), 3);
+                }
+            } else if (isGrapeSegment(current)) {
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
             }
         }
@@ -209,6 +266,10 @@ public final class TallCropSupport {
     }
 
     public static String segmentModelPath(BlockState state) {
+        if (isGrapeSegment(state)) {
+            // Drawn by the base plot's renderer, never by the segment itself.
+            return "<none: grape arbor renders from its base>";
+        }
         if (!(state.getBlock() instanceof CornStalkBlock)) {
             return "<none>";
         }
@@ -228,6 +289,9 @@ public final class TallCropSupport {
     }
 
     private static boolean isExpectedSegment(BlockState state, CropDefinition crop, int stage, int offset) {
+        if (isGrapeArbor(crop)) {
+            return isGrapeSegment(state) && state.getValue(GrapeArborBlock.SEGMENT) == offset;
+        }
         if (!(state.getBlock() instanceof CornStalkBlock)) {
             return false;
         }
@@ -239,11 +303,17 @@ public final class TallCropSupport {
     }
 
     private static boolean isSegmentForCrop(BlockState state, CropDefinition crop) {
+        if (isGrapeArbor(crop)) {
+            return isGrapeSegment(state);
+        }
         return state.getBlock() instanceof CornStalkBlock
                 && state.getValue(CornStalkBlock.CROP_KIND) == cropKind(crop);
     }
 
     private static int expectedPartForOffset(CropDefinition crop, int stage, int offset) {
+        if (isGrapeArbor(crop)) {
+            return 0;
+        }
         if (usesSegmentedTallShape(crop)) {
             return expectedCornPartForOffsetAndAge(offset, stage);
         }
@@ -266,5 +336,13 @@ public final class TallCropSupport {
 
     private static int cropKind(CropDefinition crop) {
         return crop != null && "banana".equals(crop.id()) ? CROP_KIND_BANANA : CROP_KIND_CORN;
+    }
+
+    public static boolean isGrapeArbor(CropDefinition crop) {
+        return crop != null && "grapes".equals(crop.id());
+    }
+
+    public static boolean isGrapeSegment(BlockState state) {
+        return state.getBlock() instanceof GrapeArborBlock;
     }
 }

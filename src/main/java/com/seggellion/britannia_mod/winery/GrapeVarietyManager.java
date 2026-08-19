@@ -7,17 +7,34 @@ import java.util.List;
 
 public class GrapeVarietyManager {
     private static final Map<String, GrapeVariety> VARIETIES = new HashMap<>();
-    private static final GrapeVariety FALLBACK_VARIETY = new GrapeVariety(
-        "wild_grape", "Wild Grape", 3,
-        0.5f, 0.5f, 0.5f, 0.5f,
-        "Temperate", 60, 100,
-        0x333333, 1, GrapeColor.PURPLE
+    /**
+     * The variety a grape falls back to whenever the shard has published none, mirroring the
+     * catalogue's own Concord records. Concord is the mass-market grape: forgiving chemistry, a wide
+     * altitude band and a cool climate, so a fallback plant behaves like something a player could
+     * reasonably have grown rather than like a placeholder.
+     */
+    private static final GrapeVariety CONCORD_GREEN = new GrapeVariety(
+        "concord_green", "Concord Green", 3,
+        0.22f, 0.13f, 0.25f, 0.56f,
+        "Cool", 25, 625,
+        0xA8B85A, 4, GrapeColor.GREEN
     );
 
-    // Called on Mod startup - creates a fallback or remains empty
+    private static final GrapeVariety CONCORD_RED = new GrapeVariety(
+        "concord_red", "Concord Red", 3,
+        0.22f, 0.13f, 0.25f, 0.56f,
+        "Cool", 25, 625,
+        0x87364F, 4, GrapeColor.RED
+    );
+
+    private static final GrapeVariety FALLBACK_VARIETY = CONCORD_GREEN;
+
+    /** Both Concords, so an offline shard still offers more than a single colour. */
+    private static final List<GrapeVariety> BUILT_IN_VARIETIES = List.of(CONCORD_GREEN, CONCORD_RED);
+
+    // Called on Mod startup - seeds the built-in Concords so grapes work before any shard data lands
     public static void init() {
-        // Optional: Add a "Wild Grape" fallback so the game doesn't crash if offline
-        register(FALLBACK_VARIETY);
+        BUILT_IN_VARIETIES.forEach(GrapeVarietyManager::register);
     }
 
     // === NEW: Called by WorldBootstrapAPI ===
@@ -26,8 +43,12 @@ public class GrapeVarietyManager {
         for (GrapeVariety v : newVarieties) {
             register(v);
         }
-        if (!VARIETIES.containsKey(FALLBACK_VARIETY.id())) {
-            register(FALLBACK_VARIETY);
+        // A shard that publishes its own Concords wins; otherwise the built-ins stay available so
+        // there is always something for an unknown or missing variety to resolve to.
+        for (GrapeVariety builtIn : BUILT_IN_VARIETIES) {
+            if (!VARIETIES.containsKey(builtIn.id())) {
+                register(builtIn);
+            }
         }
     }
 

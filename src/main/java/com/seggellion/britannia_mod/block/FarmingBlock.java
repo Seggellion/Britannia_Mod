@@ -43,6 +43,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -108,6 +109,17 @@ public class FarmingBlock extends Block implements EntityBlock {
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         
         BlockEntity be = level.getBlockEntity(pos);
+
+        // The interior decorator turns the planted crop's model a quarter turn clockwise. Handled
+        // here rather than in the tool because the block sees the interaction first, and a mature
+        // plot would otherwise answer with its harvest-tool refusal before the tool ever ran.
+        if (stack.is(ItemRegistry.INTERIOR_DECORATOR_TOOL.get())) {
+            ItemInteractionResult rotated = rotateCropVisual(level, pos);
+            if (rotated != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+                return rotated;
+            }
+        }
+
 // 1. TRELLIS PLACEMENT OVERRIDE (Adventure Mode Fix)
         // We check if the player is holding the Trellis Item and clicking the Soil
         if (stack.is(ItemRegistry.TRELLIS_ITEM.get())) {
@@ -156,6 +168,9 @@ public class FarmingBlock extends Block implements EntityBlock {
                     if (grapeCrop == null) {
                         return ItemInteractionResult.FAIL;
                     }
+                        if (!mayPlantHere(level, farmBe, player)) {
+                            return ItemInteractionResult.SUCCESS;
+                        }
                         if (!level.isClientSide) {
                             String variety = GrapeSeedsItem.getVariety(stack);
                             farmBe.plant(grapeCrop, variety);
@@ -371,6 +386,16 @@ public class FarmingBlock extends Block implements EntityBlock {
                 farmBe.tickGrowth(level, pos, state, random);
             }
         }
+
+        // A grown plant keeps the blocks it occupies even while the soil is dry, so this sits
+        // outside the hydration gate above. Without it a parched arbor whose occupancy was disturbed
+        // would stay hollow - walk-through and unharvestable - until somebody watered it.
+        if (be instanceof FarmingBlockEntity farmBe && farmBe.hasCrop()) {
+            CropDefinition planted = CropRegistry.byId(farmBe.getPlantedCropId()).orElse(null);
+            if (planted != null && planted.tallCrop()) {
+                TallCropSupport.repairStructureIfPossible(level, pos, planted, farmBe.getGrowthStage());
+            }
+        }
     }
 
     private static String fertilizerMessage(String nutrient, FarmingBlockEntity farmBe) {
@@ -384,6 +409,39 @@ public class FarmingBlock extends Block implements EntityBlock {
         );
     }
 
+    /**
+     * Private plots only accept seed from the player who tilled them. Community plots and plots that
+     * predate ownership carry no owner and stay open to everyone, so this can never lock an existing
+     * farm. Server-authoritative: the client is never consulted and never told who the owner is.
+     */
+    /**
+     * Turns the crop growing in {@code plotPos} a quarter turn clockwise.
+     *
+     * <p>Shared with the tall parts of a plant, because the block a player can actually see and
+     * click is usually not the plot: a grape arbor is clicked on its canopy, several blocks up.
+     */
+    public static ItemInteractionResult rotateCropVisual(Level level, BlockPos plotPos) {
+        if (!(level.getBlockEntity(plotPos) instanceof FarmingBlockEntity farmBe) || !farmBe.hasCrop()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (!level.isClientSide) {
+            farmBe.rotateVisualClockwise();
+            level.playSound(null, plotPos, SoundEvents.ITEM_FRAME_ROTATE_ITEM, SoundSource.BLOCKS, 0.6f, 1.1f);
+        }
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    public static boolean mayPlantHere(Level level, FarmingBlockEntity farmBe, @Nullable Player player) {
+        if (farmBe.mayPlant(player)) {
+            return true;
+        }
+        if (!level.isClientSide && player != null) {
+            player.displayClientMessage(
+                Component.literal("This farm plot belongs to someone else.").withStyle(ChatFormatting.YELLOW), true);
+        }
+        return false;
+    }
+
     public static ItemInteractionResult tryPlantSeed(Level level, BlockPos pos, BlockState state, @Nullable Player player, ItemStack stack, boolean requireTrellisCrop, String interactionSource) {
         if (!(state.getBlock() instanceof FarmingBlock)
                 || !(level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe)) {
@@ -393,6 +451,10 @@ public class FarmingBlock extends Block implements EntityBlock {
         CropDefinition crop = CropRegistry.bySeed(stack.getItem()).orElse(null);
         if (crop == null || stack.getItem() instanceof GrapeSeedsItem) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        if (!mayPlantHere(level, farmBe, player)) {
+            return ItemInteractionResult.SUCCESS;
         }
 
         if (!level.isClientSide) {
@@ -725,6 +787,17 @@ public class FarmingBlock extends Block implements EntityBlock {
         }
     }
     
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (level.isClientSide || !(placer instanceof Player player)) {
+            return;
+        }
+        if (level.getBlockEntity(pos) instanceof FarmingBlockEntity farmBe && !farmBe.isCommunityPlot()) {
+            farmBe.setOwner(player.getUUID());
+        }
+    }
+
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
          return !this.defaultBlockState().canSurvive(context.getLevel(), context.getClickedPos()) 

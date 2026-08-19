@@ -89,6 +89,20 @@ public final class CropVisualModels {
         };
     }
 
+    /**
+     * Blocks between the renderer's base anchor and the model origin. The grape arbor models are
+     * authored with their origin two blocks above the soil and their geometry hanging back down to
+     * it; rebasing them onto the soil would push elements outside the -16..32 range block models
+     * allow, so the renderer lifts the anchor instead. Grapes are a tall crop, so the renderer's
+     * own anchor is the base block itself and the whole two-block lift belongs here.
+     */
+    public static double modelAnchorYOffset(CropDefinition crop) {
+        if (crop == null) {
+            return 0.0D;
+        }
+        return "grapes".equals(crop.id()) ? 2.0D : 0.0D;
+    }
+
     public static int modelVisibleHeight(CropDefinition crop, int growthAge) {
         if (crop == null) {
             return 0;
