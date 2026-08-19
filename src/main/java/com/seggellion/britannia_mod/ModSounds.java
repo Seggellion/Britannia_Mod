@@ -350,6 +350,14 @@ public static final DeferredHolder<SoundEvent, SoundEvent> FEET15D = SOUND_EVENT
     );
 
 
+    // Main-menu theme. Named for the slot it fills rather than the file it plays, the same
+    // way the bank events are, so swapping the track later is a sounds.json edit alone.
+    public static final DeferredHolder<SoundEvent, SoundEvent> MENU_MUSIC = SOUND_EVENTS.register(
+            "menu_music",
+            () -> SoundEvent.createVariableRangeEvent(
+                    ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "menu_music"))
+    );
+
     // Register method to hook into the mod event bus
     public static void register(IEventBus modEventBus) {
         SOUND_EVENTS.register(modEventBus);
