@@ -636,6 +636,53 @@ private static Endpoint statusEndpoint(String status) {
     };
 }
 
+/**
+ * Writes the spawn source, or omits it when there isn't one.
+ *
+ * <p>Both callers used to write {@code sourceId} unconditionally, and their callers used to
+ * substitute the entity's own UUID when no real spawn source was known. A spawn source is a
+ * physical, persistent thing — a spawn block that keeps its NBT id across restarts, or a Rails
+ * spawn point — and a mob's UUID is neither. Rails recorded the substitute as the NPC's spawn
+ * block, which is why the corrupted production rows have {@code spawn_block_id == npc_id}.
+ * Omitting an unknown field lets Rails keep whatever it already knows instead of overwriting it
+ * with a value that changes every time the mob is re-created.
+ */
+private static void addSpawnSource(JsonObject payload, String sourceId) {
+    if (sourceId == null || sourceId.isBlank()) return;
+
+    payload.addProperty("source_id", sourceId);
+    payload.addProperty("spawn_block_id", sourceId);
+}
+
+/**
+ * Attaches the LOGICAL identity of a Rails-authoritative NPC, when this entity is one.
+ *
+ * <h2>Why both identities travel</h2>
+ * {@code npc_id} above is the Minecraft entity UUID: it names one incarnation of the NPC and
+ * legitimately changes whenever the entity is re-materialized — after a death and re-staffing,
+ * after an entity/chunk reload, or when the assignment reconciler resolves a duplicate. The World
+ * NPC public id names the NPC itself and survives all of that, changing only when the NPC is
+ * genuinely a different NPC.
+ *
+ * <p>Rails prefers this field over every entity identifier when it is present
+ * ({@code Npcs::LogicalIdentityResolver}), so a retry, a reconnect, a restart and a reconciliation
+ * all land on the one row Rails already owns instead of minting another. It is sent on every live
+ * sync — not only economic projections — so any Service NPC that reports itself in future is
+ * recognised by the same contract with no further protocol work.
+ */
+private static void addLogicalIdentity(JsonObject payload, Entity npc) {
+    if (!(npc instanceof CitizenEntity citizen)) return;
+
+    UUID worldNpcPublicId = citizen.getWorldNpcPublicId();
+    if (worldNpcPublicId != null) {
+        payload.addProperty("world_npc_public_id", worldNpcPublicId.toString());
+    }
+    if (npc instanceof com.seggellion.britannia_mod.entity.ServiceNpcEntity serviceNpc
+            && serviceNpc.getSpawnPointId() != null) {
+        payload.addProperty("spawn_point_public_id", serviceNpc.getSpawnPointId().toString());
+    }
+}
+
 private static JsonObject buildLiveNpcPayload(ServerLevel serverLevel, Entity npc, String npcType, String cityName,
                                               String sourceId, String spawnLocation, String status) {
     JsonObject payload = new JsonObject();
@@ -651,8 +698,8 @@ private static JsonObject buildLiveNpcPayload(ServerLevel serverLevel, Entity np
     payload.addProperty("is_active", true);
     payload.addProperty("status", status);
     payload.addProperty("spawn_location", spawnLocation);
-    payload.addProperty("source_id", sourceId);
-    payload.addProperty("spawn_block_id", sourceId);
+    addSpawnSource(payload, sourceId);
+    addLogicalIdentity(payload, npc);
     payload.addProperty("gender", getStringByReflection(npc, "getGender", "unknown"));
     if (npc instanceof ITrader trader) {
         payload.addProperty("role", trader.getTraderRoleTitle());

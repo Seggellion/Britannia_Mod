@@ -59,7 +59,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ServerEconomyService {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final double MAX_SALE_DISTANCE_SQ = 12.0D * 12.0D;
-    private static final String TRADER_SOURCE_TAG_PREFIX = "trader_source_";
     private static final Set<String> SYNCED_NPCS = ConcurrentHashMap.newKeySet();
 
     /** Metals Rails seeds under metal/ingots, and therefore the only ingots that can be sold. */
@@ -221,7 +220,51 @@ public final class ServerEconomyService {
                 }));
     }
 
+    /**
+     * True when this trader is a projection of a Rails-owned NPC identity rather than a mob some
+     * legacy spawn block in this world invented and manages. The rule itself lives in
+     * {@link LiveNpcSyncPolicy} so it is reachable from a unit test; this only reads the entity.
+     */
+    private static boolean isRailsAuthoritativeProjection(Entity trader) {
+        return trader instanceof com.seggellion.britannia_mod.entity.CitizenEntity citizen
+                && LiveNpcSyncPolicy.railsAuthoritative(
+                        citizen.getWorldNpcPublicId(), citizen.getEconomicNpcTypeKey());
+    }
+
+    /**
+     * Legacy preflight: guarantees the trader has a live NPC row before a sale that needs one.
+     *
+     * <h2>Why authoritative projections are skipped</h2>
+     * This preflight predates Rails-authoritative NPC management and exists for
+     * {@code Economy::SaleTransactionProcessor}, which resolves the selling NPC out of the
+     * {@code npcs} table by the id the payload reports. An economic projection's sale does not go
+     * there at all: {@link #buildSalePayload} sends {@code world_npc_public_id}, and
+     * {@code Api::TraderTransactionsController} routes on that field straight to
+     * {@code Economy::EconomicTraderSale}, which resolves city, identity and pricing from the
+     * assignment and never reads {@code npcs}. The preflight was therefore doing nothing for these
+     * sales except damage.
+     *
+     * <p>The damage was structural. It registered a Rails-owned NPC under this mob's UUID —
+     * {@code npc_id} = the entity UUID, and {@code spawn_block_id} = the entity UUID too, because
+     * {@link #traderSourceId} used to fall back to it when no legacy {@code trader_source_*} tag
+     * existed, which is always the case for an entity the assignment reconciler materialized. A
+     * Minecraft entity UUID identifies one INCARNATION: it legitimately changes every time the
+     * entity is re-materialized (killed and re-staffed, chunk/entity reload, a duplicate resolved
+     * by the reconciler). Rails keyed a permanent, active row on it and nothing ever retired the
+     * previous one, so every re-materialization left another live "NPC" behind — two Fish Traders
+     * named Chaney standing on one post, and a city population counting both.
+     *
+     * <p>Rails now owns this row outright: {@code NpcSpawnAssignments::Create} projects it the
+     * moment the post is staffed, keyed on the World NPC's public id. Nothing here needs to
+     * announce an NPC Rails itself created.
+     */
     private static boolean ensureTraderNpcSynced(ServerLevel level, Entity trader, String cityName, String role) {
+        if (isRailsAuthoritativeProjection(trader)) {
+            LOGGER.debug("Trader sale preflight skipped for Rails-authoritative NPC world_npc={} city={}",
+                    ((com.seggellion.britannia_mod.entity.CitizenEntity) trader).getWorldNpcPublicId(), cityName);
+            return true;
+        }
+
         String syncKey = ModConfig.SHARD_NAME + ":" + trader.getUUID();
         if (SYNCED_NPCS.contains(syncKey)) {
             return true;
@@ -246,13 +289,10 @@ public final class ServerEconomyService {
         return synced;
     }
 
+    /** See {@link LiveNpcSyncPolicy#legacySpawnSourceId} for why an unowned trader reports null. */
+    @javax.annotation.Nullable
     private static String traderSourceId(Entity trader) {
-        for (String tag : trader.getTags()) {
-            if (tag.startsWith(TRADER_SOURCE_TAG_PREFIX) && tag.length() > TRADER_SOURCE_TAG_PREFIX.length()) {
-                return tag.substring(TRADER_SOURCE_TAG_PREFIX.length());
-            }
-        }
-        return trader.getUUID().toString();
+        return LiveNpcSyncPolicy.legacySpawnSourceId(trader.getTags());
     }
 
     private static String normalizeNpcType(String role) {
