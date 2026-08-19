@@ -10,17 +10,19 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 
+import java.util.List;
+
 /** Prevents vanilla destruction of managed plants and routes accepted cuts through one transaction. */
 public final class ManagedVegetationInteractionHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         if (!(event.getLevel() instanceof ServerLevel level)
                 || !(event.getEntity() instanceof ServerPlayer player)
-                || ManagedVegetationService.resolveNode(level, event.getPos()).isEmpty()) {
+                || ManagedVegetationService.resolveOwnedCutNode(level, event.getPos()).isEmpty()) {
             return;
         }
         event.setCanceled(true);
-        if (ManagedVegetationCutTools.isSword(player.getMainHandItem())) {
+        if (ManagedVegetationCutTools.canCut(player)) {
             ManagedVegetationService.cutNode(player, level, event.getPos());
         }
     }
@@ -30,13 +32,25 @@ public final class ManagedVegetationInteractionHandler {
     public void onBreak(BlockEvent.BreakEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)
                 || !(event.getPlayer() instanceof ServerPlayer player)
-                || ManagedVegetationService.resolveNode(level, event.getPos()).isEmpty()) {
+                || ManagedVegetationService.resolveOwnedCutNode(level, event.getPos()).isEmpty()) {
             return;
         }
         event.setCanceled(true);
-        if (ManagedVegetationCutTools.isSword(player.getMainHandItem())) {
+        if (ManagedVegetationCutTools.canCut(player)) {
             ManagedVegetationService.cutNode(player, level, event.getPos());
         }
+    }
+
+    /** Runs after placement vetoes so only committed construction relinquishes node ownership. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onEntityPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        List<net.minecraft.core.BlockPos> positions = event instanceof BlockEvent.EntityMultiPlaceEvent multi
+                ? multi.getReplacedBlockSnapshots().stream().map(snapshot -> snapshot.getPos().immutable()).toList()
+                : List.of(event.getPos().immutable());
+        ManagedVegetationService.retireNodesClaimedByPlacement(level, positions);
     }
 
     @SubscribeEvent

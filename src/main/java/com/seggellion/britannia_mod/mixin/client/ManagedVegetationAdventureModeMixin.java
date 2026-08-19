@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-/** Lets sword attacks reach the server, where managed-node ownership is authoritatively checked. */
+/** Lets authorized attacks reach the server, where managed-node ownership is authoritatively checked. */
 @Mixin(MultiPlayerGameMode.class)
 public abstract class ManagedVegetationAdventureModeMixin {
     @Redirect(
@@ -34,7 +34,7 @@ public abstract class ManagedVegetationAdventureModeMixin {
             GameType gameType
     ) {
         BlockState state = level.getBlockState(position);
-        boolean managedVegetationAttack = ManagedVegetationCutTools.isSword(player.getMainHandItem())
+        boolean managedVegetationAttack = ManagedVegetationCutTools.canCut(player)
                 && isManagedVegetationCandidate(state);
         boolean wildResourceAttack = state.getBlock() instanceof AdventureHarvestableBlock harvestable
                 && harvestable.allowsAdventureHarvest(player.getMainHandItem());
@@ -47,7 +47,7 @@ public abstract class ManagedVegetationAdventureModeMixin {
     private static boolean isManagedVegetationCandidate(BlockState state) {
         return state.is(Blocks.SHORT_GRASS)
                 || state.is(Blocks.TALL_GRASS)
-                || state.is(Blocks.FERN)
+                || state.is(BlockRegistry.FERN.get())
                 || state.is(BlockRegistry.BLOOD_MOSS.get())
                 || state.is(BlockRegistry.MANAGED_FLOWER.get());
     }

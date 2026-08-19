@@ -108,8 +108,13 @@ public final class ManagedVegetationManager {
             if (current == null) {
                 continue;
             }
-            boolean consistent = reconcileVisibleState(level, current);
-            if (!consistent && current.nextTransitionGameTime() == ManagedVegetationNode.NO_TRANSITION) {
+            ManagedVegetationReconciliationResult reconciliation = reconcileVisibleState(level, current);
+            if (reconciliation == ManagedVegetationReconciliationResult.OBSTRUCTED) {
+                data.remove(current.position());
+                continue;
+            }
+            if (reconciliation == ManagedVegetationReconciliationResult.REPAIRABLE
+                    && current.nextTransitionGameTime() == ManagedVegetationNode.NO_TRANSITION) {
                 data.update(current.schedule(now + ManagedVegetationConfig.retryTicks()));
                 current = data.nodeAt(current.position()).orElseThrow();
             }
@@ -147,6 +152,15 @@ public final class ManagedVegetationManager {
             return;
         }
         try {
+            ManagedVegetationReconciliationResult reconciliation = reconcileVisibleState(level, current);
+            if (reconciliation == ManagedVegetationReconciliationResult.OBSTRUCTED) {
+                data.remove(current.position());
+                return;
+            }
+            if (reconciliation == ManagedVegetationReconciliationResult.REPAIRABLE) {
+                retry(data, current, now);
+                return;
+            }
             switch (current.lifecycle()) {
                 case REGROWING -> spawnFromProfile(level, data, current, now);
                 case SHORT_GRASS -> growTallGrass(level, data, current, now);
@@ -195,7 +209,7 @@ public final class ManagedVegetationManager {
             }
             case STATIC_FERN -> {
                 data.update(node.fern(entry.id()));
-                if (!level.setBlock(position, Blocks.FERN.defaultBlockState(), 3)) {
+                if (!level.setBlock(position, BlockRegistry.FERN.get().defaultBlockState(), 3)) {
                     data.update(node.schedule(now + ManagedVegetationConfig.retryTicks()));
                 }
             }
@@ -327,91 +341,147 @@ public final class ManagedVegetationManager {
             ManagedVegetationNode node,
             long now
     ) {
-        if (reconcileVisibleState(level, node)) {
+        ManagedVegetationReconciliationResult reconciliation = reconcileVisibleState(level, node);
+        if (reconciliation == ManagedVegetationReconciliationResult.VALID) {
             data.update(node.schedule(ManagedVegetationNode.NO_TRANSITION));
+        } else if (reconciliation == ManagedVegetationReconciliationResult.OBSTRUCTED) {
+            data.remove(node.position());
         } else {
             retry(data, node, now);
         }
     }
 
     /** Repairs only empty space or this node's own partial representation. */
-    private static boolean reconcileVisibleState(ServerLevel level, ManagedVegetationNode node) {
+    static ManagedVegetationReconciliationResult reconcileVisibleState(
+            ServerLevel level,
+            ManagedVegetationNode node
+    ) {
+        ManagedVegetationReconciliationResult classification = classifyVisibleState(level, node);
+        if (classification != ManagedVegetationReconciliationResult.REPAIRABLE) {
+            return classification;
+        }
+        return repairVisibleState(level, node)
+                ? ManagedVegetationReconciliationResult.VALID
+                : ManagedVegetationReconciliationResult.REPAIRABLE;
+    }
+
+    private static ManagedVegetationReconciliationResult classifyVisibleState(
+            ServerLevel level,
+            ManagedVegetationNode node
+    ) {
         BlockPos position = node.position();
         if (!ManagedVegetationPlacementRules.hasValidSubstrate(level::getBlockState, position)) {
-            return false;
+            return ManagedVegetationReconciliationResult.OBSTRUCTED;
         }
         return switch (node.lifecycle()) {
-            case REGROWING -> reconcileSingleBlock(
-                    level, position, BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get().defaultBlockState(),
+            case REGROWING -> classifySingleBlock(
+                    level, position,
                     state -> state.is(BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get())
             );
-            case SHORT_GRASS -> reconcileSingleBlock(
-                    level, position, Blocks.SHORT_GRASS.defaultBlockState(), state -> state.is(Blocks.SHORT_GRASS)
+            case SHORT_GRASS -> classifySingleBlock(
+                    level, position, state -> state.is(Blocks.SHORT_GRASS)
             );
-            case FERN -> reconcileSingleBlock(
-                    level, position, Blocks.FERN.defaultBlockState(), state -> state.is(Blocks.FERN)
+            case FERN -> classifySingleBlock(
+                    level, position, state -> state.is(BlockRegistry.FERN.get())
             );
-            case BLOOD_MOSS -> reconcileSingleBlock(
+            case BLOOD_MOSS -> classifySingleBlock(
                     level,
                     position,
-                    BlockRegistry.BLOOD_MOSS.get().defaultBlockState(),
                     state -> state.is(BlockRegistry.BLOOD_MOSS.get())
             );
-            case TALL_GRASS -> reconcileTallGrass(level, position);
-            case FLOWER -> reconcileFlower(level, node);
+            case TALL_GRASS -> classifyTallGrass(level, position);
+            case FLOWER -> classifyFlower(level, node);
         };
     }
 
-    private static boolean reconcileSingleBlock(
+    private static ManagedVegetationReconciliationResult classifySingleBlock(
             ServerLevel level,
             BlockPos position,
-            net.minecraft.world.level.block.state.BlockState desired,
             java.util.function.Predicate<net.minecraft.world.level.block.state.BlockState> expected
     ) {
         if (!isClear(level, position.above()) || !isClear(level, position.above(2))) {
-            return false;
+            return ManagedVegetationReconciliationResult.OBSTRUCTED;
         }
         var current = level.getBlockState(position);
         if (expected.test(current)) {
-            return true;
+            return ManagedVegetationReconciliationResult.VALID;
         }
-        return current.isAir() && current.getFluidState().isEmpty() && level.setBlock(position, desired, 3);
+        return current.isAir() && current.getFluidState().isEmpty()
+                ? ManagedVegetationReconciliationResult.REPAIRABLE
+                : ManagedVegetationReconciliationResult.OBSTRUCTED;
     }
 
-    private static boolean reconcileTallGrass(ServerLevel level, BlockPos position) {
+    private static ManagedVegetationReconciliationResult classifyTallGrass(
+            ServerLevel level,
+            BlockPos position
+    ) {
         var lower = level.getBlockState(position);
         var upper = level.getBlockState(position.above());
-        if (lower.is(Blocks.TALL_GRASS) && upper.is(Blocks.TALL_GRASS)
+        if (ManagedVegetationService.hasLiveRepresentation(
+                level,
+                ManagedVegetationNode.regrowing(position, 0L).tallGrass(ManagedVegetationProfile.GRASS_FAMILY_ID)
+        )
                 && isClear(level, position.above(2))) {
-            return true;
+            return ManagedVegetationReconciliationResult.VALID;
         }
         boolean safeLower = lower.isAir() || lower.is(Blocks.TALL_GRASS);
         boolean safeUpper = upper.isAir() || upper.is(Blocks.TALL_GRASS);
         if (!safeLower || !safeUpper || !isClear(level, position.above(2))) {
-            return false;
+            return ManagedVegetationReconciliationResult.OBSTRUCTED;
         }
-        removeOwnedTallGrass(level, position);
-        DoublePlantBlock.placeAt(level, Blocks.TALL_GRASS.defaultBlockState(), position, 3);
-        return level.getBlockState(position).is(Blocks.TALL_GRASS)
-                && level.getBlockState(position.above()).is(Blocks.TALL_GRASS);
+        return ManagedVegetationReconciliationResult.REPAIRABLE;
     }
 
-    private static boolean reconcileFlower(ServerLevel level, ManagedVegetationNode node) {
+    private static ManagedVegetationReconciliationResult classifyFlower(
+            ServerLevel level,
+            ManagedVegetationNode node
+    ) {
         BlockPos position = node.position();
         var species = node.flowerSpeciesId().orElse(null);
         if (species == null || ManagedFlowerSpecies.definition(species).isEmpty()
                 || !isClear(level, position.above()) || !isClear(level, position.above(2))) {
-            return false;
+            return ManagedVegetationReconciliationResult.OBSTRUCTED;
         }
         var current = level.getBlockState(position);
         if (current.is(BlockRegistry.MANAGED_FLOWER.get())
                 && level.getBlockEntity(position) instanceof ManagedFlowerBlockEntity flower
                 && flower.matches(species, node.flowerStage())) {
-            return true;
+            return ManagedVegetationReconciliationResult.VALID;
         }
         if (!(current.isAir() || current.is(BlockRegistry.MANAGED_FLOWER.get()))) {
-            return false;
+            return ManagedVegetationReconciliationResult.OBSTRUCTED;
         }
+        return ManagedVegetationReconciliationResult.REPAIRABLE;
+    }
+
+    private static boolean repairVisibleState(ServerLevel level, ManagedVegetationNode node) {
+        return switch (node.lifecycle()) {
+            case REGROWING -> level.setBlock(
+                    node.position(), BlockRegistry.MANAGED_VEGETATION_CONTROLLER.get().defaultBlockState(), 3
+            );
+            case SHORT_GRASS -> level.setBlock(node.position(), Blocks.SHORT_GRASS.defaultBlockState(), 3);
+            case FERN -> level.setBlock(node.position(), BlockRegistry.FERN.get().defaultBlockState(), 3);
+            case BLOOD_MOSS -> level.setBlock(
+                    node.position(), BlockRegistry.BLOOD_MOSS.get().defaultBlockState(), 3
+            );
+            case TALL_GRASS -> repairTallGrass(level, node.position());
+            case FLOWER -> repairFlower(level, node);
+        };
+    }
+
+    private static boolean repairTallGrass(ServerLevel level, BlockPos position) {
+        removeOwnedTallGrass(level, position);
+        DoublePlantBlock.placeAt(level, Blocks.TALL_GRASS.defaultBlockState(), position, 3);
+        return ManagedVegetationService.hasLiveRepresentation(
+                level,
+                ManagedVegetationNode.regrowing(position, 0L).tallGrass(ManagedVegetationProfile.GRASS_FAMILY_ID)
+        );
+    }
+
+    private static boolean repairFlower(ServerLevel level, ManagedVegetationNode node) {
+        BlockPos position = node.position();
+        var species = node.flowerSpeciesId().orElseThrow();
+        var current = level.getBlockState(position);
         if (current.is(BlockRegistry.MANAGED_FLOWER.get())) {
             level.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
         }

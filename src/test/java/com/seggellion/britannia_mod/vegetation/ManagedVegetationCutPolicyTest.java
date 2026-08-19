@@ -45,9 +45,6 @@ class ManagedVegetationCutPolicyTest {
         assertTrue(ManagedVegetationService.isOwnedState(
                 ManagedVegetationLifecycle.TALL_GRASS, Blocks.TALL_GRASS.defaultBlockState()
         ));
-        assertTrue(ManagedVegetationService.isOwnedState(
-                ManagedVegetationLifecycle.FERN, Blocks.FERN.defaultBlockState()
-        ));
         assertFalse(ManagedVegetationService.isOwnedState(
                 ManagedVegetationLifecycle.SHORT_GRASS, Blocks.FERN.defaultBlockState()
         ));
@@ -59,5 +56,19 @@ class ManagedVegetationCutPolicyTest {
         assertTrue(ManagedVegetationCutTools.isSword(new ItemStack(Items.NETHERITE_SWORD)));
         assertFalse(ManagedVegetationCutTools.isSword(new ItemStack(Items.WOODEN_AXE)));
         assertTrue(SwordItem.class.isAssignableFrom(QualitySwordItem.class));
+    }
+
+    @Test
+    void authorizationMatrixKeepsPlayersSwordOnlyAndElevatedUsersToolAgnostic() {
+        ItemStack sword = new ItemStack(Items.IRON_SWORD);
+        ItemStack arbitrary = new ItemStack(Items.STICK);
+
+        assertTrue(ManagedVegetationCutTools.isAuthorized(false, false, sword));
+        assertFalse(ManagedVegetationCutTools.isAuthorized(false, false, ItemStack.EMPTY));
+        assertFalse(ManagedVegetationCutTools.isAuthorized(false, false, arbitrary));
+        assertTrue(ManagedVegetationCutTools.isAuthorized(true, false, ItemStack.EMPTY));
+        assertTrue(ManagedVegetationCutTools.isAuthorized(true, false, arbitrary));
+        assertTrue(ManagedVegetationCutTools.isAuthorized(false, true, ItemStack.EMPTY));
+        assertTrue(ManagedVegetationCutTools.isAuthorized(false, true, arbitrary));
     }
 }

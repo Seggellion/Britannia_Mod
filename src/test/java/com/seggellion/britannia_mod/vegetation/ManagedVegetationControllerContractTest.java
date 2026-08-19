@@ -20,6 +20,7 @@ class ManagedVegetationControllerContractTest {
         assertTrue(blocks.contains("MANAGED_VEGETATION_CONTROLLER"));
         assertTrue(blocks.contains("noCollission()"));
         assertTrue(blocks.contains("noOcclusion()"));
+        assertTrue(blocks.contains(".replaceable()"));
         assertFalse(items.contains("MANAGED_VEGETATION_CONTROLLER"));
     }
 
@@ -75,9 +76,40 @@ class ManagedVegetationControllerContractTest {
         assertTrue(mixins.contains("client.ManagedVegetationAdventureModeMixin"));
         assertTrue(adventure.contains("blockActionRestricted"));
         assertTrue(adventure.contains("gameType == GameType.ADVENTURE"));
-        assertTrue(adventure.contains("ManagedVegetationCutTools.isSword"));
-        assertTrue(handler.contains("ManagedVegetationService.resolveNode"));
-        assertTrue(handler.contains("ManagedVegetationCutTools.isSword"));
+        assertTrue(adventure.contains("ManagedVegetationCutTools.canCut"));
+        assertTrue(adventure.contains("BlockRegistry.FERN.get()"));
+        assertFalse(adventure.contains("Blocks.FERN"));
+        assertTrue(handler.contains("ManagedVegetationService.resolveOwnedCutNode"));
+        assertTrue(handler.contains("ManagedVegetationCutTools.canCut"));
+    }
+
+    @Test
+    void placementAndReconciliationContractsPreferConstruction() throws IOException {
+        String handler = source("event/ManagedVegetationInteractionHandler.java");
+        String manager = source("vegetation/ManagedVegetationManager.java");
+        String service = source("vegetation/ManagedVegetationService.java");
+
+        assertTrue(handler.contains("EventPriority.LOWEST"));
+        assertTrue(handler.contains("event.isCanceled()"));
+        assertTrue(handler.contains("EntityMultiPlaceEvent"));
+        assertTrue(handler.contains("retireNodesClaimedByPlacement"));
+        assertTrue(manager.contains("ManagedVegetationReconciliationResult.OBSTRUCTED"));
+        assertTrue(manager.contains("data.remove(current.position())"));
+        assertTrue(service.contains("resolveOwnedCutNode"));
+        assertTrue(service.contains("hasLiveRepresentation"));
+    }
+
+    @Test
+    void everyManagedFernPathUsesTheExistingBritanniaFern() throws IOException {
+        String manager = source("vegetation/ManagedVegetationManager.java");
+        String service = source("vegetation/ManagedVegetationService.java");
+        String config = source("vegetation/ManagedVegetationConfig.java");
+
+        assertTrue(manager.contains("BlockRegistry.FERN.get().defaultBlockState()"));
+        assertFalse(manager.contains("Blocks.FERN"));
+        assertTrue(service.contains("case FERN -> state.is(BlockRegistry.FERN.get())"));
+        assertFalse(service.contains("case FERN -> state.is(Blocks.FERN)"));
+        assertTrue(config.contains("Britannia fern (britannia_mod:fern)"));
     }
 
     private static String source(String relative) throws IOException {

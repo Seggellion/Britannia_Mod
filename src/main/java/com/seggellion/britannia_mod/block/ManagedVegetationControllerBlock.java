@@ -1,7 +1,5 @@
 package com.seggellion.britannia_mod.block;
 
-import com.seggellion.britannia_mod.vegetation.ManagedVegetationLifecycle;
-import com.seggellion.britannia_mod.vegetation.ManagedVegetationSavedData;
 import com.seggellion.britannia_mod.vegetation.ManagedVegetationService;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -27,18 +25,6 @@ public final class ManagedVegetationControllerBlock extends Block {
                 && !ManagedVegetationService.registerPlacedController(serverLevel, position)) {
             level.removeBlock(position, false);
         }
-    }
-
-    @Override
-    protected void onRemove(BlockState state, Level level, BlockPos position, BlockState newState, boolean movedByPiston) {
-        if (!level.isClientSide && state.getBlock() != newState.getBlock()
-                && level instanceof ServerLevel serverLevel) {
-            ManagedVegetationSavedData data = ManagedVegetationSavedData.get(serverLevel);
-            data.nodeAt(position)
-                    .filter(node -> node.lifecycle() == ManagedVegetationLifecycle.REGROWING)
-                    .ifPresent(node -> data.remove(position));
-        }
-        super.onRemove(state, level, position, newState, movedByPiston);
     }
 
     @Override

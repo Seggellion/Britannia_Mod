@@ -90,9 +90,27 @@ class ManagedVegetationProfileTest {
         assertTrue(ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_ENABLED);
         assertEquals(4_096, ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_CHANCE_DENOMINATOR);
         assertEquals(2, ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR);
+        assertEquals(12_288L, ManagedVegetationConfig.scaledNaturalGrowthChanceDenominator(4_096, 2));
+        assertEquals(6_144L, ManagedVegetationConfig.scaledNaturalGrowthChanceDenominator(4_096, 1));
         RandomSource random = RandomSource.create(42L);
         assertTrue(ManagedVegetationConfig.oneIn(random, 1));
         assertThrows(IllegalArgumentException.class, () -> ManagedVegetationConfig.oneIn(random, 0));
         assertThrows(IllegalArgumentException.class, () -> ManagedVegetationConfig.oneIn(null, 10));
+    }
+
+    @Test
+    void legacyDivisorTwoReceivesOnlyTheFiftyPercentNaturalDiscoverySlowdown() {
+        long oldEffectiveInterval = (long) ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_CHANCE_DENOMINATOR
+                * ManagedVegetationConfig.DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR;
+
+        assertEquals(8_192L, oldEffectiveInterval);
+        assertEquals(oldEffectiveInterval * 3L / 2L,
+                ManagedVegetationConfig.scaledNaturalGrowthChanceDenominator(4_096, 2));
+        assertEquals(1_200, ManagedVegetationConfig.DEFAULT_CUT_REGROW_MIN_TICKS);
+        assertEquals(2_400, ManagedVegetationConfig.DEFAULT_CUT_REGROW_MAX_TICKS);
+        assertEquals(2_400, ManagedVegetationConfig.DEFAULT_GRASS_GROWTH_MIN_TICKS);
+        assertEquals(4_800, ManagedVegetationConfig.DEFAULT_GRASS_GROWTH_MAX_TICKS);
+        assertEquals(200, ManagedVegetationConfig.DEFAULT_RETRY_TICKS);
+        assertEquals(1_200, ManagedVegetationConfig.DEFAULT_FLOWER_STAGE_TICK_MULTIPLIER);
     }
 }

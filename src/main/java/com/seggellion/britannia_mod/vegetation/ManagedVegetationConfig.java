@@ -11,6 +11,8 @@ public final class ManagedVegetationConfig {
     public static final boolean DEFAULT_NATURAL_GROWTH_ENABLED = true;
     public static final int DEFAULT_NATURAL_GROWTH_CHANCE_DENOMINATOR = 4_096;
     public static final int DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR = 2;
+    public static final int NATURAL_GROWTH_INTERVAL_SCALE_NUMERATOR = 3;
+    public static final int NATURAL_GROWTH_INTERVAL_SCALE_DENOMINATOR = 2;
     public static final int DEFAULT_CUT_REGROW_MIN_TICKS = 1_200;
     public static final int DEFAULT_CUT_REGROW_MAX_TICKS = 2_400;
     public static final int DEFAULT_GRASS_GROWTH_MIN_TICKS = 2_400;
@@ -37,7 +39,7 @@ public final class ManagedVegetationConfig {
         builder.push("managedVegetation");
         GRASS_WEIGHT = builder.comment("Relative weight for the short-grass family.")
                 .defineInRange("grassWeight", DEFAULT_GRASS_WEIGHT, 1, 1_000_000);
-        FERN_WEIGHT = builder.comment("Relative weight for vanilla fern.")
+        FERN_WEIGHT = builder.comment("Relative weight for Britannia fern (britannia_mod:fern).")
                 .defineInRange("fernWeight", DEFAULT_FERN_WEIGHT, 1, 1_000_000);
         FLOWER_WEIGHT = builder.comment("Relative weight for a random existing UltimaCraft flower (default 5%).")
                 .defineInRange("flowerWeight", DEFAULT_FLOWER_WEIGHT, 1, 1_000_000);
@@ -53,7 +55,7 @@ public final class ManagedVegetationConfig {
                 1_000_000
         );
         NATURAL_GROWTH_SPEED_DIVISOR = builder.comment(
-                "Additional natural-growth slowdown; 2 halves placement speed (effective default 1/8192)."
+                "Additional natural-growth slowdown retained for compatibility; 2 gives an effective default 1/12288."
         ).defineInRange(
                 "naturalGrowthSpeedDivisor",
                 DEFAULT_NATURAL_GROWTH_SPEED_DIVISOR,
@@ -110,13 +112,24 @@ public final class ManagedVegetationConfig {
     }
 
     public static long effectiveNaturalGrowthChanceDenominator() {
-        return (long) naturalGrowthChanceDenominator() * naturalGrowthSpeedDivisor();
+        return scaledNaturalGrowthChanceDenominator(
+                naturalGrowthChanceDenominator(), naturalGrowthSpeedDivisor()
+        );
     }
 
     public static boolean shouldNaturallyGrow(RandomSource random) {
         return naturalGrowthEnabled()
-                && oneIn(random, naturalGrowthChanceDenominator())
-                && oneIn(random, naturalGrowthSpeedDivisor());
+                && oneIn(random, Math.toIntExact(effectiveNaturalGrowthChanceDenominator()));
+    }
+
+    static long scaledNaturalGrowthChanceDenominator(int baseDenominator, int speedDivisor) {
+        if (baseDenominator <= 0 || speedDivisor <= 0) {
+            throw new IllegalArgumentException("Natural growth denominators must be positive");
+        }
+        long previousInterval = Math.multiplyExact((long) baseDenominator, speedDivisor);
+        long scaledNumerator = Math.multiplyExact(previousInterval, NATURAL_GROWTH_INTERVAL_SCALE_NUMERATOR);
+        return (scaledNumerator + NATURAL_GROWTH_INTERVAL_SCALE_DENOMINATOR - 1L)
+                / NATURAL_GROWTH_INTERVAL_SCALE_DENOMINATOR;
     }
 
     static boolean oneIn(RandomSource random, int denominator) {

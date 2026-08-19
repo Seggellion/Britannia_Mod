@@ -90,4 +90,36 @@ class ManagedVegetationSavedDataTest {
         assertTrue(data.pollDue(10_000L, 1).isEmpty());
         assertEquals(java.util.List.of(current), data.pollDue(10_001L, 1));
     }
+
+    @Test
+    void placementAtAnyReservedHeightRetiresOwnershipAndStaysRetiredAfterReload() {
+        for (int offset = 0; offset < ManagedVegetationPlacementRules.REQUIRED_VERTICAL_SPACE; offset++) {
+            ManagedVegetationSavedData data = new ManagedVegetationSavedData();
+            BlockPos base = new BlockPos(20 + offset, 70, 20);
+            data.register(ManagedVegetationNode.regrowing(base, 10L)
+                    .tallGrass(ManagedVegetationProfile.GRASS_FAMILY_ID));
+
+            assertEquals(1, ManagedVegetationService.retireNodesClaimedByPlacement(
+                    data, java.util.List.of(base.above(offset))
+            ));
+            assertTrue(data.nodeAt(base).isEmpty());
+
+            CompoundTag saved = data.save(new CompoundTag(), null);
+            assertTrue(ManagedVegetationSavedData.load(saved, null).nodeAt(base).isEmpty());
+        }
+    }
+
+    @Test
+    void multiPlacementRetiresEachClaimedNodeOnceWithoutClaimingOutsideClearance() {
+        ManagedVegetationSavedData data = new ManagedVegetationSavedData();
+        BlockPos first = new BlockPos(30, 70, 30);
+        BlockPos second = new BlockPos(34, 70, 30);
+        data.register(ManagedVegetationNode.regrowing(first, 10L));
+        data.register(ManagedVegetationNode.regrowing(second, 10L));
+
+        assertEquals(2, ManagedVegetationService.retireNodesClaimedByPlacement(data, java.util.List.of(
+                first, first.above(), second.above(2), first.above(3)
+        )));
+        assertTrue(data.snapshot().isEmpty());
+    }
 }

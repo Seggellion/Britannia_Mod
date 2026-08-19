@@ -280,6 +280,7 @@ public static final DeferredHolder<Block, ManagedVegetationControllerBlock> MANA
                     .noCollission()
                     .noOcclusion()
                     .instabreak()
+                    .replaceable()
                     .sound(SoundType.GRASS)
                     .isViewBlocking((state, level, pos) -> false)
                     .isSuffocating((state, level, pos) -> false))
