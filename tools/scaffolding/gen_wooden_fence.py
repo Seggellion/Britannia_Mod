@@ -150,7 +150,7 @@ def entry_for(bits, facing):
     y = rotation_for(bits, facing)
     if y:
         entry["y"] = y
-    entry["uvlock"] = True
+    # No uvlock: the wood grain is directional and must turn with the rail, not stay world-locked.
     return entry
 
 
