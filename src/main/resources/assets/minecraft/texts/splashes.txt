@@ -161,4 +161,6 @@ The build passed the interesting parts.
 spam spam humbug.
 recsu recdu.
 §c BANK vendor buy the guards.
+§c PKBladeSpirits[BTF]
+§c DreadPirateRoberts
 How doth Giant Squids crush their prey?
