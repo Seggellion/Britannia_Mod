@@ -1,0 +1,38 @@
+{
+  "variants": {
+    "": [
+      { "model": "minecraft:block/stone_block1_r0" },
+      { "model": "minecraft:block/stone_block1_r90" },
+      { "model": "minecraft:block/stone_block1_r180" },
+      { "model": "minecraft:block/stone_block1_r270" },
+      { "model": "minecraft:block/stone_block1_m0" },
+      { "model": "minecraft:block/stone_block1_m90" },
+      { "model": "minecraft:block/stone_block1_m180" },
+      { "model": "minecraft:block/stone_block1_m270" },
+      { "model": "minecraft:block/stone_block2_r0" },
+      { "model": "minecraft:block/stone_block2_r90" },
+      { "model": "minecraft:block/stone_block2_r180" },
+      { "model": "minecraft:block/stone_block2_r270" },
+      { "model": "minecraft:block/stone_block2_m0" },
+      { "model": "minecraft:block/stone_block2_m90" },
+      { "model": "minecraft:block/stone_block2_m180" },
+      { "model": "minecraft:block/stone_block2_m270" },
+      { "model": "minecraft:block/stone_block3_r0" },
+      { "model": "minecraft:block/stone_block3_r90" },
+      { "model": "minecraft:block/stone_block3_r180" },
+      { "model": "minecraft:block/stone_block3_r270" },
+      { "model": "minecraft:block/stone_block3_m0" },
+      { "model": "minecraft:block/stone_block3_m90" },
+      { "model": "minecraft:block/stone_block3_m180" },
+      { "model": "minecraft:block/stone_block3_m270" },
+      { "model": "minecraft:block/stone_block4_r0" },
+      { "model": "minecraft:block/stone_block4_r90" },
+      { "model": "minecraft:block/stone_block4_r180" },
+      { "model": "minecraft:block/stone_block4_r270" },
+      { "model": "minecraft:block/stone_block4_m0" },
+      { "model": "minecraft:block/stone_block4_m90" },
+      { "model": "minecraft:block/stone_block4_m180" },
+      { "model": "minecraft:block/stone_block4_m270" }
+    ]
+  }
+}
