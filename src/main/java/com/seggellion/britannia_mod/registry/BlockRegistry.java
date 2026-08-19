@@ -16,6 +16,7 @@ import com.seggellion.britannia_mod.block.entity.TrainingDummyBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MoongateBlockEntity;
 import com.seggellion.britannia_mod.block.DecorativePropBlock;
 import com.seggellion.britannia_mod.block.DoubleWallBlock;
+import com.seggellion.britannia_mod.block.WallArtProfile;
 import com.seggellion.britannia_mod.block.SandstoneBattlementBlock;
 import com.seggellion.britannia_mod.block.SandstoneWindowBlock;
 import com.seggellion.britannia_mod.block.MirrorableWallBlock;
@@ -2327,7 +2328,10 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_DIAGONAL_EAST = BLOCKS.register("plaster_wall_support_diagonal_east", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH = BLOCKS.register("plaster_wall_support_diagonal_south", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_SUPPORT_OPEN = BLOCKS.register("plaster_wall_support_open", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
-    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_BLANK = BLOCKS.register("plaster_wall_blank", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    // WallArtProfile.BLANK_PLASTER: this family's _t_junction_branch_right model was re-authored as
+    // a single run on the far edge with no branch, so its collision cannot be the canonical
+    // "facing edge plus branch edge" the other fifteen families share.
+    public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_WALL_BLANK = BLOCKS.register("plaster_wall_blank", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion(), WallArtProfile.BLANK_PLASTER));
     public static final DeferredHolder<Block, MirrorableWallBlock> PLASTER_WALL_AND_SUPPORT_BLANK = BLOCKS.register("plaster_wall_and_support_blank", () -> new MirrorableWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_ARCHWAY = BLOCKS.register("plaster_archway", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, DoubleWallBlock> PLASTER_AND_STONE_WINDOW = BLOCKS.register("plaster_and_stone_window", () -> new DoubleWallBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));

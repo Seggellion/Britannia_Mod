@@ -21,6 +21,18 @@ public final class ArchitecturalTags {
     public static final TagKey<Block> WALL_CONNECTABLE = TagKey.create(
         Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "wall_connectable"));
 
+    /**
+     * Blocks a bannister run treats as a wall it can bury its end in.
+     *
+     * <p>Narrower than {@link #WALL_CONNECTABLE}: that one answers "does the wall run continue
+     * through here", which a doorway does, while this one answers "is there enough solid block here
+     * to hide a rail end", which a doorway does not. Every {@code DoubleWallBlock} qualifies in
+     * code; the tag is for anything else - see
+     * {@code data/britannia_mod/tags/block/wall_terminal.json}.
+     */
+    public static final TagKey<Block> WALL_TERMINAL = TagKey.create(
+        Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "wall_terminal"));
+
     private ArchitecturalTags() {
     }
 }

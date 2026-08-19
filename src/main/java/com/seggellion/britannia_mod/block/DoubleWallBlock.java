@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
@@ -52,16 +51,18 @@ public class DoubleWallBlock extends Block {
     public static final BooleanProperty BRANCH_RIGHT = BooleanProperty.create("branch_right");
 
     /**
-     * Wall depth used by the collision boxes. The approved straight models occupy roughly
-     * {@code z 0..7} once their base beams are counted, so the edge strips match the art.
+     * Which edges this family's models actually fill. Every family but one draws the shape its
+     * state names; see {@link WallArtProfile}.
      */
-    private static final VoxelShape EDGE_NORTH = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 7.0D);
-    private static final VoxelShape EDGE_SOUTH = Block.box(0.0D, 0.0D, 9.0D, 16.0D, 16.0D, 16.0D);
-    private static final VoxelShape EDGE_WEST  = Block.box(0.0D, 0.0D, 0.0D, 7.0D, 16.0D, 16.0D);
-    private static final VoxelShape EDGE_EAST  = Block.box(9.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
+    private final WallArtProfile artProfile;
 
     public DoubleWallBlock(BlockBehaviour.Properties properties) {
+        this(properties, WallArtProfile.CANONICAL);
+    }
+
+    public DoubleWallBlock(BlockBehaviour.Properties properties, WallArtProfile artProfile) {
         super(properties);
+        this.artProfile = artProfile;
         this.registerDefaultState(this.defaultBlockState()
             .setValue(FACING, Direction.NORTH)
             .setValue(SHAPE, WallShape.STRAIGHT)
@@ -147,15 +148,21 @@ public class DoubleWallBlock extends Block {
      * {@link ArchitecturalTags#WALL_CONNECTABLE}.
      */
     private static boolean connectsTo(BlockState neighbour) {
-        return neighbour.getBlock() instanceof DoubleWallBlock
+        return isWallRun(neighbour)
             || neighbour.getBlock() instanceof DoorBlock
             || neighbour.is(ArchitecturalTags.WALL_CONNECTABLE);
     }
 
-    /** The perpendicular edge a state currently describes. */
-    private static Direction secondaryOf(BlockState state) {
-        Direction facing = state.getValue(FACING);
-        return state.getValue(BRANCH_RIGHT) ? facing.getClockWise() : facing.getCounterClockWise();
+    /**
+     * Whether a neighbour is a solid architectural wall - one of this family, or anything a
+     * datapack has added to {@link ArchitecturalTags#WALL_TERMINAL}.
+     *
+     * <p>Separate from {@link #connectsTo} because a doorway is a continuation of a wall run but is
+     * not something another run can be buried in; {@link BannisterBlock} needs the narrower test.
+     */
+    public static boolean isWallRun(BlockState neighbour) {
+        return neighbour.getBlock() instanceof DoubleWallBlock
+            || neighbour.is(ArchitecturalTags.WALL_TERMINAL);
     }
 
     /* ─── rotation & mirroring ───────────────────────────────── */
@@ -178,24 +185,15 @@ public class DoubleWallBlock extends Block {
 
     /* ─── shapes ─────────────────────────────────────────────── */
 
-    private static VoxelShape edge(Direction direction) {
-        return switch (direction) {
-            case SOUTH -> EDGE_SOUTH;
-            case EAST  -> EDGE_EAST;
-            case WEST  -> EDGE_WEST;
-            default    -> EDGE_NORTH;
-        };
+    /** The edges this block's art fills, for tests and for anything that has to reason about it. */
+    public WallArtProfile artProfile() {
+        return this.artProfile;
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        Direction facing = state.getValue(FACING);
-        VoxelShape main = edge(facing);
-
-        if (state.getValue(SHAPE) == WallShape.STRAIGHT) {
-            return main;
-        }
-        return Shapes.or(main, edge(secondaryOf(state)));
+        return this.artProfile.shapeFor(
+            state.getValue(SHAPE), state.getValue(FACING), state.getValue(BRANCH_RIGHT));
     }
 
     @Override

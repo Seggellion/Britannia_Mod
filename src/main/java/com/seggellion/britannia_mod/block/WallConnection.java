@@ -2,7 +2,7 @@ package com.seggellion.britannia_mod.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.Predicate;
@@ -30,7 +30,7 @@ public record WallConnection(WallShape shape, Direction facing, boolean branchRi
      * @param currentBranchRight the block's present branch side, used the same way
      * @param isPeer             what counts as a connecting neighbour
      */
-    public static WallConnection derive(LevelAccessor level, BlockPos pos,
+    public static WallConnection derive(BlockGetter level, BlockPos pos,
                                         Direction currentFacing, boolean currentBranchRight,
                                         Predicate<BlockState> isPeer) {
 

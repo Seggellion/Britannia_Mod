@@ -1,92 +1,182 @@
 {
   "variants": {
-    "facing=north,shape=straight,branch_right=false": {
+    "facing=north,shape=straight,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister"
     },
-    "facing=north,shape=straight,branch_right=true": {
+    "facing=north,shape=straight,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch"
+    },
+    "facing=north,shape=straight,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister"
     },
-    "facing=north,shape=corner,branch_right=false": {
+    "facing=north,shape=straight,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch_right"
+    },
+    "facing=north,shape=corner,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner"
     },
-    "facing=north,shape=corner,branch_right=true": {
+    "facing=north,shape=corner,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner"
+    },
+    "facing=north,shape=corner,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner_branch_right"
     },
-    "facing=north,shape=t_junction,branch_right=false": {
+    "facing=north,shape=corner,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner_branch_right"
+    },
+    "facing=north,shape=t_junction,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction"
     },
-    "facing=north,shape=t_junction,branch_right=true": {
+    "facing=north,shape=t_junction,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction"
+    },
+    "facing=north,shape=t_junction,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction_branch_right"
     },
-    "facing=east,shape=straight,branch_right=false": {
+    "facing=north,shape=t_junction,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction_branch_right"
+    },
+    "facing=east,shape=straight,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister",
       "y": 90
     },
-    "facing=east,shape=straight,branch_right=true": {
+    "facing=east,shape=straight,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch",
+      "y": 90
+    },
+    "facing=east,shape=straight,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister",
       "y": 90
     },
-    "facing=east,shape=corner,branch_right=false": {
+    "facing=east,shape=straight,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch_right",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner",
       "y": 90
     },
-    "facing=east,shape=corner,branch_right=true": {
+    "facing=east,shape=corner,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner",
+      "y": 90
+    },
+    "facing=east,shape=corner,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner_branch_right",
       "y": 90
     },
-    "facing=east,shape=t_junction,branch_right=false": {
+    "facing=east,shape=corner,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner_branch_right",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction",
       "y": 90
     },
-    "facing=east,shape=t_junction,branch_right=true": {
+    "facing=east,shape=t_junction,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction",
+      "y": 90
+    },
+    "facing=east,shape=t_junction,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction_branch_right",
       "y": 90
     },
-    "facing=south,shape=straight,branch_right=false": {
+    "facing=east,shape=t_junction,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction_branch_right",
+      "y": 90
+    },
+    "facing=south,shape=straight,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister",
       "y": 180
     },
-    "facing=south,shape=straight,branch_right=true": {
+    "facing=south,shape=straight,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch",
+      "y": 180
+    },
+    "facing=south,shape=straight,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister",
       "y": 180
     },
-    "facing=south,shape=corner,branch_right=false": {
+    "facing=south,shape=straight,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch_right",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner",
       "y": 180
     },
-    "facing=south,shape=corner,branch_right=true": {
+    "facing=south,shape=corner,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner",
+      "y": 180
+    },
+    "facing=south,shape=corner,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner_branch_right",
       "y": 180
     },
-    "facing=south,shape=t_junction,branch_right=false": {
+    "facing=south,shape=corner,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner_branch_right",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction",
       "y": 180
     },
-    "facing=south,shape=t_junction,branch_right=true": {
+    "facing=south,shape=t_junction,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction",
+      "y": 180
+    },
+    "facing=south,shape=t_junction,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction_branch_right",
       "y": 180
     },
-    "facing=west,shape=straight,branch_right=false": {
+    "facing=south,shape=t_junction,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction_branch_right",
+      "y": 180
+    },
+    "facing=west,shape=straight,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister",
       "y": 270
     },
-    "facing=west,shape=straight,branch_right=true": {
+    "facing=west,shape=straight,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch",
+      "y": 270
+    },
+    "facing=west,shape=straight,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister",
       "y": 270
     },
-    "facing=west,shape=corner,branch_right=false": {
+    "facing=west,shape=straight,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_wall_branch_right",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner",
       "y": 270
     },
-    "facing=west,shape=corner,branch_right=true": {
+    "facing=west,shape=corner,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner",
+      "y": 270
+    },
+    "facing=west,shape=corner,branch_right=true,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_corner_branch_right",
       "y": 270
     },
-    "facing=west,shape=t_junction,branch_right=false": {
+    "facing=west,shape=corner,branch_right=true,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_corner_branch_right",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=false,wall_branch=false": {
       "model": "britannia_mod:block/structure/bannister_t_junction",
       "y": 270
     },
-    "facing=west,shape=t_junction,branch_right=true": {
+    "facing=west,shape=t_junction,branch_right=false,wall_branch=true": {
+      "model": "britannia_mod:block/structure/bannister_t_junction",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=true,wall_branch=false": {
+      "model": "britannia_mod:block/structure/bannister_t_junction_branch_right",
+      "y": 270
+    },
+    "facing=west,shape=t_junction,branch_right=true,wall_branch=true": {
       "model": "britannia_mod:block/structure/bannister_t_junction_branch_right",
       "y": 270
     }
