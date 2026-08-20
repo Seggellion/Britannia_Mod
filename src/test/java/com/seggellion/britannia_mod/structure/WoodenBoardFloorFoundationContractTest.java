@@ -25,11 +25,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * an identity, not a look: it has to be visually indistinguishable from the floor it mirrors or
  * every house that uses it changes appearance.
  *
- * <p>So these tests hold it to the floor's own assets rather than to a copy of them, and check
- * that every variant it offers can actually be drawn. That last one matters: {@code
- * wooden_board_floor} itself declares fifteen variants and ships fourteen textures, so its
- * fifteenth renders as the missing-texture checkerboard. That defect is left where it is; this
- * block does not inherit it, and this test is what stops it being reintroduced.
+ * <p>So these tests hold it to the floor's own assets rather than to a copy of them, and hold
+ * both halves of the family to the same rule: every variant either has a texture or does not
+ * exist. The family shipped one short -- fifteen models against fourteen boards -- and the
+ * fifteenth drew the missing-texture checkerboard rather than failing, which is why nothing
+ * noticed for the best part of a year.
  */
 class WoodenBoardFloorFoundationContractTest {
 
@@ -94,16 +94,35 @@ class WoodenBoardFloorFoundationContractTest {
     }
 
     @Test
-    void itOffersTheSameVariantsAsTheFloorItMirrorsMinusTheOneWithNoTexture() throws IOException {
+    void theFloorAndItsFoundationOfferExactlyTheSameVariants() throws IOException {
         long floorVariations = read("blockstates/wooden_board_floor.json").getAsJsonObject("variants")
                 .keySet().stream().map(WoodenBoardFloorFoundationContractTest::variationOf).distinct().count();
         long foundationVariations = blockstate().getAsJsonObject("variants")
                 .keySet().stream().map(WoodenBoardFloorFoundationContractTest::variationOf).distinct().count();
 
-        assertEquals(floorVariations - 1, foundationVariations,
-                "the foundation should offer every Wooden Board Floor variant that has a texture. "
-                        + "If the floor's missing wooden_board_floor_14.png is ever added, this "
-                        + "block should gain variation 14 and this expectation should become equality.");
+        assertEquals(floorVariations, foundationVariations,
+                "the structural floor and the flooring above it are the same boards; they cannot "
+                        + "offer different sets of them");
+    }
+
+    /**
+     * The floor itself, held to the same rule.
+     *
+     * <p>It used to declare a fifteenth variant whose texture has never existed -- commit
+     * cb9483db added fifteen models and fourteen PNGs, and wooden_board_floor_14.png is not a
+     * blob anywhere in this repository history. A variant with no texture renders as the
+     * missing-texture checkerboard rather than failing, so nothing but this catches it.
+     */
+    @Test
+    void everyVariantOfTheFloorItselfCanBeDrawn() throws IOException {
+        for (String variant : read("blockstates/wooden_board_floor.json")
+                .getAsJsonObject("variants").keySet()) {
+            int variation = variationOf(variant);
+            Path texture = ASSETS.resolve("textures/" + MODEL_DIR + "/wooden_board_floor_"
+                    + variation + ".png");
+            assertTrue(Files.exists(texture),
+                    "wooden_board_floor variation " + variation + " has no texture: " + texture);
+        }
     }
 
     @Test

@@ -22,10 +22,12 @@ stone_keep
     britannia_mod:lockable_metal_door, the same block the castle's four double doors use,
     with the same {Locked:1} block-entity data the castle stores.
 
-    The two stone pressure plates immediately inside the doorway and the two stone buttons
-    on the wall either side of it go with them. They were the iron doors' opening mechanism,
-    and LockableDoorBlock inherits DoorBlock.neighborChanged -- so left in place they would
-    open a locked keep on redstone, from the outside, for anybody. No other house has them.
+    The two stone pressure plates just inside the doorway and the two stone buttons on the
+    wall either side of it stay exactly where the keep was authored with them. They were the
+    iron doors' opening mechanism, and against a lockable door they would once have opened a
+    locked keep on redstone from outside -- but that is a housing rule, not a structure
+    problem, and LockableDoorBlock now refuses a signal while the door is locked. A house is
+    allowed to have a pressure plate in its own doorway.
 
 large_patio
     Its interior floor is 166 britannia_mod:wooden_board_floor. That is decorative flooring
@@ -44,11 +46,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import nbt_io
 from nbt_io import TAG_BYTE, TAG_COMPOUND, TAG_STRING
 
-AIR = 'minecraft:air'
-
 KEEP_DOOR_FROM = 'minecraft:iron_door'
 KEEP_DOOR_TO = 'britannia_mod:lockable_metal_door'
 LOCKABLE_DOOR_BE = 'britannia_mod:lockable_door'
+# Authored, and kept. Named here only so the verifier can prove they were not touched.
 KEEP_REDSTONE = ('minecraft:stone_pressure_plate', 'minecraft:stone_button')
 
 PATIO_FLOOR_FROM = 'britannia_mod:wooden_board_floor'
@@ -67,17 +68,6 @@ def block_positions(compound, names, wanted):
         if names[block['state'][1]] in wanted:
             out.append(tuple(block['pos'][1][1]))
     return out
-
-
-def ensure_air_state(compound, names):
-    """Index of a minecraft:air palette entry, appending one if the structure has none."""
-    for index, name in enumerate(names):
-        if name == AIR:
-            return index
-    entry = {'Name': (TAG_STRING, AIR)}
-    compound['palette'][1][1].append(entry)
-    names.append(AIR)
-    return len(names) - 1
 
 
 def rename_palette(compound, names, old, new):
@@ -117,19 +107,6 @@ def author_keep(compound):
         stamped += 1
     if stamped:
         notes.append('stamped {Locked:1} block-entity data onto %d door halves' % stamped)
-
-    # Retire the redstone that would open a locked door.
-    redstone = [index for index, name in enumerate(names) if name in KEEP_REDSTONE]
-    if redstone:
-        air = ensure_air_state(compound, names)
-        cleared = 0
-        for block in compound['blocks'][1][1]:
-            if block['state'][1] in redstone:
-                block['state'] = (block['state'][0], air)
-                block.pop('nbt', None)
-                cleared += 1
-        if cleared:
-            notes.append('cleared %d redstone blocks that bypassed the lock' % cleared)
 
     return notes
 
@@ -200,8 +177,11 @@ def verify(path, before_compound, after_compound):
             if block.get('nbt', (None, {}))[1].get('id', (None, None))[1] != LOCKABLE_DOOR_BE:
                 problems.append('a door leaf carries no lockable block-entity data')
                 break
-        if block_positions(after_compound, after_names, set(KEEP_REDSTONE)):
-            problems.append('lock-bypassing redstone survived')
+        before_redstone = set(block_positions(before_compound, before_names, set(KEEP_REDSTONE)))
+        after_redstone = set(block_positions(after_compound, after_names, set(KEEP_REDSTONE)))
+        if before_redstone != after_redstone:
+            problems.append("the keep authored redstone was disturbed: %s"
+                            % sorted(before_redstone ^ after_redstone))
 
     if name == 'large_patio.nbt':
         if PATIO_FLOOR_FROM in after_names:

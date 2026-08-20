@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.seggellion.britannia_mod.block.LockableDoorBlock;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.structure.StructureRecord;
 import com.seggellion.britannia_mod.structure.StructureRegionManager;
@@ -34,13 +35,24 @@ public class LockableDoorBlockEntity extends BlockEntity {
     }
 
     public void toggleLock() {
-        this.locked = !this.locked;
-        setChanged();
+        setLocked(!this.locked);
     }
 
+    /**
+     * The flag, and the door state that has to follow it.
+     *
+     * <p>A door standing open on a pressure plate when its house turns private would
+     * otherwise stay open: vanilla only re-evaluates a door when the signal changes, and the
+     * signal has not changed -- the lock has. So the lock drives the door rather than only
+     * being consulted when somebody clicks it.
+     *
+     * <p>Loading from NBT sets the field directly and deliberately does not come through
+     * here; a block entity being read back has no business writing block states.
+     */
     public void setLocked(boolean locked) {
         this.locked = locked;
         setChanged();
+        LockableDoorBlock.enforceLock(getLevel(), getBlockPos(), locked);
     }
     
 
