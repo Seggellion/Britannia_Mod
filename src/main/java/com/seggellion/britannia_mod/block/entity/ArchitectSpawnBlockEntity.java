@@ -1,19 +1,14 @@
 package com.seggellion.britannia_mod.block.entity;
 
-import com.seggellion.britannia_mod.client.renderer.CityNameBlockRenderer;
 import com.seggellion.britannia_mod.entity.ArchitectEntity;
 import com.seggellion.britannia_mod.entity.TownPersonEntity;
 import com.seggellion.britannia_mod.network.CityDataSync;
-import com.seggellion.britannia_mod.network.CityFoodSupplyCache;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
-import com.seggellion.britannia_mod.registry.EntityRegistry;
-import com.seggellion.britannia_mod.util.NameLoader;
-import com.seggellion.britannia_mod.util.Util;
+import com.seggellion.britannia_mod.service.spawn.LegacySpawnBlockMigrator;
 import com.seggellion.britannia_mod.util.HasCityName;
 
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.Connection;
-
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -24,7 +19,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,19 +27,53 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.jetbrains.annotations.Nullable;
-
+/**
+ * A legacy Architect post, waiting to become an authoritative one.
+ *
+ * <h2>What this block used to decide, and no longer does</h2>
+ * It carried its own economy: 400 food and 200 wood in the city, polled every 1200 ticks, and
+ * on that alone it spawned an Architect and two townspeople, or despawned everything it had
+ * spawned. Neither number had anything to do with building a house, and worse, it was a second
+ * opinion -- a city Rails considered ineligible could still be staffed here, and a city Rails
+ * had staffed could be emptied by a bad harvest.
+ *
+ * <p>Rails now owns the decision entirely: a treasury floor and standing stock of the five
+ * materials the Architect builds from, with its own dwell rules so a post does not flap. None
+ * of those numbers appear in this repository, and none should. The count of economic thresholds
+ * in mod production code is zero.
+ *
+ * <h2>What it does instead</h2>
+ * It migrates itself, once, onto the same authoritative post architecture the merchant and
+ * trader blocks were moved onto in Vendor/Trader Milestone 16 -- and then it is gone. From
+ * there the existing pipeline does everything: the post registers with Rails carrying
+ * {@code economic:architect_vendor}, Rails opens or closes an assignment against it, and
+ * {@code ServiceNpcAssignmentReconciler} materializes or removes the Architect to match. That
+ * reconciler is also what stamps the entity with its economic type, city and world-NPC id,
+ * which is what makes the Milestone 7 deed catalogue work on a living Architect rather than
+ * only on paper.
+ *
+ * <p>Until the migration succeeds -- Rails unreachable, city bootstrap not yet loaded -- this
+ * block does nothing at all. That is deliberate. The merchant and trader blocks keep their
+ * legacy behaviour while they wait because their legacy behaviour was harmless; this one's was
+ * the very gate being retired, so there is nothing to fall back to.
+ *
+ * <p>Townspeople are not this block's business any more either. {@code
+ * TownPersonPopulationManager} converges a city toward the population Rails says its prosperity
+ * supports, which is the regional system the migration notes were waiting on. Any townspeople
+ * this block already spawned are left standing when it migrates, exactly as a migrating
+ * merchant block leaves its own.
+ */
 public class ArchitectSpawnBlockEntity extends BlockEntity implements HasCityName {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private static final double SPAWN_RADIUS = 10.0;
-    private static final int MAX_COOLDOWN = 1200;
-    private static final int REQUIRED_FOOD = 400;
-    private static final int REQUIRED_WOOD = 200;
-    private static final int MAX_ARCHITECTS = 1;
-    private static final int TOWNSPERSON_COUNT = 2;
+    /**
+     * How often migration is retried. Not an economic cadence -- there is no economics here to
+     * re-evaluate. It is how long this block waits before asking again whether Rails and the
+     * city registry have become available.
+     */
+    private static final int MIGRATION_RETRY_TICKS = 1200;
 
-    private int spawnCooldown = 0;
+    private int migrationRetryCooldown = 0;
     private String cityName = "";
     private final List<UUID> associatedNpcs = new ArrayList<>();
 
@@ -58,10 +86,18 @@ public class ArchitectSpawnBlockEntity extends BlockEntity implements HasCityNam
         return cityName;
     }
 
-
     public void setCityName(String name) {
         this.cityName = name;
         setChanged();
+    }
+
+    /** Townspeople this block spawned before the population manager took the job over. */
+    public int getTrackedTownPersonCount() {
+        if (!(level instanceof ServerLevel serverLevel)) return 0;
+        return (int) associatedNpcs.stream()
+                .map(serverLevel::getEntity)
+                .filter(entity -> entity instanceof TownPersonEntity)
+                .count();
     }
 
 @Override
@@ -87,105 +123,37 @@ public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
     this.handleUpdateTag(pkt.getTag(), provider);
 }
 
-
     public void tick() {
-        if (level == null || level.isClientSide || spawnCooldown-- > 0) return;
+        if (level == null || level.isClientSide || migrationRetryCooldown-- > 0) return;
         if (cityName == null || cityName.isEmpty()) return;
 
-        spawnCooldown = MAX_COOLDOWN;
+        migrationRetryCooldown = MIGRATION_RETRY_TICKS;
         ServerLevel serverLevel = (ServerLevel) level;
 
-        // Was a blocking Rails GET on the thread that runs the world. The reading still gates
-        // spawning exactly as before; it is now served from the last answer Rails gave while the
-        // next one is fetched behind it. Empty means Rails has not answered for this city yet, and
-        // the cycle is skipped rather than acted on -- a missing reading is not a reading of zero.
-        java.util.Optional<double[]> supplyReading = CityFoodSupplyCache.pollFoodAndWood(serverLevel, cityName);
-        if (supplyReading.isEmpty()) return;
-        double[] supplies = supplyReading.get();
-        double currentFood = supplies[0];
-        double currentWood = supplies[1];
+        // Replaces this block when it succeeds, so nothing may run after it.
+        LegacySpawnBlockMigrator.migrateArchitectBlock(serverLevel, this);
+    }
 
-        long architectCount = associatedNpcs.stream()
-                .map(serverLevel::getEntity)
-                .filter(e -> e instanceof ArchitectEntity)
-                .count();
+    /**
+     * Removes the Architect this block was managing, immediately before migration replaces it.
+     *
+     * <p>The authoritative pipeline staffs the new post with its own persistent world NPC, so a
+     * legacy Architect left standing would simply be a second one. Townspeople are deliberately
+     * spared -- owner decision #12 leaves them to the regional population manager -- and are
+     * dropped from this block's tracking so that its removal does not take them with it. A
+     * migrating merchant block reaches the same outcome by never having tracked them.
+     */
+    public void despawnManagedNpcForMigration(ServerLevel serverLevel) {
+        for (UUID id : associatedNpcs) {
+            Entity entity = serverLevel.getEntity(id);
+            if (!(entity instanceof ArchitectEntity)) continue;
 
-        if (currentFood >= REQUIRED_FOOD &&
-            currentWood >= REQUIRED_WOOD &&
-            architectCount < MAX_ARCHITECTS) {
-            spawnArchitect(serverLevel);
-
-            long townspeople = associatedNpcs.stream()
-                    .map(serverLevel::getEntity)
-                    .filter(e -> e instanceof TownPersonEntity)
-                    .count();
-            int toSpawn = Math.max(0, TOWNSPERSON_COUNT - (int) townspeople);
-            spawnTownspersons(serverLevel, toSpawn);
-
-        } else if (currentFood < REQUIRED_FOOD || currentWood < REQUIRED_WOOD) {
-            despawnAssociatedNpcs(serverLevel);
+            entity.remove(RemovalReason.DISCARDED);
+            CityDataSync.removeNpcAsync(serverLevel, id);
+            LOGGER.info("Legacy architect despawned for migration source={} npc={} city={}",
+                    worldPosition.toShortString(), id, cityName);
         }
-    }
-
-private void spawnArchitect(ServerLevel sl) {
-    boolean hasOne = associatedNpcs.stream()
-            .map(sl::getEntity)
-            .anyMatch(e -> e instanceof ArchitectEntity);
-    if (hasOne) return;
-
-    BlockPos spawnPos = Util.findGround(sl, worldPosition, 10);
-    if (spawnPos == null) {
-        LOGGER.warn("Could not find ground to place Architect at {}", worldPosition);
-        return;
-    }
-
-    ArchitectEntity arch = EntityRegistry.ARCHITECT_ENTITY.get().create(sl);
-    if (arch == null) {
-        LOGGER.error("Failed to create ArchitectEntity!");
-        return;
-    }
-
-    arch.setCityName(cityName);
-    arch.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, sl.random.nextFloat() * 360F, 0);
-    arch.setPersistenceRequired();
-
-    // Assign random gender
-    String gender = sl.random.nextBoolean() ? "male" : "female";
-    arch.setGender(gender); // Ensure ArchitectEntity has setGender(String) and getGender()
-
-    // Pick name and description based on gender
-    String randomName = gender.equals("male") ? NameLoader.getRandomMaleName() : NameLoader.getRandomFemaleName();
-    arch.setPersonalName(randomName);
-
-    String description = "A master " + (gender.equals("male") ? "builder" : "architect") + " named " + randomName;
-
-    sl.addFreshEntity(arch);
-    associatedNpcs.add(arch.getUUID());
-
-    String spawnLoc = String.format("[x=%d, y=%d, z=%d]", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-
-   // CityDataSync.registerNpc(sl, arch.getUUID(), "architect", cityName, randomName, description, 1, 100, 0, true, spawnLoc);
-}
-
-
-    private void spawnTownspersons(ServerLevel sl, int count) {
-        for (int i = 0; i < count; i++) {
-            TownPersonEntity person = EntityRegistry.TOWNSPERSON.get().create(sl);
-            if (person == null) continue;
-
-            BlockPos spawnPos = Util.findGround(sl, worldPosition, 10);
-            if (spawnPos == null) continue;
-
-            person.setCityName(cityName);
-            person.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, sl.random.nextFloat() * 360F, 0);
-            sl.addFreshEntity(person);
-            associatedNpcs.add(person.getUUID());
-
-            String randName = NameLoader.getRandomMaleName();
-            String loc = String.format("[x=%d, y=%d, z=%d]", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-
-         //   CityDataSync.registerNpc(sl, person.getUUID(), "town_person", cityName, randName, "A friendly townsman named " + randName, 1, 100, 0, true, loc);
-        }
+        associatedNpcs.clear();
     }
 
     private void despawnAssociatedNpcs(ServerLevel sl) {

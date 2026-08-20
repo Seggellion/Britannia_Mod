@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.service.spawn;
 
 import com.mojang.logging.LogUtils;
+import com.seggellion.britannia_mod.block.entity.ArchitectSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MerchantSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.ServiceNpcSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.TraderSpawnBlockEntity;
@@ -62,6 +63,15 @@ public final class LegacySpawnBlockMigrator {
     /** Rails economic type keys legacy merchant blocks map onto (Milestones 7 + 16 seeds). */
     static final Set<String> MERCHANT_KEYS = Set.of("baker", "tavernkeeper", "costermonger");
 
+    /**
+     * Housing Deed Milestone 8: the Architect post.
+     *
+     * <p>A legacy Architect block is not a typed block the way a merchant block is -- there is
+     * one kind of Architect -- so the key is the constant rather than something read off the
+     * block. It is the Rails economic type verbatim, and Rails is where the decision now lives.
+     */
+    static final Set<String> ARCHITECT_KEYS = Set.of("architect_vendor");
+
     public static final String OUTCOME_CONFIGURED = "configured";
     public static final String OUTCOME_CONFIGURATION_FAILED = "configuration_failed";
     public static final String OUTCOME_REPLACE_FAILED = "replace_failed";
@@ -74,6 +84,21 @@ public final class LegacySpawnBlockMigrator {
         String key = MerchantTypes.normalize(legacy.getMerchantType());
         return migrate(level, legacy, "merchant", key, MERCHANT_KEYS,
                 legacy.getCityName(), legacy.getTownPersonAmount(),
+                () -> legacy.despawnManagedNpcForMigration(level));
+    }
+
+    /**
+     * True when the legacy Architect block was replaced; the caller must stop ticking.
+     *
+     * <p>The Architect had its own economic gate -- 400 food and 200 wood -- which is what this
+     * migration exists to retire. Rails now evaluates the city and opens or closes the
+     * assignment; the post this produces is staffed by the same pipeline that staffs every other
+     * economic vendor, which is also what finally stamps the Architect with its economic type so
+     * the deed catalogue works on a living NPC rather than only in principle.
+     */
+    public static boolean migrateArchitectBlock(ServerLevel level, ArchitectSpawnBlockEntity legacy) {
+        return migrate(level, legacy, "architect", "architect_vendor", ARCHITECT_KEYS,
+                legacy.getCityName(), legacy.getTrackedTownPersonCount(),
                 () -> legacy.despawnManagedNpcForMigration(level));
     }
 
