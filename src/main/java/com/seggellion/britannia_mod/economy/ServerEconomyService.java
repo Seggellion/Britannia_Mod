@@ -524,7 +524,7 @@ public final class ServerEconomyService {
      * endpoint accepts the same per-item keys the sale posts, so one serializer feeding both is
      * what keeps a quoted price and a paid price from drifting apart.
      */
-    static JsonObject describeSaleItem(ItemStack stack) {
+    public static JsonObject describeSaleItem(ItemStack stack) {
         JsonObject item = new JsonObject();
         String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         item.addProperty("item_id", itemId);

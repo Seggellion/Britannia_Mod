@@ -139,6 +139,22 @@ public final class CommodityMappings {
         mapStone("minecraft:blackstone", "blackstone", "Blackstone");
         mapStone("limestone", "limestone", "Limestone");
         mapStone("minecraft:quartz", "quartz", "Quartz");
+
+        // Housing clay supply. Rails seeds exactly one clay row -- `clay|raw|clay` -- and the
+        // mason is the only trader whose policy accepts it; the mod's job is to describe the
+        // commodity, never to name the buyer.
+        //
+        // WEIGHT because `clay` is one of Rails' BULK_CATEGORIES, so the row is weight-canonical
+        // and BuybackValuation reads the posted weight when it is positive. A clay ball carries
+        // no weight component, so the fallback in classifyMappedCommodity applies and one ball
+        // is one unit -- the same relation Rails would have derived from unit_weight anyway,
+        // stated by the sender instead of inferred by the receiver.
+        //
+        // The finished goods stay out of this deliberately. `brick_wall_bottom`, `brick_wall_top`,
+        // `tile_roof` and `tile_roof_flat` are construction blocks, and Rails' own negative probe
+        // `clay|processed|fired_brick` says a fired clay good is not raw clay. Salvage, if it is
+        // ever wanted, is a separate system with its own commodity.
+        map("minecraft:clay_ball", "clay", "raw", "clay", "Clay", CommodityUnit.WEIGHT);
     }
 
     private CommodityMappings() {
