@@ -18,16 +18,25 @@ import javax.annotation.Nullable;
  * main run hugs and {@code branchRight} says whether the perpendicular run is on the clockwise
  * ({@code true}) or counter-clockwise ({@code false}) edge from it.
  *
- * <h2>Why a straight run asks its neighbours</h2>
- * A block with one connection cannot tell which of the two parallel edges to hug, so it used to
- * fall back on a fixed default - north for an east-west run, west for a north-south one. A corner
- * or junction has no such freedom: its main run is pushed to the edge away from its branch. When
- * those two disagreed the wall jogged sideways at the junction, which is what made a T built
- * against a north or west neighbour come apart while the same T built the other way looked right.
+ * <h2>The junction moves, the run does not</h2>
+ * A straight run hugs whichever edge the player gave it and never moves again. That is the whole
+ * point: a wall already standing must not jump to the other side of its blocks because something
+ * was built against it. So it is the corner or junction that adapts, taking its edges from the
+ * straight runs either side of it. Straights never adopt, so nothing can cycle, and nothing ends
+ * up anywhere but where it was built.
  *
- * <p>So a straight run now adopts the edge a corner or junction beside it has already committed to.
- * Junctions never adopt, only straights do, which is what keeps this from oscillating: the
- * authoritative choice flows outwards along the run and nothing flows back.
+ * <p>The junction used to do the opposite - it forced its main run onto the edge away from its
+ * branch and left behind the run it was joining. That is what tore a T apart when its stem pointed
+ * north or west, and a corner whenever its branch did.
+ *
+ * <h2>Two strips, and when one is enough</h2>
+ * A block draws at most two strips: an east-west one hugging {@code north} or {@code south}, and a
+ * north-south one hugging {@code west} or {@code east}. A strip spans its block, so as well as
+ * reaching along itself it touches the face it hugs - an east-west run on the north edge already
+ * meets a neighbour to the north, with no branch at all. Where that is true the block stays
+ * {@link WallShape#STRAIGHT} however many neighbours it has, and the corner is formed across the
+ * two blocks instead of inside one. A branch there would only reach out of the far side into
+ * nothing.
  *
  * @param shape       straight, L-corner or T-junction
  * @param facing      the edge the main run hugs
@@ -71,25 +80,48 @@ public record WallConnection(WallShape shape, Direction facing, boolean branchRi
         }
 
         if (needsEastWestRun && !needsNorthSouthRun) {
-            Direction edge = eastWestRunEdge(north, south, currentFacing);
             return new WallConnection(WallShape.STRAIGHT,
-                adopted(level, pos, Direction.Axis.X, edge, peers), currentBranchRight);
+                keep(currentFacing, Direction.Axis.Z, Direction.NORTH), currentBranchRight);
         }
 
         if (needsNorthSouthRun && !needsEastWestRun) {
-            Direction edge = northSouthRunEdge(east, west, currentFacing);
             return new WallConnection(WallShape.STRAIGHT,
-                adopted(level, pos, Direction.Axis.Z, edge, peers), currentBranchRight);
+                keep(currentFacing, Direction.Axis.X, Direction.WEST), currentBranchRight);
         }
 
-        // Both runs are needed: this block turns or branches, and its edges are forced.
-        Direction main = eastWestRunEdge(north, south, currentFacing);
-        Direction secondary = northSouthRunEdge(east, west, currentSecondary);
+        // Both axes have neighbours. Take each strip's edge from the straight run beside it, so
+        // this block lines up with what is already standing instead of dragging it across.
+        Direction eastWest = adoptFrom(level, pos, Direction.Axis.X, Direction.Axis.Z, peers);
+        if (eastWest == null) {
+            eastWest = keep(currentFacing, Direction.Axis.Z, Direction.NORTH);
+        }
+        Direction northSouth = adoptFrom(level, pos, Direction.Axis.Z, Direction.Axis.X, peers);
+        if (northSouth == null) {
+            northSouth = keep(currentSecondary, Direction.Axis.X, Direction.WEST);
+        }
+
+        // A strip touches the face it hugs, so it may already reach the perpendicular neighbours on
+        // its own - and then a branch would only reach out of the far side into nothing.
+        boolean eastWestReachesBoth = (!north || eastWest == Direction.NORTH)
+                                   && (!south || eastWest == Direction.SOUTH);
+        if (eastWestReachesBoth) {
+            return new WallConnection(WallShape.STRAIGHT, eastWest, currentBranchRight);
+        }
+        boolean northSouthReachesBoth = (!east || northSouth == Direction.EAST)
+                                     && (!west || northSouth == Direction.WEST);
+        if (northSouthReachesBoth) {
+            return new WallConnection(WallShape.STRAIGHT, northSouth, currentBranchRight);
+        }
 
         return new WallConnection(
             connections >= 3 ? WallShape.T_JUNCTION : WallShape.CORNER,
-            main,
-            secondary == main.getClockWise());
+            eastWest,
+            northSouth == eastWest.getClockWise());
+    }
+
+    /** The block's own edge when it lies on the axis wanted, otherwise the family's default. */
+    private static Direction keep(Direction current, Direction.Axis wanted, Direction fallback) {
+        return current.getAxis() == wanted ? current : fallback;
     }
 
     /* ─── which edges a run occupies ─────────────────────────── */
@@ -118,47 +150,30 @@ public record WallConnection(WallShape shape, Direction facing, boolean branchRi
     }
 
     /**
-     * The edge a straight run should hug: whatever a corner or junction along the same run has
-     * already committed to, or {@code fallback} when there is none to ask.
+     * The edge a straight run beside this block is already hugging, so a junction can line up with
+     * it instead of moving it.
      *
-     * @param along the axis this run travels, so the axis its neighbours lie on
+     * <p>Only straights are asked. They are the ones that never adopt, which makes them the stable
+     * end of the relationship - two junctions reading each other could disagree for ever.
+     *
+     * @param probeAxis  which neighbours to ask, so which of this block's strips they share
+     * @param wantedAxis the axis the answer has to lie on to be about that strip
      */
-    private static Direction adopted(BlockGetter level, BlockPos pos, Direction.Axis along,
-                                     Direction fallback, Peers peers) {
+    @Nullable
+    private static Direction adoptFrom(BlockGetter level, BlockPos pos, Direction.Axis probeAxis,
+                                       Direction.Axis wantedAxis, Peers peers) {
         for (Direction side : Direction.values()) {
-            if (side.getAxis() != along) {
+            if (side.getAxis() != probeAxis) {
                 continue;
             }
-            WallConnection neighbour = peers.runOf(level.getBlockState(pos.relative(side)));
-            if (neighbour == null || neighbour.shape() == WallShape.STRAIGHT) {
-                continue; // only a corner or a junction has a forced edge worth adopting
+            WallConnection run = peers.runOf(level.getBlockState(pos.relative(side)));
+            if (run == null || run.shape() != WallShape.STRAIGHT) {
+                continue;
             }
-            Direction edge = along == Direction.Axis.X
-                ? neighbour.eastWestEdge() : neighbour.northSouthEdge();
-            if (edge != null) {
-                return edge;
+            if (run.facing().getAxis() == wantedAxis) {
+                return run.facing();
             }
         }
-        return fallback;
-    }
-
-    /**
-     * The edge for the east-west run. The run hugs the edge away from the perpendicular branch, so
-     * a branch heading south leaves the run on the north edge and vice versa.
-     */
-    private static Direction eastWestRunEdge(boolean north, boolean south, Direction current) {
-        if (south && !north) return Direction.NORTH;
-        if (north && !south) return Direction.SOUTH;
-        return current.getAxis() == Direction.Axis.Z ? current : Direction.NORTH;
-    }
-
-    /**
-     * The edge for the north-south run, by the same rule: a run arriving from the east leaves the
-     * perpendicular run on the west edge.
-     */
-    private static Direction northSouthRunEdge(boolean east, boolean west, Direction current) {
-        if (east && !west) return Direction.WEST;
-        if (west && !east) return Direction.EAST;
-        return current.getAxis() == Direction.Axis.X ? current : Direction.WEST;
+        return null;
     }
 }
