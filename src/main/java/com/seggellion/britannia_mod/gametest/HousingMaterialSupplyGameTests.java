@@ -304,6 +304,116 @@ public final class HousingMaterialSupplyGameTests {
     }
 
     /* ------------------------------------------------------------------ */
+    /*  Common stone                                                       */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Rubble fires into common stone, and mining still yields rubble.
+     *
+     * <p>Four deeds want {@code stone|common|stone} — 4288 in the Castle, 2451 in the Stone Keep —
+     * and nothing produced it, because mining {@code minecraft:stone} deliberately gives rubble.
+     * That rule is untouched. What is added is the step vanilla itself has always had between the
+     * two, so a player who wants stone burns their cobblestone for it and a player who wants coin
+     * sells the rubble as it is.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void rubblefiresintocommonstoneandminingstillyieldsrubble(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+
+        // What the pickaxe actually hands over, taken from the block rather than assumed.
+        BlockPos absolute = helper.absolutePos(SPOT);
+        helper.setBlock(SPOT, Blocks.STONE);
+        ServerPlayer quarryman = player(level, "rubble-quarryman");
+        quarryman.setItemInHand(InteractionHand.MAIN_HAND,
+                ToolRegistry.createPickaxe(UOMetalToolMaterial.IRON, 3));
+        new com.seggellion.britannia_mod.event.CustomBlockBreakHandler().onBlockBreak(
+                new net.neoforged.neoforge.event.level.BlockEvent.BreakEvent(
+                        level, absolute, level.getBlockState(absolute), quarryman));
+
+        ItemStack rubble = dropsAround(level, absolute).stream()
+                .filter(stack -> stack.getItem() instanceof GradeStoneItem)
+                .findFirst()
+                .orElseThrow(() -> new GameTestAssertException("mining stone produced no graded stone"));
+        GradeStoneItem graded = (GradeStoneItem) rubble.getItem();
+        if (!"Cobblestone".equalsIgnoreCase(graded.getStoneType(rubble))) {
+            throw new GameTestAssertException("mining stone now yields "
+                    + graded.getStoneType(rubble) + "; the rubble rule was changed");
+        }
+        JsonObject asRubble = ServerEconomyService.describeSaleItem(rubble);
+        assertMember(asRubble, "subcategory", "rubble");
+        assertMember(asRubble, "item_name", "cobblestone");
+
+        // And the same stack, fired.
+        ItemStack fired = smelt(level, rubble);
+        if (fired.isEmpty() || !(fired.getItem() instanceof GradeStoneItem)) {
+            throw new GameTestAssertException("firing rubble produced " + fired);
+        }
+        if (fired.getCount() != 1) {
+            throw new GameTestAssertException("one rubble did not make one stone: " + fired.getCount());
+        }
+        if (!"Stone".equalsIgnoreCase(((GradeStoneItem) fired.getItem()).getStoneType(fired))) {
+            throw new GameTestAssertException("firing rubble produced "
+                    + ((GradeStoneItem) fired.getItem()).getStoneType(fired));
+        }
+
+        JsonObject asStone = ServerEconomyService.describeSaleItem(fired);
+        assertMember(asStone, "category", "stone");
+        assertMember(asStone, "subcategory", "common");
+        assertMember(asStone, "item_name", "stone");
+        helper.succeed();
+    }
+
+    /**
+     * The grade the miner earned survives the fire.
+     *
+     * <p>A fixed grade in the recipe would have flattened the 1-5 roll into a number somebody
+     * chose, and a missing one reads back as zero, which {@code EntityStoneMerchant} skips
+     * entirely. The conversion changes what the stone is and nothing else.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void firingrubblekeepsitsgrade(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (int grade = 1; grade <= 5; grade++) {
+            ItemStack rubble = gradedStone("Cobblestone");
+            ((GradeStoneItem) rubble.getItem()).setGradeValue(rubble, grade);
+
+            ItemStack fired = smelt(level, rubble);
+            if (fired.isEmpty()) {
+                throw new GameTestAssertException("grade " + grade + " rubble did not smelt");
+            }
+            int kept = ((GradeStoneItem) fired.getItem()).getGradeValue(fired);
+            if (kept != grade) {
+                throw new GameTestAssertException(
+                        "grade " + grade + " rubble fired into grade " + kept + " stone");
+            }
+        }
+        helper.succeed();
+    }
+
+    /**
+     * No other quarried stone takes this road.
+     *
+     * <p>The graded stone item is shared across every rock in the game, so a recipe that could not
+     * read the type would have turned sandstone or limestone into generic common stone — and the
+     * villa's sandstone and the plaster chain's limestone would both have leaked into it.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void noothergradedstonefiresintocommonstone(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (String other : new String[] {
+                "Sandstone", "Diorite", "Granite", "Limestone", "Andesite", "Blackrock" }) {
+            ItemStack fired = smelt(level, gradedStone(other));
+            if (fired.isEmpty()) continue;
+            if (fired.getItem() instanceof GradeStoneItem produced
+                    && "Stone".equalsIgnoreCase(produced.getStoneType(fired))) {
+                throw new GameTestAssertException(
+                        other + " fires into common stone, so any rock is every rock");
+            }
+        }
+        helper.succeed();
+    }
+
+    /* ------------------------------------------------------------------ */
     /*  Iron                                                               */
     /* ------------------------------------------------------------------ */
 

@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.economy;
 
 import com.seggellion.britannia_mod.economy.crafting.GradedStoneIngredient;
+import com.seggellion.britannia_mod.deposit.ManagedDeposits;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.item.WeightedWoodType;
 import com.seggellion.britannia_mod.mining.MineableCatalog;
@@ -72,13 +73,36 @@ class HousingMaterialCommodityTest {
         WOOD,
         /** Worked with the Britannia pickaxe; the row is in mineables.json. */
         MINED,
-        /** A discrete item with a row in CommodityMappings. */
+        /** A discrete item with a row in CommodityMappings, gathered rather than made. */
         ITEM,
+        /** Made from something else by a shipped recipe. */
+        PROCESSED,
         /** A discrete item classified by a branch of describeSaleItem rather than by the table. */
         ITEM_BY_BRANCH
     }
 
-    private record Material(String commodity, int deeds, Supply supply, String source) {
+    /** Where a processing recipe's input comes from, in terms this file can actually check. */
+    private enum Origin {
+        /** An ACTIVE Mining catalogue row yields it, named by its economy commodity. */
+        MINED,
+        /** A managed deposit yields it, named by the deposit's registry id. */
+        DEPOSIT
+    }
+
+    /**
+     * A conversion: which shipped recipe makes this material, and what it is made from.
+     *
+     * <p>{@code feedstock} is checked two ways — that the recipe really names it, and that a
+     * player can really get it. A recipe whose input nobody can obtain is not a supply path.
+     */
+    private record Processing(String recipeFile, Origin origin, String feedstock) {
+    }
+
+    private record Material(String commodity, int deeds, Supply supply, String source,
+                            Processing processing) {
+        Material(String commodity, int deeds, Supply supply, String source) {
+            this(commodity, deeds, supply, source, null);
+        }
     }
 
     private static final List<Material> DEED_MATERIALS = List.of(
@@ -86,12 +110,18 @@ class HousingMaterialCommodityTest {
             new Material("wood|logs|spruce", 6, Supply.WOOD, "spruce"),
             new Material("wood|logs|birch", 3, Supply.WOOD, "birch"),
             new Material("wood|logs|dark_oak", 1, Supply.WOOD, "dark_oak"),
-            new Material("stone|common|stone", 4, Supply.MINED, "stone"),
             new Material("stone|rubble|cobblestone", 1, Supply.MINED, "cobblestone"),
             new Material("stone|igneous|diorite", 7, Supply.MINED, "diorite"),
             new Material("stone|sedimentary|sandstone", 1, Supply.MINED, "sandstone"),
-            new Material("stone|processed|plaster", 4, Supply.ITEM, "britannia_mod:plaster"),
-            new Material("glass|raw|raw_glass", 9, Supply.ITEM, "britannia_mod:raw_glass"),
+            // Mining stone yields rubble, deliberately and unchanged. Common stone is what a
+            // player makes of that rubble, the way vanilla has always let them.
+            new Material("stone|common|stone", 4, Supply.PROCESSED, "graded:Stone",
+                    new Processing("stone_from_cobblestone.json", Origin.MINED, "cobblestone")),
+            new Material("stone|processed|plaster", 4, Supply.PROCESSED, "britannia_mod:plaster",
+                    new Processing("plaster_from_limestone.json", Origin.MINED, "limestone")),
+            new Material("glass|raw|raw_glass", 9, Supply.PROCESSED, "britannia_mod:raw_glass",
+                    new Processing("raw_glass_from_silica_sand.json", Origin.DEPOSIT,
+                            "britannia_mod:silica_sand_deposit")),
             new Material("textile|raw|thatch", 2, Supply.ITEM, "britannia_mod:straw"),
             new Material("clay|raw|clay", 2, Supply.ITEM, "minecraft:clay_ball"),
             // The ingot path lives in describeSaleItem rather than in the mapping table, and that
@@ -289,37 +319,10 @@ class HousingMaterialCommodityTest {
                         + (who.isEmpty() ? "" : " (dormant only: " + who + ")"));
             }
         }
-        assertEquals(KNOWN_UNREACHABLE, broken.stream().map(row -> row.split(":")[0]).toList(),
-                () -> "the set of housing materials a player cannot supply changed:"
-                        + System.lineSeparator() + "  "
+        assertTrue(broken.isEmpty(),
+                () -> "housing materials a player cannot supply:" + System.lineSeparator() + "  "
                         + String.join(System.lineSeparator() + "  ", broken));
     }
-
-    /**
-     * The one material a player still cannot supply, and why it is not a mistake to fix here.
-     *
-     * <p>{@code stone|common|stone} is consumed by four deeds — 4288 units in the Castle and 2451
-     * in the Stone Keep — and nothing in the game produces it. Mining {@code minecraft:stone}
-     * yields rubble: the catalogue's {@code stone} row declares {@code drop: "Cobblestone"} and
-     * {@code economy_commodity: cobblestone}, so the one definition that could yield the commodity
-     * deliberately yields somebody else's. That is not a typo. It descends from the original
-     * {@code BlockBreakUtils} chain, and two contract tests pin it on purpose —
-     * {@code dropNamesMatchTheHistoricalBlockBreakUtilsChain} and
-     * {@code noTwoResourcesShareACommodityUnintentionally}, the second of which says in as many
-     * words that Stone and Cobblestone share the cobblestone commodity because mining stone yields
-     * rubble.
-     *
-     * <p>So the housing bill of materials and the Mining resource model disagree, and closing the
-     * gap means choosing between them: either mining stone starts yielding Stone, which changes
-     * what the most-mined block in the game has always given and contradicts both pinned
-     * contracts, or a deliberate processing step converts rubble into stone the way vanilla's own
-     * furnace does. Both are resource-model decisions with price consequences, and this pass was
-     * an audit, not a calibration.
-     *
-     * <p>Pinned as an exact set so it fails two ways that both matter: if another commodity loses
-     * its path, and when this one gains one.
-     */
-    private static final List<String> KNOWN_UNREACHABLE = List.of("stone|common|stone");
 
     /** The set is thirteen, and it is Rails' set rather than a convenient subset. */
     @Test
@@ -343,6 +346,7 @@ class HousingMaterialCommodityTest {
                     ? null : "no WeightedWoodType is registered for " + material.source();
             case MINED -> minedDefect(material.source(), parts[1]);
             case ITEM -> itemDefect(material.source(), material.commodity());
+            case PROCESSED -> processedDefect(material);
             // The classifier branch is proven in-world; here only the identity shape is checked.
             case ITEM_BY_BRANCH -> parts[0].isBlank() ? "malformed commodity key" : null;
         };
@@ -362,6 +366,106 @@ class HousingMaterialCommodityTest {
                     + " rather than " + subcategory;
         }
         return null;
+    }
+
+    /**
+     * A made material needs a shipped recipe, a reachable input, and the right identity out.
+     *
+     * <p>All three are read out of the recipe JSON the game actually loads. The one thing not
+     * proven here is the binding between a managed deposit and the item it yields — that needs a
+     * world, and {@code HousingMaterialSupplyGameTests} does it.
+     */
+    private static String processedDefect(Material material) {
+        Processing processing = material.processing();
+        Path file = PROJECT.resolve("src/main/resources/data/britannia_mod/recipe")
+                .resolve(processing.recipeFile());
+        if (!Files.exists(file)) return "no shipped recipe at " + processing.recipeFile();
+
+        JsonObject recipe;
+        try {
+            recipe = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+        } catch (IOException unreadable) {
+            return processing.recipeFile() + " could not be read";
+        }
+        if (!text(recipe, "type").endsWith("smelting")) {
+            return processing.recipeFile() + " is not a smelting recipe";
+        }
+
+        String inputDefect = recipeConsumes(recipe, processing.feedstock(), processing.origin());
+        if (inputDefect != null) return inputDefect;
+
+        String originDefect = originDefect(processing);
+        if (originDefect != null) return originDefect;
+
+        return producesIdentity(recipe, material);
+    }
+
+    /** The recipe's ingredient has to be the feedstock the row claims. */
+    private static String recipeConsumes(JsonObject recipe, String feedstock, Origin origin) {
+        JsonObject ingredient = recipe.getAsJsonObject("ingredient");
+        String named = origin == Origin.MINED
+                ? text(ingredient, "stone_type")
+                : text(ingredient, "item");
+        if (origin == Origin.MINED) {
+            if (named == null) return "the recipe does not name a quarried stone as its input";
+            if (!feedstock.equalsIgnoreCase(named)) {
+                return "the recipe consumes " + named + " rather than " + feedstock;
+            }
+        } else if (named == null) {
+            return "the recipe names no item input";
+        }
+        return null;
+    }
+
+    /** And that feedstock has to be something a player can get. */
+    private static String originDefect(Processing processing) {
+        return switch (processing.origin()) {
+            case MINED -> catalog().active().stream()
+                    .anyMatch(definition -> definition.economyCommodity()
+                            .map(processing.feedstock()::equals).orElse(false))
+                    ? null
+                    : "nothing mineable yields " + processing.feedstock();
+            case DEPOSIT -> ManagedDeposits.all().stream()
+                    .anyMatch(deposit -> deposit.id().toString().equals(processing.feedstock()))
+                    ? null
+                    : "no managed deposit " + processing.feedstock() + " is registered";
+        };
+    }
+
+    /**
+     * What comes out has to carry the commodity the deeds ask for.
+     *
+     * <p>Two shapes, because the economy has two: a discrete item resolves through the mapping
+     * table, and a quarried stone resolves through its stone type. A graded row names the type the
+     * recipe stamps, so this reads the recipe's own result rather than trusting the row.
+     */
+    private static String producesIdentity(JsonObject recipe, Material material) {
+        JsonObject result = recipe.getAsJsonObject("result");
+        String id = text(result, "id");
+        if (id == null) return "the recipe declares no result";
+
+        if (material.source().startsWith("graded:")) {
+            String stoneType = result.has("components")
+                    ? text(result.getAsJsonObject("components")
+                            .getAsJsonObject("minecraft:custom_data"), "StoneType")
+                    : null;
+            if (stoneType == null) return "the recipe result carries no StoneType";
+            String[] parts = material.commodity().split("[|]", -1);
+            if (!Optional.of(parts[2]).equals(CommodityMappings.stoneCommodityKey(stoneType))) {
+                return "the result stamps " + stoneType + ", which is not " + parts[2];
+            }
+            if (!Optional.of(parts[1])
+                    .equals(CommodityMappings.stoneCommoditySubcategory(parts[2]))) {
+                return parts[2] + " does not post under " + parts[1];
+            }
+            return null;
+        }
+
+        if (!material.source().equals(id)) {
+            return "the recipe produces " + id + " rather than " + material.source();
+        }
+        return itemDefect(id, material.commodity());
     }
 
     /** The mapping table must give this item exactly the identity Rails prices. */
