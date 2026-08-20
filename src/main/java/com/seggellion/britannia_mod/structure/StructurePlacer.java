@@ -118,7 +118,10 @@ String nbtFile = style.getStructureFile();                 // e.g. "structures/w
     // persisting this instead means a rehydrated region matches the structure on the ground.
     final int canonicalRotationDeg = rotation.ordinal() * 90;
     Vec3i    rawSize  = template.getSize();
-    BlockPos unrotatedDoorOffset    = StructureUtils.getDoorOffset(rawSize);
+    // The entrance the style declares, not one derived from the template size. A house whose
+    // front door is not at front-centre -- the villa, the patio, the keep -- would otherwise
+    // land offset from where the player aimed by however far its real door is from the middle.
+    BlockPos unrotatedDoorOffset    = style.getDoorOffset();
     BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
         new StructurePlaceSettings().setRotation(rotation),
         unrotatedDoorOffset

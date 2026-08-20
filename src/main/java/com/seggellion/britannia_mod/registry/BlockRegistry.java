@@ -64,6 +64,7 @@ import com.seggellion.britannia_mod.block.PurpleTentBlock;
 import com.seggellion.britannia_mod.block.CobbleStoneWallBlock;
 import com.seggellion.britannia_mod.block.OakWallBlock;
 import com.seggellion.britannia_mod.block.FloorBlock;
+import com.seggellion.britannia_mod.block.WoodenBoardFloorFoundationBlock;
 import com.seggellion.britannia_mod.block.FloorSlabBlock;
 import com.seggellion.britannia_mod.block.DungeonWallBlock;
 import com.seggellion.britannia_mod.block.CaveBlock;
@@ -1684,6 +1685,18 @@ public static final DeferredHolder<Block, FloorSlabBlock> WOODEN_PLANK_FLOOR_SLA
 public static final DeferredHolder<Block, FloorBlock> WOODEN_BOARD_FLOOR =
     BLOCKS.register("wooden_board_floor", () ->
         new FloorBlock(
+            BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
+                .strength(2.0f)
+                .sound(SoundType.WOOD)
+        ));
+
+// The structural interior floor a house ships with, as opposed to the flooring above it or
+// the perimeter around it. Properties are the floor's, because it is the same boards; only
+// the identity differs, and that identity is what lets a house tell the layer its owner may
+// cut a basement through from the perimeter it may not.
+public static final DeferredHolder<Block, WoodenBoardFloorFoundationBlock> WOODEN_BOARD_FLOOR_FOUNDATION =
+    BLOCKS.register("wooden_board_floor_foundation", () ->
+        new WoodenBoardFloorFoundationBlock(
             BlockBehaviour.Properties.ofFullCopy(Blocks.OAK_PLANKS)
                 .strength(2.0f)
                 .sound(SoundType.WOOD)

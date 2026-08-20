@@ -77,7 +77,11 @@ class Milestone14RRemovalAndPreservationTest {
         // two flagstone-top variants are model-level only, so they add no further ids.
         // 905 as of 2026-08-18: the standalone Flagstone building block item. Its two textures
         // are a blockstate variation property, not separate ids.
-        assertEquals(905, repositoryItems);
+        // 906 as of 2026-08-20: the Wooden Board Floor Foundation block item -- the structural
+        // interior floor a house ships with, as distinct from the perimeter foundation around it
+        // and from the decorative flooring an owner lays. It reuses the Wooden Board Floor models
+        // and textures wholesale, so it adds one id and no assets beyond its own blockstate.
+        assertEquals(906, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

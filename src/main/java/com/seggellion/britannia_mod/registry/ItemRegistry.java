@@ -1599,6 +1599,10 @@ public static final DeferredHolder<Item, BlockItem> WOODEN_BOARD_FLOOR_ITEM =
     ITEMS.register("wooden_board_floor", () ->
         new BlockItem(BlockRegistry.WOODEN_BOARD_FLOOR.get(), new Item.Properties()));
 
+public static final DeferredHolder<Item, BlockItem> WOODEN_BOARD_FLOOR_FOUNDATION_ITEM =
+    ITEMS.register("wooden_board_floor_foundation", () ->
+        new BlockItem(BlockRegistry.WOODEN_BOARD_FLOOR_FOUNDATION.get(), new Item.Properties()));
+
 
     public static final DeferredHolder<Item, Item> CAVE_ITEM =
         ITEMS.register("cave", () ->

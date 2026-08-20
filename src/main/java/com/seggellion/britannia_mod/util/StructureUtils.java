@@ -53,10 +53,21 @@ public static Rotation getRotationToFace(Direction playerFacing) {
         return Rotation.values()[(rotationDeg / 90) % 4];
     }
 
+    /**
+     * The historical convention: front face, horizontal centre.
+     *
+     * <p>Every structure that shipped before the larger houses honours this, because they were
+     * authored against it. It is the default a {@link com.seggellion.britannia_mod.structure.HouseStyle}
+     * gets when it does not declare an entrance of its own -- not a rule the geometry has to obey.
+     */
+    public static BlockPos getDefaultDoorOffset(int width) {
+        return new BlockPos(width / 2, 0, 0); // X center, Z front (north)
+    }
+
+    /** @deprecated prefer {@code HouseStyle#getDoorOffset()}; a house declares its own entrance. */
+    @Deprecated
     public static BlockPos getDoorOffset(Vec3i size) {
-        // If door is at z=0, centered on X:
-        
-return new BlockPos(size.getX() / 2, 0, 0); // X center, Z front (north)
+        return getDefaultDoorOffset(size.getX());
     }
 
 public static Vec3i getRotatedSize(Vec3i originalSize, Rotation rotation) {
