@@ -8,6 +8,7 @@ import com.seggellion.britannia_mod.structure.StructureRegionManager;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
@@ -61,7 +62,7 @@ public class HouseUtil {
     public static @Nullable HouseLotBlockEntity findLot(Level level, BlockPos pos) {
         if (!(level instanceof ServerLevel server)) return null;
 
-        StructureRecord record = enclosingStructure(pos);
+        StructureRecord record = enclosingStructure(level, pos);
         return record == null ? null : lotOf(server, record);
     }
 
@@ -72,8 +73,22 @@ public class HouseUtil {
      * ten blocks below the building, so a door or a block in the basement resolves to the same
      * house as one on the ground floor.
      */
-    public static @Nullable StructureRecord enclosingStructure(BlockPos pos) {
+    public static @Nullable StructureRecord enclosingStructure(Level level, BlockPos pos) {
+        return level == null ? null : enclosingStructure(level.dimension(), pos);
+    }
+
+    /**
+     * The same question asked with a dimension rather than a world.
+     *
+     * <p>This is the real signature: a region is identified by its dimension and its box,
+     * and a {@link Level} is only ever consulted for the former. Taking the key directly also
+     * means the rule can be exercised for two dimensions at once without two worlds.
+     */
+    public static @Nullable StructureRecord enclosingStructure(
+            ResourceKey<Level> dimension, BlockPos pos) {
+        if (dimension == null) return null;
         List<StructureRecord> candidates = StructureRegionManager.getStructuresInChunk(
+                dimension,
                 SectionPos.blockToSectionCoord(pos.getX()),
                 SectionPos.blockToSectionCoord(pos.getZ()));
         if (candidates.isEmpty()) return null;

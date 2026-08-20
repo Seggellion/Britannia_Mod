@@ -1,5 +1,7 @@
 package com.seggellion.britannia_mod.structure;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import java.util.UUID;
 
@@ -32,10 +34,20 @@ public class StructureRecord {
     private final UUID deedId;
     private final int rotationDeg; // 0, 90, 180, 270 -- or ROTATION_UNKNOWN
 
+    /**
+     * Which world this house stands in.
+     *
+     * <p>Regions used to be indexed by chunk alone, which is only an identity if there is one
+     * world. Two houses at the same X/Z in different dimensions shared a chunk key and
+     * therefore shared each other: a door in the Nether could resolve an Overworld house, and
+     * unregistering one could empty the other's entry.
+     */
+    private final ResourceKey<Level> dimension;
+
     /** Full constructor */
     public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
                            UUID houseUuid, String sizeId, String styleId, UUID deedId,
-                           int rotationDeg) {
+                           int rotationDeg, ResourceKey<Level> dimension) {
         this.ownerUuid    = ownerUuid;
         this.structureBox = structureBox;
         this.fullBox      = fullBox;
@@ -44,6 +56,14 @@ public class StructureRecord {
         this.styleId      = styleId;
         this.deedId       = deedId;
         this.rotationDeg  = rotationDeg;
+        this.dimension    = dimension == null ? Level.OVERWORLD : dimension;
+    }
+
+    public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
+                           UUID houseUuid, String sizeId, String styleId, UUID deedId,
+                           int rotationDeg) {
+        this(ownerUuid, structureBox, fullBox, houseUuid, sizeId, styleId, deedId, rotationDeg,
+                Level.OVERWORLD);
     }
 
     public StructureRecord(UUID ownerUuid, AABB structureBox, AABB fullBox,
@@ -75,4 +95,5 @@ public class StructureRecord {
     public String getStyleId()     { return styleId;    }
     public UUID getDeedId()        { return deedId; }
     public int getRotationDeg()    { return rotationDeg; }
+    public ResourceKey<Level> getDimension() { return dimension; }
 }

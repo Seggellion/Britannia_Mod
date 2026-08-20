@@ -159,10 +159,13 @@ public final class GrabbyPolicy {
      * dimension parameter here avoids implying a precision the underlying registry does not have.
      */
     public static boolean insideForeignStructure(@Nullable BlockPos pos, @Nullable Player actor) {
-        if (pos == null) {
+        if (pos == null || actor == null) {
+            // Without an actor there is no world to ask, and a region is only an identity in one
+            // world. Answering from the Overworld's regions would be a guess.
             return false;
         }
         List<StructureRecord> records = StructureRegionManager.getStructuresInChunk(
+                actor.level().dimension(),
                 SectionPos.blockToSectionCoord(pos.getX()),
                 SectionPos.blockToSectionCoord(pos.getZ()));
         if (records == null || records.isEmpty()) {

@@ -53,6 +53,7 @@ public class HouseActionHandler {
         LOGGER.info("Initializing handleRedeed");
 
     List<StructureRecord> structures = StructureRegionManager.getStructuresInChunk(
+        player.level().dimension(),
         SectionPos.blockToSectionCoord(origin.getX()),
         SectionPos.blockToSectionCoord(origin.getZ())
     );

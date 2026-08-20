@@ -245,6 +245,7 @@ public class HouseFarmPlotBlock extends FarmingBlock {
             return true;
         }
         return StructureRegionManager.getStructuresInChunk(
+                        level.dimension(),
                         SectionPos.blockToSectionCoord(pos.getX()),
                         SectionPos.blockToSectionCoord(pos.getZ())
                 ).stream()

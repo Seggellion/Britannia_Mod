@@ -242,7 +242,6 @@ BlockPos.betweenClosedStream(
     UUID houseUuid = UUID.randomUUID();
     // You can keep your HouseLot logic unchanged
     // Lot block goes just inside the door (1 block behind)
-    BlockPos baseLot = doorTarget.relative(playerFacing.getOpposite(), 1);
 
 // Step 1: Compute center-front position in unrotated structure space
 int centerX = rawSize.getX() / 2 + style.getLotOffsetX();;
@@ -310,7 +309,8 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
         style.getSize().id(),
         style.name(),
         deedUuid,
-        canonicalRotationDeg
+        canonicalRotationDeg,
+        level.dimension()
     );
     StructureRegionManager.registerStructure(record);
 

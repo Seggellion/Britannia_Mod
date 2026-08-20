@@ -3,6 +3,10 @@ package com.seggellion.britannia_mod.structure;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
@@ -50,6 +54,7 @@ public final class StructureRegionCodec {
         JsonObject structure = new JsonObject();
         structure.addProperty("schema", SCHEMA_VERSION);
         structure.addProperty("rotation_deg", record.getRotationDeg());
+        structure.addProperty("dimension", record.getDimension().location().toString());
         structure.addProperty("style", record.getStyleId());
         structure.addProperty("size_id", record.getSizeId());
         structure.add("origin", encodePos(origin));
@@ -111,8 +116,24 @@ public final class StructureRegionCodec {
                 stringOrDefault(structure, "size_id", "unknown"),
                 stringOrDefault(structure, "style", "unknown"),
                 uuidOrNull(houseRow, "deed_id"),
-                intOrDefault(structure, "rotation_deg", StructureRecord.ROTATION_UNKNOWN)
+                intOrDefault(structure, "rotation_deg", StructureRecord.ROTATION_UNKNOWN),
+                dimensionOf(structure)
         ));
+    }
+
+    /**
+     * The world a house stands in, defaulting to the Overworld.
+     *
+     * <p>Deliberately tolerant rather than a schema bump. Every house row written before regions
+     * carried a dimension is an Overworld house -- placement only accepts grass or sand, and the
+     * shard has always built there -- and refusing those rows would cost every existing house its
+     * region to record something that was never in doubt.
+     */
+    private static ResourceKey<Level> dimensionOf(JsonObject structure) {
+        String id = stringOrDefault(structure, "dimension", "");
+        if (id.isBlank()) return Level.OVERWORLD;
+        ResourceLocation location = ResourceLocation.tryParse(id);
+        return location == null ? Level.OVERWORLD : ResourceKey.create(Registries.DIMENSION, location);
     }
 
     @Nullable

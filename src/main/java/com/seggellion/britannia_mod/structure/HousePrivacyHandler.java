@@ -38,17 +38,22 @@ public class HousePrivacyHandler {
                               boolean makePrivate) {
 
         ServerLevel level = player.serverLevel();
-        lot.setPrivate(makePrivate);
-        level.sendBlockUpdated(lot.getBlockPos(), lot.getBlockState(),
-                               lot.getBlockState(), Block.UPDATE_CLIENTS);
 
+        // Resolve and validate before touching anything. This used to flip the lot's privacy
+        // flag and push it to clients first, so a house whose region was missing -- every house
+        // between a restart and the region rehydrate finishing -- came away marked private with
+        // its doors never locked and no key issued. Half a privacy change is worse than none.
         UUID houseUuid = lot.getHouseUuid();
         @Nullable StructureRecord rec =
             StructureRegionManager.getStructureByUuid(houseUuid);
         if (rec == null) {
-            LOGGER.warn("No StructureRecord for house {}", houseUuid);
+            LOGGER.warn("No StructureRecord for house {}; privacy unchanged", houseUuid);
             return;
         }
+
+        lot.setPrivate(makePrivate);
+        level.sendBlockUpdated(lot.getBlockPos(), lot.getBlockState(),
+                               lot.getBlockState(), Block.UPDATE_CLIENTS);
 
         if (makePrivate) {
             /* -------- PRIVATE: lock + key + reset sign -------- */

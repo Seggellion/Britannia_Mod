@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.structure;
 
 import com.seggellion.britannia_mod.util.HouseUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class HouseRegionResolutionTest {
         // were outside the old cube; all four are inside the castle.
         for (int z : new int[] { 1, 5, 13, 28 }) {
             BlockPos door = origin.offset(17, 1, z);
-            StructureRecord found = HouseUtil.enclosingStructure(door);
+            StructureRecord found = HouseUtil.enclosingStructure(Level.OVERWORLD, door);
             assertNotNull(found, "no region contains the castle door at template z=" + z);
             assertEquals(castle, found.getHouseUuid(), "castle door at z=" + z + " resolved elsewhere");
         }
@@ -57,7 +58,7 @@ class HouseRegionResolutionTest {
 
         // The keep's double door, template (12,1,2) and (13,1,2).
         for (int x : new int[] { 12, 13 }) {
-            StructureRecord found = HouseUtil.enclosingStructure(origin.offset(x, 1, 2));
+            StructureRecord found = HouseUtil.enclosingStructure(Level.OVERWORLD, origin.offset(x, 1, 2));
             assertNotNull(found);
             assertEquals(keep, found.getHouseUuid());
         }
@@ -72,7 +73,7 @@ class HouseRegionResolutionTest {
         // Both leaves of the villa's entrance, and its interior door on the upper floor.
         for (BlockPos door : new BlockPos[] {
                 villaOrigin.offset(2, 1, 6), villaOrigin.offset(3, 1, 6), villaOrigin.offset(6, 4, 5) }) {
-            StructureRecord found = HouseUtil.enclosingStructure(door);
+            StructureRecord found = HouseUtil.enclosingStructure(Level.OVERWORLD, door);
             assertNotNull(found, "villa door at " + door + " resolved nothing");
             assertEquals(villa, found.getHouseUuid());
         }
@@ -82,7 +83,7 @@ class HouseRegionResolutionTest {
         StructureRegionManager.registerStructure(house(patio, patioOrigin, 18, 8, 18));
 
         // The patio's deepest door, template (3,1,8) -- eight blocks in from the front wall.
-        StructureRecord found = HouseUtil.enclosingStructure(patioOrigin.offset(3, 1, 8));
+        StructureRecord found = HouseUtil.enclosingStructure(Level.OVERWORLD, patioOrigin.offset(3, 1, 8));
         assertNotNull(found);
         assertEquals(patio, found.getHouseUuid());
     }
@@ -98,12 +99,12 @@ class HouseRegionResolutionTest {
         StructureRegionManager.registerStructure(house(leftHouse, left, 9, 8, 9));
         StructureRegionManager.registerStructure(house(rightHouse, right, 9, 8, 9));
 
-        StructureRecord found = HouseUtil.enclosingStructure(left.offset(8, 1, 4));
+        StructureRecord found = HouseUtil.enclosingStructure(Level.OVERWORLD, left.offset(8, 1, 4));
         assertNotNull(found);
         assertEquals(leftHouse, found.getHouseUuid(),
                 "a block on the left house's own boundary was claimed by its neighbour");
 
-        found = HouseUtil.enclosingStructure(right.offset(0, 1, 4));
+        found = HouseUtil.enclosingStructure(Level.OVERWORLD, right.offset(0, 1, 4));
         assertNotNull(found);
         assertEquals(rightHouse, found.getHouseUuid());
     }
@@ -114,8 +115,8 @@ class HouseRegionResolutionTest {
         StructureRegionManager.registerStructure(house(UUID.randomUUID(), origin, 9, 8, 9));
 
         // One block outside the wall. The old scan would have found this house from here.
-        assertNull(HouseUtil.enclosingStructure(origin.offset(-1, 1, 4)));
-        assertNull(HouseUtil.enclosingStructure(origin.offset(4, 1, -1)));
+        assertNull(HouseUtil.enclosingStructure(Level.OVERWORLD, origin.offset(-1, 1, 4)));
+        assertNull(HouseUtil.enclosingStructure(Level.OVERWORLD, origin.offset(4, 1, -1)));
     }
 
     @Test
@@ -124,11 +125,11 @@ class HouseRegionResolutionTest {
         UUID house = UUID.randomUUID();
         StructureRegionManager.registerStructure(house(house, origin, 9, 8, 9));
 
-        StructureRecord found = HouseUtil.enclosingStructure(origin.offset(4, -5, 4));
+        StructureRecord found = HouseUtil.enclosingStructure(Level.OVERWORLD, origin.offset(4, -5, 4));
         assertNotNull(found, "the region reaches ten blocks down; a basement block must resolve");
         assertEquals(house, found.getHouseUuid());
 
-        assertNull(HouseUtil.enclosingStructure(origin.offset(4, -11, 4)),
+        assertNull(HouseUtil.enclosingStructure(Level.OVERWORLD, origin.offset(4, -11, 4)),
                 "eleven blocks down is past the bottom of the region");
     }
 

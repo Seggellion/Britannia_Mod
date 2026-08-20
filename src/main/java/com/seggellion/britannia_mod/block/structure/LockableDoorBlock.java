@@ -27,7 +27,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
 
 import com.seggellion.britannia_mod.ModSounds;
@@ -232,26 +231,6 @@ private InteractionResult tryOpenDoor(BlockState state, Level level, BlockPos po
 
 
 
-    private boolean hasMatchingKey(Player player, UUID lockId) {
-        // Check both hands first
-        for (InteractionHand hand : InteractionHand.values()) {
-            ItemStack held = player.getItemInHand(hand);
-            if (held.getItem() instanceof HouseKeyItem keyItem &&
-                keyItem.matches(held, lockId)) {
-                return true;
-            }
-        }
-
-        // Then fallback to inventory check
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.getItem() instanceof HouseKeyItem keyItem &&
-                keyItem.matches(stack, lockId)) {
-                return true;
-            }
-        }
-
-        return false;
-}
 
 
 

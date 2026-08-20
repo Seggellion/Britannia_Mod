@@ -79,6 +79,7 @@ public class LockableDoorBlockEntity extends BlockEntity {
 
         // Convert block coords to chunk coords (>> 4 == /16)
         List<StructureRecord> nearby = StructureRegionManager.getStructuresInChunk(
+            level.dimension(),
             this.getBlockPos().getX() >> 4,
             this.getBlockPos().getZ() >> 4
         );

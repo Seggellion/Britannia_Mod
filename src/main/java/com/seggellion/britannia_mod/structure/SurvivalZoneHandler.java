@@ -81,7 +81,7 @@ public class SurvivalZoneHandler {
                 player.setGameMode(GameType.ADVENTURE);
             }
 
-            if (HouseBuildRights.ownsHouseAt(player.blockPosition(), player.getUUID())) {
+            if (HouseBuildRights.ownsHouseAt(player.level(), player.blockPosition(), player.getUUID())) {
                 grant(player);
             } else {
                 revoke(player);

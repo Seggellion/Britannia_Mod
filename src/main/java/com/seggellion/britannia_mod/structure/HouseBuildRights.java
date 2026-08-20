@@ -89,7 +89,7 @@ public final class HouseBuildRights {
      * so the caller can leave the world's own protection alone instead of overriding it.
      */
     public static Decision evaluateBreak(Level level, BlockPos pos, Player player) {
-        StructureRecord house = HouseUtil.enclosingStructure(pos);
+        StructureRecord house = HouseUtil.enclosingStructure(level, pos);
         if (house == null) return Decision.OUTSIDE_ANY_HOUSE;
 
         if (!owns(house, player.getUUID())) return Decision.DENIED_NOT_OWNER;
@@ -110,15 +110,24 @@ public final class HouseBuildRights {
      * the outline of a house does not mean refusing to build against it.
      */
     public static Decision evaluatePlace(Level level, BlockPos pos, Player player) {
-        StructureRecord house = HouseUtil.enclosingStructure(pos);
+        StructureRecord house = HouseUtil.enclosingStructure(level, pos);
         if (house == null) return Decision.OUTSIDE_ANY_HOUSE;
 
         return owns(house, player.getUUID()) ? Decision.ALLOWED : Decision.DENIED_NOT_OWNER;
     }
 
     /** Whether this player stands inside a house they own, which is what earns the exemption. */
-    public static boolean ownsHouseAt(BlockPos pos, UUID playerUuid) {
-        StructureRecord house = HouseUtil.enclosingStructure(pos);
+    public static boolean ownsHouseAt(Level level, BlockPos pos, UUID playerUuid) {
+        return level != null && ownsHouseAt(level.dimension(), pos, playerUuid);
+    }
+
+    /**
+     * The same question by dimension. A house at these coordinates in another world is
+     * another house, and its owner is not this one.
+     */
+    public static boolean ownsHouseAt(
+            net.minecraft.resources.ResourceKey<Level> dimension, BlockPos pos, UUID playerUuid) {
+        StructureRecord house = HouseUtil.enclosingStructure(dimension, pos);
         return house != null && owns(house, playerUuid);
     }
 

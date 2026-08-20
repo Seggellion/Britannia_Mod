@@ -27,7 +27,8 @@ public class StructureCommands {
     }
 
     private static int listAllStructures(CommandSourceStack source) {
-        Map<Long, List<StructureRecord>> structureMap = StructureRegionManager.getChunkStructureMap();
+        Map<StructureRegionManager.RegionKey, List<StructureRecord>> structureMap =
+                StructureRegionManager.getChunkStructureMap();
 
         if (structureMap.isEmpty()) {
             source.sendSuccess(() -> Component.literal("No structures registered."), false);
@@ -53,7 +54,8 @@ public class StructureCommands {
         }
 
         ChunkPos chunkPos = new ChunkPos(player.blockPosition());
-        List<StructureRecord> records = StructureRegionManager.getStructuresInChunk(chunkPos.x, chunkPos.z);
+        List<StructureRecord> records = StructureRegionManager.getStructuresInChunk(
+                player.level().dimension(), chunkPos.x, chunkPos.z);
 
         if (records.isEmpty()) {
             source.sendSuccess(() -> Component.literal("No structures in current chunk."), false);
