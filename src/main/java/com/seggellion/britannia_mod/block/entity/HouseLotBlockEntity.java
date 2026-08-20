@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.block.entity;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import com.seggellion.britannia_mod.registry.BlockEntityRegistry;
 import com.seggellion.britannia_mod.structure.HouseStyle;
+import com.seggellion.britannia_mod.structure.StructureRecord;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -34,6 +35,17 @@ public class HouseLotBlockEntity extends BlockEntity {
     private boolean privateHouse;
     @Nullable
     private UUID deedUuid = null;
+
+    /**
+     * Housing Deed Milestone 2. Rails is what the shard rehydrates its regions from, but a
+     * house placed while Rails was unreachable never reached Rails, and would come back with
+     * no region at all. These two fields are the local copy of the only things the lot did not
+     * already know: which way the structure was turned, and who owns it as a UUID rather than
+     * as a username that a rename would invalidate.
+     */
+    private int rotationDeg = StructureRecord.ROTATION_UNKNOWN;
+    @Nullable
+    private UUID ownerUuid = null;
 
 
     public HouseLotBlockEntity(BlockPos pos, BlockState state) {
@@ -167,6 +179,25 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
         return privateHouse;
     }
 
+    public int getRotationDeg() {
+        return rotationDeg;
+    }
+
+    public void setRotationDeg(int rotationDeg) {
+        this.rotationDeg = rotationDeg;
+        setChanged();
+    }
+
+    @Nullable
+    public UUID getOwnerUuid() {
+        return ownerUuid;
+    }
+
+    public void setOwnerUuid(@Nullable UUID ownerUuid) {
+        this.ownerUuid = ownerUuid;
+        setChanged();
+    }
+
     public void setPrivate(boolean flag) {
         this.privateHouse = flag;
         setChanged();
@@ -207,6 +238,8 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
             this.placedAt = Instant.parse(tag.getString("PlacedAt"));
         }
         if (tag.contains("DeedUUID")) this.deedUuid = UUID.fromString(tag.getString("DeedUUID"));
+        if (tag.contains("RotationDeg")) this.rotationDeg = tag.getInt("RotationDeg");
+        if (tag.contains("OwnerUUID")) this.ownerUuid = UUID.fromString(tag.getString("OwnerUUID"));
 
     }
 
@@ -231,6 +264,9 @@ public void setDeedUuid(@Nullable UUID deedUuid) {
         tag.putString("PlacedAt", this.placedAt.toString());
         if (this.deedUuid != null)
                 tag.putString("DeedUUID", this.deedUuid.toString());
+        tag.putInt("RotationDeg", this.rotationDeg);
+        if (this.ownerUuid != null)
+                tag.putString("OwnerUUID", this.ownerUuid.toString());
         }
 
         @Override

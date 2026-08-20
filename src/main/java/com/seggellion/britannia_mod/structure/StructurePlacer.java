@@ -113,6 +113,10 @@ String nbtFile = style.getStructureFile();                 // e.g. "structures/w
        3. Place the (now‑valid) template
        -------------------------------------------------- */
     Rotation rotation = StructureUtils.getRotation(rotationDeg);// always north‑facing
+    // Milestone 2: the rotation as it was actually applied. getRotation() folds any request
+    // into one of four, so the incoming degrees are not necessarily what the house got;
+    // persisting this instead means a rehydrated region matches the structure on the ground.
+    final int canonicalRotationDeg = rotation.ordinal() * 90;
     Vec3i    rawSize  = template.getSize();
     BlockPos unrotatedDoorOffset    = StructureUtils.getDoorOffset(rawSize);
     BlockPos rotatedDoorOffset = StructureTemplate.calculateRelativePosition(
@@ -268,6 +272,11 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
         lotBE.setPrice(0);
         lotBE.setPlacedAt(Instant.now());
         lotBE.setAccessList(new ArrayList<>());
+        // Milestone 2: the local copy of the region inputs. Rails is what the shard
+        // rehydrates from, but a house placed while Rails was down never got there, and the
+        // lot block is the only thing left in the world that knows how it was turned.
+        lotBE.setRotationDeg(canonicalRotationDeg);
+        lotBE.setOwnerUuid(player.getUUID());
         lotBE.setChanged();
 
     // ✅ Apply deed_uuid if available
@@ -290,19 +299,21 @@ BlockPos lotOffset = StructureTemplate.calculateRelativePosition(
 
     }
 
-    StructureRegionManager.registerStructure(
-        new StructureRecord(
-            player.getUUID(),
-            boxes.structureBox(),
-            boxes.fullBox(),
-            houseUuid,
-            style.getSize().id(),
-            style.name(),
-            deedUuid
-        )
+    StructureRecord record = new StructureRecord(
+        player.getUUID(),
+        boxes.structureBox(),
+        boxes.fullBox(),
+        houseUuid,
+        style.getSize().id(),
+        style.name(),
+        deedUuid,
+        canonicalRotationDeg
     );
+    StructureRegionManager.registerStructure(record);
 
-    HouseDataAPI.sendHouseDataToRails(level, lotPos, player, style);
+    // Milestone 2: the same record goes to Rails, with the origin it was placed at, so the
+    // region can be put back after a restart instead of being lost with the process.
+    HouseDataAPI.sendHouseDataToRails(level, lotPos, player, style, record, adjustedPos);
 
     HouseKeyItem keyItem = (HouseKeyItem) ItemRegistry.HOUSE_KEY.get();
     ItemStack    key     = keyItem.createKey(houseUuid);

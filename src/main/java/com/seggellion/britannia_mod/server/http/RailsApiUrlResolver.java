@@ -223,6 +223,10 @@ public final class RailsApiUrlResolver {
         TRADER_SALE("trader_transactions"),
         TRANSACTION("transactions"),
         HOUSE_CREATE("houses"),
+        // Housing Deed Milestone 2: the shard read side, used once at server start to put
+        // every house region back into StructureRegionManager. Same path as HOUSE_CREATE;
+        // the verb and the shard query are what separate them.
+        HOUSE_INDEX("houses", "shard"),
         HOUSE_DELETE("houses/delete"),
         HOUSE_RENAME("houses/rename"),
         SKILL_CONFIG("skills/config"),

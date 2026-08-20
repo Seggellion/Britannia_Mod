@@ -323,6 +323,10 @@ public void onServerStopping(ServerStoppingEvent event) {
 }
 
 public void onServerStarted(ServerStartedEvent event) {
+    // Housing Deed Milestone 2: house regions live in a static map that nothing used to
+    // save or load, so every restart silently revoked every owner build right and left
+    // every door unable to resolve a lock. Restore them before anything else touches them.
+    com.seggellion.britannia_mod.structure.StructureRegionRehydrator.start(event.getServer());
     ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
     com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.start(event.getServer());
     com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.runStartupReconciliation(event.getServer());
