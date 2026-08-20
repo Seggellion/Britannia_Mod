@@ -1,0 +1,95 @@
+package com.seggellion.britannia_mod.deposit;
+
+import com.seggellion.britannia_mod.BritanniaMod;
+import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.util.ModTags;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Every managed deposit the mod knows about, and the question "is this block one of them".
+ *
+ * <h2>Where this sits</h2>
+ * The mod already had a managed-resource loop before clay: an administrator places a resource
+ * block, a player works it, the block goes away, and {@code BlockRestoreHandler} brings it back
+ * six hours later. That loop is in two halves, and only one of them was ore-shaped.
+ *
+ * <ul>
+ *   <li><b>Shared already.</b> {@code BrokenBlockTracker} / {@code BrokenBlockDataStorage} /
+ *       {@code BlockRestoreHandler} take a position and a block state and know nothing about ore,
+ *       tools or skills. Clay joins this half unchanged — no second scheduler, no second store,
+ *       and {@code /brokenblocks} lists a pending clay bed beside a pending vein.</li>
+ *   <li><b>Ore-shaped.</b> {@code Mineables} resolves a block <em>type</em> to a Mining skill
+ *       requirement, and the pickaxe is welded into three separate places. Clay must not be in
+ *       it: a Mining requirement is the wrong skill, STONE/ORE is the wrong category, and a
+ *       block-type rule would make every vanilla clay block in the world an economic deposit the
+ *       moment it was added.</li>
+ * </ul>
+ *
+ * <p>So this catalogue is the second front half, not a second system: it answers which block is a
+ * deposit and what works it, and then hands over to the shared half. Adding the silica sand
+ * deposit later is one entry in {@link #ALL} and its block; it is not another architecture.
+ */
+public final class ManagedDeposits {
+
+    /**
+     * The clay bed.
+     *
+     * <p>One clay ball per bed, which is the yield every other managed resource here already
+     * uses — a worked stone block gives one graded stone, an ore block one purity ore, a wild
+     * node one item. Vanilla's four-per-block is a loot rule for a material anyone may dig;
+     * this is a deposit whose whole purpose is that supply is controlled. House recipes consume
+     * clay by the dozens, but that is what they cost, not what a bed contains.
+     *
+     * <p>{@code minecraft:clay_ball} rather than a new item. Rails prices the commodity, not the
+     * item, and a {@code britannia_mod:raw_clay} would be a second name for the same substance
+     * whose only purpose was to be scarce — scarcity lives in the deposit.
+     */
+    public static final ManagedDeposit CLAY = new ManagedDeposit(
+            ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "clay_deposit"),
+            BlockRegistry.CLAY_DEPOSIT::get,
+            ModTags.Items.CLAY_SHOVELS,
+            () -> Items.CLAY_BALL,
+            1
+    );
+
+    private static final List<ManagedDeposit> ALL = List.of(CLAY);
+
+    private ManagedDeposits() {
+    }
+
+    public static List<ManagedDeposit> all() {
+        return ALL;
+    }
+
+    /** The deposit this block is, or empty when it is ordinary world. */
+    public static Optional<ManagedDeposit> resolve(BlockState state) {
+        if (state == null) return Optional.empty();
+        for (ManagedDeposit deposit : ALL) {
+            if (state.is(deposit.block().get())) return Optional.of(deposit);
+        }
+        return Optional.empty();
+    }
+
+    /** The deposit named by an authoring command, e.g. {@code clay}. */
+    public static Optional<ManagedDeposit> byName(String name) {
+        if (name == null || name.isBlank()) return Optional.empty();
+        String wanted = name.toLowerCase(java.util.Locale.ROOT);
+        for (ManagedDeposit deposit : ALL) {
+            String path = deposit.id().getPath();
+            if (path.equals(wanted) || path.equals(wanted + "_deposit")) return Optional.of(deposit);
+        }
+        return Optional.empty();
+    }
+
+    /** Whether this stack is a tool authorized to work this deposit. */
+    public static boolean isAuthorizedTool(ManagedDeposit deposit, ItemStack stack) {
+        return stack != null && !stack.isEmpty() && stack.is(deposit.extractionTool());
+    }
+}

@@ -219,6 +219,10 @@ CraftableRegistry.init();
         // Mining milestone 7: records player-placed mineables so the place-break loop is not a
         // Mining exploit and players can always dismantle their own construction.
         NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningProvenanceHandler());
+        // Housing clay supply: the managed deposit rule. HIGH priority for the same reason as
+        // the Mining gate -- CustomBlockBreakHandler mutates the world inside its NORMAL listener.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.deposit.ManagedDepositInteractionHandler());
        NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
         NeoForge.EVENT_BUS.register(new ChestHandler());
         NeoForge.EVENT_BUS.register(new LockpickingEventHandler());

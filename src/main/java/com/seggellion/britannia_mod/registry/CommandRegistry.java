@@ -13,6 +13,7 @@ import com.seggellion.britannia_mod.commands.RandomizeWallsCommand;
 import com.seggellion.britannia_mod.commands.VerifyCommand;
 import com.seggellion.britannia_mod.commands.FarmingDebugCommand;
 import com.seggellion.britannia_mod.commands.BannerDyeAdminCommands;
+import com.seggellion.britannia_mod.commands.ManagedDepositCommands;
 import com.seggellion.britannia_mod.commands.ManagedVegetationCommands;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -45,6 +46,7 @@ public class CommandRegistry {
         com.seggellion.britannia_mod.commands.MiningDebugCommand.register(event.getDispatcher());
         BannerDyeAdminCommands.register(event.getDispatcher());
         ManagedVegetationCommands.register(event.getDispatcher());
+        ManagedDepositCommands.register(event.getDispatcher());
 
         // Register additional command classes here
     }

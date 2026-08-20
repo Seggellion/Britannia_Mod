@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.registry;
 
 import com.seggellion.britannia_mod.block.HorizontalFacingBlock;
+import com.seggellion.britannia_mod.block.ManagedDepositBlock;
 import com.seggellion.britannia_mod.block.DecorativePlantBlock;
 import com.seggellion.britannia_mod.block.HedgeBushBlock;
 import com.seggellion.britannia_mod.block.PoolOfBloodBlock;
@@ -2261,6 +2262,21 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 
         public static final DeferredHolder<Block, Block> GLACIAL_ROCK = BLOCKS.register(
                 "glacial_rock", BaseOreBlock::new);
+
+        /**
+         * The managed clay bed. Soft sediment worked with a shovel, not a pickaxe, so it is
+         * deliberately absent from the Mining catalogue; {@code ManagedDeposits} owns the rule.
+         *
+         * <p>Registered beside the ores because it is the same kind of thing: a resource block
+         * an administrator places, with no item form and no loot table, whose only legitimate
+         * removal is the extraction flow.
+         */
+        public static final DeferredHolder<Block, ManagedDepositBlock> CLAY_DEPOSIT = BLOCKS.register(
+                "clay_deposit",
+                () -> new ManagedDepositBlock(BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.CLAY)
+                        .strength(0.6F)
+                        .sound(SoundType.GRAVEL)));
 
         public static final DeferredHolder<Block, Block> METAL_DOOR = BLOCKS.register(
         "metal_door", MetalDoorBlock::new);

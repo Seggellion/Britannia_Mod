@@ -80,6 +80,17 @@ public class ModTags {
         public static final TagKey<Item> GRAIN_HARVEST_BLADES = createTag("grain_harvest_blades");
         public static final TagKey<Item> ROOT_CROP_SHOVELS = createTag("root_crop_shovels");
         public static final TagKey<Item> SKINNING_KNIVES = createTag("skinning_knives");
+
+        /**
+         * The shovels authorized to work a managed clay deposit.
+         *
+         * <p>A tag rather than a class check, because that is how every other harvest category
+         * here is expressed ({@code ROOT_CROP_SHOVELS}, {@code GRAIN_HARVEST_BLADES},
+         * {@code SKINNING_KNIVES}) and because widening the rule later must be a data change,
+         * not a Java edit. It holds the project shovel only: a vanilla shovel is not an
+         * authorized tool, exactly as a vanilla sword is not a skinning knife.
+         */
+        public static final TagKey<Item> CLAY_SHOVELS = createTag("clay_shovels");
         public static final TagKey<Item> FLOWERS = createTag("flowers");
         public static final TagKey<Item> FLOWER_SEEDS = createTag("flower_seeds");
 
