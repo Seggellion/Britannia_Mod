@@ -2,6 +2,8 @@ package com.seggellion.britannia_mod.economy;
 
 import com.seggellion.britannia_mod.economy.crafting.GradedStoneIngredient;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
+import com.seggellion.britannia_mod.item.WeightedWoodType;
+import com.seggellion.britannia_mod.mining.MineableCatalog;
 import com.seggellion.britannia_mod.service.EconomicNpcRegistryParser;
 import com.seggellion.britannia_mod.service.EconomicNpcRegistrySnapshot;
 
@@ -54,27 +56,48 @@ class HousingMaterialCommodityTest {
             Path.of("src/test/resources/wire_contract/trader_policy_parity.json");
 
     /**
-     * The thirteen, counted from the census by Rails' {@code StructureBillOfMaterials} on
-     * 2026-08-20 at {@code b7bbf97}, with how many of the ten deeds consume each.
+     * The thirteen, and how a player gets each one.
+     *
+     * <p>Re-derived from the census by Rails' {@code StructureBillOfMaterials} on 2026-08-20 at
+     * {@code 0206efd}: ten deeds, thirteen distinct commodities, unchanged from {@code b7bbf97}.
+     * The count beside each is how many of the ten consume it.
+     *
+     * <p>The {@link Supply} beside each is the mechanism, not a second catalogue. MINED rows are
+     * checked against the shipped Mining catalogue, ITEM rows against the shipped mapping table,
+     * and WOOD rows against the wood-type registry. What is written here is only which of those a
+     * commodity belongs to and what it is made from; every claim rests on the mod's own data.
      */
-    private static final Map<String, Integer> DEED_COMMODITIES = new LinkedHashMap<>();
-
-
-    static {
-        DEED_COMMODITIES.put("wood|logs|oak", 10);
-        DEED_COMMODITIES.put("wood|logs|spruce", 6);
-        DEED_COMMODITIES.put("wood|logs|birch", 3);
-        DEED_COMMODITIES.put("wood|logs|dark_oak", 1);
-        DEED_COMMODITIES.put("stone|common|stone", 4);
-        DEED_COMMODITIES.put("stone|rubble|cobblestone", 1);
-        DEED_COMMODITIES.put("stone|igneous|diorite", 7);
-        DEED_COMMODITIES.put("stone|sedimentary|sandstone", 1);
-        DEED_COMMODITIES.put("stone|processed|plaster", 4);
-        DEED_COMMODITIES.put("glass|raw|raw_glass", 9);
-        DEED_COMMODITIES.put("textile|raw|thatch", 2);
-        DEED_COMMODITIES.put("metal|ingots|iron", 2);
-        DEED_COMMODITIES.put("clay|raw|clay", 2);
+    private enum Supply {
+        /** Felled with the two-handed axe; the species is a WeightedWoodType. */
+        WOOD,
+        /** Worked with the Britannia pickaxe; the row is in mineables.json. */
+        MINED,
+        /** A discrete item with a row in CommodityMappings. */
+        ITEM,
+        /** A discrete item classified by a branch of describeSaleItem rather than by the table. */
+        ITEM_BY_BRANCH
     }
+
+    private record Material(String commodity, int deeds, Supply supply, String source) {
+    }
+
+    private static final List<Material> DEED_MATERIALS = List.of(
+            new Material("wood|logs|oak", 10, Supply.WOOD, "oak"),
+            new Material("wood|logs|spruce", 6, Supply.WOOD, "spruce"),
+            new Material("wood|logs|birch", 3, Supply.WOOD, "birch"),
+            new Material("wood|logs|dark_oak", 1, Supply.WOOD, "dark_oak"),
+            new Material("stone|common|stone", 4, Supply.MINED, "stone"),
+            new Material("stone|rubble|cobblestone", 1, Supply.MINED, "cobblestone"),
+            new Material("stone|igneous|diorite", 7, Supply.MINED, "diorite"),
+            new Material("stone|sedimentary|sandstone", 1, Supply.MINED, "sandstone"),
+            new Material("stone|processed|plaster", 4, Supply.ITEM, "britannia_mod:plaster"),
+            new Material("glass|raw|raw_glass", 9, Supply.ITEM, "britannia_mod:raw_glass"),
+            new Material("textile|raw|thatch", 2, Supply.ITEM, "britannia_mod:straw"),
+            new Material("clay|raw|clay", 2, Supply.ITEM, "minecraft:clay_ball"),
+            // The ingot path lives in describeSaleItem rather than in the mapping table, and that
+            // method cannot run without a loaded mod. HousingMaterialSupplyGameTests drives the
+            // real serializer over an iron ingot; this row asserts the buyer half.
+            new Material("metal|ingots|iron", 2, Supply.ITEM_BY_BRANCH, "minecraft:iron_ingot"));
 
     @BeforeAll
     static void bootstrapMinecraftRegistries() {
@@ -235,44 +258,128 @@ class HousingMaterialCommodityTest {
     /* ------------------------------------------------------------------ */
 
     /**
-     * Twelve of the thirteen deed commodities have a buyer a player can actually walk up to.
+     * The whole of it, in one place: every material a house is made of can reach a city.
      *
-     * <p>The thirteenth is {@code metal|ingots|iron}, and it is a Rails policy gap rather than a
-     * mod one: the mod mines iron, forges it, and describes the ingot as {@code metal|ingots|iron}
-     * correctly, but the only trader accepting {@code metal|ingots|*} is the Salvager, whose key
-     * list is copper, silver and gold. Nobody buys iron. The Castle wants sixteen and the Stone
-     * Keep four.
+     * <p>Three things have to be true at once for a commodity to be supplied, and each of the
+     * three has failed on its own during this programme. There has to be a mechanism a player can
+     * work; the mod has to describe the resulting item with the exact identity Rails prices (clay
+     * had none at all until the supply pass); and a trader who exists in the world has to accept
+     * it (iron was correctly classified and unbuyable until Rails granted it to the Salvager at
+     * {@code 0206efd}).
      *
-     * <p>Pinned as an exact set rather than tolerated, so this fails two ways that both matter:
-     * if a NEW commodity loses its buyer, and if Rails grants iron a buyer and this note goes
-     * stale. Rails is the policy authority and was not edited to make this pass.
+     * <p>This is the regression guard for all three. A future house that introduces a fourteenth
+     * commodity fails here naming the key it added, rather than being discovered when a player
+     * cannot build it.
      */
     @Test
-    void everyDeedCommodityHasALiveBuyerExceptTheOneRailsHasNotGranted() throws IOException {
-        Map<String, List<String>> buyers = buyersByCommodity(DEED_COMMODITIES.keySet());
+    void everyMaterialTheDeedsConsumeCanReachACity() throws IOException {
+        Map<String, List<String>> buyers = buyersByCommodity(
+                DEED_MATERIALS.stream().map(Material::commodity).toList());
         List<String> live = liveTraders();
         assertFalse(live.isEmpty(), "no trader in the registry has an entity at all");
 
-        List<String> unbuyable = new ArrayList<>();
-        for (String commodity : DEED_COMMODITIES.keySet()) {
-            List<String> who = buyers.getOrDefault(commodity, List.of());
-            if (who.stream().noneMatch(live::contains)) unbuyable.add(commodity);
+        List<String> broken = new ArrayList<>();
+        for (Material material : DEED_MATERIALS) {
+            String why = supplyDefect(material);
+            if (why != null) broken.add(material.commodity() + ": " + why);
+
+            List<String> who = buyers.getOrDefault(material.commodity(), List.of());
+            if (who.stream().noneMatch(live::contains)) {
+                broken.add(material.commodity() + ": no trader a player can meet accepts it"
+                        + (who.isEmpty() ? "" : " (dormant only: " + who + ")"));
+            }
         }
-        assertEquals(List.of("metal|ingots|iron"), unbuyable,
-                "the set of housing commodities with no reachable buyer changed; buyers were "
-                        + buyers);
+        assertEquals(KNOWN_UNREACHABLE, broken.stream().map(row -> row.split(":")[0]).toList(),
+                () -> "the set of housing materials a player cannot supply changed:"
+                        + System.lineSeparator() + "  "
+                        + String.join(System.lineSeparator() + "  ", broken));
     }
 
-    /** The four this pass added are all among the reachable ones. */
+    /**
+     * The one material a player still cannot supply, and why it is not a mistake to fix here.
+     *
+     * <p>{@code stone|common|stone} is consumed by four deeds — 4288 units in the Castle and 2451
+     * in the Stone Keep — and nothing in the game produces it. Mining {@code minecraft:stone}
+     * yields rubble: the catalogue's {@code stone} row declares {@code drop: "Cobblestone"} and
+     * {@code economy_commodity: cobblestone}, so the one definition that could yield the commodity
+     * deliberately yields somebody else's. That is not a typo. It descends from the original
+     * {@code BlockBreakUtils} chain, and two contract tests pin it on purpose —
+     * {@code dropNamesMatchTheHistoricalBlockBreakUtilsChain} and
+     * {@code noTwoResourcesShareACommodityUnintentionally}, the second of which says in as many
+     * words that Stone and Cobblestone share the cobblestone commodity because mining stone yields
+     * rubble.
+     *
+     * <p>So the housing bill of materials and the Mining resource model disagree, and closing the
+     * gap means choosing between them: either mining stone starts yielding Stone, which changes
+     * what the most-mined block in the game has always given and contradicts both pinned
+     * contracts, or a deliberate processing step converts rubble into stone the way vanilla's own
+     * furnace does. Both are resource-model decisions with price consequences, and this pass was
+     * an audit, not a calibration.
+     *
+     * <p>Pinned as an exact set so it fails two ways that both matter: if another commodity loses
+     * its path, and when this one gains one.
+     */
+    private static final List<String> KNOWN_UNREACHABLE = List.of("stone|common|stone");
+
+    /** The set is thirteen, and it is Rails' set rather than a convenient subset. */
     @Test
-    void theFourNewMaterialsAllHaveALiveBuyer() throws IOException {
-        List<String> added = List.of("stone|sedimentary|sandstone", "stone|processed|plaster",
-                "glass|raw|raw_glass", "textile|raw|thatch");
-        Map<String, List<String>> buyers = buyersByCommodity(added);
-        List<String> live = liveTraders();
-        for (String commodity : added) {
-            assertTrue(buyers.get(commodity).stream().anyMatch(live::contains),
-                    commodity + " has no trader a player can meet: " + buyers.get(commodity));
+    void theBillOfMaterialsIsStillThirteenCommodities() {
+        assertEquals(13, DEED_MATERIALS.size());
+        assertEquals(13, DEED_MATERIALS.stream().map(Material::commodity).distinct().count());
+        assertEquals(10, DEED_MATERIALS.stream().mapToInt(Material::deeds).max().orElseThrow(),
+                "oak is in all ten deeds; a lower maximum means the census was re-counted");
+    }
+
+    /**
+     * Why a material could not be supplied, or null when it can.
+     *
+     * <p>Every branch reads the mod's own shipped data. Nothing here restates what the mapping
+     * table or the Mining catalogue says; it asks them.
+     */
+    private static String supplyDefect(Material material) {
+        String[] parts = material.commodity().split("[|]", -1);
+        return switch (material.supply()) {
+            case WOOD -> WeightedWoodType.byId(material.source()).isPresent()
+                    ? null : "no WeightedWoodType is registered for " + material.source();
+            case MINED -> minedDefect(material.source(), parts[1]);
+            case ITEM -> itemDefect(material.source(), material.commodity());
+            // The classifier branch is proven in-world; here only the identity shape is checked.
+            case ITEM_BY_BRANCH -> parts[0].isBlank() ? "malformed commodity key" : null;
+        };
+    }
+
+    /** An ACTIVE catalogue row must yield this commodity, and post it in the right family. */
+    private static String minedDefect(String commodity, String subcategory) {
+        boolean catalogued = catalog().active().stream()
+                .anyMatch(definition -> definition.economyCommodity()
+                        .map(commodity::equals).orElse(false));
+        if (!catalogued) {
+            return "no ACTIVE Mining definition yields " + commodity;
+        }
+        if (!Optional.of(subcategory).equals(CommodityMappings.stoneCommoditySubcategory(commodity))) {
+            return commodity + " posts under "
+                    + CommodityMappings.stoneCommoditySubcategory(commodity).orElse("nothing")
+                    + " rather than " + subcategory;
+        }
+        return null;
+    }
+
+    /** The mapping table must give this item exactly the identity Rails prices. */
+    private static String itemDefect(String itemId, String commodity) {
+        Optional<CommodityMapping> mapping = CommodityMappings.forId(itemId);
+        if (mapping.isEmpty()) return itemId + " carries no commodity mapping";
+        if (!commodity.equals(mapping.get().normalizedKey())) {
+            return itemId + " classifies as " + mapping.get().normalizedKey();
+        }
+        return null;
+    }
+
+    private static MineableCatalog catalog() {
+        try {
+            return MineableCatalog.parse(Files.newBufferedReader(PROJECT.resolve(
+                    "src/main/resources/data/britannia_mod/mining/mineables.json")));
+        } catch (IOException unreadable) {
+            throw new AssertionError("the shipped Mining catalogue could not be read", unreadable);
         }
     }
 

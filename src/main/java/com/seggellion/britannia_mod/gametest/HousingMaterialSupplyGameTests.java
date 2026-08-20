@@ -304,6 +304,27 @@ public final class HousingMaterialSupplyGameTests {
     }
 
     /* ------------------------------------------------------------------ */
+    /*  Iron                                                               */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * An iron ingot says it is iron, and the Salvager may now hear it.
+     *
+     * <p>The ingot path is a branch of describeSaleItem rather than a row in the mapping table, so
+     * it can only be exercised with the mod loaded. Iron was correctly classified and completely
+     * unbuyable until Rails granted it to the Salvager; the mod side never changed, which is what
+     * this pins.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    public static void anironingotsellsasmetalingotsiron(GameTestHelper helper) {
+        JsonObject described = ServerEconomyService.describeSaleItem(new ItemStack(Items.IRON_INGOT));
+        assertMember(described, "category", "metal");
+        assertMember(described, "subcategory", "ingots");
+        assertMember(described, "material", "iron");
+        helper.succeed();
+    }
+
+    /* ------------------------------------------------------------------ */
     /*  Fixtures                                                           */
     /* ------------------------------------------------------------------ */
 

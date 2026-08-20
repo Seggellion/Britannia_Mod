@@ -213,8 +213,16 @@ class TraderPolicyWireParityTest {
         assertEquals(2, entries.size());
         assertEquals(List.of("salvage"), entries.get(0).subcategories());
         assertEquals(List.of("ingots"), entries.get(1).subcategories());
-        assertEquals(List.of("copper", "silver", "gold"), entries.get(1).commodityKeys(),
+        // Read out of the fixture rather than written down here. What this asserts is that the
+        // allow-list survives the round trip IN ORDER; which metals are on it is Rails' business
+        // and has changed twice already (iron was granted at 0206efd). Comparing against the
+        // bytes is strictly stronger than a frozen triple and does not go stale when Rails
+        // legitimately grants another metal.
+        assertEquals(allowListFromFixture("salvage_trader", "ingots"),
+                entries.get(1).commodityKeys(),
                 "string order inside the allow-list survives the round trip too");
+        assertTrue(entries.get(1).commodityKeys().size() >= 3,
+                "the allow-list collapsed to almost nothing, which no policy change should do");
         assertEquals(null, entries.get(0).commodityKeys(),
                 "the salvage entry carries no allow-list; absence must not become an empty list");
     }
@@ -231,6 +239,28 @@ class TraderPolicyWireParityTest {
         root.add(EconomicNpcRegistryParser.ROOT_KEY, registry);
 
         assertEquals(snapshot, EconomicNpcRegistryParser.parseBootstrapRoot(root));
+    }
+
+    /** The commodity_keys Rails published for one trader's entry, in the order it published them. */
+    private static List<String> allowListFromFixture(String traderKey, String subcategory) {
+        for (JsonElement element : fixture.getAsJsonObject("registry")
+                .getAsJsonArray("economic_npc_types")) {
+            JsonObject type = element.getAsJsonObject();
+            if (!traderKey.equals(type.get("key").getAsString())) continue;
+            for (JsonElement entryElement : type.getAsJsonArray("accepted_commodities")) {
+                JsonObject entry = entryElement.getAsJsonObject();
+                if (!entry.has("subcategories") || !entry.has("commodity_keys")) continue;
+                JsonArray subcategories = entry.getAsJsonArray("subcategories");
+                if (subcategories.size() != 1
+                        || !subcategory.equals(subcategories.get(0).getAsString())) continue;
+                List<String> keys = new ArrayList<>();
+                for (JsonElement key : entry.getAsJsonArray("commodity_keys")) {
+                    keys.add(key.getAsString());
+                }
+                return keys;
+            }
+        }
+        return fail("the fixture carries no " + subcategory + " allow-list for " + traderKey);
     }
 
     private static JsonObject reverseKeys(JsonObject original) {

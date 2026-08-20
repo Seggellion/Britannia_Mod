@@ -177,7 +177,8 @@
             "commodity_keys": [
               "copper",
               "silver",
-              "gold"
+              "gold",
+              "iron"
             ]
           }
         ]
@@ -270,7 +271,7 @@
         ]
       }
     ],
-    "revision": "89f5ae478a3c01e46c2b33ff407a44429ed9f2011811820d4ac92115bd052624"
+    "revision": "35fa5d3060045474c461d88a9dc960e218529b1333ceaaa2ab27303284436464"
   },
   "probes": [
     {
@@ -332,6 +333,11 @@
       "category": "metal",
       "subcategory": "ingots",
       "item_name": "copper"
+    },
+    {
+      "category": "metal",
+      "subcategory": "ingots",
+      "item_name": "iron"
     },
     {
       "category": "metal",
@@ -443,10 +449,12 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "fish_trader": [
       true,
+      false,
       false,
       false,
       false,
@@ -503,9 +511,11 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "glass_trader": [
+      false,
       false,
       false,
       false,
@@ -563,6 +573,7 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "meat_trader": [
@@ -593,12 +604,14 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "ore_trader": [
       false,
       false,
       true,
+      false,
       false,
       false,
       false,
@@ -653,9 +666,11 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "provision_trader": [
+      false,
       false,
       false,
       false,
@@ -700,6 +715,7 @@
       false,
       false,
       false,
+      false,
       true,
       false,
       false,
@@ -728,6 +744,7 @@
       false,
       true,
       true,
+      true,
       false,
       false,
       false,
@@ -746,6 +763,7 @@
       false
     ],
     "scribe_trader": [
+      false,
       false,
       false,
       false,
@@ -794,6 +812,7 @@
       false,
       false,
       false,
+      false,
       true,
       true,
       true,
@@ -806,6 +825,7 @@
       false
     ],
     "textile_trader": [
+      false,
       false,
       false,
       false,
@@ -838,6 +858,7 @@
     "wood_trader": [
       false,
       true,
+      false,
       false,
       false,
       false,
