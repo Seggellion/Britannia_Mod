@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.deposit;
 
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
+import com.seggellion.britannia_mod.structure.HouseBuildRights;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,13 @@ import net.minecraft.world.level.block.state.BlockState;
  * restoration record is taken from the state that is still standing. A rule that mutated first
  * and validated afterwards is exactly the housing privacy defect this programme already fixed
  * once; it is not repeated here.
+ *
+ * <p>House authority is asked first, before the tool. A deposit inside somebody's house is
+ * theirs, whatever is in the hand reaching for it, and the answer comes from
+ * {@link HouseBuildRights} rather than from a copy of the region rules living here. That also
+ * settles the ordering hazard the clay pass reported: this runs at HIGH priority and so precedes
+ * {@code StructureProtectionHandler}, which means it cannot rely on that handler to protect
+ * anything and has to ask the same question itself.
  *
  * <h2>Exhaustion and regeneration</h2>
  * The bed is replaced by whatever fluid occupies its cell — air on a bank, water in a shallow —
@@ -44,7 +52,9 @@ public final class ManagedDepositExtraction {
         /** Not a deposit at all; the caller should leave the world's own rules alone. */
         NOT_A_DEPOSIT,
         /** A deposit, but not with that in hand. */
-        WRONG_TOOL;
+        WRONG_TOOL,
+        /** A deposit standing inside a house this player has no right to change. */
+        PROTECTED;
 
         public boolean extracted() {
             return this == EXTRACTED;
@@ -70,6 +80,19 @@ public final class ManagedDepositExtraction {
         if (deposit == null) {
             return Result.NOT_A_DEPOSIT;
         }
+
+        // Whose ground is this? Outside any house the world's own rules apply and this passes;
+        // inside one, only the owner may work what stands in it. An administrator dropping a
+        // deposit into somebody's house therefore cannot hand strangers a way in.
+        HouseBuildRights.Decision house = HouseBuildRights.evaluateBreak(level, pos, player);
+        if (!house.permitted()) {
+            String refusal = house.message();
+            if (refusal != null) {
+                player.displayClientMessage(Component.literal(refusal), true);
+            }
+            return Result.PROTECTED;
+        }
+
         if (!ManagedDeposits.isAuthorizedTool(deposit, tool)) {
             player.displayClientMessage(
                     Component.translatable("message.britannia_mod.deposit.wrong_tool"), true);
