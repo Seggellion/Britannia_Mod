@@ -1,0 +1,455 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Seggellion from Ultimacraft.com",
+	"parent": "minecraft:block/block",
+	"ambientocclusion": false,
+	"textures": {
+		"1": "britannia_mod:block/structure/plaster/wood_support",
+		"particle": "britannia_mod:block/structure/plaster/dirty_plaster",
+		"wall": "britannia_mod:block/structure/plaster/dirty_plaster"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0.0,
+				0
+			],
+			"to": [
+				16,
+				16.0,
+				5
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					0,
+					0,
+					-5.5
+				]
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						8.25,
+						12.11285,
+						15.625,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"east": {
+					"uv": [
+						8.25,
+						12.11285,
+						15.625,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"south": {
+					"uv": [
+						8.25,
+						12.11285,
+						15.625,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"west": {
+					"uv": [
+						8.25,
+						12.11285,
+						15.625,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"up": {
+					"uv": [
+						8.25,
+						8.25,
+						15.625,
+						16
+					],
+					"texture": "#wall"
+				},
+				"down": {
+					"uv": [
+						8.25,
+						8.25,
+						15.625,
+						16
+					],
+					"texture": "#wall"
+				}
+			}
+		},
+		{
+			"from": [
+				0,
+				0,
+				-1
+			],
+			"to": [
+				16,
+				1,
+				0
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					-0.2,
+					0,
+					-0.9
+				]
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"east": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"south": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"west": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"up": {
+					"uv": [
+						3.125,
+						0,
+						12.75,
+						1.25
+					],
+					"texture": "#1"
+				},
+				"down": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				}
+			}
+		},
+		{
+			"from": [
+				0,
+				0,
+				5
+			],
+			"to": [
+				16,
+				1,
+				6
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					-0.2,
+					0,
+					5.1
+				]
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"east": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"south": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"west": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"up": {
+					"uv": [
+						3.125,
+						0,
+						12.75,
+						1.25
+					],
+					"texture": "#1"
+				},
+				"down": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				}
+			}
+		},
+		{
+			"from": [
+				11,
+				0.0,
+				5
+			],
+			"to": [
+				16,
+				16.0,
+				16
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					21.5,
+					0,
+					0
+				]
+			},
+			"faces": {
+				"east": {
+					"uv": [
+						8.25,
+						12.11285,
+						13.32031,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"south": {
+					"uv": [
+						8.25,
+						12.11285,
+						15.625,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"west": {
+					"uv": [
+						10.55469,
+						12.11285,
+						15.625,
+						16.0
+					],
+					"texture": "#wall"
+				},
+				"up": {
+					"uv": [
+						8.25,
+						8.25,
+						15.625,
+						16
+					],
+					"texture": "#wall",
+					"rotation": 90
+				},
+				"down": {
+					"uv": [
+						8.25,
+						8.25,
+						15.625,
+						16
+					],
+					"texture": "#wall",
+					"rotation": 270
+				}
+			}
+		},
+		{
+			"from": [
+				16,
+				0,
+				5
+			],
+			"to": [
+				17,
+				1,
+				16
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					16.9,
+					0,
+					-0.2
+				]
+			},
+			"faces": {
+				"east": {
+					"uv": [
+						6.375,
+						14.125,
+						12.99219,
+						16
+					],
+					"texture": "#1"
+				},
+				"south": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"west": {
+					"uv": [
+						9.38281,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"up": {
+					"uv": [
+						3.125,
+						0,
+						12.75,
+						1.25
+					],
+					"texture": "#1",
+					"rotation": 90
+				},
+				"down": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1",
+					"rotation": 270
+				}
+			}
+		},
+		{
+			"from": [
+				10,
+				0,
+				5
+			],
+			"to": [
+				11,
+				1,
+				16
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					10.9,
+					0,
+					-0.2
+				]
+			},
+			"faces": {
+				"east": {
+					"uv": [
+						6.375,
+						14.125,
+						12.99219,
+						16
+					],
+					"texture": "#1"
+				},
+				"south": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"west": {
+					"uv": [
+						9.38281,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1"
+				},
+				"up": {
+					"uv": [
+						3.125,
+						0,
+						12.75,
+						1.25
+					],
+					"texture": "#1",
+					"rotation": 90
+				},
+				"down": {
+					"uv": [
+						6.375,
+						14.125,
+						16,
+						16
+					],
+					"texture": "#1",
+					"rotation": 270
+				}
+			}
+		}
+	],
+	"__comment": "Half-height cut of plaster_wall_blank_t_junction_branch_right: clamp(y, 0, 16) with the vertical faces re-cut to the slice of texture that survives. Generated by tools/generate_half_walls.py, which proves the transform against the hand-made _half straight models before writing."
+}

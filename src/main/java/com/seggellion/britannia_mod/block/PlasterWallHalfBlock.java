@@ -34,8 +34,12 @@ public class PlasterWallHalfBlock extends Block {
     public static final EnumProperty<WallShape> SHAPE = EnumProperty.create("shape", WallShape.class);
     public static final BooleanProperty BRANCH_RIGHT = BooleanProperty.create("branch_right");
 
-    /** Matches the models: 5 voxels deep against the edge named by {@link #FACING}. */
-    private static final double DEPTH = 5.0D;
+    /**
+     * Matches {@link DoubleWallBlock}: these are the same models cut down to sixteen, so they
+     * occupy the same depth once their base beams and the timber posts of the support families are
+     * counted. It was five, which left up to a voxel of visible post with nothing behind it.
+     */
+    private static final double DEPTH = 7.0D;
 
     private static final VoxelShape NORTH = Block.box(0, 0, 0, 16, 16, DEPTH);
     private static final VoxelShape SOUTH = Block.box(0, 0, 16 - DEPTH, 16, 16, 16);
@@ -68,7 +72,12 @@ public class PlasterWallHalfBlock extends Block {
         return derive(state, level, currentPos);
     }
 
-    private BlockState derive(BlockState state, LevelAccessor level, BlockPos pos) {
+    /**
+     * The whole connection rule, shared by placement and by every neighbour update.
+     *
+     * <p>Package-visible so the collision suite can drive it without standing up a level.
+     */
+    BlockState derive(BlockState state, BlockGetter level, BlockPos pos) {
         WallConnection connection = WallConnection.derive(
             level, pos,
             state.getValue(FACING), state.getValue(BRANCH_RIGHT),
