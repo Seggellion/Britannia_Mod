@@ -209,6 +209,15 @@
         "accepted_commodities": [
           {
             "category": "stone"
+          },
+          {
+            "category": "glass",
+            "subcategories": [
+              "processed"
+            ],
+            "commodity_keys": [
+              "glass"
+            ]
           }
         ]
       },
@@ -239,11 +248,20 @@
         "accepted_commodities": [
           {
             "category": "wood"
+          },
+          {
+            "category": "textile",
+            "subcategories": [
+              "raw"
+            ],
+            "commodity_keys": [
+              "thatch"
+            ]
           }
         ]
       }
     ],
-    "revision": "3e390b2d8ba403c45c260f91c1158961f1cf1e7e3088f2c96c7b2287ea8f13d9"
+    "revision": "4276ea5099258117f637c9b65bdb93f5f2a7e837fafbc7a94bd37e4c971ea59d"
   },
   "probes": [
     {
@@ -337,6 +355,31 @@
       "item_name": "parchment"
     },
     {
+      "category": "stone",
+      "subcategory": "sedimentary",
+      "item_name": "sandstone"
+    },
+    {
+      "category": "stone",
+      "subcategory": "processed",
+      "item_name": "plaster"
+    },
+    {
+      "category": "glass",
+      "subcategory": "processed",
+      "item_name": "glass"
+    },
+    {
+      "category": "textile",
+      "subcategory": "raw",
+      "item_name": "thatch"
+    },
+    {
+      "category": "textile",
+      "subcategory": "raw",
+      "item_name": "wool"
+    },
+    {
       "category": "FISH",
       "subcategory": "RAW",
       "item_name": "COD"
@@ -368,10 +411,20 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     ],
     "fish_trader": [
       true,
+      false,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -412,6 +465,11 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     ],
     "glass_trader": [
@@ -434,6 +492,11 @@
       true,
       false,
       false,
+      false,
+      true,
+      false,
+      false,
+      false,
       false
     ],
     "grain_trader": [
@@ -442,6 +505,11 @@
       false,
       false,
       true,
+      false,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -478,12 +546,22 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     ],
     "ore_trader": [
       false,
       false,
       true,
+      false,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -522,9 +600,19 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     ],
     "provision_trader": [
+      false,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -566,6 +654,11 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     ],
     "salvage_trader": [
@@ -581,6 +674,11 @@
       false,
       true,
       true,
+      false,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -610,6 +708,11 @@
       false,
       true,
       false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false
     ],
     "stone_trader": [
@@ -629,6 +732,11 @@
       false,
       false,
       false,
+      false,
+      false,
+      true,
+      true,
+      true,
       false,
       false,
       false,
@@ -654,6 +762,11 @@
       false,
       false,
       false,
+      false,
+      false,
+      true,
+      true,
+      false,
       false
     ],
     "wood_trader": [
@@ -674,6 +787,11 @@
       false,
       false,
       false,
+      false,
+      false,
+      false,
+      false,
+      true,
       false,
       false,
       false

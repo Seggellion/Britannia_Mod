@@ -153,8 +153,24 @@ public final class ServerCatalogService {
             "city_public_id", cityPublicId.toString()
         );
         String body = request(player, "GET", Endpoint.ECONOMIC_CATALOG, query, null);
-        JsonObject root = JsonParser.parseString(body).getAsJsonObject();
-        if (!root.has("rows") || !root.get("rows").isJsonArray()) return List.of();
+        return parseEconomicCatalogRows(JsonParser.parseString(body).getAsJsonObject());
+    }
+
+    /**
+     * Turns a Rails economic catalogue response into the rows a vendor screen shows.
+     *
+     * <p>Separated from the request so it can be exercised against real Rails-shaped bodies:
+     * the rules it applies are the ones a player notices. An unavailable row is dropped
+     * rather than shown greyed out, so a deed whose city is short of plaster simply is not
+     * for sale; and the price and its denomination are carried through exactly as Rails sent
+     * them, which matters because a house deed is a six- or seven-figure number in gold and
+     * a denomination lost on the way would quote it in copper.
+     *
+     * <p>Public static for test access, following the same pattern as
+     * {@code EconomicVendorPurchaseService.reserveExactDenomination}.
+     */
+    public static List<Product> parseEconomicCatalogRows(JsonObject root) {
+        if (root == null || !root.has("rows") || !root.get("rows").isJsonArray()) return List.of();
 
         String catalogRevision = root.has("catalog_revision")
                 ? root.get("catalog_revision").getAsString() : "";
