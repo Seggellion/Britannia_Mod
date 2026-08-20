@@ -70,7 +70,6 @@ private static final Logger LOGGER = LogManager.getLogger();
             }
 
             if (insideOwnStructure) {
-                   LOGGER.info("Is inside structure");
                 if (currentMode != GameType.SURVIVAL) {
                     player.setGameMode(GameType.SURVIVAL);
                 }
