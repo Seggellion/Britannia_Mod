@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:brick_foundation_oak",
+    "britannia_mod:brick_foundation_spruce",
+    "britannia_mod:brick_foundation_sandstone",
+    "britannia_mod:brick_foundation_dark_sandstone",
+    "britannia_mod:brick_foundation_flagstone",
+    "britannia_mod:stone_foundation",
+    "britannia_mod:wooden_board_floor_foundation"
+  ]
+}

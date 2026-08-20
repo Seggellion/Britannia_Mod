@@ -4,9 +4,12 @@ import com.seggellion.britannia_mod.util.StructureUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Rotation;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The entrance a house declares, and the placement arithmetic that reads it.
@@ -35,7 +38,10 @@ class HouseEntranceAnchorTest {
         // Not a rule the table has to obey -- a regression guard. Before this change the value
         // was computed here, from the size; if any of these moved, an existing house would land
         // somewhere new for players who already own one.
+        // The six small houses and the castle, which were authored against the centred anchor.
+        // The villa, patio and keep were not, which is the whole reason the offset is a field.
         for (HouseStyle style : HouseStyle.values()) {
+            if (style != HouseStyle.CASTLE && style.getSize() != HouseSize.SMALL) continue;
             assertEquals(StructureUtils.getDefaultDoorOffset(style.getWidth()), style.getDoorOffset(),
                     style + " no longer places its entrance at front centre");
         }
@@ -84,6 +90,59 @@ class HouseEntranceAnchorTest {
 
             assertEquals(doorTarget.above(2).relative(rotationForward(rotation), 1), placedDoor,
                     "small house door landed wrong under " + rotation);
+        }
+    }
+
+    /**
+     * Milestone 4: every registered house lands on the block the player aimed at, in all four
+     * rotations, through the arithmetic the placer actually runs.
+     *
+     * <p>This is the placement criterion reduced to the part that can be wrong. StructurePlacer
+     * computes an origin from the aim point and the style's declared entrance, then hands the
+     * template to Minecraft; everything after the origin is vanilla. So the origin is what gets
+     * checked, by putting the structure's real front door through it and asking where it lands.
+     *
+     * <p>The invariant is the one every existing house already satisfies: the door ends up one
+     * block beyond the aim point, at head height. A house whose entrance metadata is wrong misses
+     * that by exactly the distance between its declared entrance and its real one -- which for the
+     * villa under the old centred anchor would have been three blocks sideways and five forward.
+     */
+    @ParameterizedTest
+    @EnumSource(HouseStyle.class)
+    void everyHouseLandsOnTheBlockThePlayerAimedAt(HouseStyle style) throws java.io.IOException {
+        BlockPos entrance = style.getDoorOffset();
+        BlockPos doorInTemplate = new BlockPos(entrance.getX(), 1, entrance.getZ() + 1);
+        BlockPos doorTarget = new BlockPos(1000, 64, -1000);
+
+        for (Rotation rotation : Rotation.values()) {
+            BlockPos origin = StructureUtils.getAdjustedPosForDoor(
+                    doorTarget.above(), rotation, entrance);
+            BlockPos placedDoor = origin.offset(
+                    StructureUtils.getRotatedDoorOffset(rotation, doorInTemplate));
+
+            assertEquals(doorTarget.above(2).relative(rotationForward(rotation), 1), placedDoor,
+                    style + " lands its entrance in the wrong place under " + rotation);
+
+            // The box the region is built from must cover the building and start at the origin --
+            // no vertical shift, and no footprint clipped by a size that disagrees with the NBT.
+            var boxes = StructureUtils.makeStructureBoxes(origin,
+                    new net.minecraft.core.Vec3i(style.getWidth(), style.getHeight(), style.getDepth()),
+                    rotation);
+            var box = boxes.structureBox();
+            boolean quarterTurn = rotation == Rotation.CLOCKWISE_90
+                    || rotation == Rotation.COUNTERCLOCKWISE_90;
+
+            assertEquals(origin.getY(), (int) box.minY, style + " shifted vertically under " + rotation);
+            assertEquals(style.getHeight(), (int) (box.maxY - box.minY),
+                    style + " lost height under " + rotation);
+            assertEquals(quarterTurn ? style.getDepth() : style.getWidth(), (int) (box.maxX - box.minX),
+                    style + " X span wrong under " + rotation);
+            assertEquals(quarterTurn ? style.getWidth() : style.getDepth(), (int) (box.maxZ - box.minZ),
+                    style + " Z span wrong under " + rotation);
+
+            // And the door it just placed is inside its own region.
+            assertTrue(box.contains(net.minecraft.world.phys.Vec3.atCenterOf(placedDoor)),
+                    style + " placed its entrance outside its own bounding box under " + rotation);
         }
     }
 

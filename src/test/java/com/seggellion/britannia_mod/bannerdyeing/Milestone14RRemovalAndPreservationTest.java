@@ -81,7 +81,10 @@ class Milestone14RRemovalAndPreservationTest {
         // interior floor a house ships with, as distinct from the perimeter foundation around it
         // and from the decorative flooring an owner lays. It reuses the Wooden Board Floor models
         // and textures wholesale, so it adds one id and no assets beyond its own blockstate.
-        assertEquals(906, repositoryItems);
+        // 909 as of 2026-08-20: the villa, patio and keep house deeds. Deeds are registered by
+        // walking HouseStyle, so three new styles are three new items and no new registration
+        // code; only their item models and language entries are hand-written.
+        assertEquals(909, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

@@ -20,6 +20,33 @@ public class ModTags {
         public static final TagKey<Block> ADVENTURE_LADDERS = createTag("adventure_ladders");
 
         /**
+         * The exterior of a house: the wall-base courses that run around the outside.
+         *
+         * <p>Protected from everybody, the owner included. Membership is decided by what these
+         * blocks actually do in the authored structures rather than by their registry names, which
+         * are misleading -- every block in this mod with "foundation" in its name is not in here,
+         * and the ones that are, are the ones that occur at y>=1 and never at y=0.
+         *
+         * <p>{@code HouseFloorRoleTest} holds that measurement still.
+         */
+        public static final TagKey<Block> HOUSE_FOUNDATION = createTag("house_foundation");
+
+        /**
+         * The interior of a house: the structural ground-floor slab it ships with.
+         *
+         * <p>This is the layer an owner cuts down through to reach a basement, so it is the one
+         * part of the shipped structure they are meant to be able to break. It is not the same
+         * thing as decorative flooring, which was never part of the structure, and it is not the
+         * perimeter, which is not theirs to remove.
+         *
+         * <p>The names mislead in both directions: {@code brick_foundation_spruce} sounds like a
+         * perimeter block and is the six small houses' interior floor, laid 49 at a time at y=0 and
+         * nowhere else.
+         */
+        public static final TagKey<Block> HOUSE_FLOOR_FOUNDATION = createTag("house_floor_foundation");
+
+
+        /**
          * Types that <em>may</em> participate in Grabby Hands pickup/placement.
          *
          * <p>Type eligibility is not instance mobility. A block being in this tag says only that the

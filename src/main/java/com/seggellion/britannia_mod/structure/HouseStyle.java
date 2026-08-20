@@ -31,6 +31,21 @@ public enum HouseStyle {
     SMALL_COTTAGE("thatched_roof_cottage",    HouseSize.SMALL, -2),
     SMALL_BRICK("small_brick_house",       HouseSize.SMALL, -2),
     SMALL_STONEPLASTER("stone_and_plaster_house",       HouseSize.SMALL, -2),
+
+    // The three larger houses. Each declares its own entrance because none of them puts a front
+    // door at front centre, and each declares a lot offset that lands on air beside that
+    // entrance rather than in front of a door leaf.
+    //
+    //   villa   entrance is a double door part-way down the west side, leaves at (2,1,6)/(3,1,6)
+    //   patio   front wall, leaves at (10,1,1)/(11,1,1) -- a block off centre
+    //   keep    gateway recessed two blocks, leaves at (12,1,2)/(13,1,2)
+    //
+    // The offset a style declares is (doorX, 0, doorZ - 1) of the right-hand leaf, which is what
+    // (4,0,0) has always meant for a small house whose single door is at (4,1,1).
+    VILLA("two_story_villa", HouseSize.VILLA, -5, new BlockPos(3, 0, 5)),
+    PATIO("large_patio",     HouseSize.PATIO,  0, new BlockPos(11, 0, 0)),
+    KEEP("stone_keep",       HouseSize.KEEP,  -2, new BlockPos(13, 0, 1)),
+
     CASTLE("castle", HouseSize.CASTLE, -3);
 
 

@@ -80,7 +80,9 @@ class ShippedHouseDoorReachTest {
     @Test
     void theSmallHousesAreWhyNobodyNoticed() throws IOException {
         for (HouseStyle style : HouseStyle.values()) {
-            if (style == HouseStyle.CASTLE) continue;
+            // The small houses only. The castle, villa, patio and keep all have doors outside the
+            // old cube -- that is the defect, and it is measured in the test above.
+            if (style.getSize() != HouseSize.SMALL) continue;
 
             CompoundTag structure = read(style);
             int[] lot = lotPosition(style, size(structure));

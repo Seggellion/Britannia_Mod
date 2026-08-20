@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "britannia_mod:cobblestone_foundation",
+    "britannia_mod:plaster_stone_foundation",
+    "britannia_mod:plaster_wood_foundation",
+    "britannia_mod:curtain_foundation"
+  ]
+}
