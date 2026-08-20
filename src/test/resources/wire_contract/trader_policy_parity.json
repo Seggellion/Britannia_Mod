@@ -218,6 +218,15 @@
             "commodity_keys": [
               "glass"
             ]
+          },
+          {
+            "category": "clay",
+            "subcategories": [
+              "raw"
+            ],
+            "commodity_keys": [
+              "clay"
+            ]
           }
         ]
       },
@@ -261,7 +270,7 @@
         ]
       }
     ],
-    "revision": "4276ea5099258117f637c9b65bdb93f5f2a7e837fafbc7a94bd37e4c971ea59d"
+    "revision": "e3fec443ccbce796cc4444f6ac083c103feae71f014bfbd75a60aabec0265b9b"
   },
   "probes": [
     {
@@ -380,6 +389,16 @@
       "item_name": "wool"
     },
     {
+      "category": "clay",
+      "subcategory": "raw",
+      "item_name": "clay"
+    },
+    {
+      "category": "clay",
+      "subcategory": "processed",
+      "item_name": "fired_brick"
+    },
+    {
       "category": "FISH",
       "subcategory": "RAW",
       "item_name": "COD"
@@ -416,10 +435,14 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "fish_trader": [
       true,
+      false,
+      false,
       false,
       false,
       false,
@@ -470,6 +493,8 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "glass_trader": [
@@ -497,6 +522,8 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "grain_trader": [
@@ -505,6 +532,8 @@
       false,
       false,
       true,
+      false,
+      false,
       false,
       false,
       false,
@@ -551,12 +580,16 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "ore_trader": [
       false,
       false,
       true,
+      false,
+      false,
       false,
       false,
       false,
@@ -605,9 +638,13 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "provision_trader": [
+      false,
+      false,
       false,
       false,
       false,
@@ -659,6 +696,8 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "salvage_trader": [
@@ -674,6 +713,8 @@
       false,
       true,
       true,
+      false,
+      false,
       false,
       false,
       false,
@@ -713,6 +754,8 @@
       false,
       false,
       false,
+      false,
+      false,
       false
     ],
     "stone_trader": [
@@ -738,6 +781,8 @@
       true,
       true,
       false,
+      false,
+      true,
       false,
       false,
       false
@@ -767,6 +812,8 @@
       true,
       true,
       false,
+      false,
+      false,
       false
     ],
     "wood_trader": [
@@ -792,6 +839,8 @@
       false,
       false,
       true,
+      false,
+      false,
       false,
       false,
       false
