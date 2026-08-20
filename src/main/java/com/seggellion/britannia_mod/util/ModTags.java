@@ -91,6 +91,15 @@ public class ModTags {
          * authorized tool, exactly as a vanilla sword is not a skinning knife.
          */
         public static final TagKey<Item> CLAY_SHOVELS = createTag("clay_shovels");
+
+        /**
+         * The shovels authorized to work a managed silica bed.
+         *
+         * <p>A tag of its own rather than a reuse of {@code CLAY_SHOVELS}: tags here are named for
+         * the job, not for the tool, so that widening one harvest never silently widens another.
+         * Both happen to hold the same shovel today.
+         */
+        public static final TagKey<Item> SILICA_SHOVELS = createTag("silica_shovels");
         public static final TagKey<Item> FLOWERS = createTag("flowers");
         public static final TagKey<Item> FLOWER_SEEDS = createTag("flower_seeds");
 

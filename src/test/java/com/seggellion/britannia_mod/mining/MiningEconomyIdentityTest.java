@@ -40,6 +40,10 @@ class MiningEconomyIdentityTest {
             Map.entry("blackstone", "volcanic"),
             Map.entry("volcanic_rock", "volcanic"),
             Map.entry("limestone", "sedimentary"),
+            // Housing supply: Rails seeds `stone|sedimentary|sandstone` at 1.5, the price its own
+            // ladder gives a requirement-5 rock, so the authored sandstone face sits beside
+            // calcite in both the catalogue and the market.
+            Map.entry("sandstone", "sedimentary"),
             Map.entry("dripstone", "sedimentary"),
             Map.entry("glacial_rock", "sedimentary"),
             Map.entry("deepslate", "metamorphic"),

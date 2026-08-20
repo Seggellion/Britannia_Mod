@@ -47,6 +47,7 @@ public final class CommodityMappings {
             Map.entry("basalt", "volcanic"),
             Map.entry("blackstone", "volcanic"),
             Map.entry("limestone", "sedimentary"),
+            Map.entry("sandstone", "sedimentary"),
             Map.entry("dripstone", "sedimentary"),
             Map.entry("glacial_rock", "sedimentary"),
             Map.entry("deepslate", "metamorphic"),
@@ -155,6 +156,24 @@ public final class CommodityMappings {
         // `clay|processed|fired_brick` says a fired clay good is not raw clay. Salvage, if it is
         // ever wanted, is a separate system with its own commodity.
         map("minecraft:clay_ball", "clay", "raw", "clay", "Clay", CommodityUnit.WEIGHT);
+
+        // Housing supply, the remaining four building materials. Each is the bulk material a
+        // builder works, never the finished block it becomes: raw glass rather than a window,
+        // plaster rather than a plaster wall, thatch rather than a thatch roof.
+        //
+        // `straw` is the cereal harvest's existing byproduct -- FarmingBlock pops one from every
+        // grain-blade harvest -- and it is thatch to the economy while wheat stays grain. One
+        // plant, two products, which is what keeps roofing off the city's food supply.
+        map("straw", "textile", "raw", "thatch", "Thatch", CommodityUnit.WEIGHT);
+        map("raw_glass", "glass", "raw", "raw_glass", "Raw Glass", CommodityUnit.WEIGHT);
+        map("plaster", "stone", "processed", "plaster", "Plaster", CommodityUnit.WEIGHT);
+
+        // Silica is the player's feedstock, not the Architect's commodity. It carries Rails'
+        // `glass|raw|sand` identity so a sale is honestly described, and the only trader whose
+        // policy accepts that identity is the dormant Glassblower -- deliberately, because the
+        // intended loop is that a player fires their own silica into raw glass and sells that.
+        // No live fallback is added here; adding one would delete the processing step.
+        map("silica_sand", "glass", "raw", "sand", "Silica Sand", CommodityUnit.WEIGHT);
     }
 
     private CommodityMappings() {
@@ -167,6 +186,22 @@ public final class CommodityMappings {
         if (byId != null) return Optional.of(byId);
 
         String path = itemId.contains(":") ? itemId.substring(itemId.indexOf(':') + 1) : itemId;
+        return Optional.ofNullable(BY_PATH.get(path));
+    }
+
+    /**
+     * The mapping for a registry id or bare path, without needing the item itself.
+     *
+     * <p>Same two-step lookup {@link #forStack} performs. Exists so a caller holding an id can ask
+     * the table directly -- notably a test running without a loaded mod, where the mod's own items
+     * are not in the registry and an {@code ItemStack} of one cannot be built.
+     */
+    public static Optional<CommodityMapping> forId(String itemIdOrPath) {
+        if (itemIdOrPath == null || itemIdOrPath.isBlank()) return Optional.empty();
+        String id = itemIdOrPath.toLowerCase(Locale.ROOT);
+        CommodityMapping byId = BY_ITEM_ID.get(id);
+        if (byId != null) return Optional.of(byId);
+        String path = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
         return Optional.ofNullable(BY_PATH.get(path));
     }
 

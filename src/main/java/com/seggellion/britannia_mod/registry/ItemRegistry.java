@@ -864,6 +864,21 @@ public static final DeferredHolder<Item, Item> RYE = ITEMS.register("rye",
         () -> new Item(new Item.Properties()));
 public static final DeferredHolder<Item, Item> STRAW = ITEMS.register("straw",
         () -> new Item(new Item.Properties()));
+
+/**
+ * Housing construction materials.
+ *
+ * <p>Three plain items, deliberately. {@code silica_sand} is a feedstock a player digs and then
+ * fires; {@code raw_glass} and {@code plaster} are the bulk building stock a city buys. None of
+ * them is a placeable block: the finished window, the plaster wall and the brick course are
+ * separate construction blocks and are not these materials in disguise.
+ */
+public static final DeferredHolder<Item, Item> SILICA_SAND = ITEMS.register("silica_sand",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> RAW_GLASS = ITEMS.register("raw_glass",
+        () -> new Item(new Item.Properties()));
+public static final DeferredHolder<Item, Item> PLASTER = ITEMS.register("plaster",
+        () -> new Item(new Item.Properties()));
 public static final DeferredHolder<Item, Item> FLOUR = ITEMS.register("flour",
         () -> new Item(new Item.Properties()));
 public static final DeferredHolder<Item, Item> OAT_FLOUR = ITEMS.register("oat_flour",

@@ -162,6 +162,7 @@ CraftableRegistry.init();
         MenuRegistry.register(modEventBus);
 
         ToolRegistry.register(modEventBus);
+        com.seggellion.britannia_mod.economy.crafting.ModIngredients.register(modEventBus);
         EntityRegistry.register(modEventBus);
         BlacksmithProfessions.registerAll(modEventBus);
         DataComponentRegistry.register(modEventBus);

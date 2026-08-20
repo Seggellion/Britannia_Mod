@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.deposit;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.registry.ItemRegistry;
 import com.seggellion.britannia_mod.util.ModTags;
 
 import net.minecraft.resources.ResourceLocation;
@@ -59,7 +60,24 @@ public final class ManagedDeposits {
             1
     );
 
-    private static final List<ManagedDeposit> ALL = List.of(CLAY);
+    /**
+     * The silica bed: whiter, purer sand than the beach, and the first step of the glass chain.
+     *
+     * <p>What it yields is deliberately NOT the Architect's commodity. {@code silica_sand} is
+     * feedstock; a player fires it into raw glass and sells that. Rails already draws the same
+     * line — {@code glass|raw|sand} is accepted only by the dormant Glassblower, while
+     * {@code glass|raw|raw_glass} is what the live mason buys — so the processing step is a real
+     * one rather than a formality a fallback buyer would erase.
+     */
+    public static final ManagedDeposit SILICA_SAND = new ManagedDeposit(
+            ResourceLocation.fromNamespaceAndPath(BritanniaMod.MODID, "silica_sand_deposit"),
+            BlockRegistry.SILICA_SAND_DEPOSIT::get,
+            ModTags.Items.SILICA_SHOVELS,
+            ItemRegistry.SILICA_SAND::get,
+            1
+    );
+
+    private static final List<ManagedDeposit> ALL = List.of(CLAY, SILICA_SAND);
 
     private ManagedDeposits() {
     }

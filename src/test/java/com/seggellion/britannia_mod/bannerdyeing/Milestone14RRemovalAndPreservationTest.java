@@ -84,7 +84,12 @@ class Milestone14RRemovalAndPreservationTest {
         // 909 as of 2026-08-20: the villa, patio and keep house deeds. Deeds are registered by
         // walking HouseStyle, so three new styles are three new items and no new registration
         // code; only their item models and language entries are hand-written.
-        assertEquals(909, repositoryItems);
+        // 912 as of 2026-08-20: silica sand, raw glass and plaster -- the three bulk building
+        // materials the housing economy was missing. All three are plain items with no block
+        // form: the finished window, plaster wall and brick course are separate construction
+        // blocks and are deliberately not these materials wearing a different name. The two new
+        // deposit blocks add no ids at all, because a resource block has no item form.
+        assertEquals(912, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

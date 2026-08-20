@@ -46,7 +46,13 @@ class MineableCatalogContractTest {
             // Milestone 6, deliberate: Dripstone activated at its approved 35.0 tier as a pure
             // data change. High-Purity Silver was retired from the managed set by owner decision
             // (one Silver metal/ore), so the discovered set is 29 blocks minus it, plus Dripstone.
-            "minecraft:dripstone_block");
+            "minecraft:dripstone_block",
+            // Housing supply, added deliberately: the villa needs 121 sandstone and nothing in
+            // the game could produce the commodity. It is an AUTHORED block, not the vanilla
+            // material -- `minecraft:sandstone` stays out, because a block-type rule over a
+            // material that generates in every desert would hand world generation the villa's
+            // price. See ManagedSandstoneDepositTest.
+            "britannia_mod:sandstone_deposit");
 
     private static MineableCatalog catalog;
 

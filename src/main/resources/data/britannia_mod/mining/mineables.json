@@ -9,7 +9,10 @@
       "status": "active",
       "required_mining": 0.0,
       "challenge": 0.0,
-      "blocks": ["minecraft:iron_ore", "minecraft:deepslate_iron_ore"],
+      "blocks": [
+        "minecraft:iron_ore",
+        "minecraft:deepslate_iron_ore"
+      ],
       "drop": "Iron ore",
       "economy_commodity": "iron",
       "restorable": true
@@ -21,7 +24,9 @@
       "status": "active",
       "required_mining": 55.0,
       "challenge": 55.0,
-      "blocks": ["britannia_mod:silver_ore"],
+      "blocks": [
+        "britannia_mod:silver_ore"
+      ],
       "drop": "Silver ore",
       "economy_commodity": "silver",
       "restorable": true
@@ -33,7 +38,9 @@
       "status": "active",
       "required_mining": 65.0,
       "challenge": 65.0,
-      "blocks": ["britannia_mod:tin_ore"],
+      "blocks": [
+        "britannia_mod:tin_ore"
+      ],
       "drop": "Tin ore",
       "economy_commodity": "tin",
       "restorable": true,
@@ -46,7 +53,9 @@
       "status": "active",
       "required_mining": 70.0,
       "challenge": 70.0,
-      "blocks": ["britannia_mod:shadow_iron_ore"],
+      "blocks": [
+        "britannia_mod:shadow_iron_ore"
+      ],
       "drop": "Shadow Iron ore",
       "economy_commodity": "shadow_iron",
       "restorable": true
@@ -58,7 +67,9 @@
       "status": "active",
       "required_mining": 75.0,
       "challenge": 75.0,
-      "blocks": ["britannia_mod:copper_ore"],
+      "blocks": [
+        "britannia_mod:copper_ore"
+      ],
       "drop": "Copper ore",
       "economy_commodity": "copper",
       "restorable": true
@@ -70,7 +81,11 @@
       "status": "active",
       "required_mining": 85.0,
       "challenge": 85.0,
-      "blocks": ["minecraft:gold_ore", "minecraft:deepslate_gold_ore", "britannia_mod:gold_ore"],
+      "blocks": [
+        "minecraft:gold_ore",
+        "minecraft:deepslate_gold_ore",
+        "britannia_mod:gold_ore"
+      ],
       "drop": "Gold ore",
       "economy_commodity": "gold",
       "restorable": true,
@@ -84,7 +99,9 @@
       "status": "active",
       "required_mining": 90.0,
       "challenge": 90.0,
-      "blocks": ["britannia_mod:agapite_ore"],
+      "blocks": [
+        "britannia_mod:agapite_ore"
+      ],
       "drop": "Agapite ore",
       "economy_commodity": "agapite",
       "restorable": true
@@ -96,7 +113,9 @@
       "status": "active",
       "required_mining": 95.0,
       "challenge": 95.0,
-      "blocks": ["britannia_mod:verite_ore"],
+      "blocks": [
+        "britannia_mod:verite_ore"
+      ],
       "drop": "Verite ore",
       "economy_commodity": "verite",
       "restorable": true
@@ -108,7 +127,9 @@
       "status": "active",
       "required_mining": 99.0,
       "challenge": 99.0,
-      "blocks": ["britannia_mod:valorite_ore"],
+      "blocks": [
+        "britannia_mod:valorite_ore"
+      ],
       "drop": "Valorite ore",
       "economy_commodity": "valorite",
       "restorable": true
@@ -120,7 +141,9 @@
       "status": "active",
       "required_mining": 0.0,
       "challenge": 0.0,
-      "blocks": ["minecraft:stone"],
+      "blocks": [
+        "minecraft:stone"
+      ],
       "drop": "Cobblestone",
       "economy_commodity": "cobblestone",
       "restorable": true,
@@ -133,7 +156,9 @@
       "status": "active",
       "required_mining": 0.0,
       "challenge": 0.0,
-      "blocks": ["minecraft:cobblestone"],
+      "blocks": [
+        "minecraft:cobblestone"
+      ],
       "drop": "Cobblestone",
       "economy_commodity": "cobblestone",
       "restorable": true
@@ -145,11 +170,28 @@
       "status": "active",
       "required_mining": 5.0,
       "challenge": 5.0,
-      "blocks": ["minecraft:calcite"],
+      "blocks": [
+        "minecraft:calcite"
+      ],
       "drop": "Limestone",
       "economy_commodity": "limestone",
       "restorable": true,
       "notes": "Calcite is the intended limestone supply source (alias E5); no limestone block exists and none should be duplicated."
+    },
+    {
+      "id": "sandstone",
+      "display_name": "Sandstone",
+      "category": "stone",
+      "status": "active",
+      "required_mining": 5.0,
+      "challenge": 5.0,
+      "blocks": [
+        "britannia_mod:sandstone_deposit"
+      ],
+      "drop": "Sandstone",
+      "economy_commodity": "sandstone",
+      "restorable": true,
+      "notes": "Housing supply: the ONLY sandstone the pickaxe works is the authored deposit block. minecraft:sandstone is deliberately absent -- it generates by the thousand in every desert, and a block-type rule over it would let world generation set the villa's material price."
     },
     {
       "id": "diorite",
@@ -158,7 +200,9 @@
       "status": "active",
       "required_mining": 10.0,
       "challenge": 10.0,
-      "blocks": ["minecraft:diorite"],
+      "blocks": [
+        "minecraft:diorite"
+      ],
       "drop": "Diorite",
       "economy_commodity": "diorite",
       "restorable": true
@@ -170,7 +214,9 @@
       "status": "active",
       "required_mining": 15.0,
       "challenge": 15.0,
-      "blocks": ["minecraft:andesite"],
+      "blocks": [
+        "minecraft:andesite"
+      ],
       "drop": "Andesite",
       "economy_commodity": "andesite",
       "restorable": true
@@ -182,7 +228,9 @@
       "status": "active",
       "required_mining": 20.0,
       "challenge": 20.0,
-      "blocks": ["minecraft:granite"],
+      "blocks": [
+        "minecraft:granite"
+      ],
       "drop": "Granite",
       "economy_commodity": "granite",
       "restorable": true,
@@ -195,7 +243,9 @@
       "status": "active",
       "required_mining": 25.0,
       "challenge": 25.0,
-      "blocks": ["minecraft:tuff"],
+      "blocks": [
+        "minecraft:tuff"
+      ],
       "drop": "Tuff",
       "economy_commodity": "tuff",
       "restorable": true
@@ -207,7 +257,9 @@
       "status": "active",
       "required_mining": 30.0,
       "challenge": 30.0,
-      "blocks": ["minecraft:deepslate"],
+      "blocks": [
+        "minecraft:deepslate"
+      ],
       "drop": "Deepslate",
       "economy_commodity": "deepslate",
       "restorable": true,
@@ -220,7 +272,9 @@
       "status": "active",
       "required_mining": 30.0,
       "challenge": 30.0,
-      "blocks": ["minecraft:cobbled_deepslate"],
+      "blocks": [
+        "minecraft:cobbled_deepslate"
+      ],
       "drop": "Cobbled Deepslate",
       "economy_commodity": "cobbled_deepslate",
       "restorable": true,
@@ -234,7 +288,10 @@
       "status": "active",
       "required_mining": 40.0,
       "challenge": 40.0,
-      "blocks": ["minecraft:basalt", "minecraft:smooth_basalt"],
+      "blocks": [
+        "minecraft:basalt",
+        "minecraft:smooth_basalt"
+      ],
       "drop": "Basalt",
       "economy_commodity": "basalt",
       "restorable": true
@@ -246,7 +303,9 @@
       "status": "active",
       "required_mining": 45.0,
       "challenge": 45.0,
-      "blocks": ["minecraft:blackstone"],
+      "blocks": [
+        "minecraft:blackstone"
+      ],
       "drop": "Blackrock",
       "economy_commodity": "blackstone",
       "restorable": true,
@@ -259,7 +318,9 @@
       "status": "active",
       "required_mining": 40.0,
       "challenge": 40.0,
-      "blocks": ["britannia_mod:igneous_rock"],
+      "blocks": [
+        "britannia_mod:igneous_rock"
+      ],
       "drop": "Igneous Rock",
       "economy_commodity": "igneous_rock",
       "restorable": true,
@@ -273,7 +334,9 @@
       "status": "active",
       "required_mining": 30.0,
       "challenge": 30.0,
-      "blocks": ["britannia_mod:metamorphic_rock"],
+      "blocks": [
+        "britannia_mod:metamorphic_rock"
+      ],
       "drop": "Metamorphic Rock",
       "economy_commodity": "metamorphic_rock",
       "restorable": true,
@@ -287,7 +350,9 @@
       "status": "active",
       "required_mining": 45.0,
       "challenge": 45.0,
-      "blocks": ["britannia_mod:volcanic_rock"],
+      "blocks": [
+        "britannia_mod:volcanic_rock"
+      ],
       "drop": "Volcanic Rock",
       "economy_commodity": "volcanic_rock",
       "restorable": true,
@@ -301,7 +366,9 @@
       "status": "active",
       "required_mining": 35.0,
       "challenge": 35.0,
-      "blocks": ["britannia_mod:glacial_rock"],
+      "blocks": [
+        "britannia_mod:glacial_rock"
+      ],
       "drop": "Glacial Rock",
       "economy_commodity": "glacial_rock",
       "restorable": true,
@@ -315,7 +382,9 @@
       "status": "active",
       "required_mining": 35.0,
       "challenge": 35.0,
-      "blocks": ["minecraft:dripstone_block"],
+      "blocks": [
+        "minecraft:dripstone_block"
+      ],
       "drop": "Dripstone",
       "economy_commodity": "dripstone",
       "restorable": true,

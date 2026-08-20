@@ -2278,6 +2278,35 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
                         .strength(0.6F)
                         .sound(SoundType.GRAVEL)));
 
+        /**
+         * The managed silica bed: a whiter, purer sand than the beach it sits beside.
+         *
+         * <p>Shovel work like the clay bed, and a deposit for the same reason — registering
+         * {@code minecraft:sand} would make every beach in the world a glass mine.
+         */
+        public static final DeferredHolder<Block, ManagedDepositBlock> SILICA_SAND_DEPOSIT = BLOCKS.register(
+                "silica_sand_deposit",
+                () -> new ManagedDepositBlock(BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.TERRACOTTA_WHITE)
+                        .strength(0.5F)
+                        .sound(SoundType.SAND)));
+
+        /**
+         * The managed sandstone quarry face.
+         *
+         * <p>Pickaxe work, and therefore NOT a {@code ManagedDeposits} entry: it goes through the
+         * Mining catalogue with the ores, which is the system that already knows how to hand a
+         * pickaxe a graded stone. The catalogue keys on block type, which is safe here for the
+         * same reason it is safe for {@code silver_ore} — this block exists only where somebody
+         * put one. {@code minecraft:sandstone} stays out of it and stays worthless.
+         */
+        public static final DeferredHolder<Block, Block> SANDSTONE_DEPOSIT = BLOCKS.register(
+                "sandstone_deposit",
+                () -> new Block(BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.SAND)
+                        .strength(3.0F, 3.0F)
+                        .sound(SoundType.STONE)));
+
         public static final DeferredHolder<Block, Block> METAL_DOOR = BLOCKS.register(
         "metal_door", MetalDoorBlock::new);
 
