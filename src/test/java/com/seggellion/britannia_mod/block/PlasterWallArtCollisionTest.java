@@ -53,7 +53,7 @@ class PlasterWallArtCollisionTest {
         SharedConstants.tryDetectVersion();
         Bootstrap.bootStrap();
         GameData.unfreezeData();
-        blankPlaster = new DoubleWallBlock(stoneProps(), WallArtProfile.BLANK_PLASTER);
+        blankPlaster = new DoubleWallBlock(stoneProps());
     }
 
     private static BlockBehaviour.Properties stoneProps() {
@@ -98,51 +98,28 @@ class PlasterWallArtCollisionTest {
         }
     }
 
-    /* ─── the state the manual edit changed ──────────────────── */
+    /* ─── the junction the manual edit had flattened ─────────── */
 
     @Test
-    void theReauthoredJunctionCollidesOnTheEdgeItNowDraws() {
+    void theBranchRightJunctionDrawsBothItsRuns() {
+        // plaster_wall_blank_t_junction_branch_right.json had been re-authored as a single run on
+        // the far edge with no branch at all, as a way of papering over the junction misalignment
+        // that WallJunctionAlignmentTest now covers properly. With that fixed the model has to be
+        // back on the family's convention, or the junction has nothing to reach its third
+        // neighbour with.
         for (Direction facing : Direction.Plane.HORIZONTAL) {
-            BlockState state = junction(facing, true);
-            VoxelShape shape = shapeOf(state);
-
-            assertTrue(reaches(shape, facing.getOpposite()),
-                facing + ": the model's run is on the far edge, so collision has to be there");
-            assertFalse(reaches(shape, facing),
-                facing + ": nothing is drawn on the facing edge any more");
-            assertFalse(reaches(shape, facing.getClockWise()),
-                facing + ": the perpendicular branch was removed from the model");
-            assertFalse(reaches(shape, facing.getCounterClockWise()),
-                facing + ": and it is not on the other side either");
+            VoxelShape shape = shapeOf(junction(facing, true));
+            assertTrue(reaches(shape, facing),
+                facing + ": the main run hugs the facing edge");
+            assertTrue(reaches(shape, facing.getClockWise()),
+                facing + ": the branch hugs the clockwise edge when branch_right is set");
+            assertFalse(reaches(shape, facing.getOpposite()),
+                facing + ": nothing is drawn on the far edge");
         }
     }
 
     @Test
-    void theOtherThreeStatesOfTheFamilyAreStillCanonical() {
-        // Only branch_right junctions deviate. Repairing that one must not disturb the rest.
-        for (Direction facing : Direction.Plane.HORIZONTAL) {
-            assertShapesMatch(facing + " straight",
-                WallArtProfile.CANONICAL.shapeFor(WallShape.STRAIGHT, facing, false),
-                shapeOf(state(facing, WallShape.STRAIGHT, false)));
-            assertShapesMatch(facing + " corner",
-                WallArtProfile.CANONICAL.shapeFor(WallShape.CORNER, facing, true),
-                shapeOf(state(facing, WallShape.CORNER, true)));
-            assertShapesMatch(facing + " left-branch junction",
-                WallArtProfile.CANONICAL.shapeFor(WallShape.T_JUNCTION, facing, false),
-                shapeOf(junction(facing, false)));
-        }
-    }
-
-    @Test
-    void everyOtherFamilyKeepsTheCanonicalProfile() {
-        DoubleWallBlock plain = new DoubleWallBlock(stoneProps());
-        assertEquals(WallArtProfile.CANONICAL, plain.artProfile(),
-            "the deviation is one family's, and the default must stay canonical");
-        assertEquals(WallArtProfile.BLANK_PLASTER, blankPlaster.artProfile());
-    }
-
-    @Test
-    void theDeviatingShapeTurnsWithItsFacing() {
+    void theJunctionShapeTurnsWithItsFacing() {
         VoxelShape canonical = shapeOf(junction(Direction.NORTH, true));
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             assertShapesMatch("blank junction " + facing,

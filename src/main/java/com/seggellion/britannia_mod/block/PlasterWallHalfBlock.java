@@ -72,7 +72,10 @@ public class PlasterWallHalfBlock extends Block {
         WallConnection connection = WallConnection.derive(
             level, pos,
             state.getValue(FACING), state.getValue(BRANCH_RIGHT),
-            neighbour -> neighbour.getBlock() instanceof PlasterWallHalfBlock);
+            neighbour -> neighbour.getBlock() instanceof PlasterWallHalfBlock
+                ? new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
+                                     neighbour.getValue(BRANCH_RIGHT))
+                : null);
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())

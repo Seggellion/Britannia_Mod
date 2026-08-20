@@ -88,7 +88,10 @@ public class WoodSupportFloorBlock extends Block {
         WallConnection connection = WallConnection.derive(
             level, pos,
             state.getValue(FACING), state.getValue(BRANCH_RIGHT),
-            neighbour -> neighbour.getBlock() instanceof WoodSupportFloorBlock);
+            neighbour -> neighbour.getBlock() instanceof WoodSupportFloorBlock
+                ? new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
+                                     neighbour.getValue(BRANCH_RIGHT))
+                : null);
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())

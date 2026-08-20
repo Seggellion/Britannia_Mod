@@ -22,7 +22,10 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import javax.annotation.Nullable;
 
 /**
  * Two-block-tall architectural wall built from edge-aligned segments.
@@ -51,18 +54,16 @@ public class DoubleWallBlock extends Block {
     public static final BooleanProperty BRANCH_RIGHT = BooleanProperty.create("branch_right");
 
     /**
-     * Which edges this family's models actually fill. Every family but one draws the shape its
-     * state names; see {@link WallArtProfile}.
+     * Wall depth used by the collision boxes. The approved straight models occupy roughly
+     * {@code z 0..7} once their base beams are counted, so the edge strips match the art.
      */
-    private final WallArtProfile artProfile;
+    private static final VoxelShape EDGE_NORTH = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 7.0D);
+    private static final VoxelShape EDGE_SOUTH = Block.box(0.0D, 0.0D, 9.0D, 16.0D, 16.0D, 16.0D);
+    private static final VoxelShape EDGE_WEST  = Block.box(0.0D, 0.0D, 0.0D, 7.0D, 16.0D, 16.0D);
+    private static final VoxelShape EDGE_EAST  = Block.box(9.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
 
     public DoubleWallBlock(BlockBehaviour.Properties properties) {
-        this(properties, WallArtProfile.CANONICAL);
-    }
-
-    public DoubleWallBlock(BlockBehaviour.Properties properties, WallArtProfile artProfile) {
         super(properties);
-        this.artProfile = artProfile;
         this.registerDefaultState(this.defaultBlockState()
             .setValue(FACING, Direction.NORTH)
             .setValue(SHAPE, WallShape.STRAIGHT)
@@ -125,8 +126,11 @@ public class DoubleWallBlock extends Block {
      * and junctions pointed the wrong way. Facing is now derived alongside the shape, and the values
      * already on the state are used as tie-breakers so a deliberate player choice survives wherever
      * the geometry allows more than one answer.
+     *
+     * <p>Package-visible so the alignment suite can drive it directly instead of standing up a
+     * level; it is the same call {@link #updateShape} and {@link #getStateForPlacement} both make.
      */
-    private BlockState deriveConnections(BlockState state, LevelAccessor level, BlockPos pos) {
+    BlockState deriveConnections(BlockState state, BlockGetter level, BlockPos pos) {
         // Always derive from the lower half's neighbourhood. The two halves would otherwise be able
         // to disagree - a door or any block that only reaches one of them used to leave the lower
         // half a corner and the upper half straight, so collision stopped matching the art.
@@ -135,7 +139,7 @@ public class DoubleWallBlock extends Block {
         WallConnection connection = WallConnection.derive(
             level, base,
             state.getValue(FACING), state.getValue(BRANCH_RIGHT),
-            DoubleWallBlock::connectsTo);
+            DoubleWallBlock::runOf);
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())
@@ -154,6 +158,23 @@ public class DoubleWallBlock extends Block {
     }
 
     /**
+     * The run a neighbour describes, or null when it is not part of this family's wall at all.
+     *
+     * <p>Doors and tagged blocks connect but carry no run of their own, so they answer with a
+     * straight facing the wall - enough to count as a connection, and never something a straight
+     * run adopts an edge from.
+     */
+    @Nullable
+    private static WallConnection runOf(BlockState neighbour) {
+        if (neighbour.getBlock() instanceof DoubleWallBlock) {
+            return new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
+                                      neighbour.getValue(BRANCH_RIGHT));
+        }
+        return connectsTo(neighbour)
+            ? new WallConnection(WallShape.STRAIGHT, Direction.NORTH, false) : null;
+    }
+
+    /**
      * Whether a neighbour is a solid architectural wall - one of this family, or anything a
      * datapack has added to {@link ArchitecturalTags#WALL_TERMINAL}.
      *
@@ -163,6 +184,23 @@ public class DoubleWallBlock extends Block {
     public static boolean isWallRun(BlockState neighbour) {
         return neighbour.getBlock() instanceof DoubleWallBlock
             || neighbour.is(ArchitecturalTags.WALL_TERMINAL);
+    }
+
+    /**
+     * Whether a wall draws its run against one particular face of its own block, so that something
+     * ending at that face is buried rather than left reaching across an empty half-block.
+     *
+     * <p>These walls only draw on the edge {@link #FACING} names; the rest of the block is empty
+     * and walkable. A wall turned the other way presents eleven voxels of nothing at this face,
+     * which is why {@link BannisterBlock} has to ask before it grows a return into one.
+     *
+     * @param face which face of the wall's own block is being approached
+     */
+    public static boolean presentsRunAt(BlockState wall, Direction face) {
+        if (!(wall.getBlock() instanceof DoubleWallBlock)) {
+            return wall.is(ArchitecturalTags.WALL_TERMINAL); // datapack's word for it
+        }
+        return wall.getValue(FACING) == face;
     }
 
     /* ─── rotation & mirroring ───────────────────────────────── */
@@ -185,15 +223,30 @@ public class DoubleWallBlock extends Block {
 
     /* ─── shapes ─────────────────────────────────────────────── */
 
-    /** The edges this block's art fills, for tests and for anything that has to reason about it. */
-    public WallArtProfile artProfile() {
-        return this.artProfile;
+    private static VoxelShape edge(Direction direction) {
+        return switch (direction) {
+            case SOUTH -> EDGE_SOUTH;
+            case EAST  -> EDGE_EAST;
+            case WEST  -> EDGE_WEST;
+            default    -> EDGE_NORTH;
+        };
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return this.artProfile.shapeFor(
-            state.getValue(SHAPE), state.getValue(FACING), state.getValue(BRANCH_RIGHT));
+        Direction facing = state.getValue(FACING);
+        VoxelShape main = edge(facing);
+
+        if (state.getValue(SHAPE) == WallShape.STRAIGHT) {
+            return main;
+        }
+        return Shapes.or(main, edge(secondaryOf(state)));
+    }
+
+    /** The perpendicular edge a state currently describes. */
+    private static Direction secondaryOf(BlockState state) {
+        Direction facing = state.getValue(FACING);
+        return state.getValue(BRANCH_RIGHT) ? facing.getClockWise() : facing.getCounterClockWise();
     }
 
     @Override

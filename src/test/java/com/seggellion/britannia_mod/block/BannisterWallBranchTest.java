@@ -149,6 +149,17 @@ class BannisterWallBranchTest {
         }
     }
 
+    @Test
+    void aWallTurnedAwayFromTheRunDoesNotGetAReturn() {
+        // Its art sits eleven voxels further off than the return reaches. Drawing one anyway is
+        // what left a rail ending in mid air short of the plaster.
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            assertFalse(runFacing(facing).withWallTurnedAway(facing.getOpposite()).settle(facing)
+                    .getValue(BannisterBlock.WALL_BRANCH),
+                facing + ": a wall drawing its run on its far edge is out of reach");
+        }
+    }
+
     /* ─── neighbour changes ──────────────────────────────────── */
 
     @Test
@@ -165,7 +176,7 @@ class BannisterWallBranchTest {
         assertFalse(after.getValue(BannisterBlock.WALL_BRANCH),
             "the return has to come down with the wall, without the player touching the bannister");
 
-        scene.put(wallPos, wall.defaultBlockState());
+        scene.withWall(facing.getOpposite());
         assertTrue(scene.update(after).getValue(BannisterBlock.WALL_BRANCH),
             "and go back up when the wall is replaced");
     }
@@ -254,8 +265,16 @@ class BannisterWallBranchTest {
             return this;
         }
 
+        /** A wall on {@code side}, drawing its run against the face it shares with us. */
         Scene withWall(Direction side) {
-            return put(BlockPos.ZERO.relative(side), wall.defaultBlockState());
+            return put(BlockPos.ZERO.relative(side),
+                wall.defaultBlockState().setValue(DoubleWallBlock.FACING, side.getOpposite()));
+        }
+
+        /** A wall on {@code side} turned the other way, so its art is on its far edge. */
+        Scene withWallTurnedAway(Direction side) {
+            return put(BlockPos.ZERO.relative(side),
+                wall.defaultBlockState().setValue(DoubleWallBlock.FACING, side));
         }
 
         /** The state a bannister placed at the origin facing {@code facing} settles into. */

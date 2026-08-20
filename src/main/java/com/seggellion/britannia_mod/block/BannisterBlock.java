@@ -19,6 +19,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import javax.annotation.Nullable;
+
 /**
  * Edge-mounted bannister: 3 voxels thick, spanning the full 16-voxel edge, 18 voxels tall.
  *
@@ -111,7 +113,7 @@ public class BannisterBlock extends Block {
         WallConnection connection = WallConnection.derive(
             level, pos,
             state.getValue(FACING), state.getValue(BRANCH_RIGHT),
-            BannisterBlock::isPeer);
+            BannisterBlock::runOf);
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())
@@ -121,6 +123,15 @@ public class BannisterBlock extends Block {
 
     private static boolean isPeer(BlockState neighbour) {
         return neighbour.getBlock() instanceof BannisterBlock;
+    }
+
+    /** The run a neighbouring bannister describes, or null when it is not one. */
+    @Nullable
+    private static WallConnection runOf(BlockState neighbour) {
+        return isPeer(neighbour)
+            ? new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
+                                 neighbour.getValue(BRANCH_RIGHT))
+            : null;
     }
 
     /**
@@ -150,7 +161,14 @@ public class BannisterBlock extends Block {
             || !isPeer(level.getBlockState(pos.relative(along.getOpposite())))) {
             return false;
         }
-        return DoubleWallBlock.isWallRun(level.getBlockState(pos.relative(facing.getOpposite())));
+        Direction toWall = facing.getOpposite();
+        BlockState wall = level.getBlockState(pos.relative(toWall));
+        // The return only reaches WALL_OVERLAP voxels in, so the wall has to be drawing its run
+        // against the face they share. A wall turned away keeps its art eleven voxels further
+        // off than that, and a return sized to reach it would burst out of the far side of one
+        // that is not - so the railing stays plain instead, and turning the wall round fixes it.
+        return DoubleWallBlock.isWallRun(wall)
+            && DoubleWallBlock.presentsRunAt(wall, toWall.getOpposite());
     }
 
     @Override
