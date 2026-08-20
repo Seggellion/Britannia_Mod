@@ -213,10 +213,10 @@
           {
             "category": "glass",
             "subcategories": [
-              "processed"
+              "raw"
             ],
             "commodity_keys": [
-              "glass"
+              "raw_glass"
             ]
           },
           {
@@ -270,7 +270,7 @@
         ]
       }
     ],
-    "revision": "e3fec443ccbce796cc4444f6ac083c103feae71f014bfbd75a60aabec0265b9b"
+    "revision": "89f5ae478a3c01e46c2b33ff407a44429ed9f2011811820d4ac92115bd052624"
   },
   "probes": [
     {
@@ -375,8 +375,13 @@
     },
     {
       "category": "glass",
-      "subcategory": "processed",
-      "item_name": "glass"
+      "subcategory": "raw",
+      "item_name": "raw_glass"
+    },
+    {
+      "category": "glass",
+      "subcategory": "raw",
+      "item_name": "sand"
     },
     {
       "category": "textile",
@@ -437,10 +442,12 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "fish_trader": [
       true,
+      false,
       false,
       false,
       false,
@@ -495,6 +502,7 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "glass_trader": [
@@ -519,6 +527,7 @@
       false,
       false,
       true,
+      true,
       false,
       false,
       false,
@@ -532,6 +541,7 @@
       false,
       false,
       true,
+      false,
       false,
       false,
       false,
@@ -582,12 +592,14 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "ore_trader": [
       false,
       false,
       true,
+      false,
       false,
       false,
       false,
@@ -640,9 +652,11 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "provision_trader": [
+      false,
       false,
       false,
       false,
@@ -698,6 +712,7 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "salvage_trader": [
@@ -713,6 +728,7 @@
       false,
       true,
       true,
+      false,
       false,
       false,
       false,
@@ -756,6 +772,7 @@
       false,
       false,
       false,
+      false,
       false
     ],
     "stone_trader": [
@@ -780,6 +797,7 @@
       true,
       true,
       true,
+      false,
       false,
       false,
       true,
@@ -809,6 +827,7 @@
       false,
       false,
       false,
+      false,
       true,
       true,
       false,
@@ -819,6 +838,7 @@
     "wood_trader": [
       false,
       true,
+      false,
       false,
       false,
       false,
