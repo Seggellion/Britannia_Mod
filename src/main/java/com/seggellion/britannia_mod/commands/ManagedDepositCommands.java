@@ -133,13 +133,24 @@ public final class ManagedDepositCommands {
         StringBuilder report = new StringBuilder(position.toShortString()).append(": ");
         report.append(standing == null ? "no deposit standing" : standing.id() + " standing");
         if (pending != null) {
-            long remaining = BlockRestoreHandler.RESTORE_DELAY
-                    - (System.currentTimeMillis() - pending.brokenTime);
+            // Milestone 4: the due moment is stored on the record, resolved from the resource's own
+            // regeneration policy when the cell was worked. Recomputing it from a global constant
+            // here would have reported six hours for a silica bed that is actually owed at 24.
+            long now = System.currentTimeMillis();
+            long remaining = pending.dueAt - now;
             report.append("; ")
                     .append(pending.originalState.getBlock().getName().getString())
                     .append(remaining > 0
                             ? " restores in " + (remaining / 60_000L) + " minutes"
                             : " is due to restore");
+            if (pending.retryCount > 0) {
+                report.append(" (blocked ").append(pending.retryCount)
+                        .append(" time(s), next attempt in ")
+                        .append(Math.max(0L, pending.retryAt - now) / 60_000L).append(" minutes)");
+            }
+            report.append(pending.owned()
+                    ? ", deposit " + Long.toHexString(pending.instanceId)
+                    : ", no owning deposit");
         }
         String message = report.toString();
         source.sendSuccess(() -> Component.literal(message), false);

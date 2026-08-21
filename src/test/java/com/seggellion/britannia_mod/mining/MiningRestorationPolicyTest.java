@@ -42,19 +42,56 @@ class MiningRestorationPolicyTest {
         }
     }
 
-    /** One scheduler only: restoration must not grow a second timer or queue. */
+    /**
+     * Restoration never forces a chunk to load, and there is still only one system doing it.
+     *
+     * <p>Rewritten at milestone 4, and the rewrite is the second time this file has had to give
+     * way to a correct change. It used to assert that {@code BlockRestoreHandler} contained exactly
+     * one {@code @SubscribeEvent} and the literal string {@code level.isLoaded(data.pos)} — both
+     * true of the every-tick full scan, and both false of the event-driven scheduler that replaced
+     * it. The invariant was never "one listener"; it was "one scheduler, and it never force-loads".
+     *
+     * <p>What is left here is the part a static check is genuinely good at: proving an API is
+     * <em>absent</em>. That restoration actually leaves unloaded chunks alone is proved by driving
+     * it — {@code RestorationSchedulerTest.tenThousandUnloadedDebtsAreNeverInspected} and the
+     * {@code DepositLifecycleGameTests} force-load case — rather than by reading it.
+     */
     @Test
-    void restorationKeepsASingleSchedulerAndNeverForceLoads() throws Exception {
-        String handler = code("block/blockrestore/BlockRestoreHandler.java");
-        assertTrue(handler.contains("ServerTickEvent.Pre"), "the one existing tick hook must remain");
-        assertEquals(1, handler.split("@SubscribeEvent", -1).length - 1,
-                "restoration must keep exactly one event listener");
-        for (String forbidden : List.of("setChunkForced", "forceLoad", "addRegionTicket")) {
-            assertFalse(handler.contains(forbidden),
-                    "restoration must never force-load chunks (found " + forbidden + ")");
+    void restorationNeverForceLoadsAChunk() throws Exception {
+        for (String source : List.of(
+                "block/blockrestore/BlockRestoreHandler.java",
+                "block/blockrestore/RestorationScheduler.java",
+                "block/blockrestore/BrokenBlockDataStorage.java")) {
+            String body = code(source);
+            // The APIs that would create or keep a chunk loaded. Deliberately not a blanket ban on
+            // touching a chunk at all: the load handler is handed its own chunk by the event, and
+            // the store asks getChunkNow whether a chunk is already there -- which returns null
+            // rather than loading one, and is exactly the question that has to be asked.
+            for (String forbidden : List.of("setChunkForced", "forceLoad", "addRegionTicket",
+                    "getChunkAt", "getChunkFuture")) {
+                assertFalse(body.contains(forbidden),
+                        source + " must never make a chunk exist to restore into it (found "
+                                + forbidden + ")");
+            }
         }
-        assertTrue(handler.contains("level.isLoaded(data.pos)"),
-                "an unloaded cell must be retried later, not force-loaded");
+
+        String storage = code("block/blockrestore/BrokenBlockDataStorage.java");
+        if (storage.contains("getChunkSource()")) {
+            assertTrue(storage.contains("getChunkNow"),
+                    "the only permitted chunk-source question is the non-loading one");
+        }
+    }
+
+    /** Still exactly one thing scheduling restorations, however many events it listens to. */
+    @Test
+    void thereIsStillOnlyOneRestorationScheduler() throws Exception {
+        String handler = code("block/blockrestore/BlockRestoreHandler.java");
+        assertTrue(handler.contains("ServerTickEvent.Pre"),
+                "the cadenced pass still rides the server tick");
+        assertTrue(handler.contains("ChunkEvent.Load") && handler.contains("ChunkEvent.Unload"),
+                "and it is driven by chunk lifecycle rather than by sweeping everything");
+        assertEquals(1, handler.split("runPass", -1).length - 1,
+                "exactly one place may drain the due queue");
     }
 
     /** Restoration must cover every dimension, not just the Overworld it used to hard-code. */

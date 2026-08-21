@@ -242,7 +242,10 @@ public final class ManagedClayDepositGameTests {
         storage.add(new BrokenBlockData(record.pos, record.originalState,
                 record.brokenTime - BlockRestoreHandler.RESTORE_DELAY - 1_000L, record.playerUUID));
 
-        helper.runAfterDelay(5L, () -> {
+                // Milestone 4: the restoration pass runs on a cadence (once a second) rather than on every
+        // tick, so a five-tick wait now outruns the scheduler. These are six-hour timers; a second
+        // of latency is the whole point of not sweeping twenty times a second.
+        helper.runAfterDelay(30L, () -> {
             helper.assertBlockPresent(BlockRegistry.CLAY_DEPOSIT.get(), BED);
             if (storage.getBrokenBlocks().containsKey(absolute)) {
                 throw new GameTestAssertException(

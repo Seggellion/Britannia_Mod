@@ -46,49 +46,6 @@ class PlacementPlannerTest {
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Deterministic seeds                                                */
-    /* ------------------------------------------------------------------ */
-
-    /**
-     * The same curated row derives the same seed, every time and in every session.
-     *
-     * <p>{@code /populateores} used to reroll a vein on every run because the shapes drew from the
-     * level's RNG. The seed now comes only from things about the row that do not change.
-     */
-    @Test
-    void aCuratedRowAlwaysDerivesTheSameSeed() {
-        long first = DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -50, 100, 50, ShapeRotation.ZW);
-        long second = DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -50, 100, 50, ShapeRotation.ZW);
-        assertEquals(first, second);
-    }
-
-    /** Every input that identifies the row changes the seed, so two rows are two deposits. */
-    @Test
-    void everyIdentifyingInputChangesTheSeed() {
-        long base = DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -50, 100, 50, ShapeRotation.ZW);
-        Set<Long> seeds = new HashSet<>();
-        seeds.add(base);
-        seeds.add(DepositSeed.forCuratedVein(
-                "minecraft:the_nether", "britannia_mod:silver", 120, -50, 100, 50, ShapeRotation.ZW));
-        seeds.add(DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:tin", 120, -50, 100, 50, ShapeRotation.ZW));
-        seeds.add(DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 121, -50, 100, 50, ShapeRotation.ZW));
-        seeds.add(DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -49, 100, 50, ShapeRotation.ZW));
-        seeds.add(DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -50, 101, 50, ShapeRotation.ZW));
-        seeds.add(DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -50, 100, 51, ShapeRotation.ZW));
-        seeds.add(DepositSeed.forCuratedVein(
-                OVERWORLD, "britannia_mod:silver", 120, -50, 100, 50, ShapeRotation.XZ));
-        assertEquals(8, seeds.size(), "two different rows must never share a seed");
-    }
-
-    /* ------------------------------------------------------------------ */
     /*  Deterministic plans                                                */
     /* ------------------------------------------------------------------ */
 

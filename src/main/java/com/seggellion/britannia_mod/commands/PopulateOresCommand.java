@@ -14,6 +14,11 @@ import net.minecraft.network.chat.Component;
 import com.seggellion.britannia_mod.util.OreVeinFetcher;
 import com.seggellion.britannia_mod.features.VeinPlacementValidation;
 import com.seggellion.britannia_mod.resource.ResourceDefinition;
+import com.seggellion.britannia_mod.resource.deposit.DepositIdentity;
+import com.seggellion.britannia_mod.resource.deposit.DepositInstance;
+import com.seggellion.britannia_mod.resource.deposit.DepositLedger;
+import com.seggellion.britannia_mod.resource.deposit.DepositRegistrar;
+import com.seggellion.britannia_mod.resource.deposit.DepositSource;
 import com.seggellion.britannia_mod.resource.placement.MaterializationService;
 import com.seggellion.britannia_mod.resource.placement.PlacementPlanner;
 import com.seggellion.britannia_mod.resource.placement.PlannedDeposit;
@@ -229,12 +234,15 @@ public class PopulateOresCommand {
         int placed;
         int skipped;
         int rejected;
+        int alreadyRegistered;
         boolean truncated;
 
         void report(CommandSourceStack source, String what) {
             String message = "Populated " + placed + " blocks " + what
                     + (skipped > 0 ? " (" + skipped + " row(s) skipped)" : "")
                     + (rejected > 0 ? " (" + rejected + " cell(s) refused by host policy)" : "")
+                    + (alreadyRegistered > 0
+                            ? " (" + alreadyRegistered + " deposit(s) already registered, resumed)" : "")
                     + (truncated ? " -- budget reached, run again to continue" : "");
             source.sendSuccess(() -> Component.literal(message), true);
         }
@@ -265,20 +273,45 @@ public class PopulateOresCommand {
         }
         ShapeRotation rotation = VeinPlacementValidation.normaliseRotation(vein.rotation).orElseThrow();
 
-        PlannedDeposit deposit = PlacementPlanner.planCuratedVein(
-                resource,
-                level.dimension().location().toString(),
-                vein.getPosition(),
-                vein.radius,
-                rotation);
+        String shard = ModConfig.SHARD_NAME;
+        String dimension = level.dimension().location().toString();
+        BlockPos origin = vein.getPosition();
+
+        // One identity contract: the id the deposit is registered under and the seed its geometry
+        // is drawn from come from the same canonical encoding of this row.
+        long instanceId = DepositIdentity.rails(shard, dimension, resource.id(),
+                origin.getX(), origin.getY(), origin.getZ(), vein.radius, rotation, vein.region);
+        String identity = DepositIdentity.railsEncoding(shard, dimension, resource.id(),
+                origin.getX(), origin.getY(), origin.getZ(), vein.radius, rotation, vein.region);
+
+        PlannedDeposit deposit = PlacementPlanner.plan(resource, dimension, origin,
+                vein.radius, rotation, DepositIdentity.plannerSeed(instanceId));
+
+        DepositInstance candidate =
+                DepositRegistrar.describe(deposit, instanceId, DepositSource.RAILS, identity);
+        DepositLedger.Registration registration = DepositLedger.get(level).register(candidate);
+
+        if (!registration.mayMaterialize()) {
+            // A collision or a revision change. Refused loudly, and nothing is written -- silently
+            // overwriting one deposit with another, or writing half a vein in each of two shapes,
+            // is exactly what the ledger exists to prevent.
+            tally.skipped++;
+            reportSkip(source, vein, registration.message());
+            return;
+        }
+        if (registration.outcome() == DepositLedger.Outcome.ALREADY_REGISTERED) {
+            tally.alreadyRegistered++;
+        }
 
         MaterializationService.Result result = MaterializationService.materialize(level, deposit);
+        DepositRegistrar.recordCompletePass(level, instanceId, result, deposit.count());
+
         tally.placed += result.placed();
         tally.rejected += result.totalRejected();
         tally.truncated |= result.truncated();
 
-        LOGGER.info("Placed {} at {}: {} of {} cells written ({})",
-                resource.path(), vein.getPosition().toShortString(),
-                result.placed(), deposit.count(), result.describeRejections());
+        LOGGER.info("Deposit {} ({}) at {}: {} of {} cells written, registration {} ({})",
+                Long.toHexString(instanceId), resource.path(), origin.toShortString(),
+                result.placed(), deposit.count(), registration.outcome(), result.describeRejections());
     }
 }

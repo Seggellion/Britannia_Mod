@@ -2,133 +2,123 @@ package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
-import com.seggellion.britannia_mod.resource.Resources;
+import com.seggellion.britannia_mod.blockrestore.RestorationScheduler;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.minecraft.network.chat.Component;
 
 import net.neoforged.bus.api.SubscribeEvent;
 
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.UUID;
 
 /**
  * Returns mined resource nodes to the world once their restoration delay has elapsed.
  *
- * <p>Milestone 7 kept this single existing scheduler — no second timer, no force-loading — and
- * corrected two ways it did not yet cooperate with the Mining system:
+ * <h2>What milestone 4 changed</h2>
+ * This used to walk every restoration debt in every dimension on every server pre-tick, asking each
+ * one whether it was ready. Its cost was the number of debts the world had ever accumulated,
+ * multiplied by twenty per second, and almost all of that work was spent on debts in chunks nobody
+ * had loaded.
  *
- * <ul>
- *   <li><b>Every dimension, not only the Overworld.</b> Records are stored per level, but this loop
- *       used to read only {@code Level.OVERWORLD}, so a node mined anywhere else was scheduled and
- *       then never restored. That became load-bearing once Mining governed Basalt and Blackstone,
- *       which are Nether-native.</li>
- *   <li><b>Never overwrite what is standing there.</b> Restoration used to write the block back
- *       unconditionally, which could delete a player's construction or materialise stone inside a
- *       player or their animals. It now restores only into a genuinely free cell and otherwise
- *       waits, which is the "wait when the target is occupied" policy the design asks for.</li>
- * </ul>
+ * <p>It is now event-driven. {@link BrokenBlockDataStorage} indexes debts by chunk;
+ * {@link RestorationScheduler} watches only the chunks that are loaded and orders them by due time.
+ * A chunk load reads exactly that chunk's debts. A pass looks at the queue head and stops as soon
+ * as the head is not ready, so a tick with nothing to do costs one comparison.
+ *
+ * <p>What deliberately did not change: the clock is still wall-clock epoch, so offline time counts;
+ * an unloaded chunk is still never force-loaded; and the occupancy rules milestone 1 established
+ * are untouched — fluids, block entities and occupied cells still block, and a blocked debt is
+ * still kept rather than dropped or forced through.
  */
 public class BlockRestoreHandler {
 
-    private static final int RESTORE_HOURS = 6;
-    /** Public so admin tooling reports the real delay instead of duplicating the constant. */
-    public static final long RESTORE_DELAY = RESTORE_HOURS * 60L * 60L * 1000L;
+    /**
+     * The historical global delay, still the fallback for a block with no resource policy.
+     *
+     * <p>Per-resource timing has resolved from the resource definition since milestone 2; milestone
+     * 4 moved the resolution to the moment a debt is recorded rather than every time it is looked
+     * at. This constant is what a block the catalogue no longer governs falls back to.
+     */
+    public static final long RESTORE_DELAY = BrokenBlockData.DEFAULT_RESTORE_DELAY;
+
+    private int tickCounter;
+
+    /* ------------------------------------------------------------------ */
+    /*  Chunk lifecycle                                                    */
+    /* ------------------------------------------------------------------ */
+
+    @SubscribeEvent
+    public void onChunkLoad(ChunkEvent.Load event) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            RestorationScheduler.of(level).activate(
+                    BrokenBlockDataStorage.get(level), event.getChunk().getPos());
+        }
+    }
+
+    @SubscribeEvent
+    public void onChunkUnload(ChunkEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            RestorationScheduler.of(level).deactivate(event.getChunk().getPos());
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  The cadenced pass                                                  */
+    /* ------------------------------------------------------------------ */
 
     @SubscribeEvent
     public void onServerTick(ServerTickEvent.Pre event) {
         MinecraftServer server = event.getServer();
         if (server == null) return;
 
+        // Once a second, not twenty times. These are six-hour and twenty-four-hour timers.
+        if (++tickCounter < RestorationScheduler.CADENCE_TICKS) {
+            return;
+        }
+        tickCounter = 0;
+
         long now = System.currentTimeMillis();
         Map<UUID, Integer> playerRestoreCount = new HashMap<>();
 
         for (ServerLevel level : server.getAllLevels()) {
-            restoreDueBlocks(level, now, playerRestoreCount);
+            RestorationScheduler scheduler = RestorationScheduler.of(level);
+            scheduler.runPass(BrokenBlockDataStorage.get(level), now, debt -> {
+                if (!canRestoreInto(level, debt.pos)) {
+                    return false;
+                }
+                level.setBlockAndUpdate(debt.pos, debt.originalState);
+                playerRestoreCount.merge(debt.playerUUID, 1, Integer::sum);
+                return true;
+            });
         }
 
-        // Notify each player of their specific restored blocks
         if (!playerRestoreCount.isEmpty()) {
             sendRestorationMessages(server, playerRestoreCount);
         }
     }
 
-    private void restoreDueBlocks(ServerLevel level, long now, Map<UUID, Integer> playerRestoreCount) {
-        BrokenBlockDataStorage storage = BrokenBlockDataStorage.get(level);
-        Iterator<Map.Entry<BlockPos, BrokenBlockData>> iterator =
-                storage.getBrokenBlocks().entrySet().iterator();
-        boolean restoredAny = false;
-
-        while (iterator.hasNext()) {
-            Map.Entry<BlockPos, BrokenBlockData> entry = iterator.next();
-            BrokenBlockData data = entry.getValue();
-
-            if (now - data.brokenTime < restoreDelayFor(data)) {
-                continue;
-            }
-            // An unloaded cell is retried on a later tick rather than force-loaded.
-            if (!level.isLoaded(data.pos)) {
-                continue;
-            }
-            if (!canRestoreInto(level, data.pos)) {
-                continue;
-            }
-
-            level.setBlockAndUpdate(data.pos, data.originalState);
-            iterator.remove();
-            restoredAny = true;
-            playerRestoreCount.merge(data.playerUUID, 1, Integer::sum);
-        }
-
-        if (restoredAny) {
-            storage.setDirty();
-        }
-    }
-
-    /**
-     * How long this particular record must wait.
-     *
-     * <p>OreVein milestone 2. The delay used to be one global constant for everything; it is now a
-     * field on the resource definition, resolved from the state that was recorded when the node was
-     * broken. Silica is the first resource to differ, at its approved 24 hours; every other
-     * resource carries the historical six, so nothing else changes.
-     *
-     * <p>Resolving from {@code originalState} rather than from a new field on the record is what
-     * keeps this out of milestone 4's way: the saved data format is untouched, every debt already
-     * on disk keeps working, and no migration is needed. The scheduler is still the single existing
-     * pre-tick sweep — redesigning that is milestone 4's job, not this one's.
-     *
-     * <p>A record whose block is no longer a managed resource — a definition retired between
-     * sessions — falls back to the global default rather than never becoming due.
-     */
-    private static long restoreDelayFor(BrokenBlockData data) {
-        return Resources.regenerationMillis(data.originalState).orElse(RESTORE_DELAY);
-    }
-
     /**
      * Whether the node may return without taking something else with it.
      *
-     * <p>Milestone 1 of the OreVein remediation narrowed this. It used to accept any cell that was
-     * air <em>or</em> {@code canBeReplaced()}, and in 1.21.1 both {@code minecraft:water} and
-     * {@code minecraft:lava} are declared {@code .replaceable()} — so a node mined in a shallow or
-     * beside a lava fall came back by deleting the fluid. That is the restoration system quietly
-     * editing the world outside its remit, and it is not what "the cell is still free" was ever
-     * meant to mean.
+     * <p>Unchanged since milestone 1, which narrowed it: it used to accept any cell that was air
+     * <em>or</em> {@code canBeReplaced()}, and in 1.21.1 both water and lava are declared
+     * replaceable — so a node mined in a shallow came back by deleting the fluid.
      *
-     * <p>The cell must now be genuinely empty of fluid, hold no block entity, be air or a
-     * replaceable state that policy accepts, and have nothing standing in it. A cell that fails
-     * any of those keeps its debt and is tried again later — the record is never dropped and the
-     * occupying state is never destroyed.
+     * <p>Milestone 4 changes only what happens when this says no: instead of the cell being
+     * revisited twenty times a second forever, the debt backs off. The debt itself is never
+     * dropped and the blocker is never overwritten.
      */
     public static boolean canRestoreInto(ServerLevel level, BlockPos pos) {
         BlockState current = level.getBlockState(pos);

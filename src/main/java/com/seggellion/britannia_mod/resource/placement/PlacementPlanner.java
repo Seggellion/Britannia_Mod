@@ -1,6 +1,7 @@
 package com.seggellion.britannia_mod.resource.placement;
 
 import com.seggellion.britannia_mod.resource.ResourceDefinition;
+import com.seggellion.britannia_mod.resource.deposit.DepositIdentity;
 import com.seggellion.britannia_mod.resource.shape.ShapeConfig;
 import com.seggellion.britannia_mod.resource.shape.ShapePlan;
 import com.seggellion.britannia_mod.resource.shape.ShapePlanner;
@@ -60,9 +61,13 @@ public final class PlacementPlanner {
     /**
      * Plan a curated Rails vein, deriving its seed from the row's immutable identity.
      *
-     * <p>The compatibility path. Running the same row twice re-derives the same seed and therefore
-     * re-plans the same cells, which is what stopped {@code /populateores} rerolling a vein every
-     * time it was run.
+     * <p>The compatibility path. Running the same row twice re-derives the same identity, therefore
+     * the same seed, therefore the same cells — which is what stopped {@code /populateores}
+     * rerolling a vein every time it was run.
+     *
+     * <p>Milestone 4 folded the seed derivation into {@link DepositIdentity}, so the id a deposit is
+     * registered under and the seed its geometry is drawn from now come from one contract rather
+     * than from two functions that happened to agree.
      */
     public static PlannedDeposit planCuratedVein(
             ResourceDefinition resource,
@@ -70,10 +75,22 @@ public final class PlacementPlanner {
             BlockPos origin,
             int radius,
             ShapeRotation rotation) {
-        long seed = DepositSeed.forCuratedVein(
-                dimensionId, resource.id(), origin.getX(), origin.getY(), origin.getZ(),
-                radius, rotation);
-        return plan(resource, dimensionId, origin, radius, rotation, seed);
+        return planCuratedVein(resource, "", dimensionId, origin, radius, rotation, "");
+    }
+
+    /** The same, with the shard and region a real curated row carries. */
+    public static PlannedDeposit planCuratedVein(
+            ResourceDefinition resource,
+            String shard,
+            String dimensionId,
+            BlockPos origin,
+            int radius,
+            ShapeRotation rotation,
+            String region) {
+        long instanceId = DepositIdentity.rails(shard, dimensionId, resource.id(),
+                origin.getX(), origin.getY(), origin.getZ(), radius, rotation, region);
+        return plan(resource, dimensionId, origin, radius, rotation,
+                DepositIdentity.plannerSeed(instanceId));
     }
 
     /**

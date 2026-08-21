@@ -292,6 +292,10 @@ CraftableRegistry.init();
     }
 
 public void onServerStopping(ServerStoppingEvent event) {
+    // OreVein milestone 4: the restoration schedulers hold per-level in-memory queues keyed by the
+    // ServerLevel object. They are rebuilt from the chunk-indexed saved data as chunks load, so
+    // dropping them here costs nothing and stops a stopped server's levels being retained.
+    com.seggellion.britannia_mod.blockrestore.RestorationScheduler.clearAll();
     if (deedHttpServer != null) {
         deedHttpServer.stop();
         LOGGER.info("🛑 DeedHttpServer stopped");

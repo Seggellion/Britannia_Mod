@@ -101,10 +101,11 @@ private static int listBrokenBlocks(CommandContext<CommandSourceStack> context) 
         ServerLevel level = source.getLevel(); // Get the current server world
 
         BrokenBlockDataStorage storage = BrokenBlockDataStorage.get(level);
-        int count = storage.getBrokenBlocks().size();
-        
-        storage.getBrokenBlocks().clear();  // Clear the tracked blocks
-        storage.setDirty();                 // Mark as dirty so it will be saved
+        int count = storage.totalCount();
+
+        // Milestone 4: an explicit operation. The flat view is a copy now, so clearing it would
+        // have cleared a temporary map and left every debt exactly where it was.
+        storage.clearAll();
 
         source.sendSuccess(() -> Component.literal("Destroyed all " + count + " recorded broken blocks."), true);
         return count;

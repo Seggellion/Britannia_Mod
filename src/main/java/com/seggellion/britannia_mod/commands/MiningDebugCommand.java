@@ -6,6 +6,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
+import com.seggellion.britannia_mod.blockrestore.RestorationScheduler;
+import com.seggellion.britannia_mod.resource.deposit.DepositInstance;
+import com.seggellion.britannia_mod.resource.deposit.DepositLedger;
+import com.seggellion.britannia_mod.resource.deposit.DepositRegistrar;
 import com.seggellion.britannia_mod.mining.MineableDefinition;
 import com.seggellion.britannia_mod.mining.Mineables;
 import com.seggellion.britannia_mod.mining.MiningBreakGate;
@@ -141,26 +145,86 @@ public final class MiningDebugCommand {
         return 1;
     }
 
+    /**
+     * What the restoration system is carrying, per dimension.
+     *
+     * <p>Rewritten at milestone 4, because the numbers it used to report no longer describe the
+     * system. It computed "due" from one global six-hour constant, which stopped being true when
+     * milestone 2 made the delay per resource, and it had no way to say how much of the backlog the
+     * scheduler was actually watching -- because the old scheduler watched all of it, always.
+     *
+     * <p>It now reports the distinction that matters operationally: how much is owed, how much is
+     * being watched, how much is overdue, and how much is stuck. A blocked cell is not a failure to
+     * be chased; it is a puddle somebody can go and drain.
+     */
     private static int reportRestorations(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
         long now = System.currentTimeMillis();
+
         for (ServerLevel level : source.getServer().getAllLevels()) {
-            var pending = BrokenBlockDataStorage.get(level).getBrokenBlocks();
-            if (pending.isEmpty()) {
+            BrokenBlockDataStorage storage = BrokenBlockDataStorage.get(level);
+            if (storage.totalCount() == 0) {
                 continue;
             }
-            long due = pending.values().stream()
-                    .filter(data -> now - data.brokenTime >= BlockRestoreHandler.RESTORE_DELAY)
-                    .count();
-            long blocked = pending.entrySet().stream()
-                    .filter(entry -> now - entry.getValue().brokenTime >= BlockRestoreHandler.RESTORE_DELAY)
-                    .filter(entry -> level.isLoaded(entry.getKey()))
-                    .filter(entry -> !BlockRestoreHandler.canRestoreInto(level, entry.getKey()))
-                    .count();
+            RestorationScheduler scheduler = RestorationScheduler.of(level);
+            var pending = storage.getBrokenBlocks();
+
+            long overdue = pending.values().stream().filter(data -> data.dueAt <= now).count();
+            long backedOff = pending.values().stream().filter(data -> data.retryCount > 0).count();
+            long unowned = pending.values().stream().filter(data -> !data.owned()).count();
+
+            String nextDue = scheduler.nextDueAt().isPresent()
+                    ? formatDuration(Math.max(0L, scheduler.nextDueAt().getAsLong() - now))
+                    : "-";
+
             source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                    "%s: pending=%d, due_now=%d, waiting_on_occupied_cell=%d",
-                    level.dimension().location(), pending.size(), due, blocked)), false);
+                    "%s: owed=%d overdue=%d backed_off=%d unowned=%d | watching %d in %d loaded chunk(s), next in %s",
+                    level.dimension().location(), storage.totalCount(), overdue, backedOff, unowned,
+                    scheduler.queuedCount(), scheduler.activeChunkCount(), nextDue)), false);
+
+            if (storage.migratedFromLegacy()) {
+                source.sendSuccess(() -> Component.literal(
+                        "  (this dimension's restoration file was migrated from the pre-milestone-4 "
+                                + "layout; its debts carry no deposit identity)"), false);
+            }
+
+            // The stuck ones, named, because these are the ones an operator can actually act on.
+            pending.values().stream()
+                    .filter(data -> data.retryCount > 0)
+                    .sorted((a, b) -> Long.compare(b.retryCount, a.retryCount))
+                    .limit(5)
+                    .forEach(data -> source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                            "  blocked %s %s at %s, %d attempt(s), retry in %s, deposit %s",
+                            data.resourceId.isEmpty() ? "(unknown resource)" : data.resourceId,
+                            data.originalState.getBlock().getName().getString(),
+                            data.pos.toShortString(),
+                            data.retryCount,
+                            formatDuration(Math.max(0L, data.retryAt - now)),
+                            data.owned() ? Long.toHexString(data.instanceId) : "unowned")), false));
         }
+
+        for (ServerLevel level : source.getServer().getAllLevels()) {
+            DepositLedger ledger = DepositLedger.get(level);
+            if (ledger.size() == 0) continue;
+            source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                    "%s: %d registered deposit(s)", level.dimension().location(), ledger.size())), false);
+            for (DepositInstance instance : ledger.all()) {
+                int depleted = DepositRegistrar.depletedCells(level, instance);
+                source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
+                        "  %s %s %s at %s r=%d planned=%d materialized=%s blocked=%s depleted=%d rev=%d",
+                        Long.toHexString(instance.instanceId()),
+                        instance.resourceId(),
+                        instance.source().id(),
+                        instance.origin().toShortString(),
+                        instance.radius(),
+                        instance.plannedCells(),
+                        instance.progressKnown() ? String.valueOf(instance.materializedCells()) : "?",
+                        instance.progressKnown() ? String.valueOf(instance.blockedCells()) : "?",
+                        depleted,
+                        instance.definitionRevision())), false);
+            }
+        }
+
         source.sendSuccess(() -> Component.literal(
                 "provenance: " + MiningProvenance.trackedCount(source.getLevel())
                         + " player-placed mineables tracked in " + source.getLevel().dimension().location()), false);
