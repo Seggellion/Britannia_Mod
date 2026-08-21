@@ -150,19 +150,19 @@ public class PopulateOresCommand {
 
         MinecraftServer server = level.getServer();
         String shardName = ModConfig.SHARD_NAME;
-        List<OreVeinFetcher.OreVein> veins = OreVeinFetcher.fetchOreVeins(server, shardName);
-
-        Tally tally = new Tally();
         LOGGER.info("Populating ore: {}", oreType);
 
-        for (OreVeinFetcher.OreVein vein : veins) {
-            if (!vein.oreType.equalsIgnoreCase(oreType)) {
-                continue;
+        fetchThenApply(source, server, shardName, veins -> {
+            Tally tally = new Tally();
+            for (OreVeinFetcher.OreVein vein : veins) {
+                if (!vein.oreType.equalsIgnoreCase(oreType)) {
+                    continue;
+                }
+                place(source, level, resource, vein, tally);
             }
-            place(source, level, resource, vein, tally);
-        }
-        tally.report(source, "of " + oreType);
-        return tally.placed;
+            tally.report(source, "of " + oreType);
+        });
+        return 1;
     }
 
     private static int executePopulateRegionOres(CommandContext<CommandSourceStack> context) {
@@ -183,27 +183,67 @@ public class PopulateOresCommand {
 
         MinecraftServer server = level.getServer();
         String shardName = ModConfig.SHARD_NAME;
-        List<OreVeinFetcher.OreVein> veins = OreVeinFetcher.fetchOreVeins(server, shardName);
-
-        Tally tally = new Tally();
         LOGGER.info("Populating ores for region: {}", region);
         if (oreType != null) LOGGER.info("Filtered by ore type: {}", oreType);
 
-        for (OreVeinFetcher.OreVein vein : veins) {
-            if (!region.equalsIgnoreCase(vein.region)) continue;
-            if (oreType != null && !vein.oreType.equalsIgnoreCase(oreType)) continue;
+        fetchThenApply(source, server, shardName, veins -> {
+            Tally tally = new Tally();
+            for (OreVeinFetcher.OreVein vein : veins) {
+                if (!region.equalsIgnoreCase(vein.region)) continue;
+                if (oreType != null && !vein.oreType.equalsIgnoreCase(oreType)) continue;
 
-            ResourceDefinition resource =
-                    VeinPlacementValidation.resourceFor(vein.oreType).orElse(null);
-            if (resource == null) {
-                tally.skipped++;
-                reportSkip(source, vein, "unknown or unplaceable ore type '" + vein.oreType + "'");
-                continue;
+                ResourceDefinition resource =
+                        VeinPlacementValidation.resourceFor(vein.oreType).orElse(null);
+                if (resource == null) {
+                    tally.skipped++;
+                    reportSkip(source, vein, "unknown or unplaceable ore type '" + vein.oreType + "'");
+                    continue;
+                }
+                place(source, level, resource, vein, tally);
             }
-            place(source, level, resource, vein, tally);
-        }
-        tally.report(source, "in region " + region + (oreType != null ? (" for ore " + oreType) : ""));
-        return tally.placed;
+            tally.report(source,
+                    "in region " + region + (oreType != null ? (" for ore " + oreType) : ""));
+        });
+        return 1;
+    }
+
+    /**
+     * Ask Rails off the server thread, then apply on it.
+     *
+     * <p>Milestone 8. The fetch used to happen inline, so an import froze the server for the whole
+     * Rails round trip and then for the placement that followed. Only the waiting has moved: every
+     * block written by {@code apply} is still written on the server thread, because that is the only
+     * thread allowed to touch the world or the deposit ledger.
+     *
+     * <p>The command therefore returns immediately, and the operator gets the outcome in a second
+     * message. A failure is reported as the failure it was rather than as "0 blocks placed".
+     */
+    private static void fetchThenApply(
+            CommandSourceStack source,
+            MinecraftServer server,
+            String shardName,
+            java.util.function.Consumer<List<OreVeinFetcher.OreVein>> apply) {
+
+        source.sendSuccess(() -> Component.literal(
+                "Fetching curated veins from Rails for shard " + shardName + "..."), false);
+
+        OreVeinFetcher.fetchOreVeinsAsync(server, shardName)
+                .whenComplete((result, error) -> server.execute(() -> {
+                    if (error != null) {
+                        source.sendFailure(Component.literal(
+                                "Vein import failed before it began: " + error));
+                        return;
+                    }
+                    if (!result.ok()) {
+                        source.sendFailure(Component.literal(result.describe()));
+                        return;
+                    }
+                    source.sendSuccess(() -> Component.literal(result.describe()), false);
+                    if (!result.detail().isEmpty()) {
+                        source.sendSystemMessage(Component.literal("  " + result.detail()));
+                    }
+                    apply.accept(result.veins());
+                }));
     }
 
     /** One curated row against the build limits of the level it would be written into. */

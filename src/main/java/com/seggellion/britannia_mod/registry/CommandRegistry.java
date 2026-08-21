@@ -47,6 +47,9 @@ public class CommandRegistry {
         BannerDyeAdminCommands.register(event.getDispatcher());
         ManagedVegetationCommands.register(event.getDispatcher());
         ManagedDepositCommands.register(event.getDispatcher());
+        // OreVein milestone 8: read-only ledger diagnostics. /manageddeposit answers questions
+        // about a place; this answers questions about the ledger.
+        com.seggellion.britannia_mod.commands.OreVeinDiagnosticsCommand.register(event.getDispatcher());
 
         // Register additional command classes here
     }

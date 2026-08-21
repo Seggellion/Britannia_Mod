@@ -116,6 +116,39 @@ public class DepositLedger extends SavedData {
         }
     }
 
+    /**
+     * One registration the ledger turned away, kept so an operator can ask about it.
+     *
+     * <p>Refusing is precisely <em>not</em> writing anything, so a refusal leaves no trace in the
+     * ledger itself — which makes "was a duplicate rejected?" unanswerable after the fact. Milestone
+     * 8 needs that answer, so refusals are journalled here.
+     *
+     * <p>Deliberately in memory and bounded. The question is asked about an import that has just
+     * been run, not about last month, and persisting it would mean a ledger schema change for
+     * diagnostics rather than for state.
+     */
+    public record Refusal(long instanceId, Outcome outcome, String message) {
+    }
+
+    /** How many refusals are remembered before the oldest is dropped. */
+    public static final int REFUSAL_JOURNAL_LIMIT = 64;
+
+    private final java.util.Deque<Refusal> refusals = new java.util.ArrayDeque<>();
+
+    /** Refused registrations since this server started, oldest first. */
+    public List<Refusal> refusals() {
+        return List.copyOf(refusals);
+    }
+
+    private Registration refuse(long instanceId, Outcome outcome, DepositInstance existing,
+                                String message) {
+        refusals.addLast(new Refusal(instanceId, outcome, message));
+        while (refusals.size() > REFUSAL_JOURNAL_LIMIT) {
+            refusals.removeFirst();
+        }
+        return new Registration(outcome, existing, message);
+    }
+
     /** Record this deposit, or explain why it cannot be recorded as described. */
     public Registration register(DepositInstance candidate) {
         DepositInstance existing = byId.get(candidate.instanceId());
@@ -126,14 +159,14 @@ public class DepositLedger extends SavedData {
             return new Registration(Outcome.REGISTERED, candidate, "");
         }
         if (!existing.sameDepositAs(candidate)) {
-            return new Registration(Outcome.CONFLICT, existing,
+            return refuse(candidate.instanceId(), Outcome.CONFLICT, existing,
                     "deposit id " + Long.toHexString(candidate.instanceId())
                             + " already describes " + existing.describeIdentity()
                             + ", but was offered " + candidate.describeIdentity()
                             + "; refusing rather than overwriting one deposit with another");
         }
         if (existing.definitionRevision() != candidate.definitionRevision()) {
-            return new Registration(Outcome.REVISION_MISMATCH, existing,
+            return refuse(candidate.instanceId(), Outcome.REVISION_MISMATCH, existing,
                     "deposit " + Long.toHexString(existing.instanceId()) + " (" + existing.resourceId()
                             + ") was created under definition revision " + existing.definitionRevision()
                             + " but the catalogue now says revision " + candidate.definitionRevision()

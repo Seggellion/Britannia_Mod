@@ -166,6 +166,34 @@ public final class NaturalSilicaGameTests {
         helper.succeed();
     }
 
+    /**
+     * An existing chunk is never retro-populated, and the guarantee needs no bookkeeping.
+     *
+     * <p>Milestone 8 carries this forward as a world-safety rule: a server that updates must not
+     * start writing silica into terrain players have already built in. The guarantee is structural
+     * rather than recorded — {@code isNewChunk()} is false for a chunk read from disk, because
+     * NeoForge derives it from whether the promoted chunk was a real {@code ProtoChunk} and a stored
+     * full chunk always comes back wrapped — so this asserts the handler's own contract rather than
+     * the presence of a marker, and asserts that no marker exists to drift.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void anExistingChunkIsNeverRetroPopulated(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ChunkPos chunk = new ChunkPos(helper.absolutePos(NODE));
+        var handler = new com.seggellion.britannia_mod.resource.natural.NaturalGenerationHandler();
+
+        int ledgerBefore = DepositLedger.get(level).size();
+        var existing = new net.neoforged.neoforge.event.level.ChunkEvent.Load(
+                level.getChunk(chunk.x, chunk.z), false);
+        handler.onChunkLoad(existing);
+
+        check(!existing.isNewChunk(), "the test built a new-chunk event, so it proves nothing");
+        check(DepositLedger.get(level).size() == ledgerBefore,
+                "loading an existing chunk registered " + (DepositLedger.get(level).size() - ledgerBefore)
+                        + " deposit(s); an updated server would rewrite worlds players already live in");
+        helper.succeed();
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Materialisation policy                                             */
     /* ------------------------------------------------------------------ */
