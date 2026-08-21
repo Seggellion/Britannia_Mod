@@ -145,11 +145,19 @@ public record ResourceDefinition(
      * including bedrock, fluids and block entities.
      */
     public record Generation(
-            ResourceShape shape, String blockId, int minRadius, int maxRadius, String hostTag) {
+            ResourceShape shape, String blockId, int minRadius, int maxRadius, String hostTag,
+            Optional<com.seggellion.britannia_mod.resource.natural.NaturalGeneration> natural) {
         public Generation {
             Objects.requireNonNull(shape, "generation shape is required");
             Objects.requireNonNull(blockId, "generation block is required");
             Objects.requireNonNull(hostTag, "generation host tag is required");
+            Objects.requireNonNull(natural, "natural generation optional is required");
+        }
+
+        /** The original five-argument form: a resource that is placed but never occurs by itself. */
+        public Generation(ResourceShape shape, String blockId, int minRadius, int maxRadius,
+                          String hostTag) {
+            this(shape, blockId, minRadius, maxRadius, hostTag, Optional.empty());
         }
     }
 
@@ -162,6 +170,17 @@ public record ResourceDefinition(
         Objects.requireNonNull(yield, "yield is required");
         Objects.requireNonNull(depleted, "depleted state is required");
         Objects.requireNonNull(generation, "generation optional is required");
+    }
+
+    /**
+     * How this resource occurs naturally, when it does.
+     *
+     * <p>Most resources answer empty: they exist where Rails or an operator put them, and no grid
+     * or biome policy applies. Natural occurrence is opt-in through data, which is what keeps the
+     * generation seam free of any mention of a particular resource.
+     */
+    public Optional<com.seggellion.britannia_mod.resource.natural.NaturalGeneration> natural() {
+        return generation.flatMap(Generation::natural);
     }
 
     /** The path portion of the id, which is what operator commands and Rails rows spell. */

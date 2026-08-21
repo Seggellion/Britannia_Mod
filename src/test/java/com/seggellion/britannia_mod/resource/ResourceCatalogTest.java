@@ -241,17 +241,26 @@ class ResourceCatalogTest {
     /* ------------------------------------------------------------------ */
 
     /**
-     * The nine ores the legacy command can place, with the shapes and bounds milestone 1 derived
-     * from the algorithms — now data rather than a table in {@code VeinPlacementValidation}.
+     * Everything that can be placed, with the shape each one uses.
+     *
+     * <p>The nine ores are milestone 1's table, moved into data. Silica joined them at milestone 7
+     * as the first sediment bed with a geometry of its own; it is listed here rather than tested
+     * separately because "which resources can be placed" is one question and should have one
+     * answer.
      */
     @Test
-    void theNinePlaceableOresCarryTheirShapeConfiguration() {
-        Map<String, ResourceShape> expected = Map.of(
-                "copper", ResourceShape.CLUSTER, "verite", ResourceShape.CLUSTER,
-                "iron", ResourceShape.VERTICAL, "valorite", ResourceShape.VERTICAL,
-                "shadow_iron", ResourceShape.VERTICAL, "gold", ResourceShape.SNAKE,
-                "agapite", ResourceShape.GEODE, "silver", ResourceShape.VERTICAL_LAYERED,
-                "tin", ResourceShape.LAYERED);
+    void everyPlaceableResourceCarriesItsShapeConfiguration() {
+        Map<String, ResourceShape> expected = Map.ofEntries(
+                Map.entry("copper", ResourceShape.CLUSTER),
+                Map.entry("verite", ResourceShape.CLUSTER),
+                Map.entry("iron", ResourceShape.VERTICAL),
+                Map.entry("valorite", ResourceShape.VERTICAL),
+                Map.entry("shadow_iron", ResourceShape.VERTICAL),
+                Map.entry("gold", ResourceShape.SNAKE),
+                Map.entry("agapite", ResourceShape.GEODE),
+                Map.entry("silver", ResourceShape.VERTICAL_LAYERED),
+                Map.entry("tin", ResourceShape.LAYERED),
+                Map.entry("silica_sand_deposit", ResourceShape.SEDIMENTARY_LENS));
 
         List<ResourceDefinition> generatable = catalog().generatable();
         assertEquals(expected.keySet(),
@@ -299,12 +308,24 @@ class ResourceCatalogTest {
         }
     }
 
-    /** A sediment bed is hand-placed; sedimentary generation is milestone 7's, not this one's. */
+    /**
+     * Silica is the one sediment bed that generates; clay is still placed by hand.
+     *
+     * <p>Milestone 7 is where this changed. It used to read "sediment beds carry no generation",
+     * which was true and is the sort of assertion that quietly becomes a rule: silica gaining a
+     * sedimentary lens is the whole point of the milestone, and clay staying hand-placed is a
+     * deliberate decision rather than an oversight, so both halves are now stated.
+     */
     @Test
-    void sedimentBedsCarryNoGeneration() {
-        for (ResourceDefinition definition : catalog().family(ResourceDefinition.Family.SEDIMENT)) {
-            assertTrue(definition.generation().isEmpty(), definition.id() + " is hand-placed for now");
-        }
+    void silicaGeneratesAndClayIsStillPlacedByHand() {
+        ResourceDefinition silica = catalog().byId("britannia_mod:silica_sand_deposit").orElseThrow();
+        ResourceDefinition clay = catalog().byId("britannia_mod:clay_deposit").orElseThrow();
+
+        assertTrue(silica.generation().isPresent(), "silica lost its generation configuration");
+        assertEquals(ResourceShape.SEDIMENTARY_LENS, silica.generation().orElseThrow().shape());
+        assertTrue(silica.natural().isPresent(), "silica lost its natural distribution");
+        assertTrue(clay.generation().isEmpty(), "clay is placed by hand, not generated");
+        assertTrue(clay.natural().isEmpty(), "clay gained a natural distribution nobody asked for");
     }
 
     /* ------------------------------------------------------------------ */

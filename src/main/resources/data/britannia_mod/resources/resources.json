@@ -572,7 +572,32 @@
       "regeneration": {
         "hours": 24
       },
-      "revision": 1
+      "revision": 1,
+      "generation": {
+        "shape": "sedimentary_lens",
+        "block": "britannia_mod:silica_sand_deposit",
+        "min_radius": 8,
+        "max_radius": 13,
+        "host": "britannia_mod:silica_hosts",
+        "natural": {
+          "dimension": "minecraft:overworld",
+          "biomes": "britannia_mod:has_silica_deposits",
+          "cell_chunks": 10,
+          "chance": 0.85,
+          "min_radius": 8,
+          "max_radius": 13,
+          "depth": 5,
+          "depth_jitter": 2,
+          "min_y": 40,
+          "max_y": 96,
+          "salt": 7311,
+          "tuning": {
+            "thickness": 5,
+            "irregularity": 0.2,
+            "gap_chance": 0.18
+          }
+        }
+      }
     }
   ]
 }

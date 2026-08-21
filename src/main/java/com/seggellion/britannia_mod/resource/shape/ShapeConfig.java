@@ -14,14 +14,28 @@ import java.util.Objects;
  * @param radius   the deposit's configured size; what it means is the planner's to define
  * @param rotation orientation, consulted only by planners that declare they are directional
  * @param seed     the deterministic seed; identical seeds must give identical geometry
+ * @param tuning   optional geometric knobs, read only by shapes that declare they have any
  */
-public record ShapeConfig(int radius, ShapeRotation rotation, long seed) {
+public record ShapeConfig(int radius, ShapeRotation rotation, long seed, ShapeTuning tuning) {
 
     public ShapeConfig {
         Objects.requireNonNull(rotation, "shape rotation is required");
+        Objects.requireNonNull(tuning, "shape tuning is required");
+    }
+
+    /**
+     * The original three-argument form, kept so that every caller written before tuning existed
+     * still reads correctly. A shape that takes no tuning is the common case, not a special one.
+     */
+    public ShapeConfig(int radius, ShapeRotation rotation, long seed) {
+        this(radius, rotation, seed, ShapeTuning.DEFAULT);
     }
 
     public ShapeConfig withSeed(long newSeed) {
-        return new ShapeConfig(radius, rotation, newSeed);
+        return new ShapeConfig(radius, rotation, newSeed, tuning);
+    }
+
+    public ShapeConfig withTuning(ShapeTuning newTuning) {
+        return new ShapeConfig(radius, rotation, seed, newTuning);
     }
 }

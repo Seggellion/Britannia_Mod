@@ -381,9 +381,14 @@ public final class OreVeinContainmentGameTests {
     public static void coalIsNoLongerPlaceableByTheLegacyCommand(GameTestHelper helper) {
         check(!PopulateOresCommand.placeableOreTypes().contains("coal"),
                 "coal must not be placeable until it has a canonical resource definition");
-        check(PopulateOresCommand.placeableOreTypes().size() == 9,
-                "exactly the nine catalogued ladder ores remain placeable, found "
+        // Nine ladder ores, plus silica since milestone 7 gave it a shape of its own. What this
+        // guards is that the placeable set is exactly the catalogued resources -- coal is out
+        // because it has no resource definition, not because the number happens to be nine.
+        check(PopulateOresCommand.placeableOreTypes().size() == 10,
+                "expected the nine ladder ores plus silica to be placeable, found "
                         + PopulateOresCommand.placeableOreTypes());
+        check(PopulateOresCommand.placeableOreTypes().contains("silica_sand_deposit"),
+                "silica gained a generation shape at milestone 7 and should be placeable");
         helper.succeed();
     }
 

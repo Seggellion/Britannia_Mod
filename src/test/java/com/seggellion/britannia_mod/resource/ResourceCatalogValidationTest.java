@@ -260,12 +260,12 @@ class ResourceCatalogValidationTest {
     }
 
     @Test
-    void aSedimentBedThatConfiguresVeinGenerationFails() {
+    void aSedimentBedThatConfiguresAVeinShapeFails() {
         String wrong = VALID_BED.replace("  \"revision\": 1",
                 "  \"generation\": {\"shape\": \"layered\", \"block\": \"britannia_mod:clay_deposit\","
                         + " \"min_radius\": 1, \"max_radius\": 8,"
                         + " \"host\": \"britannia_mod:ore_hosts\"},\n  \"revision\": 1");
-        assertTrue(failureOf(wrong).contains("must not configure vein generation"), wrong);
+        assertTrue(failureOf(wrong).contains("may only generate as a sedimentary_lens"), wrong);
     }
 
     /* ------------------------------------------------------------------ */

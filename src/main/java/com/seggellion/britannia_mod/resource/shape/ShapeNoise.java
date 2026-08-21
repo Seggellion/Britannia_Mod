@@ -65,6 +65,54 @@ public final class ShapeNoise {
     }
 
     /**
+     * Smooth, low-frequency value noise over the horizontal plane, in {@code [0, 1]}.
+     *
+     * <h2>Why the per-cell hash is not enough on its own</h2>
+     * {@link #unit} is white noise: neighbouring cells are uncorrelated, which is exactly right for
+     * deciding whether one cell has a gap in it and exactly wrong for deciding where the top of a
+     * bed lies. A surface built from white noise is not a surface, it is static. A sedimentary bed
+     * needs its rim and its thickness to <em>drift</em> — smoothly, over tens of blocks — which is
+     * what makes it read as geology rather than as scatter.
+     *
+     * <p>So the same hash is sampled on a coarse lattice of spacing {@code scale} and interpolated
+     * between the four corners with a smoothstep, which is ordinary value noise. It keeps every
+     * property the planners rely on: pure, order-independent, and identical for identical inputs,
+     * because it is still only ever a function of the lattice coordinates.
+     *
+     * @param scale lattice spacing in blocks; larger is smoother and lower frequency
+     */
+    public static double smooth2(long seed, int salt, int x, int z, double scale) {
+        if (!(scale > 0.0)) {
+            throw new IllegalArgumentException("noise scale must be positive, was " + scale);
+        }
+        double sx = x / scale;
+        double sz = z / scale;
+        int x0 = (int) Math.floor(sx);
+        int z0 = (int) Math.floor(sz);
+        double fx = smoothstep(sx - x0);
+        double fz = smoothstep(sz - z0);
+
+        double n00 = unit(seed, salt, x0, 0, z0);
+        double n10 = unit(seed, salt, x0 + 1, 0, z0);
+        double n01 = unit(seed, salt, x0, 0, z0 + 1);
+        double n11 = unit(seed, salt, x0 + 1, 0, z0 + 1);
+
+        double top = n00 + (n10 - n00) * fx;
+        double bottom = n01 + (n11 - n01) * fx;
+        return top + (bottom - top) * fz;
+    }
+
+    /** The same, centred on zero: {@code [-1, 1]}. */
+    public static double smoothSigned2(long seed, int salt, int x, int z, double scale) {
+        return smooth2(seed, salt, x, z, scale) * 2.0 - 1.0;
+    }
+
+    /** Hermite ease, so the lattice corners do not show as creases. */
+    private static double smoothstep(double t) {
+        return t * t * (3.0 - 2.0 * t);
+    }
+
+    /**
      * A seed for one sub-part of a deposit — a tendril, a walk step — derived from the deposit
      * seed rather than from a running counter, so sub-parts stay independent of each other.
      */

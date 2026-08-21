@@ -227,6 +227,10 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningProvenanceHandler());
         // Housing clay supply: the managed deposit rule. HIGH priority for the same reason as
         // the Mining gate -- CustomBlockBreakHandler mutates the world inside its NORMAL listener.
+        // OreVein milestone 7: natural deposits enter the world here, on the server thread, as
+        // each chunk finishes generating. See NaturalGenerationHandler for why not a PlacedFeature.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.resource.natural.NaturalGenerationHandler());
         // OreVein milestone 6 amendment: refuses an ordinary creative break of a sited deposit,
         // ahead of everything else, so removing one stays an explicit administrative act.
         NeoForge.EVENT_BUS.register(

@@ -166,7 +166,55 @@ public final class ResourceCatalog {
                 requiredString(json, "block"),
                 json.get("min_radius").getAsInt(),
                 json.get("max_radius").getAsInt(),
-                requiredString(json, "host"));
+                requiredString(json, "host"),
+                json.has("natural")
+                        ? java.util.Optional.of(parseNatural(json.getAsJsonObject("natural"), shape))
+                        : java.util.Optional.empty());
+    }
+
+    /**
+     * A resource's natural-occurrence policy, when it has one.
+     *
+     * <p>Validated here rather than at the point of use for the same reason every other part of
+     * this catalogue is: a distribution that cannot work should stop the server at load with a
+     * sentence naming the field, not produce a world quietly missing a resource.
+     */
+    private static com.seggellion.britannia_mod.resource.natural.NaturalGeneration parseNatural(
+            JsonObject json, ResourceShape shape) {
+        com.seggellion.britannia_mod.resource.shape.ShapeTuning tuning =
+                json.has("tuning")
+                        ? parseTuning(json.getAsJsonObject("tuning"))
+                        : com.seggellion.britannia_mod.resource.shape.ShapeTuning.DEFAULT;
+
+        com.seggellion.britannia_mod.resource.natural.NaturalGeneration natural =
+                new com.seggellion.britannia_mod.resource.natural.NaturalGeneration(
+                        requiredString(json, "dimension"),
+                        requiredString(json, "biomes"),
+                        json.get("cell_chunks").getAsInt(),
+                        json.get("chance").getAsDouble(),
+                        json.get("min_radius").getAsInt(),
+                        json.get("max_radius").getAsInt(),
+                        json.get("depth").getAsInt(),
+                        json.has("depth_jitter") ? json.get("depth_jitter").getAsInt() : 0,
+                        json.get("min_y").getAsInt(),
+                        json.get("max_y").getAsInt(),
+                        json.get("salt").getAsInt(),
+                        tuning);
+
+        // The geometry has to be plannable at both ends of the configured range, or the first
+        // world to roll the wrong radius fails during chunk generation instead of at load.
+        for (int radius : new int[] {natural.minRadius(), natural.maxRadius()}) {
+            shape.planner().validate(new com.seggellion.britannia_mod.resource.shape.ShapeConfig(
+                    radius, com.seggellion.britannia_mod.resource.shape.ShapeRotation.XZ, 0L, tuning));
+        }
+        return natural;
+    }
+
+    private static com.seggellion.britannia_mod.resource.shape.ShapeTuning parseTuning(JsonObject json) {
+        return new com.seggellion.britannia_mod.resource.shape.ShapeTuning(
+                json.has("thickness") ? json.get("thickness").getAsInt() : 0,
+                json.has("irregularity") ? json.get("irregularity").getAsDouble() : -1.0,
+                json.has("gap_chance") ? json.get("gap_chance").getAsDouble() : -1.0);
     }
 
     private static com.google.gson.JsonArray requiredArrayHolder(JsonObject json, String key) {
@@ -292,9 +340,14 @@ public final class ResourceCatalog {
             throw new IllegalStateException("Resource '" + id + "' configures max radius "
                     + generation.maxRadius() + " below its min radius " + generation.minRadius());
         }
-        if (definition.isSediment()) {
-            throw new IllegalStateException("Resource '" + id + "' is a hand-placed deposit and must not "
-                    + "configure vein generation; sedimentary generation arrives at milestone 7");
+        // Milestone 2 refused generation on a sediment bed outright, with a message saying that
+        // sedimentary generation arrived at milestone 7. It has. What replaces the blanket refusal
+        // is the narrower rule it was standing in for: a bed is bedded, so if it generates at all
+        // it generates as a lens rather than as a vein.
+        if (definition.isSediment() && generation.shape() != ResourceShape.SEDIMENTARY_LENS) {
+            throw new IllegalStateException("Resource '" + id + "' is a sediment bed and may only "
+                    + "generate as a " + ResourceShape.SEDIMENTARY_LENS.id() + ", not as a "
+                    + generation.shape().id());
         }
     }
 

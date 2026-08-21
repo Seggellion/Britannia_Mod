@@ -4,6 +4,7 @@ import com.seggellion.britannia_mod.resource.shape.ShapePlanner;
 import com.seggellion.britannia_mod.resource.shape.planner.ClusterPlanner;
 import com.seggellion.britannia_mod.resource.shape.planner.GeodePlanner;
 import com.seggellion.britannia_mod.resource.shape.planner.LayeredPlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.SedimentaryLensPlanner;
 import com.seggellion.britannia_mod.resource.shape.planner.SnakePlanner;
 import com.seggellion.britannia_mod.resource.shape.planner.VerticalLayeredPlanner;
 import com.seggellion.britannia_mod.resource.shape.planner.VerticalPlanner;
@@ -31,7 +32,9 @@ public enum ResourceShape {
     SNAKE(new SnakePlanner()),
     GEODE(new GeodePlanner()),
     LAYERED(new LayeredPlanner()),
-    VERTICAL_LAYERED(new VerticalLayeredPlanner());
+    VERTICAL_LAYERED(new VerticalLayeredPlanner()),
+    /** Milestone 7: a broad thin bed that thins to nothing at its rim. */
+    SEDIMENTARY_LENS(new SedimentaryLensPlanner());
 
     private final ShapePlanner planner;
 
