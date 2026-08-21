@@ -85,6 +85,47 @@ class ResourceCatalogTest {
         }
     }
 
+    /**
+     * Two distinct resources may absolutely resolve to the same numeric Mining requirement.
+     *
+     * <p>Clarifying what milestone 2 meant when it reported that "two resources sharing one Mining
+     * requirement is unrepresentable". That was about sharing a <em>Mineable identity</em> — two
+     * definitions pointing at the same catalogue row, which would make one row's blocks and level
+     * belong to two resources at once. Sharing a <em>value</em> is ordinary and always worked, and
+     * the shipped catalogue is full of it: three resources sit at 30.0 and two each at 5.0, 35.0,
+     * 40.0 and 45.0.
+     *
+     * <p>Worth pinning rather than merely stating, because the looser reading would have been a
+     * real limitation on a platform meant to carry 25-50 resources — a new rock could not have
+     * been priced the same as an existing one.
+     */
+    @Test
+    void distinctResourcesMayShareANumericMiningRequirement() {
+        Map<Float, List<String>> byRequirement = new java.util.TreeMap<>();
+        for (ResourceDefinition definition : catalog().all()) {
+            Optional<String> reference = definition.mineableId();
+            if (reference.isEmpty()) continue;
+            float required = MineableCatalog.instance().byId(reference.get())
+                    .orElseThrow().requiredMining();
+            byRequirement.computeIfAbsent(required, key -> new java.util.ArrayList<>())
+                    .add(definition.id());
+        }
+        List<String> shared = byRequirement.values().stream()
+                .filter(ids -> ids.size() > 1)
+                .map(Object::toString)
+                .toList();
+        assertFalse(shared.isEmpty(),
+                "the shipped catalogue is expected to contain resources priced identically");
+        assertTrue(shared.size() >= 5,
+                "several requirement values are shared today; found only " + shared);
+
+        // Named, so the claim is concrete rather than statistical.
+        assertEquals(30.0f, MineableCatalog.instance().byId("deepslate").orElseThrow().requiredMining());
+        assertEquals(30.0f, MineableCatalog.instance().byId("metamorphic_rock").orElseThrow().requiredMining());
+        assertTrue(catalog().byId("britannia_mod:deepslate").isPresent());
+        assertTrue(catalog().byId("britannia_mod:metamorphic_rock").isPresent());
+    }
+
     /** Both catalogues must agree, block for block, about what each resource covers. */
     @Test
     void theTwoCataloguesClaimIdenticalBlocksForEveryMiningResource() {
@@ -220,20 +261,42 @@ class ResourceCatalogTest {
             assertEquals(expected.get(definition.path()), generation.shape(), definition.id());
             assertTrue(definition.blockIds().contains(generation.blockId()),
                     definition.id() + " must generate a block it governs");
-            assertTrue(generation.minRadius() >= generation.shape().hardFloorRadius(),
-                    definition.id() + " must not configure a radius the algorithm throws on");
+            assertTrue(generation.minRadius() >= generation.shape().minimumRadius(),
+                    definition.id() + " must not configure a radius below its shape's own minimum");
         }
     }
 
-    /** The hard floors are the crash boundaries milestone 1 measured against the algorithms. */
+    /**
+     * Every shape's minimum comes from its planner, and nowhere else.
+     *
+     * <p>Milestone 2 kept these numbers here as "hard floors" measured from where the legacy
+     * algorithms threw. Milestone 3 deleted those algorithms, so a minimum is now a property of the
+     * geometry — the smallest radius at which the shape means anything — and it is declared once,
+     * by the planner that draws it. Snake's dropped from ten to four because ten was an artefact of
+     * the {@code nextInt(radius - 9)} bug rather than a design decision; gold's configured minimum
+     * is still ten, which is data narrowing a shape's range as it is allowed to.
+     */
     @Test
-    void shapeHardFloorsMatchTheAlgorithmCrashBoundaries() {
-        assertEquals(10, ResourceShape.SNAKE.hardFloorRadius(), "nextInt(radius - 9)");
-        assertEquals(2, ResourceShape.GEODE.hardFloorRadius(), "nextInt(radius / 2)");
-        assertEquals(1, ResourceShape.LAYERED.hardFloorRadius(), "nextInt(radius * 2)");
-        assertEquals(1, ResourceShape.VERTICAL_LAYERED.hardFloorRadius());
-        assertEquals(1, ResourceShape.CLUSTER.hardFloorRadius(), "division by radius");
-        assertEquals(1, ResourceShape.VERTICAL.hardFloorRadius());
+    void everyShapeTakesItsMinimumFromItsPlanner() {
+        for (ResourceShape shape : ResourceShape.values()) {
+            assertEquals(shape.planner().minimumRadius(), shape.minimumRadius(),
+                    shape + " must not hold a second opinion about its own minimum");
+            assertTrue(shape.minimumRadius() >= 1, shape + " must need at least one cell of radius");
+        }
+        assertEquals(4, ResourceShape.SNAKE.minimumRadius(), "a snake needs length to wind");
+        assertEquals(3, ResourceShape.GEODE.minimumRadius(), "a nodule needs a crust and a hollow");
+        assertEquals(1, ResourceShape.CLUSTER.minimumRadius());
+    }
+
+    /** Only the shapes that are actually directional consult the rotation. */
+    @Test
+    void onlyDirectionalShapesUseRotation() {
+        assertTrue(ResourceShape.VERTICAL_LAYERED.usesRotation(), "a standing sheet has an orientation");
+        for (ResourceShape shape : java.util.List.of(ResourceShape.CLUSTER, ResourceShape.GEODE,
+                ResourceShape.LAYERED, ResourceShape.VERTICAL)) {
+            assertFalse(shape.usesRotation(),
+                    shape + " is not directional and must say so rather than silently ignoring it");
+        }
     }
 
     /** A sediment bed is hand-placed; sedimentary generation is milestone 7's, not this one's. */

@@ -22,7 +22,8 @@
         "shape": "vertical",
         "block": "minecraft:iron_ore",
         "min_radius": 1,
-        "max_radius": 128
+        "max_radius": 128,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -46,7 +47,8 @@
         "shape": "vertical_layered",
         "block": "britannia_mod:silver_ore",
         "min_radius": 1,
-        "max_radius": 128
+        "max_radius": 96,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -70,7 +72,8 @@
         "shape": "layered",
         "block": "britannia_mod:tin_ore",
         "min_radius": 1,
-        "max_radius": 128
+        "max_radius": 96,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -94,7 +97,8 @@
         "shape": "vertical",
         "block": "britannia_mod:shadow_iron_ore",
         "min_radius": 1,
-        "max_radius": 128
+        "max_radius": 128,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -118,7 +122,8 @@
         "shape": "cluster",
         "block": "britannia_mod:copper_ore",
         "min_radius": 1,
-        "max_radius": 32
+        "max_radius": 22,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -144,7 +149,8 @@
         "shape": "snake",
         "block": "minecraft:gold_ore",
         "min_radius": 10,
-        "max_radius": 128
+        "max_radius": 128,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -167,8 +173,9 @@
       "generation": {
         "shape": "geode",
         "block": "britannia_mod:agapite_ore",
-        "min_radius": 2,
-        "max_radius": 128
+        "min_radius": 3,
+        "max_radius": 16,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -192,7 +199,8 @@
         "shape": "cluster",
         "block": "britannia_mod:verite_ore",
         "min_radius": 1,
-        "max_radius": 32
+        "max_radius": 22,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -216,7 +224,8 @@
         "shape": "vertical",
         "block": "britannia_mod:valorite_ore",
         "min_radius": 1,
-        "max_radius": 128
+        "max_radius": 128,
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },

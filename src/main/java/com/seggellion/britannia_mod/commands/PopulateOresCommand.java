@@ -12,17 +12,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.network.chat.Component;
 
 import com.seggellion.britannia_mod.util.OreVeinFetcher;
-import com.seggellion.britannia_mod.features.ClusterVein;
-import com.seggellion.britannia_mod.features.LayeredVein;
-import com.seggellion.britannia_mod.features.VerticalVein;
-import com.seggellion.britannia_mod.features.VerticalLayeredVein;
-import com.seggellion.britannia_mod.features.GeodeVein;
-import com.seggellion.britannia_mod.features.SnakeVein;
 import com.seggellion.britannia_mod.features.VeinPlacementValidation;
-import com.seggellion.britannia_mod.resource.ResourceCatalog;
 import com.seggellion.britannia_mod.resource.ResourceDefinition;
-import com.seggellion.britannia_mod.resource.ResourceShape;
-import com.seggellion.britannia_mod.resource.Resources;
+import com.seggellion.britannia_mod.resource.placement.MaterializationService;
+import com.seggellion.britannia_mod.resource.placement.PlacementPlanner;
+import com.seggellion.britannia_mod.resource.placement.PlannedDeposit;
+import com.seggellion.britannia_mod.resource.shape.ShapeRotation;
 import com.seggellion.britannia_mod.config.ModConfig;
 import net.minecraft.server.MinecraftServer;
 
@@ -147,43 +142,22 @@ public class PopulateOresCommand {
                     + ". Placeable: " + String.join(", ", VeinPlacementValidation.placeableOreTypes())));
             return 0;
         }
-        Block oreBlock = Resources.standingBlock(resource);
 
         MinecraftServer server = level.getServer();
         String shardName = ModConfig.SHARD_NAME;
         List<OreVeinFetcher.OreVein> veins = OreVeinFetcher.fetchOreVeins(server, shardName);
 
-        // Per invocation, never static: see the class comment.
-        Map<BlockPos, BlockState> originalBlocks = new HashMap<>();
-        int placedCount = 0;
-        int skipped = 0;
-
+        Tally tally = new Tally();
         LOGGER.info("Populating ore: {}", oreType);
 
         for (OreVeinFetcher.OreVein vein : veins) {
             if (!vein.oreType.equalsIgnoreCase(oreType)) {
                 continue;
             }
-            Optional<String> rejection = validate(level, vein);
-            if (rejection.isPresent()) {
-                skipped++;
-                reportSkip(source, vein, rejection.get());
-                continue;
-            }
-            String rotation = VeinPlacementValidation
-                    .normaliseRotation(vein.rotation).orElse(VeinPlacementValidation.DEFAULT_ROTATION);
-            LOGGER.info("Placing ore at: {} radius {}", vein.getPosition(), vein.radius);
-            placedCount += generateOreVein(level, vein.getPosition(), vein.radius,
-                    resource, oreBlock, rotation, originalBlocks);
+            place(source, level, resource, vein, tally);
         }
-
-        final int finalPlacedCount = placedCount;
-        final int finalSkipped = skipped;
-        final String finalOreType = oreType;
-        source.sendSuccess(() -> Component.literal("Populated " + finalPlacedCount + " blocks of "
-                + finalOreType + (finalSkipped > 0 ? " (" + finalSkipped + " row(s) skipped)" : "")), true);
-
-        return placedCount;
+        tally.report(source, "of " + oreType);
+        return tally.placed;
     }
 
     private static int executePopulateRegionOres(CommandContext<CommandSourceStack> context) {
@@ -206,10 +180,7 @@ public class PopulateOresCommand {
         String shardName = ModConfig.SHARD_NAME;
         List<OreVeinFetcher.OreVein> veins = OreVeinFetcher.fetchOreVeins(server, shardName);
 
-        Map<BlockPos, BlockState> originalBlocks = new HashMap<>();
-        int placedCount = 0;
-        int skipped = 0;
-
+        Tally tally = new Tally();
         LOGGER.info("Populating ores for region: {}", region);
         if (oreType != null) LOGGER.info("Filtered by ore type: {}", oreType);
 
@@ -219,29 +190,15 @@ public class PopulateOresCommand {
 
             ResourceDefinition resource =
                     VeinPlacementValidation.resourceFor(vein.oreType).orElse(null);
-            Optional<String> rejection = resource == null
-                    ? Optional.of("unknown or unplaceable ore type '" + vein.oreType + "'")
-                    : validate(level, vein);
-            if (rejection.isPresent()) {
-                skipped++;
-                reportSkip(source, vein, rejection.get());
+            if (resource == null) {
+                tally.skipped++;
+                reportSkip(source, vein, "unknown or unplaceable ore type '" + vein.oreType + "'");
                 continue;
             }
-
-            String rotation = VeinPlacementValidation
-                    .normaliseRotation(vein.rotation).orElse(VeinPlacementValidation.DEFAULT_ROTATION);
-            LOGGER.info("Placing {} at {} with radius {}", vein.oreType, vein.getPosition(), vein.radius);
-            placedCount += generateOreVein(level, vein.getPosition(), vein.radius,
-                    resource, Resources.standingBlock(resource), rotation, originalBlocks);
+            place(source, level, resource, vein, tally);
         }
-
-        final int finalPlacedCount = placedCount;
-        final int finalSkipped = skipped;
-        source.sendSuccess(() -> Component.literal("Populated " + finalPlacedCount + " blocks in region "
-                + region + (oreType != null ? (" for ore " + oreType) : "")
-                + (finalSkipped > 0 ? " (" + finalSkipped + " row(s) skipped)" : "")), true);
-
-        return placedCount;
+        tally.report(source, "in region " + region + (oreType != null ? (" for ore " + oreType) : ""));
+        return tally.placed;
     }
 
     /** One curated row against the build limits of the level it would be written into. */
@@ -267,41 +224,61 @@ public class PopulateOresCommand {
         source.sendSystemMessage(Component.literal(message));
     }
 
-    /**
-     * Dispatch to the legacy implementation of this resource's configured shape.
-     *
-     * <p>Milestone 2's central claim, in one method: this used to switch on the ore <em>name</em>,
-     * so adding a resource meant editing Java. It now switches on the {@link ResourceShape} the
-     * resource's definition names, so a new ore that reuses an existing shape is a row in
-     * {@code resources.json} and nothing else. The remaining branch is a shape-to-implementation
-     * lookup, which milestone 3 replaces with a planner registry when the six imperative classes
-     * become deterministic pure planners.
-     *
-     * <p>Every caller validates first, so the ranges each algorithm needs are already guaranteed.
-     */
-    private static int generateOreVein(
-            ServerLevel level,
-            BlockPos center,
-            int radius,
-            ResourceDefinition resource,
-            Block oreBlock,
-            String rotation,
-            Map<BlockPos, BlockState> originalBlocks) {
+    /** Running totals for one command invocation. */
+    private static final class Tally {
+        int placed;
+        int skipped;
+        int rejected;
+        boolean truncated;
 
-        ResourceShape shape = resource.generation().orElseThrow().shape();
-        return switch (shape) {
-            case CLUSTER ->
-                    ClusterVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case VERTICAL ->
-                    VerticalVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case SNAKE ->
-                    SnakeVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case GEODE ->
-                    GeodeVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case VERTICAL_LAYERED ->
-                    VerticalLayeredVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case LAYERED ->
-                    LayeredVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-        };
+        void report(CommandSourceStack source, String what) {
+            String message = "Populated " + placed + " blocks " + what
+                    + (skipped > 0 ? " (" + skipped + " row(s) skipped)" : "")
+                    + (rejected > 0 ? " (" + rejected + " cell(s) refused by host policy)" : "")
+                    + (truncated ? " -- budget reached, run again to continue" : "");
+            source.sendSuccess(() -> Component.literal(message), true);
+        }
+    }
+
+    /**
+     * One curated row, planned and materialised.
+     *
+     * <p>The whole of milestone 3's change to this command is visible here. It resolves the
+     * resource, asks {@link PlacementPlanner} for a deterministic plan, and hands that plan to
+     * {@link MaterializationService}. It does not choose an algorithm, does not touch randomness,
+     * and does not write a block. Running it twice re-derives the same seed, re-plans the same
+     * cells, finds them already correct and writes nothing -- which is what stopped the same
+     * command producing a different vein every time it was run.
+     */
+    private static void place(
+            CommandSourceStack source,
+            ServerLevel level,
+            ResourceDefinition resource,
+            OreVeinFetcher.OreVein vein,
+            Tally tally) {
+
+        java.util.Optional<String> rejection = validate(level, vein);
+        if (rejection.isPresent()) {
+            tally.skipped++;
+            reportSkip(source, vein, rejection.get());
+            return;
+        }
+        ShapeRotation rotation = VeinPlacementValidation.normaliseRotation(vein.rotation).orElseThrow();
+
+        PlannedDeposit deposit = PlacementPlanner.planCuratedVein(
+                resource,
+                level.dimension().location().toString(),
+                vein.getPosition(),
+                vein.radius,
+                rotation);
+
+        MaterializationService.Result result = MaterializationService.materialize(level, deposit);
+        tally.placed += result.placed();
+        tally.rejected += result.totalRejected();
+        tally.truncated |= result.truncated();
+
+        LOGGER.info("Placed {} at {}: {} of {} cells written ({})",
+                resource.path(), vein.getPosition().toShortString(),
+                result.placed(), deposit.count(), result.describeRejections());
     }
 }

@@ -2,52 +2,49 @@ package com.seggellion.britannia_mod.features;
 
 import com.seggellion.britannia_mod.resource.ResourceCatalog;
 import com.seggellion.britannia_mod.resource.ResourceDefinition;
-import com.seggellion.britannia_mod.resource.ResourceShape;
+import com.seggellion.britannia_mod.resource.placement.PlacementPlanner;
+import com.seggellion.britannia_mod.resource.shape.ShapeRotation;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 /**
- * What a curated vein row must satisfy before any shape algorithm is allowed to see it.
+ * External-input checks for a curated vein row, before it becomes a placement.
  *
- * <h2>Why this exists</h2>
- * The six shape classes are imperative, mutate the world directly, and trust their arguments
- * completely. Several throw outright on values Rails is free to send: {@link SnakeVein} on a radius
- * of nine or less, {@link GeodeVein} below two, {@link LayeredVein} and {@link VerticalLayeredVein}
- * at zero, and {@link ClusterVein} divides by the radius. Correcting the algorithms is milestone 3;
- * this guarantees malformed input never reaches them, so a bad row is reported and skipped rather
- * than throwing through a half-finished command.
- *
- * <h2>Where the numbers live now</h2>
- * Milestone 1 held its own ore-name-to-shape table and its own per-ore radius bounds, which was a
- * second source of truth for facts the command already had. Milestone 2 removed it:
+ * <h2>What this is now</h2>
+ * Milestone 1 created this class because the six imperative shapes threw on values Rails was free
+ * to send, and something had to stop those values reaching them. Milestone 2 moved the shape table
+ * and the radius bounds into the resource catalogue. Milestone 3 finished the job: the shapes are
+ * gone, and every rule that was ever about a shape now lives with the shape.
  *
  * <ul>
- *   <li><b>Which shape an ore uses, and its configured radius range</b>, are read from that
- *       resource's {@link ResourceDefinition.Generation} in {@code resources.json}. Tuning a vein
- *       is now a data edit.</li>
- *   <li><b>The radius at which an algorithm throws</b> stays with the algorithm, in
- *       {@link ResourceShape}. That is not tuning — it is a property of the code — and
- *       {@code ResourceCatalog} refuses a configured minimum that dips below it, so data can
- *       narrow the safe range but never widen it back into the crashing one.</li>
+ *   <li><b>Which shape a resource uses, and its configured radius range</b> — the resource
+ *       definition. Asked through {@link PlacementPlanner#reject}, which is the same check the
+ *       planner applies to itself, so the command and the planner cannot disagree.</li>
+ *   <li><b>The radius a geometry means nothing below</b> — the planner. It refuses its own
+ *       configuration before planning, so no caller can reach the failure by forgetting to
+ *       validate first.</li>
+ *   <li><b>Which cells may actually be written</b> — {@code MaterializationService}, against the
+ *       resource's host tag.</li>
  * </ul>
  *
- * <p>This class is now a validator, not a registry. Milestone 3 folds the remaining rules into the
- * shape codecs when the planners replace the six imperative classes, at which point the whole file
- * goes away.
+ * <p>What is left here is what genuinely belongs to the <em>row</em> rather than to the resource or
+ * the shape: is this a resource the command can place at all, is the rotation a word we know, is
+ * the origin somewhere a world can exist. Those are properties of an external message, and they are
+ * checked once, where the message arrives.
+ *
+ * <p>This class survives milestone 3 rather than being deleted with the shapes because the curated
+ * Rails row survives it too. When milestone 8 replaces the synchronous fetch with a validated
+ * importer, this is the validation that importer inherits, and the file goes with it.
  */
 public final class VeinPlacementValidation {
 
     /** Beyond the world border a placement is meaningless; reject rather than write into nowhere. */
     public static final int MAX_HORIZONTAL = 30_000_000;
 
-    /** The rotations {@link VerticalLayeredVein} actually understands. */
-    private static final java.util.Set<String> ROTATIONS =
-            java.util.Set.of("XZ", "YZ", "XY", "ZW");
-
-    /** The default the command has always applied when a row carries no rotation. */
-    public static final String DEFAULT_ROTATION = "XZ";
+    /** The rotation the curated rows have always defaulted to when they carry none. */
+    public static final ShapeRotation DEFAULT_ROTATION = ShapeRotation.XZ;
 
     private VeinPlacementValidation() {
     }
@@ -59,13 +56,6 @@ public final class VeinPlacementValidation {
                 .filter(definition -> definition.generation().isPresent());
     }
 
-    /** The shape this ore type uses, or empty when the legacy command cannot place it at all. */
-    public static Optional<ResourceShape> shapeFor(String oreType) {
-        return resourceFor(oreType)
-                .flatMap(ResourceDefinition::generation)
-                .map(ResourceDefinition.Generation::shape);
-    }
-
     /** Every ore type the legacy command can still place, for operator-facing messages. */
     public static List<String> placeableOreTypes() {
         return ResourceCatalog.instance().generatable().stream()
@@ -74,17 +64,21 @@ public final class VeinPlacementValidation {
     }
 
     /**
-     * Normalises a row's rotation: absent means the historical default, anything unrecognised is
-     * a rejection rather than a silent collapse to a single cell.
+     * Normalises a row's rotation: absent means the historical default, anything unrecognised is a
+     * rejection rather than a silent collapse.
+     *
+     * <p>The legacy {@code VerticalLayeredVein} had a rotation {@code switch} with no default, so an
+     * unrecognised value left every offset at zero and stacked the whole deposit into one cell.
+     * {@link ShapeRotation} is an enum, so that failure no longer has anywhere to happen — but a row
+     * can still carry a word we do not know, and saying so is better than assuming one.
      */
-    public static Optional<String> normaliseRotation(String rotation) {
+    public static Optional<ShapeRotation> normaliseRotation(String rotation) {
         if (rotation == null || rotation.isBlank()) return Optional.of(DEFAULT_ROTATION);
-        String upper = rotation.trim().toUpperCase(Locale.ROOT);
-        return ROTATIONS.contains(upper) ? Optional.of(upper) : Optional.empty();
+        return ShapeRotation.byId(rotation);
     }
 
     /**
-     * Why this row must not be placed, or empty when it is safe to hand to its shape.
+     * Why this row must not be placed, or empty when it is safe to plan.
      *
      * @return a short operator-facing reason, suitable for a command message and a log line
      */
@@ -103,20 +97,16 @@ public final class VeinPlacementValidation {
             return Optional.of("unknown or unplaceable ore type '" + oreType
                     + "' (placeable: " + String.join(", ", placeableOreTypes()) + ")");
         }
-        ResourceDefinition.Generation generation = resource.generation().orElseThrow();
-        String shapeName = generation.shape().id();
-
-        if (radius < generation.minRadius()) {
-            return Optional.of("radius " + radius + " is below the minimum " + generation.minRadius()
-                    + " configured for " + resource.path() + "'s " + shapeName + " shape");
-        }
-        if (radius > generation.maxRadius()) {
-            return Optional.of("radius " + radius + " exceeds the maximum " + generation.maxRadius()
-                    + " configured for " + resource.path() + "'s " + shapeName + " shape");
+        // Radius is the resource's and the shape's business, not this class's. Asking the planner
+        // means there is exactly one answer, and it is the one placement will actually apply.
+        Optional<PlacementPlanner.Rejection> radiusRejection =
+                PlacementPlanner.reject(resource, radius);
+        if (radiusRejection.isPresent()) {
+            return Optional.of(radiusRejection.get().reason());
         }
         if (normaliseRotation(rotation).isEmpty()) {
             return Optional.of("unrecognised rotation '" + rotation + "' (expected one of "
-                    + ROTATIONS.stream().sorted().toList() + ")");
+                    + java.util.Arrays.stream(ShapeRotation.values()).map(ShapeRotation::id).toList() + ")");
         }
         if (y < minBuildHeight || y > maxBuildHeight) {
             return Optional.of("y " + y + " is outside the build range ["

@@ -33,8 +33,7 @@ class ResourceCatalogValidationTest {
               "yield": {"mode": "purity_ore"},
               "depleted": "fluid_aware_air",
               "regeneration": {"hours": 6},
-              "generation": {"shape": "vertical_layered", "block": "britannia_mod:silver_ore",
-                             "min_radius": 1, "max_radius": 128},
+              "generation": {"shape": "vertical_layered", "block": "britannia_mod:silver_ore", "min_radius": 1, "max_radius": 96, "host": "britannia_mod:ore_hosts"},
               "revision": 1
             }""";
 
@@ -221,16 +220,35 @@ class ResourceCatalogValidationTest {
 
     /** Data may narrow a shape's safe range but never widen it back into the crashing one. */
     @Test
-    void aMinimumRadiusBelowTheShapeHardFloorFails() {
+    void aMinimumRadiusBelowTheShapesOwnMinimumFails() {
         String snake = VALID_ORE
                 .replace("\"shape\": \"vertical_layered\"", "\"shape\": \"snake\"")
-                .replace("\"min_radius\": 1", "\"min_radius\": 9");
-        assertTrue(failureOf(snake).contains("hard floor"));
+                .replace("\"min_radius\": 1", "\"min_radius\": 3");
+        assertTrue(failureOf(snake).contains("shape's own minimum"),
+                "data may narrow a shape's range, never widen it below what the planner needs");
+    }
+
+    /**
+     * A generation block without a host tag has no policy about what it may replace.
+     *
+     * <p>Which is the defect milestone 3 removed from the shapes: they each decided for themselves,
+     * and disagreed. Leaving the field out must fail rather than default to something permissive.
+     */
+    @Test
+    void generationWithNoHostTagFails() {
+        String noHost = VALID_ORE.replace(", \"host\": \"britannia_mod:ore_hosts\"", "");
+        assertTrue(failureOf(noHost).contains("missing 'host'"), noHost);
+    }
+
+    @Test
+    void aMalformedHostTagFails() {
+        assertTrue(failureOf(VALID_ORE.replace("\"britannia_mod:ore_hosts\"", "\"not a tag\""))
+                .contains("Malformed host tag"));
     }
 
     @Test
     void aMaximumRadiusBelowTheMinimumFails() {
-        assertTrue(failureOf(VALID_ORE.replace("\"max_radius\": 128", "\"max_radius\": 0"))
+        assertTrue(failureOf(VALID_ORE.replace("\"max_radius\": 96", "\"max_radius\": 0"))
                 .contains("below its min radius"));
     }
 
@@ -245,8 +263,9 @@ class ResourceCatalogValidationTest {
     void aSedimentBedThatConfiguresVeinGenerationFails() {
         String wrong = VALID_BED.replace("  \"revision\": 1",
                 "  \"generation\": {\"shape\": \"layered\", \"block\": \"britannia_mod:clay_deposit\","
-                        + " \"min_radius\": 1, \"max_radius\": 8},\n  \"revision\": 1");
-        assertTrue(failureOf(wrong).contains("must not configure vein generation"));
+                        + " \"min_radius\": 1, \"max_radius\": 8,"
+                        + " \"host\": \"britannia_mod:ore_hosts\"},\n  \"revision\": 1");
+        assertTrue(failureOf(wrong).contains("must not configure vein generation"), wrong);
     }
 
     /* ------------------------------------------------------------------ */
@@ -311,8 +330,7 @@ class ResourceCatalogValidationTest {
                   "yield": {"mode": "purity_ore"},
                   "depleted": "fluid_aware_air",
                   "regeneration": {"hours": 12},
-                  "generation": {"shape": "geode", "block": "britannia_mod:tin_ore",
-                                 "min_radius": 4, "max_radius": 40},
+                  "generation": {"shape": "geode", "block": "britannia_mod:tin_ore", "min_radius": 4, "max_radius": 16, "host": "britannia_mod:ore_hosts"},
                   "revision": 1
                 }""";
         ResourceCatalog catalog = parse(invented);

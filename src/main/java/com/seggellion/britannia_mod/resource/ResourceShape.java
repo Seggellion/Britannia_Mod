@@ -1,48 +1,57 @@
 package com.seggellion.britannia_mod.resource;
 
+import com.seggellion.britannia_mod.resource.shape.ShapePlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.ClusterPlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.GeodePlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.LayeredPlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.SnakePlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.VerticalLayeredPlanner;
+import com.seggellion.britannia_mod.resource.shape.planner.VerticalPlanner;
+
 import java.util.Locale;
 import java.util.Optional;
 
 /**
- * The geological shapes a resource definition may name, and the radius each one cannot survive.
+ * The geological shapes a resource definition may name, and the planner that draws each one.
  *
- * <h2>Hard floor versus configured range</h2>
- * A shape's <b>hard floor</b> is a property of its algorithm, not a design choice: below it the
- * implementation throws. {@code SnakeVein} computes {@code random.nextInt(radius - 9)}, so nine is
- * fatal; {@code GeodeVein} computes {@code random.nextInt(radius / 2)}, so one is fatal; the
- * layered shapes and the cluster reach {@code nextInt(radius * 2)} or divide by the radius, so
- * zero is fatal for all of them. Those numbers belong with the algorithm and are stated here.
+ * <h2>One source for a shape's limits</h2>
+ * Milestone 2 kept a table of "hard floor" radii here, measured from the legacy algorithms'
+ * crash points. Milestone 3 deleted the algorithms, so the number is no longer a crash boundary —
+ * it is the smallest radius at which the geometry means anything, and it belongs to the planner
+ * that defines the geometry. {@link #minimumRadius()} delegates, so the enum, the catalogue's
+ * validation and the planner itself cannot disagree.
  *
- * <p>A resource's <b>configured range</b> is tuning, and belongs in its definition — one ore may
- * reasonably be capped smaller than another using the same shape. {@link ResourceCatalog}
- * validates the configured minimum against the hard floor, so data can narrow the safe range but
- * never widen it back into the crashing one.
- *
- * <p>Moved here from {@code VeinPlacementValidation} at milestone 2 so that the resource package
- * owns shape identity and {@code features} depends on it rather than the other way round.
- * Milestone 3 replaces the six imperative implementations with deterministic pure planners; when
- * it does, this enum becomes the planner registry's key and the hard floors disappear with the
- * algorithms that needed them.
+ * <p>A resource's configured range may narrow this, and several do; it may never widen it, because
+ * {@link ResourceCatalog} refuses a configured minimum below the planner's own and every planner
+ * re-checks its own contract before planning anyway.
  */
 public enum ResourceShape {
-    CLUSTER(1),
-    VERTICAL(1),
-    /** {@code nextInt(radius - 9)} throws at or below 9. */
-    SNAKE(10),
-    /** {@code nextInt(radius / 2)} throws below 2. */
-    GEODE(2),
-    LAYERED(1),
-    VERTICAL_LAYERED(1);
+    CLUSTER(new ClusterPlanner()),
+    VERTICAL(new VerticalPlanner()),
+    SNAKE(new SnakePlanner()),
+    GEODE(new GeodePlanner()),
+    LAYERED(new LayeredPlanner()),
+    VERTICAL_LAYERED(new VerticalLayeredPlanner());
 
-    private final int hardFloorRadius;
+    private final ShapePlanner planner;
 
-    ResourceShape(int hardFloorRadius) {
-        this.hardFloorRadius = hardFloorRadius;
+    ResourceShape(ShapePlanner planner) {
+        this.planner = planner;
     }
 
-    /** The smallest radius this algorithm can be handed without throwing. */
-    public int hardFloorRadius() {
-        return hardFloorRadius;
+    /** The pure planner that draws this shape. Holds no state and touches no world. */
+    public ShapePlanner planner() {
+        return planner;
+    }
+
+    /** The smallest radius this geometry means anything at, defined by the planner. */
+    public int minimumRadius() {
+        return planner.minimumRadius();
+    }
+
+    /** Whether the configured rotation changes this shape's output. */
+    public boolean usesRotation() {
+        return planner.usesRotation();
     }
 
     /** The id used in data, e.g. {@code vertical_layered}. */

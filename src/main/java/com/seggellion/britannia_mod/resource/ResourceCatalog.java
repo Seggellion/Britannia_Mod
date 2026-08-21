@@ -165,7 +165,8 @@ public final class ResourceCatalog {
                 shape,
                 requiredString(json, "block"),
                 json.get("min_radius").getAsInt(),
-                json.get("max_radius").getAsInt());
+                json.get("max_radius").getAsInt(),
+                requiredString(json, "host"));
     }
 
     private static com.google.gson.JsonArray requiredArrayHolder(JsonObject json, String key) {
@@ -277,10 +278,15 @@ public final class ResourceCatalog {
             throw new IllegalStateException("Resource '" + id + "' generates " + generation.blockId()
                     + ", which is not one of the blocks it governs " + definition.blockIds());
         }
-        if (generation.minRadius() < generation.shape().hardFloorRadius()) {
+        if (generation.minRadius() < generation.shape().minimumRadius()) {
             throw new IllegalStateException("Resource '" + id + "' configures a minimum radius of "
-                    + generation.minRadius() + ", below the " + generation.shape().id() + " shape's hard floor of "
-                    + generation.shape().hardFloorRadius() + ", where the algorithm throws");
+                    + generation.minRadius() + ", below the " + generation.shape().id()
+                    + " shape's own minimum of " + generation.shape().minimumRadius()
+                    + "; data may narrow a shape's range but never widen it");
+        }
+        if (!REGISTRY_ID.matcher(generation.hostTag()).matches()) {
+            throw new IllegalStateException("Malformed host tag '" + generation.hostTag()
+                    + "' in '" + id + "'");
         }
         if (generation.maxRadius() < generation.minRadius()) {
             throw new IllegalStateException("Resource '" + id + "' configures max radius "

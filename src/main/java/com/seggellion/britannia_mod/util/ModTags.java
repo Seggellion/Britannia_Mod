@@ -47,6 +47,22 @@ public class ModTags {
 
 
         /**
+         * The rock a geological deposit may replace when it is materialised.
+         *
+         * <p>OreVein milestone 3. The legacy shapes each decided this for themselves and disagreed:
+         * two would only write into air, one would write over anything that was not air -- bedrock,
+         * a fluid or a chest included -- and the rest asked nothing at all. The decision now belongs
+         * to the resource definition, which names this tag, and to {@code MaterializationService},
+         * which is the only place a deposit is written.
+         *
+         * <p>It composes the two vanilla ore-replaceable tags rather than listing blocks, so it
+         * follows the stone families Minecraft itself considers ore hosts and picks up any a
+         * datapack adds. Silica's sediment hosts will be a tag of their own at milestone 7; that is
+         * why the definition names the tag rather than this being a constant.
+         */
+        public static final TagKey<Block> ORE_HOSTS = createTag("ore_hosts");
+
+        /**
          * Types that <em>may</em> participate in Grabby Hands pickup/placement.
          *
          * <p>Type eligibility is not instance mobility. A block being in this tag says only that the

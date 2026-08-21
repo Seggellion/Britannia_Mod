@@ -130,16 +130,26 @@ public record ResourceDefinition(
     /**
      * How and where the legacy command materialises this resource.
      *
-     * <p>Present only for the nine ores {@code /populateores} can place. Everything else — the
-     * stone family, and the hand-placed deposit beds — omits it. {@code minRadius} and
-     * {@code maxRadius} are the resource's configured range; {@link ResourceShape} owns the hard
-     * floor below which the algorithm throws, and the catalogue refuses a configured minimum that
-     * dips beneath it.
+     * <p>Present only for the nine ores {@code /populateores} can place. Everything else -- the
+     * stone family, and the hand-placed deposit beds -- omits it.
+     *
+     * <p>{@code minRadius} and {@code maxRadius} are this resource's configured range;
+     * {@link ResourceShape} owns the smallest radius its geometry means anything at, and the
+     * catalogue refuses a configured minimum below it. Data may narrow a shape's range, never
+     * widen it.
+     *
+     * <p>{@code hostTag} names the block tag whose members this resource may replace. It is the
+     * resource's host policy and the only thing that decides it: milestone 3 took that decision
+     * away from the shapes, which had been making it inconsistently and inside their geometry --
+     * one refusing every cell that was not air, another accepting anything that was not air,
+     * including bedrock, fluids and block entities.
      */
-    public record Generation(ResourceShape shape, String blockId, int minRadius, int maxRadius) {
+    public record Generation(
+            ResourceShape shape, String blockId, int minRadius, int maxRadius, String hostTag) {
         public Generation {
             Objects.requireNonNull(shape, "generation shape is required");
             Objects.requireNonNull(blockId, "generation block is required");
+            Objects.requireNonNull(hostTag, "generation host tag is required");
         }
     }
 
