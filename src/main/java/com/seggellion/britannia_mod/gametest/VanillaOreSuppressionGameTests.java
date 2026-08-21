@@ -319,23 +319,27 @@ public final class VanillaOreSuppressionGameTests {
     }
 
     /**
-     * The leak the biome modifier cannot close, pinned against the live registry.
+     * The route feature removal cannot reach is still there, and is now controlled anyway.
      *
      * <p>{@code ore_veins_enabled} lives on the Overworld's noise settings, not on any biome, so the
      * chunk generator writes copper and iron veins directly and no amount of feature removal touches
-     * them. A fixed-seed world confirmed it: every suppressed placed feature gone, and vanilla copper
-     * ore still between y0 and y50 with raw copper blocks beside it.
+     * them. That was milestone 5's finding, and it remains true of the <em>mechanism</em>: the veins
+     * still run, and still lay down granite and tuff.
      *
-     * <p>This asserts the leak is still open rather than asserting it is closed, which is the useful
-     * direction. If a future Minecraft, NeoForge or datapack turns ore veins off, this fails and
-     * sends whoever sees it to the policy entry to delete it — instead of leaving the mod carrying a
-     * documented gap that no longer exists.
+     * <p>What changed at milestone 8.5 is what they are made of. The ore results are substituted for
+     * the vein's own filler, so the route no longer produces economy. The policy entries therefore
+     * stay — "feature removal cannot reach this" is still the fact worth recording — but each must
+     * now name what does control it, or the shipped data is describing a production gap that has
+     * been closed.
      */
     @GameTest(template = TEMPLATE)
-    public static void theOverworldStillGeneratesTheNoiseOreVeinsWeCannotRemove(GameTestHelper helper) {
+    public static void theNoiseOreVeinRouteIsRecordedAndResolved(GameTestHelper helper) {
         VanillaFeaturePolicy policy = VanillaFeaturePolicy.instance();
         check(!policy.unreachableSources().isEmpty(),
                 "the policy records no unreachable source, but the veins are still generating");
+        check(policy.everyUnreachableSourceIsResolved(),
+                "a recorded unreachable source does not say what brought it under control, so the"
+                        + " shipped policy still describes an open gap");
 
         NoiseGeneratorSettings overworld = helper.getLevel().registryAccess()
                 .registryOrThrow(Registries.NOISE_SETTINGS)

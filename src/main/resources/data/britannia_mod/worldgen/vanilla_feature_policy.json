@@ -232,7 +232,8 @@
       ],
       "min_y": 0,
       "max_y": 50,
-      "reason": "The noise chunk generator writes this directly while carving the column, before any decoration step runs. It is switched on by 'ore_veins_enabled' in the overworld noise settings, so it is not a placed feature and neoforge:remove_features cannot reach it."
+      "reason": "The noise chunk generator writes this directly while carving the column, before any decoration step runs. It is switched on by 'ore_veins_enabled' in the overworld noise settings, so it is not a placed feature and neoforge:remove_features cannot reach it.",
+      "resolved_by": "milestone 8.5: the vein rule's ore results are substituted for the vein's own filler, so the mechanism still runs and no longer produces ore"
     },
     {
       "mechanism": "minecraft:ore_veinifier/iron",
@@ -243,7 +244,8 @@
       ],
       "min_y": -60,
       "max_y": -8,
-      "reason": "Same generator pass as the copper vein, on the negative half of the veininess noise. Removing it needs the dimension's noise settings, which also deletes the granite and tuff the veins deposit as filler."
+      "reason": "Same generator pass as the copper vein, on the negative half of the veininess noise. Removing it needs the dimension's noise settings, which also deletes the granite and tuff the veins deposit as filler.",
+      "resolved_by": "milestone 8.5: the vein rule's ore results are substituted for the vein's own filler, so the mechanism still runs and no longer produces ore"
     }
   ]
 }

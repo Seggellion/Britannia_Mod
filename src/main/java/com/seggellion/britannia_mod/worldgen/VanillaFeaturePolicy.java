@@ -77,7 +77,7 @@ public final class VanillaFeaturePolicy {
      * @param maxY      highest block Y it can occupy
      */
     public record UnreachableSource(String mechanism, String family, List<String> produces,
-                                    int minY, int maxY, String reason) {
+                                    int minY, int maxY, String reason, String resolvedBy) {
         public UnreachableSource {
             produces = List.copyOf(produces);
         }
@@ -179,7 +179,8 @@ public final class VanillaFeaturePolicy {
                     produces,
                     json.get("min_y").getAsInt(),
                     json.get("max_y").getAsInt(),
-                    json.has("reason") ? json.get("reason").getAsString() : ""));
+                    json.has("reason") ? json.get("reason").getAsString() : "",
+                    json.has("resolved_by") ? json.get("resolved_by").getAsString() : ""));
         }
         return sources;
     }
@@ -262,6 +263,18 @@ public final class VanillaFeaturePolicy {
         Set<String> leaking = new LinkedHashSet<>();
         unreachable.forEach(source -> leaking.add(source.family()));
         return Collections.unmodifiableSet(leaking);
+    }
+
+    /**
+     * Whether every recorded unreachable source now names how it was brought under control.
+     *
+     * <p>The category was created at milestone 5 to record a route the biome modifier could not
+     * reach. Milestone 8.5 closed it by a different mechanism, so the entries stay -- the route is
+     * still unreachable <em>by feature removal</em>, which is the fact worth keeping -- but each now
+     * says what does control it. An entry without a resolution is an open gap.
+     */
+    public boolean everyUnreachableSourceIsResolved() {
+        return unreachable.stream().allMatch(source -> !source.resolvedBy().isBlank());
     }
 
     /** Every block an unreachable source can still write, for an audit scan to expect. */

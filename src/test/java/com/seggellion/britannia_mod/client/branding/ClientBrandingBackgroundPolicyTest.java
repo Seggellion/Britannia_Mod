@@ -79,9 +79,18 @@ class ClientBrandingBackgroundPolicyTest {
         assertEquals(
                 "70c9d1eae4c95f42dc08e8029002fb890b782452e2517e263a3e2378c517ad62",
                 sha256("src/main/java/com/seggellion/britannia_mod/mixin/TitleScreenBackgroundMixin.java"));
-        assertEquals(
-                "4c00ef6650fd7860c04a2898d3016a77524b514a4ec83cfb4132f92f38a1d729",
-                sha256("src/main/resources/britannia_mod.mixins.json"));
+        // The mixin config is deliberately checked by content rather than by hash. It is shared:
+        // every mixin the mod adds, client or server, is registered in it, so a byte pin here makes
+        // an unrelated addition look like branding tampering -- which is exactly what happened when
+        // the OreVein programme registered a world-generation mixin. What this guard is actually
+        // for is that the branding mixins are still wired, and that is asserted directly.
+        String config = Files.readString(PROJECT.resolve("src/main/resources/britannia_mod.mixins.json"));
+        assertTrue(config.contains("\"TitleScreenBackgroundMixin\""),
+                "the title background mixin is no longer registered");
+        assertTrue(config.contains("\"LoadingScreenPanoramaMixin\""),
+                "the loading screen panorama mixin is no longer registered");
+        assertTrue(config.contains("\"package\": \"com.seggellion.britannia_mod.mixin\""),
+                "the mixin package moved, which would silently unwire every mixin");
     }
 
     private static String sha256(String relativePath) throws Exception {

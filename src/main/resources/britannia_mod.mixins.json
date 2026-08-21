@@ -9,7 +9,8 @@
     "LivingEntityBedMixin",
     "PlayerSleepMixin",
     "PlayerListInvokerMixin",
-    "PlayerListAccessorMixin"
+    "PlayerListAccessorMixin",
+    "OreVeinifierMixin"
   ],
   "client": [
     "LoadingScreenPanoramaMixin",
