@@ -56,8 +56,12 @@ import java.util.List;
  * chunk, a bed straddling a desert edge would exist according to one chunk and not according to its
  * neighbour.
  *
- * <p>Writes are confined to the loading chunk's own cells, with {@code UPDATE_CLIENTS} only, so no
- * neighbour update escapes into an adjacent chunk and nothing else is obliged to load.
+ * <p>Writes are confined to the loading chunk's own cells, and use
+ * {@link com.seggellion.britannia_mod.resource.placement.MaterializationService#WRITE_FLAGS}, so
+ * neither a neighbour update nor a neighbour shape update escapes into an adjacent chunk and
+ * nothing else is obliged to load. Confining the write positions is necessary but not sufficient:
+ * a write inside the chunk still reads across the border unless the shape update is suppressed
+ * too, and that read is what deadlocks the server thread against itself.
  */
 public final class NaturalDepositService {
 

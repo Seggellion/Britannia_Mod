@@ -152,17 +152,34 @@ public final class NaturalSilicaGameTests {
         helper.succeed();
     }
 
-    /** Silica is the only resource that generates naturally, and only in the Overworld. */
+    /**
+     * Exactly the resources that are meant to generate naturally do, and only in the Overworld.
+     *
+     * <p>This read "only silica" until milestone 10A gave iron, gold and copper their distribution
+     * data. The assertion is still worth having in the stronger form: a resource gaining natural
+     * generation is a deliberate act, and one gaining it by accident — a stray {@code natural} block
+     * copied into the wrong definition — should fail here rather than in a world.
+     */
     @GameTest(template = TEMPLATE)
-    public static void onlySilicaGeneratesNaturallyAndOnlyInTheOverworld(GameTestHelper helper) {
+    public static void exactlyTheIntendedResourcesGenerateNaturallyAndOnlyInTheOverworld(
+            GameTestHelper helper) {
+        java.util.Set<String> expected = java.util.Set.of(
+                "britannia_mod:silica_sand_deposit",
+                "britannia_mod:iron",
+                "britannia_mod:gold",
+                "britannia_mod:copper");
+
         List<ResourceDefinition> naturalResources =
                 NaturalDepositService.naturalResourcesIn(helper.getLevel());
-        check(naturalResources.size() == 1,
-                "expected exactly one naturally generating resource, found " + naturalResources.size());
-        check(naturalResources.get(0).id().equals(silica().id()),
-                "the naturally generating resource is " + naturalResources.get(0).id());
-        check(natural().dimensionId().equals("minecraft:overworld"),
-                "silica is configured for " + natural().dimensionId());
+        java.util.Set<String> found = new java.util.LinkedHashSet<>();
+        naturalResources.forEach(resource -> found.add(resource.id()));
+
+        check(found.equals(expected),
+                "naturally generating resources are " + found + ", expected " + expected);
+        for (ResourceDefinition resource : naturalResources) {
+            check(resource.natural().orElseThrow().dimensionId().equals("minecraft:overworld"),
+                    resource.id() + " is configured for a dimension other than the Overworld");
+        }
         helper.succeed();
     }
 

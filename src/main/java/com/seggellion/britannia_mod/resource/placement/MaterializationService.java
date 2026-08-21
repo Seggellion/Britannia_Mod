@@ -65,6 +65,26 @@ public final class MaterializationService {
     /** Blocks one invocation may write. Chosen so a full deposit lands well inside one tick. */
     public static final int DEFAULT_BUDGET = 4_096;
 
+    /**
+     * The flags every managed write uses, and the reason they are not negotiable.
+     *
+     * <p>{@code UPDATE_CLIENTS} sends the change to players without asking neighbouring blocks to
+     * react to it. That is the obvious half and it is not the important half.
+     *
+     * <p>{@code UPDATE_KNOWN_SHAPE} is what keeps this safe to call while a chunk is still being
+     * promoted to full status. Without it, {@code Level#markAndNotifyBlock} calls
+     * {@code updateNeighbourShapes}, which reads all six neighbours of every cell written. A cell on
+     * a chunk border therefore reads a block in the next chunk, and reading a block in a chunk that
+     * is not loaded asks the chunk source to produce it. During {@code ChunkEvent.Load} the thread
+     * making that request is the same server thread that would have to generate the answer, so it
+     * parks in {@code ServerChunkCache$MainThreadExecutor.managedBlock} waiting for itself: the
+     * server stops with no exception and no crash report, mid "Preparing spawn area".
+     *
+     * <p>Flag 2 alone suppresses neighbour <em>block</em> updates. Only flag 16 suppresses neighbour
+     * <em>shape</em> updates. Bulk terrain writes want both.
+     */
+    public static final int WRITE_FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+
     private MaterializationService() {
     }
 
@@ -150,9 +170,7 @@ public final class MaterializationService {
                 rejections.merge(rejection, 1, Integer::sum);
                 continue;
             }
-            // Flag 2: send the change to clients without triggering neighbour updates, which is
-            // what the legacy shapes used and what bulk terrain writes want.
-            level.setBlock(pos, placed, Block.UPDATE_CLIENTS);
+            level.setBlock(pos, placed, WRITE_FLAGS);
             written++;
         }
         return new Result(written, Math.max(0, candidates.size() - index), rejections);

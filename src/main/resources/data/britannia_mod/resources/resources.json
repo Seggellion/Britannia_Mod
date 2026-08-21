@@ -23,7 +23,20 @@
         "block": "minecraft:iron_ore",
         "min_radius": 1,
         "max_radius": 128,
-        "host": "britannia_mod:ore_hosts"
+        "host": "britannia_mod:ore_hosts",
+        "natural": {
+          "dimension": "minecraft:overworld",
+          "biomes": "minecraft:is_overworld",
+          "cell_chunks": 8,
+          "chance": 0.85,
+          "min_radius": 24,
+          "max_radius": 32,
+          "depth": 45,
+          "depth_jitter": 15,
+          "min_y": -52,
+          "max_y": 120,
+          "salt": 1041
+        }
       },
       "revision": 1
     },
@@ -123,7 +136,20 @@
         "block": "britannia_mod:copper_ore",
         "min_radius": 1,
         "max_radius": 22,
-        "host": "britannia_mod:ore_hosts"
+        "host": "britannia_mod:ore_hosts",
+        "natural": {
+          "dimension": "minecraft:overworld",
+          "biomes": "minecraft:is_overworld",
+          "cell_chunks": 16,
+          "chance": 0.85,
+          "min_radius": 8,
+          "max_radius": 10,
+          "depth": 32,
+          "depth_jitter": 12,
+          "min_y": -52,
+          "max_y": 120,
+          "salt": 3163
+        }
       },
       "revision": 1
     },
@@ -150,7 +176,20 @@
         "block": "minecraft:gold_ore",
         "min_radius": 10,
         "max_radius": 128,
-        "host": "britannia_mod:ore_hosts"
+        "host": "britannia_mod:ore_hosts",
+        "natural": {
+          "dimension": "minecraft:overworld",
+          "biomes": "minecraft:is_overworld",
+          "cell_chunks": 28,
+          "chance": 0.85,
+          "min_radius": 32,
+          "max_radius": 40,
+          "depth": 85,
+          "depth_jitter": 20,
+          "min_y": -52,
+          "max_y": 90,
+          "salt": 2079
+        }
       },
       "revision": 1
     },
