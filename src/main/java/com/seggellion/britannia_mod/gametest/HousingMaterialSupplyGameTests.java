@@ -1,7 +1,6 @@
 package com.seggellion.britannia_mod.gametest;
 
 import com.google.gson.JsonObject;
-import com.mojang.authlib.GameProfile;
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
@@ -31,7 +30,6 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -461,8 +459,13 @@ public final class HousingMaterialSupplyGameTests {
         return ToolRegistry.createShovel(UOMetalToolMaterial.IRON, 3);
     }
 
+    /**
+     * A named survival player. Milestone 6: this used to be a {@code FakePlayerFactory} player,
+     * which meant these tests were asserting that automation could work a deposit — the very thing
+     * the extraction policy now refuses. See {@link ManagedResourceTestPlayers}.
+     */
     private static ServerPlayer player(ServerLevel level, String name) {
-        ServerPlayer player = FakePlayerFactory.get(level, new GameProfile(UUID.randomUUID(), name));
+        ServerPlayer player = ManagedResourceTestPlayers.survival(level, name);
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         return player;
     }

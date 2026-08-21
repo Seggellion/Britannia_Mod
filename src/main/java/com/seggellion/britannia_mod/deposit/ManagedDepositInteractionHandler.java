@@ -21,6 +21,11 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  * relaxes adventure for {@code minecraft:clay}. Adventure is left exactly as strict as it was, and
  * the deposit is an authorized exception inside it rather than a hole in it.
  *
+ * <p>"Anybody else" is not "any ServerPlayer". A fake player is one, so the actor question is
+ * asked inside {@link ManagedDepositExtraction} rather than here (milestone 6): the break is
+ * cancelled first and refused second, which leaves the bed standing rather than letting automation
+ * destroy what it is not allowed to earn from.
+ *
  * <h2>Break, anywhere</h2>
  * A break of a deposit is taken over rather than allowed. An operator in creative may remove a
  * badly placed bed and is left alone; anybody else is routed through the same extraction, so a

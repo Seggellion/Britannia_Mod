@@ -8,11 +8,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.util.FakePlayer;
+import com.seggellion.britannia_mod.resource.extraction.ManagedExtractionPolicy;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -193,7 +192,7 @@ public final class MiningBreakGate {
         }
         boolean authorizedTool =
                 MiningExtractionTool.isAuthorized(state, serverPlayer.getMainHandItem());
-        if (serverPlayer instanceof FakePlayer) {
+        if (ManagedExtractionPolicy.actorOf(serverPlayer) == ManagedExtractionPolicy.Actor.FAKE_PLAYER) {
             return new Subject(ActorType.AUTOMATION, isCreativeGameMode(serverPlayer),
                     FlowerProtectionService.effectivePermissionLevel(serverPlayer),
                     SkillManager.SkillDataState.NOT_LOADED, Float.NaN, authorizedTool);
@@ -214,7 +213,7 @@ public final class MiningBreakGate {
      * consults.
      */
     private static boolean isCreativeGameMode(ServerPlayer player) {
-        return player.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
+        return ManagedExtractionPolicy.isCreativeGameMode(player);
     }
 
     /**

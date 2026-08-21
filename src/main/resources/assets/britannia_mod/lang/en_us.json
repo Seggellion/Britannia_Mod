@@ -279,6 +279,7 @@
   "item.britannia_mod.raw_glass": "Raw Glass",
   "item.britannia_mod.plaster": "Plaster",
   "message.britannia_mod.deposit.wrong_tool": "You need the right tool to work this deposit.",
+  "message.britannia_mod.deposit.creative_refused": "Deposits are removed with a command, not by hand.",
   "message.britannia_mod.deposit.extracted": "You dig out %s.",
   "item.britannia_mod.order_shield": "Order Shield",
   "item.britannia_mod.gold_coin": "Gold Coin",

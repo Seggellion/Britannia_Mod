@@ -190,8 +190,18 @@ public final class MiningGateGameTests {
         helper.succeed();
     }
 
+    /**
+     * Creative is not stopped by the Mining threshold — and, since the milestone 6 amendment, is
+     * not a way to delete a deposit either.
+     *
+     * <p>This used to assert that the ore was gone, which was the behaviour at the time: the gate
+     * approved the bypass and vanilla removed the block. That turned an ordinary click into a
+     * permanent, unrecorded deletion of a sited deposit, so the amended policy refuses the break.
+     * What the bypass still means is unchanged and is what this test was really about: an operator
+     * is not answered "your Mining is too low", and no skill is granted for the attempt.
+     */
     @GameTest(template = TEMPLATE)
-    public static void creativeBypassesTheThresholdWithoutGain(GameTestHelper helper) {
+    public static void creativeBypassesTheThresholdWithoutGainOrDeletion(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos relative = new BlockPos(1, 1, 1);
         BlockPos absolute = helper.absolutePos(relative);
@@ -203,11 +213,17 @@ public final class MiningGateGameTests {
         SkillManager.applyConfirmedValue(admin, MiningBreakGate.SKILL_ID, 0.0f);
 
         // Empty hand: the bypass is the gate's, not the Britannia-pickaxe flow's.
+        MiningBreakGate.Evaluation evaluation =
+                MiningBreakGate.evaluate(admin, level.getBlockState(absolute), level, absolute);
+        check(evaluation.type() == MiningBreakGate.ResultType.APPROVED_BYPASS,
+                "an operator at zero Mining was answered " + evaluation.type()
+                        + " rather than being waved past the threshold");
+
         admin.gameMode.destroyBlock(absolute);
 
-        helper.assertBlockNotPresent(BlockRegistry.VALORITE_ORE.get(), relative);
+        helper.assertBlockPresent(BlockRegistry.VALORITE_ORE.get(), relative);
         check(!hasRestoreRecord(level, absolute),
-                "a creative bypass break outside the managed flow must not schedule restoration");
+                "a refused creative break must not schedule restoration");
         check(SkillManager.getSkill(admin, MiningBreakGate.SKILL_ID) == 0.0f,
                 "bypass must not grant Mining skill");
         helper.succeed();

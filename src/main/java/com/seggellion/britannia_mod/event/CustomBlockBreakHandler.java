@@ -16,6 +16,7 @@ import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
 import com.seggellion.britannia_mod.mining.MiningSkill;
 import com.seggellion.britannia_mod.resource.Resources;
+import com.seggellion.britannia_mod.resource.extraction.ManagedExtractionPolicy;
 import com.seggellion.britannia_mod.util.BlockBreakUtils;
 import com.seggellion.britannia_mod.util.PickaxeMiningRules;
 
@@ -39,6 +40,24 @@ public class CustomBlockBreakHandler {
             return;
         }
 
+        // OreVein milestone 6. Only a real player in a survival-like mode performs an economic
+        // extraction. Everything else leaves this handler untouched, which means no depletion, no
+        // yield, no restoration debt, no skill and no tool wear -- there is no partial transaction
+        // to unwind because none is started.
+        //
+        // Creative is the case this closes. The Mining gate deliberately permits an operator's
+        // break so a misplaced block can be removed, and that permission was arriving here as a
+        // fully accounted extraction: an administrator clearing a vein was minting purity ore and
+        // enrolling restoration debt in their own name. The break still happens; it is now an
+        // ordinary creative removal that drops nothing, which is exactly what a creative break of
+        // a clay bed has always done.
+        //
+        // Fake players are refused here too, though the gate already cancels them upstream. Two
+        // independent refusals of automation is the correct amount for the path that mints money.
+        if (!ManagedExtractionPolicy.mayExtract(player)) {
+            return;
+        }
+
         boolean isStone = PickaxeMiningRules.isAllowedStoneBlock(state);
         boolean isOre = PickaxeMiningRules.isAllowedOreBlock(state);
 
@@ -50,6 +69,9 @@ public class CustomBlockBreakHandler {
             } else if (isOre) {
                 handleOreBreaking(serverLevel, pos, state, player);
             } else {
+                // Authorized for something this handler does not yield -- a sediment bed reached
+                // with its own shovel, which the deposit handler has already taken. Nothing was
+                // extracted here, so nothing is charged for it.
                 return;
             }
 
@@ -60,6 +82,10 @@ public class CustomBlockBreakHandler {
             // activation. Invalid-tool breaks never reach here (design 9.1 excludes them), and the
             // award itself re-checks the break gate, so bypasses and automation award nothing.
             MiningSkill.awardForBreak(player, state, pos);
+
+            // Milestone 6: the single durability charge, at the end of the one path that commits.
+            // One ordinary hurtAndBreak, so Unbreaking behaves here as it does everywhere else.
+            ManagedExtractionPolicy.chargeExtractionTool((net.minecraft.server.level.ServerPlayer) player);
         }
     }
 

@@ -3,6 +3,7 @@ package com.seggellion.britannia_mod.deposit;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.resource.ResourceDefinition;
 import com.seggellion.britannia_mod.resource.Resources;
+import com.seggellion.britannia_mod.resource.extraction.ManagedExtractionPolicy;
 import com.seggellion.britannia_mod.structure.HouseBuildRights;
 
 import net.minecraft.core.BlockPos;
@@ -56,7 +57,12 @@ public final class ManagedDepositExtraction {
         /** A deposit, but not with that in hand. */
         WRONG_TOOL,
         /** A deposit standing inside a house this player has no right to change. */
-        PROTECTED;
+        PROTECTED,
+        /**
+         * A deposit reached by something that does not earn: a fake player, or anything else the
+         * managed extraction policy refuses. Milestone 6.
+         */
+        DENIED_ACTOR;
 
         public boolean extracted() {
             return this == EXTRACTED;
@@ -83,6 +89,17 @@ public final class ManagedDepositExtraction {
             return Result.NOT_A_DEPOSIT;
         }
 
+        // Milestone 6, and asked before anything else about the situation, because a machine is
+        // refused for what it is rather than for where it is standing or what it is holding. A
+        // fake player is a real ServerPlayer, so nothing above this line excludes one: a quarry
+        // mod holding a project shovel was previously an ordinary customer of this method.
+        //
+        // Nothing is written and nothing is said. The caller cancels the break, so the bed is
+        // still standing afterwards, with no yield, no restoration debt and no tool wear.
+        if (!ManagedExtractionPolicy.mayExtract(player)) {
+            return Result.DENIED_ACTOR;
+        }
+
         // Whose ground is this? Outside any house the world's own rules apply and this passes;
         // inside one, only the owner may work what stands in it. An administrator dropping a
         // deposit into somebody's house therefore cannot hand strangers a way in.
@@ -107,6 +124,7 @@ public final class ManagedDepositExtraction {
 
         ItemStack yield = ManagedDeposits.yieldStack(deposit);
         Block.popResource(level, pos, yield);
+        ManagedExtractionPolicy.chargeExtractionTool(player);
         player.displayClientMessage(
                 Component.translatable("message.britannia_mod.deposit.extracted", yield.getHoverName()), true);
         return Result.EXTRACTED;
