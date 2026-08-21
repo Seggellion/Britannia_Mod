@@ -92,11 +92,28 @@ class ManagedClayDepositTest {
                 "clay reached the pickaxe catalogue");
     }
 
+    /**
+     * The three spellings an administrator might reach for, and the one that must not resolve.
+     *
+     * <p>Milestone 10 puts test beds in the world by hand, and the name typed at the console is
+     * the whole interface to that. {@code silica} is what anybody writes for
+     * {@code silica_sand_deposit}; refusing it was friction in the only workflow that places a
+     * resource at all.
+     */
     @Test
-    void theAuthoringCommandCanNameIt() {
+    void theAuthoringCommandTakesTheNameAnAdministratorWouldType() {
         assertTrue(ManagedDeposits.byName("clay").isPresent());
         assertTrue(ManagedDeposits.byName("clay_deposit").isPresent());
+        assertEquals("britannia_mod:silica_sand_deposit",
+                ManagedDeposits.byName("silica_sand_deposit").orElseThrow().id().toString());
+        assertEquals("britannia_mod:silica_sand_deposit",
+                ManagedDeposits.byName("silica_sand").orElseThrow().id().toString());
+        assertEquals("britannia_mod:silica_sand_deposit",
+                ManagedDeposits.byName("silica").orElseThrow().id().toString(),
+                "the short name is what /manageddeposit place silica has to accept");
         assertTrue(ManagedDeposits.byName("gravel").isEmpty());
+        assertTrue(ManagedDeposits.byName("").isEmpty());
+        assertTrue(ManagedDeposits.byName(null).isEmpty());
     }
 
     /**

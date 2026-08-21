@@ -95,15 +95,40 @@ public final class ManagedDeposits {
         return Optional.empty();
     }
 
-    /** The deposit named by an authoring command, e.g. {@code clay}. */
+    /**
+     * The deposit named by an authoring command.
+     *
+     * <p>Three spellings, because an administrator placing test beds should not have to remember
+     * which one the registry uses: the full id path ({@code silica_sand_deposit}), the material
+     * ({@code silica_sand}), or an unambiguous shortening of it ({@code silica}). The last is what
+     * anybody actually types, and refusing it was a small piece of friction in the one workflow
+     * that puts resources in the world at all.
+     *
+     * <p>Ambiguity resolves to nothing rather than to whichever entry sorted first. Two deposits
+     * sharing a leading word would both be candidates, and quietly placing one of them is worse
+     * than saying the name is not specific enough.
+     */
     public static Optional<ManagedDeposit> byName(String name) {
         if (name == null || name.isBlank()) return Optional.empty();
         String wanted = name.toLowerCase(java.util.Locale.ROOT);
+
+        ManagedDeposit exact = null;
+        ManagedDeposit shortened = null;
+        int shortenedMatches = 0;
         for (ManagedDeposit deposit : ALL) {
             String path = deposit.id().getPath();
-            if (path.equals(wanted) || path.equals(wanted + "_deposit")) return Optional.of(deposit);
+            String material = path.endsWith("_deposit")
+                    ? path.substring(0, path.length() - "_deposit".length())
+                    : path;
+            if (path.equals(wanted) || material.equals(wanted)) {
+                exact = deposit;
+            } else if (material.startsWith(wanted + "_")) {
+                shortened = deposit;
+                shortenedMatches++;
+            }
         }
-        return Optional.empty();
+        if (exact != null) return Optional.of(exact);
+        return shortenedMatches == 1 ? Optional.of(shortened) : Optional.empty();
     }
 
     /** Whether this stack is a tool authorized to work this deposit. */
