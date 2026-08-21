@@ -1,0 +1,249 @@
+{
+  "schema": 1,
+  "suppressed": [
+    {
+      "feature": "minecraft:ore_coal_upper",
+      "family": "coal",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_coal_lower",
+      "family": "coal",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_iron_upper",
+      "family": "iron",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_iron_middle",
+      "family": "iron",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_iron_small",
+      "family": "iron",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_gold",
+      "family": "gold",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_gold_lower",
+      "family": "gold",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_gold_extra",
+      "family": "gold_badlands",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_redstone",
+      "family": "redstone",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_redstone_lower",
+      "family": "redstone",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_diamond",
+      "family": "diamond",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_diamond_medium",
+      "family": "diamond",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_diamond_large",
+      "family": "diamond",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_diamond_buried",
+      "family": "diamond",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_lapis",
+      "family": "lapis",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_lapis_buried",
+      "family": "lapis",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_emerald",
+      "family": "emerald",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_copper",
+      "family": "copper",
+      "step": "underground_ores"
+    },
+    {
+      "feature": "minecraft:ore_copper_large",
+      "family": "copper",
+      "step": "underground_ores"
+    }
+  ],
+  "allowed": [
+    {
+      "feature": "minecraft:ore_andesite_upper",
+      "family": "andesite",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: andesite, required 15"
+    },
+    {
+      "feature": "minecraft:ore_andesite_lower",
+      "family": "andesite",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: andesite, required 15"
+    },
+    {
+      "feature": "minecraft:ore_diorite_upper",
+      "family": "diorite",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: diorite, required 10"
+    },
+    {
+      "feature": "minecraft:ore_diorite_lower",
+      "family": "diorite",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: diorite, required 10"
+    },
+    {
+      "feature": "minecraft:ore_granite_upper",
+      "family": "granite",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: granite, required 20"
+    },
+    {
+      "feature": "minecraft:ore_granite_lower",
+      "family": "granite",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: granite, required 20"
+    },
+    {
+      "feature": "minecraft:ore_tuff",
+      "family": "tuff",
+      "step": "underground_ores",
+      "reason": "ACTIVE Mineable: tuff, required 25"
+    },
+    {
+      "feature": "minecraft:ore_gravel",
+      "family": "gravel",
+      "step": "underground_ores",
+      "reason": "world formation, not an economic mineral"
+    },
+    {
+      "feature": "minecraft:ore_dirt",
+      "family": "dirt",
+      "step": "underground_ores",
+      "reason": "world formation, not an economic mineral"
+    },
+    {
+      "feature": "minecraft:ore_clay",
+      "family": "clay",
+      "step": "underground_ores",
+      "reason": "lush caves; the managed clay bed is a placed deposit, not this"
+    },
+    {
+      "feature": "minecraft:underwater_magma",
+      "family": "underwater_magma",
+      "step": "underground_ores",
+      "reason": "shares the step but is a cave feature, not an ore"
+    }
+  ],
+  "out_of_scope": [
+    {
+      "feature": "minecraft:ore_gold_nether",
+      "family": "nether_gold",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_quartz_nether",
+      "family": "nether_quartz",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_gravel_nether",
+      "family": "nether_gravel",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_blackstone",
+      "family": "blackstone",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_magma",
+      "family": "nether_magma",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_soul_sand",
+      "family": "soul_sand",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_gold_deltas",
+      "family": "nether_gold",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_quartz_deltas",
+      "family": "nether_quartz",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_ancient_debris_large",
+      "family": "ancient_debris",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_debris_small",
+      "family": "ancient_debris",
+      "reason": "underground_decoration"
+    },
+    {
+      "feature": "minecraft:ore_infested",
+      "family": "infested_stone",
+      "reason": "underground_decoration; Overworld, but not an economic mineral"
+    }
+  ],
+  "unreachable": [
+    {
+      "mechanism": "minecraft:ore_veinifier/copper",
+      "family": "copper",
+      "produces": [
+        "minecraft:copper_ore",
+        "minecraft:raw_copper_block"
+      ],
+      "min_y": 0,
+      "max_y": 50,
+      "reason": "The noise chunk generator writes this directly while carving the column, before any decoration step runs. It is switched on by 'ore_veins_enabled' in the overworld noise settings, so it is not a placed feature and neoforge:remove_features cannot reach it."
+    },
+    {
+      "mechanism": "minecraft:ore_veinifier/iron",
+      "family": "iron",
+      "produces": [
+        "minecraft:deepslate_iron_ore",
+        "minecraft:raw_iron_block"
+      ],
+      "min_y": -60,
+      "max_y": -8,
+      "reason": "Same generator pass as the copper vein, on the negative half of the veininess noise. Removing it needs the dimension's noise settings, which also deletes the granite and tuff the veins deposit as filler."
+    }
+  ]
+}
