@@ -33,8 +33,11 @@ import java.util.Optional;
  * <p>The tool step is milestone 1 of the OreVein remediation. Without it the gate answered "yes"
  * to any sufficiently skilled player whatever they held, and the block then fell through to
  * vanilla breaking because {@code CustomBlockBreakHandler} only acts for a project pickaxe — which
- * destroyed the resource outside the managed transaction. The predicate itself lives in
- * {@link MiningExtractionTool} so this gate and that handler cannot hold different opinions.
+ * destroyed the resource outside the managed transaction.
+ *
+ * <p>Milestone 2 made that step data-driven. The answer comes from the resource definition's
+ * configured item tag through {@link MiningExtractionTool}, not from a class check, so this gate
+ * and the yield handler cannot hold different opinions and neither holds an opinion of its own.
  */
 public final class MiningBreakGate {
 
@@ -137,7 +140,7 @@ public final class MiningBreakGate {
         if (MiningProvenance.isPlayerPlaced(level, pos)) {
             return new Evaluation(ResultType.NOT_APPLICABLE, Optional.empty(), Float.NaN, Float.NaN);
         }
-        return evaluateResolved(Mineables.resolve(state), subject(actor));
+        return evaluateResolved(Mineables.resolve(state), subject(actor, state));
     }
 
     /** Pure decision core; package-visible so unit tests drive it without Minecraft bootstrap. */
@@ -174,16 +177,22 @@ public final class MiningBreakGate {
      *
      * <p>The held item is read here, from the server's own copy of the main hand, for the same
      * reason the game mode is: it is state the client cannot assert. Reading it inside the
-     * snapshot rather than threading it through {@link #evaluate} keeps every caller — the break
-     * gate, the skill award, and the read-only diagnostic command — asking the identical question
-     * about the identical actor, so none of them can drift into a second tool policy.
+     * snapshot keeps every caller -- the break gate, the skill award, and the read-only diagnostic
+     * command -- asking the identical question about the identical actor, so none of them can
+     * drift into a second tool policy.
+     *
+     * <p>The block is a parameter because milestone 2 made authorization per resource: the tool is
+     * checked against the tag that particular resource names, not against a class. A null state
+     * therefore authorises nothing, which is the correct fail-closed answer and never reached in
+     * practice because an unresolved block answers NOT_APPLICABLE first.
      */
-    static Subject subject(@Nullable Player actor) {
+    static Subject subject(@Nullable Player actor, @Nullable BlockState state) {
         if (!(actor instanceof ServerPlayer serverPlayer)) {
             return new Subject(ActorType.NON_PLAYER, false, 0,
                     SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
         }
-        boolean authorizedTool = MiningExtractionTool.isAuthorized(serverPlayer.getMainHandItem());
+        boolean authorizedTool =
+                MiningExtractionTool.isAuthorized(state, serverPlayer.getMainHandItem());
         if (serverPlayer instanceof FakePlayer) {
             return new Subject(ActorType.AUTOMATION, isCreativeGameMode(serverPlayer),
                     FlowerProtectionService.effectivePermissionLevel(serverPlayer),

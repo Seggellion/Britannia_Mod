@@ -12,13 +12,10 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.network.chat.Component;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.registry.ItemRegistry;
-import com.seggellion.britannia_mod.registry.ToolRegistry;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.GradeStoneItem;
-
-import com.seggellion.britannia_mod.item.BritanniaPickaxeItem;
-import com.seggellion.britannia_mod.item.QualityToolItem;
 import com.seggellion.britannia_mod.mining.MiningSkill;
+import com.seggellion.britannia_mod.resource.Resources;
 import com.seggellion.britannia_mod.util.BlockBreakUtils;
 import com.seggellion.britannia_mod.util.PickaxeMiningRules;
 
@@ -45,7 +42,7 @@ public class CustomBlockBreakHandler {
         boolean isStone = PickaxeMiningRules.isAllowedStoneBlock(state);
         boolean isOre = PickaxeMiningRules.isAllowedOreBlock(state);
 
-        if (isBritanniaPickaxe(heldItem)) {
+        if (com.seggellion.britannia_mod.mining.MiningExtractionTool.isAuthorized(state, heldItem)) {
             event.setCanceled(true);
 
             if (isStone) {
@@ -66,21 +63,23 @@ public class CustomBlockBreakHandler {
         }
     }
 
-    /**
-     * Milestone 1: delegated to {@link com.seggellion.britannia_mod.mining.MiningExtractionTool},
-     * which is now the single authority the Mining break gate consults as well. This method used
-     * to be the only place a mining tool was defined, and the gate did not consult it — so a
-     * wrong tool was silently handed to vanilla breaking rather than refused. Coverage is
-     * unchanged: {@code ToolRegistry.PICKAXE} is a {@code QualityToolItem}, so the predicate
-     * admits exactly the items it always did.
-     */
-    private boolean isBritanniaPickaxe(ItemStack stack) {
-        return com.seggellion.britannia_mod.mining.MiningExtractionTool.isAuthorized(stack);
+    // Milestone 2: the tool question is asked directly of MiningExtractionTool above, which
+    // resolves the resource's configured extraction tag. The private isBritanniaPickaxe predicate
+    // that used to live here is gone -- it was the second definition of the rule, and there is now
+    // exactly one, in data.
+
+    /** The declared depleted state, falling back to the historical behaviour for unmanaged blocks. */
+    private static BlockState depletedState(ServerLevel level, BlockPos pos, BlockState state) {
+        return Resources.resolve(state)
+                .map(definition -> Resources.depletedState(definition, level, pos))
+                .orElseGet(() -> level.getFluidState(pos).createLegacyBlock());
     }
 
     private void handleStoneBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {
-        // Replace the block with its fluid state
-        level.setBlock(pos, level.getFluidState(pos).createLegacyBlock(), 2);
+        // Milestone 2: the cell becomes the resource's declared depleted state. That is still the
+        // fluid-aware air this always wrote -- the behaviour is unchanged -- but it is now the
+        // definition saying so rather than this line assuming it.
+        level.setBlock(pos, depletedState(level, pos, state), 2);
 
         String stoneType = BlockBreakUtils.deduceStoneType(state);
         int grade = BlockBreakUtils.generateStoneGrade();
@@ -106,8 +105,7 @@ public class CustomBlockBreakHandler {
     }
 
     private void handleOreBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {
-        // Replace the block with its fluid state
-        level.setBlock(pos, level.getFluidState(pos).createLegacyBlock(), 2);
+        level.setBlock(pos, depletedState(level, pos, state), 2);
 
         String oreType = BlockBreakUtils.deduceOreType(state);
         int purity = BlockBreakUtils.generateRandomPurity();

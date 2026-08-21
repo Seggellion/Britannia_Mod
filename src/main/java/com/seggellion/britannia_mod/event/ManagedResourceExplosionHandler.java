@@ -1,9 +1,8 @@
 package com.seggellion.britannia_mod.event;
 
-import com.seggellion.britannia_mod.deposit.ManagedDeposits;
-import com.seggellion.britannia_mod.mining.MineableDefinition;
-import com.seggellion.britannia_mod.mining.Mineables;
 import com.seggellion.britannia_mod.mining.MiningProvenance;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
+import com.seggellion.britannia_mod.resource.Resources;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -64,10 +63,13 @@ public class ManagedResourceExplosionHandler {
      */
     public static boolean isProtectedFromExplosions(ServerLevel level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
-        boolean managed = ManagedDeposits.resolve(state).isPresent()
-                || Mineables.resolve(state)
-                        .map(definition -> definition.category() == MineableDefinition.Category.ORE)
-                        .orElse(false);
+        // Milestone 2: one lookup against the canonical catalogue instead of two against the two
+        // subsystems. The policy is identical -- sediment beds and the ore ladder are protected,
+        // STONE-category terrain is not -- but it is now expressed once, in terms of the family
+        // the resource declares.
+        boolean managed = Resources.resolve(state)
+                .map(definition -> definition.family() != ResourceDefinition.Family.STONE)
+                .orElse(false);
         return managed && !MiningProvenance.isPlayerPlaced(level, pos);
     }
 }

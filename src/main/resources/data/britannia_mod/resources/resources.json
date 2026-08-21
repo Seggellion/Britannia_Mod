@@ -1,0 +1,569 @@
+{
+  "schema": 1,
+  "resources": [
+    {
+      "id": "britannia_mod:iron",
+      "display_name": "Iron",
+      "family": "ore",
+      "blocks": [
+        "minecraft:iron_ore",
+        "minecraft:deepslate_iron_ore"
+      ],
+      "mineable": "iron",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "vertical",
+        "block": "minecraft:iron_ore",
+        "min_radius": 1,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:silver",
+      "display_name": "Silver",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:silver_ore"
+      ],
+      "mineable": "silver",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "vertical_layered",
+        "block": "britannia_mod:silver_ore",
+        "min_radius": 1,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:tin",
+      "display_name": "Tin",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:tin_ore"
+      ],
+      "mineable": "tin",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "layered",
+        "block": "britannia_mod:tin_ore",
+        "min_radius": 1,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:shadow_iron",
+      "display_name": "Shadow Iron",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:shadow_iron_ore"
+      ],
+      "mineable": "shadow_iron",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "vertical",
+        "block": "britannia_mod:shadow_iron_ore",
+        "min_radius": 1,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:copper",
+      "display_name": "Copper",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:copper_ore"
+      ],
+      "mineable": "copper",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "cluster",
+        "block": "britannia_mod:copper_ore",
+        "min_radius": 1,
+        "max_radius": 32
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:gold",
+      "display_name": "Gold",
+      "family": "ore",
+      "blocks": [
+        "minecraft:gold_ore",
+        "minecraft:deepslate_gold_ore",
+        "britannia_mod:gold_ore"
+      ],
+      "mineable": "gold",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "snake",
+        "block": "minecraft:gold_ore",
+        "min_radius": 10,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:agapite",
+      "display_name": "Agapite",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:agapite_ore"
+      ],
+      "mineable": "agapite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "geode",
+        "block": "britannia_mod:agapite_ore",
+        "min_radius": 2,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:verite",
+      "display_name": "Verite",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:verite_ore"
+      ],
+      "mineable": "verite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "cluster",
+        "block": "britannia_mod:verite_ore",
+        "min_radius": 1,
+        "max_radius": 32
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:valorite",
+      "display_name": "Valorite",
+      "family": "ore",
+      "blocks": [
+        "britannia_mod:valorite_ore"
+      ],
+      "mineable": "valorite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "purity_ore"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "generation": {
+        "shape": "vertical",
+        "block": "britannia_mod:valorite_ore",
+        "min_radius": 1,
+        "max_radius": 128
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:stone",
+      "display_name": "Stone",
+      "family": "stone",
+      "blocks": [
+        "minecraft:stone"
+      ],
+      "mineable": "stone",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:cobblestone",
+      "display_name": "Cobblestone",
+      "family": "stone",
+      "blocks": [
+        "minecraft:cobblestone"
+      ],
+      "mineable": "cobblestone",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:calcite",
+      "display_name": "Calcite",
+      "family": "stone",
+      "blocks": [
+        "minecraft:calcite"
+      ],
+      "mineable": "calcite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:sandstone",
+      "display_name": "Sandstone",
+      "family": "stone",
+      "blocks": [
+        "britannia_mod:sandstone_deposit"
+      ],
+      "mineable": "sandstone",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:diorite",
+      "display_name": "Diorite",
+      "family": "stone",
+      "blocks": [
+        "minecraft:diorite"
+      ],
+      "mineable": "diorite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:andesite",
+      "display_name": "Andesite",
+      "family": "stone",
+      "blocks": [
+        "minecraft:andesite"
+      ],
+      "mineable": "andesite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:granite",
+      "display_name": "Granite",
+      "family": "stone",
+      "blocks": [
+        "minecraft:granite"
+      ],
+      "mineable": "granite",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:tuff",
+      "display_name": "Tuff",
+      "family": "stone",
+      "blocks": [
+        "minecraft:tuff"
+      ],
+      "mineable": "tuff",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:deepslate",
+      "display_name": "Deepslate",
+      "family": "stone",
+      "blocks": [
+        "minecraft:deepslate"
+      ],
+      "mineable": "deepslate",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:cobbled_deepslate",
+      "display_name": "Cobbled Deepslate",
+      "family": "stone",
+      "blocks": [
+        "minecraft:cobbled_deepslate"
+      ],
+      "mineable": "cobbled_deepslate",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:basalt",
+      "display_name": "Basalt",
+      "family": "stone",
+      "blocks": [
+        "minecraft:basalt",
+        "minecraft:smooth_basalt"
+      ],
+      "mineable": "basalt",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:blackstone",
+      "display_name": "Blackstone",
+      "family": "stone",
+      "blocks": [
+        "minecraft:blackstone"
+      ],
+      "mineable": "blackstone",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:igneous_rock",
+      "display_name": "Igneous Rock",
+      "family": "stone",
+      "blocks": [
+        "britannia_mod:igneous_rock"
+      ],
+      "mineable": "igneous_rock",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:metamorphic_rock",
+      "display_name": "Metamorphic Rock",
+      "family": "stone",
+      "blocks": [
+        "britannia_mod:metamorphic_rock"
+      ],
+      "mineable": "metamorphic_rock",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:volcanic_rock",
+      "display_name": "Volcanic Rock",
+      "family": "stone",
+      "blocks": [
+        "britannia_mod:volcanic_rock"
+      ],
+      "mineable": "volcanic_rock",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:glacial_rock",
+      "display_name": "Glacial Rock",
+      "family": "stone",
+      "blocks": [
+        "britannia_mod:glacial_rock"
+      ],
+      "mineable": "glacial_rock",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:dripstone",
+      "display_name": "Dripstone",
+      "family": "stone",
+      "blocks": [
+        "minecraft:dripstone_block"
+      ],
+      "mineable": "dripstone",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "graded_stone"
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:clay_deposit",
+      "display_name": "Clay Bed",
+      "family": "sediment",
+      "blocks": [
+        "britannia_mod:clay_deposit"
+      ],
+      "extraction_tool": "britannia_mod:clay_shovels",
+      "yield": {
+        "mode": "item",
+        "item": "minecraft:clay_ball",
+        "count": 1
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1
+    },
+    {
+      "id": "britannia_mod:silica_sand_deposit",
+      "display_name": "Silica Bed",
+      "family": "sediment",
+      "blocks": [
+        "britannia_mod:silica_sand_deposit"
+      ],
+      "extraction_tool": "britannia_mod:silica_shovels",
+      "yield": {
+        "mode": "item",
+        "item": "britannia_mod:silica_sand",
+        "count": 1
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 24
+      },
+      "revision": 1
+    }
+  ]
+}

@@ -427,7 +427,7 @@ class HousingMaterialCommodityTest {
                     ? null
                     : "nothing mineable yields " + processing.feedstock();
             case DEPOSIT -> ManagedDeposits.all().stream()
-                    .anyMatch(deposit -> deposit.id().toString().equals(processing.feedstock()))
+                    .anyMatch(deposit -> deposit.id().equals(processing.feedstock()))
                     ? null
                     : "no managed deposit " + processing.feedstock() + " is registered";
         };

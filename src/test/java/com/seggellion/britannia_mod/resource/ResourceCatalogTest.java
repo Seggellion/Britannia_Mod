@@ -1,0 +1,272 @@
+package com.seggellion.britannia_mod.resource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.seggellion.britannia_mod.mining.MineableCatalog;
+import com.seggellion.britannia_mod.mining.MineableDefinition;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.Test;
+
+/**
+ * OreVein milestone 2: the shipped catalogue loads, says what it is supposed to say, and does not
+ * duplicate anything {@code MineableCatalog} already owns.
+ *
+ * <p>Pure JUnit against the real data, exactly as {@code MineableCatalogContractTest} works — no
+ * Minecraft, no world, no source-text assertions.
+ */
+class ResourceCatalogTest {
+
+    private static ResourceCatalog catalog() {
+        return ResourceCatalog.instance();
+    }
+
+    private static ResourceDefinition byId(String id) {
+        return catalog().byId(id).orElseThrow(() -> new AssertionError("no resource " + id));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  It loads, and it covers what it must                               */
+    /* ------------------------------------------------------------------ */
+
+    @Test
+    void theShippedCatalogueLoadsAndCoversEveryFamily() {
+        ResourceCatalog catalog = catalog();
+        assertEquals(28, catalog.all().size(), "9 ores + 17 stones + 2 sediment beds");
+        assertEquals(9, catalog.family(ResourceDefinition.Family.ORE).size());
+        assertEquals(17, catalog.family(ResourceDefinition.Family.STONE).size());
+        assertEquals(2, catalog.family(ResourceDefinition.Family.SEDIMENT).size());
+    }
+
+    /**
+     * Every Mining resource has a configured extraction tag, because every ACTIVE mineable is
+     * claimed. This is the check that makes a permissive fallback impossible: the gate reads its
+     * tool policy from a definition, so a mineable without one would have to be defaulted, and
+     * instead it fails the load.
+     */
+    @Test
+    void everyActiveMineableIsClaimedByExactlyOneResource() {
+        catalog().validateCoversEveryActiveMineable();
+
+        Map<String, Long> claims = catalog().all().stream()
+                .map(ResourceDefinition::mineableId)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+        for (MineableDefinition mineable : MineableCatalog.instance().active()) {
+            assertEquals(1L, claims.getOrDefault(mineable.id(), 0L),
+                    mineable.id() + " must be claimed by exactly one resource definition");
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  One authority per fact                                             */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * The whole point of composing rather than copying: a resource definition carries no Mining
+     * number at all, so two files cannot state different requirements for one resource.
+     */
+    @Test
+    void noResourceDefinitionCarriesAMiningNumber() {
+        for (java.lang.reflect.RecordComponent component : ResourceDefinition.class.getRecordComponents()) {
+            String name = component.getName().toLowerCase(java.util.Locale.ROOT);
+            assertFalse(name.contains("mining") && !name.equals("mineableid"),
+                    "ResourceDefinition must reference Mining, never restate it: found " + component.getName());
+            assertFalse(name.contains("required") || name.contains("challenge"),
+                    "Mining progression belongs to MineableCatalog alone: found " + component.getName());
+        }
+    }
+
+    /** Both catalogues must agree, block for block, about what each resource covers. */
+    @Test
+    void theTwoCataloguesClaimIdenticalBlocksForEveryMiningResource() {
+        for (ResourceDefinition definition : catalog().all()) {
+            Optional<String> reference = definition.mineableId();
+            if (reference.isEmpty()) continue;
+            MineableDefinition mineable = MineableCatalog.instance().byId(reference.get()).orElseThrow();
+            assertEquals(Set.copyOf(mineable.blockIds()), Set.copyOf(definition.blockIds()),
+                    definition.id() + " and mineable " + reference.get() + " must cover the same blocks");
+        }
+    }
+
+    /**
+     * The approved Mining levels are unchanged by the migration. Pinned by value here rather than
+     * by "the file still parses", because a silent edit to a requirement is exactly the drift the
+     * composition model exists to prevent.
+     */
+    @Test
+    void existingMiningLevelsAreUnchanged() {
+        Map<String, Float> approved = Map.ofEntries(
+                Map.entry("iron", 0.0f), Map.entry("silver", 55.0f), Map.entry("tin", 65.0f),
+                Map.entry("shadow_iron", 70.0f), Map.entry("copper", 75.0f), Map.entry("gold", 85.0f),
+                Map.entry("agapite", 90.0f), Map.entry("verite", 95.0f), Map.entry("valorite", 99.0f),
+                Map.entry("stone", 0.0f), Map.entry("calcite", 5.0f), Map.entry("sandstone", 5.0f),
+                Map.entry("diorite", 10.0f), Map.entry("andesite", 15.0f), Map.entry("granite", 20.0f),
+                Map.entry("tuff", 25.0f), Map.entry("deepslate", 30.0f), Map.entry("dripstone", 35.0f),
+                Map.entry("basalt", 40.0f), Map.entry("blackstone", 45.0f));
+        approved.forEach((id, required) -> assertEquals(required,
+                MineableCatalog.instance().byId(id).orElseThrow().requiredMining(), 0.0f,
+                id + "'s approved Mining requirement must not have moved"));
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Extraction: the pickaxe and the shovel are parallel                */
+    /* ------------------------------------------------------------------ */
+
+    @Test
+    void everyMiningResourceNamesThePickaxeTagAndEverySedimentBedAShovelTag() {
+        for (ResourceDefinition definition : catalog().all()) {
+            if (definition.isSediment()) {
+                assertTrue(definition.extractionToolTag().endsWith("_shovels"),
+                        definition.id() + " is worked with a shovel");
+            } else {
+                assertEquals("britannia_mod:mining_pickaxes", definition.extractionToolTag(),
+                        definition.id() + " is worked with the Mining pickaxe tag");
+            }
+        }
+        assertEquals("britannia_mod:clay_shovels", byId("britannia_mod:clay_deposit").extractionToolTag());
+        assertEquals("britannia_mod:silica_shovels",
+                byId("britannia_mod:silica_sand_deposit").extractionToolTag());
+    }
+
+    /**
+     * The two families use different tags, which is the structural reason a pickaxe has no
+     * authority over a bed and a shovel none over an ore. Neither is a subset of the other.
+     */
+    @Test
+    void theOreAndSedimentTagsAreDisjointNames() {
+        Set<String> mining = catalog().all().stream()
+                .filter(definition -> !definition.isSediment())
+                .map(ResourceDefinition::extractionToolTag).collect(Collectors.toSet());
+        Set<String> sediment = catalog().all().stream()
+                .filter(ResourceDefinition::isSediment)
+                .map(ResourceDefinition::extractionToolTag).collect(Collectors.toSet());
+        assertTrue(java.util.Collections.disjoint(mining, sediment),
+                "a tool family must never be authorised for both by sharing a tag");
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Yields, regeneration, depletion                                    */
+    /* ------------------------------------------------------------------ */
+
+    @Test
+    void existingYieldIdentitiesAreUnchanged() {
+        ResourceDefinition clay = byId("britannia_mod:clay_deposit");
+        assertEquals(ResourceDefinition.Yield.Mode.ITEM, clay.yield().mode());
+        assertEquals(Optional.of("minecraft:clay_ball"), clay.yield().itemId());
+        assertEquals(1, clay.yield().count());
+
+        ResourceDefinition silica = byId("britannia_mod:silica_sand_deposit");
+        assertEquals(Optional.of("britannia_mod:silica_sand"), silica.yield().itemId());
+        assertEquals(1, silica.yield().count());
+
+        assertEquals(ResourceDefinition.Yield.Mode.PURITY_ORE, byId("britannia_mod:silver").yield().mode());
+        assertEquals(ResourceDefinition.Yield.Mode.GRADED_STONE, byId("britannia_mod:granite").yield().mode());
+    }
+
+    /** Silica is the first resource whose regeneration differs from the historical global six. */
+    @Test
+    void silicaResolvesTwentyFourHoursAndEverythingElseKeepsSix() {
+        assertEquals(24, byId("britannia_mod:silica_sand_deposit").regenerationHours());
+        assertEquals(24L * 60 * 60 * 1000,
+                byId("britannia_mod:silica_sand_deposit").regenerationMillis());
+
+        for (ResourceDefinition definition : catalog().all()) {
+            if (definition.id().equals("britannia_mod:silica_sand_deposit")) continue;
+            assertEquals(6, definition.regenerationHours(),
+                    definition.id() + " must keep the historical six-hour delay");
+        }
+        assertEquals(6L * 60 * 60 * 1000, byId("britannia_mod:clay_deposit").regenerationMillis());
+    }
+
+    @Test
+    void everyResourceDeclaresItsDepletedState() {
+        for (ResourceDefinition definition : catalog().all()) {
+            assertSame(ResourceDefinition.DepletedState.FLUID_AWARE_AIR, definition.depleted(),
+                    definition.id() + " must declare what stands in its cell once worked");
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Generation configuration                                           */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * The nine ores the legacy command can place, with the shapes and bounds milestone 1 derived
+     * from the algorithms — now data rather than a table in {@code VeinPlacementValidation}.
+     */
+    @Test
+    void theNinePlaceableOresCarryTheirShapeConfiguration() {
+        Map<String, ResourceShape> expected = Map.of(
+                "copper", ResourceShape.CLUSTER, "verite", ResourceShape.CLUSTER,
+                "iron", ResourceShape.VERTICAL, "valorite", ResourceShape.VERTICAL,
+                "shadow_iron", ResourceShape.VERTICAL, "gold", ResourceShape.SNAKE,
+                "agapite", ResourceShape.GEODE, "silver", ResourceShape.VERTICAL_LAYERED,
+                "tin", ResourceShape.LAYERED);
+
+        List<ResourceDefinition> generatable = catalog().generatable();
+        assertEquals(expected.keySet(),
+                generatable.stream().map(ResourceDefinition::path).collect(Collectors.toSet()));
+        for (ResourceDefinition definition : generatable) {
+            ResourceDefinition.Generation generation = definition.generation().orElseThrow();
+            assertEquals(expected.get(definition.path()), generation.shape(), definition.id());
+            assertTrue(definition.blockIds().contains(generation.blockId()),
+                    definition.id() + " must generate a block it governs");
+            assertTrue(generation.minRadius() >= generation.shape().hardFloorRadius(),
+                    definition.id() + " must not configure a radius the algorithm throws on");
+        }
+    }
+
+    /** The hard floors are the crash boundaries milestone 1 measured against the algorithms. */
+    @Test
+    void shapeHardFloorsMatchTheAlgorithmCrashBoundaries() {
+        assertEquals(10, ResourceShape.SNAKE.hardFloorRadius(), "nextInt(radius - 9)");
+        assertEquals(2, ResourceShape.GEODE.hardFloorRadius(), "nextInt(radius / 2)");
+        assertEquals(1, ResourceShape.LAYERED.hardFloorRadius(), "nextInt(radius * 2)");
+        assertEquals(1, ResourceShape.VERTICAL_LAYERED.hardFloorRadius());
+        assertEquals(1, ResourceShape.CLUSTER.hardFloorRadius(), "division by radius");
+        assertEquals(1, ResourceShape.VERTICAL.hardFloorRadius());
+    }
+
+    /** A sediment bed is hand-placed; sedimentary generation is milestone 7's, not this one's. */
+    @Test
+    void sedimentBedsCarryNoGeneration() {
+        for (ResourceDefinition definition : catalog().family(ResourceDefinition.Family.SEDIMENT)) {
+            assertTrue(definition.generation().isEmpty(), definition.id() + " is hand-placed for now");
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Identity stability                                                 */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * The deposit ids are load-bearing economic identifiers — the housing material data names
+     * {@code britannia_mod:clay_deposit} as a feedstock — so the migration must not have tidied
+     * them into something prettier.
+     */
+    @Test
+    void depositIdsAreUnchangedBecauseTheEconomyReferencesThem() {
+        assertTrue(catalog().byId("britannia_mod:clay_deposit").isPresent());
+        assertTrue(catalog().byId("britannia_mod:silica_sand_deposit").isPresent());
+    }
+
+    /** A Rails row spells the ore's path, so the path must remain the legacy ore-type name. */
+    @Test
+    void oreResourcePathsStillMatchTheLegacyOreTypeNames() {
+        for (String legacy : List.of("copper", "tin", "silver", "gold", "iron",
+                "shadow_iron", "agapite", "verite", "valorite")) {
+            assertTrue(catalog().byPath(legacy).isPresent(), legacy + " must resolve by its legacy name");
+        }
+        assertTrue(catalog().byPath("coal").isEmpty(),
+                "coal has no definition, which is what keeps it out of the placement route");
+    }
+}

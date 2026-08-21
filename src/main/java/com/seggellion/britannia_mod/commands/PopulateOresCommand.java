@@ -19,7 +19,10 @@ import com.seggellion.britannia_mod.features.VerticalLayeredVein;
 import com.seggellion.britannia_mod.features.GeodeVein;
 import com.seggellion.britannia_mod.features.SnakeVein;
 import com.seggellion.britannia_mod.features.VeinPlacementValidation;
-import com.seggellion.britannia_mod.registry.BlockRegistry;
+import com.seggellion.britannia_mod.resource.ResourceCatalog;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
+import com.seggellion.britannia_mod.resource.ResourceShape;
+import com.seggellion.britannia_mod.resource.Resources;
 import com.seggellion.britannia_mod.config.ModConfig;
 import net.minecraft.server.MinecraftServer;
 
@@ -56,32 +59,21 @@ public class PopulateOresCommand {
     private static final Logger LOGGER = LogManager.getLogger();
 
     /**
-     * The blocks this command can place, one per ore type {@link VeinPlacementValidation} knows.
+     * The ore types this command can place, read from the canonical resource catalogue.
      *
-     * <p>Previously this map also held nine types with no shape branch at all — diamond, redstone,
-     * emerald, lapis and their deepslate variants — which could never be placed and existed only
-     * to widen the {@code clear} scan. With that scan disabled they are dead config, and leaving
-     * them would let an operator type a name the command silently placed nothing for.
+     * <p>Milestone 2 removed the {@code ORE_TYPES} map that used to live here. It was a third copy
+     * of knowledge the catalogue now owns — which block an ore name places, and which ore names
+     * exist at all — sitting alongside the shape {@code switch} below and
+     * {@link VeinPlacementValidation}'s own table. A resource is placeable exactly when its
+     * definition carries a {@code generation} block, so adding or retiring one is a data edit.
+     *
+     * <p>Coal's absence is therefore no longer a deletion here but a fact about the data: it has no
+     * definition, because {@code minecraft:coal_ore} is not a Mining-catalogued resource and a
+     * managed generation route must not manufacture unmanaged economic material. Vanilla coal world
+     * generation remains untouched; suppressing that is milestone 5.
      */
-    private static final Map<String, Block> ORE_TYPES = new HashMap<>();
-
-    static {
-        ORE_TYPES.put("copper", BlockRegistry.COPPER_ORE.get());
-        ORE_TYPES.put("tin", BlockRegistry.TIN_ORE.get());
-        ORE_TYPES.put("silver", BlockRegistry.SILVER_ORE.get());
-        ORE_TYPES.put("gold", net.minecraft.world.level.block.Blocks.GOLD_ORE);
-        ORE_TYPES.put("iron", net.minecraft.world.level.block.Blocks.IRON_ORE);
-        ORE_TYPES.put("shadow_iron", BlockRegistry.SHADOW_IRON_ORE.get());
-        ORE_TYPES.put("agapite", BlockRegistry.AGAPITE_ORE.get());
-        ORE_TYPES.put("verite", BlockRegistry.VERITE_ORE.get());
-        ORE_TYPES.put("valorite", BlockRegistry.VALORITE_ORE.get());
-        // No coal: withdrawn at OreVein milestone 1, see the class comment.
-        // No high_purity_silver: retired by owner decision 2026-08-14 (one Silver metal/ore).
-    }
-
-    /** Ore types this command is willing to act on. Exposed so a GameTest can pin the set. */
     public static Set<String> placeableOreTypes() {
-        return Collections.unmodifiableSet(ORE_TYPES.keySet());
+        return Set.copyOf(VeinPlacementValidation.placeableOreTypes());
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -149,12 +141,13 @@ public class PopulateOresCommand {
         ServerLevel level = source.getLevel();
         String oreType = StringArgumentType.getString(context, "ore_type").toLowerCase(Locale.ROOT);
 
-        Block oreBlock = ORE_TYPES.get(oreType);
-        if (oreBlock == null) {
+        ResourceDefinition resource = VeinPlacementValidation.resourceFor(oreType).orElse(null);
+        if (resource == null) {
             source.sendFailure(Component.literal("Unknown or unplaceable ore type: " + oreType
                     + ". Placeable: " + String.join(", ", VeinPlacementValidation.placeableOreTypes())));
             return 0;
         }
+        Block oreBlock = Resources.standingBlock(resource);
 
         MinecraftServer server = level.getServer();
         String shardName = ModConfig.SHARD_NAME;
@@ -180,8 +173,8 @@ public class PopulateOresCommand {
             String rotation = VeinPlacementValidation
                     .normaliseRotation(vein.rotation).orElse(VeinPlacementValidation.DEFAULT_ROTATION);
             LOGGER.info("Placing ore at: {} radius {}", vein.getPosition(), vein.radius);
-            placedCount += generateOreVein(
-                    level, vein.getPosition(), vein.radius, oreType, oreBlock, rotation, originalBlocks);
+            placedCount += generateOreVein(level, vein.getPosition(), vein.radius,
+                    resource, oreBlock, rotation, originalBlocks);
         }
 
         final int finalPlacedCount = placedCount;
@@ -224,8 +217,9 @@ public class PopulateOresCommand {
             if (!region.equalsIgnoreCase(vein.region)) continue;
             if (oreType != null && !vein.oreType.equalsIgnoreCase(oreType)) continue;
 
-            Block oreBlock = ORE_TYPES.get(vein.oreType.toLowerCase(Locale.ROOT));
-            Optional<String> rejection = oreBlock == null
+            ResourceDefinition resource =
+                    VeinPlacementValidation.resourceFor(vein.oreType).orElse(null);
+            Optional<String> rejection = resource == null
                     ? Optional.of("unknown or unplaceable ore type '" + vein.oreType + "'")
                     : validate(level, vein);
             if (rejection.isPresent()) {
@@ -238,7 +232,7 @@ public class PopulateOresCommand {
                     .normaliseRotation(vein.rotation).orElse(VeinPlacementValidation.DEFAULT_ROTATION);
             LOGGER.info("Placing {} at {} with radius {}", vein.oreType, vein.getPosition(), vein.radius);
             placedCount += generateOreVein(level, vein.getPosition(), vein.radius,
-                    vein.oreType.toLowerCase(Locale.ROOT), oreBlock, rotation, originalBlocks);
+                    resource, Resources.standingBlock(resource), rotation, originalBlocks);
         }
 
         final int finalPlacedCount = placedCount;
@@ -274,34 +268,40 @@ public class PopulateOresCommand {
     }
 
     /**
-     * Dispatch to the legacy shape for this ore type.
+     * Dispatch to the legacy implementation of this resource's configured shape.
      *
-     * <p>Every caller validates first, so the ranges each algorithm needs are already guaranteed
-     * here. Milestone 3 replaces this switch with the resource definition's shape id.
+     * <p>Milestone 2's central claim, in one method: this used to switch on the ore <em>name</em>,
+     * so adding a resource meant editing Java. It now switches on the {@link ResourceShape} the
+     * resource's definition names, so a new ore that reuses an existing shape is a row in
+     * {@code resources.json} and nothing else. The remaining branch is a shape-to-implementation
+     * lookup, which milestone 3 replaces with a planner registry when the six imperative classes
+     * become deterministic pure planners.
+     *
+     * <p>Every caller validates first, so the ranges each algorithm needs are already guaranteed.
      */
     private static int generateOreVein(
             ServerLevel level,
             BlockPos center,
             int radius,
-            String oreType,
+            ResourceDefinition resource,
             Block oreBlock,
             String rotation,
             Map<BlockPos, BlockState> originalBlocks) {
 
-        return switch (oreType) {
-            case "copper", "verite" ->
+        ResourceShape shape = resource.generation().orElseThrow().shape();
+        return switch (shape) {
+            case CLUSTER ->
                     ClusterVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case "iron", "valorite", "shadow_iron" ->
+            case VERTICAL ->
                     VerticalVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case "gold" ->
+            case SNAKE ->
                     SnakeVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case "agapite" ->
+            case GEODE ->
                     GeodeVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case "silver" ->
+            case VERTICAL_LAYERED ->
                     VerticalLayeredVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            case "tin" ->
+            case LAYERED ->
                     LayeredVein.generate(level, center, radius, oreBlock, rotation, originalBlocks);
-            default -> 0;
         };
     }
 }

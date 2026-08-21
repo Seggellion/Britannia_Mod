@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.event;
 
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
+import com.seggellion.britannia_mod.resource.Resources;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -72,7 +73,7 @@ public class BlockRestoreHandler {
             Map.Entry<BlockPos, BrokenBlockData> entry = iterator.next();
             BrokenBlockData data = entry.getValue();
 
-            if (now - data.brokenTime < RESTORE_DELAY) {
+            if (now - data.brokenTime < restoreDelayFor(data)) {
                 continue;
             }
             // An unloaded cell is retried on a later tick rather than force-loaded.
@@ -92,6 +93,26 @@ public class BlockRestoreHandler {
         if (restoredAny) {
             storage.setDirty();
         }
+    }
+
+    /**
+     * How long this particular record must wait.
+     *
+     * <p>OreVein milestone 2. The delay used to be one global constant for everything; it is now a
+     * field on the resource definition, resolved from the state that was recorded when the node was
+     * broken. Silica is the first resource to differ, at its approved 24 hours; every other
+     * resource carries the historical six, so nothing else changes.
+     *
+     * <p>Resolving from {@code originalState} rather than from a new field on the record is what
+     * keeps this out of milestone 4's way: the saved data format is untouched, every debt already
+     * on disk keeps working, and no migration is needed. The scheduler is still the single existing
+     * pre-tick sweep — redesigning that is milestone 4's job, not this one's.
+     *
+     * <p>A record whose block is no longer a managed resource — a definition retired between
+     * sessions — falls back to the global default rather than never becoming due.
+     */
+    private static long restoreDelayFor(BrokenBlockData data) {
+        return Resources.regenerationMillis(data.originalState).orElse(RESTORE_DELAY);
     }
 
     /**

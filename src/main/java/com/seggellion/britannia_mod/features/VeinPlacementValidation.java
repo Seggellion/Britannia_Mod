@@ -1,94 +1,46 @@
 package com.seggellion.britannia_mod.features;
 
+import com.seggellion.britannia_mod.resource.ResourceCatalog;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
+import com.seggellion.britannia_mod.resource.ResourceShape;
+
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * What a curated vein row must satisfy before any shape algorithm is allowed to see it.
  *
- * <h2>Why this exists at milestone 1</h2>
+ * <h2>Why this exists</h2>
  * The six shape classes are imperative, mutate the world directly, and trust their arguments
- * completely. Several of them throw outright on values Rails is free to send:
+ * completely. Several throw outright on values Rails is free to send: {@link SnakeVein} on a radius
+ * of nine or less, {@link GeodeVein} below two, {@link LayeredVein} and {@link VerticalLayeredVein}
+ * at zero, and {@link ClusterVein} divides by the radius. Correcting the algorithms is milestone 3;
+ * this guarantees malformed input never reaches them, so a bad row is reported and skipped rather
+ * than throwing through a half-finished command.
+ *
+ * <h2>Where the numbers live now</h2>
+ * Milestone 1 held its own ore-name-to-shape table and its own per-ore radius bounds, which was a
+ * second source of truth for facts the command already had. Milestone 2 removed it:
  *
  * <ul>
- *   <li>{@link SnakeVein} computes {@code random.nextInt(radius - 9)}, which throws
- *       {@code IllegalArgumentException} for any radius of 9 or less. It is evaluated <em>before</em>
- *       the full-height override on the next line, so the throw is unconditional on the first
- *       tendril — a single bad gold row aborts the whole command part-way through, after it has
- *       already written blocks.</li>
- *   <li>{@link GeodeVein} computes {@code random.nextInt(radius / 2)}, which throws for any radius
- *       below 2.</li>
- *   <li>{@link LayeredVein} and {@link VerticalLayeredVein} compute {@code random.nextInt(radius * 2)},
- *       which throws at radius 0 and for negative radii.</li>
- *   <li>{@link ClusterVein} divides by {@code radius}, producing NaN comparisons at radius 0.</li>
- *   <li>{@link VerticalLayeredVein}'s rotation {@code switch} has no default, so an unrecognised
- *       rotation silently leaves every offset at zero and stacks the entire deposit in one cell.</li>
+ *   <li><b>Which shape an ore uses, and its configured radius range</b>, are read from that
+ *       resource's {@link ResourceDefinition.Generation} in {@code resources.json}. Tuning a vein
+ *       is now a data edit.</li>
+ *   <li><b>The radius at which an algorithm throws</b> stays with the algorithm, in
+ *       {@link ResourceShape}. That is not tuning — it is a property of the code — and
+ *       {@code ResourceCatalog} refuses a configured minimum that dips below it, so data can
+ *       narrow the safe range but never widen it back into the crashing one.</li>
  * </ul>
  *
- * <p>Correcting the algorithms is milestone 3, which replaces them with deterministic pure
- * planners. This milestone only has to guarantee that malformed input cannot reach them — so the
- * rules live here, ahead of the call, and a rejected row is reported and skipped rather than
- * throwing through a half-finished command.
- *
- * <p>Pure Java on purpose, exactly like {@code MineableCatalog}: no Minecraft types, so a plain
- * JUnit test drives every boundary without booting the game. Build-height limits are passed in by
- * the caller rather than read from a level here.
- *
- * <h2>Known duplication</h2>
- * The ore-name-to-shape table below repeats the {@code switch} in {@code PopulateOresCommand}.
- * That duplication is deliberate and temporary: milestone 2 moves the mapping into the canonical
- * resource definition, at which point both copies collapse into the definition's shape field.
+ * <p>This class is now a validator, not a registry. Milestone 3 folds the remaining rules into the
+ * shape codecs when the planners replace the six imperative classes, at which point the whole file
+ * goes away.
  */
 public final class VeinPlacementValidation {
 
-    /** The shapes the legacy command can actually select, and what each one needs to be safe. */
-    public enum Shape {
-        /** Cubic scan, so its cost grows with the cube of the radius; capped tighter than the rest. */
-        CLUSTER(1, 32),
-        VERTICAL(1, 128),
-        /** {@code nextInt(radius - 9)} throws at or below 9. */
-        SNAKE(10, 128),
-        /** {@code nextInt(radius / 2)} throws below 2. */
-        GEODE(2, 128),
-        LAYERED(1, 128),
-        VERTICAL_LAYERED(1, 128);
-
-        private final int minimumRadius;
-        private final int maximumRadius;
-
-        Shape(int minimumRadius, int maximumRadius) {
-            this.minimumRadius = minimumRadius;
-            this.maximumRadius = maximumRadius;
-        }
-
-        public int minimumRadius() {
-            return minimumRadius;
-        }
-
-        public int maximumRadius() {
-            return maximumRadius;
-        }
-    }
-
-    /**
-     * Ore types the legacy command can place, and the shape each uses.
-     *
-     * <p>Coal is deliberately absent. It was placed as {@code minecraft:coal_ore}, a block the
-     * Mining catalogue does not govern, so it broke with vanilla drops, no skill requirement and
-     * no restoration — a managed generation route manufacturing unmanaged economic material.
-     * Milestone 1 withdraws the route; coal returns when it has a real resource definition.
-     */
-    private static final Map<String, Shape> SHAPES = Map.of(
-            "copper", Shape.CLUSTER,
-            "verite", Shape.CLUSTER,
-            "iron", Shape.VERTICAL,
-            "valorite", Shape.VERTICAL,
-            "shadow_iron", Shape.VERTICAL,
-            "gold", Shape.SNAKE,
-            "agapite", Shape.GEODE,
-            "silver", Shape.VERTICAL_LAYERED,
-            "tin", Shape.LAYERED);
+    /** Beyond the world border a placement is meaningless; reject rather than write into nowhere. */
+    public static final int MAX_HORIZONTAL = 30_000_000;
 
     /** The rotations {@link VerticalLayeredVein} actually understands. */
     private static final java.util.Set<String> ROTATIONS =
@@ -97,21 +49,28 @@ public final class VeinPlacementValidation {
     /** The default the command has always applied when a row carries no rotation. */
     public static final String DEFAULT_ROTATION = "XZ";
 
-    /** Beyond the world border a placement is meaningless; reject rather than write into nowhere. */
-    public static final int MAX_HORIZONTAL = 30_000_000;
-
     private VeinPlacementValidation() {
     }
 
-    /** The shape this ore type uses, or empty when the legacy command cannot place it at all. */
-    public static Optional<Shape> shapeFor(String oreType) {
+    /** The resource this legacy ore name refers to, if the command can place it at all. */
+    public static Optional<ResourceDefinition> resourceFor(String oreType) {
         if (oreType == null) return Optional.empty();
-        return Optional.ofNullable(SHAPES.get(oreType.toLowerCase(Locale.ROOT)));
+        return ResourceCatalog.instance().byPath(oreType.toLowerCase(Locale.ROOT))
+                .filter(definition -> definition.generation().isPresent());
+    }
+
+    /** The shape this ore type uses, or empty when the legacy command cannot place it at all. */
+    public static Optional<ResourceShape> shapeFor(String oreType) {
+        return resourceFor(oreType)
+                .flatMap(ResourceDefinition::generation)
+                .map(ResourceDefinition.Generation::shape);
     }
 
     /** Every ore type the legacy command can still place, for operator-facing messages. */
-    public static java.util.List<String> placeableOreTypes() {
-        return SHAPES.keySet().stream().sorted().toList();
+    public static List<String> placeableOreTypes() {
+        return ResourceCatalog.instance().generatable().stream()
+                .map(ResourceDefinition::path)
+                .toList();
     }
 
     /**
@@ -139,18 +98,21 @@ public final class VeinPlacementValidation {
             int minBuildHeight,
             int maxBuildHeight) {
 
-        Shape shape = shapeFor(oreType).orElse(null);
-        if (shape == null) {
+        ResourceDefinition resource = resourceFor(oreType).orElse(null);
+        if (resource == null) {
             return Optional.of("unknown or unplaceable ore type '" + oreType
                     + "' (placeable: " + String.join(", ", placeableOreTypes()) + ")");
         }
-        if (radius < shape.minimumRadius()) {
-            return Optional.of("radius " + radius + " is below the minimum " + shape.minimumRadius()
-                    + " that the " + shape.name().toLowerCase(Locale.ROOT) + " shape can produce");
+        ResourceDefinition.Generation generation = resource.generation().orElseThrow();
+        String shapeName = generation.shape().id();
+
+        if (radius < generation.minRadius()) {
+            return Optional.of("radius " + radius + " is below the minimum " + generation.minRadius()
+                    + " configured for " + resource.path() + "'s " + shapeName + " shape");
         }
-        if (radius > shape.maximumRadius()) {
-            return Optional.of("radius " + radius + " exceeds the maximum " + shape.maximumRadius()
-                    + " allowed for the " + shape.name().toLowerCase(Locale.ROOT) + " shape");
+        if (radius > generation.maxRadius()) {
+            return Optional.of("radius " + radius + " exceeds the maximum " + generation.maxRadius()
+                    + " configured for " + resource.path() + "'s " + shapeName + " shape");
         }
         if (normaliseRotation(rotation).isEmpty()) {
             return Optional.of("unrecognised rotation '" + rotation + "' (expected one of "

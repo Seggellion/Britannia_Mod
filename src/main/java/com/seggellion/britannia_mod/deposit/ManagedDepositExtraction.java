@@ -1,6 +1,8 @@
 package com.seggellion.britannia_mod.deposit;
 
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
+import com.seggellion.britannia_mod.resource.Resources;
 import com.seggellion.britannia_mod.structure.HouseBuildRights;
 
 import net.minecraft.core.BlockPos;
@@ -76,7 +78,7 @@ public final class ManagedDepositExtraction {
      */
     public static Result extract(ServerLevel level, BlockPos pos, ServerPlayer player, ItemStack tool) {
         BlockState state = level.getBlockState(pos);
-        ManagedDeposit deposit = ManagedDeposits.resolve(state).orElse(null);
+        ResourceDefinition deposit = ManagedDeposits.resolve(state).orElse(null);
         if (deposit == null) {
             return Result.NOT_A_DEPOSIT;
         }
@@ -101,9 +103,9 @@ public final class ManagedDepositExtraction {
 
         // Remembered before it is removed, and from the state that is still there.
         BrokenBlockTracker.recordBrokenBlock(level, pos, state, player.getUUID());
-        level.setBlock(pos, level.getFluidState(pos).createLegacyBlock(), 3);
+        level.setBlock(pos, Resources.depletedState(deposit, level, pos), 3);
 
-        ItemStack yield = new ItemStack(deposit.extractedItem().get(), deposit.extractedCount());
+        ItemStack yield = ManagedDeposits.yieldStack(deposit);
         Block.popResource(level, pos, yield);
         player.displayClientMessage(
                 Component.translatable("message.britannia_mod.deposit.extracted", yield.getHoverName()), true);

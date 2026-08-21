@@ -100,6 +100,22 @@ public class ModTags {
          * Both happen to hold the same shovel today.
          */
         public static final TagKey<Item> SILICA_SHOVELS = createTag("silica_shovels");
+
+        /**
+         * The pickaxes authorized to work a Mining-catalogued stone or ore resource.
+         *
+         * <p>OreVein milestone 2. The Mining half had no tag at all — authorization was an
+         * {@code instanceof QualityToolItem} predicate in Java, which is why a shovel and a
+         * two-handed axe had to be excluded by class rather than by data. This is the pickaxe's
+         * side of the same arrangement clay and silica already had, so the pickaxe and the shovel
+         * are now parallel: each resource definition names the tag that works it, and neither tool
+         * has any authority the data has not granted it.
+         *
+         * <p>Named for the job like every tag above it, and resource definitions reference it per
+         * resource — so a future ore that wants its own pickaxe tag is a data change here and one
+         * line in {@code resources.json}, not a Java edit.
+         */
+        public static final TagKey<Item> MINING_PICKAXES = createTag("mining_pickaxes");
         public static final TagKey<Item> FLOWERS = createTag("flowers");
         public static final TagKey<Item> FLOWER_SEEDS = createTag("flower_seeds");
 

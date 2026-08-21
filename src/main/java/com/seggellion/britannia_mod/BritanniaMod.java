@@ -136,6 +136,10 @@ CraftableRegistry.init();
         // Mining milestone 2: load + validate the Mining progression catalogue fail-fast.
         // Definitions only — no break-flow behavior is wired until milestone 3.
         com.seggellion.britannia_mod.mining.Mineables.init();
+        // OreVein milestone 2: the canonical resource catalogue. Loaded after Mineables because it
+        // validates its references against it -- an unresolved or mismatched Mining reference must
+        // fail the load here rather than become a permissive extraction rule at runtime.
+        com.seggellion.britannia_mod.resource.Resources.init();
         // Register mod components
      //   FeatureRegistry.register(modEventBus);
         BlockRegistry.register(modEventBus);
@@ -361,6 +365,11 @@ public void onServerStarting(ServerStartingEvent event) {
     // Mining milestone 2: block registration is complete by now, so every catalogued block id
     // must resolve against the live registry (the catalogue's unresolved-reference check).
     com.seggellion.britannia_mod.mining.Mineables.validateBlockIdsResolve();
+    com.seggellion.britannia_mod.resource.Resources.validateAgainstRegistries();
+    // Tags only exist once datapacks have loaded. An extraction tag that authorises nobody would
+    // make its resource quietly unworkable, which is the silent-fallback failure this milestone
+    // was told not to allow, so it is checked explicitly rather than discovered by a player.
+    com.seggellion.britannia_mod.resource.Resources.validateExtractionTagsResolve();
     NameLoader.loadNames("assets/britannia_mod/uo_names.xml");
 
     try {

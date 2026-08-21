@@ -43,19 +43,19 @@ class ManagedClayDepositTest {
 
     @Test
     void theClayBedIsAManagedDepositThatYieldsOneVanillaClayBall() {
-        assertEquals("britannia_mod:clay_deposit", ManagedDeposits.CLAY.id().toString());
-        assertEquals(Items.CLAY_BALL, ManagedDeposits.CLAY.extractedItem().get(),
+        assertEquals("britannia_mod:clay_deposit", ManagedDeposits.CLAY.id());
+        assertEquals(Items.CLAY_BALL, ManagedDeposits.yieldStack(ManagedDeposits.CLAY).getItem(),
                 "the deposit must yield the same item the economy classifier knows about");
-        assertEquals(1, ManagedDeposits.CLAY.extractedCount(),
+        assertEquals(1, ManagedDeposits.CLAY.yield().count(),
                 "one bed is one unit, as a worked stone block is one graded stone and an ore "
                         + "block one purity ore; house recipes are consumption, not node yield");
     }
 
     @Test
     void theAuthorizingToolIsAShovelTag() {
-        assertEquals(ModTags.Items.CLAY_SHOVELS, ManagedDeposits.CLAY.extractionTool());
-        assertEquals("britannia_mod:clay_shovels",
-                ManagedDeposits.CLAY.extractionTool().location().toString());
+        assertEquals(ModTags.Items.CLAY_SHOVELS, ManagedDeposits.extractionTag(ManagedDeposits.CLAY));
+        assertEquals("britannia_mod:clay_shovels", ManagedDeposits.CLAY.extractionToolTag(),
+                "the authorising tag is configured data, not a compiled-in constant");
     }
 
     /**
@@ -105,11 +105,11 @@ class ManagedClayDepositTest {
         assertTrue(ManagedDeposits.byName("clay").isPresent());
         assertTrue(ManagedDeposits.byName("clay_deposit").isPresent());
         assertEquals("britannia_mod:silica_sand_deposit",
-                ManagedDeposits.byName("silica_sand_deposit").orElseThrow().id().toString());
+                ManagedDeposits.byName("silica_sand_deposit").orElseThrow().id());
         assertEquals("britannia_mod:silica_sand_deposit",
-                ManagedDeposits.byName("silica_sand").orElseThrow().id().toString());
+                ManagedDeposits.byName("silica_sand").orElseThrow().id());
         assertEquals("britannia_mod:silica_sand_deposit",
-                ManagedDeposits.byName("silica").orElseThrow().id().toString(),
+                ManagedDeposits.byName("silica").orElseThrow().id(),
                 "the short name is what /manageddeposit place silica has to accept");
         assertTrue(ManagedDeposits.byName("gravel").isEmpty());
         assertTrue(ManagedDeposits.byName("").isEmpty());

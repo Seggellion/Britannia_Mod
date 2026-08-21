@@ -274,7 +274,7 @@ public final class ManagedClayDepositGameTests {
             throw new GameTestAssertException("nothing was extracted, so nothing can be sold");
         }
         ItemStack yield = dropped.get(0);
-        if (!yield.is(ManagedDeposits.CLAY.extractedItem().get())) {
+        if (!yield.is(ManagedDeposits.yieldStack(ManagedDeposits.CLAY).getItem())) {
             throw new GameTestAssertException(
                     "the bed yielded " + yield.getItem() + ", not the catalogued commodity item");
         }

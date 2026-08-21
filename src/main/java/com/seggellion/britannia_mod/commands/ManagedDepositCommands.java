@@ -5,8 +5,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
-import com.seggellion.britannia_mod.deposit.ManagedDeposit;
 import com.seggellion.britannia_mod.deposit.ManagedDeposits;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 
 import net.minecraft.commands.CommandSourceStack;
@@ -77,7 +77,7 @@ public final class ManagedDepositCommands {
     }
 
     private static int place(CommandSourceStack source, String type, BlockPos position) {
-        ManagedDeposit deposit = ManagedDeposits.byName(type).orElse(null);
+        ResourceDefinition deposit = ManagedDeposits.byName(type).orElse(null);
         if (deposit == null) {
             source.sendFailure(Component.literal("Unknown deposit type: " + type));
             return 0;
@@ -89,7 +89,7 @@ public final class ManagedDepositCommands {
                     "A managed deposit already stands at " + position.toShortString()));
             return 0;
         }
-        level.setBlockAndUpdate(position, deposit.block().get().defaultBlockState());
+        level.setBlockAndUpdate(position, ManagedDeposits.block(deposit).defaultBlockState());
         // A deposit placed on top of a pending restoration would be overwritten when that
         // restoration came due, so the stale record goes with the old block.
         BrokenBlockDataStorage.get(level).remove(position);
@@ -101,7 +101,7 @@ public final class ManagedDepositCommands {
 
     private static int remove(CommandSourceStack source, BlockPos position) {
         ServerLevel level = source.getLevel();
-        ManagedDeposit deposit = ManagedDeposits.resolve(level.getBlockState(position)).orElse(null);
+        ResourceDefinition deposit = ManagedDeposits.resolve(level.getBlockState(position)).orElse(null);
         if (deposit == null) {
             source.sendFailure(Component.literal(
                     "No managed deposit at " + position.toShortString()));
@@ -122,7 +122,7 @@ public final class ManagedDepositCommands {
      */
     private static int inspect(CommandSourceStack source, BlockPos position) {
         ServerLevel level = source.getLevel();
-        ManagedDeposit standing = ManagedDeposits.resolve(level.getBlockState(position)).orElse(null);
+        ResourceDefinition standing = ManagedDeposits.resolve(level.getBlockState(position)).orElse(null);
         BrokenBlockData pending = BrokenBlockDataStorage.get(level).getBrokenBlocks().get(position);
 
         if (standing == null && pending == null) {
@@ -147,10 +147,15 @@ public final class ManagedDepositCommands {
     }
 
     private static int types(CommandSourceStack source) {
-        for (ManagedDeposit deposit : ManagedDeposits.all()) {
-            String line = deposit.id() + " -> " + deposit.extractedCount() + "x "
-                    + deposit.extractedItem().get().getDescriptionId()
-                    + " with " + deposit.extractionTool().location();
+        for (ResourceDefinition deposit : ManagedDeposits.all()) {
+            // Milestone 2: every fact on this line now comes from the resource catalogue, so the
+            // listing is a readout of the data rather than of a compiled-in constant. The
+            // regeneration hours are included because they are now per resource -- silica's 24 is
+            // the first value that differs from the historical six.
+            String line = deposit.id() + " -> " + deposit.yield().count() + "x "
+                    + ManagedDeposits.yieldStack(deposit).getItem().getDescriptionId()
+                    + " with " + deposit.extractionToolTag()
+                    + ", regenerates in " + deposit.regenerationHours() + "h";
             source.sendSuccess(() -> Component.literal(line), false);
         }
         return ManagedDeposits.all().size();
