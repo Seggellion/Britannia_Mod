@@ -226,6 +226,11 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(
                 new com.seggellion.britannia_mod.deposit.ManagedDepositInteractionHandler());
        NeoForge.EVENT_BUS.register(new CustomBlockBreakHandler());
+        // OreVein milestone 1: explosions do not fire BreakEvent, so neither the Mining gate nor
+        // the deposit handler above ever saw one. This takes managed resource cells out of the
+        // blast instead, which is the same answer the flower and vegetation handlers use.
+        NeoForge.EVENT_BUS.register(
+                new com.seggellion.britannia_mod.event.ManagedResourceExplosionHandler());
         NeoForge.EVENT_BUS.register(new ChestHandler());
         NeoForge.EVENT_BUS.register(new LockpickingEventHandler());
         com.seggellion.britannia_mod.grabbyhands.GrabbyInteractionHandler.register();

@@ -66,10 +66,16 @@ public class CustomBlockBreakHandler {
         }
     }
 
+    /**
+     * Milestone 1: delegated to {@link com.seggellion.britannia_mod.mining.MiningExtractionTool},
+     * which is now the single authority the Mining break gate consults as well. This method used
+     * to be the only place a mining tool was defined, and the gate did not consult it — so a
+     * wrong tool was silently handed to vanilla breaking rather than refused. Coverage is
+     * unchanged: {@code ToolRegistry.PICKAXE} is a {@code QualityToolItem}, so the predicate
+     * admits exactly the items it always did.
+     */
     private boolean isBritanniaPickaxe(ItemStack stack) {
-        return stack.getItem() == ToolRegistry.PICKAXE.get()
-                || stack.getItem() instanceof QualityToolItem
-                || stack.getItem() instanceof BritanniaPickaxeItem;
+        return com.seggellion.britannia_mod.mining.MiningExtractionTool.isAuthorized(stack);
     }
 
     private void handleStoneBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {

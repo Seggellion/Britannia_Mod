@@ -173,8 +173,12 @@ public final class SilverMiningGameTests {
                 .filter(pos -> level.getBlockState(pos).is(BlockRegistry.SILVER_ORE.get()))
                 .count();
         check(silverBlocks > 0, "no Silver ore is present where the vein reported placements");
+        // The reported count must equal the number of distinct cells written. OreVein milestone 1
+        // retired /undoores, which is what this map used to feed, but the invariant it happens to
+        // prove is still worth holding: a shape that reported more placements than it wrote would
+        // be double-counting, which is one of the defects milestone 3 has to correct.
         check(replaced.size() == placed,
-                "every placement must record its original block so /undoores can reverse it");
+                "the reported placement count must match the cells actually written");
         helper.succeed();
     }
 }

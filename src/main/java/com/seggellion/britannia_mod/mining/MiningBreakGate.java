@@ -27,8 +27,14 @@ import java.util.Optional;
  * repo-standard admin bypass, and the skill-data-unavailable denial policy. The client never
  * supplies a skill value anywhere on this path.
  *
- * <p>Decision order mirrors Farming: resolution → actor policy → admin bypass → data
- * availability → inclusive threshold ({@code current >= required}, design §10.2).
+ * <p>Decision order mirrors Farming: resolution → actor policy → admin bypass → <b>extraction
+ * tool</b> → data availability → inclusive threshold ({@code current >= required}, design §10.2).
+ *
+ * <p>The tool step is milestone 1 of the OreVein remediation. Without it the gate answered "yes"
+ * to any sufficiently skilled player whatever they held, and the block then fell through to
+ * vanilla breaking because {@code CustomBlockBreakHandler} only acts for a project pickaxe — which
+ * destroyed the resource outside the managed transaction. The predicate itself lives in
+ * {@link MiningExtractionTool} so this gate and that handler cannot hold different opinions.
  */
 public final class MiningBreakGate {
 
@@ -44,7 +50,13 @@ public final class MiningBreakGate {
         NOT_APPLICABLE,
         APPROVED_BYPASS,
         NON_PLAYER_POLICY,
-        SKILL_DATA_UNAVAILABLE
+        SKILL_DATA_UNAVAILABLE,
+        /**
+         * A managed resource reached with something that cannot work it (milestone 1). Denied
+         * whatever the skill: skill answers "may you", the tool answers "with that", and the
+         * second question was previously never asked on this path.
+         */
+        WRONG_TOOL
     }
 
     enum ActorType {
@@ -58,16 +70,24 @@ public final class MiningBreakGate {
             boolean creativeMode,
             int permissionLevel,
             SkillManager.SkillDataState skillDataState,
-            float miningSkill
+            float miningSkill,
+            boolean authorizedTool
     ) {
         Subject {
             Objects.requireNonNull(actorType, "Mining actor type is required");
             Objects.requireNonNull(skillDataState, "Mining skill-data state is required");
         }
 
+        /** A loaded player holding a real mining tool: the subject skill questions are about. */
         static Subject loadedPlayer(float miningSkill) {
             return new Subject(ActorType.PLAYER, false, 0,
-                    SkillManager.SkillDataState.AVAILABLE, miningSkill);
+                    SkillManager.SkillDataState.AVAILABLE, miningSkill, true);
+        }
+
+        /** The same player with something that cannot work the resource. */
+        static Subject loadedPlayerWithWrongTool(float miningSkill) {
+            return new Subject(ActorType.PLAYER, false, 0,
+                    SkillManager.SkillDataState.AVAILABLE, miningSkill, false);
         }
     }
 
@@ -93,6 +113,7 @@ public final class MiningBreakGate {
                 case INSUFFICIENT_SKILL -> "message.britannia_mod.mining.insufficient";
                 case SKILL_DATA_UNAVAILABLE -> "message.britannia_mod.mining.skill_unavailable";
                 case NON_PLAYER_POLICY -> "message.britannia_mod.mining.automation_blocked";
+                case WRONG_TOOL -> "message.britannia_mod.mining.wrong_tool";
                 default -> "";
             };
         }
@@ -132,6 +153,13 @@ public final class MiningBreakGate {
         if (FlowerProtectionService.isAdministrator(subject.creativeMode(), subject.permissionLevel())) {
             return new Evaluation(ResultType.APPROVED_BYPASS, resolved, subject.miningSkill(), required);
         }
+        // Milestone 1. Before skill, because the tool is a fact the player can see and fix, while
+        // skill data is transient -- "you cannot mine this with that" is the more useful answer
+        // when both are wrong. After the admin bypass, because an operator removing a misplaced
+        // block is not an extraction and was never meant to need the right tool in hand.
+        if (!subject.authorizedTool()) {
+            return new Evaluation(ResultType.WRONG_TOOL, resolved, subject.miningSkill(), required);
+        }
         if (subject.skillDataState() != SkillManager.SkillDataState.AVAILABLE) {
             return new Evaluation(ResultType.SKILL_DATA_UNAVAILABLE, resolved, Float.NaN, required);
         }
@@ -141,21 +169,31 @@ public final class MiningBreakGate {
         return new Evaluation(type, resolved, subject.miningSkill(), required);
     }
 
+    /**
+     * Snapshot of authoritative server state for one actor.
+     *
+     * <p>The held item is read here, from the server's own copy of the main hand, for the same
+     * reason the game mode is: it is state the client cannot assert. Reading it inside the
+     * snapshot rather than threading it through {@link #evaluate} keeps every caller — the break
+     * gate, the skill award, and the read-only diagnostic command — asking the identical question
+     * about the identical actor, so none of them can drift into a second tool policy.
+     */
     static Subject subject(@Nullable Player actor) {
         if (!(actor instanceof ServerPlayer serverPlayer)) {
             return new Subject(ActorType.NON_PLAYER, false, 0,
-                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN);
+                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
         }
+        boolean authorizedTool = MiningExtractionTool.isAuthorized(serverPlayer.getMainHandItem());
         if (serverPlayer instanceof FakePlayer) {
             return new Subject(ActorType.AUTOMATION, isCreativeGameMode(serverPlayer),
                     FlowerProtectionService.effectivePermissionLevel(serverPlayer),
-                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN);
+                    SkillManager.SkillDataState.NOT_LOADED, Float.NaN, authorizedTool);
         }
         SkillManager.SkillSnapshot snapshot = SkillManager.getSkillSnapshot(
                 serverPlayer.getUUID(), SKILL_ID);
         return new Subject(ActorType.PLAYER, isCreativeGameMode(serverPlayer),
                 FlowerProtectionService.effectivePermissionLevel(serverPlayer),
-                snapshot.state(), snapshot.value());
+                snapshot.state(), snapshot.value(), authorizedTool);
     }
 
     /**

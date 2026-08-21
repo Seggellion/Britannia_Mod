@@ -2305,6 +2305,9 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
                 () -> new Block(BlockBehaviour.Properties.of()
                         .mapColor(MapColor.SAND)
                         .strength(3.0F, 3.0F)
+                        // Milestone 1: a quarry face is a place, not a material. It travels with
+                        // its restoration record or not at all, exactly like BaseOreBlock.
+                        .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
                         .sound(SoundType.STONE)));
 
         public static final DeferredHolder<Block, Block> METAL_DOOR = BLOCKS.register(

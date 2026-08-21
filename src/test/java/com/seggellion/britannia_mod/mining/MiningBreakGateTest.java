@@ -105,7 +105,7 @@ class MiningBreakGateTest {
     void automationIsDeniedEvenWithCreativeOrSkill() {
         MiningBreakGate.Subject automation = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.AUTOMATION, true, 2,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true);
         MiningBreakGate.Evaluation evaluation =
                 MiningBreakGate.evaluateResolved(definition("silver"), automation);
         assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY, evaluation.type());
@@ -118,7 +118,7 @@ class MiningBreakGateTest {
     void nonPlayerActorsAreDenied() {
         MiningBreakGate.Subject nonPlayer = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.NON_PLAYER, false, 0,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true);
         assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY,
                 MiningBreakGate.evaluateResolved(definition("stone"), nonPlayer).type());
     }
@@ -127,7 +127,7 @@ class MiningBreakGateTest {
     void creativeAndOperatorBypassTheThresholdOnly() {
         MiningBreakGate.Subject creative = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, true, 0,
-                SkillManager.SkillDataState.AVAILABLE, 0.0f);
+                SkillManager.SkillDataState.AVAILABLE, 0.0f, true);
         MiningBreakGate.Evaluation viaCreative =
                 MiningBreakGate.evaluateResolved(definition("valorite"), creative);
         assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS, viaCreative.type());
@@ -135,7 +135,7 @@ class MiningBreakGateTest {
 
         MiningBreakGate.Subject operator = new MiningBreakGate.Subject(
                 MiningBreakGate.ActorType.PLAYER, false, 2,
-                SkillManager.SkillDataState.NOT_LOADED, Float.NaN);
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, true);
         assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS,
                 MiningBreakGate.evaluateResolved(definition("valorite"), operator).type(),
                 "permission-level 2 bypasses even before skill data loads, matching Farming");
@@ -148,7 +148,7 @@ class MiningBreakGateTest {
                 SkillManager.SkillDataState.LOADING,
                 SkillManager.SkillDataState.UNAVAILABLE)) {
             MiningBreakGate.Subject subject = new MiningBreakGate.Subject(
-                    MiningBreakGate.ActorType.PLAYER, false, 0, state, 100.0f);
+                    MiningBreakGate.ActorType.PLAYER, false, 0, state, 100.0f, true);
             MiningBreakGate.Evaluation evaluation =
                     MiningBreakGate.evaluateResolved(definition("stone"), subject);
             assertEquals(MiningBreakGate.ResultType.SKILL_DATA_UNAVAILABLE, evaluation.type(), state.name());
@@ -170,5 +170,89 @@ class MiningBreakGateTest {
         assertEquals("72.4", MiningBreakGate.formatSkill(72.4f));
         assertEquals("75", MiningBreakGate.formatSkill(75.0f));
         assertEquals("?", MiningBreakGate.formatSkill(Float.NaN));
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // OreVein milestone 1: the tool is now part of the decision, not an afterthought left to
+    // whichever handler happened to run next.
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * The defect this milestone exists to close. Skill alone used to be a full answer, so a
+     * maxed-out miner holding anything at all was told ELIGIBLE and the block fell through to
+     * vanilla breaking.
+     */
+    @Test
+    void skillNeverSubstitutesForTheTool() {
+        for (String id : List.of("stone", "iron", "silver", "copper", "verite", "valorite")) {
+            MiningBreakGate.Evaluation evaluation = MiningBreakGate.evaluateResolved(
+                    definition(id), MiningBreakGate.Subject.loadedPlayerWithWrongTool(100.0f));
+            assertEquals(MiningBreakGate.ResultType.WRONG_TOOL, evaluation.type(),
+                    id + " must refuse a wrong tool at any skill");
+            assertFalse(evaluation.permitsBreak(), id + " must not reach vanilla breaking");
+            assertEquals("message.britannia_mod.mining.wrong_tool",
+                    evaluation.feedbackTranslationKey());
+        }
+    }
+
+    /** The requirement is still enforced for someone holding the right thing. */
+    @Test
+    void theRightToolStillHasToClearTheRequirement() {
+        assertEquals(MiningBreakGate.ResultType.INSUFFICIENT_SKILL,
+                MiningBreakGate.evaluateResolved(
+                        definition("valorite"), MiningBreakGate.Subject.loadedPlayer(50.0f)).type());
+        assertEquals(MiningBreakGate.ResultType.ELIGIBLE,
+                MiningBreakGate.evaluateResolved(
+                        definition("valorite"), MiningBreakGate.Subject.loadedPlayer(99.0f)).type());
+    }
+
+    /** An unmanaged block is still nobody's business, whatever is in hand. */
+    @Test
+    void theToolCheckOnlyAppliesToManagedResources() {
+        assertEquals(MiningBreakGate.ResultType.NOT_APPLICABLE,
+                MiningBreakGate.evaluateResolved(
+                        Optional.empty(),
+                        MiningBreakGate.Subject.loadedPlayerWithWrongTool(0.0f)).type(),
+                "a wrong tool on ordinary world must not become a Mining denial");
+    }
+
+    /**
+     * An operator clearing a badly placed block is not extracting it, so the administrative
+     * bypass deliberately outranks the tool check — the same way it already outranks the skill
+     * requirement.
+     */
+    @Test
+    void theAdminBypassOutranksTheToolCheck() {
+        MiningBreakGate.Subject creativeWrongTool = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, true, 0,
+                SkillManager.SkillDataState.AVAILABLE, 0.0f, false);
+        assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS,
+                MiningBreakGate.evaluateResolved(definition("valorite"), creativeWrongTool).type());
+
+        MiningBreakGate.Subject operatorWrongTool = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, false, 2,
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
+        assertEquals(MiningBreakGate.ResultType.APPROVED_BYPASS,
+                MiningBreakGate.evaluateResolved(definition("valorite"), operatorWrongTool).type());
+    }
+
+    /** Automation is refused on actor policy first, so its tool never becomes the reason. */
+    @Test
+    void actorPolicyIsDecidedBeforeTheTool() {
+        MiningBreakGate.Subject automationWrongTool = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.AUTOMATION, false, 0,
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
+        assertEquals(MiningBreakGate.ResultType.NON_PLAYER_POLICY,
+                MiningBreakGate.evaluateResolved(definition("stone"), automationWrongTool).type());
+    }
+
+    /** A wrong tool is a knowable, fixable fact, so it is reported ahead of transient skill state. */
+    @Test
+    void theToolIsReportedBeforeUnavailableSkillData() {
+        MiningBreakGate.Subject unloadedWrongTool = new MiningBreakGate.Subject(
+                MiningBreakGate.ActorType.PLAYER, false, 0,
+                SkillManager.SkillDataState.NOT_LOADED, Float.NaN, false);
+        assertEquals(MiningBreakGate.ResultType.WRONG_TOOL,
+                MiningBreakGate.evaluateResolved(definition("stone"), unloadedWrongTool).type());
     }
 }

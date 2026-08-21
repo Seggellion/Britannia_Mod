@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -66,13 +67,54 @@ class MiningRestorationPolicyTest {
                 "the Overworld-only restriction stranded Nether nodes (Basalt, Blackstone)");
     }
 
-    /** Restoration must never overwrite construction or bury an entity. */
+    /**
+     * The occupancy policy, driven rather than read.
+     *
+     * <p>This test used to assert that {@code BlockRestoreHandler.java} <em>contained the string</em>
+     * {@code canBeReplaced}. That is what a source-text contract costs: the call it was pinning was
+     * the bug. In 1.21.1 {@code minecraft:water} and {@code minecraft:lava} are both declared
+     * {@code .replaceable()}, so "air or replaceable" meant restoration came back by deleting the
+     * fluid standing in the cell. Pinning the spelling of the defect made it look protected.
+     *
+     * <p>It now exercises the policy function itself across every combination that matters. Real
+     * water and lava in a real world are covered by {@code MiningRestorationGameTests}; this is
+     * the exhaustive half, and it needs no Minecraft to run.
+     */
     @Test
-    void restorationRefusesOccupiedCells() throws Exception {
+    void restorationRefusesOccupiedCells() {
+        // The ordinary case: the node was mined, nothing moved in, it comes back.
+        assertTrue(BlockRestoreHandler.cellStateAllowsRestoration(false, true, true, false),
+                "an empty cell must accept the node back");
+        // Replaceable ground cover is explicitly allowed: grass or a snow layer is not construction.
+        assertTrue(BlockRestoreHandler.cellStateAllowsRestoration(false, false, true, false),
+                "a replaceable non-fluid state must accept the node back");
+
+        // Fluids block, whatever else is true of the cell. This is the milestone 1 correction.
+        assertFalse(BlockRestoreHandler.cellStateAllowsRestoration(true, false, true, false),
+                "water or lava must block restoration rather than be deleted by it");
+        assertFalse(BlockRestoreHandler.cellStateAllowsRestoration(true, true, true, false),
+                "a fluid must block even when the state also reports air");
+
+        // Somebody built here.
+        assertFalse(BlockRestoreHandler.cellStateAllowsRestoration(false, false, false, false),
+                "a solid non-replaceable state is construction and must block");
+        // ...and a block entity is never overwritten, even if its state claimed to be replaceable.
+        assertFalse(BlockRestoreHandler.cellStateAllowsRestoration(false, false, true, true),
+                "a block entity must block restoration");
+        assertFalse(BlockRestoreHandler.cellStateAllowsRestoration(false, true, true, true),
+                "a block entity must block even in a cell that reports air");
+    }
+
+    /** The guard is still wired into the real level check, and still consults entities. */
+    @Test
+    void theOccupancyGuardIsWiredIntoTheLevelCheck() throws Exception {
         String handler = code("block/blockrestore/BlockRestoreHandler.java");
-        assertTrue(handler.contains("canRestoreInto"), "an occupancy guard must exist");
-        assertTrue(handler.contains("canBeReplaced"), "a built-over cell must be detected");
-        assertTrue(handler.contains("getEntitiesOfClass"), "an occupied cell must be detected");
+        assertTrue(handler.contains("cellStateAllowsRestoration"),
+                "canRestoreInto must delegate to the policy the test above drives");
+        assertTrue(handler.contains("getFluidState"),
+                "the fluid question must be asked of the level, not inferred from the block state");
+        assertTrue(handler.contains("getEntitiesOfClass"),
+                "an entity standing in the cell must still block");
     }
 
     /**

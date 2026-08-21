@@ -95,16 +95,53 @@ public class BlockRestoreHandler {
     }
 
     /**
-     * Whether the node may return without taking something else with it: the cell must still be
-     * free (nothing was built there) and no entity may be standing in it.
+     * Whether the node may return without taking something else with it.
+     *
+     * <p>Milestone 1 of the OreVein remediation narrowed this. It used to accept any cell that was
+     * air <em>or</em> {@code canBeReplaced()}, and in 1.21.1 both {@code minecraft:water} and
+     * {@code minecraft:lava} are declared {@code .replaceable()} — so a node mined in a shallow or
+     * beside a lava fall came back by deleting the fluid. That is the restoration system quietly
+     * editing the world outside its remit, and it is not what "the cell is still free" was ever
+     * meant to mean.
+     *
+     * <p>The cell must now be genuinely empty of fluid, hold no block entity, be air or a
+     * replaceable state that policy accepts, and have nothing standing in it. A cell that fails
+     * any of those keeps its debt and is tried again later — the record is never dropped and the
+     * occupying state is never destroyed.
      */
     public static boolean canRestoreInto(ServerLevel level, BlockPos pos) {
         BlockState current = level.getBlockState(pos);
-        if (!current.isAir() && !current.canBeReplaced()) {
+        boolean allowed = cellStateAllowsRestoration(
+                !level.getFluidState(pos).isEmpty(),
+                current.isAir(),
+                current.canBeReplaced(),
+                level.getBlockEntity(pos) != null);
+        if (!allowed) {
             return false;
         }
         List<Entity> occupants = level.getEntitiesOfClass(Entity.class, new AABB(pos));
         return occupants.isEmpty();
+    }
+
+    /**
+     * The occupancy policy itself, as a pure function of what is in the cell.
+     *
+     * <p>Split out so the rule can be driven exhaustively by a plain JUnit test without booting
+     * Minecraft, the way {@code MiningBreakGate.evaluateResolved} is. The policy this states, in
+     * order: fluid always blocks; a block entity always blocks; otherwise air and explicitly
+     * replaceable states (grass, snow layers, and the like) accept the node back.
+     *
+     * @param fluidPresent      the cell holds water or lava, flowing or source
+     * @param air               the cell is air
+     * @param replaceable       the cell's state reports {@code canBeReplaced()}
+     * @param blockEntityPresent something with stored contents or identity stands here
+     */
+    public static boolean cellStateAllowsRestoration(
+            boolean fluidPresent, boolean air, boolean replaceable, boolean blockEntityPresent) {
+        if (fluidPresent || blockEntityPresent) {
+            return false;
+        }
+        return air || replaceable;
     }
 
     /**
