@@ -241,6 +241,124 @@ public final class SilicaDistributionAuditGameTests {
         helper.succeed();
     }
 
+    /**
+     * Milestone 9: the same audit widened, for a verdict on M7's provisional tuning.
+     *
+     * <p>M7 measured three seeds. This measures eight, and adds the two figures a balancing
+     * decision actually needs: how often a bed straddles a chunk border — which is what exercises
+     * the multi-chunk identity machinery in a live world — and how far apart accepted beds are.
+     *
+     * <p>It asserts only the bands that would make the configuration unusable. Silica being common
+     * in one region and absent from another is the design, not a defect, so the assertion is on the
+     * aggregate rather than on any single seed.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 900)
+    public static void silicaTuningMeasuredAcrossEightSeeds(GameTestHelper helper) {
+        ResourceDefinition silica = silica();
+        NaturalGeneration natural = silica.natural().orElseThrow();
+        long[] seeds = {1L, 987654321L, -4242L, 0x5EEDL, 77L, -19L, 31337L, 606L};
+
+        int candidatesTotal = 0;
+        int acceptedTotal = 0;
+        int multiChunk = 0;
+        List<Integer> sizes = new ArrayList<>();
+        List<Integer> altitudes = new ArrayList<>();
+        Map<String, Integer> biomes = new LinkedHashMap<>();
+        List<Double> nearest = new ArrayList<>();
+
+        System.out.println("M9SILICA ---- silica tuning, 8 seeds x " + (CELL_SPAN * CELL_SPAN)
+                + " owner cells ----");
+        for (long seed : seeds) {
+            Survey survey = survey(helper, seed);
+            candidatesTotal += survey.candidates();
+            acceptedTotal += survey.accepted();
+            altitudes.addAll(survey.altitudes());
+            survey.biomes().forEach((key, count) -> biomes.merge(key, count, Integer::sum));
+
+            long chunks = (long) survey.cells() * natural.cellChunks() * natural.cellChunks();
+            System.out.println(String.format(Locale.ROOT,
+                    "M9SILICA seed %-12d chunks=%d candidates=%d accepted=%d  rate=1 per %s chunks",
+                    seed, chunks, survey.candidates(), survey.accepted(),
+                    survey.accepted() == 0 ? "-" : Long.toString(chunks / survey.accepted())));
+
+            // Nearest neighbour among this seed's accepted beds.
+            List<int[]> origins = survey.origins();
+            for (int i = 0; i < origins.size(); i++) {
+                double best = Double.MAX_VALUE;
+                for (int j = 0; j < origins.size(); j++) {
+                    if (i == j) continue;
+                    double dx = origins.get(i)[0] - origins.get(j)[0];
+                    double dz = origins.get(i)[1] - origins.get(j)[1];
+                    best = Math.min(best, Math.sqrt(dx * dx + dz * dz));
+                }
+                if (best < Double.MAX_VALUE) {
+                    nearest.add(best);
+                }
+            }
+
+            // Size and chunk span of every candidate this seed produced.
+            for (int cellX = 0; cellX < CELL_SPAN; cellX++) {
+                for (int cellZ = 0; cellZ < CELL_SPAN; cellZ++) {
+                    var candidate = NaturalDepositSelector.candidateFor(seed, silica, natural, cellX, cellZ);
+                    if (candidate.isEmpty()) continue;
+                    var plan = silica.generation().orElseThrow().shape().planner()
+                            .plan(new ShapeConfig(candidate.get().radius(), ShapeRotation.XZ,
+                                    candidate.get().plannerSeed(), natural.tuning()));
+                    sizes.add(plan.count());
+                    int originX = candidate.get().originX();
+                    int originZ = candidate.get().originZ();
+                    int minChunkX = (originX - candidate.get().radius()) >> 4;
+                    int maxChunkX = (originX + candidate.get().radius()) >> 4;
+                    int minChunkZ = (originZ - candidate.get().radius()) >> 4;
+                    int maxChunkZ = (originZ + candidate.get().radius()) >> 4;
+                    if (minChunkX != maxChunkX || minChunkZ != maxChunkZ) {
+                        multiChunk++;
+                    }
+                }
+            }
+        }
+
+        sizes.sort(Integer::compareTo);
+        altitudes.sort(Integer::compareTo);
+        nearest.sort(Double::compareTo);
+
+        System.out.println(String.format(Locale.ROOT,
+                "M9SILICA totals: candidates=%d accepted=%d acceptance=%.1f%%  biomes=%s",
+                candidatesTotal, acceptedTotal,
+                100.0 * acceptedTotal / Math.max(1, candidatesTotal), biomes));
+        System.out.println(String.format(Locale.ROOT,
+                "M9SILICA planned cells: min=%d median=%d mean=%.0f max=%d over %d deposits",
+                sizes.get(0), sizes.get(sizes.size() / 2),
+                sizes.stream().mapToInt(Integer::intValue).average().orElseThrow(),
+                sizes.get(sizes.size() - 1), sizes.size()));
+        System.out.println(String.format(Locale.ROOT,
+                "M9SILICA multi-chunk: %d of %d candidates span a chunk border (%.0f%%)",
+                multiChunk, sizes.size(), 100.0 * multiChunk / sizes.size()));
+        if (!altitudes.isEmpty()) {
+            System.out.println(String.format(Locale.ROOT,
+                    "M9SILICA altitude: min=%d median=%d max=%d",
+                    altitudes.get(0), altitudes.get(altitudes.size() / 2),
+                    altitudes.get(altitudes.size() - 1)));
+        }
+        if (!nearest.isEmpty()) {
+            System.out.println(String.format(Locale.ROOT,
+                    "M9SILICA nearest neighbour among accepted: min=%.0f median=%.0f max=%.0f blocks",
+                    nearest.get(0), nearest.get(nearest.size() / 2),
+                    nearest.get(nearest.size() - 1)));
+        }
+
+        check(acceptedTotal > 0, "silica was accepted nowhere across eight seeds");
+        double acceptance = 100.0 * acceptedTotal / candidatesTotal;
+        check(acceptance < 50.0,
+                "the biome gate accepted " + acceptance + "% of candidates; silica is not curated");
+        check(multiChunk > sizes.size() / 20,
+                "only " + multiChunk + " of " + sizes.size() + " beds cross a chunk border, so the"
+                        + " multi-chunk identity machinery is barely exercised in a live world");
+        check(sizes.get(sizes.size() - 1) <= 3_000,
+                "the largest planned bed is " + sizes.get(sizes.size() - 1) + " cells");
+        helper.succeed();
+    }
+
     /** The planned size of the deposits that are actually accepted, for the report's size figures. */
     @GameTest(template = TEMPLATE, timeoutTicks = 600)
     public static void theAcceptedDepositsAreTheSizeTheReportClaims(GameTestHelper helper) {
