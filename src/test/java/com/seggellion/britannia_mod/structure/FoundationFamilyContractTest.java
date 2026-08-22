@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static com.seggellion.britannia_mod.structure.FoundationAssets.ASSETS;
 import static com.seggellion.britannia_mod.structure.FoundationAssets.DARK_SIDE_TEXTURE;
@@ -30,6 +32,7 @@ import static com.seggellion.britannia_mod.structure.FoundationAssets.texturePat
 import static com.seggellion.britannia_mod.structure.FoundationAssets.variantModels;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -299,5 +302,199 @@ class FoundationFamilyContractTest {
                             + " requiresCorrectToolForDrops, which TOOL_GATED disagrees with. The "
                             + "list and the pickaxe tag both need to follow the registration.");
         }
+    }
+
+    /* -- the same masonry, cut as stairs --------------------------------------------------- */
+
+    /**
+     * The stairs are the family member that is not a cube.
+     *
+     * <p>Everything above measures a foundation by its five masonry faces, which a stair does not
+     * have -- {@code minecraft:block/stairs} paints from a {@code bottom}/{@code top}/{@code side}
+     * map instead. So the family rules that generalise are re-asserted here in the stair's own
+     * terms rather than the block being bent to fit a cube-shaped test, and the two that do not --
+     * the full-cube geometry and the pickaxe tier -- are replaced by the rules that do apply: the
+     * vanilla stair parents, and being unbreakable rather than tool-gated.
+     */
+    private static final String STAIRS = "brick_foundation_stairs";
+
+    /** The faces a stair model paints. Everything visible on one is masonry. */
+    private static final List<String> STAIR_FACES = List.of("bottom", "top", "side");
+
+    private static final List<String> STAIR_SHAPES =
+            List.of("straight", "inner_left", "inner_right", "outer_left", "outer_right");
+
+    private static final Path STAIRS_SOURCE = ROOT.resolve(
+            "src/main/java/com/seggellion/britannia_mod/block/BrickFoundationStairsBlock.java");
+
+    @Test
+    void theFoundationStairsShowTheNormalBrickMasonryAndNothingElse() throws IOException {
+        Set<String> reached = new LinkedHashSet<>();
+        for (String model : distinctModels(STAIRS)) {
+            Map<String, String> textures = resolveTextures(model);
+            for (String face : STAIR_FACES) {
+                String texture = textures.get(face);
+                assertNotNull(texture, model + " does not define the " + face + " face");
+                assertTrue(NORMAL_SIDE_TEXTURES.contains(texture),
+                        model + " paints " + texture + " on its " + face + " face, which is not "
+                                + "part of the light foundation masonry set");
+                reached.add(texture);
+            }
+        }
+        assertEquals(NORMAL_SIDE_TEXTURES, reached,
+                STAIRS + " must be able to show exactly the three normal brick textures, so a run "
+                        + "of them varies the way the foundation course beside it does");
+    }
+
+    @Test
+    void theFoundationStairsInheritVanillaStairGeometryRatherThanCarryingTheirOwn()
+            throws IOException {
+        Set<String> parents = new LinkedHashSet<>();
+        for (String model : distinctModels(STAIRS)) {
+            parents.add(parentOf(model));
+            assertEquals(parentOf(model), rootParentOf(model),
+                    model + " must reach vanilla in one hop; an intermediate model of our own "
+                            + "would be a second copy of the stair geometry");
+        }
+        assertEquals(Set.of("block/stairs", "block/inner_stairs", "block/outer_stairs"), parents,
+                STAIRS + " must be built from the three vanilla stair shapes");
+    }
+
+    @Test
+    void theFoundationStairsCoverEveryFacingHalfAndShape() throws IOException {
+        Set<String> expected = new TreeSet<>();
+        for (String shape : STAIR_SHAPES) {
+            for (String half : List.of("bottom", "top")) {
+                for (String facing : List.of("north", "south", "east", "west")) {
+                    expected.add("facing=" + facing + ",half=" + half + ",shape=" + shape);
+                }
+            }
+        }
+        assertEquals(expected, new TreeSet<>(variantModels(STAIRS).keySet()),
+                "a stair state with no entry renders as the missing-model cube, so every facing, "
+                        + "half and shape must be listed");
+    }
+
+    @Test
+    void everyFoundationStairsStateOffersAllThreeMasonryVariationsExactlyOnce() throws IOException {
+        for (Map.Entry<String, List<String>> variant : variantModels(STAIRS).entrySet()) {
+            List<String> models = variant.getValue();
+            assertEquals(3, models.size(),
+                    STAIRS + " offers " + models.size() + " models under " + variant.getKey()
+                            + "; every state must offer all three masonry variations");
+            assertEquals(models.size(), new LinkedHashSet<>(models).size(),
+                    STAIRS + " lists a duplicate model under " + variant.getKey() + ", which would "
+                            + "skew the random distribution");
+        }
+    }
+
+    @Test
+    void everyReferencedFoundationStairsModelAndTextureExists() throws IOException {
+        for (String model : distinctModels(STAIRS)) {
+            assertTrue(Files.exists(modelPath(model)),
+                    STAIRS + " selects " + model + ", which does not exist");
+            for (Map.Entry<String, String> texture : resolveTextures(model).entrySet()) {
+                String reference = texture.getValue();
+                assertFalse(reference.startsWith("#"),
+                        model + " left texture alias " + texture.getKey() + " unresolved");
+                if (!reference.startsWith("britannia_mod:")) {
+                    continue;
+                }
+                assertTrue(Files.exists(texturePath(reference)),
+                        "missing texture " + reference + " referenced by " + model);
+            }
+        }
+    }
+
+    @Test
+    void theFoundationStairsAreFullyWiredUp() throws IOException {
+        String blocks = Files.readString(ROOT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/registry/BlockRegistry.java"));
+        String items = Files.readString(ROOT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/registry/ItemRegistry.java"));
+        String tabs = Files.readString(ROOT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/registry/CreativeTabRegistry.java"));
+        JsonObject lang = read(ASSETS.resolve("lang/en_us.json"));
+
+        assertTrue(blocks.contains("\"" + STAIRS + "\""), STAIRS + " is not registered");
+        assertTrue(items.contains("\"" + STAIRS + "\""), STAIRS + " has no BlockItem");
+        assertTrue(tabs.contains(STAIRS.toUpperCase() + "_ITEM"),
+                STAIRS + " is missing from the creative tab");
+        assertTrue(lang.has("block.britannia_mod." + STAIRS), STAIRS + " has no display name");
+        assertTrue(Files.exists(itemModelPath(STAIRS)), STAIRS + " has no item model");
+
+        // The one wiring rule that inverts: an unbreakable block declares noLootTable() rather
+        // than shipping a table, exactly as the moongate does.
+        assertFalse(Files.exists(lootTablePath(STAIRS)),
+                STAIRS + " ships a loot table, but nothing may ever break it. A table here is dead "
+                        + "data that reads as though the block drops.");
+        assertTrue(Files.readString(STAIRS_SOURCE).contains(".noLootTable()"),
+                STAIRS + " must be explicitly drop-free");
+    }
+
+    @Test
+    void theFoundationStairsItemModelPointsAtARealCanonicalVariant() throws IOException {
+        String parent = read(itemModelPath(STAIRS)).get("parent").getAsString();
+        assertTrue(allModels(STAIRS).contains(parent),
+                STAIRS + " item model must render one of the block's own variants, so that the "
+                        + "inventory icon and the placed block agree; it shows " + parent);
+        assertTrue(Files.exists(modelPath(parent)), STAIRS + " item model parent does not exist");
+    }
+
+    /**
+     * The stairs are permanent, and both halves of that are asserted.
+     *
+     * <p>Hardness alone is not indestructibility: {@code ServerPlayerGameMode.destroyBlock} never
+     * consults it for a creative player. {@code onDestroyedByPlayer} is the one question asked in
+     * every game mode, and it must answer no on its own rather than deferring to {@code super}.
+     * {@code FoundationStairsIndestructibilityGameTests} drives the live behaviour; this holds the
+     * declarations that produce it, because a unit test that touches {@code BlockRegistry} without
+     * bootstrapping Minecraft poisons the whole test JVM.
+     */
+    @Test
+    void theFoundationStairsRefuseEveryPlayerInEveryGameMode() throws IOException {
+        String source = Files.readString(STAIRS_SOURCE);
+
+        assertTrue(source.contains("extends StairBlock"),
+                STAIRS + " must be an ordinary stair everywhere except in what may remove it");
+        assertTrue(source.contains("strength(-1.0F, 3600000.0F)"),
+                STAIRS + " must carry bedrock's hardness and blast resistance, which is what stops "
+                        + "a survival or adventure break and every explosion");
+
+        int declaration = source.indexOf("public boolean onDestroyedByPlayer");
+        assertTrue(declaration >= 0,
+                STAIRS + " does not override onDestroyedByPlayer, so a creative player removes it "
+                        + "-- hardness is never consulted on that path");
+        String body = source.substring(declaration, source.indexOf("}", declaration));
+        assertTrue(body.contains("return false;"),
+                STAIRS + " must refuse removal outright");
+        assertFalse(body.contains("super.onDestroyedByPlayer"),
+                STAIRS + " must not fall through to the default removal");
+    }
+
+    /**
+     * Permanence is declared on the block, and the housing rule is joined rather than duplicated.
+     *
+     * <p>The stairs sit in {@code house_foundation} beside the other perimeter courses, so a player
+     * who reaches for one inside a house is told why by the rule that already exists. That rule is
+     * scoped to registered houses and exempts creative, which is exactly why the block-level
+     * refusal above is also there -- and why a tool tier would be meaningless here.
+     */
+    @Test
+    void theFoundationStairsJoinThePerimeterTagAndCarryNoToolTier() throws IOException {
+        assertTrue(tagValues("britannia_mod/tags/block/house_foundation.json")
+                        .contains("britannia_mod:" + STAIRS),
+                STAIRS + " is a housing-boundary block and must be classified as perimeter, so the "
+                        + "housing refusal explains itself instead of the block silently not moving");
+
+        String registry = Files.readString(ROOT.resolve(
+                "src/main/java/com/seggellion/britannia_mod/registry/BlockRegistry.java"));
+        int from = registry.indexOf("\"" + STAIRS + "\"");
+        assertTrue(from >= 0, STAIRS + " is not registered");
+        String statement = registry.substring(from, registry.indexOf(");", from));
+        assertFalse(statement.contains("requiresCorrectToolForDrops"),
+                STAIRS + " is unbreakable, so a tool tier promises drops it can never produce");
+        assertFalse(tagValues(PICKAXE_TAG).contains("britannia_mod:" + STAIRS),
+                STAIRS + " cannot be mined at all, so it does not belong in mineable/pickaxe");
     }
 }

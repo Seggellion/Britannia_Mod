@@ -102,6 +102,7 @@ import com.seggellion.britannia_mod.block.MultiCellWindowBlock;
 import com.seggellion.britannia_mod.block.WindowFootprint;
 import com.seggellion.britannia_mod.block.StoneFloorBlock;
 import com.seggellion.britannia_mod.block.CustomStoneStairsBlock;
+import com.seggellion.britannia_mod.block.BrickFoundationStairsBlock;
 import com.seggellion.britannia_mod.block.entity.HouseLotBlockEntity;
 import com.seggellion.britannia_mod.block.entity.WoodSpawnBlockEntity;
 import com.seggellion.britannia_mod.block.entity.MetalSpawnBlockEntity;
@@ -1487,6 +1488,13 @@ public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_DARK_SANDSTONE
 public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_FLAGSTONE = BLOCKS.register(
     "brick_foundation_flagstone",
     () -> new Block(Block.Properties.of().strength(2.0f).requiresCorrectToolForDrops())
+);
+
+// The same light brick sides, cut as stairs. A permanent housing-boundary block: no player may
+// remove it in any game mode, so it carries neither a tool tier nor a loot table. The rule and
+// the reason for it both live in BrickFoundationStairsBlock.
+public static final DeferredHolder<Block, Block> BRICK_FOUNDATION_STAIRS = BLOCKS.register(
+    "brick_foundation_stairs", BrickFoundationStairsBlock::new
 );
 
 // A plain flagstone building block. Random variant on placement, decorator-tool cycling after.

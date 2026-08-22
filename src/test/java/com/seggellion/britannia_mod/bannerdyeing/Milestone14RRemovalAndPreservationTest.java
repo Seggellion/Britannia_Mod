@@ -89,7 +89,11 @@ class Milestone14RRemovalAndPreservationTest {
         // form: the finished window, plaster wall and brick course are separate construction
         // blocks and are deliberately not these materials wearing a different name. The two new
         // deposit blocks add no ids at all, because a resource block has no item form.
-        assertEquals(912, repositoryItems);
+        // 913 as of 2026-08-22: the Brick Foundation Stairs block item. Its nine models are
+        // the three vanilla stair shapes times the three existing brick-side textures, so
+        // they are model-level only and add no further ids -- and the block is unbreakable,
+        // so the item is the only way anybody ever holds one.
+        assertEquals(913, repositoryItems);
 
         assertFalse(Files.exists(MAIN.resolve(
                 "java/com/seggellion/britannia_mod/registry/BannerRecipeRegistry.java")));

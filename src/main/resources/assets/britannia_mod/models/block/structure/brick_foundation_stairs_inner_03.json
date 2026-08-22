@@ -1,0 +1,8 @@
+{
+  "parent": "block/inner_stairs",
+  "textures": {
+    "bottom": "britannia_mod:block/structure/brick_foundation_03",
+    "top": "britannia_mod:block/structure/brick_foundation_03",
+    "side": "britannia_mod:block/structure/brick_foundation_03"
+  }
+}

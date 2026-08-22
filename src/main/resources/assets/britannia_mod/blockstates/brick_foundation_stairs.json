@@ -1,0 +1,699 @@
+{
+  "variants": {
+    "facing=east,half=bottom,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03"
+      }
+    ],
+    "facing=south,half=bottom,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=bottom,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=bottom,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=top,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "x": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=top,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=top,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=top,shape=straight": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_01",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_02",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_03",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=bottom,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=bottom,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03"
+      }
+    ],
+    "facing=west,half=bottom,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=bottom,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=top,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=top,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=top,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=top,shape=inner_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=bottom,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03"
+      }
+    ],
+    "facing=south,half=bottom,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=bottom,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=bottom,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=top,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=top,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=top,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=top,shape=inner_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_01",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_02",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_inner_03",
+        "x": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=bottom,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=bottom,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03"
+      }
+    ],
+    "facing=west,half=bottom,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=bottom,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=top,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=top,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=top,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=top,shape=outer_left": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=bottom,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02"
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03"
+      }
+    ],
+    "facing=south,half=bottom,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=bottom,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=bottom,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=east,half=top,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "y": 90,
+        "uvlock": true
+      }
+    ],
+    "facing=south,half=top,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "y": 180,
+        "uvlock": true
+      }
+    ],
+    "facing=west,half=top,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "y": 270,
+        "uvlock": true
+      }
+    ],
+    "facing=north,half=top,shape=outer_right": [
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_01",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_02",
+        "x": 180,
+        "uvlock": true
+      },
+      {
+        "model": "britannia_mod:block/structure/brick_foundation_stairs_outer_03",
+        "x": 180,
+        "uvlock": true
+      }
+    ]
+  }
+}
