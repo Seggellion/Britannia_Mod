@@ -19,6 +19,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import javax.annotation.Nullable;
+
 /**
  * Half-height plaster wall: 16 voxels tall, 5 deep, hugging one edge of the block.
  *
@@ -78,17 +80,66 @@ public class PlasterWallHalfBlock extends Block {
      * <p>Package-visible so the collision suite can drive it without standing up a level.
      */
     BlockState derive(BlockState state, BlockGetter level, BlockPos pos) {
+        Direction currentFacing = state.getValue(FACING);
         WallConnection connection = WallConnection.derive(
             level, pos,
-            state.getValue(FACING), state.getValue(BRANCH_RIGHT),
-            neighbour -> neighbour.getBlock() instanceof PlasterWallHalfBlock
-                ? new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
-                                     neighbour.getValue(BRANCH_RIGHT))
-                : null);
+            currentFacing, state.getValue(BRANCH_RIGHT),
+            PlasterWallHalfBlock::runOf);
+
+        // A lone perpendicular full wall would otherwise turn this half wall into another straight
+        // run aimed at the neighbour. Preserve the run the player placed and add a return on their
+        // shared face, producing the visible L-corner expected where the two families meet.
+        Direction branchEdge = perpendicularFullWallBranchEdge(level, pos, currentFacing);
+        if (branchEdge != null && connection.shape() == WallShape.STRAIGHT) {
+            connection = new WallConnection(
+                WallShape.CORNER, currentFacing, branchEdge == currentFacing.getClockWise());
+        }
 
         return state.setValue(SHAPE, connection.shape())
                     .setValue(FACING, connection.facing())
                     .setValue(BRANCH_RIGHT, connection.branchRight());
+    }
+
+    /**
+     * Half walls and the full-height plaster wall family use the same connection properties and
+     * canonical orientation. Reading both lets a half wall form its own corner where it meets a
+     * perpendicular full wall, without requiring the full wall to change shape.
+     */
+    @Nullable
+    private static WallConnection runOf(BlockState neighbour) {
+        if (neighbour.getBlock() instanceof PlasterWallHalfBlock) {
+            return new WallConnection(neighbour.getValue(SHAPE), neighbour.getValue(FACING),
+                                      neighbour.getValue(BRANCH_RIGHT));
+        }
+        if (neighbour.getBlock() instanceof DoubleWallBlock) {
+            return new WallConnection(neighbour.getValue(DoubleWallBlock.SHAPE),
+                                      neighbour.getValue(DoubleWallBlock.FACING),
+                                      neighbour.getValue(DoubleWallBlock.BRANCH_RIGHT));
+        }
+        return null;
+    }
+
+    /**
+     * The edge of this block that borders an adjacent perpendicular full wall.
+     *
+     * <p>The return must point toward the neighbour position ({@code side}), not copy the full
+     * wall's facing. The facing is used only to prove the two runs are perpendicular; whether the
+     * full wall occupies its near or far edge, the half-wall corner arm fills the offset toward it.
+     */
+    @Nullable
+    private static Direction perpendicularFullWallBranchEdge(BlockGetter level, BlockPos pos,
+                                                             Direction halfWallEdge) {
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            BlockState neighbour = level.getBlockState(pos.relative(side));
+            if (!(neighbour.getBlock() instanceof DoubleWallBlock)) {
+                continue;
+            }
+            Direction fullWallEdge = neighbour.getValue(DoubleWallBlock.FACING);
+            if (fullWallEdge.getAxis() != halfWallEdge.getAxis()) {
+                return side;
+            }
+        }
+        return null;
     }
 
     @Override

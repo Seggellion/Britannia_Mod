@@ -41,126 +41,144 @@
       "y": 90
     },
     "facing=east,shape=straight,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 90
     },
     "facing=east,shape=straight,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
       "y": 90
     },
     "facing=east,shape=straight,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 90
     },
     "facing=east,shape=corner,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_corner",
       "y": 90
     },
     "facing=east,shape=corner,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 90
     },
     "facing=east,shape=corner,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_corner_branch_right",
       "y": 90
     },
     "facing=east,shape=corner,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 90
     },
     "facing=east,shape=t_junction,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_t_junction",
       "y": 90
     },
     "facing=east,shape=t_junction,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 90
     },
     "facing=east,shape=t_junction,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_t_junction_branch_right",
       "y": 90
     },
     "facing=east,shape=t_junction,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 90
     },
     "facing=south,shape=straight,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
       "y": 180
     },
     "facing=south,shape=straight,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 180
     },
     "facing=south,shape=straight,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
       "y": 180
     },
     "facing=south,shape=straight,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 180
     },
     "facing=south,shape=corner,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_corner",
       "y": 180
     },
     "facing=south,shape=corner,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 180
     },
     "facing=south,shape=corner,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_corner_branch_right",
       "y": 180
     },
     "facing=south,shape=corner,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 180
     },
     "facing=south,shape=t_junction,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_t_junction",
       "y": 180
     },
     "facing=south,shape=t_junction,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 180
     },
     "facing=south,shape=t_junction,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_t_junction_branch_right",
       "y": 180
     },
     "facing=south,shape=t_junction,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 180
     },
     "facing=west,shape=straight,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
       "y": 270
     },
     "facing=west,shape=straight,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 270
     },
     "facing=west,shape=straight,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge",
       "y": 270
     },
     "facing=west,shape=straight,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 270
     },
     "facing=west,shape=corner,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_corner",
       "y": 270
     },
     "facing=west,shape=corner,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 270
     },
     "facing=west,shape=corner,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_corner_branch_right",
       "y": 270
     },
     "facing=west,shape=corner,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 270
     },
     "facing=west,shape=t_junction,branch_right=false,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_t_junction",
       "y": 270
     },
     "facing=west,shape=t_junction,branch_right=false,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 270
     },
     "facing=west,shape=t_junction,branch_right=true,enclosed=false": {
       "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_t_junction_branch_right",
       "y": 270
     },
     "facing=west,shape=t_junction,branch_right=true,enclosed=true": {
-      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed"
+      "model": "britannia_mod:block/structure/plaster/plaster_wall_joist_edge_enclosed",
+      "y": 270
     }
   }
 }

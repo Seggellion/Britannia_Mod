@@ -56,6 +56,8 @@ class PlasterHalfWallArtCollisionTest {
         "plaster_wall_support_diagonal_south_half");
 
     private static PlasterWallHalfBlock halfWall;
+    private static PlasterWallBlankHalfBlock blankHalfWall;
+    private static DoubleWallBlock fullWall;
 
     @BeforeAll
     static void bootstrap() {
@@ -63,6 +65,10 @@ class PlasterHalfWallArtCollisionTest {
         Bootstrap.bootStrap();
         GameData.unfreezeData();
         halfWall = new PlasterWallHalfBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE).strength(2.0F).sound(SoundType.STONE).noOcclusion());
+        blankHalfWall = new PlasterWallBlankHalfBlock(BlockBehaviour.Properties.of()
+            .mapColor(MapColor.STONE).strength(2.0F).sound(SoundType.STONE).noOcclusion());
+        fullWall = new DoubleWallBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.STONE).strength(2.0F).sound(SoundType.STONE).noOcclusion());
     }
 
@@ -131,6 +137,150 @@ class PlasterHalfWallArtCollisionTest {
                     && bounds.maxX <= 1.0D + 1.0E-6D && bounds.maxZ <= 1.0D + 1.0E-6D,
                 state + " collides outside its own block: " + bounds);
         }
+    }
+
+    @Test
+    void formsACornerWhereAHalfWallRunMeetsAPerpendicularFullPlasterWall() {
+        for (Direction fullWallSide : Direction.Plane.HORIZONTAL) {
+            Direction halfEdge = fullWallSide.getClockWise();
+            Direction fullEdge = fullWallSide.getOpposite();
+
+            BlockScene scene = new BlockScene()
+                .put(BlockPos.ZERO.relative(fullWallSide.getOpposite()), halfWall.defaultBlockState()
+                    .setValue(PlasterWallHalfBlock.FACING, halfEdge))
+                .put(BlockPos.ZERO.relative(fullWallSide), fullWall.defaultBlockState()
+                    .setValue(DoubleWallBlock.FACING, fullEdge));
+
+            BlockState result = halfWall.derive(
+                halfWall.defaultBlockState().setValue(PlasterWallHalfBlock.FACING, halfEdge),
+                scene, BlockPos.ZERO);
+
+            assertEquals(WallShape.CORNER, result.getValue(PlasterWallHalfBlock.SHAPE),
+                "half wall did not form a corner into its " + fullWallSide + " full wall");
+            WallConnection run = new WallConnection(
+                result.getValue(PlasterWallHalfBlock.SHAPE),
+                result.getValue(PlasterWallHalfBlock.FACING),
+                result.getValue(PlasterWallHalfBlock.BRANCH_RIGHT));
+            assertEquals(fullWallSide, run.secondary(),
+                "corner return points away from its " + fullWallSide + " full-wall neighbour");
+        }
+    }
+
+    @Test
+    void aLonePerpendicularFullPlasterWallProducesAVisibleReturn() {
+        for (Direction neighbourSide : Direction.Plane.HORIZONTAL) {
+            Direction halfEdge = neighbourSide.getCounterClockWise();
+            Direction fullEdge = neighbourSide.getOpposite();
+            BlockScene scene = new BlockScene().put(
+                BlockPos.ZERO.relative(neighbourSide),
+                fullWall.defaultBlockState().setValue(DoubleWallBlock.FACING, fullEdge));
+
+            BlockState result = halfWall.derive(
+                halfWall.defaultBlockState().setValue(PlasterWallHalfBlock.FACING, halfEdge),
+                scene, BlockPos.ZERO);
+
+            assertEquals(WallShape.CORNER, result.getValue(PlasterWallHalfBlock.SHAPE),
+                "half wall did not return into its " + neighbourSide + " full-wall neighbour");
+            assertEquals(halfEdge, result.getValue(PlasterWallHalfBlock.FACING),
+                "forming the return moved the half wall's player-placed main run");
+            assertEquals(neighbourSide == halfEdge.getClockWise(),
+                result.getValue(PlasterWallHalfBlock.BRANCH_RIGHT),
+                "return was placed on the wrong edge for " + neighbourSide);
+            WallConnection run = new WallConnection(
+                result.getValue(PlasterWallHalfBlock.SHAPE),
+                result.getValue(PlasterWallHalfBlock.FACING),
+                result.getValue(PlasterWallHalfBlock.BRANCH_RIGHT));
+            assertEquals(neighbourSide, run.secondary(),
+                "return does not occupy the shared face toward " + neighbourSide);
+        }
+    }
+
+    @Test
+    void anOffsetPerpendicularFullWallStillProducesTheCornerReturn() {
+        // The full wall is on the far edge of its own block in this layout. That offset is exactly
+        // why the half wall needs its corner arm; requiring the full wall to occupy the shared face
+        // reduced this state to a straight and recreated the visible gap from the client screenshot.
+        for (Direction neighbourSide : Direction.Plane.HORIZONTAL) {
+            Direction halfEdge = neighbourSide.getClockWise();
+            Direction fullFarEdge = neighbourSide;
+            BlockScene scene = new BlockScene().put(
+                BlockPos.ZERO.relative(neighbourSide),
+                fullWall.defaultBlockState().setValue(DoubleWallBlock.FACING, fullFarEdge));
+
+            BlockState result = halfWall.derive(
+                halfWall.defaultBlockState().setValue(PlasterWallHalfBlock.FACING, halfEdge),
+                scene, BlockPos.ZERO);
+
+            assertEquals(WallShape.CORNER, result.getValue(PlasterWallHalfBlock.SHAPE),
+                "offset full wall suppressed the half-wall corner toward " + neighbourSide);
+            WallConnection run = new WallConnection(
+                result.getValue(PlasterWallHalfBlock.SHAPE),
+                result.getValue(PlasterWallHalfBlock.FACING),
+                result.getValue(PlasterWallHalfBlock.BRANCH_RIGHT));
+            assertEquals(neighbourSide, run.secondary(),
+                "offset corner return points away from its " + neighbourSide + " neighbour");
+        }
+    }
+
+    @Test
+    void blankHalfWallExtendsItsOffsetReturnAcrossTheFarEdgeGapOnly() {
+        for (Direction neighbourSide : Direction.Plane.HORIZONTAL) {
+            Direction halfEdge = neighbourSide.getClockWise();
+            BlockPos neighbourPos = BlockPos.ZERO.relative(neighbourSide);
+
+            BlockScene farScene = new BlockScene().put(neighbourPos,
+                fullWall.defaultBlockState().setValue(DoubleWallBlock.FACING, neighbourSide));
+            BlockState far = blankHalfWall.derive(
+                blankHalfWall.defaultBlockState().setValue(PlasterWallHalfBlock.FACING, halfEdge),
+                farScene, BlockPos.ZERO);
+
+            assertTrue(far.getValue(PlasterWallBlankHalfBlock.OFFSET_RETURN),
+                "far-edge full wall did not select offset return toward " + neighbourSide);
+            AABB bounds = far.getShape(farScene, BlockPos.ZERO, CollisionContext.empty()).bounds();
+            boolean reachesNeighbour = switch (neighbourSide) {
+                case WEST -> bounds.minX < 0.0D;
+                case EAST -> bounds.maxX > 1.0D;
+                case NORTH -> bounds.minZ < 0.0D;
+                case SOUTH -> bounds.maxZ > 1.0D;
+                default -> false;
+            };
+            assertTrue(reachesNeighbour,
+                "offset return collision does not cross the " + neighbourSide + " boundary: " + bounds);
+
+            BlockScene nearScene = new BlockScene().put(neighbourPos,
+                fullWall.defaultBlockState().setValue(
+                    DoubleWallBlock.FACING, neighbourSide.getOpposite()));
+            BlockState near = blankHalfWall.derive(
+                blankHalfWall.defaultBlockState().setValue(PlasterWallHalfBlock.FACING, halfEdge),
+                nearScene, BlockPos.ZERO);
+            assertFalse(near.getValue(PlasterWallBlankHalfBlock.OFFSET_RETURN),
+                "ordinary shared-face corner incorrectly selected the extended model toward "
+                    + neighbourSide);
+        }
+    }
+
+    @Test
+    void offsetReturnModelsActuallyDrawAcrossTheElevenPixelGap() throws IOException {
+        int offsetCorners = 0;
+        for (WindowArt.Variant variant : WindowArt.variantsOf("plaster_wall_blank_half")) {
+            boolean offsetCorner = variant.key().contains("shape=corner")
+                && variant.key().contains("offset_return=true");
+            if (!offsetCorner) {
+                assertFalse(variant.model().endsWith("_offset_return"),
+                    "ordinary half-wall state unexpectedly uses extended art: " + variant.key());
+                continue;
+            }
+
+            offsetCorners++;
+            assertTrue(variant.model().endsWith("_offset_return"),
+                "offset state maps to an ordinary corner model: " + variant.key());
+            boolean reachesFarEdge = WindowArt.solidElements(variant).stream().anyMatch(box ->
+                box.x0() <= -10.0D || box.x1() >= 26.0D
+                    || box.z0() <= -10.0D || box.z1() >= 26.0D);
+            assertTrue(reachesFarEdge,
+                "offset corner art stops at its block boundary: " + variant.key());
+        }
+        assertEquals(8, offsetCorners, "expected both corner hands in all four rotations");
     }
 
     /* ─── helpers ────────────────────────────────────────────── */

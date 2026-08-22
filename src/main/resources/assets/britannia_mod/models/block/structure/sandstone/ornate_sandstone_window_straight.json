@@ -12,7 +12,7 @@
 		{
 			"name": "north_sill",
 			"from": [0, 0, 0],
-			"to": [16, 8, 7],
+			"to": [16, 11, 7],
 			"faces": {
 				"north": {"uv": [0, 0, 16, 4], "texture": "#side"},
 				"east": {"uv": [0, 0, 7, 4], "texture": "#side"},
@@ -24,9 +24,9 @@
 		},
 		{
 			"name": "north_jamb_a_lower",
-			"from": [0, 8, 0],
+			"from": [0, 11, 0],
 			"to": [3, 16, 7],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 4, 0]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 0]},
 			"faces": {
 				"north": {"uv": [0, 0, 3, 12], "texture": "#side"},
 				"east": {"uv": [0, 0, 7, 12], "texture": "#side"},
@@ -49,9 +49,9 @@
 		},
 		{
 			"name": "north_jamb_b_lower",
-			"from": [13, 8, 0],
+			"from": [13, 11, 0],
 			"to": [16, 16, 7],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 4, 0]},
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 0]},
 			"faces": {
 				"north": {"uv": [0, 0, 3, 12], "texture": "#side"},
 				"east": {"uv": [0, 0, 7, 12], "texture": "#side"},

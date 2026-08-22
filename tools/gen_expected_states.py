@@ -36,8 +36,11 @@ MIRRORABLE = ["plaster_wall_large_window", "ornate_wall_large_window",
                       "plaster_wall_and_support_blank"]
 
 # BannisterBlock: facing x shape x branch_right
-FLOORS = ["bannister", "plaster_wall_blank_half", "plaster_wall_and_support_blank_half",
+FLOORS = ["bannister", "plaster_wall_and_support_blank_half",
           "plaster_wall_support_diagonal_east_half", "plaster_wall_support_diagonal_south_half"]
+
+# PlasterWallBlankHalfBlock: the half-wall state, plus its isolated far-edge return model selector
+OFFSET_HALF_WALLS = ["plaster_wall_blank_half"]
 
 # WoodSupportFloorBlock: the above, plus enclosed
 JOISTS = ["wood_support_floor"]
@@ -71,6 +74,12 @@ def main():
         states[name] = [
             ["facing=" + f, "shape=" + s, "branch_right=" + b]
             for f, s, b in itertools.product(DIRECTIONS, SHAPES, BOOLEANS)
+        ]
+
+    for name in OFFSET_HALF_WALLS:
+        states[name] = [
+            ["facing=" + f, "shape=" + s, "branch_right=" + b, "offset_return=" + o]
+            for f, s, b, o in itertools.product(DIRECTIONS, SHAPES, BOOLEANS, BOOLEANS)
         ]
 
     for name in JOISTS:

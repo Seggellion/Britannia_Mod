@@ -27,6 +27,7 @@ import com.seggellion.britannia_mod.block.PlasterWoodPostBlock;
 import com.seggellion.britannia_mod.block.HouseFarmPlotBlock;
 import com.seggellion.britannia_mod.block.VillaLampPostBlock;
 import com.seggellion.britannia_mod.block.PlasterWallHalfBlock;
+import com.seggellion.britannia_mod.block.PlasterWallBlankHalfBlock;
 import com.seggellion.britannia_mod.block.CeilingJoistEdgeBlock;
 import com.seggellion.britannia_mod.block.CeilingPanelBlock;
 import com.seggellion.britannia_mod.block.CustomSandstoneBrickBlock;
@@ -2420,7 +2421,7 @@ public static final DeferredHolder<Block, ChessBoardBlock> CHESS_BOARD =
 
     // Half-height plaster walls: 16 tall, 5 deep, on the block edge. Same connection logic as the
     // full-height family, so they turn corners the same way.
-    public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_BLANK_HALF = BLOCKS.register("plaster_wall_blank_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
+    public static final DeferredHolder<Block, PlasterWallBlankHalfBlock> PLASTER_WALL_BLANK_HALF = BLOCKS.register("plaster_wall_blank_half", () -> new PlasterWallBlankHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_AND_SUPPORT_BLANK_HALF = BLOCKS.register("plaster_wall_and_support_blank_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_SUPPORT_DIAGONAL_EAST_HALF = BLOCKS.register("plaster_wall_support_diagonal_east_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));
     public static final DeferredHolder<Block, PlasterWallHalfBlock> PLASTER_WALL_SUPPORT_DIAGONAL_SOUTH_HALF = BLOCKS.register("plaster_wall_support_diagonal_south_half", () -> new PlasterWallHalfBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(2.0f).sound(SoundType.STONE).noOcclusion()));

@@ -1,92 +1,182 @@
 {
 	"variants": {
-		"facing=north,shape=straight,branch_right=false": {
+		"facing=north,shape=straight,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half"
 		},
-		"facing=north,shape=straight,branch_right=true": {
+		"facing=north,shape=straight,branch_right=false,offset_return=true": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half"
 		},
-		"facing=north,shape=corner,branch_right=false": {
+		"facing=north,shape=straight,branch_right=true,offset_return=false": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half"
+		},
+		"facing=north,shape=straight,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half"
+		},
+		"facing=north,shape=corner,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner"
 		},
-		"facing=north,shape=corner,branch_right=true": {
+		"facing=north,shape=corner,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_offset_return"
+		},
+		"facing=north,shape=corner,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right"
 		},
-		"facing=north,shape=t_junction,branch_right=false": {
+		"facing=north,shape=corner,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right_offset_return"
+		},
+		"facing=north,shape=t_junction,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction"
 		},
-		"facing=north,shape=t_junction,branch_right=true": {
+		"facing=north,shape=t_junction,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction"
+		},
+		"facing=north,shape=t_junction,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right"
 		},
-		"facing=east,shape=straight,branch_right=false": {
+		"facing=north,shape=t_junction,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right"
+		},
+		"facing=east,shape=straight,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
 			"y": 90
 		},
-		"facing=east,shape=straight,branch_right=true": {
+		"facing=east,shape=straight,branch_right=false,offset_return=true": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
 			"y": 90
 		},
-		"facing=east,shape=corner,branch_right=false": {
+		"facing=east,shape=straight,branch_right=true,offset_return=false": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
+			"y": 90
+		},
+		"facing=east,shape=straight,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
+			"y": 90
+		},
+		"facing=east,shape=corner,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner",
 			"y": 90
 		},
-		"facing=east,shape=corner,branch_right=true": {
+		"facing=east,shape=corner,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_offset_return",
+			"y": 90
+		},
+		"facing=east,shape=corner,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right",
 			"y": 90
 		},
-		"facing=east,shape=t_junction,branch_right=false": {
+		"facing=east,shape=corner,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right_offset_return",
+			"y": 90
+		},
+		"facing=east,shape=t_junction,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction",
 			"y": 90
 		},
-		"facing=east,shape=t_junction,branch_right=true": {
+		"facing=east,shape=t_junction,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction",
+			"y": 90
+		},
+		"facing=east,shape=t_junction,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right",
 			"y": 90
 		},
-		"facing=south,shape=straight,branch_right=false": {
+		"facing=east,shape=t_junction,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right",
+			"y": 90
+		},
+		"facing=south,shape=straight,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
 			"y": 180
 		},
-		"facing=south,shape=straight,branch_right=true": {
+		"facing=south,shape=straight,branch_right=false,offset_return=true": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
 			"y": 180
 		},
-		"facing=south,shape=corner,branch_right=false": {
+		"facing=south,shape=straight,branch_right=true,offset_return=false": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
+			"y": 180
+		},
+		"facing=south,shape=straight,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
+			"y": 180
+		},
+		"facing=south,shape=corner,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner",
 			"y": 180
 		},
-		"facing=south,shape=corner,branch_right=true": {
+		"facing=south,shape=corner,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_offset_return",
+			"y": 180
+		},
+		"facing=south,shape=corner,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right",
 			"y": 180
 		},
-		"facing=south,shape=t_junction,branch_right=false": {
+		"facing=south,shape=corner,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right_offset_return",
+			"y": 180
+		},
+		"facing=south,shape=t_junction,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction",
 			"y": 180
 		},
-		"facing=south,shape=t_junction,branch_right=true": {
+		"facing=south,shape=t_junction,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction",
+			"y": 180
+		},
+		"facing=south,shape=t_junction,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right",
 			"y": 180
 		},
-		"facing=west,shape=straight,branch_right=false": {
+		"facing=south,shape=t_junction,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right",
+			"y": 180
+		},
+		"facing=west,shape=straight,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
 			"y": 270
 		},
-		"facing=west,shape=straight,branch_right=true": {
+		"facing=west,shape=straight,branch_right=false,offset_return=true": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
 			"y": 270
 		},
-		"facing=west,shape=corner,branch_right=false": {
+		"facing=west,shape=straight,branch_right=true,offset_return=false": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
+			"y": 270
+		},
+		"facing=west,shape=straight,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half",
+			"y": 270
+		},
+		"facing=west,shape=corner,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner",
 			"y": 270
 		},
-		"facing=west,shape=corner,branch_right=true": {
+		"facing=west,shape=corner,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_offset_return",
+			"y": 270
+		},
+		"facing=west,shape=corner,branch_right=true,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right",
 			"y": 270
 		},
-		"facing=west,shape=t_junction,branch_right=false": {
+		"facing=west,shape=corner,branch_right=true,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_corner_branch_right_offset_return",
+			"y": 270
+		},
+		"facing=west,shape=t_junction,branch_right=false,offset_return=false": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction",
 			"y": 270
 		},
-		"facing=west,shape=t_junction,branch_right=true": {
+		"facing=west,shape=t_junction,branch_right=false,offset_return=true": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction",
+			"y": 270
+		},
+		"facing=west,shape=t_junction,branch_right=true,offset_return=false": {
+			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right",
+			"y": 270
+		},
+		"facing=west,shape=t_junction,branch_right=true,offset_return=true": {
 			"model": "britannia_mod:block/structure/plaster/plaster_wall_blank_half_t_junction_branch_right",
 			"y": 270
 		}
