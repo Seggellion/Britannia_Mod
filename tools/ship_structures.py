@@ -44,8 +44,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import nbt_io
 
-DEFAULT_EXPORT_DIR = (r"C:\Users\dusti\curseforge\minecraft\Instances\UltimaCraft - Britannia"
-                      r"\saves\Sandbox\generated\britannia_mod\structures")
+# Point this at your Minecraft instance's structure-export directory, e.g.
+# <instance>/saves/<world>/generated/britannia_mod/structures
+DEFAULT_EXPORT_DIR = os.environ.get("BRITANNIA_STRUCTURE_EXPORT_DIR", "")
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(REPO_ROOT, "src", "main", "resources", "assets", "britannia_mod", "structures")
