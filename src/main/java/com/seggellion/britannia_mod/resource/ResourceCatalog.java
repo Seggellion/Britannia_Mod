@@ -167,47 +167,52 @@ public final class ResourceCatalog {
                 json.get("min_radius").getAsInt(),
                 json.get("max_radius").getAsInt(),
                 requiredString(json, "host"),
-                json.has("natural")
-                        ? java.util.Optional.of(parseNatural(json.getAsJsonObject("natural"), shape))
-                        : java.util.Optional.empty());
+                parseGenerationTuning(json, shape));
     }
 
     /**
-     * A resource's natural-occurrence policy, when it has one.
+     * The shape knobs a curated deposit is planned with, and a hard refusal of the retired
+     * {@code natural} block.
      *
-     * <p>Validated here rather than at the point of use for the same reason every other part of
-     * this catalogue is: a distribution that cannot work should stop the server at load with a
-     * sentence naming the field, not produce a world quietly missing a resource.
+     * <p>Milestone 11 amendment. Deposits are created from Rails rows; the server does not decide
+     * that one exists. A {@code natural} block in data would describe a distribution policy nothing
+     * reads any more, so it fails the load with a sentence rather than being quietly ignored --
+     * silently ignoring it is how a world ends up with an owner expecting deposits that will never
+     * appear.
      */
-    private static com.seggellion.britannia_mod.resource.natural.NaturalGeneration parseNatural(
+    private static com.seggellion.britannia_mod.resource.shape.ShapeTuning parseGenerationTuning(
             JsonObject json, ResourceShape shape) {
-        com.seggellion.britannia_mod.resource.shape.ShapeTuning tuning =
-                json.has("tuning")
-                        ? parseTuning(json.getAsJsonObject("tuning"))
-                        : com.seggellion.britannia_mod.resource.shape.ShapeTuning.DEFAULT;
-
-        com.seggellion.britannia_mod.resource.natural.NaturalGeneration natural =
-                new com.seggellion.britannia_mod.resource.natural.NaturalGeneration(
-                        requiredString(json, "dimension"),
-                        requiredString(json, "biomes"),
-                        json.get("cell_chunks").getAsInt(),
-                        json.get("chance").getAsDouble(),
-                        json.get("min_radius").getAsInt(),
-                        json.get("max_radius").getAsInt(),
-                        json.get("depth").getAsInt(),
-                        json.has("depth_jitter") ? json.get("depth_jitter").getAsInt() : 0,
-                        json.get("min_y").getAsInt(),
-                        json.get("max_y").getAsInt(),
-                        json.get("salt").getAsInt(),
-                        tuning);
-
-        // The geometry has to be plannable at both ends of the configured range, or the first
-        // world to roll the wrong radius fails during chunk generation instead of at load.
-        for (int radius : new int[] {natural.minRadius(), natural.maxRadius()}) {
-            shape.planner().validate(new com.seggellion.britannia_mod.resource.shape.ShapeConfig(
-                    radius, com.seggellion.britannia_mod.resource.shape.ShapeRotation.XZ, 0L, tuning));
+        if (json.has("natural")) {
+            throw new IllegalStateException(
+                    "Generation carries a 'natural' block, which was retired at milestone 11."
+                            + " Managed deposits are defined by Rails rows, not selected from the"
+                            + " world seed. Move any shape knobs to a 'tuning' block on generation"
+                            + " and delete the rest.");
         }
-        return natural;
+        if (!json.has("tuning")) {
+            return com.seggellion.britannia_mod.resource.shape.ShapeTuning.DEFAULT;
+        }
+        com.seggellion.britannia_mod.resource.shape.ShapeTuning tuning =
+                parseTuning(json.getAsJsonObject("tuning"));
+
+        // Tuned geometry has to be plannable at both ends of the configured range, or the first
+        // Rails row to name the wrong radius fails during import instead of at load. Only tuned
+        // shapes are checked here: an untuned range is already validated against the shape's own
+        // minimum by the catalogue, and doing it twice would report the planner's complaint in
+        // place of the catalogue's clearer one.
+        for (int radius : new int[] {json.get("min_radius").getAsInt(),
+                json.get("max_radius").getAsInt()}) {
+            try {
+                shape.planner().validate(new com.seggellion.britannia_mod.resource.shape.ShapeConfig(
+                        radius, com.seggellion.britannia_mod.resource.shape.ShapeRotation.XZ, 0L,
+                        tuning));
+            } catch (RuntimeException failure) {
+                throw new IllegalStateException(
+                        "Generation tuning cannot be planned at radius " + radius + ": "
+                                + failure.getMessage(), failure);
+            }
+        }
+        return tuning;
     }
 
     private static com.seggellion.britannia_mod.resource.shape.ShapeTuning parseTuning(JsonObject json) {
@@ -297,7 +302,11 @@ public final class ResourceCatalog {
         ResourceDefinition.Yield.Mode expected = switch (definition.family()) {
             case ORE -> ResourceDefinition.Yield.Mode.PURITY_ORE;
             case STONE -> ResourceDefinition.Yield.Mode.GRADED_STONE;
-            case SEDIMENT -> ResourceDefinition.Yield.Mode.ITEM;
+            // A mineral is on the Mining ladder but has no purity and no grade. It yields the
+            // ordinary item it is -- coal yields minecraft:coal -- which is the same contract the
+            // sediment beds already use, for the same reason: nothing downstream needs to know
+            // anything about the yield beyond what item it is.
+            case MINERAL, SEDIMENT -> ResourceDefinition.Yield.Mode.ITEM;
         };
         if (yield.mode() != expected) {
             throw new IllegalStateException("Resource '" + definition.id() + "' is family "
@@ -378,6 +387,7 @@ public final class ResourceCatalog {
         ResourceDefinition.Family expected = switch (mineable.category()) {
             case ORE -> ResourceDefinition.Family.ORE;
             case STONE -> ResourceDefinition.Family.STONE;
+            case MINERAL -> ResourceDefinition.Family.MINERAL;
         };
         if (definition.family() != expected) {
             throw new IllegalStateException("Resource '" + id + "' is family " + definition.family()

@@ -23,22 +23,36 @@
         "block": "minecraft:iron_ore",
         "min_radius": 1,
         "max_radius": 128,
-        "host": "britannia_mod:ore_hosts",
-        "natural": {
-          "dimension": "minecraft:overworld",
-          "biomes": "minecraft:is_overworld",
-          "cell_chunks": 8,
-          "chance": 0.85,
-          "min_radius": 24,
-          "max_radius": 32,
-          "depth": 45,
-          "depth_jitter": 15,
-          "min_y": -52,
-          "max_y": 120,
-          "salt": 1041
-        }
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
+    },
+    {
+      "id": "britannia_mod:coal",
+      "display_name": "Coal",
+      "family": "mineral",
+      "blocks": [
+        "britannia_mod:coal_ore"
+      ],
+      "mineable": "coal",
+      "extraction_tool": "britannia_mod:mining_pickaxes",
+      "yield": {
+        "mode": "item",
+        "item": "minecraft:coal",
+        "count": 1
+      },
+      "depleted": "fluid_aware_air",
+      "regeneration": {
+        "hours": 6
+      },
+      "revision": 1,
+      "generation": {
+        "shape": "layered",
+        "block": "britannia_mod:coal_ore",
+        "min_radius": 1,
+        "max_radius": 96,
+        "host": "britannia_mod:ore_hosts"
+      }
     },
     {
       "id": "britannia_mod:silver",
@@ -136,20 +150,7 @@
         "block": "britannia_mod:copper_ore",
         "min_radius": 1,
         "max_radius": 22,
-        "host": "britannia_mod:ore_hosts",
-        "natural": {
-          "dimension": "minecraft:overworld",
-          "biomes": "minecraft:is_overworld",
-          "cell_chunks": 16,
-          "chance": 0.85,
-          "min_radius": 8,
-          "max_radius": 10,
-          "depth": 32,
-          "depth_jitter": 12,
-          "min_y": -52,
-          "max_y": 120,
-          "salt": 3163
-        }
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -176,20 +177,7 @@
         "block": "minecraft:gold_ore",
         "min_radius": 10,
         "max_radius": 128,
-        "host": "britannia_mod:ore_hosts",
-        "natural": {
-          "dimension": "minecraft:overworld",
-          "biomes": "minecraft:is_overworld",
-          "cell_chunks": 28,
-          "chance": 0.85,
-          "min_radius": 32,
-          "max_radius": 40,
-          "depth": 85,
-          "depth_jitter": 20,
-          "min_y": -52,
-          "max_y": 90,
-          "salt": 2079
-        }
+        "host": "britannia_mod:ore_hosts"
       },
       "revision": 1
     },
@@ -618,23 +606,10 @@
         "min_radius": 8,
         "max_radius": 13,
         "host": "britannia_mod:silica_hosts",
-        "natural": {
-          "dimension": "minecraft:overworld",
-          "biomes": "britannia_mod:has_silica_deposits",
-          "cell_chunks": 10,
-          "chance": 0.85,
-          "min_radius": 8,
-          "max_radius": 13,
-          "depth": 5,
-          "depth_jitter": 2,
-          "min_y": 40,
-          "max_y": 96,
-          "salt": 7311,
-          "tuning": {
-            "thickness": 5,
-            "irregularity": 0.2,
-            "gap_chance": 0.18
-          }
+        "tuning": {
+          "thickness": 5,
+          "irregularity": 0.2,
+          "gap_chance": 0.18
         }
       }
     }

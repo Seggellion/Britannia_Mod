@@ -52,7 +52,9 @@ public final class PlacementPlanner {
                         "Resource " + resource.id() + " has no generation configuration"));
         checkRadius(resource, generation, radius);
 
-        ShapeConfig config = new ShapeConfig(radius, rotation, seed);
+        // Milestone 11 amendment: the resource's own tuning, so a curated bed keeps the shape
+        // character its geometry means. Same inputs in, same cells out -- no world seed here.
+        ShapeConfig config = new ShapeConfig(radius, rotation, seed, generation.tuning());
         ShapePlanner planner = generation.shape().planner();
         ShapePlan plan = planner.plan(config);
         return new PlannedDeposit(resource, dimensionId, origin, config, plan);

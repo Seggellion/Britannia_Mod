@@ -127,8 +127,8 @@ public final class ResourceExtractionMatrixGameTests {
     @GameTest(template = TEMPLATE)
     public static void everyCataloguedBlockAndYieldItemResolves(GameTestHelper helper) {
         Resources.validateAgainstRegistries();
-        check(ResourceCatalog.instance().all().size() == 28,
-                "the shipped catalogue must describe all 28 resources");
+        check(ResourceCatalog.instance().all().size() == 29,
+                "the shipped catalogue must describe all 29 resources");
         helper.succeed();
     }
 

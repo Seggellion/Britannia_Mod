@@ -18,6 +18,20 @@
       "restorable": true
     },
     {
+      "id": "coal",
+      "display_name": "Coal",
+      "category": "mineral",
+      "status": "active",
+      "required_mining": 10.0,
+      "challenge": 10.0,
+      "blocks": [
+        "britannia_mod:coal_ore"
+      ],
+      "drop": "Coal",
+      "economy_commodity": "coal",
+      "restorable": true
+    },
+    {
       "id": "silver",
       "display_name": "Silver",
       "category": "ore",

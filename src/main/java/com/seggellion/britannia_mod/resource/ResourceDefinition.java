@@ -54,6 +54,21 @@ public record ResourceDefinition(
     public enum Family {
         ORE,
         STONE,
+        /**
+         * A Mining-governed resource that is not a metal and yields an ordinary item.
+         *
+         * <p>Coal is the first. It belongs on the Mining ladder and is worked with the Britannia
+         * pickaxe exactly as the ores are, but it has no purity: {@code PurityOreItem} carries an
+         * ore type and a rolled purity, and "coal, 73% pure" is not a thing the economy or any
+         * vanilla recipe knows what to do with. What coal yields is {@code minecraft:coal}, which
+         * every furnace already accepts as fuel.
+         *
+         * <p>{@link #ORE} could not express that. The catalogue requires family and yield mode to
+         * agree — ore means purity, stone means grade — so a Mining-governed resource yielding a
+         * plain item had nowhere to sit. This is that place, and it is a family rather than a coal
+         * special case: any future non-metal mineral worked with a pickaxe belongs here.
+         */
+        MINERAL,
         SEDIMENT;
 
         public static Family parse(String raw) {
@@ -146,18 +161,19 @@ public record ResourceDefinition(
      */
     public record Generation(
             ResourceShape shape, String blockId, int minRadius, int maxRadius, String hostTag,
-            Optional<com.seggellion.britannia_mod.resource.natural.NaturalGeneration> natural) {
+            com.seggellion.britannia_mod.resource.shape.ShapeTuning tuning) {
         public Generation {
             Objects.requireNonNull(shape, "generation shape is required");
             Objects.requireNonNull(blockId, "generation block is required");
             Objects.requireNonNull(hostTag, "generation host tag is required");
-            Objects.requireNonNull(natural, "natural generation optional is required");
+            Objects.requireNonNull(tuning, "generation tuning is required");
         }
 
-        /** The original five-argument form: a resource that is placed but never occurs by itself. */
+        /** The five-argument form: a shape that wants none of its tuning knobs adjusted. */
         public Generation(ResourceShape shape, String blockId, int minRadius, int maxRadius,
                           String hostTag) {
-            this(shape, blockId, minRadius, maxRadius, hostTag, Optional.empty());
+            this(shape, blockId, minRadius, maxRadius, hostTag,
+                    com.seggellion.britannia_mod.resource.shape.ShapeTuning.DEFAULT);
         }
     }
 
@@ -173,14 +189,18 @@ public record ResourceDefinition(
     }
 
     /**
-     * How this resource occurs naturally, when it does.
+     * The shape tuning a curated deposit of this resource is planned with.
      *
-     * <p>Most resources answer empty: they exist where Rails or an operator put them, and no grid
-     * or biome policy applies. Natural occurrence is opt-in through data, which is what keeps the
-     * generation seam free of any mention of a particular resource.
+     * <p>Milestone 11 amendment. These knobs used to live inside a {@code natural} block, which is
+     * gone: the server no longer decides that a deposit exists. They belong to the resource's
+     * geometry rather than to any distribution policy, so a Rails-defined bed is planned with the
+     * same thickness and irregularity the resource has always meant — which is what keeps a silica
+     * lens a lens rather than a default slab.
      */
-    public Optional<com.seggellion.britannia_mod.resource.natural.NaturalGeneration> natural() {
-        return generation.flatMap(Generation::natural);
+    public com.seggellion.britannia_mod.resource.shape.ShapeTuning tuning() {
+        return generation
+                .map(Generation::tuning)
+                .orElse(com.seggellion.britannia_mod.resource.shape.ShapeTuning.DEFAULT);
     }
 
     /** The path portion of the id, which is what operator commands and Rails rows spell. */

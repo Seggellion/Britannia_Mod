@@ -4,6 +4,8 @@ import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockTracker;
 import com.seggellion.britannia_mod.commands.PopulateOresCommand;
+import com.seggellion.britannia_mod.resource.ResourceCatalog;
+import com.seggellion.britannia_mod.resource.ResourceDefinition;
 import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 import com.seggellion.britannia_mod.event.ManagedResourceExplosionHandler;
 import com.seggellion.britannia_mod.mining.MiningBreakGate;
@@ -371,24 +373,45 @@ public final class OreVeinContainmentGameTests {
     // ------------------------------------------------------------------ 5. legacy command scope
 
     /**
-     * Coal is out of the legacy placement route.
+     * Coal is placeable again, on the terms milestone 1 set.
      *
-     * <p>It placed {@code minecraft:coal_ore}, which the Mining catalogue does not govern, so it
-     * broke with vanilla drops, required no skill and scheduled no restoration — a managed
-     * generation path manufacturing unmanaged economic material.
+     * <p>Milestone 1 withdrew coal because it placed {@code minecraft:coal_ore}, which the Mining
+     * catalogue did not govern: it broke with vanilla drops, required no skill and scheduled no
+     * restoration — a managed generation path manufacturing unmanaged economic material. The test
+     * that replaced it said coal must stay out "until it has a canonical resource definition".
+     *
+     * <p>Milestone 11 gave it one. So this now asserts the other half of that sentence, and the
+     * condition that made the withdrawal necessary is asserted separately and still holds: what
+     * coal places is {@code britannia_mod:coal_ore}, never the vanilla block.
      */
     @GameTest(template = TEMPLATE)
-    public static void coalIsNoLongerPlaceableByTheLegacyCommand(GameTestHelper helper) {
-        check(!PopulateOresCommand.placeableOreTypes().contains("coal"),
-                "coal must not be placeable until it has a canonical resource definition");
-        // Nine ladder ores, plus silica since milestone 7 gave it a shape of its own. What this
-        // guards is that the placeable set is exactly the catalogued resources -- coal is out
-        // because it has no resource definition, not because the number happens to be nine.
-        check(PopulateOresCommand.placeableOreTypes().size() == 10,
-                "expected the nine ladder ores plus silica to be placeable, found "
+    public static void coalIsPlaceableNowThatItHasACanonicalDefinition(GameTestHelper helper) {
+        check(PopulateOresCommand.placeableOreTypes().contains("coal"),
+                "coal has a canonical resource definition at milestone 11 and should be placeable");
+        // Nine ladder ores, silica since milestone 7, and coal since milestone 11. What this guards
+        // is that the placeable set is exactly the catalogued resources, not that the number is 11.
+        check(PopulateOresCommand.placeableOreTypes().size() == 11,
+                "expected the nine ladder ores plus silica and coal to be placeable, found "
                         + PopulateOresCommand.placeableOreTypes());
         check(PopulateOresCommand.placeableOreTypes().contains("silica_sand_deposit"),
                 "silica gained a generation shape at milestone 7 and should be placeable");
+        helper.succeed();
+    }
+
+    /**
+     * The reason coal was withdrawn must not come back with it.
+     *
+     * <p>Managed coal is {@code britannia_mod:coal_ore}. If the definition ever named the vanilla
+     * block instead, every legacy chunk's coal would become economic terrain overnight and the
+     * placement route would once again be manufacturing material the catalogue does not govern.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void managedCoalIsNeverTheVanillaBlock(GameTestHelper helper) {
+        ResourceDefinition coal = ResourceCatalog.instance().byPath("coal").orElseThrow();
+        check(coal.blockIds().equals(java.util.List.of("britannia_mod:coal_ore")),
+                "managed coal must govern exactly britannia_mod:coal_ore, found " + coal.blockIds());
+        check(coal.generation().orElseThrow().blockId().equals("britannia_mod:coal_ore"),
+                "coal must generate its own block, never minecraft:coal_ore");
         helper.succeed();
     }
 
@@ -432,8 +455,11 @@ public final class OreVeinContainmentGameTests {
     }
 
     /**
-     * Withdrawing the placement route must not have touched vanilla coal generation, which is
-     * milestone 5's separate concern. The block is still registered and still behaves normally.
+     * Vanilla coal ore stays ordinary, decorative terrain.
+     *
+     * <p>Milestone 11 gave coal a managed identity of its own, and this is the other side of that:
+     * {@code minecraft:coal_ore} in a legacy chunk is not retro-claimed by the economy. It carries
+     * no managed policy, so it breaks the way it always has.
      */
     @GameTest(template = TEMPLATE)
     public static void vanillaCoalOreItselfIsUnchanged(GameTestHelper helper) {

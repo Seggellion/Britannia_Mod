@@ -125,17 +125,29 @@ class VeinPlacementValidationTest {
     }
 
     /**
-     * Coal is withdrawn from this route. It placed {@code minecraft:coal_ore}, which the Mining
-     * catalogue does not govern, so it broke with vanilla drops and scheduled no restoration —
-     * a managed generation path producing unmanaged economic material.
+     * The curated Rails coal row resolves again, through the canonical resource.
+     *
+     * <p>Coal was withdrawn from this route at milestone 1 because it placed
+     * {@code minecraft:coal_ore}, which the Mining catalogue did not govern: it broke with vanilla
+     * drops and scheduled no restoration — a managed generation path producing unmanaged economic
+     * material. Milestone 11 gave coal a canonical definition, so the shipped row at radius 50 is
+     * accepted, and what it places is {@code britannia_mod:coal_ore}.
+     *
+     * <p>Radius 50 is curated content, plausibly a deliberately large mine, so it is validated
+     * rather than trimmed. {@code CoalDistributionAuditGameTests} reports what it plans.
      */
     @Test
-    void coalIsNoLongerPlaceableThroughTheLegacyRoute() {
-        assertTrue(VeinPlacementValidation.resourceFor("coal").isEmpty(),
-                "coal must not resolve to a placeable resource");
-        assertFalse(VeinPlacementValidation.placeableOreTypes().contains("coal"),
-                "coal must not be offered as placeable");
-        assertTrue(reject("coal", 50).isPresent(), "the shipped coal row must now be skipped");
+    void theCuratedCoalRowResolvesThroughTheCanonicalResource() {
+        assertTrue(VeinPlacementValidation.resourceFor("coal").isPresent(),
+                "coal must resolve now that it has a canonical resource definition");
+        assertTrue(VeinPlacementValidation.placeableOreTypes().contains("coal"),
+                "coal must be offered as placeable");
+        assertTrue(reject("coal", 50).isEmpty(),
+                "the shipped Rails coal row at radius 50 must be accepted, not skipped: "
+                        + reject("coal", 50).orElse(""));
+        assertEquals(List.of("britannia_mod:coal_ore"),
+                VeinPlacementValidation.resourceFor("coal").orElseThrow().blockIds(),
+                "the curated row must place the managed block, never minecraft:coal_ore");
     }
 
     /** The nine types that never had a shape branch are gone rather than silently placing nothing. */
@@ -198,7 +210,8 @@ class VeinPlacementValidationTest {
     @Test
     void everyRejectionCarriesAReason() {
         for (Optional<String> rejection : List.of(
-                reject("coal", 50), reject("gold", 3), reject("agapite", 1), reject("copper", 0))) {
+                reject("no_such_ore", 10), reject("gold", 3), reject("agapite", 1),
+                reject("copper", 0))) {
             assertTrue(rejection.isPresent());
             assertFalse(rejection.get().isBlank(), "a skipped row must explain itself");
         }

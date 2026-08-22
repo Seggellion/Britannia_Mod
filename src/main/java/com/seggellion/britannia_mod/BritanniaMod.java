@@ -227,10 +227,11 @@ CraftableRegistry.init();
         NeoForge.EVENT_BUS.register(new com.seggellion.britannia_mod.mining.MiningProvenanceHandler());
         // Housing clay supply: the managed deposit rule. HIGH priority for the same reason as
         // the Mining gate -- CustomBlockBreakHandler mutates the world inside its NORMAL listener.
-        // OreVein milestone 7: natural deposits enter the world here, on the server thread, as
-        // each chunk finishes generating. See NaturalGenerationHandler for why not a PlacedFeature.
-        NeoForge.EVENT_BUS.register(
-                new com.seggellion.britannia_mod.resource.natural.NaturalGenerationHandler());
+        // OreVein milestone 11 amendment: nothing is registered for chunk generation any more.
+        // Milestone 7 hung automatic deposit creation off ChunkEvent.Load, which meant a new chunk
+        // could invent a managed deposit from the world seed. Deposits are defined by Rails rows
+        // and enter the world through /populateores; a chunk generating is not an event that
+        // creates economic material, and there is deliberately no listener here that says it is.
         // OreVein milestone 6 amendment: refuses an ordinary creative break of a sited deposit,
         // ahead of everything else, so removing one stays an explicit administrative act.
         NeoForge.EVENT_BUS.register(

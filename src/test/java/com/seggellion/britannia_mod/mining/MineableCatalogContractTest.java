@@ -30,8 +30,15 @@ class MineableCatalogContractTest {
     /**
      * The complete managed set discovered in milestone 1 (PickaxeMiningRules): the catalogue's
      * ACTIVE coverage must equal it exactly — no silent widening, no dropped block.
+     *
+     * <p>OreVein milestone 11 adds {@code britannia_mod:coal_ore}. That is a deliberate widening,
+     * which is why it is written here rather than discovered: coal was withdrawn in milestone 1
+     * because it placed unmanaged {@code minecraft:coal_ore}, and it returns as a managed block of
+     * its own. Note which id is present — the vanilla block is deliberately still absent, so legacy
+     * coal in old chunks stays ordinary decorative terrain and is not retro-claimed by the economy.
      */
     private static final Set<String> DISCOVERED_MANAGED_BLOCKS = Set.of(
+            "britannia_mod:coal_ore",
             "minecraft:stone", "minecraft:cobblestone", "minecraft:andesite", "minecraft:diorite",
             "minecraft:granite", "minecraft:tuff", "minecraft:basalt", "minecraft:smooth_basalt",
             "minecraft:blackstone", "minecraft:deepslate", "minecraft:cobbled_deepslate",

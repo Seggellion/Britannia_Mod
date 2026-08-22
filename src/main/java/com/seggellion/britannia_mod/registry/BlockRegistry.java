@@ -2224,6 +2224,14 @@ public static final DeferredHolder<Block, ThinWall> PLASTER_WOOD_WALL_BOTTOM =
 // Ores
 
 
+        /**
+         * Managed coal. Deliberately not {@code minecraft:coal_ore}: that block generates in every
+         * legacy chunk and is placed by structures, so keying the economy on it would let old
+         * terrain decide how much coal exists. This one is placed only by the deposit platform.
+         */
+        public static final DeferredHolder<Block, Block> COAL_ORE = BLOCKS.register(
+                "coal_ore", BaseOreBlock::new);
+
         public static final DeferredHolder<Block, Block> COPPER_ORE = BLOCKS.register(
                 "copper_ore", BaseOreBlock::new);
                 

@@ -39,7 +39,7 @@ class ResourceCatalogTest {
     @Test
     void theShippedCatalogueLoadsAndCoversEveryFamily() {
         ResourceCatalog catalog = catalog();
-        assertEquals(28, catalog.all().size(), "9 ores + 17 stones + 2 sediment beds");
+        assertEquals(29, catalog.all().size(), "9 ores + 1 mineral + 17 stones + 2 sediment beds");
         assertEquals(9, catalog.family(ResourceDefinition.Family.ORE).size());
         assertEquals(17, catalog.family(ResourceDefinition.Family.STONE).size());
         assertEquals(2, catalog.family(ResourceDefinition.Family.SEDIMENT).size());
@@ -251,6 +251,9 @@ class ResourceCatalogTest {
     @Test
     void everyPlaceableResourceCarriesItsShapeConfiguration() {
         Map<String, ResourceShape> expected = Map.ofEntries(
+                // Milestone 11. Layered is what the legacy route already treated coal as, and it is
+                // what coal geologically is: a broad, thin, horizontal seam.
+                Map.entry("coal", ResourceShape.LAYERED),
                 Map.entry("copper", ResourceShape.CLUSTER),
                 Map.entry("verite", ResourceShape.CLUSTER),
                 Map.entry("iron", ResourceShape.VERTICAL),
@@ -316,16 +319,60 @@ class ResourceCatalogTest {
      * sedimentary lens is the whole point of the milestone, and clay staying hand-placed is a
      * deliberate decision rather than an oversight, so both halves are now stated.
      */
+    /**
+     * No resource declares an automatic distribution, and one cannot be reintroduced by accident.
+     *
+     * <p>Milestone 11 amendment: Rails decides where deposits are. A {@code natural} block in the
+     * shipped data would describe a grid, a probability and a salt that nothing reads, so the
+     * catalogue refuses it at load rather than ignoring it — and this asserts both halves, because
+     * a refusal nobody exercises is a refusal nobody can rely on.
+     */
     @Test
-    void silicaGeneratesAndClayIsStillPlacedByHand() {
+    void noResourceCarriesTheRetiredAutomaticDistributionBlock() throws java.io.IOException {
+        java.nio.file.Path project =
+                java.nio.file.Paths.get(System.getProperty("britannia.projectDir", "."));
+        String shipped = java.nio.file.Files.readString(project.resolve(
+                "src/main/resources/data/britannia_mod/resources/resources.json"));
+        assertFalse(shipped.contains("\"natural\""),
+                "the shipped catalogue still declares a 'natural' distribution block; deposits are"
+                        + " defined by Rails rows, not selected from the world seed");
+
+        IllegalStateException refused = org.junit.jupiter.api.Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> ResourceCatalog.parse(new java.io.StringReader("""
+                        {"schema": 1, "resources": [{
+                          "id": "britannia_mod:test_resource",
+                          "display_name": "Test",
+                          "family": "sediment",
+                          "blocks": ["britannia_mod:silica_sand_deposit"],
+                          "extraction_tool": "britannia_mod:silica_shovels",
+                          "yield": {"mode": "item", "item": "minecraft:sand", "count": 1},
+                          "depleted": "fluid_aware_air",
+                          "regeneration": {"hours": 6},
+                          "revision": 1,
+                          "generation": {
+                            "shape": "sedimentary_lens", "block": "britannia_mod:silica_sand_deposit",
+                            "min_radius": 8, "max_radius": 13, "host": "britannia_mod:silica_hosts",
+                            "natural": {"dimension": "minecraft:overworld", "biomes": "minecraft:is_overworld",
+                              "cell_chunks": 10, "chance": 0.85, "min_radius": 8, "max_radius": 13,
+                              "depth": 5, "depth_jitter": 2, "min_y": 40, "max_y": 96, "salt": 1}
+                          }}]}
+                        """)));
+        assertTrue(refused.getMessage().contains("retired at milestone 11"),
+                "a stale natural block must be refused by name, found: " + refused.getMessage());
+    }
+
+    @Test
+    void silicaIsShapedAndClayIsStillPlacedByHand() {
         ResourceDefinition silica = catalog().byId("britannia_mod:silica_sand_deposit").orElseThrow();
         ResourceDefinition clay = catalog().byId("britannia_mod:clay_deposit").orElseThrow();
 
         assertTrue(silica.generation().isPresent(), "silica lost its generation configuration");
         assertEquals(ResourceShape.SEDIMENTARY_LENS, silica.generation().orElseThrow().shape());
-        assertTrue(silica.natural().isPresent(), "silica lost its natural distribution");
+        // Milestone 11 amendment: silica's lens knobs moved out of the retired natural block and
+        // onto generation, so a Rails-defined bed is still a lens rather than a default slab.
+        assertEquals(5, silica.tuning().thickness(), "silica lost its lens thickness");
         assertTrue(clay.generation().isEmpty(), "clay is placed by hand, not generated");
-        assertTrue(clay.natural().isEmpty(), "clay gained a natural distribution nobody asked for");
     }
 
     /* ------------------------------------------------------------------ */
@@ -350,7 +397,9 @@ class ResourceCatalogTest {
                 "shadow_iron", "agapite", "verite", "valorite")) {
             assertTrue(catalog().byPath(legacy).isPresent(), legacy + " must resolve by its legacy name");
         }
-        assertTrue(catalog().byPath("coal").isEmpty(),
-                "coal has no definition, which is what keeps it out of the placement route");
+        // Milestone 11 gave coal the canonical definition milestone 1 said it would need before it
+        // could be placed again, so the Rails row's "coal" now resolves the same way the metals do.
+        assertTrue(catalog().byPath("coal").isPresent(),
+                "the curated Rails coal row spells 'coal', so the resource path must be 'coal'");
     }
 }

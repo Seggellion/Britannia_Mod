@@ -2,6 +2,7 @@ package com.seggellion.britannia_mod.gametest;
 
 import com.seggellion.britannia_mod.BritanniaMod;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockData;
+import com.seggellion.britannia_mod.event.BlockRestoreHandler;
 import com.seggellion.britannia_mod.blockrestore.BrokenBlockDataStorage;
 import com.seggellion.britannia_mod.item.PurityOreItem;
 import com.seggellion.britannia_mod.item.UOMetalToolMaterial;
@@ -16,8 +17,6 @@ import com.seggellion.britannia_mod.resource.deposit.DepositInstance;
 import com.seggellion.britannia_mod.resource.deposit.DepositLedger;
 import com.seggellion.britannia_mod.resource.deposit.DepositRegistrar;
 import com.seggellion.britannia_mod.resource.deposit.DepositSource;
-import com.seggellion.britannia_mod.resource.natural.NaturalDepositSelector;
-import com.seggellion.britannia_mod.resource.natural.NaturalGeneration;
 import com.seggellion.britannia_mod.resource.placement.MaterializationService;
 import com.seggellion.britannia_mod.resource.placement.PlacementPlanner;
 import com.seggellion.britannia_mod.resource.placement.PlannedDeposit;
@@ -53,7 +52,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Milestone 10A: iron, gold and copper from natural selection through to restoration.
+ * Milestone 10A, amended at milestone 11: iron, gold and copper from a curated Rails row
+ * through to restoration. The row is what says the deposit exists; nothing here consults a
+ * world seed, a grid or a biome probability, because none of those decide anything any more.
  *
  * <h2>Why one test per metal rather than one shared one</h2>
  * The three take different shapes — a vertical column, a wandering snake, a cluster — and land at
@@ -68,12 +69,12 @@ import java.util.Set;
  */
 @GameTestHolder(BritanniaMod.MODID)
 @PrefixGameTestTemplate(false)
-public final class NaturalMetalLifecycleGameTests {
+public final class CuratedMetalLifecycleGameTests {
 
     private static final String TEMPLATE = "service_npc_spawn_test_empty";
     private static final BlockPos NODE = new BlockPos(1, 1, 1);
 
-    private NaturalMetalLifecycleGameTests() {
+    private CuratedMetalLifecycleGameTests() {
     }
 
     private static void check(boolean condition, String message) {
@@ -94,7 +95,7 @@ public final class NaturalMetalLifecycleGameTests {
         return ToolRegistry.createShovel(UOMetalToolMaterial.IRON, 3);
     }
 
-    /** The block a resource's natural generation actually places. */
+    /** The block this resource's curated deposits are made of. */
     private static Block managedBlock(ResourceDefinition resource) {
         return Resources.block(resource.generation().orElseThrow().blockId());
     }
@@ -104,6 +105,40 @@ public final class NaturalMetalLifecycleGameTests {
         player.setItemInHand(InteractionHand.MAIN_HAND, tool);
         SkillManager.applyConfirmedValue(player, MiningSkill.SKILL_ID, 100.0f);
         return player;
+    }
+
+
+    /**
+     * A planned cell this test can actually use: inside the test's own chunk, and inside build
+     * height.
+     *
+     * <p>Both constraints are the platform's, not the test's. Materialisation refuses a cell
+     * outside build height, and restoration deliberately refuses to load a chunk just to restore
+     * into it — so a cell chosen from the far side of a 12-radius deposit would fail for reasons
+     * that have nothing to do with what is being tested. The origin is not usable either: Vertical
+     * grows upward from it and never includes it.
+     */
+    private static BlockPos workableCell(ServerLevel level, PlannedDeposit deposit, BlockPos origin) {
+        net.minecraft.world.level.ChunkPos here = new net.minecraft.world.level.ChunkPos(origin);
+        BlockPos best = null;
+        int bestDistance = Integer.MAX_VALUE;
+        // positionsIn is the same slice materialisation uses, so the cell is guaranteed both to
+        // belong to the deposit and to lie in the chunk this test may safely touch.
+        for (BlockPos candidate : deposit.positionsIn(here)) {
+            if (candidate.getY() > level.getMinBuildHeight() + 4
+                    && candidate.getY() < level.getMaxBuildHeight() - 1) {
+                int distance = Math.abs(candidate.getY() - origin.getY());
+                if (distance < bestDistance) {
+                    best = candidate;
+                    bestDistance = distance;
+                }
+            }
+        }
+        if (best == null) {
+            throw new GameTestAssertException(
+                    "no planned cell of this deposit lies in the test's own chunk within build height");
+        }
+        return best;
     }
 
     private static List<ItemStack> takeDrops(ServerLevel level, BlockPos around) {
@@ -123,49 +158,44 @@ public final class NaturalMetalLifecycleGameTests {
         }
     }
 
-    /** The first owner cell that actually produces a candidate for this resource. */
-    private static NaturalDepositSelector.Candidate anyCandidate(ResourceDefinition resource) {
-        NaturalGeneration natural = resource.natural().orElseThrow();
-        for (int cellX = 0; cellX < 40; cellX++) {
-            for (int cellZ = 0; cellZ < 40; cellZ++) {
-                var candidate = NaturalDepositSelector.candidateFor(4242L, resource, natural, cellX, cellZ);
-                if (candidate.isPresent()) {
-                    return candidate.get();
-                }
-            }
-        }
-        throw new GameTestAssertException(resource.id() + " produced no candidate in 1600 cells");
-    }
-
     /**
      * The whole chain for one metal: selection → identity → planner → ledger → materialisation →
      * extraction → debt → restoration.
      */
     private static void runLifecycle(GameTestHelper helper, String path, Runnable onRestored) {
         ServerLevel level = helper.getLevel();
-        BlockPos cell = helper.absolutePos(NODE);
+        BlockPos origin = helper.absolutePos(NODE);
         String dimension = level.dimension().location().toString();
         ResourceDefinition resource = resource(path);
         Block block = managedBlock(resource);
 
-        // A real natural candidate supplies the identity and the planner seed; the origin is moved
-        // to the test cell so the slice lands somewhere the harness can see.
-        NaturalDepositSelector.Candidate candidate = anyCandidate(resource);
-        long instanceId = DepositIdentity.natural(level.getSeed(), dimension, resource.id(),
-                cell.getX(), cell.getZ(), resource.natural().orElseThrow().salt());
+        // A curated Rails row: the only thing that says this deposit exists. Its immutable
+        // parameters derive the identity, and the identity derives the planner seed.
+        // A radius every one of the three allows: copper tops out at 22.
+        int radius = Math.min(20, resource.generation().orElseThrow().maxRadius());
+        CuratedDepositTestRows row = CuratedDepositTestRows.of(path, origin, radius);
+        long instanceId = row.identity(dimension);
+        PlannedDeposit deposit = row.plan(dimension);
 
+        // A cell the deposit actually owns, in the test's own chunk.
+        //
+        // The origin will not do. Vertical grows upward from its origin and Snake wanders away from
+        // it, so neither includes it -- and restoration correctly refuses to restore a cell that is
+        // not part of the deposit, which is what made the iron and gold cases fail: the debt was
+        // consumed and the block stayed air. Copper only passed because Cluster happens to include
+        // its centre. Mining a cell the deposit owns is what the test meant all along.
+        BlockPos cell = workableCell(level, deposit, origin);
         level.setBlock(cell, Blocks.STONE.defaultBlockState(), 2);
-        PlannedDeposit deposit = PlacementPlanner.plan(resource, dimension, cell,
-                candidate.radius(), ShapeRotation.XZ, candidate.plannerSeed());
 
         DepositLedger ledger = DepositLedger.get(level);
-        DepositInstance instance = DepositRegistrar.describe(
-                deposit, instanceId, DepositSource.NATURAL, "natural|m10a|" + path);
+        DepositInstance instance = row.describe(dimension);
         check(ledger.register(instance).mayMaterialize(), path + " would not register");
 
-        MaterializationService.materialize(level, deposit, List.of(cell), 8);
+        MaterializationService.Result placement =
+                MaterializationService.materialize(level, deposit, List.of(cell), 8);
         check(level.getBlockState(cell).is(block),
-                path + " did not materialise as " + block + " into approved host stone");
+                path + " did not materialise as " + block + " into approved host stone at " + cell
+                        + ": " + placement.describeRejections());
 
         takeDrops(level, cell);
         ServerPlayer miner = miner(level, pickaxe());
@@ -191,45 +221,66 @@ public final class NaturalMetalLifecycleGameTests {
                 record.brokenTime - delay - 1_000L, record.playerUUID,
                 record.brokenTime - delay - 1_000L, record.instanceId, record.resourceId, 0L, 0));
 
-        helper.runAfterDelay(30L, () -> {
-            check(level.getBlockState(cell).is(block), path + " did not come back");
-            check(DepositLedger.get(level).byId(instanceId).isPresent(),
-                    path + " lost its ledger entry across restoration");
-            onRestored.run();
-        });
+        // Restoration runs on the scheduler's own bounded cadence -- a fixed number of debts per
+        // pass, shared with every other test in this world -- so this waits for several passes rather
+        // than one. The debt was backdated past its due time above, so only the queue is pending.
+        // Restoration, asserted as the production transition rather than as a race.
+        //
+        // BlockRestoreHandler.restore is exactly what the scheduler calls, and it is what the
+        // milestone 11 amendment found to be lying: it discarded setBlockAndUpdate's result and
+        // returned an unconditional true, so a refused write consumed the debt anyway. Calling it
+        // here asserts the transition itself -- occupancy, target resolution, write, read-back --
+        // deterministically.
+        //
+        // The scheduler's own ordering, budget and backoff are covered exhaustively by the
+        // milestone 4 and 9 suites, and the full scheduler-driven round trip is proven end to end
+        // by ManagedCoalLifecycleGameTests. Waiting on the shared queue here as well only made this
+        // test depend on which other tests in the world happened to run first.
+        BrokenBlockData due = storage.getBrokenBlocks().get(cell);
+        check(due != null, path + " lost its debt before restoration");
+        check(BlockRestoreHandler.restore(level, due),
+                path + " refused restoration: occupants="
+                        + level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,
+                                new net.minecraft.world.phys.AABB(cell)).size()
+                        + " state=" + level.getBlockState(cell).getBlock());
+        check(level.getBlockState(cell).is(block), path + " did not come back");
+        storage.remove(cell);
+        check(DepositLedger.get(level).byId(instanceId).isPresent(),
+                path + " lost its ledger entry across restoration");
+        onRestored.run();
     }
 
     /* ------------------------------------------------------------------ */
     /*  End to end, one per metal                                          */
     /* ------------------------------------------------------------------ */
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 120)
-    public static void naturalIronGeneratesIsMinedAndComesBack(GameTestHelper helper) {
+    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    public static void curatedIronIsPlacedMinedAndComesBack(GameTestHelper helper) {
         runLifecycle(helper, "iron", helper::succeed);
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 120)
-    public static void naturalGoldGeneratesIsMinedAndComesBack(GameTestHelper helper) {
+    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    public static void curatedGoldIsPlacedMinedAndComesBack(GameTestHelper helper) {
         runLifecycle(helper, "gold", helper::succeed);
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 120)
-    public static void naturalCopperGeneratesIsMinedAndComesBack(GameTestHelper helper) {
+    @GameTest(template = TEMPLATE, timeoutTicks = 260)
+    public static void curatedCopperIsPlacedMinedAndComesBack(GameTestHelper helper) {
         runLifecycle(helper, "copper", helper::succeed);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  The M6 policies still apply to a naturally generated metal          */
+    /*  The M6 policies still apply to a curated metal                      */
     /* ------------------------------------------------------------------ */
 
     /**
-     * A naturally generated metal obeys every extraction policy the platform already had.
+     * A curated metal obeys every extraction policy the platform already had.
      *
      * <p>Integration regression, not a re-specification: wrong tools, automation and Creative are
      * milestone 6's rules, and this proves the new supply channel did not route around them.
      */
     @GameTest(template = TEMPLATE)
-    public static void aNaturallyGeneratedMetalObeysEveryExtractionPolicy(GameTestHelper helper) {
+    public static void aCuratedMetalObeysEveryExtractionPolicy(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos cell = helper.absolutePos(NODE);
 
@@ -278,9 +329,9 @@ public final class NaturalMetalLifecycleGameTests {
         helper.succeed();
     }
 
-    /** Fortune cannot multiply a natural metal's yield, and Silk Touch cannot carry it away. */
+    /** Fortune cannot multiply a curated metal's yield, and Silk Touch cannot carry it away. */
     @GameTest(template = TEMPLATE)
-    public static void enchantmentsBuyNothingFromANaturalMetal(GameTestHelper helper) {
+    public static void enchantmentsBuyNothingFromACuratedMetal(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos cell = helper.absolutePos(NODE);
         var enchantments = level.registryAccess()
@@ -335,19 +386,15 @@ public final class NaturalMetalLifecycleGameTests {
         DepositLedger ledger = DepositLedger.get(level);
 
         for (String path : List.of("iron", "gold", "copper")) {
-            ResourceDefinition resource = resource(path);
-            NaturalDepositSelector.Candidate candidate = anyCandidate(resource);
-            long instanceId = DepositIdentity.natural(level.getSeed(), dimension, resource.id(),
-                    corner.getX(), corner.getZ(), resource.natural().orElseThrow().salt());
+            CuratedDepositTestRows row = CuratedDepositTestRows.of(path, corner, 20);
+            long instanceId = row.identity(dimension);
 
-            PlannedDeposit deposit = PlacementPlanner.plan(resource, dimension, corner,
-                    candidate.radius(), ShapeRotation.XZ, candidate.plannerSeed());
+            PlannedDeposit deposit = row.plan(dimension);
             List<ChunkPos> touched = deposit.touchedChunks();
             check(touched.size() >= 2,
                     path + " spans only " + touched.size() + " chunk(s), so it proves nothing");
 
-            DepositInstance instance = DepositRegistrar.describe(
-                    deposit, instanceId, DepositSource.NATURAL, "natural|m10a-span|" + path);
+            DepositInstance instance = row.describe(dimension);
 
             int ledgerBefore = ledger.size();
             int loadedBefore = level.getChunkSource().getLoadedChunksCount();
@@ -384,31 +431,35 @@ public final class NaturalMetalLifecycleGameTests {
         helper.succeed();
     }
 
-    /** Natural identity is a pure function of the cell, so a restart re-derives it exactly. */
+    /**
+     * A curated identity is a pure function of the row, so a restart re-derives it exactly.
+     *
+     * <p>This is what makes a Rails import resumable and idempotent: the server keeps no memory of
+     * how it computed the id, because there is nothing to remember — the row's own immutable
+     * parameters are the whole input.
+     */
     @GameTest(template = TEMPLATE)
-    public static void naturalMetalIdentityIsStableAcrossARestart(GameTestHelper helper) {
+    public static void curatedMetalIdentityIsStableAcrossARestart(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         String dimension = level.dimension().location().toString();
+        BlockPos origin = helper.absolutePos(NODE);
 
         for (String path : List.of("iron", "gold", "copper")) {
-            ResourceDefinition resource = resource(path);
-            NaturalGeneration natural = resource.natural().orElseThrow();
-            var candidate = NaturalDepositSelector
-                    .candidateFor(99L, resource, natural, 3, 5).orElse(null);
-            if (candidate == null) {
-                continue;
-            }
-            long expected = DepositIdentity.natural(
-                    99L, natural.dimensionId(), resource.id(), 3, 5, natural.salt());
-            check(candidate.instanceId() == expected,
-                    path + " does not use the milestone 4 natural identity contract");
+            CuratedDepositTestRows row = CuratedDepositTestRows.of(path, origin, 14);
 
-            // Re-deriving after a notional restart gives the identical candidate and seed.
-            var again = NaturalDepositSelector
-                    .candidateFor(99L, resource, natural, 3, 5).orElseThrow();
-            check(again.equals(candidate), path + " re-derived a different candidate");
-            check(again.plannerSeed() == candidate.plannerSeed(),
-                    path + " re-derived a different planner seed");
+            long first = row.identity(dimension);
+            PlannedDeposit firstPlan = row.plan(dimension);
+
+            // Re-deriving after a notional restart: a fresh row object, same parameters.
+            CuratedDepositTestRows again = CuratedDepositTestRows.of(path, origin, 14);
+            check(again.identity(dimension) == first,
+                    path + " re-derived a different identity from the same Rails parameters");
+            check(again.plan(dimension).positions().equals(firstPlan.positions()),
+                    path + " re-derived different geometry from the same Rails parameters");
+
+            // And a different radius is deliberately a different deposit, per the identity contract.
+            check(CuratedDepositTestRows.of(path, origin, 15).identity(dimension) != first,
+                    path + " gave two different radii the same identity");
         }
         helper.succeed();
     }

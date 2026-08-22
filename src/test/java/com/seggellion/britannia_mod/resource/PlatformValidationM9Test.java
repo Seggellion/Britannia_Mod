@@ -46,9 +46,7 @@ class PlatformValidationM9Test {
                 continue;
             }
             ResourceDefinition.Generation config = generation.orElseThrow();
-            ShapeTuning tuning = definition.natural()
-                    .map(natural -> natural.tuning())
-                    .orElse(ShapeTuning.DEFAULT);
+            ShapeTuning tuning = definition.tuning();
             int representative = Math.max(config.minRadius(),
                     Math.min(config.maxRadius(), config.maxRadius() / 3));
             cases.add(new ShapeCase(definition.path(), config.shape(),
@@ -166,8 +164,7 @@ class PlatformValidationM9Test {
                 "gold", "verite", "valorite", "shadow_iron", "silica_sand_deposit")) {
             ResourceDefinition definition = ResourceCatalog.instance().byPath(path).orElseThrow();
             ResourceDefinition.Generation generation = definition.generation().orElseThrow();
-            ShapeTuning tuning = definition.natural()
-                    .map(natural -> natural.tuning()).orElse(ShapeTuning.DEFAULT);
+            ShapeTuning tuning = definition.tuning();
 
             // Curated resources are placed at whatever radius Rails names, so the assessment uses
             // the configured radius the live data actually uses where one is known, and the

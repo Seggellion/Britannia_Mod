@@ -35,7 +35,15 @@ public record MineableDefinition(
 
     public enum Category {
         STONE,
-        ORE;
+        ORE,
+        /**
+         * On the Mining ladder, worked with the pickaxe, but not a metal — coal is the first.
+         *
+         * <p>Kept distinct from {@link #ORE} because the category decides what a break yields:
+         * ORE mints a {@code PurityOreItem} and STONE a {@code GradeStoneItem}, and coal wants
+         * neither. See {@code ResourceDefinition.Family#MINERAL}.
+         */
+        MINERAL;
 
         public static Category parse(String raw) {
             for (Category value : values()) {

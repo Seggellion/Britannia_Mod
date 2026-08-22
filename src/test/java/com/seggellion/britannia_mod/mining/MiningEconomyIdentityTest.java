@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.seggellion.britannia_mod.economy.CommodityMapping;
+import com.seggellion.britannia_mod.resource.ResourceCatalog;
 import com.seggellion.britannia_mod.economy.CommodityMappings;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -102,9 +104,17 @@ class MiningEconomyIdentityTest {
             if (declared.isEmpty()) {
                 continue;
             }
-            Optional<String> resolved = definition.category() == MineableDefinition.Category.ORE
-                    ? CommodityMappings.oreCommodityKey(definition.dropName())
-                    : CommodityMappings.stoneCommodityKey(definition.dropName());
+            // A mineral's yield is an ordinary item, so its sale resolves by item id rather than
+            // by a drop name -- there is no purity or grade payload carrying a type string. The
+            // other two families still resolve the way their payload does.
+            Optional<String> resolved = switch (definition.category()) {
+                case ORE -> CommodityMappings.oreCommodityKey(definition.dropName());
+                case STONE -> CommodityMappings.stoneCommodityKey(definition.dropName());
+                case MINERAL -> ResourceCatalog.instance().byPath(definition.id())
+                        .flatMap(resource -> resource.yield().itemId())
+                        .flatMap(CommodityMappings::forId)
+                        .map(CommodityMapping::itemName);
+            };
             assertEquals(declared, resolved,
                     definition.id() + " drops \"" + definition.dropName()
                             + "\" which must resolve to its declared commodity");
@@ -117,6 +127,9 @@ class MiningEconomyIdentityTest {
         for (MineableDefinition definition : catalog.active()) {
             String declared = definition.economyCommodity().orElse(null);
             if (declared == null) continue;
+            if (PENDING_RAILS_COMMODITY.contains(definition.id())) {
+                continue; // Declared deliberately, awaiting the Rails record. See the field.
+            }
             boolean seeded = definition.category() == MineableDefinition.Category.ORE
                     ? SEEDED_ORES.contains(declared)
                     : SEEDED_STONE.containsKey(declared);
@@ -125,8 +138,58 @@ class MiningEconomyIdentityTest {
     }
 
     /**
+     * Commodities the mod declares that Rails has not seeded yet.
+     *
+     * <p>Coal is one, and it is a <b>deployment prerequisite, not an accepted state</b>. The owner
+     * decision is explicit that coal must be sellable like every other mined resource; what is
+     * missing is the Rails record, which cannot be created from this repository.
+     *
+     * <p>The exact contract Rails has to satisfy, so nobody has to reverse-engineer it:
+     * <ul>
+     *   <li>category {@code ore}</li>
+     *   <li>subcategory {@code raw}</li>
+     *   <li>item name {@code coal}</li>
+     *   <li>display name {@code Coal}</li>
+     *   <li>unit: quantity — coal is counted, not weighed</li>
+     * </ul>
+     * which is the same shape {@code CommoditySeeder} already uses for the nine metals, and matches
+     * {@code CommodityMappings.map("minecraft:coal", "ore", "raw", "coal", "Coal", QUANTITY)}.
+     *
+     * <p><b>Delete the entry the moment Rails seeds that row.</b> Until then a coal sale resolves
+     * against nothing, exactly as every stone sale did before Mining milestone 8.
+     */
+    private static final List<String> PENDING_RAILS_COMMODITY = List.of("coal");
+
+    /**
+     * Anything pending must really still be missing, and must really be declared.
+     *
+     * <p>The list is a record of outstanding external work, not a place to park a resource. This
+     * fails if an entry stops being a real gap, which is what forces it to be emptied rather than
+     * forgotten.
+     */
+    @Test
+    void thePendingRailsCommodityListIsAnOutstandingPrerequisiteNotAnExcuse() {
+        for (String id : PENDING_RAILS_COMMODITY) {
+            MineableDefinition definition = catalog.active().stream()
+                    .filter(candidate -> candidate.id().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError(
+                            id + " is listed as pending a Rails commodity but is not mineable"));
+            assertTrue(definition.economyCommodity().isPresent(),
+                    id + " must declare the commodity identity Rails is expected to seed");
+            assertFalse(SEEDED_ORES.contains(definition.economyCommodity().orElseThrow()),
+                    id + " is seeded in Rails now -- remove it from PENDING_RAILS_COMMODITY");
+            System.out.println("DEPLOYMENT PREREQUISITE: Rails must seed commodity ore/raw/"
+                    + definition.economyCommodity().orElseThrow()
+                    + " before " + id + " can be sold.");
+        }
+    }
+
+    /**
      * Owner decision 2026-08-15: every mined resource sells. A resource that reaches a player's
-     * inventory with nowhere to sell it is now a defect, not a documented gap.
+     * inventory with nowhere to sell it is now a defect, not a documented gap. Coal satisfies this
+     * by declaring its identity; whether Rails has seeded the matching record is a separate,
+     * deliberately separate question -- see {@link #PENDING_RAILS_COMMODITY}.
      */
     @Test
     void everyMinedResourceHasSomewhereToSell() {

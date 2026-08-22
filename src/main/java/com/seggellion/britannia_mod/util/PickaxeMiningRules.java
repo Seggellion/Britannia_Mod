@@ -30,6 +30,11 @@ public final class PickaxeMiningRules {
         return isCategory(state, MineableDefinition.Category.ORE);
     }
 
+    /** A Mining-governed non-metal worked with the pickaxe -- coal today. */
+    public static boolean isAllowedMineralBlock(BlockState state) {
+        return isCategory(state, MineableDefinition.Category.MINERAL);
+    }
+
     private static boolean isCategory(BlockState state, MineableDefinition.Category category) {
         return Mineables.resolve(state)
                 .map(definition -> definition.category() == category)

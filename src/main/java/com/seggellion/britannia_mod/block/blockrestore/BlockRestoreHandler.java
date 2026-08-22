@@ -95,10 +95,9 @@ public class BlockRestoreHandler {
         for (ServerLevel level : server.getAllLevels()) {
             RestorationScheduler scheduler = RestorationScheduler.of(level);
             scheduler.runPass(BrokenBlockDataStorage.get(level), now, debt -> {
-                if (!canRestoreInto(level, debt.pos)) {
+                if (!restore(level, debt)) {
                     return false;
                 }
-                level.setBlockAndUpdate(debt.pos, debt.originalState);
                 playerRestoreCount.merge(debt.playerUUID, 1, Integer::sum);
                 return true;
             });
@@ -107,6 +106,48 @@ public class BlockRestoreHandler {
         if (!playerRestoreCount.isEmpty()) {
             sendRestorationMessages(server, playerRestoreCount);
         }
+    }
+
+    /**
+     * Put one cell's resource back, and say truthfully whether it went back.
+     *
+     * <h2>The invariant this exists to hold</h2>
+     * A restoration debt is the record of economic material owed to the world. The scheduler
+     * removes a debt when, and only when, this returns {@code true} — so returning {@code true}
+     * without the block actually standing there deletes the debt and the resource with it, silently
+     * and permanently. Nothing later would know: there is no second record.
+     *
+     * <p>The previous version could do exactly that. It called {@code setBlockAndUpdate} and
+     * discarded the result, then returned an unconditional {@code true}, so any refused write —
+     * a chunk that unloaded between the occupancy check and the write, a state that will not fit,
+     * a position outside build height — consumed the debt anyway.
+     *
+     * <p>Three things must now all hold before this reports success, and each failure keeps the
+     * debt so the existing backoff can retry it later:
+     * <ol>
+     *   <li>the cell will accept the block back — no fluid, no block entity, no occupant;</li>
+     *   <li>the state to restore is a real one, not an empty or air placeholder;</li>
+     *   <li>the write returned true <em>and</em> the block is standing there afterwards.</li>
+     * </ol>
+     *
+     * <p>The read-back is deliberate rather than paranoid. {@code setBlockAndUpdate} reports
+     * whether the level accepted the change, not whether anything else replaced it in the same
+     * tick, and the cost of being wrong here is unrecoverable.
+     */
+    public static boolean restore(ServerLevel level, BrokenBlockData debt) {
+        if (!canRestoreInto(level, debt.pos)) {
+            return false;
+        }
+        BlockState target = debt.originalState;
+        if (target == null || target.isAir()) {
+            // Nothing sensible to put back. Keeping the debt is the honest outcome: it will show up
+            // in diagnostics as owed rather than vanishing as though it had been paid.
+            return false;
+        }
+        if (!level.setBlockAndUpdate(debt.pos, target)) {
+            return false;
+        }
+        return level.getBlockState(debt.pos).is(target.getBlock());
     }
 
     /**

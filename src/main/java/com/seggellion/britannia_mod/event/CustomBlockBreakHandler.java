@@ -60,6 +60,7 @@ public class CustomBlockBreakHandler {
 
         boolean isStone = PickaxeMiningRules.isAllowedStoneBlock(state);
         boolean isOre = PickaxeMiningRules.isAllowedOreBlock(state);
+        boolean isMineral = PickaxeMiningRules.isAllowedMineralBlock(state);
 
         if (com.seggellion.britannia_mod.mining.MiningExtractionTool.isAuthorized(state, heldItem)) {
             event.setCanceled(true);
@@ -68,6 +69,8 @@ public class CustomBlockBreakHandler {
                 handleStoneBreaking(serverLevel, pos, state, player);
             } else if (isOre) {
                 handleOreBreaking(serverLevel, pos, state, player);
+            } else if (isMineral) {
+                handleMineralBreaking(serverLevel, pos, state, player);
             } else {
                 // Authorized for something this handler does not yield -- a sediment bed reached
                 // with its own shovel, which the deposit handler has already taken. Nothing was
@@ -128,6 +131,38 @@ public class CustomBlockBreakHandler {
                                             stoneType, stoneItem.getGradeName(stoneStack))),
             true
         );
+    }
+
+    /**
+     * A Mining-governed non-metal: coal today.
+     *
+     * <p>Unlike stone and ore this mints nothing. The yield is whatever the resource's definition
+     * says it is, built by {@link Resources#yieldStack} -- the same call the sediment beds use --
+     * so managed coal hands over ordinary {@code minecraft:coal} and every furnace, campfire and
+     * torch recipe that already accepts coal keeps working with no registration of ours.
+     *
+     * <p>The definition is the authority for the yield, not the block being broken and not the
+     * vanilla loot table, which is never consulted: the break is cancelled above, so the only way
+     * material leaves this cell is the stack built here.
+     */
+    private void handleMineralBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {
+        level.setBlock(pos, depletedState(level, pos, state), 2);
+
+        ItemStack yield = Resources.resolve(state)
+                .map(Resources::yieldStack)
+                .orElse(ItemStack.EMPTY);
+        if (yield.isEmpty()) {
+            // Reachable only if the catalogue and the block registry disagree, which the catalogue's
+            // load-time validation already refuses. Dropping nothing is the safe half of that.
+            return;
+        }
+
+        level.addFreshEntity(new ItemEntity(level,
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, yield));
+
+        player.displayClientMessage(
+                Component.literal(String.format("You mined %s.", yield.getHoverName().getString())),
+                true);
     }
 
     private void handleOreBreaking(ServerLevel level, BlockPos pos, BlockState state, Player player) {

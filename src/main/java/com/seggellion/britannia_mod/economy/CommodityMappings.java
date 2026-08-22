@@ -174,6 +174,13 @@ public final class CommodityMappings {
         // intended loop is that a player fires their own silica into raw glass and sells that.
         // No live fallback is added here; adding one would delete the processing step.
         map("silica_sand", "glass", "raw", "sand", "Silica Sand", CommodityUnit.WEIGHT);
+
+        // OreVein milestone 11. Managed coal yields ordinary minecraft:coal, so the sale is
+        // keyed on the vanilla item rather than on a Britannia one. Posted under ore/raw
+        // beside the nine metals because coal is mined and sold the same way, even though it
+        // is not a metal. Rails must seed a matching ore/raw/coal commodity before a sale can
+        // resolve -- see MiningEconomyIdentityTest.PENDING_RAILS_COMMODITY.
+        map("minecraft:coal", "ore", "raw", "coal", "Coal", CommodityUnit.QUANTITY);
     }
 
     private CommodityMappings() {

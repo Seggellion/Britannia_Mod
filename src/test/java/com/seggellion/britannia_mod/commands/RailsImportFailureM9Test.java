@@ -109,8 +109,10 @@ class RailsImportFailureM9Test {
     void anUnknownResourceIsRejectedBeforePlanning() {
         assertTrue(VeinPlacementValidation.resourceFor("mithril").isEmpty(),
                 "an unplaceable ore type resolved to a resource");
-        assertTrue(VeinPlacementValidation.resourceFor("coal").isEmpty(),
-                "coal has no resource definition and must not be placeable");
+        // Coal used to be the second example here, because it had no definition. Milestone 11 gave
+        // it one, so it now demonstrates the opposite: a row whose type the catalogue knows.
+        assertTrue(VeinPlacementValidation.resourceFor("coal").isPresent(),
+                "coal has a canonical resource definition since milestone 11");
         assertTrue(VeinPlacementValidation.resourceFor("silver").isPresent(),
                 "silver should still be placeable");
     }
