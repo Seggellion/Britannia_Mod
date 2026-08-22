@@ -1,0 +1,31 @@
+{
+  "protocol_version": 1,
+  "resource_deposit_uuid": "22222222-2222-4222-8222-222222222222",
+  "resource_deposit_revision": 7,
+  "status": "completed",
+  "result": {
+    "resolved_y": 40,
+    "resource_definition_revision": 3,
+    "shape": "vertical_layered",
+    "radius": 2,
+    "rotation": "zw",
+    "footprint": {
+      "min_x": 8,
+      "max_x": 12,
+      "min_y": 36,
+      "max_y": 44,
+      "min_z": 18,
+      "max_z": 22
+    },
+    "planned_block_count": 35,
+    "valid_host_count": 30,
+    "rejected_host_count": 5,
+    "warnings": [
+      "rejected_not_a_host:5"
+    ],
+    "conflicts": [
+      "structure:55555555-5555-4555-8555-555555555555"
+    ],
+    "valid": false
+  }
+}

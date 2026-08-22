@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Every deposit this dimension knows about.
@@ -56,6 +57,8 @@ public class DepositLedger extends SavedData {
 
     private final Map<Long, DepositInstance> byId = new LinkedHashMap<>();
     private final Map<ChunkPos, List<Long>> byChunk = new HashMap<>();
+    private final Map<UUID, DepositRemovalRecord> removalsByOperation = new LinkedHashMap<>();
+    private final Map<Long, UUID> removalByInstance = new HashMap<>();
 
     public DepositLedger() {
         super();
@@ -73,6 +76,11 @@ public class DepositLedger extends SavedData {
             byId.put(instance.instanceId(), instance);
             index(instance);
         }
+        for (Tag entry : tag.getList("removals", Tag.TAG_COMPOUND)) {
+            DepositRemovalRecord removal = DepositRemovalRecord.fromNbt((CompoundTag) entry);
+            removalsByOperation.put(removal.operationUuid(), removal);
+            removalByInstance.put(removal.instanceId(), removal.operationUuid());
+        }
     }
 
     public static DepositLedger get(ServerLevel level) {
@@ -88,6 +96,11 @@ public class DepositLedger extends SavedData {
             list.add(instance.toNbt());
         }
         tag.put("deposits", list);
+        ListTag removals = new ListTag();
+        for (DepositRemovalRecord removal : removalsByOperation.values()) {
+            removals.add(removal.toNbt());
+        }
+        tag.put("removals", removals);
         return tag;
     }
 
@@ -184,6 +197,62 @@ public class DepositLedger extends SavedData {
         setDirty();
     }
 
+    public record RemovalRegistration(boolean accepted, DepositRemovalRecord record, String message) {}
+
+    /** Persist operation identity before the first destructive world write. */
+    public RemovalRegistration beginRemoval(UUID operationUuid, DepositInstance instance,
+                                            int preservedModified) {
+        DepositRemovalRecord byOperation = removalsByOperation.get(operationUuid);
+        if (byOperation != null) {
+            return byOperation.sameOperation(operationUuid, instance)
+                    ? new RemovalRegistration(true, byOperation, "")
+                    : new RemovalRegistration(false, byOperation,
+                    "removal operation UUID already belongs to a different deposit");
+        }
+        UUID existingOperation = removalByInstance.get(instance.instanceId());
+        if (existingOperation != null) {
+            DepositRemovalRecord existing = removalsByOperation.get(existingOperation);
+            return new RemovalRegistration(false, existing,
+                    "deposit already has removal operation " + existingOperation);
+        }
+        DepositRemovalRecord created = new DepositRemovalRecord(operationUuid,
+                instance.instanceId(), instance.resourceId(), instance.sourceIdentity(),
+                instance.plannedCells(), 0, 0, preservedModified, false, 0L);
+        removalsByOperation.put(operationUuid, created);
+        removalByInstance.put(instance.instanceId(), operationUuid);
+        setDirty();
+        return new RemovalRegistration(true, created, "");
+    }
+
+    public Optional<DepositRemovalRecord> removalByOperation(UUID operationUuid) {
+        return Optional.ofNullable(removalsByOperation.get(operationUuid));
+    }
+
+    public Optional<DepositRemovalRecord> removalByInstance(long instanceId) {
+        UUID operation = removalByInstance.get(instanceId);
+        return operation == null ? Optional.empty() : Optional.ofNullable(removalsByOperation.get(operation));
+    }
+
+    public void recordRemovalProgress(UUID operationUuid, int removedBlocks, int depletedDebts) {
+        DepositRemovalRecord current = removalsByOperation.get(operationUuid);
+        if (current == null || current.completed()) return;
+        removalsByOperation.put(operationUuid, current.withProgress(removedBlocks, depletedDebts));
+        setDirty();
+    }
+
+    /** Convert an active instance to a durable tombstone after all safe cell processing. */
+    public DepositRemovalRecord completeRemoval(UUID operationUuid, long completedAt) {
+        DepositRemovalRecord current = removalsByOperation.get(operationUuid);
+        if (current == null) throw new IllegalStateException("removal operation is not registered");
+        if (current.completed()) return current;
+        DepositRemovalRecord completed = current.complete(completedAt);
+        removalsByOperation.put(operationUuid, completed);
+        DepositInstance removed = byId.remove(current.instanceId());
+        if (removed != null) unindex(removed);
+        setDirty();
+        return completed;
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Lookup                                                             */
     /* ------------------------------------------------------------------ */
@@ -226,6 +295,15 @@ public class DepositLedger extends SavedData {
     private void index(DepositInstance instance) {
         for (ChunkPos chunk : instance.touchedChunks()) {
             byChunk.computeIfAbsent(chunk, key -> new ArrayList<>()).add(instance.instanceId());
+        }
+    }
+
+    private void unindex(DepositInstance instance) {
+        for (ChunkPos chunk : instance.touchedChunks()) {
+            List<Long> ids = byChunk.get(chunk);
+            if (ids == null) continue;
+            ids.remove(instance.instanceId());
+            if (ids.isEmpty()) byChunk.remove(chunk);
         }
     }
 }

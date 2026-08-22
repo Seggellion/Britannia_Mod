@@ -321,6 +321,9 @@ public void onServerStopping(ServerStoppingEvent event) {
     MinecraftServer server = event.getServer();
     ServiceNpcSpawnDeliveryProcessor.stop(server);
     com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.stop(server);
+    com.seggellion.britannia_mod.resource.preview.ResourceDepositPreviewPoller.stop(server);
+    com.seggellion.britannia_mod.resource.materialization.ResourceDepositMaterializationPoller.stop(server);
+    com.seggellion.britannia_mod.resource.removal.ResourceDepositRemovalPoller.stop(server);
     WorldBootstrapHandler.onServerStopping(server);
     ServerAuthRegistry.clear(server);
     for (ServerLevel level : server.getAllLevels()) {
@@ -357,6 +360,9 @@ public void onServerStarted(ServerStartedEvent event) {
     com.seggellion.britannia_mod.structure.StructureRegionRehydrator.start(event.getServer());
     ServiceNpcSpawnDeliveryProcessor.start(event.getServer());
     com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.start(event.getServer());
+    com.seggellion.britannia_mod.resource.preview.ResourceDepositPreviewPoller.start(event.getServer());
+    com.seggellion.britannia_mod.resource.materialization.ResourceDepositMaterializationPoller.start(event.getServer());
+    com.seggellion.britannia_mod.resource.removal.ResourceDepositRemovalPoller.start(event.getServer());
     com.seggellion.britannia_mod.service.banking.BankTransferReconciliationService.runStartupReconciliation(event.getServer());
     // Vendor/Trader Milestone 19.5: report trader-sale reservations stranded by
     // a crash; the refund itself happens on that player's next login.
@@ -368,6 +374,9 @@ public void onServerStarted(ServerStartedEvent event) {
 public void onServerTick(ServerTickEvent.Post event) {
     ServiceNpcSpawnDeliveryProcessor.tick(event.getServer());
     com.seggellion.britannia_mod.worldstate.WorldStateSyncPoller.tick(event.getServer());
+    com.seggellion.britannia_mod.resource.preview.ResourceDepositPreviewPoller.tick(event.getServer());
+    com.seggellion.britannia_mod.resource.materialization.ResourceDepositMaterializationPoller.tick(event.getServer());
+    com.seggellion.britannia_mod.resource.removal.ResourceDepositRemovalPoller.tick(event.getServer());
     com.seggellion.britannia_mod.population.TownPersonPopulationManager.tick(event.getServer());
 }
 

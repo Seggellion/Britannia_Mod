@@ -147,6 +147,39 @@ public final class MaterializationService {
         return materialize(level, deposit, deposit.positionsIn(chunk), DEFAULT_BUDGET);
     }
 
+    /**
+     * Apply the exact guarded-placement policy without writing a block or touching a ledger.
+     *
+     * <p>This is the World Admin Map M4 preview seam. It deliberately delegates to the same
+     * {@link #evaluate} decision used by {@link #materialize}; preview cannot drift into a second
+     * host policy, and this method contains no call to {@code setBlock}.
+     */
+    public static Inspection inspect(ServerLevel level, PlannedDeposit deposit) {
+        ResourceDefinition.Generation generation = deposit.resource().generation().orElseThrow();
+        Block resourceBlock = Resources.block(generation.blockId());
+        TagKey<Block> hostTag = hostTag(generation);
+        Map<Rejection, Integer> rejections = new EnumMap<>(Rejection.class);
+        int validHosts = 0;
+        for (BlockPos pos : deposit.positions()) {
+            Rejection rejection = evaluate(level, pos, resourceBlock, hostTag);
+            if (rejection == null) {
+                validHosts++;
+            } else {
+                rejections.merge(rejection, 1, Integer::sum);
+            }
+        }
+        return new Inspection(deposit.count(), validHosts, rejections);
+    }
+
+    /** The read-only answer for one complete candidate plan. */
+    public record Inspection(int planned, int validHosts, Map<Rejection, Integer> rejections) {
+        public Inspection {
+            rejections = Map.copyOf(rejections);
+        }
+
+        public int rejectedHosts() { return planned - validHosts; }
+    }
+
     /** The one write path. Every rule is applied here and nowhere else. */
     public static Result materialize(
             ServerLevel level, PlannedDeposit deposit, List<BlockPos> candidates, int budget) {

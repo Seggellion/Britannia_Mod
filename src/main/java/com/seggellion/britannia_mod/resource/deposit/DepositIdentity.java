@@ -143,6 +143,32 @@ public final class DepositIdentity {
         return hash64(adminEncoding(minted, dimensionId, resourceId));
     }
 
+    /**
+     * A World Admin Map operation approved for one Rails ResourceDeposit revision.
+     *
+     * <p>The operation UUID is the retry identity. The Rails UUID and revision are retained in
+     * the same canonical source identity so a persisted {@code DepositInstance} remains directly
+     * explainable and correlatable after restart. This extends the existing ADMIN identity
+     * contract; it does not add another ledger or deposit model.
+     */
+    public static String worldAdminEncoding(
+            UUID operationUuid, UUID resourceDepositUuid, long revision,
+            String dimensionId, String resourceId) {
+        return encode(DepositSource.ADMIN,
+                "world_admin_map",
+                operationUuid.toString(),
+                resourceDepositUuid.toString(),
+                Long.toString(revision),
+                normalise(dimensionId),
+                normalise(resourceId));
+    }
+
+    public static long worldAdmin(UUID operationUuid, UUID resourceDepositUuid, long revision,
+                                  String dimensionId, String resourceId) {
+        return hash64(worldAdminEncoding(operationUuid, resourceDepositUuid, revision,
+                dimensionId, resourceId));
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Retrofit                                                           */
     /* ------------------------------------------------------------------ */
