@@ -1,0 +1,6 @@
+{
+  "parent": "britannia_mod:block/structure/foundation/brick_side_01",
+  "textures": {
+    "up": "britannia_mod:block/structure/wooden_board_floor/wooden_board_floor_8"
+  }
+}

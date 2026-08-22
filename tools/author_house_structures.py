@@ -34,8 +34,9 @@ large_patio
     standing in for the structural floor layer a house ships with, which is a distinction the
     housing system needs to make: the perimeter foundation stays protected, and the interior
     floor is what an owner cuts through to reach a basement. They become
-    britannia_mod:wooden_board_floor_foundation, which is the same boards, same models, same
-    facing and variation -- only the identity differs. No block moves and no layer is added.
+    britannia_mod:wooden_board_floor_foundation, which is the same boards on top, the same
+    facing and the same variation -- only the identity differs, and with it the masonry the
+    slab shows to the basement below it. No block moves and no layer is added.
 """
 import argparse
 import gzip
